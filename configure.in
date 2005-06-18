@@ -1,0 +1,48 @@
+dnl Process this file with autoconf to produce a configure script.
+dnl $Id: $
+
+AC_INIT(configure.in)
+
+#release versioning
+GENERIC_MAJOR_VERSION=0
+GENERIC_MINOR_VERSION=0
+GENERIC_MICRO_VERSION=4
+GENERIC_VERSION=$GENERIC_MAJOR_VERSION.$GENERIC_MINOR_VERSION.$GENERIC_MICRO_VERSION
+AC_SUBST(GENERIC_MAJOR_VERSION)
+AC_SUBST(GENERIC_MINOR_VERSION)
+AC_SUBST(GENERIC_MICRO_VERSION)
+AC_SUBST(GENERIC_VERSION)
+
+VERSION=$GENERIC_VERSION
+AM_INIT_AUTOMAKE(fuppes, $GENERIC_VERSION, mail@ulrich-voelkel.de)
+AM_CONFIG_HEADER(config.h)
+
+AC_PROG_CXX
+#AC_PROG_CXXCPP
+#AC_LANG_CPLUSPLUS
+#AC_PROG_INSTALL
+#AC_LIBTOOL_WIN32_DLL
+#AM_PROG_LIBTOOL
+
+dnl Checks for programs.
+
+
+dnl Checks for libraries.
+PKG_CHECK_MODULES(LIBXML, libxml-2.0 >= 2.6.1)
+
+dnl Checks for header files.
+AC_CHECK_HEADERS(string vector)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+
+
+dnl Checks for library functions.
+
+
+dnl Checks for Additional stuffs.
+
+AC_OUTPUT([
+Makefile
+src/Makefile
+])
+#include/Makefile
