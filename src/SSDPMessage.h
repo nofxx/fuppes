@@ -1,7 +1,6 @@
 /***************************************************************************
- *            Message.cpp
- *
- *  Sun Jun 12 18:29:01 2005
+ *            SSDPMessage.h
+ * 
  *  Copyright  2005  Ulrich Völkel
  *  mail@ulrich-voelkel.de
  ****************************************************************************/
@@ -22,38 +21,38 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#include "Message.h"
+#ifndef _SSDPMESSAGE_H
+#define _SSDPMESSAGE_H
 
-CMessage::CMessage(std::string p_sMessage)
-{
-	m_sContent = p_sMessage;
-}
+#include "win32.h"
 
-CMessage::~CMessage()
-{
-}
+#ifndef WIN32
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#endif
 
-sockaddr_in CMessage::get_local_ep()
-{
-	return local_ep;
-}
+#include <string>
 
-void CMessage::set_local_ep(sockaddr_in a_ep)
+class CSSDPMessage
 {
-	local_ep = a_ep;
-}
+	public:
+		CSSDPMessage(std::string);
+	  ~CSSDPMessage();
+	
+	public:
+		sockaddr_in get_local_ep();
+	  void set_local_ep(sockaddr_in);
+	
+		sockaddr_in get_remote_ep();
+	  void set_remote_ep(sockaddr_in);		
+	
+		std::string GetContent();
+	
+	private:
+	  sockaddr_in local_ep;
+		sockaddr_in remote_ep;
+	  std::string m_sContent;
+};
 
-sockaddr_in CMessage::get_remote_ep()
-{
-	return remote_ep;
-}
-
-void CMessage::set_remote_ep(sockaddr_in a_ep)
-{
-	remote_ep = a_ep;
-}
-
-std::string CMessage::GetContent()
-{
-	return m_sContent;
-}
+#endif /* _SSDPMESSAGE_H */

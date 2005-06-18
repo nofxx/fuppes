@@ -59,10 +59,10 @@ CSSDPCtrl* CFuppes::GetSSDPCtrl()
 	return m_pSSDPCtrl;
 }
 
-void CFuppes::OnSSDPCtrlReceiveMsg(CMessage* pMessage)
+void CFuppes::OnSSDPCtrlReceiveMsg(CSSDPMessage* pSSDPMessage)
 {
 	cout << "[fuppes] OnSSDPCtrlReceiveMsg:" << endl;
-	cout << pMessage->GetContent() << endl;
+	cout << pSSDPMessage->GetContent() << endl;
 }
 
 CHTTPMessage* CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pHTTPMessage)
@@ -95,8 +95,13 @@ CHTTPMessage* CFuppes::HandleHTTPGet(CHTTPMessage* pHTTPMessage)
 	if(pHTTPMessage->GetRequest().compare("/"))
 	{
 		pResult = new CHTTPMessage(http_200_ok, http_1_1, text_xml);
-		pResult->SetContent(m_pMediaServer->GetDescription());		
+		pResult->SetContent(m_pMediaServer->GetDeviceDescription());
 	}
+	else if(pHTTPMessage->GetRequest().compare("/UPnPServices/ContentDirectory/description.xml"))
+	{
+		pResult = new CHTTPMessage(http_200_ok, http_1_1, text_xml);
+		pResult->SetContent(m_pContentDirectory->GetServiceDescription());
+  }
 		
 	return pResult;
 }

@@ -26,7 +26,7 @@
 
 #include <iostream>
 
-#include "Message.h"
+#include "SSDPMessage.h"
 #include "HTTPMessage.h"
 
 class CMessageParser

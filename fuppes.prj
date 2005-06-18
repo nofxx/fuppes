@@ -73,7 +73,6 @@ module.source.type=
 module.source.files=\
 	main.cpp\
 	UDPSocket.cpp\
-	Message.cpp\
 	SSDPCtrl.cpp\
 	HTTPServer.cpp\
 	MediaServer.cpp\
@@ -85,7 +84,24 @@ module.source.files=\
 	HTTPMessage.cpp\
 	Fuppes.cpp\
 	ContentDirectory.cpp\
-	UPnPService.cpp
+	UPnPService.cpp\
+	SSDPMessage.cpp\
+	ContentDirectory.h\
+	Fuppes.h\
+	HTTPMessage.h\
+	HTTPServer.h\
+	MediaServer.h\
+	MessageParser.h\
+	NotifyMsgFactory.h\
+	RegEx.h\
+	SSDPCtrl.h\
+	SSDPMessage.h\
+	SSDPSession.h\
+	SharedConfig.h\
+	UDPSocket.h\
+	UPnPDevice.h\
+	UPnPService.h\
+	win32.h
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

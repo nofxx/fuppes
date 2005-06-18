@@ -26,6 +26,7 @@
 
 #include <string>
 #include <vector>
+#include <libxml/xmlwriter.h>
 
 #include "UPnPService.h"
 
@@ -50,7 +51,7 @@ class CUPnPDevice
 	
 		eUPnPDeviceType GetDeviceType();
 	  std::string			GetDeviceTypeAsString();	
-		std::string			GetDescription();
+		std::string			GetDeviceDescription();
 		void 						SetHTTPServerURL(std::string);
 	
 	private:

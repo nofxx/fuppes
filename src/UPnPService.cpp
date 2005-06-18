@@ -23,6 +23,12 @@
  
 #include "UPnPService.h"
 
+//#include "xmlencode.h"
+
+#include <sstream>
+#include <iostream>
+#include <libxml/xmlwriter.h>
+
 CUPnPService::CUPnPService(eUPnPServiceType p_UPnPServiceType)
 {
 	m_UPnPServiceType = p_UPnPServiceType;
@@ -45,4 +51,46 @@ std::string CUPnPService::GetUPnPServiceTypeAsString()
       break;
 	}	
 	return sResult;
+}
+
+std::string CUPnPService::GetServiceDescription()
+{
+	xmlTextWriterPtr writer;
+	xmlBufferPtr buf;
+	std::stringstream sTmp;
+	
+buf    = xmlBufferCreate();
+	writer = xmlNewTextWriterMemory(buf, 0);
+	xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL);
+
+	// root
+	xmlTextWriterStartElementNS(writer, NULL, BAD_CAST "scpd", BAD_CAST "urn:schemas-upnp-org:service-1-0");
+
+		// specVersion
+		xmlTextWriterStartElement(writer, BAD_CAST "specVersion");
+
+			// major
+			xmlTextWriterStartElement(writer, BAD_CAST "major");
+			xmlTextWriterWriteString(writer, BAD_CAST "1");
+			xmlTextWriterEndElement(writer);
+			// minor
+			xmlTextWriterStartElement(writer, BAD_CAST "minor");
+			xmlTextWriterWriteString(writer, BAD_CAST "0");
+			xmlTextWriterEndElement(writer);
+
+		// end specVersion
+		xmlTextWriterEndElement(writer);
+
+	// end root
+	xmlTextWriterEndElement(writer);
+	xmlTextWriterEndDocument(writer);
+	xmlFreeTextWriter(writer);
+
+	std::stringstream output;
+	output << (const char*)buf->content;
+
+	xmlBufferFree(buf);
+
+	//cout << "upnp description: " << output.str() << endl;
+	return output.str();
 }

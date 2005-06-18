@@ -32,7 +32,7 @@
 using namespace std;
 
 CHTTPMessage::CHTTPMessage(eHTTPMessageType p_HTTPMessageType, 
-													 eHTTPVersion p_HTTPVersion): CMessage("")
+													 eHTTPVersion p_HTTPVersion)
 {
 	m_HTTPMessageType = p_HTTPMessageType;
 	m_HTTPVersion			= p_HTTPVersion;
@@ -41,14 +41,14 @@ CHTTPMessage::CHTTPMessage(eHTTPMessageType p_HTTPMessageType,
 
 CHTTPMessage::CHTTPMessage(eHTTPMessageType p_HTTPMessageType, 
 													 eHTTPVersion p_HTTPVersion, 
- 													 eHTTPContentType p_HTTPContentType): CMessage("")
+ 													 eHTTPContentType p_HTTPContentType)
 {
 	m_HTTPMessageType = p_HTTPMessageType;
 	m_HTTPVersion			= p_HTTPVersion;
 	m_HTTPContentType = p_HTTPContentType;
 }
 
-CHTTPMessage::CHTTPMessage(std::string p_sContent): CMessage(p_sContent)
+CHTTPMessage::CHTTPMessage(std::string p_sContent)
 {
 	//cout << p_sContent << endl;
 	

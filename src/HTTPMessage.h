@@ -25,7 +25,6 @@
 #define _HTTPMESSAGE_H
 
 #include <string>
-#include "Message.h"
 
 enum eHTTPVersion
 {
@@ -48,7 +47,7 @@ enum eHTTPContentType
 	audio_mpeg
 };
 
-class CHTTPMessage: public CMessage
+class CHTTPMessage
 {
   public:
 		CHTTPMessage(eHTTPMessageType, eHTTPVersion);

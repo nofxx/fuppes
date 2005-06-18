@@ -25,12 +25,9 @@
 
 #include <sstream>
 #include <iostream>
-#include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
 
 using namespace std;
-
-xmlChar *ConvertInput(const char *in, const char *encoding);
 
 CUPnPDevice::CUPnPDevice(eUPnPDeviceType p_UPnPDeviceType)
 {
@@ -83,7 +80,7 @@ void CUPnPDevice::SetHTTPServerURL(std::string p_sHTTPServerURL)
 	m_sHTTPServerURL = p_sHTTPServerURL;
 }
 
-std::string CUPnPDevice::GetDescription()
+std::string CUPnPDevice::GetDeviceDescription()
 {		
 	xmlTextWriterPtr writer;
 	xmlBufferPtr buf;
@@ -174,7 +171,9 @@ std::string CUPnPDevice::GetDescription()
 			
 			// UDN
 			xmlTextWriterStartElement(writer, BAD_CAST "UDN");
-      xmlTextWriterWriteString(writer, BAD_CAST m_sUDN.c_str());
+			sTmp << "uuid:" << m_sUDN;
+      xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
+      sTmp.str("");
 			xmlTextWriterEndElement(writer);
 			
 			// UPC
@@ -246,54 +245,4 @@ std::string CUPnPDevice::GetDescription()
 	
 	//cout << "upnp description: " << output.str() << endl;
 	return output.str();
-}
-
-// from: http://xmlsoft.org/examples/testWriter.c
-xmlChar *ConvertInput(const char *in, const char *encoding)
-{
-    xmlChar *out;
-    int ret;
-    int size;
-    int out_size;
-    int temp;
-    xmlCharEncodingHandlerPtr handler;
-
-    if (in == 0)
-        return 0;
-
-    handler = xmlFindCharEncodingHandler(encoding);
-
-    if (!handler) {
-        printf("ConvertInput: no encoding handler found for '%s'\n",
-               encoding ? encoding : "");
-        return 0;
-    }
-
-    size = (int) strlen(in) + 1;
-    out_size = size * 2 - 1;
-    out = (unsigned char *) xmlMalloc((size_t) out_size);
-
-    if (out != 0) {
-        temp = size - 1;
-        ret = handler->input(out, &out_size, (const xmlChar *) in, &temp);
-        if ((ret < 0) || (temp - size + 1)) {
-            if (ret < 0) {
-                printf("ConvertInput: conversion wasn't successful.\n");
-            } else {
-                printf
-                    ("ConvertInput: conversion wasn't successful. converted: %i octets.\n",
-                     temp);
-            }
-
-            xmlFree(out);
-            out = 0;
-        } else {
-            out = (unsigned char *) xmlRealloc(out, out_size + 1);
-            out[out_size] = 0;  /*null terminating out */
-        }
-    } else {
-        printf("ConvertInput: no mem\n");
-    }
-
-    return out;
 }

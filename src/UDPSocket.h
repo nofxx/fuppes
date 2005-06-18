@@ -35,14 +35,14 @@
 
 #include <string>
 
-#include "Message.h"
+#include "SSDPMessage.h"
 
 class CUDPSocket;
 
 class IUDPSocket
 {
 	public:
-		virtual void OnUDPSocketReceive(CUDPSocket*, CMessage*) = 0;
+		virtual void OnUDPSocketReceive(CUDPSocket*, CSSDPMessage*) = 0;
 };
 
 class CUDPSocket
@@ -59,32 +59,20 @@ class CUDPSocket
 	  void setup_random_port();
 	
 		upnpSocket get_socket_fd();
-	
-		//void set_cb_on_receive(void (*)(message*, void*), void*);	
+			
 	  void SetReceiveHandler(IUDPSocket*);
-	  void call_on_receive(CMessage*);
+	  void call_on_receive(CSSDPMessage*);
 	
 		int  get_port();
 	  std::string get_ip();
-	  sockaddr_in get_local_ep();
-	
-	private:
-		//int       sock;						// socket descriptor
-	  //pthread_t receive_thread; //
-				
-		upnpSocket       sock;						// socket descriptor
-  	upnpThread receive_thread;			//
-				
-	  int port;
-		bool      is_multicast;   //
-
-	
-	  sockaddr_in local_ep;			// local end point
+	  sockaddr_in get_local_ep();	
+	private:				
+		upnpSocket  sock;					
+  	upnpThread  receive_thread;					  
+		bool        is_multicast;	
+	  sockaddr_in local_ep;	// local end point
 	
 	  IUDPSocket* m_pReceiveHandler;
-	  void*   cb_receive_handler;
-	  // events
-	  void (*cb_on_receive)(CMessage*, void*);
 	
 };
 

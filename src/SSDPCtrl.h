@@ -36,12 +36,12 @@
 #include <string>
 
 #include "UDPSocket.h"
-#include "Message.h"
+#include "SSDPMessage.h"
 
 class ISSDPCtrl
 {
   public:
-	  virtual void OnSSDPCtrlReceiveMsg(CMessage*) = 0;
+	  virtual void OnSSDPCtrlReceiveMsg(CSSDPMessage*) = 0;
 };
 
 class CSSDPCtrl: public IUDPSocket
@@ -59,7 +59,7 @@ class CSSDPCtrl: public IUDPSocket
 		CUDPSocket* get_socket();
 	
 	  void SetReceiveHandler(ISSDPCtrl*);
-	  void OnUDPSocketReceive(CUDPSocket*, CMessage*);
+	  void OnUDPSocketReceive(CUDPSocket*, CSSDPMessage*);
 	
 	private:
 		CUDPSocket *listener;	

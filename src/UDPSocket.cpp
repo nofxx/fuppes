@@ -181,7 +181,7 @@ upnpThreadCallback receive_loop(void *arg)
 		if((remote_ep.sin_addr.s_addr != udp_sock->get_local_ep().sin_addr.s_addr) || 
 			 (remote_ep.sin_port != udp_sock->get_local_ep().sin_port))		
 		{
-			CMessage* result = new CMessage(msg.str());		
+			CSSDPMessage* result = new CSSDPMessage(msg.str());		
 			result->set_remote_ep(remote_ep);
 			result->set_local_ep(udp_sock->get_local_ep());
 			udp_sock->call_on_receive(result);			
@@ -205,8 +205,8 @@ void CUDPSocket::SetReceiveHandler(IUDPSocket* pHandler)
 	this->m_pReceiveHandler = pHandler;
 }
 
-void CUDPSocket::call_on_receive(CMessage* pMessage)
+void CUDPSocket::call_on_receive(CSSDPMessage* pSSDPMessage)
 {
 	if(this->m_pReceiveHandler != NULL)
-	  m_pReceiveHandler->OnUDPSocketReceive(this, pMessage);
+	  m_pReceiveHandler->OnUDPSocketReceive(this, pSSDPMessage);
 }

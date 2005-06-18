@@ -1,7 +1,6 @@
 /***************************************************************************
- *            Message.h
+ *            SSDPMessage.cpp
  *
- *  Sun Jun 12 18:19:54 2005
  *  Copyright  2005  Ulrich Völkel
  *  mail@ulrich-voelkel.de
  ****************************************************************************/
@@ -22,38 +21,38 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _MESSAGE_H
-#define _MESSAGE_H
+#include "SSDPMessage.h"
 
-#include "win32.h"
-
-#ifndef WIN32
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#endif
-
-#include <string>
-
-class CMessage
+CSSDPMessage::CSSDPMessage(std::string p_sMessage)
 {
-	public:
-		CMessage(std::string);
-	  ~CMessage();
-	
-	public:
-		sockaddr_in get_local_ep();
-	  void set_local_ep(sockaddr_in);
-	
-		sockaddr_in get_remote_ep();
-	  void set_remote_ep(sockaddr_in);		
-	
-		std::string GetContent();
-	
-	private:
-	  sockaddr_in local_ep;
-		sockaddr_in remote_ep;
-	  std::string m_sContent;
-};
+	m_sContent = p_sMessage;
+}
 
-#endif /* _MESSAGE_H */
+CSSDPMessage::~CSSDPMessage()
+{
+}
+
+sockaddr_in CSSDPMessage::get_local_ep()
+{
+	return local_ep;
+}
+
+void CSSDPMessage::set_local_ep(sockaddr_in a_ep)
+{
+	local_ep = a_ep;
+}
+
+sockaddr_in CSSDPMessage::get_remote_ep()
+{
+	return remote_ep;
+}
+
+void CSSDPMessage::set_remote_ep(sockaddr_in a_ep)
+{
+	remote_ep = a_ep;
+}
+
+std::string CSSDPMessage::GetContent()
+{
+	return m_sContent;
+}

@@ -14,27 +14,28 @@ h_sources = \
   UDPSocket.h\
 	SSDPCtrl.h\
 	SSDPSession.h\
+	SSDPMessage.h\
 	NotifyMsgFactory.h\
-	Message.h\
 	HTTPMessage.h\
-	MessageParser.h\
 	HTTPServer.h\
+	MessageParser.h\
 	UPnPDevice.h\
 	UPnPService.h\
 	MediaServer.h\
 	ContentDirectory.h\
 	SharedConfig.h\
-	Fuppes.h
+	Fuppes.h\
+	win32.h
 
 cpp_sources = \
   UDPSocket.cpp\
 	SSDPCtrl.cpp\
 	SSDPSession.cpp\
+	SSDPMessage.cpp\
 	NotifyMsgFactory.cpp\
-	Message.cpp\
 	HTTPMessage.cpp\
-	MessageParser.cpp\
 	HTTPServer.cpp\
+	MessageParser.cpp\
 	UPnPDevice.cpp\
 	UPnPService.cpp\
 	MediaServer.cpp\

@@ -134,14 +134,14 @@ void CSSDPCtrl::SetReceiveHandler(ISSDPCtrl* pHandler)
 	m_pReceiveHandler = pHandler;
 }
 
-void CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CMessage* pMessage)
+void CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMessage)
 {  
 	//cout << "[ssdp_ctrl] received message from " << inet_ntoa(pMessage->get_remote_ep().sin_addr) << ":" << ntohs(pMessage->get_remote_ep().sin_port) << endl;		  
 		
-	if(((this->last_multicast_ep.sin_addr.s_addr != pMessage->get_remote_ep().sin_addr.s_addr) ||
-		 (this->last_multicast_ep.sin_port != pMessage->get_remote_ep().sin_port)) &&
+	if(((this->last_multicast_ep.sin_addr.s_addr != pSSDPMessage->get_remote_ep().sin_addr.s_addr) ||
+		 (this->last_multicast_ep.sin_port != pSSDPMessage->get_remote_ep().sin_port)) &&
 	   (m_pReceiveHandler != NULL))
 	{		
-	  m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pMessage);
+	  m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pSSDPMessage);
 	}	
 }

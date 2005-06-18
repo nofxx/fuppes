@@ -48,7 +48,7 @@ class CFuppes: public ISSDPCtrl, IHTTPServer
 		CHTTPMessage* HandleHTTPGet(CHTTPMessage*);
 	  CHTTPMessage* HandleHTTPPost(CHTTPMessage*);
 	
-	  void OnSSDPCtrlReceiveMsg(CMessage*);
+	  void OnSSDPCtrlReceiveMsg(CSSDPMessage*);
 	  CHTTPMessage* OnHTTPServerReceiveMsg(CHTTPMessage*);
 };
 

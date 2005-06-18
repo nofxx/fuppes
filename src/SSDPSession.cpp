@@ -57,9 +57,9 @@ void CSSDPSession::begin_receive_unicast()
 	udp->begin_receive();
 }
 
-void CSSDPSession::OnUDPSocketReceive(CUDPSocket* pSocket, CMessage* pMessage)
+void CSSDPSession::OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pSSDPMessage)
 {
-	cout << "ssdp_session::OnUDPSocketReceive" << endl << pMessage->GetContent() << endl;
+	cout << "ssdp_session::OnUDPSocketReceive" << endl << pSSDPMessage->GetContent() << endl;
 }
 
 void CSSDPSession::start()

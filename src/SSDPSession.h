@@ -27,12 +27,12 @@
 #include <string>
 
 #include "UDPSocket.h"
-#include "Message.h"
+#include "SSDPMessage.h"
 
 class CSSDPSession: public IUDPSocket
 {
 	public:	
-		void OnUDPSocketReceive(CUDPSocket*, CMessage*);
+		void OnUDPSocketReceive(CUDPSocket*, CSSDPMessage*);
 	
 	protected:
 		CSSDPSession();

@@ -40,6 +40,7 @@ class CUPnPService
 	
 	public:
 		std::string GetUPnPServiceTypeAsString();
+		std::string GetServiceDescription();
 	
 	protected:
 		eUPnPServiceType m_UPnPServiceType;

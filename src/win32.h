@@ -21,7 +21,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _WIN32_Hschnitzler
+#ifndef _WIN32_H
 #define _WIN32_H
 
 #ifdef WIN32
@@ -33,7 +33,8 @@
 #include <Ws2tcpip.h>
 
 // Common
-#define upnpSleep Sleep
+#define upnpSleep               Sleep
+#define upnpPathDelim           "\\"
 
 // Sockets
 #define upnpSocket              SOCKET
@@ -51,6 +52,7 @@
 
 // Common
 #define upnpSleep               usleep
+#define upnpPathDelim           "/"
 
 // Sockets
 #define upnpSocket              int
