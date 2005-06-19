@@ -124,6 +124,9 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
+				RelativePath=".\ContentDirectory.cpp">
+			</File>
+			<File
 				RelativePath=".\Fuppes.cpp">
 			</File>
 			<File
@@ -139,9 +142,6 @@
 				RelativePath=".\MediaServer.cpp">
 			</File>
 			<File
-				RelativePath=".\Message.cpp">
-			</File>
-			<File
 				RelativePath=".\MessageParser.cpp">
 			</File>
 			<File
@@ -154,6 +154,9 @@
 				RelativePath=".\SSDPCtrl.cpp">
 			</File>
 			<File
+				RelativePath=".\SSDPMessage.cpp">
+			</File>
+			<File
 				RelativePath=".\SSDPSession.cpp">
 			</File>
 			<File
@@ -162,11 +165,17 @@
 			<File
 				RelativePath=".\UPnPDevice.cpp">
 			</File>
+			<File
+				RelativePath=".\UPnPService.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+			<File
+				RelativePath=".\ContentDirectory.h">
+			</File>
 			<File
 				RelativePath=".\Fuppes.h">
 			</File>
@@ -178,9 +187,6 @@
 			</File>
 			<File
 				RelativePath=".\MediaServer.h">
-			</File>
-			<File
-				RelativePath=".\Message.h">
 			</File>
 			<File
 				RelativePath=".\MessageParser.h">
@@ -198,6 +204,9 @@
 				RelativePath=".\SSDPCtrl.h">
 			</File>
 			<File
+				RelativePath=".\SSDPMessage.h">
+			</File>
+			<File
 				RelativePath=".\SSDPSession.h">
 			</File>
 			<File
@@ -207,6 +216,9 @@
 				RelativePath=".\UPnPDevice.h">
 			</File>
 			<File
+				RelativePath=".\UPnPService.h">
+			</File>
+			<File
 				RelativePath=".\win32.h">
 			</File>
 		</Filter>
@@ -214,13 +226,6 @@
 			Name="Resource files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
-		</Filter>
-		<Filter
-			Name="Infos"
-			Filter="">
-			<File
-				RelativePath=".\readme_tinyxml.txt">
-			</File>
 		</Filter>
 		<Filter
 			Name="lib"
