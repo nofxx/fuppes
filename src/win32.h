@@ -1,8 +1,8 @@
 /***************************************************************************
  *            win32.h
  *
- *  Copyright  2005  Ulrich Völkel & Thomas Schnitzler
- *  mail@ulrich-voelkel.de
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel & Thomas Schnitzler
  ****************************************************************************/
 
 /*

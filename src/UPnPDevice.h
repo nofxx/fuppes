@@ -1,8 +1,8 @@
 /***************************************************************************
  *            UPnPDevice.h
  * 
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -28,17 +28,12 @@
 #include <vector>
 #include <libxml/xmlwriter.h>
 
+#include "UPnPBase.h"
 #include "UPnPService.h"
 
 using namespace std;
 
-enum eUPnPDeviceType
-{
-	dt_root_device,
-	dt_media_server
-};
-
-class CUPnPDevice
+class CUPnPDevice: public CUPnPBase
 {
   protected:
 	  CUPnPDevice(eUPnPDeviceType);
@@ -49,8 +44,7 @@ class CUPnPDevice
     int  GetUPnPServiceCount();
     CUPnPService* GetUPnPService(int);	
 	
-		eUPnPDeviceType GetDeviceType();
-	  std::string			GetDeviceTypeAsString();	
+		eUPnPDeviceType GetDeviceType();	  
 		std::string			GetDeviceDescription();
 		void 						SetHTTPServerURL(std::string);
 	

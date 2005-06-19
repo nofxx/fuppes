@@ -1,8 +1,8 @@
 /***************************************************************************
  *            UPnPDevice.cpp
  * 
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -29,9 +29,8 @@
 
 using namespace std;
 
-CUPnPDevice::CUPnPDevice(eUPnPDeviceType p_UPnPDeviceType)
+CUPnPDevice::CUPnPDevice(eUPnPDeviceType p_UPnPDeviceType): CUPnPBase(p_UPnPDeviceType)
 {
-	m_UPnPDeviceType = p_UPnPDeviceType;
 }
 
 CUPnPDevice::~CUPnPDevice()
@@ -58,22 +57,7 @@ eUPnPDeviceType CUPnPDevice::GetDeviceType()
 	return m_UPnPDeviceType;
 }
 
-std::string	CUPnPDevice::GetDeviceTypeAsString()
-{
-	std::string sResult;
-	
-	switch(m_UPnPDeviceType)
-	{
-		case dt_root_device:
-			sResult = "RootDevice";
-		  break;
-		case dt_media_server:
-			sResult = "MediaServer";
-		  break;
-	}
-	
-	return sResult;
-}
+
 
 void CUPnPDevice::SetHTTPServerURL(std::string p_sHTTPServerURL)
 {
@@ -123,7 +107,7 @@ std::string CUPnPDevice::GetDeviceDescription()
 		xmlTextWriterStartElement(writer, BAD_CAST "device");
 		
 		  // deviceType			
-			sTmp << "urn:schemas-upnp-org:device:" << GetDeviceTypeAsString() << ":1";
+			sTmp << "urn:schemas-upnp-org:device:" << GetUPnPDeviceTypeAsString() << ":1";
 			xmlTextWriterStartElement(writer, BAD_CAST "deviceType");
 			xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
 			sTmp.str("");
@@ -190,35 +174,35 @@ std::string CUPnPDevice::GetDeviceDescription()
 				xmlTextWriterStartElement(writer, BAD_CAST "service");
 				
 					// serviceType
-					sTmp << "urn:schemas-upnp-org:service:" << pTmp->GetUPnPServiceTypeAsString() << ":1";
+					sTmp << "urn:schemas-upnp-org:service:" << pTmp->GetUPnPDeviceTypeAsString() << ":1";
 					xmlTextWriterStartElement(writer, BAD_CAST "serviceType");
       		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
 					sTmp.str("");
 					xmlTextWriterEndElement(writer);
 				
 					// serviceId
-					sTmp << "urn:upnp-org:serviceId:" << pTmp->GetUPnPServiceTypeAsString() << "ServiceID";
+					sTmp << "urn:upnp-org:serviceId:" << pTmp->GetUPnPDeviceTypeAsString() << "ServiceID";
 					xmlTextWriterStartElement(writer, BAD_CAST "serviceId");
       		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
 					sTmp.str("");
 					xmlTextWriterEndElement(writer);
 				
 					// SCPDURL
-					sTmp << "/UPnPServices/" << pTmp->GetUPnPServiceTypeAsString() << "/description.xml";
+					sTmp << "/UPnPServices/" << pTmp->GetUPnPDeviceTypeAsString() << "/description.xml";
 					xmlTextWriterStartElement(writer, BAD_CAST "SCPDURL");
       		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
 					sTmp.str("");
 					xmlTextWriterEndElement(writer);					
 
 					// controlURL
-					sTmp << "/UPnPServices/" << pTmp->GetUPnPServiceTypeAsString() << "/control/";
+					sTmp << "/UPnPServices/" << pTmp->GetUPnPDeviceTypeAsString() << "/control/";
 					xmlTextWriterStartElement(writer, BAD_CAST "controlURL");
       		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
 					sTmp.str("");
 					xmlTextWriterEndElement(writer);					
 
 					// eventSubURL
-					sTmp << "/UPnPServices/" << pTmp->GetUPnPServiceTypeAsString() << "/event/";
+					sTmp << "/UPnPServices/" << pTmp->GetUPnPDeviceTypeAsString() << "/event/";
 					xmlTextWriterStartElement(writer, BAD_CAST "eventSubURL");
       		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
 					sTmp.str("");

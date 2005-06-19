@@ -1,8 +1,8 @@
 /***************************************************************************
  *            UPnPService.h
  * 
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -24,26 +24,16 @@
 #ifndef _UPNPSERVICE_H
 #define _UPNPSERVICE_H
 
-#include <string>
+#include "UPnPBase.h"
 
-enum eUPnPServiceType
-{
-	stConnectionManager,
-  stContentDirectory
-};
-
-class CUPnPService
+class CUPnPService: public CUPnPBase
 {
 	protected:
-		CUPnPService(eUPnPServiceType);
+		CUPnPService(eUPnPDeviceType);
 		virtual ~CUPnPService();
 	
-	public:
-		std::string GetUPnPServiceTypeAsString();
-		std::string GetServiceDescription();
-	
-	protected:
-		eUPnPServiceType m_UPnPServiceType;
+	public:		
+		std::string GetServiceDescription();	
 };
 
 #endif /* _UPNPSERVICE_H */

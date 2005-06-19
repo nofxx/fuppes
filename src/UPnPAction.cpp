@@ -1,8 +1,8 @@
 /***************************************************************************
- *            MessageParser.h
- * 
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *            UPnPAction.cpp
+ *
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -21,18 +21,13 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _MESSAGEPARSER_H
-#define _MESSAGEPARSER_H
-
-#include <iostream>
-
-#include "SSDPMessage.h"
-#include "HTTPMessage.h"
-
-class CMessageParser
+#include "UPnPAction.h"
+ 
+/*CUPnPAction::CUPnPAction(std::string p_sContent)
 {
-	/*public:
-		void ParseHTTPString(std::string, CHTTPMessage*);	  	*/
-};
+}
 
-#endif /* _MESSAGEPARSER_H */
+CUPnPAction::CUPnPAction(eUPnPActionType p_UPnPActionType)
+{
+  m_ActionType = p_UPnPActionType;
+}*/

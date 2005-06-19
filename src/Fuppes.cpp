@@ -1,8 +1,8 @@
 /***************************************************************************
  *            Fuppes.cpp
  * 
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -23,9 +23,10 @@
  
 #include "Fuppes.h"
 
-#include <iostream>
 #include "NotifyMsgFactory.h"
+#include "SharedConfig.h"
 
+#include <iostream>
 using namespace std;
 
 CFuppes::CFuppes()
@@ -37,6 +38,7 @@ CFuppes::CFuppes()
 	m_pHTTPServer = new CHTTPServer();
 	m_pHTTPServer->SetReceiveHandler(this);
 	m_pHTTPServer->Start();
+  CSharedConfig::Shared()->SetHTTPServerURL(m_pHTTPServer->GetURL());
 	
 	CNotifyMsgFactory::shared()->SetHTTPServerURL(m_pHTTPServer->GetURL());	
 	
@@ -94,19 +96,31 @@ CHTTPMessage* CFuppes::HandleHTTPGet(CHTTPMessage* pHTTPMessage)
 	// request == "/" => root description	
 	if(pHTTPMessage->GetRequest().compare("/"))
 	{
-		pResult = new CHTTPMessage(http_200_ok, http_1_1, text_xml);
+		pResult = new CHTTPMessage(http_200_ok, text_xml);
 		pResult->SetContent(m_pMediaServer->GetDeviceDescription());
 	}
 	else if(pHTTPMessage->GetRequest().compare("/UPnPServices/ContentDirectory/description.xml"))
 	{
-		pResult = new CHTTPMessage(http_200_ok, http_1_1, text_xml);
+		pResult = new CHTTPMessage(http_200_ok, text_xml);
 		pResult->SetContent(m_pContentDirectory->GetServiceDescription());
   }
 		
+  delete pHTTPMessage;  
 	return pResult;
 }
 
 CHTTPMessage* CFuppes::HandleHTTPPost(CHTTPMessage* pHTTPMessage)
 {
-  return NULL;
+  CHTTPMessage* pResult = NULL;	
+  
+  if(pHTTPMessage->GetAction() != NULL)
+  {
+    if(pHTTPMessage->GetAction()->m_TargetDevice == udtContentDirectory)
+    {
+      pResult = m_pContentDirectory->HandleUPnPAction(pHTTPMessage->GetAction());
+    }
+  }
+  
+  delete pHTTPMessage;  
+  return pResult;
 }

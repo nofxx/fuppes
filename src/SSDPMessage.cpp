@@ -1,8 +1,8 @@
 /***************************************************************************
  *            SSDPMessage.cpp
  *
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -23,36 +23,10 @@
  
 #include "SSDPMessage.h"
 
-CSSDPMessage::CSSDPMessage(std::string p_sMessage)
+CSSDPMessage::CSSDPMessage(std::string p_sMessage): CMessageBase(p_sMessage)
 {
-	m_sContent = p_sMessage;
 }
 
 CSSDPMessage::~CSSDPMessage()
 {
-}
-
-sockaddr_in CSSDPMessage::get_local_ep()
-{
-	return local_ep;
-}
-
-void CSSDPMessage::set_local_ep(sockaddr_in a_ep)
-{
-	local_ep = a_ep;
-}
-
-sockaddr_in CSSDPMessage::get_remote_ep()
-{
-	return remote_ep;
-}
-
-void CSSDPMessage::set_remote_ep(sockaddr_in a_ep)
-{
-	remote_ep = a_ep;
-}
-
-std::string CSSDPMessage::GetContent()
-{
-	return m_sContent;
 }

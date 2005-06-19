@@ -1,8 +1,8 @@
 /***************************************************************************
  *            HTTPMessage.cpp
  * 
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -28,31 +28,33 @@
 #include <sstream>
 
 #include "RegEx.h"
+#include "UPnPActionFactory.h"
 
 using namespace std;
 
 CHTTPMessage::CHTTPMessage(eHTTPMessageType p_HTTPMessageType, 
 													 eHTTPVersion p_HTTPVersion)
+                           : CMessageBase("")
 {
 	m_HTTPMessageType = p_HTTPMessageType;
 	m_HTTPVersion			= p_HTTPVersion;
 //	m_HTTPContentType	= unknown;
 }
 
-CHTTPMessage::CHTTPMessage(eHTTPMessageType p_HTTPMessageType, 
-													 eHTTPVersion p_HTTPVersion, 
+CHTTPMessage::CHTTPMessage(eHTTPMessageType p_HTTPMessageType,													 
  													 eHTTPContentType p_HTTPContentType)
+                          : CMessageBase("")
 {
 	m_HTTPMessageType = p_HTTPMessageType;
-	m_HTTPVersion			= p_HTTPVersion;
+	m_HTTPVersion			= http_1_1;
 	m_HTTPContentType = p_HTTPContentType;
 }
 
-CHTTPMessage::CHTTPMessage(std::string p_sContent)
+CHTTPMessage::CHTTPMessage(std::string p_sContent): CMessageBase(p_sContent)
 {
 	//cout << p_sContent << endl;
 	
-	RegEx rxGET("GET +(.+) +HTTP/1\\.([1|0])");
+	RegEx rxGET("GET +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
 	if(rxGET.Search(p_sContent.c_str()))
 	{
 		m_HTTPMessageType = http_get;
@@ -67,7 +69,7 @@ CHTTPMessage::CHTTPMessage(std::string p_sContent)
 		cout << "[HTTPMessage] GET " << m_sRequest << endl;
 	}
 	
-	RegEx rxPOST("POST +(.+) +HTTP/1\\.([1|0])");
+	RegEx rxPOST("POST +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
 	if(rxPOST.Search(p_sContent.c_str()))
 	{
 		m_HTTPMessageType = http_post;
@@ -80,6 +82,8 @@ CHTTPMessage::CHTTPMessage(std::string p_sContent)
 		
 		string m_sRequest = rxPOST.Match(1);	
 		cout << "[HTTPMessage] POST " << m_sRequest << endl;
+    
+    ParsePOSTMessage(p_sContent);
 	}
 }
 
@@ -166,4 +170,40 @@ std::string CHTTPMessage::GetMessageAsString()
 	sResult << GetHeaderAsString();
 	sResult << m_sContent;
 	return sResult.str();
+}
+
+CUPnPAction* CHTTPMessage::GetAction()
+{
+  return m_pUPnPAction;
+}
+
+void CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
+{
+  /*POST /UPnPServices/ContentDirectory/control HTTP/1.1
+    Host: 192.168.0.3:32771
+    SOAPACTION: "urn:schemas-upnp-org:service:ContentDirectory:1#Browse"
+    CONTENT-TYPE: text/xml ; charset="utf-8"
+    Content-Length: 467*/
+  
+  RegEx rxSOAP("SOAPACTION: *\"(.+)\"", PCRE_CASELESS);
+	if(rxSOAP.Search(p_sMessage.c_str()))
+	{
+    string sSOAP = rxSOAP.Match(1);
+		cout << "[HTTPMessage] SOAPACTION " << sSOAP << endl;
+	}
+      
+  RegEx rxContentLength("CONTENT-LENGTH: *(\\d+)", PCRE_CASELESS);
+  if(rxContentLength.Search(p_sMessage.c_str()))
+  {
+    string sContentLength = rxContentLength.Match(1);
+    m_nContentLength = std::atoi(sContentLength.c_str());
+    cout << "[HTTPMessage] CONTENT-LENGTH  " << m_nContentLength << endl;
+  }
+  
+  m_sContent = p_sMessage.substr(p_sMessage.length() - m_nContentLength, m_nContentLength);
+  
+  cout << "[HTTPMessage] CONTENT" << endl << m_sContent;
+  
+  CUPnPActionFactory* pFactory = new CUPnPActionFactory();
+  m_pUPnPAction = pFactory->BuildActionFromString(m_sContent);
 }

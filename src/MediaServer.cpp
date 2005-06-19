@@ -1,8 +1,8 @@
 /***************************************************************************
  *            MediaServer.cpp
  * 
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -29,13 +29,13 @@
 
 using namespace std;
 
-CMediaServer::CMediaServer(): CUPnPDevice(dt_media_server)
+CMediaServer::CMediaServer(): CUPnPDevice(udtMediaServer)
 {
-	cout << this->GetDeviceTypeAsString() << endl;
+	cout << GetUPnPDeviceTypeAsString() << endl;
 	
 	stringstream stream;
 	
-	stream << "Free UPnP Entertainment Service (" << shared_config::shared()->get_hostname() << ")";	
+	stream << "Free UPnP Entertainment Service (" << CSharedConfig::Shared()->GetHostname() << ")";	
 	//stream << "FUPPES (" << shared_config::shared()->get_hostname() << ")";	
 	m_sFriendlyName = stream.str();
 	stream.str("");
@@ -45,19 +45,19 @@ CMediaServer::CMediaServer(): CUPnPDevice(dt_media_server)
   m_sManufacturerURL  = "http://www.ulrich-voelkel.de";      
 	m_sModelDescription = "Free UPnP Media Server licensed under the terms of the GPL";
 
-	stream << "Free UPnP Entertainment Service " << shared_config::shared()->get_app_version();
+	stream << "Free UPnP Entertainment Service " << CSharedConfig::Shared()->GetAppVersion();
 	m_sModelName = stream.str();
   stream.str("");
 	stream.clear();
 	
-  stream << shared_config::shared()->get_app_version();   
+  stream << CSharedConfig::Shared()->GetAppVersion();   
   m_sModelNumber = stream.str();
 	stream.str("");
 	stream.clear();
 	
 	m_sModelURL        = "";
 	m_sSerialNumber    = "012345678910";
-  m_sUDN  			     = shared_config::shared()->get_udn();
+  m_sUDN  			     = CSharedConfig::Shared()->GetUDN();
 	m_sUPC				     = "";
 	m_sPresentationURL = "index.html";      
 }

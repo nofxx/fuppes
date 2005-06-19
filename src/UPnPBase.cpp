@@ -1,8 +1,8 @@
 /***************************************************************************
- *            MessageParser.cpp
- * 
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *            UPnPBase.cpp
+ *
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -21,19 +21,29 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#include "MessageParser.h"
-#include "RegEx.h"
+ #include "UPnPBase.h"
+ 
+ CUPnPBase::CUPnPBase(eUPnPDeviceType p_UPnPDeviceType)
+ {
+   m_UPnPDeviceType = p_UPnPDeviceType;
+ } 
 
-#include <iostream>
-
-/*CMessageParser::CMessageParser()
+std::string	CUPnPBase::GetUPnPDeviceTypeAsString()
 {
-	RegEx Pattern("bde");
-	if (Pattern.Search("acbdefgh"))
-		std::cout << "match:" << Pattern.Match(0) << std::endl;
-}*/
-
-/*void CMessageParser::ParseHTTPString(std::string p_sHTTPString, CHTTPMessage* pResult)
-{
+	std::string sResult;
 	
-}*/
+	switch(m_UPnPDeviceType)
+	{
+		case udtRootDevice:
+			sResult = "RootDevice";
+		  break;
+		case udtMediaServer:
+			sResult = "MediaServer";
+		  break;
+    case udtContentDirectory:
+      sResult = "ContentDirectory";
+      break;
+	}
+	
+	return sResult;
+}

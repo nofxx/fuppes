@@ -1,6 +1,6 @@
 /***************************************************************************
- *            SharedConfig.h
- *
+ *            MessageBase.h
+ * 
  *  FUPPES - Free UPnP Entertainment Service
  *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
@@ -21,37 +21,38 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _SHAREDCONFIG_H
-#define _SHAREDCONFIG_H
+#ifndef _MESSAGEBASE_H
+#define _MESSAGEBASE_H
+
+#include "win32.h"
+
+#ifndef WIN32
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#endif
 
 #include <string>
-using namespace std;
 
-class CSharedConfig
+class CMessageBase
 {
-	public:
-		static CSharedConfig* Shared();
-	
-		std::string GetAppName();
-	  std::string GetAppFullname();
-	  std::string GetAppVersion();
-	
-	  std::string GetHostname();
-	  std::string GetUDN();
-	
-		std::string GetIP();
-    void        SetHTTPServerURL(std::string);
-    std::string GetHTTPServerURL();
-	
 	protected:
-		CSharedConfig();
+		CMessageBase(std::string);
+	  ~CMessageBase();
 	
-	private:
-		static CSharedConfig* m_Instance;
+	public:
+		sockaddr_in GetLocalEndPoint();
+	  void        SetLocalEndPoint(sockaddr_in);
 	
-	  std::string m_sHostname;
-	  std::string m_sIP;
-    std::string m_sHTTPServerURL;
+		sockaddr_in GetRemoteEndPoint();
+	  void        SetRemoteEndPoint(sockaddr_in);		
+	
+		std::string GetContent();	
+  
+	protected:
+	  sockaddr_in m_LocalEp;
+		sockaddr_in m_RemoteEp;
+	  std::string m_sContent;
 };
 
-#endif /* _SHAREDCONFIG_H */
+#endif /* _MESSAGEBASE_H */

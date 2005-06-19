@@ -1,8 +1,8 @@
 /***************************************************************************
  *            HTTPServer.cpp
  * 
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -38,7 +38,7 @@ CHTTPServer::CHTTPServer()
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 	
 	local_ep.sin_family      = PF_INET;
-	local_ep.sin_addr.s_addr = inet_addr(shared_config::shared()->get_ip().c_str());
+	local_ep.sin_addr.s_addr = inet_addr(CSharedConfig::Shared()->GetIP().c_str());
 	local_ep.sin_port				 = htons(0);
 	
 	bind(sock, (struct sockaddr*)&local_ep, sizeof(local_ep));	
@@ -97,13 +97,13 @@ upnpThreadCallback accept_loop(void *arg)
 			{
 				cout << "[HTTPServer] bytes received: " << nBytesReceived << endl;
 				szBuffer[nBytesReceived] = '\0';
-				//cout << szBuffer << endl;
+				cout << szBuffer << endl;
 				
 				CHTTPMessage* pResponse = pHTTPServer->CallOnReceive(szBuffer);
 				if(pResponse != NULL)				
 				{
-					cout << "[HTTPServer] sending response: " << nBytesReceived << endl;
-			    //cout << pResponse->GetMessageAsString() << endl;					
+					cout << "[HTTPServer] sending response" << endl;
+			    //cout << pResponse->GetMessageAsString() << endl;
 					send(connection, pResponse->GetMessageAsString().c_str(), strlen(pResponse->GetMessageAsString().c_str()), 0);
 					cout << "[HTTPServer] done" << endl;
 				}

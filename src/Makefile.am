@@ -12,34 +12,46 @@ bin_PROGRAMS = fuppes
 
 h_sources = \
   UDPSocket.h\
-	SSDPCtrl.h\
+  MessageBase.h\
+  SSDPCtrl.h\
 	SSDPSession.h\
 	SSDPMessage.h\
-	NotifyMsgFactory.h\
+  NotifyMsgFactory.h\
 	HTTPMessage.h\
 	HTTPServer.h\
-	MessageParser.h\
+  UPnPBase.h\
 	UPnPDevice.h\
 	UPnPService.h\
+  UPnPAction.h\
+  UPnPActionFactory.h\
+  UPnPActions/UPnPBrowse.h\
 	MediaServer.h\
-	ContentDirectory.h\
+  ContentDirectory/UPnPObject.h\
+  ContentDirectory/StorageFolder.h\
+  ContentDirectory/UPnPItem.h\
+  ContentDirectory/AudioItem.h\
+  ContentDirectory/ContentDirectory.h\
 	SharedConfig.h\
 	Fuppes.h\
 	win32.h
 
 cpp_sources = \
   UDPSocket.cpp\
+  MessageBase.cpp\
 	SSDPCtrl.cpp\
 	SSDPSession.cpp\
 	SSDPMessage.cpp\
 	NotifyMsgFactory.cpp\
 	HTTPMessage.cpp\
 	HTTPServer.cpp\
-	MessageParser.cpp\
+  UPnPBase.cpp\
 	UPnPDevice.cpp\
 	UPnPService.cpp\
+  UPnPAction.cpp\
+  UPnPActionFactory.cpp\
 	MediaServer.cpp\
-	ContentDirectory.cpp\
+  ContentDirectory/StorageFolder.cpp\
+	ContentDirectory/ContentDirectory.cpp\
 	SharedConfig.cpp\
 	Fuppes.cpp\
 	main.cpp

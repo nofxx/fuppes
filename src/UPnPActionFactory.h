@@ -1,5 +1,5 @@
 /***************************************************************************
- *            SharedConfig.h
+ *            UPnPActionFactory.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *  Copyright (C) 2005 Ulrich Völkel
@@ -21,37 +21,16 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _SHAREDCONFIG_H
-#define _SHAREDCONFIG_H
+#ifndef _UPNPACTIONFACTORY_H
+#define _UPNPACTIONFACTORY_H
 
+#include "UPnPAction.h"
 #include <string>
-using namespace std;
 
-class CSharedConfig
+class CUPnPActionFactory
 {
-	public:
-		static CSharedConfig* Shared();
-	
-		std::string GetAppName();
-	  std::string GetAppFullname();
-	  std::string GetAppVersion();
-	
-	  std::string GetHostname();
-	  std::string GetUDN();
-	
-		std::string GetIP();
-    void        SetHTTPServerURL(std::string);
-    std::string GetHTTPServerURL();
-	
-	protected:
-		CSharedConfig();
-	
-	private:
-		static CSharedConfig* m_Instance;
-	
-	  std::string m_sHostname;
-	  std::string m_sIP;
-    std::string m_sHTTPServerURL;
+  public:
+    CUPnPAction* BuildActionFromString(std::string);
 };
 
-#endif /* _SHAREDCONFIG_H */
+#endif /* _UPNPACTIONFACTORY_H */

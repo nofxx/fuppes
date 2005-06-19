@@ -1,8 +1,8 @@
 /***************************************************************************
- *            ContentDirectory.cpp
- * 
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *            StorageFolder.h
+ *
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -21,12 +21,26 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
- #include "ContentDirectory.h"
- 
- CContentDirectory::CContentDirectory(): CUPnPService(stContentDirectory)
- {
- }
-	 
- CContentDirectory::~CContentDirectory()
- {
- }
+#ifndef _STORAGEFOLDER_H
+#define _STORAGEFOLDER_H
+
+#include "UPnPObject.h"
+
+#include <vector>
+#include <string>
+
+class CStorageFolder: public CUPnPObject
+{
+  public:
+    CStorageFolder();
+    ~CStorageFolder();
+  
+    void AddItem(CUPnPObject*);
+    std::string GetContentAsString();
+  
+  private:
+    std::vector<CUPnPObject*> m_vItems;
+  
+};
+
+#endif /* _STORAGEFOLDER_H */

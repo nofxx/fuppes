@@ -1,5 +1,5 @@
 /***************************************************************************
- *            SharedConfig.h
+ *            MessageBase.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *  Copyright (C) 2005 Ulrich Völkel
@@ -21,37 +21,38 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _SHAREDCONFIG_H
-#define _SHAREDCONFIG_H
+#include "MessageBase.h"
 
-#include <string>
-using namespace std;
-
-class CSharedConfig
+CMessageBase::CMessageBase(std::string p_sMessage)
 {
-	public:
-		static CSharedConfig* Shared();
-	
-		std::string GetAppName();
-	  std::string GetAppFullname();
-	  std::string GetAppVersion();
-	
-	  std::string GetHostname();
-	  std::string GetUDN();
-	
-		std::string GetIP();
-    void        SetHTTPServerURL(std::string);
-    std::string GetHTTPServerURL();
-	
-	protected:
-		CSharedConfig();
-	
-	private:
-		static CSharedConfig* m_Instance;
-	
-	  std::string m_sHostname;
-	  std::string m_sIP;
-    std::string m_sHTTPServerURL;
-};
+	m_sContent = p_sMessage;
+}
 
-#endif /* _SHAREDCONFIG_H */
+CMessageBase::~CMessageBase()
+{
+}
+
+sockaddr_in CMessageBase::GetLocalEndPoint()
+{
+	return m_LocalEp;
+}
+
+void CMessageBase::SetLocalEndPoint(sockaddr_in p_EndPoint)
+{
+	m_LocalEp = p_EndPoint;
+}
+
+sockaddr_in CMessageBase::GetRemoteEndPoint()
+{
+	return m_RemoteEp;
+}
+
+void CMessageBase::SetRemoteEndPoint(sockaddr_in p_EndPoint)
+{
+	m_RemoteEp = p_EndPoint;
+}
+
+std::string CMessageBase::GetContent()
+{
+	return m_sContent;
+}

@@ -1,8 +1,8 @@
 /***************************************************************************
  *            SharedConfig.cpp
  *
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -44,16 +44,16 @@
 
 //using namespace std;
 
-shared_config* shared_config::instance = 0;
+CSharedConfig* CSharedConfig::m_Instance = 0;
 
-shared_config* shared_config::shared()
+CSharedConfig* CSharedConfig::Shared()
 {
-	if (instance == 0)
-		instance = new shared_config();
-	return instance;
+	if (m_Instance == 0)
+		m_Instance = new CSharedConfig();
+	return m_Instance;
 }
 
-shared_config::shared_config()
+CSharedConfig::CSharedConfig()
 {
 in_addr* addr;
 
@@ -68,7 +68,7 @@ in_addr* addr;
     nRet = gethostname(name, sizeof(name));
     if(0 == nRet)
     {
-      hostname = name;
+      m_sHostname = name;
 
       // Get host
       struct hostent* host;
@@ -85,7 +85,7 @@ in_addr* addr;
 
   char* name;
   gethostname(name, 64);	
-  hostname = name;
+  m_sHostname = name;
 	
   struct hostent* host;
   host = gethostbyname(name);
@@ -94,35 +94,45 @@ in_addr* addr;
   addr = (struct in_addr*)host->h_addr;
 #endif
 
-  ip = inet_ntoa(*addr);
+  m_sIP = inet_ntoa(*addr);
 }
 
-string shared_config::get_app_name()
+string CSharedConfig::GetAppName()
 {
 	return "fuppes";
 }
 
-string shared_config::get_app_fullname()
+string CSharedConfig::GetAppFullname()
 {
 	return "Free UPnP Entertainment Service";
 }
 
-string shared_config::get_app_version()
+string CSharedConfig::GetAppVersion()
 {
 	return "0.1";
 }
 
-string shared_config::get_hostname()
+string CSharedConfig::GetHostname()
 {
-	return hostname;
+	return m_sHostname;
 }
 
-string shared_config::get_ip()
+string CSharedConfig::GetIP()
 {
-	return ip;
+	return m_sIP;
 }
 
-string shared_config::get_udn()
+string CSharedConfig::GetUDN()
 {	
 	return "12345678-aabb-0000-ccdd-1234eeff0000";
+}
+
+void CSharedConfig::SetHTTPServerURL(string p_sURL)
+{
+  m_sHTTPServerURL = p_sURL;
+}
+
+string CSharedConfig::GetHTTPServerURL()
+{
+  return m_sHTTPServerURL;
 }

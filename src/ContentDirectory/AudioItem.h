@@ -1,5 +1,5 @@
 /***************************************************************************
- *            SharedConfig.h
+ *            AudioItem.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *  Copyright (C) 2005 Ulrich Völkel
@@ -21,37 +21,13 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _SHAREDCONFIG_H
-#define _SHAREDCONFIG_H
+#ifndef _AUDIOITEM_H
+#define _AUDIOITEM_H
 
-#include <string>
-using namespace std;
+#include "UPnPItem.h"
 
-class CSharedConfig
+class CAudioItem: public CUPnPItem
 {
-	public:
-		static CSharedConfig* Shared();
-	
-		std::string GetAppName();
-	  std::string GetAppFullname();
-	  std::string GetAppVersion();
-	
-	  std::string GetHostname();
-	  std::string GetUDN();
-	
-		std::string GetIP();
-    void        SetHTTPServerURL(std::string);
-    std::string GetHTTPServerURL();
-	
-	protected:
-		CSharedConfig();
-	
-	private:
-		static CSharedConfig* m_Instance;
-	
-	  std::string m_sHostname;
-	  std::string m_sIP;
-    std::string m_sHTTPServerURL;
 };
 
-#endif /* _SHAREDCONFIG_H */
+#endif /* _AUDIOITEM_H */

@@ -2,7 +2,7 @@
 Compatibility Level: 1 
 
 <PROJECT_DESCRIPTION_START>
-<PROJECT_DESCRIPTION_END>
+FUPPES - Free UPnP Entertainment System<PROJECT_DESCRIPTION_END>
 <CONFIG_PROGS_START>
 <CONFIG_PROGS_END>
 <CONFIG_LIBS_START>
@@ -28,7 +28,7 @@ anjuta.compatibility.level=1
 project.name=fuppes
 project.type=GENERIC
 project.target.type=EXECUTABLE
-project.version=0.1
+project.version=0.0.6
 project.author=Ulrich Völkel
 project.source.target=fuppes
 project.has.gettext=0
@@ -59,7 +59,7 @@ preferences.autoformat.custom.style= -i8 -sc -bli0 -bl0 -cbi0 -ss
 preferences.indent.opening=0
 preferences.autoformat.disable=1
 preferences.indent.automatic=1
-preferences.use.tabs=1
+preferences.use.tabs=0
 preferences.indent.size=2
 preferences.tabsize=2
 preferences.indent.closing=0
@@ -80,20 +80,15 @@ module.source.files=\
 	SSDPSession.cpp\
 	SharedConfig.cpp\
 	UPnPDevice.cpp\
-	MessageParser.cpp\
 	HTTPMessage.cpp\
 	Fuppes.cpp\
-	ContentDirectory.cpp\
 	UPnPService.cpp\
 	SSDPMessage.cpp\
-	ContentDirectory.h\
 	Fuppes.h\
 	HTTPMessage.h\
 	HTTPServer.h\
 	MediaServer.h\
-	MessageParser.h\
 	NotifyMsgFactory.h\
-	RegEx.h\
 	SSDPCtrl.h\
 	SSDPMessage.h\
 	SSDPSession.h\
@@ -101,7 +96,21 @@ module.source.files=\
 	UDPSocket.h\
 	UPnPDevice.h\
 	UPnPService.h\
-	win32.h
+	win32.h\
+	MessageBase.cpp\
+	MessageBase.h\
+	UPnPAction.cpp\
+	UPnPAction.h\
+	UPnPActionFactory.cpp\
+	UPnPActionFactory.h\
+	UPnPActions/UPnPBrowse.h\
+	ContentDirectory/ContentDirectory.cpp\
+	ContentDirectory/ContentDirectory.h\
+	ContentDirectory/AudioItem.h\
+	ContentDirectory/StorageFolder.h\
+	ContentDirectory/UPnPItem.h\
+	ContentDirectory/UPnPObject.h\
+	ContentDirectory/StorageFolder.cpp
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

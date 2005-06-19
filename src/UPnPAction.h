@@ -1,8 +1,8 @@
 /***************************************************************************
- *            ContentDirectory.h
- * 
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *            UPnPAction.h
+ *
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -21,16 +21,26 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _CONTENTDIRECTORY_H
-#define _CONTENTDIRECTORY_H
+#ifndef _UPNPACTION_H
+#define _UPNPACTION_H
 
-#include "UPnPService.h"
+#include "UPnPBase.h"
+#include <string>
 
-class CContentDirectory: public CUPnPService
+enum eUPnPActionType
 {
-	public:
-		CContentDirectory();
-	  ~CContentDirectory();
+  uatBrowse
 };
 
-#endif /* _CONTENTDIRECTORY_H */
+class CUPnPAction
+{
+  public:
+    /*CUPnPAction(eUPnPActionType);
+    CUPnPAction(std::string);*/
+  
+  public:
+    eUPnPDeviceType m_TargetDevice;
+    eUPnPActionType m_ActionType;
+};
+
+#endif /* _UPNPACTION_H */

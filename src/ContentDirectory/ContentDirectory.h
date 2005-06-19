@@ -1,6 +1,6 @@
 /***************************************************************************
- *            SharedConfig.h
- *
+ *            ContentDirectory.h
+ * 
  *  FUPPES - Free UPnP Entertainment Service
  *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
@@ -21,37 +21,29 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _SHAREDCONFIG_H
-#define _SHAREDCONFIG_H
+#ifndef _CONTENTDIRECTORY_H
+#define _CONTENTDIRECTORY_H
 
+#include "../UPnPService.h"
+#include "../HTTPMessage.h"
+#include <map>
 #include <string>
-using namespace std;
 
-class CSharedConfig
+#include "UPnPObject.h"
+#include "../UPnPActions/UPnPBrowse.h"
+
+class CContentDirectory: public CUPnPService
 {
 	public:
-		static CSharedConfig* Shared();
-	
-		std::string GetAppName();
-	  std::string GetAppFullname();
-	  std::string GetAppVersion();
-	
-	  std::string GetHostname();
-	  std::string GetUDN();
-	
-		std::string GetIP();
-    void        SetHTTPServerURL(std::string);
-    std::string GetHTTPServerURL();
-	
-	protected:
-		CSharedConfig();
-	
-	private:
-		static CSharedConfig* m_Instance;
-	
-	  std::string m_sHostname;
-	  std::string m_sIP;
-    std::string m_sHTTPServerURL;
+		CContentDirectory();
+	  ~CContentDirectory();
+    
+    CHTTPMessage* HandleUPnPAction(CUPnPAction*);
+  
+  private:
+    std::string HandleUPnPBrowse(CUPnPBrowse*);
+    std::map<std::string, CUPnPObject*> m_ObjectList;
+     std::map<std::string, CUPnPObject*>::iterator m_ListIterator;
 };
 
-#endif /* _SHAREDCONFIG_H */
+#endif /* _CONTENTDIRECTORY_H */

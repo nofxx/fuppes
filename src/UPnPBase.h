@@ -1,5 +1,5 @@
 /***************************************************************************
- *            SharedConfig.h
+ *            UPnPBase.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *  Copyright (C) 2005 Ulrich Völkel
@@ -21,37 +21,28 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _SHAREDCONFIG_H
-#define _SHAREDCONFIG_H
+#ifndef _UPNPBASE_H
+#define _UPNPBASE_H
 
 #include <string>
-using namespace std;
 
-class CSharedConfig
+enum eUPnPDeviceType
 {
-	public:
-		static CSharedConfig* Shared();
-	
-		std::string GetAppName();
-	  std::string GetAppFullname();
-	  std::string GetAppVersion();
-	
-	  std::string GetHostname();
-	  std::string GetUDN();
-	
-		std::string GetIP();
-    void        SetHTTPServerURL(std::string);
-    std::string GetHTTPServerURL();
-	
-	protected:
-		CSharedConfig();
-	
-	private:
-		static CSharedConfig* m_Instance;
-	
-	  std::string m_sHostname;
-	  std::string m_sIP;
-    std::string m_sHTTPServerURL;
+  udtRootDevice,
+  udtMediaServer,
+  udtContentDirectory
 };
 
-#endif /* _SHAREDCONFIG_H */
+class CUPnPBase
+{
+  protected:
+    CUPnPBase(eUPnPDeviceType);  
+  
+  public:
+    std::string GetUPnPDeviceTypeAsString();
+  
+  private:
+    eUPnPDeviceType m_UPnPDeviceType;
+};
+
+#endif /* _UPNPBASE_H */

@@ -1,8 +1,8 @@
 /***************************************************************************
- *            NotifyMsgFactory.cc
+ *            NotifyMsgFactory.cpp
  * 
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -54,7 +54,7 @@ std::string CNotifyMsgFactory::type_to_string(msg_type a_type)
 	switch(a_type)
 	{
 		case mt_usn:
-			result << "uuid:" << shared_config::shared()->get_udn();
+			result << "uuid:" << CSharedConfig::Shared()->GetUDN();
 			break;
 		
 		case mt_root_device:
@@ -101,12 +101,12 @@ std::string CNotifyMsgFactory::notify_alive(msg_type a_type)
 	result << "NOTIFY * HTTP/1.1\r\n";
   result << "LOCATION: http://" << m_sHTTPServerURL << "/\r\n";
   result << "HOST: 239.255.255.250:1900\r\n";
-  result << "SERVER: " << shared_config::shared()->get_app_fullname() << "/" << shared_config::shared()->get_app_version() << " ";
+  result << "SERVER: " << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << " ";
 		result << "UPnP/1.0 ";
 	  result << "libfuppes/0.1\r\n";
   result << "NTS: ssdp:alive\r\n";
 	
-	result << "USN: uuid:" << shared_config::shared()->get_udn();
+	result << "USN: uuid:" << CSharedConfig::Shared()->GetUDN();
 	if(a_type == mt_usn)
 		result << "\r\n";
 	else
@@ -127,11 +127,11 @@ std::string CNotifyMsgFactory::notify_bye_bye(msg_type a_type)
 	result << "HOST: 239.255.255.250:1900\r\n";
   result << "NTS: ssdp:byebye\r\n";
 	
-	result << "USN: uuid:" << shared_config::shared()->get_udn();
+	result << "USN: uuid:" << CSharedConfig::Shared()->GetUDN();
 	if(a_type == mt_usn)
 	{
 		result << "\r\n";
-		result << "NT: " << shared_config::shared()->get_udn() << "\r\n";
+		result << "NT: " << CSharedConfig::Shared()->GetUDN() << "\r\n";
   }
 	else
 	{

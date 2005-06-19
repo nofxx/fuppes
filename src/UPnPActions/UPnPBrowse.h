@@ -1,5 +1,5 @@
 /***************************************************************************
- *            SharedConfig.h
+ *            UPnPBrowse.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *  Copyright (C) 2005 Ulrich Völkel
@@ -21,37 +21,25 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _SHAREDCONFIG_H
-#define _SHAREDCONFIG_H
+#ifndef _UPNPBROWSE_H
+#define _UPNPBROWSE_H
 
-#include <string>
-using namespace std;
+#include "../UPnPAction.h"
 
-class CSharedConfig
+enum eUPnPBrowseFlag
 {
-	public:
-		static CSharedConfig* Shared();
-	
-		std::string GetAppName();
-	  std::string GetAppFullname();
-	  std::string GetAppVersion();
-	
-	  std::string GetHostname();
-	  std::string GetUDN();
-	
-		std::string GetIP();
-    void        SetHTTPServerURL(std::string);
-    std::string GetHTTPServerURL();
-	
-	protected:
-		CSharedConfig();
-	
-	private:
-		static CSharedConfig* m_Instance;
-	
-	  std::string m_sHostname;
-	  std::string m_sIP;
-    std::string m_sHTTPServerURL;
+  ubfBrowseDirectChildren
 };
 
-#endif /* _SHAREDCONFIG_H */
+class CUPnPBrowse: public CUPnPAction
+{
+  public:
+    std::string     m_sObjectID;
+    eUPnPBrowseFlag m_BrowseFlag;
+    std::string     m_sFilter;
+    int             m_nStartingIndex;
+    int             m_nRequestedCount;
+    std::string     m_sSortCriteria;
+};
+
+#endif /* _UPNPBROWSE_H */

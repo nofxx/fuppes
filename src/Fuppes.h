@@ -1,8 +1,8 @@
 /***************************************************************************
  *            Fuppes.h
  * 
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -28,7 +28,7 @@
 #include "HTTPServer.h"
 #include "HTTPMessage.h"
 #include "MediaServer.h"
-#include "ContentDirectory.h"
+#include "ContentDirectory/ContentDirectory.h"
 
 
 class CFuppes: public ISSDPCtrl, IHTTPServer

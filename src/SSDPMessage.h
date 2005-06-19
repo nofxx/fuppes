@@ -1,8 +1,8 @@
 /***************************************************************************
  *            SSDPMessage.h
  * 
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -24,35 +24,14 @@
 #ifndef _SSDPMESSAGE_H
 #define _SSDPMESSAGE_H
 
-#include "win32.h"
-
-#ifndef WIN32
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#endif
-
+#include "MessageBase.h"
 #include <string>
 
-class CSSDPMessage
+class CSSDPMessage: public CMessageBase
 {
 	public:
 		CSSDPMessage(std::string);
-	  ~CSSDPMessage();
-	
-	public:
-		sockaddr_in get_local_ep();
-	  void set_local_ep(sockaddr_in);
-	
-		sockaddr_in get_remote_ep();
-	  void set_remote_ep(sockaddr_in);		
-	
-		std::string GetContent();
-	
-	private:
-	  sockaddr_in local_ep;
-		sockaddr_in remote_ep;
-	  std::string m_sContent;
+	  ~CSSDPMessage();	
 };
 
 #endif /* _SSDPMESSAGE_H */

@@ -1,8 +1,8 @@
 /***************************************************************************
  *            UDPSocket.cpp
  *
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -76,7 +76,7 @@ void CUDPSocket::setup_socket(bool do_multicast)
 	}
   else 
 	{
-    local_ep.sin_addr.s_addr = inet_addr(shared_config::shared()->get_ip().c_str());		
+    local_ep.sin_addr.s_addr = inet_addr(CSharedConfig::Shared()->GetIP().c_str());		
     local_ep.sin_port		     = htons(0); // use random port
 	}
 	
@@ -182,8 +182,8 @@ upnpThreadCallback receive_loop(void *arg)
 			 (remote_ep.sin_port != udp_sock->get_local_ep().sin_port))		
 		{
 			CSSDPMessage* result = new CSSDPMessage(msg.str());		
-			result->set_remote_ep(remote_ep);
-			result->set_local_ep(udp_sock->get_local_ep());
+			result->SetRemoteEndPoint(remote_ep);
+			result->SetLocalEndPoint(udp_sock->get_local_ep());
 			udp_sock->call_on_receive(result);			
 		}
 		

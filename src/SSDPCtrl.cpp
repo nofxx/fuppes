@@ -1,8 +1,8 @@
 /***************************************************************************
  *            SSDPCtrl.cpp
  *
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -138,8 +138,8 @@ void CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMe
 {  
 	//cout << "[ssdp_ctrl] received message from " << inet_ntoa(pMessage->get_remote_ep().sin_addr) << ":" << ntohs(pMessage->get_remote_ep().sin_port) << endl;		  
 		
-	if(((this->last_multicast_ep.sin_addr.s_addr != pSSDPMessage->get_remote_ep().sin_addr.s_addr) ||
-		 (this->last_multicast_ep.sin_port != pSSDPMessage->get_remote_ep().sin_port)) &&
+	if(((this->last_multicast_ep.sin_addr.s_addr != pSSDPMessage->GetRemoteEndPoint().sin_addr.s_addr) ||
+		 (this->last_multicast_ep.sin_port != pSSDPMessage->GetRemoteEndPoint().sin_port)) &&
 	   (m_pReceiveHandler != NULL))
 	{		
 	  m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pSSDPMessage);

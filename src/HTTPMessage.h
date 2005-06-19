@@ -1,8 +1,8 @@
 /***************************************************************************
  *            HTTPMessage.h
  * 
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -24,6 +24,8 @@
 #ifndef _HTTPMESSAGE_H
 #define _HTTPMESSAGE_H
 
+#include "MessageBase.h"
+#include "UPnPAction.h"
 #include <string>
 
 enum eHTTPVersion
@@ -47,11 +49,11 @@ enum eHTTPContentType
 	audio_mpeg
 };
 
-class CHTTPMessage
+class CHTTPMessage: public CMessageBase
 {
   public:
 		CHTTPMessage(eHTTPMessageType, eHTTPVersion);
-	  CHTTPMessage(eHTTPMessageType, eHTTPVersion, eHTTPContentType);
+	  CHTTPMessage(eHTTPMessageType, eHTTPContentType);
     CHTTPMessage(std::string);
 		
 		eHTTPMessageType GetMessageType();
@@ -63,13 +65,17 @@ class CHTTPMessage
 		bool LoadContentFromFile(std::string);	
 		std::string 		 GetHeaderAsString();		  
 	  std::string			 GetMessageAsString();
-	
+    CUPnPAction*     GetAction();
+  
 	private:
+    void             ParsePOSTMessage(std::string);
+  
+    CUPnPAction*     m_pUPnPAction;
 		eHTTPVersion     m_HTTPVersion;
 		eHTTPMessageType m_HTTPMessageType;
 		std::string	     m_sRequest;
-		eHTTPContentType m_HTTPContentType;	
-		std::string 		 m_sContent;
+		eHTTPContentType m_HTTPContentType;
+    int              m_nContentLength;
 };
 
 #endif /* _HTTPMESSAGE_H */

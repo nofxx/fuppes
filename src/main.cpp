@@ -1,8 +1,8 @@
 /***************************************************************************
  *            main.cpp
  *
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -40,10 +40,10 @@ int main()
   WSADATA wsa;
   WSAStartup(MAKEWORD(2,0),&wsa);
   #endif
-
+  
 	cout << "FUPPES - Free UPnP(tm) Entertainment Service" << endl;	
-	cout << "hostname: " << shared_config::shared()->get_hostname() << endl;
-	cout << "address : " << shared_config::shared()->get_ip() << endl;
+	cout << "hostname: " << CSharedConfig::Shared()->GetHostname() << endl;
+	cout << "address : " << CSharedConfig::Shared()->GetIP() << endl;
 	cout << endl;
 	
 	CFuppes* pFuppes = new CFuppes();	
@@ -64,6 +64,7 @@ int main()
 	}
 	
   cout << "[fuppes] shutting down" << endl;		
+  pFuppes->GetSSDPCtrl()->send_byebye();
 	delete pFuppes;
 		
 	return 0;

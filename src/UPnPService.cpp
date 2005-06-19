@@ -1,8 +1,8 @@
 /***************************************************************************
  *            UPnPService.cpp
  * 
- *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
 
 /*
@@ -29,28 +29,12 @@
 #include <iostream>
 #include <libxml/xmlwriter.h>
 
-CUPnPService::CUPnPService(eUPnPServiceType p_UPnPServiceType)
+CUPnPService::CUPnPService(eUPnPDeviceType p_UPnPDeviceType): CUPnPBase(p_UPnPDeviceType)
 {
-	m_UPnPServiceType = p_UPnPServiceType;
 }
 
 CUPnPService::~CUPnPService()
 {
-}
-
-std::string CUPnPService::GetUPnPServiceTypeAsString()
-{
-	std::string sResult;	
-	switch(m_UPnPServiceType)
-	{
-		case stContentDirectory:
-			sResult = "ContentDirectory";
-		  break;
-		case stConnectionManager:
-			sResult = "ConnectionManager";
-      break;
-	}	
-	return sResult;
 }
 
 std::string CUPnPService::GetServiceDescription()
@@ -59,7 +43,7 @@ std::string CUPnPService::GetServiceDescription()
 	xmlBufferPtr buf;
 	std::stringstream sTmp;
 	
-buf    = xmlBufferCreate();
+  buf    = xmlBufferCreate();
 	writer = xmlNewTextWriterMemory(buf, 0);
 	xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL);
 
