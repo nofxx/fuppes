@@ -124,9 +124,6 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath=".\ContentDirectory.cpp">
-			</File>
-			<File
 				RelativePath=".\Fuppes.cpp">
 			</File>
 			<File
@@ -142,7 +139,7 @@
 				RelativePath=".\MediaServer.cpp">
 			</File>
 			<File
-				RelativePath=".\MessageParser.cpp">
+				RelativePath=".\MessageBase.cpp">
 			</File>
 			<File
 				RelativePath=".\NotifyMsgFactory.cpp">
@@ -163,19 +160,35 @@
 				RelativePath=".\UDPSocket.cpp">
 			</File>
 			<File
+				RelativePath=".\UPnPAction.cpp">
+			</File>
+			<File
+				RelativePath=".\UPnPActionFactory.cpp">
+			</File>
+			<File
+				RelativePath=".\UPnPBase.cpp">
+			</File>
+			<File
 				RelativePath=".\UPnPDevice.cpp">
 			</File>
 			<File
 				RelativePath=".\UPnPService.cpp">
 			</File>
+			<Filter
+				Name="ContentDirectory"
+				Filter="">
+				<File
+					RelativePath=".\ContentDirectory\ContentDirectory.cpp">
+				</File>
+				<File
+					RelativePath=".\ContentDirectory\StorageFolder.cpp">
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
-			<File
-				RelativePath=".\ContentDirectory.h">
-			</File>
 			<File
 				RelativePath=".\Fuppes.h">
 			</File>
@@ -189,7 +202,7 @@
 				RelativePath=".\MediaServer.h">
 			</File>
 			<File
-				RelativePath=".\MessageParser.h">
+				RelativePath=".\MessageBase.h">
 			</File>
 			<File
 				RelativePath=".\NotifyMsgFactory.h">
@@ -213,6 +226,15 @@
 				RelativePath=".\UDPSocket.h">
 			</File>
 			<File
+				RelativePath=".\UPnPAction.h">
+			</File>
+			<File
+				RelativePath=".\UPnPActionFactory.h">
+			</File>
+			<File
+				RelativePath=".\UPnPBase.h">
+			</File>
+			<File
 				RelativePath=".\UPnPDevice.h">
 			</File>
 			<File
@@ -221,6 +243,32 @@
 			<File
 				RelativePath=".\win32.h">
 			</File>
+			<Filter
+				Name="UPnPActions"
+				Filter="">
+				<File
+					RelativePath=".\UPnPActions\UPnPBrowse.h">
+				</File>
+			</Filter>
+			<Filter
+				Name="ContentDirectory"
+				Filter="">
+				<File
+					RelativePath=".\ContentDirectory\AudioItem.h">
+				</File>
+				<File
+					RelativePath=".\ContentDirectory\ContentDirectory.h">
+				</File>
+				<File
+					RelativePath=".\ContentDirectory\StorageFolder.h">
+				</File>
+				<File
+					RelativePath=".\ContentDirectory\UPnPItem.h">
+				</File>
+				<File
+					RelativePath=".\ContentDirectory\UPnPObject.h">
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource files"
