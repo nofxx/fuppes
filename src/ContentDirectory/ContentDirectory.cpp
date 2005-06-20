@@ -45,17 +45,16 @@ CContentDirectory::~CContentDirectory()
 {
 }
  
-CHTTPMessage* CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction)
+bool CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut)
 {
   cout << "[ContentDirectory] HandleUPnPAction" << endl;     
   string sContent = HandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);
   
   //cout << sContent << endl;
   
-  CHTTPMessage* pResult = new CHTTPMessage(http_200_ok, text_xml);
-  pResult->SetContent(sContent);
+  pMessageOut->SetContent(sContent);
   
-  return pResult;
+  return true;
 }
  
 std::string CContentDirectory::HandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)

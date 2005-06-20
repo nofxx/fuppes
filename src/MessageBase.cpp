@@ -25,7 +25,7 @@
 
 CMessageBase::CMessageBase(std::string p_sMessage)
 {
-	m_sContent = p_sMessage;
+    m_sContent = p_sMessage;
 }
 
 CMessageBase::~CMessageBase()
@@ -34,25 +34,25 @@ CMessageBase::~CMessageBase()
 
 sockaddr_in CMessageBase::GetLocalEndPoint()
 {
-	return m_LocalEp;
+    return m_LocalEp;
 }
 
 void CMessageBase::SetLocalEndPoint(sockaddr_in p_EndPoint)
 {
-	m_LocalEp = p_EndPoint;
+    m_LocalEp = p_EndPoint;
 }
 
 sockaddr_in CMessageBase::GetRemoteEndPoint()
 {
-	return m_RemoteEp;
+    return m_RemoteEp;
 }
 
 void CMessageBase::SetRemoteEndPoint(sockaddr_in p_EndPoint)
 {
-	m_RemoteEp = p_EndPoint;
+    m_RemoteEp = p_EndPoint;
 }
 
 std::string CMessageBase::GetContent()
 {
-	return m_sContent;
+    return m_sContent;
 }

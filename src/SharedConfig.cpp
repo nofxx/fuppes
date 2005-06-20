@@ -24,6 +24,7 @@
 #include <iostream>
 
 #include "win32.h"
+#include "Common.h"
 
 #ifndef WIN32
 #include <unistd.h>
@@ -44,13 +45,13 @@
 
 //using namespace std;
 
-CSharedConfig* CSharedConfig::m_Instance = 0;
+CSharedConfig* CSharedConfig::m_pInstance = NULL;
 
 CSharedConfig* CSharedConfig::Shared()
 {
-	if (m_Instance == 0)
-		m_Instance = new CSharedConfig();
-	return m_Instance;
+    if (NULL == m_pInstance)
+        m_pInstance = new CSharedConfig();
+    return m_pInstance;
 }
 
 CSharedConfig::CSharedConfig()
@@ -97,42 +98,47 @@ in_addr* addr;
   m_sIP = inet_ntoa(*addr);
 }
 
+CSharedConfig::~CSharedConfig()
+{
+    SAFE_DELETE(m_pInstance);
+}
+
 string CSharedConfig::GetAppName()
 {
-	return "fuppes";
+    return "fuppes";
 }
 
 string CSharedConfig::GetAppFullname()
 {
-	return "Free UPnP Entertainment Service";
+    return "Free UPnP Entertainment Service";
 }
 
 string CSharedConfig::GetAppVersion()
 {
-	return "0.1";
+    return "0.1";
 }
 
 string CSharedConfig::GetHostname()
 {
-	return m_sHostname;
+    return m_sHostname;
 }
 
 string CSharedConfig::GetIP()
 {
-	return m_sIP;
+    return m_sIP;
 }
 
 string CSharedConfig::GetUDN()
 {	
-	return "12345678-aabb-0000-ccdd-1234eeff0000";
+    return "12345678-aabb-0000-ccdd-1234eeff0000";
 }
 
 void CSharedConfig::SetHTTPServerURL(string p_sURL)
 {
-  m_sHTTPServerURL = p_sURL;
+    m_sHTTPServerURL = p_sURL;
 }
 
 string CSharedConfig::GetHTTPServerURL()
 {
-  return m_sHTTPServerURL;
+    return m_sHTTPServerURL;
 }

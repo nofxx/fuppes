@@ -31,32 +31,32 @@
 
 class CSSDPSession: public IUDPSocket
 {
-	public:	
-		void OnUDPSocketReceive(CUDPSocket*, CSSDPMessage*);
-	
-	protected:
-		CSSDPSession();
-	  virtual ~CSSDPSession();
-	
-	  void send_multicast(std::string);
-	  void send_unicast(std::string);
-	  
-	  void begin_receive_unicast();	  
+public:	
+    void OnUDPSocketReceive(CUDPSocket*, CSSDPMessage*);
 
-	  virtual void start();	  
-	
-		int timeout;
-	  CUDPSocket* udp;	  
+protected:
+    CSSDPSession();
+    virtual ~CSSDPSession();
+
+    void send_multicast(std::string);
+    void send_unicast(std::string);
+
+    void begin_receive_unicast();	  
+
+    virtual void start();	  
+
+    int timeout;
+    CUDPSocket m_UDPSocket;	  
 };
 
 class CMSearchSession: public CSSDPSession
 {
-	public:
-	  CMSearchSession();
+public:
+    CMSearchSession();
     ~CMSearchSession();
-	
-	  void start();
-	  sockaddr_in  GetLocalEndPoint();
+
+    void start();
+    sockaddr_in  GetLocalEndPoint();
 };
 
 #endif /* _SSDPSESSION_H */

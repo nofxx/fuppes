@@ -26,6 +26,7 @@
 
 #include "SharedConfig.h"
 #include "Fuppes.h"
+#include "Common.h"
 
 #include "win32.h"
 
@@ -33,39 +34,44 @@ using namespace std;
 
 int main()
 {
-	/*
-	 * setup winsockets
-	 */
-  #ifdef WIN32
-  WSADATA wsa;
-  WSAStartup(MAKEWORD(2,0),&wsa);
-  #endif
-  
-	cout << "FUPPES - Free UPnP(tm) Entertainment Service" << endl;	
-	cout << "hostname: " << CSharedConfig::Shared()->GetHostname() << endl;
-	cout << "address : " << CSharedConfig::Shared()->GetIP() << endl;
-	cout << endl;
-	
-	CFuppes* pFuppes = new CFuppes();	
-	
-	string input = "";
-	while(input != "q")
-	{		
-		getline(cin, input);
-		
-		if (input == "m")
-			pFuppes->GetSSDPCtrl()->send_msearch();
-		else if (input == "a")
-			pFuppes->GetSSDPCtrl()->send_alive();
-		else if (input == "b")
-			pFuppes->GetSSDPCtrl()->send_byebye();
-		
-		upnpSleep(300);
-	}
-	
-  cout << "[fuppes] shutting down" << endl;		
-  pFuppes->GetSSDPCtrl()->send_byebye();
-	delete pFuppes;
-		
-	return 0;
+    /*
+    * setup winsockets
+    */
+#ifdef WIN32
+    WSADATA wsa;
+    WSAStartup(MAKEWORD(2,0),&wsa);
+#endif
+
+    cout << "FUPPES - Free UPnP(tm) Entertainment Service" << endl;	
+    cout << "hostname: " << CSharedConfig::Shared()->GetHostname() << endl;
+    cout << "address : " << CSharedConfig::Shared()->GetIP() << endl;
+    cout << endl;
+
+    CFuppes* pFuppes = new CFuppes();	
+
+    string input = "";
+    while(input != "q")
+    {		
+        getline(cin, input);
+
+        if (input == "m")
+            pFuppes->GetSSDPCtrl()->send_msearch();
+        else if (input == "a")
+            pFuppes->GetSSDPCtrl()->send_alive();
+        else if (input == "b")
+            pFuppes->GetSSDPCtrl()->send_byebye();
+
+        upnpSleep(300);
+    }
+
+    cout << "[fuppes] shutting down" << endl;		
+    pFuppes->GetSSDPCtrl()->send_byebye();
+    SAFE_DELETE(pFuppes);
+
+#ifdef WIN32
+    // Cleanup winsockets
+    WSACleanup();
+#endif
+
+    return 0;
 }

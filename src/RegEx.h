@@ -111,7 +111,7 @@ class RegEx
       bool Search(const char * subject, int len = -1, int options = 0)
       {
          ClearMatchList();
-         return pcre_exec(re, pe, lastsubject = subject, slen = (len >= 0) ? len : strlen(subject), 0, options, ovector, 3*substrcount) > 0;
+         return pcre_exec(re, pe, lastsubject = subject, slen = (len >= 0) ? len : (int)strlen(subject), 0, options, ovector, 3*substrcount) > 0;
       }
 
       /////////////////////////////////

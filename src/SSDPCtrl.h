@@ -46,27 +46,27 @@ class ISSDPCtrl
 
 class CSSDPCtrl: public IUDPSocket
 {
-	public:
-		CSSDPCtrl();
-		virtual ~CSSDPCtrl();
+public:
+    CSSDPCtrl();
+    virtual ~CSSDPCtrl();
+
+    void Start();
+
+    void send_msearch();
+    void send_alive();
+    void send_byebye();
+
+    CUDPSocket* get_socket();
+
+    void SetReceiveHandler(ISSDPCtrl*);
+    void OnUDPSocketReceive(CUDPSocket*, CSSDPMessage*);
 	
-		void Start();
-	
-		void send_msearch();
-	  void send_alive();
-	  void send_byebye();
-	
-		CUDPSocket* get_socket();
-	
-	  void SetReceiveHandler(ISSDPCtrl*);
-	  void OnUDPSocketReceive(CUDPSocket*, CSSDPMessage*);
-	
-	private:
-		CUDPSocket *listener;	
-		upnpThread  msearch_thread;
-	  sockaddr_in last_multicast_ep;  
-	
-		ISSDPCtrl* m_pReceiveHandler;
+private:
+    CUDPSocket  m_Listener;
+    upnpThread  msearch_thread;
+    sockaddr_in last_multicast_ep;  
+
+    ISSDPCtrl* m_pReceiveHandler;
 };
 
 #endif /* _SSDPCTRL_H */

@@ -25,6 +25,7 @@
 
 #include "SSDPSession.h"
 #include "NotifyMsgFactory.h"
+#include "Common.h"
 
 #include <iostream>
 
@@ -32,19 +33,17 @@ using namespace std;
 
 CSSDPSession::CSSDPSession()
 {
-	udp = new CUDPSocket();
 }
 
 CSSDPSession::~CSSDPSession()
 {
-	delete udp;
 }
 
 void CSSDPSession::send_multicast(std::string a_message)
 {
-	udp->send_multicast(a_message);
+	m_UDPSocket.send_multicast(a_message);
 	upnpSleep(200);
-	udp->send_multicast(a_message);	
+	m_UDPSocket.send_multicast(a_message);	
 }
 
 void CSSDPSession::send_unicast(std::string)
@@ -53,8 +52,8 @@ void CSSDPSession::send_unicast(std::string)
 	  
 void CSSDPSession::begin_receive_unicast()
 {	
-	udp->SetReceiveHandler(this);
-	udp->begin_receive();
+	m_UDPSocket.SetReceiveHandler(this);
+	m_UDPSocket.begin_receive();
 }
 
 void CSSDPSession::OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pSSDPMessage)
@@ -69,7 +68,7 @@ void CSSDPSession::start()
 
 CMSearchSession::CMSearchSession(): CSSDPSession()
 {
-	udp->setup_socket(false);	
+	m_UDPSocket.setup_socket(false);	
 }
 
 CMSearchSession::~CMSearchSession()
@@ -86,5 +85,5 @@ void CMSearchSession::start()
 
 sockaddr_in CMSearchSession:: GetLocalEndPoint()
 {
-	return udp->get_local_ep();
+	return m_UDPSocket.get_local_ep();
 }

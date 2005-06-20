@@ -33,23 +33,33 @@
 
 class CFuppes: public ISSDPCtrl, IHTTPServer
 {
-	public:
-		CFuppes();
-	  virtual ~CFuppes();
-			
-		CSSDPCtrl* GetSSDPCtrl();
+public:
+    CFuppes();
+    virtual ~CFuppes();
+
+    CSSDPCtrl* GetSSDPCtrl();
 	
-	private:
-		CSSDPCtrl*         m_pSSDPCtrl;
-	  CHTTPServer*       m_pHTTPServer;
-	  CMediaServer*      m_pMediaServer;
-	  CContentDirectory* m_pContentDirectory;
-	
-		CHTTPMessage* HandleHTTPGet(CHTTPMessage*);
-	  CHTTPMessage* HandleHTTPPost(CHTTPMessage*);
-	
-	  void OnSSDPCtrlReceiveMsg(CSSDPMessage*);
-	  CHTTPMessage* OnHTTPServerReceiveMsg(CHTTPMessage*);
+private:
+    CSSDPCtrl          m_SSDPCtrl;
+    CHTTPServer        m_HTTPServer;
+    CMediaServer       m_MediaServer;
+    CContentDirectory  m_ContentDirectory;
+
+    bool HandleHTTPGet(
+        CHTTPMessage* pMessageIn,
+        CHTTPMessage* pMessageOut
+        );
+    bool CFuppes::HandleHTTPPost(
+        CHTTPMessage* pMessageIn,
+        CHTTPMessage* pMessageOut
+        );
+    bool CFuppes::OnHTTPServerReceiveMsg(
+        CHTTPMessage* pMessageIn,
+        CHTTPMessage* pMessageOut
+        );
+
+    void OnSSDPCtrlReceiveMsg(CSSDPMessage*);
+
 };
 
 #endif /* _FUPPES_H */

@@ -45,9 +45,10 @@ class CSharedConfig
 	
 	protected:
 		CSharedConfig();
+        ~CSharedConfig();
 	
 	private:
-		static CSharedConfig* m_Instance;
+		static CSharedConfig* m_pInstance;
 	
 	  std::string m_sHostname;
 	  std::string m_sIP;

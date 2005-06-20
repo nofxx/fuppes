@@ -1,8 +1,8 @@
 /***************************************************************************
- *            NotifyMsgFactory.h
+ *            Common.h
  * 
- *  Copyright  2005  Ulrich VÃ¶lkel
- *  mail@ulrich-voelkel.de
+ *  FUPPES - Free UPnP Entertainment Service
+ *  Copyright (C) 2005 Ulrich Völkel & Thomas Schnitzler
  ****************************************************************************/
 
 /*
@@ -14,47 +14,16 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ *  GNU Library General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
-#ifndef _NOTIFYMSGFACTORY_H
-#define _NOTIFYMSGFACTORY_H
 
-#include <string>
+/*===============================================================================
+ MACROS
+===============================================================================*/
 
-enum msg_type
-{
-	mt_usn,
-	mt_root_device,
-	mt_connection_manager,
-	mt_content_directory,
-	mt_media_server
-};
+#define SAFE_DELETE(_x_) if(_x_){delete(_x_); _x_ = NULL;}
 
-class CNotifyMsgFactory
-{
-public:
-    static CNotifyMsgFactory* shared();
-
-    std::string msearch();	
-    std::string notify_alive(msg_type);	
-    std::string notify_bye_bye(msg_type);
-
-    void SetHTTPServerURL(std::string);
-	
-protected:
-    CNotifyMsgFactory();
-    ~CNotifyMsgFactory();
-
-private:
-    static CNotifyMsgFactory* m_pInstance;
-    static std::string type_to_string(msg_type);
-
-    std::string m_sHTTPServerURL;
-};	
-
-#endif /* _NOTIFYMSGFACTORY_H */

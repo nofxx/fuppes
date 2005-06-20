@@ -38,7 +38,7 @@ class CContentDirectory: public CUPnPService
 		CContentDirectory();
 	  ~CContentDirectory();
     
-    CHTTPMessage* HandleUPnPAction(CUPnPAction*);
+    bool HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut);
   
   private:
     std::string HandleUPnPBrowse(CUPnPBrowse*);

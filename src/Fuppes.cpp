@@ -25,40 +25,33 @@
 
 #include "NotifyMsgFactory.h"
 #include "SharedConfig.h"
+#include "Common.h"
 
 #include <iostream>
 using namespace std;
 
 CFuppes::CFuppes()
 {
-	m_pSSDPCtrl = new CSSDPCtrl();
-	m_pSSDPCtrl->SetReceiveHandler(this);
-	m_pSSDPCtrl->Start();
-	
-	m_pHTTPServer = new CHTTPServer();
-	m_pHTTPServer->SetReceiveHandler(this);
-	m_pHTTPServer->Start();
-  CSharedConfig::Shared()->SetHTTPServerURL(m_pHTTPServer->GetURL());
-	
-	CNotifyMsgFactory::shared()->SetHTTPServerURL(m_pHTTPServer->GetURL());	
-	
-	m_pContentDirectory = new CContentDirectory();
-		
-	m_pMediaServer = new CMediaServer();
-	m_pMediaServer->SetHTTPServerURL(m_pHTTPServer->GetURL());
-	m_pMediaServer->AddUPnPService((CUPnPService*)m_pContentDirectory);	
+    m_SSDPCtrl.SetReceiveHandler(this);
+    m_SSDPCtrl.Start();
+
+    m_HTTPServer.SetReceiveHandler(this);
+    m_HTTPServer.Start();
+    CSharedConfig::Shared()->SetHTTPServerURL(m_HTTPServer.GetURL());
+
+    CNotifyMsgFactory::shared()->SetHTTPServerURL(m_HTTPServer.GetURL());	
+
+    m_MediaServer.SetHTTPServerURL(m_HTTPServer.GetURL());
+    m_MediaServer.AddUPnPService((CUPnPService*)&m_ContentDirectory);	
 }
 
 CFuppes::~CFuppes()
 {
-	delete m_pMediaServer;
-	delete m_pHTTPServer;
-	delete m_pSSDPCtrl;
 }
 
 CSSDPCtrl* CFuppes::GetSSDPCtrl()
 {
-	return m_pSSDPCtrl;
+	return &m_SSDPCtrl;
 }
 
 void CFuppes::OnSSDPCtrlReceiveMsg(CSSDPMessage* pSSDPMessage)
@@ -67,60 +60,70 @@ void CFuppes::OnSSDPCtrlReceiveMsg(CSSDPMessage* pSSDPMessage)
 	cout << pSSDPMessage->GetContent() << endl;
 }
 
-CHTTPMessage* CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pHTTPMessage)
+bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
 {
-	cout << "[fuppes] OnHTTPServerReceiveMsg:" << endl;
-	
-	CHTTPMessage* pResult = NULL;
-	
-	switch(pHTTPMessage->GetMessageType())
-	{
-		case http_get:
-			pResult = HandleHTTPGet(pHTTPMessage);
-		  break;
-		case http_post:
-			pResult = HandleHTTPPost(pHTTPMessage);
-		  break;
-		case http_200_ok:
-			break;
-		case http_404_not_found:
-			break;
-	}
-		
-	return pResult;
-}
+    cout << "[fuppes] OnHTTPServerReceiveMsg:" << endl;
+    if(!pMessageIn)
+        return false;
+    if(!pMessageOut)
+        return false;
 
-CHTTPMessage* CFuppes::HandleHTTPGet(CHTTPMessage* pHTTPMessage)
-{
-	CHTTPMessage* pResult = NULL;	
-	// request == "/" => root description	
-	if(pHTTPMessage->GetRequest().compare("/"))
-	{
-		pResult = new CHTTPMessage(http_200_ok, text_xml);
-		pResult->SetContent(m_pMediaServer->GetDeviceDescription());
-	}
-	else if(pHTTPMessage->GetRequest().compare("/UPnPServices/ContentDirectory/description.xml"))
-	{
-		pResult = new CHTTPMessage(http_200_ok, text_xml);
-		pResult->SetContent(m_pContentDirectory->GetServiceDescription());
-  }
-		
-  delete pHTTPMessage;  
-	return pResult;
-}
-
-CHTTPMessage* CFuppes::HandleHTTPPost(CHTTPMessage* pHTTPMessage)
-{
-  CHTTPMessage* pResult = NULL;	
-  
-  if(pHTTPMessage->GetAction() != NULL)
-  {
-    if(pHTTPMessage->GetAction()->m_TargetDevice == udtContentDirectory)
+    bool fRet = false;
+    
+    switch(pMessageIn->GetMessageType())
     {
-      pResult = m_pContentDirectory->HandleUPnPAction(pHTTPMessage->GetAction());
+    case http_get:
+        fRet = HandleHTTPGet(pMessageIn, pMessageOut);
+        break;
+    case http_post:
+        fRet = HandleHTTPPost(pMessageIn, pMessageOut);
+        break;
+    case http_200_ok:
+        break;
+    case http_404_not_found:
+        break;
     }
-  }
-  
-  delete pHTTPMessage;  
-  return pResult;
+
+    return fRet;
+}
+
+bool CFuppes::HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
+{
+    if(!pMessageIn)
+        return false;
+    if(!pMessageOut)
+        return false;
+    
+    // request == "/" => root description	
+    if(pMessageIn->GetRequest().compare("/"))
+    {
+        pMessageOut->SetContent(m_MediaServer.GetDeviceDescription());
+        return true;
+    }
+    else if(pMessageIn->GetRequest().compare("/UPnPServices/ContentDirectory/description.xml"))
+    {
+        pMessageOut->SetContent(m_ContentDirectory.GetServiceDescription());
+        return true;
+    }
+    
+    return false;
+}
+
+bool CFuppes::HandleHTTPPost(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
+{
+    if(!pMessageIn)
+        return false;
+    if(!pMessageOut)
+        return false;
+    
+    if(pMessageIn->GetAction() != NULL)
+    {
+        if(pMessageIn->GetAction()->m_TargetDevice == udtContentDirectory)
+        {
+            bool fRet = m_ContentDirectory.HandleUPnPAction(pMessageIn->GetAction(), pMessageOut);
+            return fRet;
+        }
+    }
+
+    return false;
 }
