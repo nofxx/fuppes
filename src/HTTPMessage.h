@@ -25,7 +25,8 @@
 #define _HTTPMESSAGE_H
 
 #include "MessageBase.h"
-#include ".\UPnPActions\UPnPBrowse.h"
+#include "UPnPAction.h"
+#include "win32.h"
 #include <string>
 
 enum eHTTPVersion
@@ -51,30 +52,33 @@ enum eHTTPContentType
 
 class CHTTPMessage: public CMessageBase
 {
-public:
-    CHTTPMessage(eHTTPMessageType, eHTTPVersion);
-    CHTTPMessage(eHTTPMessageType, eHTTPContentType);
+  public:
+		CHTTPMessage(eHTTPMessageType, eHTTPVersion);
+	  CHTTPMessage(eHTTPMessageType, eHTTPContentType);
     CHTTPMessage(std::string);
-
-    eHTTPMessageType GetMessageType();
-    std::string		 GetRequest();
-    eHTTPContentType GetContentType();
-
-    void             SetContent(std::string);
-
-    bool             LoadContentFromFile(std::string);	
-    std::string 	 GetHeaderAsString();		  
-    std::string		 GetMessageAsString();
+		
+		eHTTPMessageType GetMessageType();
+	  std::string			 GetRequest();
+	  eHTTPContentType GetContentType();
+		
+		void						SetContent(std::string);
+	
+		bool LoadContentFromFile(std::string);	
+		std::string 		 GetHeaderAsString();		  
+	  std::string			 GetMessageAsString();
     CUPnPAction*     GetAction();
   
-private:
+    char*            m_szBinContent;
+    unsigned int     m_nBinContentLength;
+  
+	private:
     void             ParsePOSTMessage(std::string);
-
-    CUPnPBrowse      m_UPnPAction;
-    eHTTPVersion     m_HTTPVersion;
-    eHTTPMessageType m_HTTPMessageType;
-    std::string	     m_sRequest;
-    eHTTPContentType m_HTTPContentType;
+  
+    CUPnPAction*     m_pUPnPAction;
+		eHTTPVersion     m_HTTPVersion;
+		eHTTPMessageType m_HTTPMessageType;
+		std::string	     m_sRequest;
+		eHTTPContentType m_HTTPContentType;
     int              m_nContentLength;
 };
 

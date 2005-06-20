@@ -41,40 +41,40 @@ class CUDPSocket;
 
 class IUDPSocket
 {
-public:
-    virtual void OnUDPSocketReceive(CUDPSocket*, CSSDPMessage*) = 0;
+	public:
+		virtual void OnUDPSocketReceive(CUDPSocket*, CSSDPMessage*) = 0;
 };
 
 class CUDPSocket
 {
-public:
-    CUDPSocket();
-    ~CUDPSocket();
-
-    void send_multicast(std::string a_message);
-
-    void begin_receive();
-    void setup_socket(bool do_multicast);
-    void teardown_socket();
-    void setup_random_port();
-
-    upnpSocket get_socket_fd();
-
-    void SetReceiveHandler(IUDPSocket*);
-    void call_on_receive(CSSDPMessage*);
-
-    int  get_port();
-    std::string get_ip();
-    sockaddr_in get_local_ep();	
-
-private:
-    upnpSocket  m_Socket;
-    upnpThread  m_ReceiveThread;
-    bool        m_fIsMulticast;
-    sockaddr_in m_LocalEndpoint;	// local end point
-
-    IUDPSocket* m_pReceiveHandler;
-
+	public:
+		CUDPSocket();
+		~CUDPSocket();
+	
+		void send_multicast(std::string p_sMessage);
+    void SendUnicast(std::string p_sMessage, sockaddr_in p_RemoteEndPoint);
+  
+		void begin_receive();
+		void setup_socket(bool do_multicast);
+	  void teardown_socket();
+	  void setup_random_port();
+	
+		upnpSocket get_socket_fd();
+			
+	  void SetReceiveHandler(IUDPSocket*);
+	  void call_on_receive(CSSDPMessage*);
+	
+		int  get_port();
+	  std::string get_ip();
+	  sockaddr_in get_local_ep();	
+	private:				
+		upnpSocket  sock;					
+  	upnpThread  receive_thread;					  
+		bool        is_multicast;	
+	  sockaddr_in local_ep;	// local end point
+	
+	  IUDPSocket* m_pReceiveHandler;
+	
 };
 
 #endif /* _UDPSOCKET_H */

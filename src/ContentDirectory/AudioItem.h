@@ -28,6 +28,8 @@
 
 class CAudioItem: public CUPnPItem
 {
+  public:
+    CAudioItem(): CUPnPItem(uotAudioItem) {}
 };
 
 #endif /* _AUDIOITEM_H */

@@ -28,6 +28,8 @@
 
 class CUPnPItem: public CUPnPObject
 {
+  public:
+    CUPnPItem(eUPnPObjectType p_UPnPObjectType): CUPnPObject(p_UPnPObjectType) {}
 };
 
 #endif /* _UPNPITEM_H */

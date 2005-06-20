@@ -25,9 +25,12 @@
 #define _STORAGEFOLDER_H
 
 #include "UPnPObject.h"
+#include "UPnPItem.h"
+#include "../UPnPActions/UPnPBrowse.h"
 
 #include <vector>
 #include <string>
+#include <libxml/xmlwriter.h>
 
 class CStorageFolder: public CUPnPObject
 {
@@ -35,12 +38,14 @@ class CStorageFolder: public CUPnPObject
     CStorageFolder();
     ~CStorageFolder();
   
-    void AddItem(CUPnPObject*);
-    std::string GetContentAsString();
+    void AddUPnPObject(CUPnPObject*);
+    std::string GetContentAsString(CUPnPBrowse* pBrowseAction, unsigned int* p_nNumberReturned, unsigned int* p_nTotalMatches);
+    std::string GetChildCountAsString();
   
   private:
-    std::vector<CUPnPObject*> m_vItems;
-  
+    std::vector<CUPnPObject*> m_vObjects;
+    void BuildFolderDescription(CStorageFolder*, xmlTextWriterPtr);
+    void BuildItemDescription(CUPnPItem*, xmlTextWriterPtr);
 };
 
 #endif /* _STORAGEFOLDER_H */

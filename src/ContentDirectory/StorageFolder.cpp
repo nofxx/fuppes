@@ -26,12 +26,11 @@
 #include "../SharedConfig.h"
 
 #include <sstream> 
-#include <libxml/xmlwriter.h>
 #include <iostream>
 
 using namespace std;
 
-CStorageFolder::CStorageFolder()
+CStorageFolder::CStorageFolder(): CUPnPObject(uotStorageFolder)
 {
 }
 
@@ -39,12 +38,21 @@ CStorageFolder::~CStorageFolder()
 {
 }
 
-void CStorageFolder::AddItem(CUPnPObject* pUPnPObject)
+void CStorageFolder::AddUPnPObject(CUPnPObject* pUPnPObject)
 {
-  m_vItems.push_back(pUPnPObject);
+  m_vObjects.push_back(pUPnPObject);
 }
 
-std::string CStorageFolder::GetContentAsString()
+string CStorageFolder::GetChildCountAsString()
+{
+  stringstream sTmp;
+  sTmp << m_vObjects.size();
+  return sTmp.str();
+}
+
+std::string CStorageFolder::GetContentAsString(CUPnPBrowse* pBrowseAction, 
+                                               unsigned int* p_nNumberReturned, 
+                                               unsigned int* p_nTotalMatches)
 {
   xmlTextWriterPtr writer;
 	xmlBufferPtr buf;
@@ -54,72 +62,35 @@ std::string CStorageFolder::GetContentAsString()
 	writer = xmlNewTextWriterMemory(buf, 0);    
 	xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL);
   
-  CUPnPObject* pTmpObj = NULL; 
+  CUPnPObject* pTmpObj = NULL;  
+  
+  *p_nTotalMatches = m_vObjects.size();
+  if((pBrowseAction->m_nStartingIndex + pBrowseAction->m_nRequestedCount) > m_vObjects.size())
+    *p_nNumberReturned = pBrowseAction->m_nStartingIndex + (m_vObjects.size() - pBrowseAction->m_nStartingIndex);
+  else
+    *p_nNumberReturned = pBrowseAction->m_nStartingIndex + pBrowseAction->m_nRequestedCount;
   
   // root  
   xmlTextWriterStartElementNS(writer, NULL, BAD_CAST "DIDL-Lite", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite");
         
-  for(unsigned int i = 0; i < m_vItems.size(); i++)
-  {
-    pTmpObj = (CUPnPObject*)m_vItems[i];
+  for(unsigned int i = pBrowseAction->m_nStartingIndex; i < *p_nNumberReturned; i++)
+  { 
+    pTmpObj = (CUPnPObject*)m_vObjects[i];
     
-    // item
-    xmlTextWriterStartElement(writer, BAD_CAST "item");
-    
-      // id
-      xmlTextWriterWriteAttribute(writer, BAD_CAST "id", BAD_CAST "0000000000000001");
-      // parentID
-      xmlTextWriterWriteAttribute(writer, BAD_CAST "parentID", BAD_CAST "0");
-      // restricted
-      xmlTextWriterWriteAttribute(writer, BAD_CAST "restricted", BAD_CAST "0");    
-    
-      // title
-      xmlTextWriterStartElementNS(writer, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");    
-      xmlTextWriterWriteString(writer, BAD_CAST "Alle meine Entchen");
-      xmlTextWriterEndElement(writer);
-    
-      // class
-      xmlTextWriterStartElementNS(writer, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
-      xmlTextWriterWriteString(writer, BAD_CAST "object.item.audioItem.musicTrack");
-      xmlTextWriterEndElement(writer);
-    
-      // creator
-      xmlTextWriterStartElementNS(writer, BAD_CAST "dc", BAD_CAST "creator", BAD_CAST "http://purl.org/dc/elements/1.1/");    
-      xmlTextWriterWriteString(writer, BAD_CAST "-Unknown-");
-      xmlTextWriterEndElement(writer);
-    
-      // storageMedium
-      xmlTextWriterStartElementNS(writer, BAD_CAST "upnp", BAD_CAST "storageMedium", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
-      xmlTextWriterWriteString(writer, BAD_CAST "UNKNOWN");
-      xmlTextWriterEndElement(writer);
-    
-      // date
-      xmlTextWriterStartElementNS(writer, BAD_CAST "dc", BAD_CAST "date", BAD_CAST "http://purl.org/dc/elements/1.1/");    
-      xmlTextWriterWriteString(writer, BAD_CAST "2005-06-19");
-      xmlTextWriterEndElement(writer);
-      
-      // writeStatus
-      xmlTextWriterStartElementNS(writer, BAD_CAST "upnp", BAD_CAST "writeStatus", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
-      xmlTextWriterWriteString(writer, BAD_CAST "UNKNOWN");
-      xmlTextWriterEndElement(writer);
-      
-      // get url
-      xmlTextWriterStartElement(writer, BAD_CAST "res");
-      xmlTextWriterWriteAttribute(writer, BAD_CAST "protocolInfo", BAD_CAST "http-get:*:audio/mpeg:*");
-      stringstream sTmp;
-      sTmp << "http://" << CSharedConfig::Shared()->GetHTTPServerURL() << "/test.mp3";
-      xmlTextWriterWriteAttribute(writer, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
-      xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
-      xmlTextWriterEndElement(writer);                  
-    
-    // end iten
-    xmlTextWriterEndElement(writer);    
+    switch(pTmpObj->GetObjectType())
+    {
+      case uotStorageFolder:
+        ((CStorageFolder*)pTmpObj)->GetChildCountAsString();
+        BuildFolderDescription(((CStorageFolder*)pTmpObj), writer);
+        break;
+      case uotAudioItem:
+        BuildItemDescription(((CUPnPItem*)pTmpObj), writer);
+        break;
+      case uotItem:
+        break;
+    }        
   }  
   
-  /*Result += "&lt;res protocolInfo=\"http-get:*:audio/mpeg:*\" ";
-  Result += "importUri=\"http://" + HTTPServer.Shared.Address + ":" + HTTPServer.Shared.Port.ToString() + "/MediaServer0/" + AItem.Id.ToString("X16") + "/\"&gt;" +
-   "http://" + HTTPServer.Shared.Address + ":" + HTTPServer.Shared.Port.ToString() + "/MediaServer0/" + AItem.Id.ToString("X16") + "/" + AItem.Title + "&lt;/res&gt;";*/  
-   
 	// end root
 	xmlTextWriterEndElement(writer);
   xmlTextWriterEndDocument(writer);
@@ -128,8 +99,97 @@ std::string CStorageFolder::GetContentAsString()
 	std::stringstream output;
 	output << (const char*)buf->content;
 	
-	xmlBufferFree(buf);
-  
-  //cout << output.str().substr(strlen("<?xml version=\"1.0\" encoding=\"UTF-8\"?> ")) << endl;  
+	xmlBufferFree(buf);  
 	return output.str().substr(strlen("<?xml version=\"1.0\" encoding=\"UTF-8\"?> "));
+}
+
+
+void CStorageFolder::BuildFolderDescription(CStorageFolder* pFolder, xmlTextWriterPtr pWriter)
+{
+  // container
+  xmlTextWriterStartElement(pWriter, BAD_CAST "container");
+    
+    // id
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "id", BAD_CAST pFolder->GetObjectID().c_str());
+    // searchable
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "searchable", BAD_CAST "0");
+    // parentID
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "parentID", BAD_CAST pFolder->GetParent()->GetObjectID().c_str());
+    // restricted
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "restricted", BAD_CAST "0");    
+    // childCount
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "childCount", BAD_CAST pFolder->GetChildCountAsString().c_str());
+    
+    // title
+    xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");    
+    xmlTextWriterWriteString(pWriter, BAD_CAST pFolder->GetName().c_str());
+    xmlTextWriterEndElement(pWriter);
+  
+    // class
+    xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
+    xmlTextWriterWriteString(pWriter, BAD_CAST "object.container");
+    xmlTextWriterEndElement(pWriter);
+    
+    // writeStatus
+    xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "writeStatus", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
+    xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN");
+    xmlTextWriterEndElement(pWriter);           
+  
+  // end container
+  xmlTextWriterEndElement(pWriter);
+}
+
+void CStorageFolder::BuildItemDescription(CUPnPItem* pUPnPItem, xmlTextWriterPtr pWriter)
+{
+  // item
+  xmlTextWriterStartElement(pWriter, BAD_CAST "item");
+
+    // id
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "id", BAD_CAST pUPnPItem->GetObjectID().c_str());
+    // parentID
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "parentID", BAD_CAST pUPnPItem->GetParent()->GetObjectID().c_str());
+    // restricted
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "restricted", BAD_CAST "0");    
+  
+    // title
+    xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");    
+    xmlTextWriterWriteString(pWriter, BAD_CAST pUPnPItem->GetName().c_str());
+    xmlTextWriterEndElement(pWriter);
+  
+    // class
+    xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
+    xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.audioItem.musicTrack");
+    xmlTextWriterEndElement(pWriter);
+  
+    // creator
+    xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "creator", BAD_CAST "http://purl.org/dc/elements/1.1/");    
+    xmlTextWriterWriteString(pWriter, BAD_CAST "-Unknown-");
+    xmlTextWriterEndElement(pWriter);
+  
+    // storageMedium
+    xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "storageMedium", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
+    xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN");
+    xmlTextWriterEndElement(pWriter);
+  
+    // date
+    xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "date", BAD_CAST "http://purl.org/dc/elements/1.1/");    
+    xmlTextWriterWriteString(pWriter, BAD_CAST "2005-06-19");
+    xmlTextWriterEndElement(pWriter);
+    
+    // writeStatus
+    xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "writeStatus", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
+    xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN");
+    xmlTextWriterEndElement(pWriter);
+    
+    // get url
+    xmlTextWriterStartElement(pWriter, BAD_CAST "res");
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST "http-get:*:audio/mpeg:*");
+    stringstream sTmp;
+    sTmp << "http://" << CSharedConfig::Shared()->GetHTTPServerURL() << "/MediaServer/AudioItems/" << pUPnPItem->GetObjectID();
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
+    xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
+    xmlTextWriterEndElement(pWriter);                  
+  
+  // end iten
+  xmlTextWriterEndElement(pWriter);
 }

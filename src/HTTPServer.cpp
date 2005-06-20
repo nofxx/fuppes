@@ -23,7 +23,6 @@
 
 #include "HTTPServer.h"
 #include "SharedConfig.h"
-#include "Common.h"
 
 #include <iostream>
 #include <sstream>
@@ -98,16 +97,25 @@ upnpThreadCallback accept_loop(void *arg)
 			{
 				cout << "[HTTPServer] bytes received: " << nBytesReceived << endl;
 				szBuffer[nBytesReceived] = '\0';
-				cout << szBuffer << endl;
-                CHTTPMessage httpMessage(http_200_ok, text_xml);
-                bool fRet = pHTTPServer->CallOnReceive(szBuffer, &httpMessage);
-				if(true == fRet)				
+				//cout << szBuffer << endl;
+				
+				CHTTPMessage* pResponse = pHTTPServer->CallOnReceive(szBuffer);
+				if(pResponse != NULL)				
 				{
 					cout << "[HTTPServer] sending response" << endl;
 			    //cout << pResponse->GetMessageAsString() << endl;
-					send(connection, httpMessage.GetMessageAsString().c_str(), (int)strlen(httpMessage.GetMessageAsString().c_str()), 0);
+					
+          if(pResponse->m_nBinContentLength > 0)
+          {
+            send(connection, pResponse->GetHeaderAsString().c_str(), strlen(pResponse->GetMessageAsString().c_str()), 0);            
+            send(connection, pResponse->m_szBinContent, pResponse->m_nBinContentLength, 0);                        
+          }
+          else            
+            send(connection, pResponse->GetMessageAsString().c_str(), strlen(pResponse->GetMessageAsString().c_str()), 0);
 					cout << "[HTTPServer] done" << endl;
 				}
+				
+				delete pResponse;
 			}			
 			upnpSocketClose(connection);
 		}
@@ -121,18 +129,16 @@ void CHTTPServer::SetReceiveHandler(IHTTPServer* pHandler)
 	m_pReceiveHandler = pHandler;
 }
 
-bool CHTTPServer::CallOnReceive(std::string p_sMessage, CHTTPMessage* pMessageOut)
+CHTTPMessage* CHTTPServer::CallOnReceive(std::string p_sMessage)
 {
-    if(!pMessageOut)
-        return false;
-    
-    if(NULL != m_pReceiveHandler)
+	if(m_pReceiveHandler != NULL)
 	{
 		// parse message
-		CHTTPMessage httpMsg(p_sMessage);		
-        bool fRet = m_pReceiveHandler->OnHTTPServerReceiveMsg(&httpMsg, pMessageOut);
-        return fRet;
+		CHTTPMessage* pMsg = new CHTTPMessage(p_sMessage);		
+		return m_pReceiveHandler->OnHTTPServerReceiveMsg(pMsg);
 	}
-
-    return false;
+	else
+	{
+		return NULL;
+	}
 }

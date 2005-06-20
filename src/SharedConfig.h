@@ -43,12 +43,13 @@ class CSharedConfig
     void        SetHTTPServerURL(std::string);
     std::string GetHTTPServerURL();
 	
+    std::string GetBaseDir();
+  
 	protected:
 		CSharedConfig();
-        ~CSharedConfig();
 	
 	private:
-		static CSharedConfig* m_pInstance;
+		static CSharedConfig* m_Instance;
 	
 	  std::string m_sHostname;
 	  std::string m_sIP;

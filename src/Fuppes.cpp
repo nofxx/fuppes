@@ -25,105 +25,139 @@
 
 #include "NotifyMsgFactory.h"
 #include "SharedConfig.h"
-#include "Common.h"
 
 #include <iostream>
+#include <fstream>
 using namespace std;
 
 CFuppes::CFuppes()
 {
-    m_SSDPCtrl.SetReceiveHandler(this);
-    m_SSDPCtrl.Start();
-
-    m_HTTPServer.SetReceiveHandler(this);
-    m_HTTPServer.Start();
-    CSharedConfig::Shared()->SetHTTPServerURL(m_HTTPServer.GetURL());
-
-    CNotifyMsgFactory::shared()->SetHTTPServerURL(m_HTTPServer.GetURL());	
-
-    m_MediaServer.SetHTTPServerURL(m_HTTPServer.GetURL());
-    m_MediaServer.AddUPnPService((CUPnPService*)&m_ContentDirectory);	
+  cout << "[FUPPES] initializing devices" << endl;
+  
+	m_pSSDPCtrl = new CSSDPCtrl();
+	m_pSSDPCtrl->SetReceiveHandler(this);
+	m_pSSDPCtrl->Start();
+	
+	m_pHTTPServer = new CHTTPServer();
+	m_pHTTPServer->SetReceiveHandler(this);
+	m_pHTTPServer->Start();
+  CSharedConfig::Shared()->SetHTTPServerURL(m_pHTTPServer->GetURL());
+	
+	CNotifyMsgFactory::shared()->SetHTTPServerURL(m_pHTTPServer->GetURL());	
+	
+	m_pContentDirectory = new CContentDirectory();
+		
+	m_pMediaServer = new CMediaServer();
+	m_pMediaServer->SetHTTPServerURL(m_pHTTPServer->GetURL());
+	m_pMediaServer->AddUPnPService((CUPnPService*)m_pContentDirectory);	  
+  cout << "[FUPPES] done" << endl; 
+  
+  cout << "[FUPPES] multicasting alive message" << endl;
+  m_pSSDPCtrl->send_alive();  
+  cout << "[FUPPES] done" << endl; 
 }
 
 CFuppes::~CFuppes()
 {
+  cout << "[FUPPES] multicasting byebye message" << endl;
+  m_pSSDPCtrl->send_byebye();
+  cout << "[FUPPES] done" << endl; 
+ 
+  cout << "[FUPPES] shutting down" << endl;		  
+	delete m_pMediaServer;
+  delete m_pContentDirectory;
+	delete m_pHTTPServer;
+	delete m_pSSDPCtrl;
+  cout << "[FUPPES] done" << endl; 
 }
 
 CSSDPCtrl* CFuppes::GetSSDPCtrl()
 {
-	return &m_SSDPCtrl;
+	return m_pSSDPCtrl;
 }
 
 void CFuppes::OnSSDPCtrlReceiveMsg(CSSDPMessage* pSSDPMessage)
 {
-	cout << "[fuppes] OnSSDPCtrlReceiveMsg:" << endl;
-	cout << pSSDPMessage->GetContent() << endl;
 }
 
-bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
+CHTTPMessage* CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pHTTPMessage)
 {
-    cout << "[fuppes] OnHTTPServerReceiveMsg:" << endl;
-    if(!pMessageIn)
-        return false;
-    if(!pMessageOut)
-        return false;
-
-    bool fRet = false;
-    
-    switch(pMessageIn->GetMessageType())
-    {
-    case http_get:
-        fRet = HandleHTTPGet(pMessageIn, pMessageOut);
-        break;
-    case http_post:
-        fRet = HandleHTTPPost(pMessageIn, pMessageOut);
-        break;
-    case http_200_ok:
-        break;
-    case http_404_not_found:
-        break;
-    }
-
-    return fRet;
+	CHTTPMessage* pResult = NULL;
+	
+	switch(pHTTPMessage->GetMessageType())
+	{
+		case http_get:
+			pResult = HandleHTTPGet(pHTTPMessage);
+		  break;
+		case http_post:
+			pResult = HandleHTTPPost(pHTTPMessage);
+		  break;
+		case http_200_ok:
+			break;
+		case http_404_not_found:
+			break;
+	}
+		
+	return pResult;
 }
 
-bool CFuppes::HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
+CHTTPMessage* CFuppes::HandleHTTPGet(CHTTPMessage* pHTTPMessage)
 {
-    if(!pMessageIn)
-        return false;
-    if(!pMessageOut)
-        return false;
-    
-    // request == "/" => root description	
-    if(pMessageIn->GetRequest().compare("/"))
-    {
-        pMessageOut->SetContent(m_MediaServer.GetDeviceDescription());
-        return true;
+	CHTTPMessage* pResult = NULL;	
+	// request == "/" => root description	
+	if(pHTTPMessage->GetRequest().compare("/") == 0)
+	{
+		pResult = new CHTTPMessage(http_200_ok, text_xml);
+		pResult->SetContent(m_pMediaServer->GetDeviceDescription());
+	}
+	else if(pHTTPMessage->GetRequest().compare("/UPnPServices/ContentDirectory/description.xml") == 0)
+	{
+		pResult = new CHTTPMessage(http_200_ok, text_xml);
+		pResult->SetContent(m_pContentDirectory->GetServiceDescription());
+  }
+  else if((pHTTPMessage->GetRequest().length() > 24) &&
+          ((pHTTPMessage->GetRequest().length() > 24) && 
+         (pHTTPMessage->GetRequest().substr(24).compare("/MediaServer/AudioItems/"))))
+  {
+    string sItemObjId = pHTTPMessage->GetRequest().substr(24, pHTTPMessage->GetRequest().length());
+    string sFileName  = m_pContentDirectory->GetFileNameFromObjectID(sItemObjId);
+    cout << "[FUPPES] sending audio file " << sFileName << endl; 
+
+    fstream fFile;    
+    fFile.open(sFileName.c_str(), ios::binary|ios::in);
+    if(fFile.fail() != 1)
+    {      
+      pResult = new CHTTPMessage(http_200_ok, audio_mpeg);
+      
+      fFile.seekg(0, ios::end); 
+      unsigned long nFileSize = streamoff(fFile.tellg()); 
+      fFile.seekg(0, ios::beg);
+      
+      pResult->m_szBinContent = new char[nFileSize + 1];     
+      fFile.read(pResult->m_szBinContent, nFileSize); 
+      pResult->m_szBinContent[nFileSize] = '\0';      
+      pResult->m_nBinContentLength = nFileSize;      
+      
+      fFile.close();
     }
-    else if(pMessageIn->GetRequest().compare("/UPnPServices/ContentDirectory/description.xml"))
-    {
-        pMessageOut->SetContent(m_ContentDirectory.GetServiceDescription());
-        return true;
-    }
     
-    return false;
+  }
+  delete pHTTPMessage;  
+	return pResult;
 }
 
-bool CFuppes::HandleHTTPPost(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
+CHTTPMessage* CFuppes::HandleHTTPPost(CHTTPMessage* pHTTPMessage)
 {
-    if(!pMessageIn)
-        return false;
-    if(!pMessageOut)
-        return false;
-    
-    if(pMessageIn->GetAction() != NULL)
+  CHTTPMessage* pResult = NULL;	
+  
+  if(pHTTPMessage->GetAction() != NULL)
+  {
+    if(pHTTPMessage->GetAction()->m_TargetDevice == udtContentDirectory)
     {
-        if(pMessageIn->GetAction()->m_TargetDevice == udtContentDirectory)
-        {
-            bool fRet = m_ContentDirectory.HandleUPnPAction(pMessageIn->GetAction(), pMessageOut);
-            return fRet;
-        }
+      pResult = m_pContentDirectory->HandleUPnPAction(pHTTPMessage->GetAction());
     }
-
-    return false;
+  }
+  
+  delete pHTTPMessage;  
+  return pResult;
 }

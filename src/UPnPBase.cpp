@@ -23,27 +23,27 @@
  
  #include "UPnPBase.h"
  
-CUPnPBase::CUPnPBase(eUPnPDeviceType p_UPnPDeviceType)
-{
-    m_UPnPDeviceType = p_UPnPDeviceType;
-} 
+ CUPnPBase::CUPnPBase(eUPnPDeviceType p_UPnPDeviceType)
+ {
+   m_UPnPDeviceType = p_UPnPDeviceType;
+ } 
 
 std::string	CUPnPBase::GetUPnPDeviceTypeAsString()
 {
-    std::string sResult;
-
-    switch(m_UPnPDeviceType)
-    {
-    case udtRootDevice:
-        sResult = "RootDevice";
-        break;
-    case udtMediaServer:
-        sResult = "MediaServer";
-        break;
+	std::string sResult;
+	
+	switch(m_UPnPDeviceType)
+	{
+		case udtRootDevice:
+			sResult = "RootDevice";
+		  break;
+		case udtMediaServer:
+			sResult = "MediaServer";
+		  break;
     case udtContentDirectory:
-        sResult = "ContentDirectory";
-        break;
-    }
-
-    return sResult;
+      sResult = "ContentDirectory";
+      break;
+	}
+	
+	return sResult;
 }

@@ -24,13 +24,13 @@
 #ifndef _UPNPACTIONFACTORY_H
 #define _UPNPACTIONFACTORY_H
 
-#include "UPnPActions/UPnPBrowse.h"
+#include "UPnPAction.h"
 #include <string>
 
 class CUPnPActionFactory
 {
   public:
-    bool BuildActionFromString(std::string p_sContent, CUPnPBrowse* pAction);
+    CUPnPAction* BuildActionFromString(std::string);
 };
 
 #endif /* _UPNPACTIONFACTORY_H */

@@ -40,7 +40,7 @@
 class IHTTPServer
 {
   public:
-	  virtual bool OnHTTPServerReceiveMsg(CHTTPMessage*, CHTTPMessage*) = 0;
+	  virtual CHTTPMessage* OnHTTPServerReceiveMsg(CHTTPMessage*) = 0;
 };
 
 class CHTTPServer
@@ -53,7 +53,7 @@ class CHTTPServer
 	  upnpSocket    GetSocket();
 	  std::string   GetURL();	
 		void				  SetReceiveHandler(IHTTPServer*);		
-		bool CHTTPServer::CallOnReceive(std::string p_sMessage, CHTTPMessage* pMessageOut);
+		CHTTPMessage* CallOnReceive(std::string);		
 	
 	private:
 	  sockaddr_in local_ep;

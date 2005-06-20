@@ -44,7 +44,7 @@ void CUPnPDevice::AddUPnPService(CUPnPService* pUPnPService)
 
 int  CUPnPDevice::GetUPnPServiceCount()
 {
-	return (int)m_vUPnPServices.size();
+	return m_vUPnPServices.size();
 }
 
 CUPnPService* CUPnPDevice::GetUPnPService(int p_nIndex)
@@ -56,6 +56,8 @@ eUPnPDeviceType CUPnPDevice::GetDeviceType()
 {
 	return m_UPnPDeviceType;
 }
+
+
 
 void CUPnPDevice::SetHTTPServerURL(std::string p_sHTTPServerURL)
 {

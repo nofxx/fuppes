@@ -35,36 +35,36 @@ using namespace std;
 
 class CUPnPDevice: public CUPnPBase
 {
-protected:
-    CUPnPDevice(eUPnPDeviceType);
-    ~CUPnPDevice();
+  protected:
+	  CUPnPDevice(eUPnPDeviceType);
+		~CUPnPDevice();
 
-public:
-    void AddUPnPService(CUPnPService*);
+	public:
+		void AddUPnPService(CUPnPService*);
     int  GetUPnPServiceCount();
     CUPnPService* GetUPnPService(int);	
-
-    eUPnPDeviceType GetDeviceType();	  
-    std::string			GetDeviceDescription();
-    void 						SetHTTPServerURL(std::string);
 	
-private:
-    eUPnPDeviceType m_UPnPDeviceType;	
-    std::string     m_sHTTPServerURL;
-    std::vector<CUPnPService*> m_vUPnPServices;
+		eUPnPDeviceType GetDeviceType();	  
+		std::string			GetDeviceDescription();
+		void 						SetHTTPServerURL(std::string);
 	
-protected:
-    string m_sFriendlyName;
-    string m_sManufacturer;
-    string m_sManufacturerURL;
-    string m_sModelDescription;
-    string m_sModelName;
-    string m_sModelNumber;
-    string m_sModelURL;
-    string m_sSerialNumber;
-    string m_sUDN;
-    string m_sUPC;
-    string m_sPresentationURL;
+	private:
+		eUPnPDeviceType m_UPnPDeviceType;	
+		std::string     m_sHTTPServerURL;
+		std::vector<CUPnPService*> m_vUPnPServices;
+	
+	protected:
+		string m_sFriendlyName;
+	  string m_sManufacturer;
+	  string m_sManufacturerURL;
+	  string m_sModelDescription;
+	  string m_sModelName;
+	  string m_sModelNumber;
+	  string m_sModelURL;
+	  string m_sSerialNumber;
+	  string m_sUDN;
+	  string m_sUPC;
+	  string m_sPresentationURL;
 };
 
 #endif /* _UPNPDEVICE_H */

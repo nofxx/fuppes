@@ -30,6 +30,7 @@
 #include <string>
 
 #include "UPnPObject.h"
+#include "StorageFolder.h"
 #include "../UPnPActions/UPnPBrowse.h"
 
 class CContentDirectory: public CUPnPService
@@ -38,12 +39,15 @@ class CContentDirectory: public CUPnPService
 		CContentDirectory();
 	  ~CContentDirectory();
     
-    bool HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut);
+    CHTTPMessage* HandleUPnPAction(CUPnPAction*);
+    std::string GetFileNameFromObjectID(std::string);
   
   private:
     std::string HandleUPnPBrowse(CUPnPBrowse*);
     std::map<std::string, CUPnPObject*> m_ObjectList;
-     std::map<std::string, CUPnPObject*>::iterator m_ListIterator;
+    std::map<std::string, CUPnPObject*>::iterator m_ListIterator;
+    void BuildObjectList();
+    void ScanDirectory(std::string, int*, CStorageFolder*);
 };
 
 #endif /* _CONTENTDIRECTORY_H */

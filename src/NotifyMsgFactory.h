@@ -37,24 +37,24 @@ enum msg_type
 
 class CNotifyMsgFactory
 {
-public:
-    static CNotifyMsgFactory* shared();
-
-    std::string msearch();	
-    std::string notify_alive(msg_type);	
-    std::string notify_bye_bye(msg_type);
-
-    void SetHTTPServerURL(std::string);
+	public:
+		static CNotifyMsgFactory* shared();
+		
+		std::string msearch();	
+	  std::string notify_alive(msg_type);	
+	  std::string notify_bye_bye(msg_type);
+    std::string GetMSearchResponse(msg_type);
+  
+		void SetHTTPServerURL(std::string);
 	
-protected:
-    CNotifyMsgFactory();
-    ~CNotifyMsgFactory();
-
-private:
-    static CNotifyMsgFactory* m_pInstance;
-    static std::string type_to_string(msg_type);
-
-    std::string m_sHTTPServerURL;
+	protected:
+		CNotifyMsgFactory();
+	
+	private:
+		static CNotifyMsgFactory* instance;
+	  static std::string type_to_string(msg_type);
+	
+		std::string m_sHTTPServerURL;
 };	
 
 #endif /* _NOTIFYMSGFACTORY_H */
