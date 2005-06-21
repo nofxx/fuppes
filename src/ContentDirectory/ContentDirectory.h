@@ -48,6 +48,7 @@ class CContentDirectory: public CUPnPService
     std::map<std::string, CUPnPObject*>::iterator m_ListIterator;
     void BuildObjectList();
     void ScanDirectory(std::string, int*, CStorageFolder*);
+    CStorageFolder* m_pBaseFolder;
 };
 
 #endif /* _CONTENTDIRECTORY_H */

@@ -23,7 +23,7 @@
  
 #include <iostream>
 
-#include "win32.h"
+#include "SharedConfig.h"
 
 #ifndef WIN32
 #include <unistd.h>
@@ -35,8 +35,11 @@
 #include <sys/socket.h>
 #endif
 
-//#include <string>
-#include "SharedConfig.h"
+#include <fstream>
+#include <sstream>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
+#include "win32.h"
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN     64
@@ -55,46 +58,9 @@ CSharedConfig* CSharedConfig::Shared()
 
 CSharedConfig::CSharedConfig()
 {
-in_addr* addr;
-
-#ifdef WIN32
-  // Init windows sockets
-  WSADATA wsaData;
-  int nRet = WSAStartup(MAKEWORD(1, 1), &wsaData);
-  if(0 == nRet)
-  {
-    // Get hostname
-    char name[64] = "";
-    nRet = gethostname(name, sizeof(name));
-    if(0 == nRet)
-    {
-      m_sHostname = name;
-
-      // Get host
-      struct hostent* host;
-      host = gethostbyname(name);
-
-      // Get host address
-      //in_addr* addr;
-      addr = (struct in_addr*)host->h_addr;
-    }
-    WSACleanup();
-  }
-    
-#else
-
-  char* name;
-  gethostname(name, 64);	
-  m_sHostname = name;
-	
-  struct hostent* host;
-  host = gethostbyname(name);
-	
-  //in_addr* addr;
-  addr = (struct in_addr*)host->h_addr;
-#endif
-
-  m_sIP = inet_ntoa(*addr);
+  ResolveHostAndIP();
+  if(!ReadConfigFile())
+    cout << "no config file found" << endl;
 }
 
 string CSharedConfig::GetAppName()
@@ -137,7 +103,111 @@ string CSharedConfig::GetHTTPServerURL()
   return m_sHTTPServerURL;
 }
 
-string CSharedConfig::GetBaseDir()
-{ 
-  return "/mnt/nfs/data/Musik/Singles";
+std::string CSharedConfig::GetSharedDir(int p_nIndex)
+{
+  return m_vSharedDirectories[p_nIndex];
+}
+
+int CSharedConfig::SharedDirCount()
+{
+  return m_vSharedDirectories.size();
+}
+
+bool CSharedConfig::ReadConfigFile()
+{
+  xmlDocPtr pDoc;  
+  string    sFileName = "fuppes.conf";
+  bool      bResult   = false;
+  
+  if(FileExists(sFileName))
+  {
+    pDoc = xmlReadFile(sFileName.c_str(), NULL, 0);
+    if(pDoc != NULL)  
+      bResult = true;
+  }
+  
+  if(bResult)
+  {
+    xmlNode* pRootNode = NULL;  
+    xmlNode* pTmpNode  = NULL;   
+    pRootNode = xmlDocGetRootElement(pDoc);
+    
+    for(pTmpNode = pRootNode; pTmpNode; pTmpNode = pTmpNode->next)
+    {
+      if(pTmpNode->type == XML_ELEMENT_NODE)
+        cout << pTmpNode->name << endl;
+      
+      xmlNode* pDirsNode = NULL;
+      pDirsNode = pTmpNode->children->next;
+      cout << pDirsNode->name << endl;
+      
+      xmlNode* pDirNode = NULL;
+      pDirNode = pDirsNode->children;
+      for(pDirNode = pDirNode->next; pDirNode; pDirNode = pDirNode->next)
+      {
+        if(pDirNode->type == XML_ELEMENT_NODE)
+        {
+          stringstream sDirName;
+          sDirName << pDirNode->children->content;          
+          m_vSharedDirectories.push_back(sDirName.str());
+          sDirName.str("");
+        }
+      }
+    }
+    
+    xmlFreeDoc(pDoc);
+  }  
+  xmlCleanupParser();  
+  return bResult;
+}
+
+bool CSharedConfig::ResolveHostAndIP()
+{
+  in_addr* addr;
+
+  #ifdef WIN32
+  // Init windows sockets
+  WSADATA wsaData;
+  int nRet = WSAStartup(MAKEWORD(1, 1), &wsaData);
+  if(0 == nRet)
+  {
+    // Get hostname
+    char name[64] = "";
+    nRet = gethostname(name, sizeof(name));
+    if(0 == nRet)
+    {
+      m_sHostname = name;
+
+      // Get host
+      struct hostent* host;
+      host = gethostbyname(name);
+      addr = (struct in_addr*)host->h_addr;
+    }
+    WSACleanup();
+  }    
+  #else
+
+  char* name;
+  gethostname(name, 64);	
+  m_sHostname = name;
+	
+  struct hostent* host;
+  host = gethostbyname(name);
+  addr = (struct in_addr*)host->h_addr;
+  #endif
+
+  m_sIP = inet_ntoa(*addr);  
+  return true;
+}
+
+bool CSharedConfig::FileExists(std::string p_sFileName)
+{
+  ifstream fsTmp;
+  bool     bResult = false;
+  
+  fsTmp.open(p_sFileName.c_str(),ios::in);  
+  bResult = fsTmp.is_open();
+  fsTmp.close();
+  
+  return bResult;
 }

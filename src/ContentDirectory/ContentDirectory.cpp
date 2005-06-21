@@ -38,8 +38,8 @@ using namespace std;
  
 CContentDirectory::CContentDirectory(): CUPnPService(udtContentDirectory)
 {
-  CStorageFolder* pBaseDir = new CStorageFolder();
-  m_ObjectList["0"] = pBaseDir;
+  m_pBaseFolder = new CStorageFolder();
+  m_ObjectList["0"] = m_pBaseFolder;
   
   BuildObjectList();
 }
@@ -146,7 +146,27 @@ std::string CContentDirectory::HandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
 void CContentDirectory::BuildObjectList()
 {
   int nCount = 1;
-  ScanDirectory(CSharedConfig::Shared()->GetBaseDir(), &nCount, ((CStorageFolder*)m_ObjectList["0"]));
+  for (int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
+  {
+    CStorageFolder* pTmpFolder = new CStorageFolder();            
+    
+    char szObjId[10];                            
+    sprintf(szObjId, "%010X", nCount);          
+    pTmpFolder->SetObjectID(szObjId);    
+    
+    pTmpFolder->SetParent(m_pBaseFolder);
+    pTmpFolder->SetName(CSharedConfig::Shared()->GetSharedDir(i));
+    pTmpFolder->SetFileName(CSharedConfig::Shared()->GetSharedDir(i));
+            
+    // add folder to list and parent folder
+    m_ObjectList[szObjId] = pTmpFolder;
+    m_pBaseFolder->AddUPnPObject(pTmpFolder);
+            
+    // increment counter
+    nCount++;
+    
+    ScanDirectory(CSharedConfig::Shared()->GetSharedDir(i), &nCount, pTmpFolder);
+  }
 }
 
 void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, CStorageFolder* pParentFolder)

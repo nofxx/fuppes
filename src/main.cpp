@@ -33,9 +33,7 @@ using namespace std;
 
 int main()
 {
-	/*
-	 * setup winsockets
-	 */
+	//setup winsockets	
   #ifdef WIN32
   WSADATA wsa;
   WSAStartup(MAKEWORD(2,0),&wsa);
@@ -65,5 +63,10 @@ int main()
   
 	delete pFuppes;
 		
+  // Cleanup winsockets
+  #ifdef WIN32  
+  WSACleanup();
+  #endif
+  
 	return 0;
 }

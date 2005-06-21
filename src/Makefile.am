@@ -33,8 +33,9 @@ h_sources = \
   ContentDirectory/ContentDirectory.h\
 	SharedConfig.h\
 	Fuppes.h\
-	win32.h
-
+	win32.h\
+	RegEx.h
+	
 cpp_sources = \
   UDPSocket.cpp\
   MessageBase.cpp\

@@ -25,6 +25,7 @@
 #define _SHAREDCONFIG_H
 
 #include <string>
+#include <vector>
 using namespace std;
 
 class CSharedConfig
@@ -43,17 +44,22 @@ class CSharedConfig
     void        SetHTTPServerURL(std::string);
     std::string GetHTTPServerURL();
 	
-    std::string GetBaseDir();
+    std::string GetSharedDir(int);
+    int         SharedDirCount();
   
 	protected:
 		CSharedConfig();
 	
 	private:
 		static CSharedConfig* m_Instance;
-	
+    bool   ReadConfigFile();
+    bool   ResolveHostAndIP();
+    bool   FileExists(std::string p_sFileName);
+  
 	  std::string m_sHostname;
 	  std::string m_sIP;
     std::string m_sHTTPServerURL;
+    std::vector<std::string> m_vSharedDirectories;
 };
 
 #endif /* _SHAREDCONFIG_H */
