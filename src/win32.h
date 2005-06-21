@@ -45,6 +45,7 @@
 // Threads
 #define upnpThread              HANDLE
 #define upnpThreadStart(_handle_, _callback_) _handle_ = CreateThread(NULL, 0, &_callback_, this, 0, NULL)
+#define upnpThreadStartArg(_handle_, _callback_, __arg__) _handle_ = CreateThread(NULL, 0, &_callback_, &__arg_, 0, NULL)
 #define upnpThreadCallback      DWORD WINAPI
 //#define upnpThreadExitCallback  return 0
 
@@ -64,6 +65,7 @@
 // Threads
 #define upnpThread              pthread_t
 #define upnpThreadStart(_handle_, _callback_) pthread_create(&_handle_, NULL, &_callback_, this);
+#define upnpThreadStartArg(_handle_, _callback_, __arg__) pthread_create(&_handle_, NULL, &_callback_, &__arg__);
 #define upnpThreadCallback      void*
 //#define upnpThreadExitCallback  return
 

@@ -29,7 +29,8 @@
 
 using namespace std;
 
-upnpThreadCallback accept_loop(void *arg);
+upnpThreadCallback AcceptLoop(void *arg);
+upnpThreadCallback SessionLoop(void *arg);
 
 CHTTPServer::CHTTPServer()
 {
@@ -67,61 +68,71 @@ void CHTTPServer::Start()
 	do_break = false;			
 	listen(sock, 3);
 	
-	upnpThreadStart(accept_thread, accept_loop);
+	upnpThreadStart(accept_thread, AcceptLoop);
 }
 
-upnpThreadCallback accept_loop(void *arg)
+upnpThreadCallback AcceptLoop(void *arg)
 {
 	CHTTPServer* pHTTPServer = (CHTTPServer*)arg;
 	cout << "[HTTPServer] listening on " << pHTTPServer->GetURL() << endl;	
 	
-	upnpSocket sock       = pHTTPServer->GetSocket();			
-	upnpSocket connection = 0;	
+	upnpSocket nSocket     = pHTTPServer->GetSocket();			
+	upnpSocket nConnection = 0;	
 	
 	struct sockaddr_in remote_ep;
 	socklen_t size = sizeof(remote_ep);
 	
 	for(;;)
 	{
-		connection = accept(sock, (struct sockaddr*)&remote_ep, &size);
-		if(connection != -1)
+		nConnection = accept(nSocket, (struct sockaddr*)&remote_ep, &size);
+		if(nConnection != -1)
 		{	
 			cout << "[HTTPServer] new connection from " <<  inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port) << endl;
 			
-			int  nBytesReceived = 0;
-			char szBuffer[4096];
-						
-			size = sizeof(remote_ep);
-			nBytesReceived = recv(connection, szBuffer, 4096, 0); // MSG_DONTWAIT
-			if(nBytesReceived != -1)			
-			{
-				cout << "[HTTPServer] bytes received: " << nBytesReceived << endl;
-				szBuffer[nBytesReceived] = '\0';
-				//cout << szBuffer << endl;
-				
-				CHTTPMessage* pResponse = pHTTPServer->CallOnReceive(szBuffer);
-				if(pResponse != NULL)				
-				{
-					cout << "[HTTPServer] sending response" << endl;
-			    //cout << pResponse->GetMessageAsString() << endl;
-					
-          if(pResponse->m_nBinContentLength > 0)
-          {
-            send(connection, pResponse->GetHeaderAsString().c_str(), strlen(pResponse->GetMessageAsString().c_str()), 0);            
-            send(connection, pResponse->m_szBinContent, pResponse->m_nBinContentLength, 0);                        
-          }
-          else            
-            send(connection, pResponse->GetMessageAsString().c_str(), strlen(pResponse->GetMessageAsString().c_str()), 0);
-					cout << "[HTTPServer] done" << endl;
-				}
-				
-				delete pResponse;
-			}			
-			upnpSocketClose(connection);
+      // start session thread
+      CHTTPSessionInfo pSession(pHTTPServer, nConnection);      
+      upnpThread Session = (upnpThread)NULL;
+      upnpThreadStartArg(Session, SessionLoop, pSession);
 		}
 	}	
 	
 	return 0;
+}
+
+upnpThreadCallback SessionLoop(void *arg)
+{
+  CHTTPSessionInfo pSession = *(CHTTPSessionInfo*)arg;  
+  int  nBytesReceived = 0;
+  char szBuffer[4096];
+  
+  nBytesReceived = recv(pSession.GetConnection(), szBuffer, 4096, 0); // MSG_DONTWAIT  
+  if(nBytesReceived != -1)			
+  {
+    cout << "[HTTPServer] bytes received: " << nBytesReceived << endl;
+    szBuffer[nBytesReceived] = '\0';
+    //cout << szBuffer << endl;
+    
+    CHTTPMessage* pResponse = pSession.GetHTTPServer()->CallOnReceive(szBuffer);
+    if(pResponse != NULL)				
+    {
+      cout << "[HTTPServer] sending response" << endl;
+      //cout << pResponse->GetMessageAsString() << endl;
+      
+      if(pResponse->m_nBinContentLength > 0)
+      {
+        send(pSession.GetConnection(), pResponse->GetHeaderAsString().c_str(), strlen(pResponse->GetMessageAsString().c_str()), 0);            
+        send(pSession.GetConnection(), pResponse->m_szBinContent, pResponse->m_nBinContentLength, 0);                        
+      }
+      else            
+        send(pSession.GetConnection(), pResponse->GetMessageAsString().c_str(), strlen(pResponse->GetMessageAsString().c_str()), 0);
+      
+      cout << "[HTTPServer] done" << endl;
+    }
+    
+    delete pResponse;
+  }
+  
+  return 0;
 }
 
 void CHTTPServer::SetReceiveHandler(IHTTPServer* pHandler)

@@ -37,10 +37,32 @@
 #include <string>
 #include "HTTPMessage.h"
 
+#include <iostream>
+using namespace std;
+
 class IHTTPServer
 {
   public:
 	  virtual CHTTPMessage* OnHTTPServerReceiveMsg(CHTTPMessage*) = 0;
+};
+
+class CHTTPServer;
+
+class CHTTPSessionInfo
+{
+  public:
+    CHTTPSessionInfo(CHTTPServer* pHTTPServer, upnpSocket p_Connection)
+    {
+      m_pHTTPServer = pHTTPServer;
+      m_Connection  = p_Connection;
+    }
+    
+    upnpSocket GetConnection() { return m_Connection; }
+    CHTTPServer* GetHTTPServer() { return m_pHTTPServer; }
+  
+  private:
+    CHTTPServer* m_pHTTPServer;
+    upnpSocket   m_Connection;
 };
 
 class CHTTPServer
