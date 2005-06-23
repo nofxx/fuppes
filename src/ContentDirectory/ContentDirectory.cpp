@@ -28,6 +28,7 @@
 #include "../win32.h"
 #include "../SharedConfig.h"
 #include "../Common.h"
+#include "../RegEx.h"
  
 #include <iostream>
 #include <sstream>
@@ -160,9 +161,16 @@ void CContentDirectory::BuildObjectList()
       pTmpFolder->SetObjectID(szObjId);    
       
       pTmpFolder->SetParent(m_pBaseFolder);
-      pTmpFolder->SetName(CSharedConfig::Shared()->GetSharedDir(i));
       pTmpFolder->SetFileName(CSharedConfig::Shared()->GetSharedDir(i));
-              
+
+      stringstream sPattern;
+      sPattern << upnpPathDelim << "([\\w|\\n| ]+)$";      
+      RegEx rxDirName(sPattern.str().c_str(), PCRE_CASELESS);
+      if(rxDirName.Search(CSharedConfig::Shared()->GetSharedDir(i).c_str()))
+        pTmpFolder->SetName(rxDirName.Match(1));
+      else
+        pTmpFolder->SetName(CSharedConfig::Shared()->GetSharedDir(i));
+      
       // add folder to list and parent folder
       m_ObjectList[szObjId] = pTmpFolder;
       m_pBaseFolder->AddUPnPObject(pTmpFolder);
