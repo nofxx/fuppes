@@ -166,7 +166,7 @@ void CContentDirectory::BuildObjectList()
       pTmpFolder->SetFileName(CSharedConfig::Shared()->GetSharedDir(i));
 
       stringstream sPattern;
-      sPattern << upnpPathDelim << "([\\w|\\n| ]+)$";      
+      sPattern << upnpPathDelim << "\\([\\w|\\n| ]+)$";      
       RegEx rxDirName(sPattern.str().c_str(), PCRE_CASELESS);
       if(rxDirName.Search(CSharedConfig::Shared()->GetSharedDir(i).c_str()))
         pTmpFolder->SetName(rxDirName.Match(1));
