@@ -25,6 +25,7 @@
 
 #include "NotifyMsgFactory.h"
 #include "SharedConfig.h"
+#include "Common.h"
 
 #include <iostream>
 #include <fstream>
@@ -52,14 +53,14 @@ CFuppes::CFuppes()
 	m_pMediaServer->AddUPnPService((CUPnPService*)m_pContentDirectory);	  
   cout << "[FUPPES] done" << endl; 
   
-  cout << "[FUPPES] multicasting alive message" << endl;
+  cout << "[FUPPES] multicasting alive messages" << endl;
   m_pSSDPCtrl->send_alive();  
   cout << "[FUPPES] done" << endl; 
 }
 
 CFuppes::~CFuppes()
 {
-  cout << "[FUPPES] multicasting byebye message" << endl;
+  cout << "[FUPPES] multicasting byebye messages" << endl;
   m_pSSDPCtrl->send_byebye();
   cout << "[FUPPES] done" << endl; 
  
@@ -121,26 +122,13 @@ CHTTPMessage* CFuppes::HandleHTTPGet(CHTTPMessage* pHTTPMessage)
   {
     string sItemObjId = pHTTPMessage->GetRequest().substr(24, pHTTPMessage->GetRequest().length());
     string sFileName  = m_pContentDirectory->GetFileNameFromObjectID(sItemObjId);
-    cout << "[FUPPES] sending audio file " << sFileName << endl; 
-
-    fstream fFile;    
-    fFile.open(sFileName.c_str(), ios::binary|ios::in);
-    if(fFile.fail() != 1)
-    {      
-      pResult = new CHTTPMessage(http_200_ok, audio_mpeg);
-      
-      fFile.seekg(0, ios::end); 
-      unsigned long nFileSize = streamoff(fFile.tellg()); 
-      fFile.seekg(0, ios::beg);
-      
-      pResult->m_szBinContent = new char[nFileSize + 1];     
-      fFile.read(pResult->m_szBinContent, nFileSize); 
-      pResult->m_szBinContent[nFileSize] = '\0';      
-      pResult->m_nBinContentLength = nFileSize;      
-      
-      fFile.close();
-    }
     
+    if(FileExists(sFileName))
+    {
+      pResult = new CHTTPMessage(http_200_ok, audio_mpeg);
+      pResult->LoadContentFromFile(sFileName);
+    }    
+    cout << "[FUPPES] sending audio file " << sFileName << endl;    
   }
   delete pHTTPMessage;  
 	return pResult;

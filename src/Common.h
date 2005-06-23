@@ -2,7 +2,7 @@
  *            Common.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel & Thomas Schnitzler
+ *  Copyright (C) 2005 Ulrich VÃ¶lkel & Thomas Schnitzler
  ****************************************************************************/
 
 /*
@@ -21,9 +21,26 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <string>
+
 /*===============================================================================
  MACROS
 ===============================================================================*/
 
 #define SAFE_DELETE(_x_) if(_x_){delete(_x_); _x_ = NULL;}
 
+/*===============================================================================
+ File Functions
+===============================================================================*/
+
+bool FileExists(std::string p_sFileName);
+bool IsFile(std::string p_sFileName);
+bool DirectoryExists(std::string p_sDirName);
+bool IsDirectory(std::string p_sDirName);
+std::string ExtractFileExt(std::string p_sFileName);
+
+/*===============================================================================
+ String Functions
+===============================================================================*/
+
+std::string ToLower(std::string p_sInput);

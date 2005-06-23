@@ -26,6 +26,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <fstream>
 
 #include "RegEx.h"
 #include "UPnPActionFactory.h"
@@ -112,6 +113,20 @@ void	CHTTPMessage::SetContent(std::string p_sContent)
 
 bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
 {
+  fstream fFile;    
+  fFile.open(p_sFileName.c_str(), ios::binary|ios::in);
+  if(fFile.fail() != 1)
+  { 
+    fFile.seekg(0, ios::end); 
+    m_nBinContentLength = streamoff(fFile.tellg()); 
+    fFile.seekg(0, ios::beg);
+    
+    m_szBinContent = new char[m_nBinContentLength + 1];     
+    fFile.read(m_szBinContent, m_nBinContentLength); 
+    m_szBinContent[m_nBinContentLength] = '\0';    
+    
+    fFile.close();
+  }  
 	return true;
 }
 

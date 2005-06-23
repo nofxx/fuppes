@@ -110,7 +110,9 @@ module.source.files=\
 	ContentDirectory/StorageFolder.h\
 	ContentDirectory/UPnPItem.h\
 	ContentDirectory/UPnPObject.h\
-	ContentDirectory/StorageFolder.cpp
+	ContentDirectory/StorageFolder.cpp\
+	Common.cpp\
+	Common.h
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

@@ -11,6 +11,7 @@ INCLUDES = ${LIBXML_CFLAGS}\
 bin_PROGRAMS = fuppes
 
 h_sources = \
+  Common.h\
   UDPSocket.h\
   MessageBase.h\
   SSDPCtrl.h\
@@ -37,6 +38,7 @@ h_sources = \
 	RegEx.h
 	
 cpp_sources = \
+  Common.cpp\
   UDPSocket.cpp\
   MessageBase.cpp\
 	SSDPCtrl.cpp\

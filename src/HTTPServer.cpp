@@ -118,14 +118,16 @@ upnpThreadCallback SessionLoop(void *arg)
       cout << "[HTTPServer] sending response" << endl;
       //cout << pResponse->GetMessageAsString() << endl;
       
-      if(pResponse->m_nBinContentLength > 0)
+      if(pResponse->GetBinContentLength() > 0)
       {
         send(pSession.GetConnection(), pResponse->GetHeaderAsString().c_str(), strlen(pResponse->GetMessageAsString().c_str()), 0);            
-        send(pSession.GetConnection(), pResponse->m_szBinContent, pResponse->m_nBinContentLength, 0);                        
+        send(pSession.GetConnection(), pResponse->GetBinContent(), pResponse->GetBinContentLength(), 0);                        
       }
       else            
         send(pSession.GetConnection(), pResponse->GetMessageAsString().c_str(), strlen(pResponse->GetMessageAsString().c_str()), 0);
       
+      
+      upnpSocketClose(pSession.GetConnection());
       cout << "[HTTPServer] done" << endl;
     }
     
@@ -145,8 +147,9 @@ CHTTPMessage* CHTTPServer::CallOnReceive(std::string p_sMessage)
 	if(m_pReceiveHandler != NULL)
 	{
 		// parse message
-		CHTTPMessage* pMsg = new CHTTPMessage(p_sMessage);		
+		CHTTPMessage* pMsg = new CHTTPMessage(p_sMessage);
 		return m_pReceiveHandler->OnHTTPServerReceiveMsg(pMsg);
+    delete pMsg;
 	}
 	else
 	{

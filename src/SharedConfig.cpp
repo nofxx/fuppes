@@ -65,7 +65,7 @@ CSharedConfig::CSharedConfig()
 
 string CSharedConfig::GetAppName()
 {
-	return "fuppes";
+	return "FUPPES";
 }
 
 string CSharedConfig::GetAppFullname()
@@ -75,7 +75,7 @@ string CSharedConfig::GetAppFullname()
 
 string CSharedConfig::GetAppVersion()
 {
-	return "0.0.6";
+	return "0.1";
 }
 
 string CSharedConfig::GetHostname()
@@ -134,12 +134,12 @@ bool CSharedConfig::ReadConfigFile()
     
     for(pTmpNode = pRootNode; pTmpNode; pTmpNode = pTmpNode->next)
     {
-      if(pTmpNode->type == XML_ELEMENT_NODE)
-        cout << pTmpNode->name << endl;
+      /*if(pTmpNode->type == XML_ELEMENT_NODE)
+        cout << pTmpNode->name << endl;*/
       
       xmlNode* pDirsNode = NULL;
       pDirsNode = pTmpNode->children->next;
-      cout << pDirsNode->name << endl;
+      //cout << pDirsNode->name << endl;
       
       xmlNode* pDirNode = NULL;
       pDirNode = pDirsNode->children;

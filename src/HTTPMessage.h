@@ -63,13 +63,15 @@ class CHTTPMessage: public CMessageBase
 		
 		void						SetContent(std::string);
 	
-		bool LoadContentFromFile(std::string);	
+		bool             LoadContentFromFile(std::string);	
 		std::string 		 GetHeaderAsString();		  
 	  std::string			 GetMessageAsString();
     CUPnPAction*     GetAction();
   
-    char*            m_szBinContent;
-    unsigned int     m_nBinContentLength;
+    bool             IsChunked() { return m_bIsChunked; }
+  
+    unsigned int     GetBinContentLength() { return m_nBinContentLength; }
+    char*            GetBinContent() { return m_szBinContent; }
   
 	private:
     void             ParsePOSTMessage(std::string);
@@ -79,7 +81,10 @@ class CHTTPMessage: public CMessageBase
 		eHTTPMessageType m_HTTPMessageType;
 		std::string	     m_sRequest;
 		eHTTPContentType m_HTTPContentType;
-    int              m_nContentLength;
+    int              m_nContentLength;  
+    char*            m_szBinContent;
+    unsigned int     m_nBinContentLength;  
+    bool             m_bIsChunked;
 };
 
 #endif /* _HTTPMESSAGE_H */

@@ -33,8 +33,10 @@ CMediaServer::CMediaServer(): CUPnPDevice(udtMediaServer)
 {
 	stringstream stream;
 	
-	stream << "Free UPnP Entertainment Service (" << CSharedConfig::Shared()->GetHostname() << ")";	
-  //stream << "FUPPES (" << CSharedConfig::Shared()->GetHostname() << ")";	
+	//stream << "Free UPnP Entertainment Service (" << CSharedConfig::Shared()->GetHostname() << ")";	
+  stream << CSharedConfig::Shared()->GetAppName() << " ";
+  stream << CSharedConfig::Shared()->GetAppVersion() << " (";
+  stream << CSharedConfig::Shared()->GetHostname() << ")";  
 	m_sFriendlyName = stream.str();
 	stream.str("");
 	stream.clear();

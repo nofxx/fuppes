@@ -27,6 +27,7 @@
 #include "../UPnPActions/UPnPBrowse.h"
 #include "../win32.h"
 #include "../SharedConfig.h"
+#include "../Common.h"
  
 #include <iostream>
 #include <sstream>
@@ -34,6 +35,7 @@
 #include <cstdio>
 #include <dirent.h>
 #include <sys/types.h>
+#include <sys/stat.h> 
 using namespace std;
  
 CContentDirectory::CContentDirectory(): CUPnPService(udtContentDirectory)
@@ -145,40 +147,38 @@ std::string CContentDirectory::HandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
 
 void CContentDirectory::BuildObjectList()
 {
-  int nCount = 1;
+  int  nCount = 1;
+  
   for (int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
   {
-    CStorageFolder* pTmpFolder = new CStorageFolder();            
+    if(DirectoryExists(CSharedConfig::Shared()->GetSharedDir(i)))
+    {  
+      CStorageFolder* pTmpFolder = new CStorageFolder();            
     
-    char szObjId[10];                            
-    sprintf(szObjId, "%010X", nCount);          
-    pTmpFolder->SetObjectID(szObjId);    
-    
-    pTmpFolder->SetParent(m_pBaseFolder);
-    pTmpFolder->SetName(CSharedConfig::Shared()->GetSharedDir(i));
-    pTmpFolder->SetFileName(CSharedConfig::Shared()->GetSharedDir(i));
-            
-    // add folder to list and parent folder
-    m_ObjectList[szObjId] = pTmpFolder;
-    m_pBaseFolder->AddUPnPObject(pTmpFolder);
-            
-    // increment counter
-    nCount++;
-    
-    ScanDirectory(CSharedConfig::Shared()->GetSharedDir(i), &nCount, pTmpFolder);
+      char szObjId[10];                            
+      sprintf(szObjId, "%010X", nCount);          
+      pTmpFolder->SetObjectID(szObjId);    
+      
+      pTmpFolder->SetParent(m_pBaseFolder);
+      pTmpFolder->SetName(CSharedConfig::Shared()->GetSharedDir(i));
+      pTmpFolder->SetFileName(CSharedConfig::Shared()->GetSharedDir(i));
+              
+      // add folder to list and parent folder
+      m_ObjectList[szObjId] = pTmpFolder;
+      m_pBaseFolder->AddUPnPObject(pTmpFolder);
+              
+      // increment counter
+      nCount++;
+      
+      ScanDirectory(CSharedConfig::Shared()->GetSharedDir(i), &nCount, pTmpFolder);
+     
+    }
   }
 }
 
 void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, CStorageFolder* pParentFolder)
-{
-  /*
-   * ACHTUNG: Der Kram hier ist uebelst hingeschmiert :)
-   * Da ich noch keine Ahnung habe, wie man unter C++ sauber einen
-   * Verzeichnisbaum erstellt, erstmal diese Variante.
-   */
-  
+{ 
   DIR*    pDir;
-  DIR*    pTmp;
   dirent* pDirEnt;
   stringstream sTmp;
     
@@ -200,8 +200,9 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
         
         stringstream sObjId;
         
-        string sExt = sTmp.str().substr(sTmp.str().length() - 3);
-        if(sExt.compare("mp3") == 0)
+        string sExt = ExtractFileExt(sTmp.str());
+        // mp3 file
+        if(IsFile(sTmp.str()) && (ToLower(sExt).compare("mp3") == 0))
         {
           CAudioItem* pTmpItem = new CAudioItem();
           char szObjId[10];                            
@@ -221,35 +222,31 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
           nTmp++;
           *p_nCount = nTmp;         
         }
-        else
-        {
-          if((pTmp = opendir(sTmp.str().c_str())) != NULL)
-          {
-            closedir(pTmp);
-            
-            // create folder object
-            CStorageFolder* pTmpFolder = new CStorageFolder();
-            
-            char szObjId[10];                            
-            sprintf(szObjId, "%010X", *p_nCount);            
-            
-            pTmpFolder->SetObjectID(szObjId);            
-            pTmpFolder->SetParent(pParentFolder);
-            pTmpFolder->SetName(pDirEnt->d_name);
-            pTmpFolder->SetFileName(sTmp.str());
-            
-            // add folder to list and parent folder
-            m_ObjectList[szObjId] = pTmpFolder;
-            pParentFolder->AddUPnPObject(pTmpFolder);
-            
-            // increment counter
-            int nTmp = *p_nCount;
-            nTmp++;
-            *p_nCount = nTmp;
-            
-            // scan subdirectories
-            ScanDirectory(sTmp.str(), p_nCount, pTmpFolder); 
-          }
+        // folder
+        else if(IsDirectory(sTmp.str()))
+        {            
+          // create folder object
+          CStorageFolder* pTmpFolder = new CStorageFolder();
+          
+          char szObjId[10];                            
+          sprintf(szObjId, "%010X", *p_nCount);            
+          
+          pTmpFolder->SetObjectID(szObjId);            
+          pTmpFolder->SetParent(pParentFolder);
+          pTmpFolder->SetName(pDirEnt->d_name);
+          pTmpFolder->SetFileName(sTmp.str());
+          
+          // add folder to list and parent folder
+          m_ObjectList[szObjId] = pTmpFolder;
+          pParentFolder->AddUPnPObject(pTmpFolder);
+          
+          // increment counter
+          int nTmp = *p_nCount;
+          nTmp++;
+          *p_nCount = nTmp;
+          
+          // scan subdirectories
+          ScanDirectory(sTmp.str(), p_nCount, pTmpFolder);          
         }
         sTmp.str("");
       }
