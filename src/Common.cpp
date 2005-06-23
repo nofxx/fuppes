@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *            Common.cpp
  * 
  *  FUPPES - Free UPnP Entertainment Service
@@ -25,7 +25,11 @@
 #include "RegEx.h"
 
 #include <cstdio>
+#ifdef WIN32
+#include <sys/stat.h>
+#else
 #include <dirent.h>
+#endif
 #include <sys/types.h>
 #include <fstream>
 #include <iostream>
@@ -48,7 +52,24 @@ bool IsFile(std::string p_sFileName)
 {
   return FileExists(p_sFileName);
 }
+#ifdef WIN32
+bool DirectoryExists(std::string p_sDirName)
+{
+  // Convert string
+  const char* pszDirName = p_sDirName.c_str();
+  
+  // Get file information
+  struct _stat info;
+  memset(&info, 0, sizeof(info));
 
+  // Check directory exists
+  _stat(pszDirName, &info);
+  if(0 == (info.st_mode & _S_IFDIR))
+    return false;
+
+  return true;
+}
+#else
 bool DirectoryExists(std::string p_sDirName)
 {
   DIR* pDir;
@@ -62,6 +83,7 @@ bool DirectoryExists(std::string p_sDirName)
     return false;
   }  
 }
+#endif
 
 bool IsDirectory(std::string p_sDirName)
 {
