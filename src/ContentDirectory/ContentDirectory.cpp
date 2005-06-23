@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *            ContentDirectory.cpp
  * 
  *  FUPPES - Free UPnP Entertainment Service
@@ -34,7 +34,9 @@
 #include <sstream>
 #include <libxml/xmlwriter.h>
 #include <cstdio>
+#ifndef WIN32
 #include <dirent.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h> 
 using namespace std;
@@ -156,7 +158,7 @@ void CContentDirectory::BuildObjectList()
     {  
       CStorageFolder* pTmpFolder = new CStorageFolder();            
     
-      char szObjId[10];                            
+      char szObjId[11];                            
       sprintf(szObjId, "%010X", nCount);          
       pTmpFolder->SetObjectID(szObjId);    
       
@@ -186,6 +188,91 @@ void CContentDirectory::BuildObjectList()
 
 void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, CStorageFolder* pParentFolder)
 { 
+#ifdef WIN32
+  
+  // Add slash, if neccessary
+  char szTemp[MAX_PATH];
+  if(p_sDirectory.substr(p_sDirectory.length()-1).compare(upnpPathDelim) != 0)
+  {
+    strcpy(szTemp, p_sDirectory.c_str());
+    strcat(szTemp, upnpPathDelim);
+  }
+  
+  // Add search criteria
+  strcat(szTemp, "*");
+  
+  // Find first file
+  WIN32_FIND_DATA data;
+  HANDLE hFile = FindFirstFile(szTemp, &data);
+  if(NULL == hFile)
+    return;
+
+  // Loop trough all subdirectories and files
+  while(TRUE == FindNextFile(hFile, &data))
+  {
+    if(((string(".").compare(data.cFileName) != 0) && 
+      (string("..").compare(data.cFileName) != 0)))
+    {        
+      
+      // Save current filename
+      strcpy(szTemp, p_sDirectory.c_str());
+      strcat(szTemp, upnpPathDelim);
+      strcat(szTemp, data.cFileName);
+
+      string sExt = ExtractFileExt(szTemp);
+      // mp3 file
+      if(IsFile(szTemp) && (ToLower(sExt).compare("mp3") == 0))
+      {
+        CAudioItem* pTmpItem = new CAudioItem();
+        char szObjId[11];                            
+        sprintf(szObjId, "%010X", *p_nCount);
+
+        pTmpItem->SetObjectID(szObjId);            
+        pTmpItem->SetParent(pParentFolder);
+        pTmpItem->SetName(data.cFileName);
+        pTmpItem->SetFileName(szTemp);
+
+        // add folder to list and parent folder
+        m_ObjectList[szObjId] = pTmpItem;
+        pParentFolder->AddUPnPObject(pTmpItem);
+
+        // increment counter
+        int nTmp = *p_nCount;
+        nTmp++;
+        *p_nCount = nTmp;         
+      }
+      // folder
+      else if(IsDirectory(szTemp))
+      {            
+        // create folder object
+        CStorageFolder* pTmpFolder = new CStorageFolder();
+
+        char szObjId[11];                            
+        sprintf(szObjId, "%010X", *p_nCount);            
+
+        pTmpFolder->SetObjectID(szObjId);            
+        pTmpFolder->SetParent(pParentFolder);
+        pTmpFolder->SetName(data.cFileName);
+        pTmpFolder->SetFileName(szTemp);
+
+        // add folder to list and parent folder
+        m_ObjectList[szObjId] = pTmpFolder;
+        pParentFolder->AddUPnPObject(pTmpFolder);
+
+        // increment counter
+        int nTmp = *p_nCount;
+        nTmp++;
+        *p_nCount = nTmp;
+
+        // scan subdirectories
+        ScanDirectory(szTemp, p_nCount, pTmpFolder);          
+      }
+    }
+  }    
+  
+
+#else
+
   DIR*    pDir;
   dirent* pDirEnt;
   stringstream sTmp;
@@ -261,4 +348,5 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
     }    
     closedir(pDir);
   }
+#endif
 }
