@@ -17,7 +17,7 @@ Global
 		{20B37D0A-1339-400D-AC28-1B8DBED6D6E8}.Debug.Build.0 = Debug|Win32
 		{20B37D0A-1339-400D-AC28-1B8DBED6D6E8}.Release.ActiveCfg = Release|Win32
 		{20B37D0A-1339-400D-AC28-1B8DBED6D6E8}.Release.Build.0 = Release|Win32
-		{22884C84-AED3-438B-B4BA-22387C3B4BD3}.Debug.ActiveCfg = Debug
+		{22884C84-AED3-438B-B4BA-22387C3B4BD3}.Debug.ActiveCfg = Release
 		{22884C84-AED3-438B-B4BA-22387C3B4BD3}.Release.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
