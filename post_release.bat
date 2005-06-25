@@ -1,0 +1,1 @@
+xcopy .\Release\fuppes.exe .\setup\ /Y
