@@ -32,7 +32,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libpcre.lib iconv.lib libxml2.lib"
+				AdditionalDependencies="libpcre.lib libxml2.lib"
 				OutputFile="$(OutDir)/Fuppes.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=".\lib"
@@ -85,7 +85,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libpcre.lib iconv.lib libxml2.lib"
+				AdditionalDependencies="libpcre.lib libxml2.lib"
 				OutputFile="$(OutDir)/Fuppes.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=".\lib"
@@ -309,9 +309,6 @@
 			<File
 				RelativePath=".\include\pcre.h">
 			</File>
-			<File
-				RelativePath=".\include\pcreposix.h">
-			</File>
 			<Filter
 				Name="libxml"
 				Filter="">
@@ -440,9 +437,6 @@
 				</File>
 				<File
 					RelativePath=".\include\libxml\xmlversion.h">
-				</File>
-				<File
-					RelativePath=".\include\libxml\xmlwin32version.h">
 				</File>
 				<File
 					RelativePath=".\include\libxml\xmlwriter.h">
