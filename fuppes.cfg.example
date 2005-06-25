@@ -5,6 +5,5 @@
     <dir>/mnt/nfs/data/Musik/Alben/Marillion</dir>
     <dir>/mnt/nfs/data/Musik/Alben/The Flower Kings</dir>
     <dir>/mnt/nfs/data/Musik/Alben/Transatlantic</dir>
-    <dir>/mnt/nfs/data/Musik/Alben/Funkadelic</dir>
   </shared_directories>
 </fuppes_config>

@@ -10,5 +10,6 @@ EXTRA_DIST = \
 	AUTHORS\
 	ChangeLog\
 	INSTALL
-#	NEWS\
-#	TODO
+	NEWS\
+	TODO\
+	fuppes.cfg.example

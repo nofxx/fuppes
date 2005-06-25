@@ -117,7 +117,7 @@ int CSharedConfig::SharedDirCount()
 bool CSharedConfig::ReadConfigFile()
 {
   xmlDocPtr pDoc;  
-  string    sFileName = "fuppes.conf";
+  string    sFileName = "fuppes.cfg";
   bool      bResult   = false;
   
   if(FileExists(sFileName))
