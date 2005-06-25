@@ -1,7 +1,7 @@
 [Project]
 FileName=fuppes.dev
 Name=fuppes
-UnitCount=43
+UnitCount=45
 Type=1
 Ver=1
 ObjFiles=
@@ -12,7 +12,7 @@ ResourceIncludes=
 MakeIncludes=
 Compiler=
 CppCompiler=
-Linker=../../../Programme/Dev-Cpp/lib/libpcre.dll.a_@@_../../../Programme/Dev-Cpp/lib/zdll.lib_@@_../../../Programme/Dev-Cpp/lib/iconv.lib_@@_../../../Programme/Dev-Cpp/lib/libwsock32.a_@@_../../../cygwin/lib/libxml2.dll.a_@@_
+Linker=../../../Dev-Cpp/lib/libxml2.a_@@_../../../Dev-Cpp/lib/libpcre.dll.a_@@_../../../Dev-Cpp/lib/libwsock32.a_@@_../../../Dev-Cpp/lib/iconv.lib_@@_
 IsCpp=1
 Icon=
 ExeOutput=win32
@@ -27,7 +27,7 @@ CustomMakefile=
 IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=0
-CompilerSettings=00000000000010000000c0
+CompilerSettings=00000000011000000000c0
 
 [Unit1]
 FileName=src\main.cpp
@@ -121,9 +121,9 @@ BuildCmd=
 
 [VersionInfo]
 Major=0
-Minor=0
-Release=7
-Build=44
+Minor=1
+Release=0
+Build=2
 LanguageID=1033
 CharsetID=1252
 CompanyName=
@@ -469,6 +469,26 @@ BuildCmd=
 
 [Unit43]
 FileName=src\ContentDirectory\AudioItem.h
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit44]
+FileName=src\Common.h
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit45]
+FileName=src\Common.cpp
 CompileCpp=1
 Folder=fuppes
 Compile=1
