@@ -5,11 +5,11 @@ SUBDIRS = \
   src
 
 EXTRA_DIST = \
+  fuppes.cfg.example\
   README\
   COPYING\
 	AUTHORS\
 	ChangeLog\
 	INSTALL
 	NEWS\
-	TODO\
-	fuppes.cfg.example
+	TODO
