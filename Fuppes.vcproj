@@ -97,7 +97,8 @@
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="post_release.bat"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -275,11 +276,6 @@
 					RelativePath=".\src\ContentDirectory\UPnPObject.h">
 				</File>
 			</Filter>
-		</Filter>
-		<Filter
-			Name="Resource files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
 		</Filter>
 		<Filter
 			Name="lib"
@@ -474,6 +470,62 @@
 				RelativePath=".\Release\zlib1.dll">
 			</File>
 		</Filter>
+		<Filter
+			Name="Setup"
+			Filter="">
+			<File
+				RelativePath=".\setup\fuppes.exe">
+			</File>
+			<File
+				RelativePath=".\setup\fuppes.ico">
+			</File>
+			<File
+				RelativePath=".\setup\iconv.dll">
+			</File>
+			<File
+				RelativePath=".\setup\libxml2.dll">
+			</File>
+			<File
+				RelativePath=".\setup\pcre.dll">
+			</File>
+			<File
+				RelativePath=".\setup\wsock32.dll">
+			</File>
+			<Filter
+				Name="Release"
+				Filter="">
+				<File
+					RelativePath=".\setup\Release\Setup.msi">
+				</File>
+			</Filter>
+		</Filter>
+		<File
+			RelativePath=".\Authors">
+		</File>
+		<File
+			RelativePath=".\ChangeLog">
+		</File>
+		<File
+			RelativePath=".\configure.in">
+		</File>
+		<File
+			RelativePath=".\Copying">
+		</File>
+		<File
+			RelativePath=".\fuppes.cfg.example">
+		</File>
+		<File
+			RelativePath=".\News">
+		</File>
+		<File
+			RelativePath=".\post_release.bat">
+		</File>
+		<File
+			RelativePath=".\Readme">
+		</File>
+		<File
+			RelativePath=".\Todo">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
