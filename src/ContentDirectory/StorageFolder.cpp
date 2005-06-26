@@ -46,7 +46,7 @@ void CStorageFolder::AddUPnPObject(CUPnPObject* pUPnPObject)
 string CStorageFolder::GetChildCountAsString()
 {
   stringstream sTmp;
-  sTmp << m_vObjects.size();
+  sTmp << (int)m_vObjects.size();
   return sTmp.str();
 }
 
@@ -64,7 +64,7 @@ std::string CStorageFolder::GetContentAsString(CUPnPBrowse* pBrowseAction,
   
   CUPnPObject* pTmpObj = NULL;  
   
-  *p_nTotalMatches = m_vObjects.size();
+  *p_nTotalMatches = (int)m_vObjects.size();
   if((pBrowseAction->m_nStartingIndex + pBrowseAction->m_nRequestedCount) > m_vObjects.size())
     *p_nNumberReturned = pBrowseAction->m_nStartingIndex + (m_vObjects.size() - pBrowseAction->m_nStartingIndex);
   else

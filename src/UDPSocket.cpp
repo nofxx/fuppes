@@ -128,12 +128,12 @@ void CUDPSocket::send_multicast(std::string p_sMessage)
   remote_ep.sin_addr.s_addr = inet_addr(MULTICAST_IP);
   remote_ep.sin_port				= htons(MULTICAST_PORT);
 		
-	sendto(sock, p_sMessage.c_str(), strlen(p_sMessage.c_str()), 0, (struct sockaddr*)&remote_ep, sizeof(remote_ep));
+	sendto(sock, p_sMessage.c_str(), (int)strlen(p_sMessage.c_str()), 0, (struct sockaddr*)&remote_ep, sizeof(remote_ep));
 }
 
 void CUDPSocket::SendUnicast(std::string p_sMessage, sockaddr_in p_RemoteEndPoint)
 {
-  sendto(sock, p_sMessage.c_str(), strlen(p_sMessage.c_str()), 0, (struct sockaddr*)&p_RemoteEndPoint, sizeof(p_RemoteEndPoint));  
+  sendto(sock, p_sMessage.c_str(), (int)strlen(p_sMessage.c_str()), 0, (struct sockaddr*)&p_RemoteEndPoint, sizeof(p_RemoteEndPoint));  
 }
 
 int CUDPSocket::get_port()

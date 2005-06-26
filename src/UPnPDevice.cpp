@@ -44,7 +44,7 @@ void CUPnPDevice::AddUPnPService(CUPnPService* pUPnPService)
 
 int  CUPnPDevice::GetUPnPServiceCount()
 {
-	return m_vUPnPServices.size();
+	return (int)m_vUPnPServices.size();
 }
 
 CUPnPService* CUPnPDevice::GetUPnPService(int p_nIndex)

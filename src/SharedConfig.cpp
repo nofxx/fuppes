@@ -111,7 +111,7 @@ std::string CSharedConfig::GetSharedDir(int p_nIndex)
 
 int CSharedConfig::SharedDirCount()
 {
-  return m_vSharedDirectories.size();
+  return (int)m_vSharedDirectories.size();
 }
 
 bool CSharedConfig::ReadConfigFile()

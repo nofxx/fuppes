@@ -163,7 +163,7 @@ std::string CHTTPMessage::GetHeaderAsString()
 			break;
 	}
 	
-	sResult << "CONTENT-LENGTH: " << strlen(m_sContent.c_str()) << "\r\n";
+	sResult << "CONTENT-LENGTH: " << (int)strlen(m_sContent.c_str()) << "\r\n";
 	
 	switch(m_HTTPContentType)
 	{

@@ -120,11 +120,11 @@ upnpThreadCallback SessionLoop(void *arg)
       
       if(pResponse->GetBinContentLength() > 0)
       {
-        send(pSession.GetConnection(), pResponse->GetHeaderAsString().c_str(), strlen(pResponse->GetMessageAsString().c_str()), 0);            
+        send(pSession.GetConnection(), pResponse->GetHeaderAsString().c_str(), (int)strlen(pResponse->GetMessageAsString().c_str()), 0);            
         send(pSession.GetConnection(), pResponse->GetBinContent(), pResponse->GetBinContentLength(), 0);                        
       }
       else            
-        send(pSession.GetConnection(), pResponse->GetMessageAsString().c_str(), strlen(pResponse->GetMessageAsString().c_str()), 0);
+        send(pSession.GetConnection(), pResponse->GetMessageAsString().c_str(), (int)strlen(pResponse->GetMessageAsString().c_str()), 0);
       
       
       upnpSocketClose(pSession.GetConnection());
