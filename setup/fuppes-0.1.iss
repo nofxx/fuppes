@@ -28,11 +28,15 @@ Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:Ad
 Name: quicklaunchicon; Description: {cm:CreateQuickLaunchIcon}; GroupDescription: {cm:AdditionalIcons}; Flags: unchecked
 
 [Files]
-Source: E:\Entwicklung\fuppes\trunk\win32\fuppes.exe; DestDir: {app}; Flags: ignoreversion
-Source: E:\Entwicklung\fuppes\trunk\win32\iconv.dll; DestDir: {app}; Flags: ignoreversion
-Source: E:\Entwicklung\fuppes\trunk\win32\pcre.dll; DestDir: {app}; Flags: ignoreversion
-Source: E:\Entwicklung\fuppes\trunk\fuppes.cfg.example; DestDir: {app}; Flags: ignoreversion
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+Source: ..\win32\fuppes.exe; DestDir: {app}; Flags: ignoreversion
+Source: ..\win32\iconv.dll; DestDir: {app}; Flags: ignoreversion
+Source: ..\win32\pcre.dll; DestDir: {app}; Flags: ignoreversion
+Source: ..\fuppes.cfg.example; DestDir: {app}; Flags: ignoreversion
+Source: ..\AUTHORS; DestDir: {app}; Flags: ignoreversion
+Source: ..\ChangeLog; DestDir: {app}; Flags: ignoreversion
+Source: ..\COPYING; DestDir: {app}; Flags: ignoreversion
+Source: ..\NEWS; DestDir: {app}; Flags: ignoreversion
+Source: ..\README; DestDir: {app}; Flags: ignoreversion
 
 [Icons]
 Name: {group}\Free UPnP Entertainment Service; Filename: {app}\fuppes.exe
@@ -42,4 +46,3 @@ Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Free UPnP Entertain
 
 [Run]
 Filename: {app}\fuppes.exe; Description: {cm:LaunchProgram,Free UPnP Entertainment Service}; Flags: nowait postinstall skipifsilent
-
