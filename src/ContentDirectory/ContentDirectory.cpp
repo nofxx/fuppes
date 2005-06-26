@@ -170,7 +170,9 @@ void CContentDirectory::BuildObjectList()
       #else
       RegEx rxDirName("/([\\w|\\n| ]+)$", PCRE_CASELESS);
       #endif
-      if(rxDirName.Search(CSharedConfig::Shared()->GetSharedDir(i).c_str()))
+      std::string sSharedDir = CSharedConfig::Shared()->GetSharedDir(i);
+      const char* pszDir = sSharedDir.c_str();
+      if(rxDirName.Search(pszDir))
         pTmpFolder->SetName(rxDirName.Match(1));
       else
         pTmpFolder->SetName(CSharedConfig::Shared()->GetSharedDir(i));
