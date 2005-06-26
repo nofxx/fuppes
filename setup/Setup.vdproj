@@ -27,12 +27,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_3F530E1177444351B8B59539313713C8"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_469B9BB85D694916ACC9DE4CB4BFA160"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -51,13 +45,19 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_5A9455DD9BB14F2786C6222B9FE70D80"
+        "MsmKey" = "8:_59451423E19341229CD76995B37538F0"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_64513F46E1F2405A8A41590F4520E261"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_B2B828A2567E4F498259ED9E529E23E0"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -177,26 +177,6 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{A582A373-4685-4296-BEFE-614B80A702C3}:_3F530E1177444351B8B59539313713C8"
-            {
-            "SourcePath" = "8:libxml2.dll"
-            "TargetName" = "8:libxml2.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_A6EA0C07D3D743CEB1374C01FD5CB387"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{A582A373-4685-4296-BEFE-614B80A702C3}:_469B9BB85D694916ACC9DE4CB4BFA160"
             {
             "SourcePath" = "8:..\\COPYING"
@@ -241,26 +221,6 @@
             {
             "SourcePath" = "8:fuppes.ico"
             "TargetName" = "8:fuppes.ico"
-            "Tag" = "8:"
-            "Folder" = "8:_A6EA0C07D3D743CEB1374C01FD5CB387"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{A582A373-4685-4296-BEFE-614B80A702C3}:_5A9455DD9BB14F2786C6222B9FE70D80"
-            {
-            "SourcePath" = "8:iconv.dll"
-            "TargetName" = "8:iconv.dll"
             "Tag" = "8:"
             "Folder" = "8:_A6EA0C07D3D743CEB1374C01FD5CB387"
             "Condition" = "8:"
@@ -423,13 +383,13 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Free UPnP Entertainment Service"
-        "ProductCode" = "8:{344A7DE6-5147-4868-AABA-2F577FE650C4}"
-        "PackageCode" = "8:{D5EE2E6D-D2BA-4EA8-990A-17186E668F49}"
+        "ProductCode" = "8:{8C59520B-E1D7-468F-AC2B-C74B1AD6C711}"
+        "PackageCode" = "8:{7F9A5CE5-FF09-4925-B421-5742F1E09184}"
         "UpgradeCode" = "8:{0A430657-D626-4F62-9EAA-4A0EA8BC1CD7}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
-        "ProductVersion" = "8:1.0.0"
+        "ProductVersion" = "8:1.0.1"
         "Manufacturer" = "8:FUPPES Team"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -949,6 +909,34 @@
         }
         "MergeModule"
         {
+            "{35A69C6E-5BA4-440D-803D-762B59A45393}:_59451423E19341229CD76995B37538F0"
+            {
+            "UseDynamicProperties" = "11:TRUE"
+            "IsDependency" = "11:FALSE"
+            "SourcePath" = "8:c:\\programme\\gemeinsame dateien\\merge modules\\vc_user_stl71_rtl_x86_---.msm"
+                "Properties"
+                {
+                }
+            "LanguageId" = "3:0"
+            "Exclude" = "11:FALSE"
+            "Folder" = "8:"
+            "Feature" = "8:"
+            "IsolateTo" = "8:"
+            }
+            "{35A69C6E-5BA4-440D-803D-762B59A45393}:_B2B828A2567E4F498259ED9E529E23E0"
+            {
+            "UseDynamicProperties" = "11:TRUE"
+            "IsDependency" = "11:FALSE"
+            "SourcePath" = "8:c:\\programme\\gemeinsame dateien\\merge modules\\vc_user_crt71_rtl_x86_---.msm"
+                "Properties"
+                {
+                }
+            "LanguageId" = "3:0"
+            "Exclude" = "11:FALSE"
+            "Folder" = "8:"
+            "Feature" = "8:"
+            "IsolateTo" = "8:"
+            }
         }
         "ProjectOutput"
         {
