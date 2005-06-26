@@ -123,18 +123,18 @@ BuildCmd=
 Major=0
 Minor=1
 Release=0
-Build=2
+Build=10
 LanguageID=1033
 CharsetID=1252
 CompanyName=
 FileVersion=
 FileDescription=
-InternalName=
+InternalName=fuppes
 LegalCopyright=
 LegalTrademarks=
-OriginalFilename=
+OriginalFilename=fuppes.exe
 ProductName=Free UPnP Entertainment Service
-ProductVersion=
+ProductVersion=0.1
 AutoIncBuildNr=1
 
 [Unit10]
