@@ -23,7 +23,7 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="5"
+				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
@@ -32,11 +32,12 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libpcre.lib libxml2.lib"
+				AdditionalDependencies="libpcre.lib libxml2_a.lib iconv_a.lib zlib.lib"
 				OutputFile="$(OutDir)/Fuppes.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=".\lib"
 				IgnoreAllDefaultLibraries="FALSE"
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/Fuppes.pdb"
 				SubSystem="1"
@@ -74,7 +75,7 @@
 				AdditionalIncludeDirectories=".\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				MinimalRebuild="TRUE"
-				RuntimeLibrary="4"
+				RuntimeLibrary="2"
 				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="FALSE"
 				UsePrecompiledHeader="0"
@@ -85,7 +86,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libpcre.lib libxml2.lib"
+				AdditionalDependencies="libpcre.lib libxml2_a.lib iconv_a.lib zlib.lib"
 				OutputFile="$(OutDir)/Fuppes.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=".\lib"
