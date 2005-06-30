@@ -27,10 +27,11 @@
 #include "win32.h"
 
 #ifndef WIN32
-#include <pthread.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
+#include <pthread.h>
 #endif
 
 #include <string>

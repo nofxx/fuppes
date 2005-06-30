@@ -1,0 +1,1033 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 39;
+	objects = {
+		014CEA460018CE2711CA2923 = {
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 0.1;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				HEADER_SEARCH_PATHS = "/usr/local/ /usr/local/include/libxml2";
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				PRODUCT_NAME = fuppes;
+				ZERO_LINK = YES;
+			};
+			isa = PBXBuildStyle;
+			name = Development;
+		};
+		014CEA470018CE2711CA2923 = {
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				ZERO_LINK = NO;
+			};
+			isa = PBXBuildStyle;
+			name = Deployment;
+		};
+//010
+//011
+//012
+//013
+//014
+//020
+//021
+//022
+//023
+//024
+		0249A662FF388D9811CA2CEA = {
+			children = (
+				0249A663FF388D9811CA2CEA,
+				1BEB0F3C086DBADD000C4B2B,
+				1B870D2D0873DC5C0014DB19,
+			);
+			isa = PBXGroup;
+			name = "External Frameworks and Libraries";
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		0249A663FF388D9811CA2CEA = {
+			isa = PBXFileReference;
+			lastKnownFileType = archive.ar;
+			name = "libstdc++.a";
+			path = "/usr/lib/libstdc++.a";
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+//020
+//021
+//022
+//023
+//024
+//080
+//081
+//082
+//083
+//084
+		08FB7793FE84155DC02AAC07 = {
+			buildSettings = {
+			};
+			buildStyles = (
+				014CEA460018CE2711CA2923,
+				014CEA470018CE2711CA2923,
+			);
+			hasScannedForEncodings = 1;
+			isa = PBXProject;
+			mainGroup = 08FB7794FE84155DC02AAC07;
+			projectDirPath = "";
+			targets = (
+				8DD76F620486A84900D96B5E,
+			);
+		};
+		08FB7794FE84155DC02AAC07 = {
+			children = (
+				08FB7795FE84155DC02AAC07,
+				C6859E8C029090F304C91782,
+				0249A662FF388D9811CA2CEA,
+				1AB674ADFE9D54B511CA2CBB,
+			);
+			isa = PBXGroup;
+			name = fuppes;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		08FB7795FE84155DC02AAC07 = {
+			children = (
+				1B0627FF086AE90C0084C55A,
+				1B0627F0086AE8F20084C55A,
+				1B0627D4086AE8AE0084C55A,
+				1B0627D5086AE8AE0084C55A,
+				1B0627D6086AE8AE0084C55A,
+				1B0627D7086AE8AE0084C55A,
+				1B0627D8086AE8AE0084C55A,
+				1B0627D9086AE8AE0084C55A,
+				1B0627DA086AE8AE0084C55A,
+				1B0627AA086AE8950084C55A,
+				1B0627AB086AE8950084C55A,
+				1B0627AC086AE8950084C55A,
+				1B0627AD086AE8950084C55A,
+				1B0627AE086AE8950084C55A,
+				1B0627AF086AE8950084C55A,
+				1B0627B0086AE8950084C55A,
+				1B0627B1086AE8950084C55A,
+				1B0627B2086AE8950084C55A,
+				1B0627B3086AE8950084C55A,
+				1B0627B4086AE8950084C55A,
+				1B0627B5086AE8950084C55A,
+				1B0627B6086AE8950084C55A,
+				1B0627B7086AE8950084C55A,
+				1B0627B8086AE8950084C55A,
+				1B0627B9086AE8950084C55A,
+				1B0627BA086AE8950084C55A,
+				1B0627BB086AE8950084C55A,
+				1B0627BC086AE8950084C55A,
+				1B0627BD086AE8950084C55A,
+				1B0627BE086AE8950084C55A,
+				1B0627A6086AE8750084C55A,
+				1B0627A7086AE8750084C55A,
+				1B062798086AE85D0084C55A,
+				1B062799086AE85D0084C55A,
+				1B06279A086AE85D0084C55A,
+				1B06279B086AE85D0084C55A,
+				1B06279C086AE85D0084C55A,
+				1B06279D086AE85D0084C55A,
+				1B06279E086AE85D0084C55A,
+			);
+			isa = PBXGroup;
+			name = Source;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+//080
+//081
+//082
+//083
+//084
+//1A0
+//1A1
+//1A2
+//1A3
+//1A4
+		1AB674ADFE9D54B511CA2CBB = {
+			children = (
+				8DD76F6C0486A84900D96B5E,
+			);
+			isa = PBXGroup;
+			name = Products;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+//1A0
+//1A1
+//1A2
+//1A3
+//1A4
+//1B0
+//1B1
+//1B2
+//1B3
+//1B4
+		1B062798086AE85D0084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = Fuppes.cpp;
+			path = src/Fuppes.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B062799086AE85D0084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = Fuppes.h;
+			path = src/Fuppes.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B06279A086AE85D0084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = HTTPMessage.cpp;
+			path = src/HTTPMessage.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B06279B086AE85D0084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = HTTPMessage.h;
+			path = src/HTTPMessage.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B06279C086AE85D0084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = HTTPServer.cpp;
+			path = src/HTTPServer.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B06279D086AE85D0084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = HTTPServer.h;
+			path = src/HTTPServer.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B06279E086AE85D0084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = main.cpp;
+			path = src/main.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B06279F086AE85D0084C55A = {
+			fileRef = 1B062798086AE85D0084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627A0086AE85D0084C55A = {
+			fileRef = 1B062799086AE85D0084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627A1086AE85D0084C55A = {
+			fileRef = 1B06279A086AE85D0084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627A2086AE85D0084C55A = {
+			fileRef = 1B06279B086AE85D0084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627A3086AE85D0084C55A = {
+			fileRef = 1B06279C086AE85D0084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627A4086AE85D0084C55A = {
+			fileRef = 1B06279D086AE85D0084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627A5086AE85D0084C55A = {
+			fileRef = 1B06279E086AE85D0084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627A6086AE8750084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = Common.cpp;
+			path = src/Common.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627A7086AE8750084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = Common.h;
+			path = src/Common.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627A8086AE8750084C55A = {
+			fileRef = 1B0627A6086AE8750084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627A9086AE8750084C55A = {
+			fileRef = 1B0627A7086AE8750084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627AA086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = MediaServer.cpp;
+			path = src/MediaServer.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627AB086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = MediaServer.h;
+			path = src/MediaServer.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627AC086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = MessageBase.cpp;
+			path = src/MessageBase.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627AD086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = MessageBase.h;
+			path = src/MessageBase.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627AE086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = NotifyMsgFactory.cpp;
+			path = src/NotifyMsgFactory.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627AF086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = NotifyMsgFactory.h;
+			path = src/NotifyMsgFactory.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627B0086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = RegEx.h;
+			path = src/RegEx.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627B1086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = SharedConfig.cpp;
+			path = src/SharedConfig.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627B2086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = SharedConfig.h;
+			path = src/SharedConfig.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627B3086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = SSDPCtrl.cpp;
+			path = src/SSDPCtrl.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627B4086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = SSDPCtrl.h;
+			path = src/SSDPCtrl.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627B5086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = SSDPMessage.cpp;
+			path = src/SSDPMessage.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627B6086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = SSDPMessage.h;
+			path = src/SSDPMessage.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627B7086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = SSDPSession.cpp;
+			path = src/SSDPSession.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627B8086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = SSDPSession.h;
+			path = src/SSDPSession.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627B9086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = UDPSocket.cpp;
+			path = src/UDPSocket.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627BA086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = UDPSocket.h;
+			path = src/UDPSocket.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627BB086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = UPnPAction.cpp;
+			path = src/UPnPAction.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627BC086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = UPnPAction.h;
+			path = src/UPnPAction.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627BD086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = UPnPActionFactory.cpp;
+			path = src/UPnPActionFactory.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627BE086AE8950084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = UPnPActionFactory.h;
+			path = src/UPnPActionFactory.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627BF086AE8950084C55A = {
+			fileRef = 1B0627AA086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627C0086AE8950084C55A = {
+			fileRef = 1B0627AB086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627C1086AE8950084C55A = {
+			fileRef = 1B0627AC086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627C2086AE8950084C55A = {
+			fileRef = 1B0627AD086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627C3086AE8950084C55A = {
+			fileRef = 1B0627AE086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627C4086AE8950084C55A = {
+			fileRef = 1B0627AF086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627C5086AE8950084C55A = {
+			fileRef = 1B0627B0086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627C6086AE8950084C55A = {
+			fileRef = 1B0627B1086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627C7086AE8950084C55A = {
+			fileRef = 1B0627B2086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627C8086AE8950084C55A = {
+			fileRef = 1B0627B3086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627C9086AE8950084C55A = {
+			fileRef = 1B0627B4086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627CA086AE8950084C55A = {
+			fileRef = 1B0627B5086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627CB086AE8950084C55A = {
+			fileRef = 1B0627B6086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627CC086AE8950084C55A = {
+			fileRef = 1B0627B7086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627CD086AE8950084C55A = {
+			fileRef = 1B0627B8086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627CE086AE8950084C55A = {
+			fileRef = 1B0627B9086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627CF086AE8950084C55A = {
+			fileRef = 1B0627BA086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627D0086AE8950084C55A = {
+			fileRef = 1B0627BB086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627D1086AE8950084C55A = {
+			fileRef = 1B0627BC086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627D2086AE8950084C55A = {
+			fileRef = 1B0627BD086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627D3086AE8950084C55A = {
+			fileRef = 1B0627BE086AE8950084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627D4086AE8AE0084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = UPnPBase.cpp;
+			path = src/UPnPBase.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627D5086AE8AE0084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = UPnPBase.h;
+			path = src/UPnPBase.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627D6086AE8AE0084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = UPnPDevice.cpp;
+			path = src/UPnPDevice.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627D7086AE8AE0084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = UPnPDevice.h;
+			path = src/UPnPDevice.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627D8086AE8AE0084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = UPnPService.cpp;
+			path = src/UPnPService.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627D9086AE8AE0084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = UPnPService.h;
+			path = src/UPnPService.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627DA086AE8AE0084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = win32.h;
+			path = src/win32.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627DB086AE8AE0084C55A = {
+			fileRef = 1B0627D4086AE8AE0084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627DC086AE8AE0084C55A = {
+			fileRef = 1B0627D5086AE8AE0084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627DD086AE8AE0084C55A = {
+			fileRef = 1B0627D6086AE8AE0084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627DE086AE8AE0084C55A = {
+			fileRef = 1B0627D7086AE8AE0084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627DF086AE8AE0084C55A = {
+			fileRef = 1B0627D8086AE8AE0084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627E0086AE8AE0084C55A = {
+			fileRef = 1B0627D9086AE8AE0084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627E1086AE8AE0084C55A = {
+			fileRef = 1B0627DA086AE8AE0084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627F0086AE8F20084C55A = {
+			children = (
+				1B0627F1086AE8F20084C55A,
+				1B0627F2086AE8F20084C55A,
+				1B0627F3086AE8F20084C55A,
+				1B0627F4086AE8F20084C55A,
+				1B0627F5086AE8F20084C55A,
+				1B0627F6086AE8F20084C55A,
+				1B0627F7086AE8F20084C55A,
+			);
+			isa = PBXGroup;
+			name = ContentDirectory;
+			path = src/ContentDirectory;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627F1086AE8F20084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = AudioItem.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627F2086AE8F20084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			path = ContentDirectory.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627F3086AE8F20084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = ContentDirectory.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627F4086AE8F20084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			path = StorageFolder.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627F5086AE8F20084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = StorageFolder.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627F6086AE8F20084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = UPnPItem.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627F7086AE8F20084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = UPnPObject.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B0627F8086AE8F20084C55A = {
+			fileRef = 1B0627F1086AE8F20084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627F9086AE8F20084C55A = {
+			fileRef = 1B0627F2086AE8F20084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627FA086AE8F30084C55A = {
+			fileRef = 1B0627F3086AE8F20084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627FB086AE8F30084C55A = {
+			fileRef = 1B0627F4086AE8F20084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627FC086AE8F30084C55A = {
+			fileRef = 1B0627F5086AE8F20084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627FD086AE8F30084C55A = {
+			fileRef = 1B0627F6086AE8F20084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627FE086AE8F30084C55A = {
+			fileRef = 1B0627F7086AE8F20084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B0627FF086AE90C0084C55A = {
+			children = (
+				1B062800086AE90C0084C55A,
+			);
+			isa = PBXGroup;
+			name = UPnPActions;
+			path = src/UPnPActions;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B062800086AE90C0084C55A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = UPnPBrowse.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B062801086AE90C0084C55A = {
+			fileRef = 1B062800086AE90C0084C55A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B870D2D0873DC5C0014DB19 = {
+			isa = PBXFileReference;
+			lastKnownFileType = archive.ar;
+			name = libpcre.a;
+			path = /usr/local/lib/libpcre.a;
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+		1B870D2E0873DC5C0014DB19 = {
+			fileRef = 1B870D2D0873DC5C0014DB19;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1BEB0F3C086DBADD000C4B2B = {
+			isa = PBXFileReference;
+			lastKnownFileType = archive.ar;
+			path = libxml2.a;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1BEB0F3D086DBADD000C4B2B = {
+			fileRef = 1BEB0F3C086DBADD000C4B2B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+//1B0
+//1B1
+//1B2
+//1B3
+//1B4
+//8D0
+//8D1
+//8D2
+//8D3
+//8D4
+		8DD76F620486A84900D96B5E = {
+			buildPhases = (
+				8DD76F640486A84900D96B5E,
+				8DD76F660486A84900D96B5E,
+				8DD76F690486A84900D96B5E,
+			);
+			buildRules = (
+			);
+			buildSettings = {
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				INSTALL_PATH = "$(HOME)/bin";
+				LIBRARY_SEARCH_PATHS = /Users/ulrich/Projects/fuppes/trunk;
+				PRODUCT_NAME = fuppes;
+			};
+			dependencies = (
+			);
+			isa = PBXNativeTarget;
+			name = fuppes;
+			productInstallPath = "$(HOME)/bin";
+			productName = fuppes;
+			productReference = 8DD76F6C0486A84900D96B5E;
+			productType = "com.apple.product-type.tool";
+		};
+		8DD76F640486A84900D96B5E = {
+			buildActionMask = 2147483647;
+			files = (
+				1B06279F086AE85D0084C55A,
+				1B0627A1086AE85D0084C55A,
+				1B0627A3086AE85D0084C55A,
+				1B0627A5086AE85D0084C55A,
+				1B0627A8086AE8750084C55A,
+				1B0627BF086AE8950084C55A,
+				1B0627C1086AE8950084C55A,
+				1B0627C3086AE8950084C55A,
+				1B0627C6086AE8950084C55A,
+				1B0627C8086AE8950084C55A,
+				1B0627CA086AE8950084C55A,
+				1B0627CC086AE8950084C55A,
+				1B0627CE086AE8950084C55A,
+				1B0627D0086AE8950084C55A,
+				1B0627D2086AE8950084C55A,
+				1B0627DB086AE8AE0084C55A,
+				1B0627DD086AE8AE0084C55A,
+				1B0627DF086AE8AE0084C55A,
+				1B0627F9086AE8F20084C55A,
+				1B0627FB086AE8F30084C55A,
+			);
+			isa = PBXSourcesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8DD76F660486A84900D96B5E = {
+			buildActionMask = 2147483647;
+			files = (
+				8DD76F670486A84900D96B5E,
+				1BEB0F3D086DBADD000C4B2B,
+				1B870D2E0873DC5C0014DB19,
+			);
+			isa = PBXFrameworksBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8DD76F670486A84900D96B5E = {
+			fileRef = 0249A663FF388D9811CA2CEA;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		8DD76F690486A84900D96B5E = {
+			buildActionMask = 8;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+				1B0627A0086AE85D0084C55A,
+				1B0627A2086AE85D0084C55A,
+				1B0627A4086AE85D0084C55A,
+				1B0627A9086AE8750084C55A,
+				1B0627C0086AE8950084C55A,
+				1B0627C2086AE8950084C55A,
+				1B0627C4086AE8950084C55A,
+				1B0627C5086AE8950084C55A,
+				1B0627C7086AE8950084C55A,
+				1B0627C9086AE8950084C55A,
+				1B0627CB086AE8950084C55A,
+				1B0627CD086AE8950084C55A,
+				1B0627CF086AE8950084C55A,
+				1B0627D1086AE8950084C55A,
+				1B0627D3086AE8950084C55A,
+				1B0627DC086AE8AE0084C55A,
+				1B0627DE086AE8AE0084C55A,
+				1B0627E0086AE8AE0084C55A,
+				1B0627E1086AE8AE0084C55A,
+				1B0627F8086AE8F20084C55A,
+				1B0627FA086AE8F30084C55A,
+				1B0627FC086AE8F30084C55A,
+				1B0627FD086AE8F30084C55A,
+				1B0627FE086AE8F30084C55A,
+				1B062801086AE90C0084C55A,
+			);
+			isa = PBXCopyFilesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		8DD76F6C0486A84900D96B5E = {
+			explicitFileType = "compiled.mach-o.executable";
+			includeInIndex = 0;
+			isa = PBXFileReference;
+			path = fuppes;
+			refType = 3;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+//8D0
+//8D1
+//8D2
+//8D3
+//8D4
+//C60
+//C61
+//C62
+//C63
+//C64
+		C6859E8C029090F304C91782 = {
+			children = (
+			);
+			isa = PBXGroup;
+			name = Documentation;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+	};
+	rootObject = 08FB7793FE84155DC02AAC07;
+}
