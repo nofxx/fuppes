@@ -188,10 +188,12 @@ bool CSharedConfig::ResolveHostAndIP()
   }    
   #else
 
-  char* name;
-  gethostname(name, 64);	
+  char name[MAXHOSTNAMELEN];
+  int nRet = gethostname(name, MAXHOSTNAMELEN);
+  if(nRet == -1)
+    return false;
   m_sHostname = name;
-	
+
   struct hostent* host;
   host = gethostbyname(name);
   addr = (struct in_addr*)host->h_addr;
