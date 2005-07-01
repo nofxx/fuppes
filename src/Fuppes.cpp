@@ -35,46 +35,38 @@ CFuppes::CFuppes()
 {
   cout << "[FUPPES] initializing devices" << endl;
   
-	m_pSSDPCtrl = new CSSDPCtrl();
-	m_pSSDPCtrl->SetReceiveHandler(this);
-	m_pSSDPCtrl->Start();
+  // init SSDP receiver	
+	m_SSDPCtrl.SetReceiveHandler(this);
+	m_SSDPCtrl.Start();
 	
-	m_pHTTPServer = new CHTTPServer();
-	m_pHTTPServer->SetReceiveHandler(this);
-	m_pHTTPServer->Start();
-  CSharedConfig::Shared()->SetHTTPServerURL(m_pHTTPServer->GetURL());
+  // init HTTP server
+	m_HTTPServer.SetReceiveHandler(this);
+	m_HTTPServer.Start();  
+  CSharedConfig::Shared()->SetHTTPServerURL(m_HTTPServer.GetURL());	  
+	CNotifyMsgFactory::shared()->SetHTTPServerURL(m_HTTPServer.GetURL());	
 	
-	CNotifyMsgFactory::shared()->SetHTTPServerURL(m_pHTTPServer->GetURL());	
-	
-	m_pContentDirectory = new CContentDirectory();
-		
-	m_pMediaServer = new CMediaServer();
-	m_pMediaServer->SetHTTPServerURL(m_pHTTPServer->GetURL());
-	m_pMediaServer->AddUPnPService((CUPnPService*)m_pContentDirectory);	  
-  cout << "[FUPPES] done" << endl; 
+  // create media server ...
+	m_MediaServer.SetHTTPServerURL(m_HTTPServer.GetURL());
+  // ... and add the content dir to its services
+	m_MediaServer.AddUPnPService((CUPnPService*)&m_ContentDirectory);	  
   
+  cout << "[FUPPES] done" << endl;   
   cout << "[FUPPES] multicasting alive messages" << endl;
-  m_pSSDPCtrl->send_alive();  
+  m_SSDPCtrl.send_alive();  
   cout << "[FUPPES] done" << endl; 
 }
 
 CFuppes::~CFuppes()
 {
+  cout << "[FUPPES] shutting down" << endl;	
   cout << "[FUPPES] multicasting byebye messages" << endl;
-  m_pSSDPCtrl->send_byebye();
-  cout << "[FUPPES] done" << endl; 
- 
-  cout << "[FUPPES] shutting down" << endl;		  
-	delete m_pMediaServer;
-  delete m_pContentDirectory;
-	delete m_pHTTPServer;
-	delete m_pSSDPCtrl;
+  m_SSDPCtrl.send_byebye();
   cout << "[FUPPES] done" << endl; 
 }
 
 CSSDPCtrl* CFuppes::GetSSDPCtrl()
 {
-	return m_pSSDPCtrl;
+	return &m_SSDPCtrl;
 }
 
 void CFuppes::OnSSDPCtrlReceiveMsg(CSSDPMessage* pSSDPMessage)
@@ -105,23 +97,34 @@ CHTTPMessage* CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pHTTPMessage)
 CHTTPMessage* CFuppes::HandleHTTPGet(CHTTPMessage* pHTTPMessage)
 {
 	CHTTPMessage* pResult = NULL;	
+  
 	// request == "/" => root description	
 	if(pHTTPMessage->GetRequest().compare("/") == 0)
 	{
 		pResult = new CHTTPMessage(http_200_ok, text_xml);
-		pResult->SetContent(m_pMediaServer->GetDeviceDescription());
+		pResult->SetContent(m_MediaServer.GetDeviceDescription());
 	}
+  
+  // content dir description
 	else if(pHTTPMessage->GetRequest().compare("/UPnPServices/ContentDirectory/description.xml") == 0)
 	{
 		pResult = new CHTTPMessage(http_200_ok, text_xml);
-		pResult->SetContent(m_pContentDirectory->GetServiceDescription());
+		pResult->SetContent(m_ContentDirectory.GetServiceDescription());
   }
+  
+  // presentation
+  else if(ToLower(pHTTPMessage->GetRequest()).compare("/index.html") == 0)
+  {
+    pResult = new CHTTPMessage(http_200_ok, text_html);
+		pResult->SetContent(m_PresentationHandler.GetIndexHTML());    
+  }
+    
   else if((pHTTPMessage->GetRequest().length() > 24) &&
           ((pHTTPMessage->GetRequest().length() > 24) && 
          (pHTTPMessage->GetRequest().substr(24).compare("/MediaServer/AudioItems/"))))
   {
     string sItemObjId = pHTTPMessage->GetRequest().substr(24, pHTTPMessage->GetRequest().length());
-    string sFileName  = m_pContentDirectory->GetFileNameFromObjectID(sItemObjId);
+    string sFileName  = m_ContentDirectory.GetFileNameFromObjectID(sItemObjId);
     
     if(FileExists(sFileName))
     {
@@ -142,7 +145,7 @@ CHTTPMessage* CFuppes::HandleHTTPPost(CHTTPMessage* pHTTPMessage)
   {
     if(pHTTPMessage->GetAction()->m_TargetDevice == udtContentDirectory)
     {
-      pResult = m_pContentDirectory->HandleUPnPAction(pHTTPMessage->GetAction());
+      pResult = m_ContentDirectory.HandleUPnPAction(pHTTPMessage->GetAction());
     }
   }
   

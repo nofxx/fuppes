@@ -47,6 +47,8 @@ class CSharedConfig
     std::string GetSharedDir(int);
     int         SharedDirCount();
   
+    bool        SetupConfig();
+  
 	protected:
 		CSharedConfig();
 	

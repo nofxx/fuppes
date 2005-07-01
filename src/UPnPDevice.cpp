@@ -214,6 +214,11 @@ std::string CUPnPDevice::GetDeviceDescription()
 			// end serviceList			
 			xmlTextWriterEndElement(writer);
 			
+      // presentationURL
+      xmlTextWriterStartElement(writer, BAD_CAST "presentationURL");
+      xmlTextWriterWriteString(writer, BAD_CAST m_sPresentationURL.c_str());
+			xmlTextWriterEndElement(writer);
+      
 		// end device
 		xmlTextWriterEndElement(writer);
 

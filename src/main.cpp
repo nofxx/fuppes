@@ -40,7 +40,9 @@ int main()
   #endif
   
 	cout << "FUPPES - Free UPnP(tm) Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;	
-	cout << "hostname: " << CSharedConfig::Shared()->GetHostname() << endl;
+	if(!CSharedConfig::Shared()->SetupConfig())
+    return 0;
+  cout << "hostname: " << CSharedConfig::Shared()->GetHostname() << endl;
 	cout << "address : " << CSharedConfig::Shared()->GetIP() << endl;
 	cout << endl;
 	

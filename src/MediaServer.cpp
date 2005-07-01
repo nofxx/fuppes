@@ -41,7 +41,7 @@ CMediaServer::CMediaServer(): CUPnPDevice(udtMediaServer)
 	stream.str("");
 	stream.clear();
 	
-	m_sManufacturer     = "Ulrich Voelkel";
+	m_sManufacturer     = "Ulrich Völkel";
   m_sManufacturerURL  = "http://www.ulrich-voelkel.de";      
 	m_sModelDescription = "Free UPnP Media Server licensed under the terms of the GPL";
 
@@ -55,7 +55,7 @@ CMediaServer::CMediaServer(): CUPnPDevice(udtMediaServer)
 	stream.str("");
 	stream.clear();
 	
-	m_sModelURL        = "";
+	m_sModelURL        = "http://fuppes.sourceforge.net";
 	m_sSerialNumber    = "012345678910";
   m_sUDN  			     = CSharedConfig::Shared()->GetUDN();
 	m_sUPC				     = "";

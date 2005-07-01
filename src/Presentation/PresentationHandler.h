@@ -1,6 +1,6 @@
 /***************************************************************************
- *            Fuppes.h
- * 
+ *            PresentationHandler.h
+ *
  *  FUPPES - Free UPnP Entertainment Service
  *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
@@ -21,36 +21,19 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _FUPPES_H
-#define _FUPPES_H
+#ifndef _PRESENTATIONHANDLER_H
+#define _PRESENTATIONHANDLER_H
 
-#include "SSDPCtrl.h"
-#include "HTTPServer.h"
-#include "HTTPMessage.h"
-#include "MediaServer.h"
-#include "ContentDirectory/ContentDirectory.h"
-#include "Presentation/PresentationHandler.h"
+#include <string>
 
-class CFuppes: public ISSDPCtrl, IHTTPServer
+class CPresentationHandler
 {
-	public:
-		CFuppes();
-	  virtual ~CFuppes();
-		
-    CSSDPCtrl* GetSSDPCtrl();
-	
-	private:
-		CSSDPCtrl            m_SSDPCtrl;
-	  CHTTPServer          m_HTTPServer;
-	  CMediaServer         m_MediaServer;
-	  CContentDirectory    m_ContentDirectory;
-    CPresentationHandler m_PresentationHandler;
+  public:
+    CPresentationHandler();
+    ~CPresentationHandler();
   
-		CHTTPMessage* HandleHTTPGet(CHTTPMessage*);
-	  CHTTPMessage* HandleHTTPPost(CHTTPMessage*);
-	
-	  void OnSSDPCtrlReceiveMsg(CSSDPMessage*);
-	  CHTTPMessage* OnHTTPServerReceiveMsg(CHTTPMessage*);
+    std::string GetIndexHTML();
+    std::string HandleRequest(std::string p_sRequest);
 };
 
-#endif /* _FUPPES_H */
+#endif /* _PRESENTATIONHANDLER_H */

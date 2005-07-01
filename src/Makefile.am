@@ -32,6 +32,7 @@ h_sources = \
   ContentDirectory/UPnPItem.h\
   ContentDirectory/AudioItem.h\
   ContentDirectory/ContentDirectory.h\
+  Presentation/PresentationHandler.h\
 	SharedConfig.h\
 	Fuppes.h\
 	win32.h\
@@ -55,6 +56,7 @@ cpp_sources = \
 	MediaServer.cpp\
   ContentDirectory/StorageFolder.cpp\
 	ContentDirectory/ContentDirectory.cpp\
+  Presentation/PresentationHandler.cpp\
 	SharedConfig.cpp\
 	Fuppes.cpp\
 	main.cpp

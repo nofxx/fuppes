@@ -59,9 +59,22 @@ CSharedConfig* CSharedConfig::Shared()
 
 CSharedConfig::CSharedConfig()
 {
-  ResolveHostAndIP();
+}
+
+bool CSharedConfig::SetupConfig()
+{
+  bool bResult = true;
+  
+  if(!ResolveHostAndIP())
+  {
+    cout << "[ERROR] can'r resolve hostname and address" << endl;
+    bResult = false;
+  }
+  
   if(!ReadConfigFile())
-    cout << "no config file found" << endl;
+    cout << "[WARNING] config file not found" << endl;
+  
+  return bResult;
 }
 
 string CSharedConfig::GetAppName()
@@ -76,7 +89,7 @@ string CSharedConfig::GetAppFullname()
 
 string CSharedConfig::GetAppVersion()
 {
-	return "0.1";
+	return "0.1.1a";
 }
 
 string CSharedConfig::GetHostname()
@@ -166,41 +179,23 @@ bool CSharedConfig::ResolveHostAndIP()
 {
   in_addr* addr;
 
-  #ifdef WIN32
-  // Init windows sockets
-  WSADATA wsaData;
-  int nRet = WSAStartup(MAKEWORD(1, 1), &wsaData);
-  if(0 == nRet)
-  {
-    // Get hostname
-    char name[64] = "";
-    nRet = gethostname(name, sizeof(name));
-    if(0 == nRet)
-    {
-      m_sHostname = name;
-
-      // Get host
-      struct hostent* host;
-      host = gethostbyname(name);
-      addr = (struct in_addr*)host->h_addr;
-    }
-    WSACleanup();
-  }    
-  #else
-
   char name[MAXHOSTNAMELEN];
   int nRet = gethostname(name, MAXHOSTNAMELEN);
-  if(nRet == -1)
+  if(nRet == 0)
+  {    
+    m_sHostname = name;
+
+    struct hostent* host;
+    host = gethostbyname(name);
+    addr = (struct in_addr*)host->h_addr;
+    m_sIP = inet_ntoa(*addr);
+    
+    return true;
+  }
+  else
+  {
     return false;
-  m_sHostname = name;
-
-  struct hostent* host;
-  host = gethostbyname(name);
-  addr = (struct in_addr*)host->h_addr;
-  #endif
-
-  m_sIP = inet_ntoa(*addr);  
-  return true;
+  }  
 }
 
 bool CSharedConfig::FileExists(std::string p_sFileName)

@@ -1,6 +1,6 @@
 /***************************************************************************
- *            Fuppes.h
- * 
+ *            PresentationHandler.cpp
+ *
  *  FUPPES - Free UPnP Entertainment Service
  *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
@@ -21,36 +21,27 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _FUPPES_H
-#define _FUPPES_H
+#include "PresentationHandler.h"
+#include "../SharedConfig.h"
 
-#include "SSDPCtrl.h"
-#include "HTTPServer.h"
-#include "HTTPMessage.h"
-#include "MediaServer.h"
-#include "ContentDirectory/ContentDirectory.h"
-#include "Presentation/PresentationHandler.h"
+#include <sstream>
 
-class CFuppes: public ISSDPCtrl, IHTTPServer
+CPresentationHandler::CPresentationHandler()
 {
-	public:
-		CFuppes();
-	  virtual ~CFuppes();
-		
-    CSSDPCtrl* GetSSDPCtrl();
-	
-	private:
-		CSSDPCtrl            m_SSDPCtrl;
-	  CHTTPServer          m_HTTPServer;
-	  CMediaServer         m_MediaServer;
-	  CContentDirectory    m_ContentDirectory;
-    CPresentationHandler m_PresentationHandler;
-  
-		CHTTPMessage* HandleHTTPGet(CHTTPMessage*);
-	  CHTTPMessage* HandleHTTPPost(CHTTPMessage*);
-	
-	  void OnSSDPCtrlReceiveMsg(CSSDPMessage*);
-	  CHTTPMessage* OnHTTPServerReceiveMsg(CHTTPMessage*);
-};
+}
 
-#endif /* _FUPPES_H */
+CPresentationHandler::~CPresentationHandler()
+{
+}
+
+std::string CPresentationHandler::GetIndexHTML()
+{
+  std::stringstream sResult;
+  sResult << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion();  
+  return sResult.str();
+}
+
+std::string CPresentationHandler::HandleRequest(std::string p_sRequest)
+{
+  return "";
+}
