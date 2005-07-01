@@ -189,6 +189,13 @@
 					RelativePath=".\src\ContentDirectory\StorageFolder.cpp">
 				</File>
 			</Filter>
+			<Filter
+				Name="Presentation"
+				Filter="">
+				<File
+					RelativePath=".\src\Presentation\PresentationHandler.cpp">
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header files"
@@ -275,6 +282,13 @@
 				</File>
 				<File
 					RelativePath=".\src\ContentDirectory\UPnPObject.h">
+				</File>
+			</Filter>
+			<Filter
+				Name="Presentation"
+				Filter="">
+				<File
+					RelativePath=".\src\Presentation\PresentationHandler.h">
 				</File>
 			</Filter>
 		</Filter>
