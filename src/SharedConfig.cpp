@@ -137,7 +137,13 @@ bool CSharedConfig::ReadConfigFile()
   stringstream sDir;
   
   #ifdef WIN32
-  sFileName << "fuppes.cfg";
+  char szConfig[MAX_PATH];
+  GetModuleFileName(NULL, szConfig, MAX_PATH);
+  PathRemoveFileSpec(szConfig);
+  PathAppend(szConfig, "fuppes");
+  PathAppend(szConfig, "fuppes.cfg");
+  sFileName << szConfig;
+  //sFileName << "fuppes.cfg";
   #else
   sDir << getenv("HOME") << "/.fuppes/";
   sFileName << sDir.str() << "fuppes.cfg";

@@ -28,9 +28,11 @@
 
 #pragma comment(lib,"Wsock32.lib") 
 #pragma comment(lib,"Ws2_32.lib")
+#pragma comment(lib,"shlwapi.lib")
 
 #include <Winsock2.h>
 #include <Ws2tcpip.h>
+#include <shlwapi.h> // For PathXXX functions
 
 // Common
 #define upnpSleep               Sleep
