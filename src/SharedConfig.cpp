@@ -34,8 +34,10 @@
 #include <sys/socket.h>
 #endif
 
-#include <sys/types.h>
+#include "Common.h"
 
+#include <sys/types.h>
+#include <fcntl.h>
 #include <fstream>
 #include <sstream>
 #include <libxml/parser.h>
@@ -130,12 +132,25 @@ int CSharedConfig::SharedDirCount()
 bool CSharedConfig::ReadConfigFile()
 {
   xmlDocPtr pDoc;  
-  string    sFileName = "fuppes.cfg";
   bool      bResult   = false;
+  stringstream sFileName;
+  stringstream sDir;
   
-  if(FileExists(sFileName))
+  #ifdef WIN32
+  sFileName << "fuppes.cfg";
+  #else
+  sDir << getenv("HOME") << "/.fuppes/";
+  sFileName << sDir.str() << "fuppes.cfg";
+  cout << sFileName.str() << endl;
+  if(!DirectoryExists(sDir.str()))
   {
-    pDoc = xmlReadFile(sFileName.c_str(), NULL, 0);
+    mkdir(sDir.str().c_str(), S_IRWXU | S_IRWXG);
+  }  
+  #endif  
+  
+  if(FileExists(sFileName.str()))
+  {
+    pDoc = xmlReadFile(sFileName.str().c_str(), NULL, 0);
     if(pDoc != NULL)  
       bResult = true;
   }
