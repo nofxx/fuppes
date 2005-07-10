@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<fuppes_config version="0.1">
+  <shared_directories>
+    <dir>C:\Musik\mp3s\Marillion</dir>
+    <dir>C:\Musik\mp3s\Porcupine Tree</dir>
+  </shared_directories>
+</fuppes_config>

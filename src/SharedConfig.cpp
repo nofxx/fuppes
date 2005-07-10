@@ -136,17 +136,15 @@ bool CSharedConfig::ReadConfigFile()
   stringstream sDir;
   
   #ifdef WIN32
-  //sDir << getenv("HOMEDRIVE") << getenv("HOMEPATH") << "\\fuppes\\";
   sDir << getenv("APPDATA") << "\\Free UPnP Entertainment Service\\";
   sFileName << sDir.str() << "fuppes.cfg";
+  if(!DirectoryExists(sDir.str())) 
+    mkdir(sDir.str().c_str());
   #else
   sDir << getenv("HOME") << "/.fuppes/";
   sFileName << sDir.str() << "fuppes.cfg";
-  if(!DirectoryExists(sDir.str()))
-  {  
-    mkdir(sDir.str().c_str(), S_IRWXU | S_IRWXG);   
-    // todo: create default config
-  }
+  if(!DirectoryExists(sDir.str())) 
+    mkdir(sDir.str().c_str(), S_IRWXU | S_IRWXG);
   #endif
 
   if(FileExists(sFileName.str()))
@@ -159,9 +157,12 @@ bool CSharedConfig::ReadConfigFile()
   { 
     cout << endl << "[ERROR] no config file found" << endl;
     WriteDefaultConfig(sFileName.str());
-    cout << "wrote default config to " << sFileName.str() << endl;
+    cout << "wrote default config to \"" << sFileName.str() << "\"" << endl;
     cout << "please edit the config-file and restart FUPPES" << endl;
-    bResult = false;    
+    bResult = false;
+    #ifdef WIN32
+    upnpSleep(4000);
+    #endif
   }
   
   if(bResult)
