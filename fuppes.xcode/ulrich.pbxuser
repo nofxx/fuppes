@@ -1,7 +1,7 @@
 // !$*UTF8*$!
 {
 	08FB7793FE84155DC02AAC07 = {
-		activeBuildStyle = 014CEA460018CE2711CA2923;
+		activeBuildStyle = 014CEA470018CE2711CA2923;
 		activeExecutable = 1B062792086AE8030084C55A;
 		activeTarget = 8DD76F620486A84900D96B5E;
 		addToTargets = (
@@ -56,7 +56,7 @@
 					PBXFileDataSource_Warnings_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 141811189;
+			PBXPerProjectTemplateStateSaveDate = 142709076;
 			PBXPrepackagedSmartGroups_v2 = (
 				{
 					PBXTransientLocationAtTop = bottom;
@@ -233,7 +233,7 @@
 					};
 				},
 			);
-			PBXWorkspaceStateSaveDate = 141811189;
+			PBXWorkspaceStateSaveDate = 142709076;
 		};
 		sourceControlManager = 1B062796086AE80E0084C55A;
 		userBuildSettings = {
@@ -302,6 +302,14 @@
 			sepNavSelRange = "{1077, 135}";
 			sepNavVisRect = "{{0, 163}, {711, 428}}";
 			sepNavWindowFrame = "{{107, 99}, {750, 558}}";
+		};
+	};
+	1B0627B1086AE8950084C55A = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {711, 3891}}";
+			sepNavSelRange = "{1342, 0}";
+			sepNavVisRect = "{{0, 286}, {711, 428}}";
+			sepNavWindowFrame = "{{15, 183}, {750, 558}}";
 		};
 	};
 	1B0627B9086AE8950084C55A = {

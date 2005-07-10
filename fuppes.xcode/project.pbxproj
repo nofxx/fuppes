@@ -8,7 +8,7 @@
 		014CEA460018CE2711CA2923 = {
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 0.1;
+				CURRENT_PROJECT_VERSION = 0.1.1;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -24,7 +24,10 @@
 		014CEA470018CE2711CA2923 = {
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
+				CURRENT_PROJECT_VERSION = 0.1.1;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				HEADER_SEARCH_PATHS = "/usr/local/ /usr/local/include/libxml2";
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				ZERO_LINK = NO;
 			};
 			isa = PBXBuildStyle;
@@ -43,8 +46,8 @@
 		0249A662FF388D9811CA2CEA = {
 			children = (
 				0249A663FF388D9811CA2CEA,
-				1BEB0F3C086DBADD000C4B2B,
 				1B870D2D0873DC5C0014DB19,
+				1B98678F0881917800E4CF2F,
 			);
 			isa = PBXGroup;
 			name = "External Frameworks and Libraries";
@@ -98,6 +101,7 @@
 		};
 		08FB7795FE84155DC02AAC07 = {
 			children = (
+				1B986795088191DC00E4CF2F,
 				1B0627FF086AE90C0084C55A,
 				1B0627F0086AE8F20084C55A,
 				1B0627D4086AE8AE0084C55A,
@@ -729,6 +733,7 @@
 		};
 		1B0627F0086AE8F20084C55A = {
 			children = (
+				1B986793088191C000E4CF2F,
 				1B0627F1086AE8F20084C55A,
 				1B0627F2086AE8F20084C55A,
 				1B0627F3086AE8F20084C55A,
@@ -879,15 +884,69 @@
 			settings = {
 			};
 		};
-		1BEB0F3C086DBADD000C4B2B = {
+		1B98678F0881917800E4CF2F = {
 			isa = PBXFileReference;
 			lastKnownFileType = archive.ar;
-			path = libxml2.a;
+			name = libxml2.a;
+			path = /usr/local/lib/libxml2.a;
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+		1B9867900881917800E4CF2F = {
+			fileRef = 1B98678F0881917800E4CF2F;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B986793088191C000E4CF2F = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			path = AudioItem.cpp;
 			refType = 4;
 			sourceTree = "<group>";
 		};
-		1BEB0F3D086DBADD000C4B2B = {
-			fileRef = 1BEB0F3C086DBADD000C4B2B;
+		1B986794088191C000E4CF2F = {
+			fileRef = 1B986793088191C000E4CF2F;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B986795088191DC00E4CF2F = {
+			children = (
+				1B986796088191DC00E4CF2F,
+				1B986797088191DC00E4CF2F,
+			);
+			isa = PBXGroup;
+			name = Presentation;
+			path = src/Presentation;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B986796088191DC00E4CF2F = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			path = PresentationHandler.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B986797088191DC00E4CF2F = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = PresentationHandler.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1B986798088191DC00E4CF2F = {
+			fileRef = 1B986796088191DC00E4CF2F;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1B986799088191DC00E4CF2F = {
+			fileRef = 1B986797088191DC00E4CF2F;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -948,6 +1007,8 @@
 				1B0627DF086AE8AE0084C55A,
 				1B0627F9086AE8F20084C55A,
 				1B0627FB086AE8F30084C55A,
+				1B986794088191C000E4CF2F,
+				1B986798088191DC00E4CF2F,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -956,8 +1017,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				8DD76F670486A84900D96B5E,
-				1BEB0F3D086DBADD000C4B2B,
 				1B870D2E0873DC5C0014DB19,
+				1B9867900881917800E4CF2F,
 			);
 			isa = PBXFrameworksBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -998,6 +1059,7 @@
 				1B0627FD086AE8F30084C55A,
 				1B0627FE086AE8F30084C55A,
 				1B062801086AE90C0084C55A,
+				1B986799088191DC00E4CF2F,
 			);
 			isa = PBXCopyFilesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 1;
