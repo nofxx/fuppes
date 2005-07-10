@@ -40,7 +40,7 @@
 #include <fcntl.h>
 #include <fstream>
 #include <sstream>
- #include <sys/stat.h>
+#include <sys/stat.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/xmlwriter.h>
