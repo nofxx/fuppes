@@ -2,7 +2,7 @@
  *            SharedConfig.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich VÃ¶lkel
+ *  Copyright (C) 2005 Ulrich VÃƒÂ¶lkel
  ****************************************************************************/
 
 /*
@@ -42,6 +42,7 @@
 #include <sstream>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
+#include <libxml/xmlwriter.h>
 #include "win32.h"
 
 #ifndef MAXHOSTNAMELEN
@@ -65,17 +66,15 @@ CSharedConfig::CSharedConfig()
 
 bool CSharedConfig::SetupConfig()
 {
-  bool bResult = true;
+  bool bResult = true;  
+  bResult = ReadConfigFile();
   
-  if(!ResolveHostAndIP())
+  if(bResult && !ResolveHostAndIP())
   {
     cout << "[ERROR] can'r resolve hostname and address" << endl;
     bResult = false;
   }
   
-  if(!ReadConfigFile())
-    cout << "[WARNING] no config file found" << endl;
-    
   return bResult;
 }
 
@@ -137,10 +136,6 @@ bool CSharedConfig::ReadConfigFile()
   stringstream sDir;
   
   #ifdef WIN32
-  /*
-   * Unter Windows muss das Setup dafür sorgen, daß eine 
-   * default-config unter %APPDATA% angelegt wird.
-   */
   //sDir << getenv("HOMEDRIVE") << getenv("HOMEPATH") << "\\fuppes\\";
   sDir << getenv("APPDATA") << "\\Free UPnP Entertainment Service\\";
   sFileName << sDir.str() << "fuppes.cfg";
@@ -159,6 +154,14 @@ bool CSharedConfig::ReadConfigFile()
     pDoc = xmlReadFile(sFileName.str().c_str(), NULL, 0);
     if(pDoc != NULL)  
       bResult = true;
+  }
+  else
+  { 
+    cout << endl << "[ERROR] no config file found" << endl;
+    WriteDefaultConfig(sFileName.str());
+    cout << "wrote default config to " << sFileName.str() << endl;
+    cout << "please edit the config-file and restart FUPPES" << endl;
+    bResult = false;    
   }
   
   if(bResult)
@@ -225,4 +228,49 @@ bool CSharedConfig::FileExists(std::string p_sFileName)
   fsTmp.close();
   
   return bResult;
+}
+
+bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
+{
+  xmlTextWriterPtr  pWriter;	
+	std::stringstream sTmp;
+	
+	pWriter = xmlNewTextWriterFilename(p_sFileName.c_str(), 0);
+  xmlTextWriterSetIndent(pWriter, 4);
+	xmlTextWriterStartDocument(pWriter, NULL, "UTF-8", NULL);
+
+	// fuppes_config
+	xmlTextWriterStartElement(pWriter, BAD_CAST "fuppes_config");  
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "version", BAD_CAST "0.1"); 
+	
+    // shared_directories
+    xmlTextWriterStartElement(pWriter, BAD_CAST "shared_directories");
+        
+      xmlTextWriterStartElement(pWriter, BAD_CAST "dir");
+      #ifdef WIN32
+      xmlTextWriterWriteString(pWriter, BAD_CAST "C:\\Musik\\mp3s\\Marillion");      
+      #else
+      xmlTextWriterWriteString(pWriter, BAD_CAST "/mnt/musik/mp3s/Marillion");
+      #endif
+      xmlTextWriterEndElement(pWriter); 
+      
+      xmlTextWriterStartElement(pWriter, BAD_CAST "dir");
+      #ifdef WIN32
+      xmlTextWriterWriteString(pWriter, BAD_CAST "C:\\Musik\\mp3s\\Porcupine Tree");      
+      #else
+      xmlTextWriterWriteString(pWriter, BAD_CAST "/mnt/musik/mp3s/Porcupine Tree");
+      #endif
+      xmlTextWriterEndElement(pWriter); 
+  
+    // end shared_directories
+    xmlTextWriterEndElement(pWriter);	  
+  
+	// end fuppes_config
+	xmlTextWriterEndElement(pWriter);	
+	xmlTextWriterEndDocument(pWriter);
+	xmlFreeTextWriter(pWriter);
+	
+  xmlCleanupParser();
+  
+  return true;
 }

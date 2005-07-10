@@ -62,6 +62,8 @@ class CSharedConfig
 	  std::string m_sIP;
     std::string m_sHTTPServerURL;
     std::vector<std::string> m_vSharedDirectories;
+  
+    bool WriteDefaultConfig(std::string p_sFileName); 
 };
 
 #endif /* _SHAREDCONFIG_H */
