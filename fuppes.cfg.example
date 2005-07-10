@@ -12,4 +12,11 @@
     <dir>I:\Musik\Alben\The Flower Kings</dir>
     <dir>I:\Musik\Alben\Transatlantic</dir>
   </shared_directories>
+  <!-- network settings -->
+  <network_settings>
+    <!-- empty or 0 = automatic detection -->
+    <ip_address/>    
+    <!-- empty or 0 = random port -->
+    <http_port/>
+  </network_settings>
 </fuppes_config>

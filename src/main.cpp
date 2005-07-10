@@ -39,7 +39,7 @@ int main()
   WSAStartup(MAKEWORD(2,0),&wsa);
   #endif
   
-	cout << "FUPPES - Free UPnP(tm) Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;	
+	cout << "FUPPES - Free UPnP(tm) Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;
 	if(!CSharedConfig::Shared()->SetupConfig())
     return 0;
   cout << "hostname: " << CSharedConfig::Shared()->GetHostname() << endl;
@@ -59,8 +59,6 @@ int main()
 			pFuppes->GetSSDPCtrl()->send_alive();
 		else if (input == "b")
 			pFuppes->GetSSDPCtrl()->send_byebye();
-		
-		upnpSleep(300);
 	}
   
 	delete pFuppes;

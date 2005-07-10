@@ -30,6 +30,8 @@ class CUPnPItem: public CUPnPObject
 {
   public:
     CUPnPItem(eUPnPObjectType p_UPnPObjectType): CUPnPObject(p_UPnPObjectType) {}
+      
+    void GetDescription(xmlTextWriterPtr pWriter) { }
 };
 
 #endif /* _UPNPITEM_H */

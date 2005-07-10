@@ -26,6 +26,7 @@
 #include "NotifyMsgFactory.h"
 #include "SharedConfig.h"
 #include "Common.h"
+#include "ContentDirectory/AudioItem.h"
 
 #include <iostream>
 #include <fstream>
@@ -118,20 +119,21 @@ CHTTPMessage* CFuppes::HandleHTTPGet(CHTTPMessage* pHTTPMessage)
     pResult = new CHTTPMessage(http_200_ok, text_html);
 		pResult->SetContent(m_PresentationHandler.GetIndexHTML());    
   }
-    
+  
+  
   else if((pHTTPMessage->GetRequest().length() > 24) &&
           ((pHTTPMessage->GetRequest().length() > 24) && 
          (pHTTPMessage->GetRequest().substr(24).compare("/MediaServer/AudioItems/"))))
   {
     string sItemObjId = pHTTPMessage->GetRequest().substr(24, pHTTPMessage->GetRequest().length());
-    string sFileName  = m_ContentDirectory.GetFileNameFromObjectID(sItemObjId);
-    
-    if(FileExists(sFileName))
+    CAudioItem* pItem = (CAudioItem*)m_ContentDirectory.GetItemFromObjectID(sItemObjId);
+
+    if(pItem && FileExists(pItem->GetFileName()))
     {
       pResult = new CHTTPMessage(http_200_ok, audio_mpeg);
-      pResult->LoadContentFromFile(sFileName);
+      pResult->LoadContentFromFile(pItem->GetFileName());
     }    
-    cout << "[FUPPES] sending audio file " << sFileName << endl;    
+    cout << "[FUPPES] sending audio file " << pItem->GetFileName() << endl;    
   }
   delete pHTTPMessage;  
 	return pResult;

@@ -40,8 +40,8 @@ class CContentDirectory: public CUPnPService
 	  ~CContentDirectory();
     
     CHTTPMessage* HandleUPnPAction(CUPnPAction*);
-    std::string GetFileNameFromObjectID(std::string);
-  
+    std::string   GetFileNameFromObjectID(std::string p_sObjectID);
+    CUPnPObject*  GetItemFromObjectID(std::string p_sObjectID);
   private:
     std::string HandleUPnPBrowse(CUPnPBrowse*);
     std::map<std::string, CUPnPObject*> m_ObjectList;

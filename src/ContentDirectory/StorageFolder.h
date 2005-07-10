@@ -32,6 +32,17 @@
 #include <string>
 #include <libxml/xmlwriter.h>
 
+enum eContainerType
+{
+  ftObjectContainer,
+  ftMusicContainer
+};
+
+enum eSortCriteria
+{
+  scNone
+};
+
 class CStorageFolder: public CUPnPObject
 {
   public:
@@ -41,11 +52,13 @@ class CStorageFolder: public CUPnPObject
     void AddUPnPObject(CUPnPObject*);
     std::string GetContentAsString(CUPnPBrowse* pBrowseAction, unsigned int* p_nNumberReturned, unsigned int* p_nTotalMatches);
     std::string GetChildCountAsString();
+      
+    void GetDescription(xmlTextWriterPtr pWriter);
   
   private:
     std::vector<CUPnPObject*> m_vObjects;
-    void BuildFolderDescription(CStorageFolder*, xmlTextWriterPtr);
-    void BuildItemDescription(CUPnPItem*, xmlTextWriterPtr);
+    void SortContent(std::vector<CUPnPObject*>* pObjList, eSortCriteria p_SortCriteria);
+  
 };
 
 #endif /* _STORAGEFOLDER_H */

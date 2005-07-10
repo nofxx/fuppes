@@ -114,7 +114,8 @@ module.source.files=\
 	Common.cpp\
 	Common.h\
 	Presentation/PresentationHandler.cpp\
-	Presentation/PresentationHandler.h
+	Presentation/PresentationHandler.h\
+	ContentDirectory/AudioItem.cpp
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

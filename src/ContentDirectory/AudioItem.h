@@ -30,6 +30,8 @@ class CAudioItem: public CUPnPItem
 {
   public:
     CAudioItem(): CUPnPItem(uotAudioItem) {}
+      
+    void GetDescription(xmlTextWriterPtr pWriter);
 };
 
 #endif /* _AUDIOITEM_H */

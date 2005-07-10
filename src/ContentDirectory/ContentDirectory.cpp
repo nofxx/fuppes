@@ -71,6 +71,15 @@ std::string CContentDirectory::GetFileNameFromObjectID(std::string p_sObjectID)
     return "";
 }
  
+CUPnPObject* CContentDirectory::GetItemFromObjectID(std::string p_sObjectID)
+{
+  m_ListIterator = m_ObjectList.find(p_sObjectID.c_str());
+  if(m_ListIterator != m_ObjectList.end())      
+    return ((CUPnPObject*)m_ObjectList[p_sObjectID.c_str()]);
+  else
+    return NULL;
+}
+
 std::string CContentDirectory::HandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
 {
   xmlTextWriterPtr writer;
@@ -166,9 +175,9 @@ void CContentDirectory::BuildObjectList()
       pTmpFolder->SetFileName(CSharedConfig::Shared()->GetSharedDir(i));
 
       #ifdef WIN32
-      RegEx rxDirName("\\\\([\\w|\\n| ]+)$", PCRE_CASELESS);
+      RegEx rxDirName("\\\\([^\\\\|\\.]*)$", PCRE_CASELESS);
       #else
-      RegEx rxDirName("/([\\w|\\n| ]+)$", PCRE_CASELESS);
+      RegEx rxDirName("/([^/|\\.]*)$", PCRE_CASELESS);
       #endif
       std::string sSharedDir = CSharedConfig::Shared()->GetSharedDir(i);
       const char* pszDir = sSharedDir.c_str();

@@ -91,7 +91,7 @@ string CSharedConfig::GetAppFullname()
 
 string CSharedConfig::GetAppVersion()
 {
-	return "0.1.1a";
+	return "0.1.1";
 }
 
 string CSharedConfig::GetHostname()
@@ -137,22 +137,28 @@ bool CSharedConfig::ReadConfigFile()
   stringstream sDir;
   
   #ifdef WIN32
+  /* 2005-07-10 :: uv - habs mal wieder rausgeworfen :)
+  wo werden unter Windows denn ueblicherweise benutzerspezifische configs abgelegt?
+  Muesste das nicht irgendwo unter Dokumente und Einstellungen\Benutzer\ liegen?
+  In jedem Fall sollte man keine Adminrechte benoetigen um die config zu bearbeiten und
+  jeder Benutzer sollte seine eigene config anlegen koennen.  
+  
   char szConfig[MAX_PATH];
   GetModuleFileName(NULL, szConfig, MAX_PATH);
   PathRemoveFileSpec(szConfig);
   PathAppend(szConfig, "fuppes");
   PathAppend(szConfig, "fuppes.cfg");
-  sFileName << szConfig;
-  //sFileName << "fuppes.cfg";
+  sFileName << szConfig;*/
+  sFileName << "fuppes.cfg";
   #else
   sDir << getenv("HOME") << "/.fuppes/";
   sFileName << sDir.str() << "fuppes.cfg";
-  cout << sFileName.str() << endl;
   if(!DirectoryExists(sDir.str()))
   {
     mkdir(sDir.str().c_str(), S_IRWXU | S_IRWXG);
+    // todo: create default config
   }  
-  #endif  
+  #endif
   
   if(FileExists(sFileName.str()))
   {

@@ -55,6 +55,7 @@ cpp_sources = \
   UPnPActionFactory.cpp\
 	MediaServer.cpp\
   ContentDirectory/StorageFolder.cpp\
+  ContentDirectory/AudioItem.cpp\
 	ContentDirectory/ContentDirectory.cpp\
   Presentation/PresentationHandler.cpp\
 	SharedConfig.cpp\

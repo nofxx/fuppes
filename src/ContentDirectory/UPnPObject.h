@@ -25,6 +25,7 @@
 #define _UPNPOBJECT_H
 
 #include <string>
+#include <libxml/xmlwriter.h>
 
 enum eUPnPObjectType
 {
@@ -37,6 +38,7 @@ class CUPnPObject
 {
   protected:
     CUPnPObject(eUPnPObjectType p_UPnPObjectType) { m_UPnPObjectType = p_UPnPObjectType; };
+    virtual ~CUPnPObject() { };
   
   public:
     eUPnPObjectType GetObjectType() { return m_UPnPObjectType; }      
@@ -49,6 +51,8 @@ class CUPnPObject
     std::string GetName() { return m_sName; }
     void SetFileName(std::string p_sFileName) { m_sFileName = p_sFileName; }
     std::string GetFileName() { return m_sFileName; }
+    
+    virtual void GetDescription(xmlTextWriterPtr pWriter) = 0;
     
   private:
     std::string m_sObjectID;
