@@ -1,2 +1,9 @@
-Version O.1
+Version 0.1.1 (2005-07-10)
+  * sorted contentlists
+  * tries to read config from ~/.fuppes/ (Linux/Unix) 
+    resp. %APPDATA%\Free UPnP Entertainment Service\ (MS Windows)
+  * writes default config if none found
+  * some bugfixes and code-cleanup
+
+Version O.1 (2005-06-25)
 	* first release.
