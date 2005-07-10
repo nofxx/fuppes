@@ -47,7 +47,11 @@ int main()
 	cout << endl;
 	
 	CFuppes* pFuppes = new CFuppes();	
-	
+	cout << endl;
+  cout << "Webinterface: http://" << CSharedConfig::Shared()->GetHTTPServerURL() << "/index.html" << endl;
+  cout << "press \"q\" to  quit" << endl;
+  cout << endl;
+  
 	string input = "";
 	while(input != "q")
 	{		
