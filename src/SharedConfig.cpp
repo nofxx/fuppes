@@ -74,8 +74,8 @@ bool CSharedConfig::SetupConfig()
   }
   
   if(!ReadConfigFile())
-    cout << "[WARNING] config file not found" << endl;
-  
+    cout << "[WARNING] no config file found" << endl;
+    
   return bResult;
 }
 
@@ -137,29 +137,23 @@ bool CSharedConfig::ReadConfigFile()
   stringstream sDir;
   
   #ifdef WIN32
-  /* 2005-07-10 :: uv - habs mal wieder rausgeworfen :)
-  wo werden unter Windows denn ueblicherweise benutzerspezifische configs abgelegt?
-  Muesste das nicht irgendwo unter Dokumente und Einstellungen\Benutzer\ liegen?
-  In jedem Fall sollte man keine Adminrechte benoetigen um die config zu bearbeiten und
-  jeder Benutzer sollte seine eigene config anlegen koennen.  
-  
-  char szConfig[MAX_PATH];
-  GetModuleFileName(NULL, szConfig, MAX_PATH);
-  PathRemoveFileSpec(szConfig);
-  PathAppend(szConfig, "fuppes");
-  PathAppend(szConfig, "fuppes.cfg");
-  sFileName << szConfig;*/
-  sFileName << "fuppes.cfg";
+  /*
+   * Unter Windows muss das Setup dafür sorgen, daß eine 
+   * default-config unter %APPDATA% angelegt wird.
+   */
+  //sDir << getenv("HOMEDRIVE") << getenv("HOMEPATH") << "\\fuppes\\";
+  sDir << getenv("APPDATA") << "\\Free UPnP Entertainment Service\\";
+  sFileName << sDir.str() << "fuppes.cfg";
   #else
   sDir << getenv("HOME") << "/.fuppes/";
   sFileName << sDir.str() << "fuppes.cfg";
   if(!DirectoryExists(sDir.str()))
-  {
-    mkdir(sDir.str().c_str(), S_IRWXU | S_IRWXG);
+  {  
+    mkdir(sDir.str().c_str(), S_IRWXU | S_IRWXG);   
     // todo: create default config
-  }  
+  }
   #endif
-  
+
   if(FileExists(sFileName.str()))
   {
     pDoc = xmlReadFile(sFileName.str().c_str(), NULL, 0);
@@ -174,13 +168,9 @@ bool CSharedConfig::ReadConfigFile()
     pRootNode = xmlDocGetRootElement(pDoc);
     
     for(pTmpNode = pRootNode; pTmpNode; pTmpNode = pTmpNode->next)
-    {
-      /*if(pTmpNode->type == XML_ELEMENT_NODE)
-        cout << pTmpNode->name << endl;*/
-      
+    { 
       xmlNode* pDirsNode = NULL;
-      pDirsNode = pTmpNode->children->next;
-      //cout << pDirsNode->name << endl;
+      pDirsNode = pTmpNode->children->next;     
       
       xmlNode* pDirNode = NULL;
       pDirNode = pDirsNode->children;
