@@ -183,6 +183,9 @@
 				Name="ContentDirectory"
 				Filter="">
 				<File
+					RelativePath=".\src\ContentDirectory\AudioItem.cpp">
+				</File>
+				<File
 					RelativePath=".\src\ContentDirectory\ContentDirectory.cpp">
 				</File>
 				<File
