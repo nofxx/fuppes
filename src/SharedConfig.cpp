@@ -140,7 +140,7 @@ bool CSharedConfig::ReadConfigFile()
   sDir << getenv("APPDATA") << "\\Free UPnP Entertainment Service\\";
   sFileName << sDir.str() << "fuppes.cfg";
   if(!DirectoryExists(sDir.str())) 
-    mkdir(sDir.str().c_str());
+    CreateDirectory(sDir.str().c_str(), NULL);
   #else
   sDir << getenv("HOME") << "/.fuppes/";
   sFileName << sDir.str() << "fuppes.cfg";
