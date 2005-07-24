@@ -35,7 +35,7 @@ CSSDPCtrl::CSSDPCtrl(std::string p_sIPAddress, std::string p_sHTTPServerURL)
   m_pNotifyMsgFactory = new CNotifyMsgFactory(p_sHTTPServerURL);
 
   m_sIPAddress   = p_sIPAddress;
-	msearch_thread = (upnpThread)NULL;
+	msearch_thread = (fuppesThread)NULL;
 	listener       = new CUDPSocket();
 }
 
@@ -67,6 +67,8 @@ void CSSDPCtrl::send_msearch()
 	CMSearchSession* msearch = new CMSearchSession(m_sIPAddress, this, m_pNotifyMsgFactory);
 	this->last_multicast_ep = msearch->GetLocalEndPoint();
 	// T.S.TODO: Where could we call CMSearchSession::Stop() to terminate thread???
+  /* uv :: UPnP says that remote devices have to answer within iirc 30 seconds
+           so let's start a timer and kill the thread when the time is over */
   msearch->start();	
 }
 
@@ -142,7 +144,7 @@ void CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMe
 	{	
     if(pSSDPMessage->GetContent().substr(0, 8).compare("M-SEARCH") == 0)
     {
-      cout << "[SSDPCtrl] received m-search. unicasting response" << endl;
+      CSharedLog::Shared()->Log(LOGNAME, "[SSDPCtrl] received m-search. unicasting response");
       CUDPSocket* pSock = new CUDPSocket();
       pSock->SetupSocket(false, m_sIPAddress);
       
@@ -153,8 +155,8 @@ void CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMe
       pSock->SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_USN), pSSDPMessage->GetRemoteEndPoint());
       
       pSock->teardown_socket();
-      delete pSock;      
-      cout << "[SSDPCtrl] done" << endl;
+      delete pSock;
+      CSharedLog::Shared()->Log(LOGNAME, "[SSDPCtrl] done");
     }
     else if(m_pReceiveHandler !=NULL)
       m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pSSDPMessage);
@@ -163,7 +165,7 @@ void CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMe
 
 void CSSDPCtrl::OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage)
 {
-  CSharedLog::Shared()->Log(LOGNAME, "OnSessionReceive");
+  //CSharedLog::Shared()->Log(LOGNAME, "OnSessionReceive");
   if(m_pReceiveHandler !=NULL)
       m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pMessage);
   

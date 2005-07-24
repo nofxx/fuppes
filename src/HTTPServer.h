@@ -165,7 +165,7 @@ private:
   bool				do_break;
 
   upnpSocket  sock;					      
-  upnpThread  accept_thread;
+  fuppesThread  accept_thread;
 
 // <\PRIVATE>
 

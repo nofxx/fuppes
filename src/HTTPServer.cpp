@@ -43,8 +43,8 @@ const string LOGNAME = "HTTPServer";
  CALLBACKS
 ===============================================================================*/
 
-upnpThreadCallback AcceptLoop(void *arg);
-upnpThreadCallback SessionLoop(void *arg);
+fuppesThreadCallback AcceptLoop(void *arg);
+fuppesThreadCallback SessionLoop(void *arg);
 
 /*===============================================================================
  CLASS CHTTPServer
@@ -58,7 +58,7 @@ upnpThreadCallback SessionLoop(void *arg);
 
 CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 {
-	accept_thread = (upnpThread)NULL;
+	accept_thread = (fuppesThread)NULL;
 	
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 	
@@ -85,13 +85,13 @@ void CHTTPServer::Start()
   listen(sock, 3);
 
   // Start thread
-  upnpThreadStart(accept_thread, AcceptLoop);
+  fuppesThreadStart(accept_thread, AcceptLoop);
 }
 
 void CHTTPServer::Stop()
 {
   // Stop thread
-  upnpThreadExit(accept_thread, 2000);
+  fuppesThreadClose(accept_thread, 2000);
 }
 
 upnpSocket CHTTPServer::GetSocket()
@@ -144,7 +144,7 @@ bool CHTTPServer::CallOnReceive(std::string p_sMessage, CHTTPMessage* pMessageOu
  CALLBACKS
 ===============================================================================*/
 
-upnpThreadCallback AcceptLoop(void *arg)
+fuppesThreadCallback AcceptLoop(void *arg)
 {
 	CHTTPServer* pHTTPServer = (CHTTPServer*)arg;	
   string sMsg[] = { "listening on", pHTTPServer->GetURL() };
@@ -168,16 +168,19 @@ upnpThreadCallback AcceptLoop(void *arg)
 			
       // start session thread
       CHTTPSessionInfo pSession(pHTTPServer, nConnection);      
-      upnpThread Session = (upnpThread)NULL;
+      fuppesThread Session = (fuppesThread)NULL;
       // T.S.TODO: Where do we need to exit thread???
-      upnpThreadStartArg(Session, SessionLoop, pSession);
+      /* uv :: we put the thread handles in a list (e.g vector)
+               and build a garbage-collecting thread, that
+               closes all finished threads */
+      fuppesThreadStartArg(Session, SessionLoop, pSession);
 		}
 	}	
 	
 	return 0;
 }
 
-upnpThreadCallback SessionLoop(void *arg)
+fuppesThreadCallback SessionLoop(void *arg)
 {
   CHTTPSessionInfo pSession = *(CHTTPSessionInfo*)arg;  
   int  nBytesReceived = 0;
@@ -214,7 +217,7 @@ upnpThreadCallback SessionLoop(void *arg)
     
   }
   
-  return 0;
+  return 0;  
 }
 
 // <\PUBLIC>

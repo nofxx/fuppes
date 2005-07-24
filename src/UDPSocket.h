@@ -71,7 +71,7 @@ class CUDPSocket
 	  sockaddr_in get_local_ep();	
 	private:				
 		upnpSocket  sock;					
-  	upnpThread  receive_thread;					  
+  	fuppesThread  receive_thread;					  
 		bool        is_multicast;	
 	  sockaddr_in local_ep;	// local end point
 	

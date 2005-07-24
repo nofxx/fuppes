@@ -2,7 +2,9 @@
  *            Common.cpp
  * 
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel & Thomas Schnitzler
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -134,3 +136,18 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
     return false;
   }
 }
+
+#ifdef WIN32
+/* TODO: TS - win aequivalent einbauen */
+#else
+
+void fuppesThreadLock(fuppesThreadMutex* pMutex)
+{
+  pthread_mutex_lock(pMutex);
+};
+
+void fuppesThreadUnlock(fuppesThreadMutex* pMutex)
+{
+  pthread_mutex_unlock(pMutex);
+};
+#endif

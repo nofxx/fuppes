@@ -2,7 +2,8 @@
  *            SharedLog.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -25,6 +26,8 @@
 #include "Common.h"
 #include <iostream>
 
+#define DISABLELOG
+
 CSharedLog* CSharedLog::m_Instance = 0;
 
 CSharedLog* CSharedLog::Shared()
@@ -36,46 +39,84 @@ CSharedLog* CSharedLog::Shared()
 
 CSharedLog::CSharedLog()
 {
-  m_bLocked = false;
+  #ifndef DISABLELOG
+  
+  #ifdef WIN32
+  InitializeCriticalSectionAndSpinCount(&CriticalSection, 0x80000400);
+  #else
+  pthread_mutex_init(&m_Mutex, NULL);
+  #endif
+  
+  #endif
 }
 
 void CSharedLog::Log(std::string p_sSender, std::string p_sMessage)
 {
-  /*while(m_bLocked) 
-  {
-    upnpSleep(10);
-  }
+  #ifndef DISABLELOG
   
-  m_bLocked = true;
+  #ifdef WIN32
+  EnterCriticalSection(&m_Mutex);
+  #else
+  pthread_mutex_lock(&m_Mutex);
+  #endif
   
   std::cout << "[" << p_sSender << "] " << p_sMessage << std::endl;  
   fflush(stdout);
   
-  m_bLocked = false;*/
+  #ifdef WIN32
+  LeaveCriticalSection(&m_Mutex);
+  #else
+  pthread_mutex_unlock(&m_Mutex);
+  #endif
+  
+  #endif
 }
 
 void CSharedLog::Log(std::string p_sSender, std::string p_asMessages[], unsigned int p_nCount, std::string p_sSeparator)
 {
-  /*std::cout << "[" << p_sSender << "] ";
+  #ifndef DISABLELOG
+  
+  #ifdef WIN32
+  EnterCriticalSection(&m_Mutex);
+  #else
+  pthread_mutex_lock(&m_Mutex);
+  #endif
+  
+  std::cout << "[" << p_sSender << "] ";
   for(unsigned int i = 0; i < p_nCount; i++)
   {
     std::cout << p_asMessages[i] << p_sSeparator;
   }
   std::cout  << std::endl;
-  fflush(stdout);*/
+  fflush(stdout);
+  
+  #ifdef WIN32
+  LeaveCriticalSection(&m_Mutex);
+  #else
+  pthread_mutex_unlock(&m_Mutex);
+  #endif  
+  
+  #endif
 }
 
 void CSharedLog::Error(std::string p_sSender, std::string p_sMessage)
 {
- /* while(m_bLocked) 
-  {
-    upnpSleep(10);
-  }
+  #ifndef DISABLELOG
   
-  m_bLocked = true;
+  #ifdef WIN32
+  /* TODO: TS - win aequivalent einbauen */
+  #else
+  pthread_mutex_lock(&m_Mutex);
+  #endif
   
   std::cout << "[ERROR :: " << p_sSender << "] " << p_sMessage << std::endl;  
   fflush(stdout);
+
+  #ifdef WIN32
+  /* TODO: TS - win aequivalent einbauen */
+  #else
+  pthread_mutex_unlock(&m_Mutex);
+  #endif
   
-  m_bLocked = false;*/
+  #endif
 }

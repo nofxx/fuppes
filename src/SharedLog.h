@@ -2,7 +2,8 @@
  *            SharedLog.h
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -37,7 +38,14 @@ class CSharedLog
   private:
     CSharedLog();
 		static CSharedLog* m_Instance;
-    bool m_bLocked;
+
+    /* da common.h sharedlog.h einbindet muss der Kram
+       hier nochmal spezifisch abgehandelt werden */  
+    #ifdef WIN32    
+    CRITICAL_SECTION m_Mutex;
+    #else      
+    pthread_mutex_t m_Mutex;
+    #endif  
 };
 
 #endif /* _SHAREDLOG_H */

@@ -200,9 +200,9 @@ void CFuppes::OnSSDPCtrlReceiveMsg(CSSDPMessage* pMessage)
     m_RemoteDeviceIterator = m_RemoteDevices.find(pMessage->GetDeviceID());
     if(m_RemoteDeviceIterator != m_RemoteDevices.end())
     {
-      std::stringstream sMsg;
+      /*std::stringstream sMsg;
       sMsg << "known device: " << pMessage->GetDeviceID();
-      CSharedLog::Shared()->Log(LOGNAME, sMsg.str());      
+      CSharedLog::Shared()->Log(LOGNAME, sMsg.str()); */
     }
     else
     {
@@ -312,8 +312,10 @@ bool CFuppes::HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
     {
       pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, HTTP_CONTENT_TYPE_AUDIO_MPEG);
       pMessageOut->LoadContentFromFile(pItem->GetFileName());
-    }    
-    cout << "[FUPPES] sending audio file " << pItem->GetFileName() << endl;    
+    }  
+    stringstream sLog;
+    sLog << "[FUPPES] sending audio file " << pItem->GetFileName();
+    CSharedLog::Shared()->Log(LOGNAME, sLog.str());
     return true;
   }
   

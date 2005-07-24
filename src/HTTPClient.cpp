@@ -59,7 +59,7 @@ const std::string LOGNAME = "HTTPClient";
  MESSAGES
 ===============================================================================*/
 
-bool CHTTPClient::Send(CHTTPMessage* pMessage, std::string p_sTargetIPAddress, unsigned int p_nTargetPort /*= 80*/)
+bool CHTTPClient::Send(CHTTPMessage* pMessage, std::string p_sTargetIPAddress, unsigned int p_nTargetPort)
 {
   // Init socket
   upnpSocket sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -87,6 +87,12 @@ bool CHTTPClient::Send(CHTTPMessage* pMessage, std::string p_sTargetIPAddress, u
   return true;
 }
 
+/** HTTP GET implementation
+ *  @param  p_sGetURL  the URL to GET
+ *  @param  pResult pointer to a CHTTPMessage object that will be filled with the received values
+ *
+ *  @return returns true on success otherwise false
+ */
 bool CHTTPClient::Get(std::string p_sGetURL, CHTTPMessage* pResult)
 {
   std::string   sIPAddress;
@@ -103,7 +109,18 @@ bool CHTTPClient::Get(std::string p_sGetURL, CHTTPMessage* pResult)
   else return false;    
 }
 
-bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_sTargetIPAddress, unsigned int p_nTargetPort /*= 80*/)
+/** HTTP GET implementation
+ *  @param  p_sGet  the GET path plus file
+ *  @param  pResult pointer to a CHTTPMessage object that will be filled with the received values
+ *  @param  p_sTargetIPAddress  the IP-Address of the remote host
+ *  @param  p_nTargetPort the port of the remote host (default = 80)
+ *
+ *  @return returns true on success otherwise false
+ *
+ *  @todo check if received content's length corresponds to the header's CONTENT-LENGTH value
+ *  @todo implement HTTP 1.1 functionality
+ */
+bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_sTargetIPAddress, unsigned int p_nTargetPort)
 {
   // Init socket
   upnpSocket sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -139,19 +156,19 @@ bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_s
 
     while((nBytesReceived = recv(sock, buffer, sizeof(buffer), 0)) > 0)
     {
-      cout << "received " << nBytesReceived << " bytes" << endl;
-      fflush(stdout);
+      stringstream sMsg;
+      sMsg << "received " << nBytesReceived << " bytes" << endl;
+      CSharedLog::Shared()->Log(LOGNAME, sMsg.str());
+      
       buffer[nBytesReceived] = '\0';
       sReceived << buffer;
     }
 
     if(sReceived.str().length() > 0)
     {
-      cout << "done receive" << endl;
-      fflush(stdout);
+      CSharedLog::Shared()->Log(LOGNAME, "done receive");      
       pResult->BuildFromString(sReceived.str());
-      cout << "done build msg" << endl;
-      fflush(stdout);
+      CSharedLog::Shared()->Log(LOGNAME, "done build msg");      
       return true;
     }
     else

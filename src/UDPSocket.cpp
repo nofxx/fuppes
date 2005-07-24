@@ -35,12 +35,12 @@ const string LOGNAME = "UDPSocket";
 #define MULTICAST_PORT 1900
 #define MULTICAST_IP   "239.255.255.250"
 
-upnpThreadCallback receive_loop(void *arg);
+fuppesThreadCallback receive_loop(void *arg);
 
 CUDPSocket::CUDPSocket()
 {	
 	local_ep.sin_port = 0;
-	receive_thread = (upnpThread)NULL;
+	receive_thread = (fuppesThread)NULL;
 }	
 	
 
@@ -120,13 +120,13 @@ void CUDPSocket::teardown_socket()
 void CUDPSocket::begin_receive()
 {
   // Start thread
-  upnpThreadStart(receive_thread, receive_loop);
+  fuppesThreadStart(receive_thread, receive_loop);
 }
 
 void CUDPSocket::end_receive()
 {
   // Exit thread
-  upnpThreadExit(receive_thread, 2000);
+  fuppesThreadClose(receive_thread, 2000);
 }
 
 void CUDPSocket::send_multicast(std::string p_sMessage)
@@ -160,7 +160,7 @@ sockaddr_in CUDPSocket::get_local_ep()
 	return local_ep;
 }
 
-upnpThreadCallback receive_loop(void *arg)
+fuppesThreadCallback receive_loop(void *arg)
 {
   CUDPSocket* udp_sock = (CUDPSocket*)arg;
   stringstream sMsg;

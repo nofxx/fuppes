@@ -2,7 +2,9 @@
  *            Common.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel & Thomas Schnitzler
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -86,18 +88,25 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
 #define upnpSocketFlag(_x_)     const char _x_[256] = ""
 
 // Threads
-#define upnpThread              HANDLE
-#define upnpThreadStart(_handle_, _callback_)             _handle_ = CreateThread(NULL, 0, &_callback_, this, 0, NULL)
-#define upnpThreadExit(_handle_, _timeoutms_)             WaitForSingleObject(_handle_, _timeoutms_); CloseHandle(_handle_)
-#define upnpThreadStartArg(_handle_, _callback_, __arg__) _handle_ = CreateThread(NULL, 0, &_callback_, &__arg__, 0, NULL)
-#define upnpThreadCallback      DWORD WINAPI
+typedef HANDLE  fuppesThread;
+typedef CRITICAL_SECTION fuppesThreadMutex;
+
+#define fuppesThreadStart(_handle_, _callback_)             _handle_ = CreateThread(NULL, 0, &_callback_, this, 0, NULL)
+#define fuppesThreadClose(_handle_, _timeoutms_)             WaitForSingleObject(_handle_, _timeoutms_); CloseHandle(_handle_)
+#define fuppesThreadStartArg(_handle_, _callback_, _arg_)   _handle_ = CreateThread(NULL, 0, &_callback_, &_arg_, 0, NULL)
+#define fuppesThreadCallback      DWORD WINAPI
 //#define upnpThreadExitCallback  return 0
+
+void fuppesThreadLock(fuppesThreadMutex* pMutex);
+void fuppesThreadUnlock(fuppesThreadMutex* pMutex);
 
 #else
 
 /*===============================================================================
  NOT WIN32 specific definitions
 ===============================================================================*/
+
+#include <pthread.h>
 
 // Common
 #define upnpSleep               usleep
@@ -111,13 +120,17 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
 #define upnpSocketFlag(_x_)     int* _x_
 
 // Threads
-#define upnpThread              pthread_t
-#define upnpThreadStart(_handle_, _callback_) pthread_create(&_handle_, NULL, &_callback_, this);
-// T.S.TODO: define upnpThreadExit
-#define upnpThreadExit(_handle_, _timeoutms_)
-#define upnpThreadStartArg(_handle_, _callback_, __arg__) pthread_create(&_handle_, NULL, &_callback_, &__arg__);
-#define upnpThreadCallback      void*
+typedef pthread_t       fuppesThread;
+typedef pthread_mutex_t fuppesThreadMutex;
+
+#define fuppesThreadStart(_handle_, _callback_)            pthread_create(&_handle_, NULL, &_callback_, this);
+#define fuppesThreadClose(_handle_, _timeoutms_)           pthread_cancel(_handle_);
+#define fuppesThreadStartArg(_handle_, _callback_, _arg_)  pthread_create(&_handle_, NULL, &_callback_, &_arg_);
+#define fuppesThreadCallback      void*
 //#define upnpThreadExitCallback  return
+
+void fuppesThreadLock(fuppesThreadMutex* pMutex);
+void fuppesThreadUnlock(fuppesThreadMutex* pMutex);
 
 #endif
 

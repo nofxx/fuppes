@@ -72,5 +72,4 @@ void CMessageBase::SetRemoteEndPoint(sockaddr_in p_EndPoint)
 {
   m_RemoteEp = p_EndPoint;
 }
-
 // <\PUBLIC>

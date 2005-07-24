@@ -68,7 +68,7 @@ class CSSDPCtrl: public IUDPSocket, ISSDPSession
 	private:
 		CUDPSocket *listener;	
     CNotifyMsgFactory* m_pNotifyMsgFactory;
-		upnpThread  msearch_thread;
+		fuppesThread  msearch_thread;
 	  sockaddr_in last_multicast_ep;  
     std::string m_sIPAddress;    
   
