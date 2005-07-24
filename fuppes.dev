@@ -1,7 +1,7 @@
 [Project]
 FileName=fuppes.dev
 Name=fuppes
-UnitCount=53
+UnitCount=52
 Type=1
 Ver=1
 ObjFiles=
@@ -121,9 +121,9 @@ BuildCmd=
 
 [VersionInfo]
 Major=0
-Minor=2
-Release=0
-Build=10
+Minor=1
+Release=2
+Build=0
 LanguageID=1033
 CharsetID=1252
 CompanyName=
@@ -134,8 +134,8 @@ LegalCopyright=
 LegalTrademarks=
 OriginalFilename=fuppes.exe
 ProductName=Free UPnP Entertainment Service
-ProductVersion=0.2
-AutoIncBuildNr=1
+ProductVersion=0.1.2
+AutoIncBuildNr=0
 
 [Unit10]
 FileName=src\SSDPCtrl.cpp
@@ -278,36 +278,6 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit25]
-FileName=src\win32.h
-CompileCpp=1
-Folder=fuppes
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit27]
-FileName=src\MessageBase.h
-CompileCpp=1
-Folder=fuppes
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit28]
-FileName=src\SSDPMessage.cpp
-CompileCpp=1
-Folder=fuppes
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit26]
 FileName=src\MessageBase.cpp
 CompileCpp=1
 Folder=fuppes
@@ -317,7 +287,17 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit29]
+[Unit27]
+FileName=src\SSDPMessage.cpp
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit28]
 FileName=src\SSDPMessage.h
 CompileCpp=1
 Folder=fuppes
@@ -327,7 +307,17 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit30]
+[Unit26]
+FileName=src\MessageBase.h
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit29]
 FileName=src\UPnPAction.cpp
 CompileCpp=1
 Folder=fuppes
@@ -337,7 +327,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit31]
+[Unit30]
 FileName=src\UPnPAction.h
 CompileCpp=1
 Folder=fuppes
@@ -347,8 +337,18 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit32]
+[Unit31]
 FileName=src\UPnPActionFactory.cpp
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit32]
+FileName=src\UPnPActionFactory.h
 CompileCpp=1
 Folder=fuppes
 Compile=1
@@ -368,16 +368,6 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit33]
-FileName=src\UPnPActionFactory.h
-CompileCpp=1
-Folder=fuppes
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit34]
 FileName=src\UPnPBase.cpp
 CompileCpp=1
 Folder=fuppes
@@ -387,7 +377,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit35]
+[Unit34]
 FileName=src\UPnPBase.h
 CompileCpp=1
 Folder=fuppes
@@ -397,7 +387,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit36]
+[Unit35]
 FileName=src\UPnPActions\UPnPBrowse.h
 CompileCpp=1
 Folder=fuppes
@@ -407,7 +397,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit37]
+[Unit36]
 FileName=src\ContentDirectory\UPnPObject.h
 CompileCpp=1
 Folder=fuppes
@@ -417,7 +407,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit38]
+[Unit37]
 FileName=src\ContentDirectory\ContentDirectory.cpp
 CompileCpp=1
 Folder=fuppes
@@ -427,7 +417,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit39]
+[Unit38]
 FileName=src\ContentDirectory\ContentDirectory.h
 CompileCpp=1
 Folder=fuppes
@@ -437,7 +427,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit40]
+[Unit39]
 FileName=src\ContentDirectory\StorageFolder.cpp
 CompileCpp=1
 Folder=fuppes
@@ -447,7 +437,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit41]
+[Unit40]
 FileName=src\ContentDirectory\StorageFolder.h
 CompileCpp=1
 Folder=fuppes
@@ -457,7 +447,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit42]
+[Unit41]
 FileName=src\ContentDirectory\UPnPItem.h
 CompileCpp=1
 Folder=fuppes
@@ -467,7 +457,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit43]
+[Unit42]
 FileName=src\ContentDirectory\AudioItem.h
 CompileCpp=1
 Folder=fuppes
@@ -477,7 +467,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit44]
+[Unit43]
 FileName=src\Common.h
 CompileCpp=1
 Folder=fuppes
@@ -487,7 +477,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit45]
+[Unit44]
 FileName=src\Common.cpp
 CompileCpp=1
 Folder=fuppes
@@ -497,7 +487,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit46]
+[Unit45]
 FileName=src\ContentDirectory\AudioItem.cpp
 CompileCpp=1
 Folder=fuppes
@@ -507,7 +497,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit47]
+[Unit46]
 FileName=src\Presentation\PresentationHandler.h
 CompileCpp=1
 Folder=fuppes
@@ -517,7 +507,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit48]
+[Unit47]
 FileName=src\Presentation\PresentationHandler.cpp
 CompileCpp=1
 Folder=fuppes
@@ -527,7 +517,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit49]
+[Unit48]
 FileName=src\HTTPClient.cpp
 CompileCpp=1
 Folder=fuppes
@@ -537,7 +527,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit50]
+[Unit49]
 FileName=src\HTTPClient.h
 CompileCpp=1
 Folder=fuppes
@@ -547,7 +537,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit51]
+[Unit50]
 FileName=src\SharedLog.cpp
 CompileCpp=1
 Folder=fuppes
@@ -557,8 +547,18 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit52]
+[Unit51]
 FileName=src\SharedLog.h
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit52]
+FileName=src\Presentation\Stylesheet.h
 CompileCpp=1
 Folder=fuppes
 Compile=1
