@@ -2,7 +2,9 @@
  *            main.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -31,19 +33,67 @@
 #include "Fuppes.h"
 #include "Presentation/PresentationHandler.h"
 
+#ifdef DAEMON
+#include <fcntl.h>
+#endif
+
 using namespace std;
 
 /*===============================================================================
  MAIN
 ===============================================================================*/
 
+/** main function
+ *  @return int
+ *  @todo   create a CFuppes instance for each network interface
+ */
 int main()
 {
-  // Setup winsockets	
-#ifdef WIN32
+  /* Setup winsockets	*/
+  #ifdef WIN32
   WSADATA wsa;
   WSAStartup(MAKEWORD(2,0), &wsa);
-#endif
+  #endif
+  
+  /* daemon process */
+  #ifdef DAEMON
+  /* Our process ID and Session ID */
+  pid_t pid, sid;
+  
+  /* Fork off the parent process */
+  pid = fork();
+  if (pid < 0) {
+          exit(EXIT_FAILURE);
+  }
+  /* If we got a good PID, then
+     we can exit the parent process. */
+  if (pid > 0) {
+          exit(EXIT_SUCCESS);
+  }
+
+  /* Change the file mode mask */
+  umask(0);
+          
+  /* Open any logs here */        
+          
+  /* Create a new SID for the child process */
+  sid = setsid();
+  if (sid < 0) {
+          /* Log the failure */
+          exit(EXIT_FAILURE);
+  }
+  
+  /* Change the current working directory */
+  if ((chdir("/")) < 0) {
+          /* Log the failure */
+          exit(EXIT_FAILURE);
+  }
+  
+  /* Close out the standard file descriptors */
+  close(STDIN_FILENO);
+  close(STDOUT_FILENO);
+  close(STDERR_FILENO);  
+  #endif
   
   cout << "FUPPES - Free UPnP(tm) Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;
   if(!CSharedConfig::Shared()->SetupConfig())
@@ -52,7 +102,7 @@ int main()
   cout << "address : " << CSharedConfig::Shared()->GetIPv4Address() << endl;
   cout << endl;
 	
-  // Create presentation handler
+  /* Create presentation handler */
   CPresentationHandler* pPresentationHandler = new CPresentationHandler();
   
   // Create main server object (CFuppes)
@@ -70,7 +120,7 @@ int main()
   cout << "press \"q\" to  quit" << endl;
   cout << endl;
   
-  // Handle input
+  /* Handle input */
   string input = "";
   while(input != "q")
   {		
@@ -84,14 +134,14 @@ int main()
       pFuppes->GetSSDPCtrl()->send_byebye();
   }
   
-  // Destroy objects
+  /* Destroy objects */
   SAFE_DELETE(pFuppes);
   SAFE_DELETE(pPresentationHandler);
 
-  // Cleanup winsockets
-#ifdef WIN32  
+  /* Cleanup winsockets */
+  #ifdef WIN32
   WSACleanup();
-#endif
+  #endif
 
   return 0;
 }

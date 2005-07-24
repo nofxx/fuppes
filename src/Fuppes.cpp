@@ -2,8 +2,9 @@
  *            Fuppes.cpp
  * 
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
- *  Copyright (C) 2005 Thomas Schnitzler
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -57,53 +58,64 @@ const string LOGNAME = "FUPPES";
  CONSTRUCTOR / DESTRUCTOR
 ===============================================================================*/
 
+/** constructor
+ *  @param  p_sIPAddress  IP-address of the network interface 
+ *                        this instance should be started on
+ *  @param  p_sUUID       UUID this instance should be started with
+ *  @param  pPresentationRequestHandler pointer to an object implementing the request handler
+ */
 CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID, IFuppes* pPresentationRequestHandler)
 {
   ASSERT(NULL != pPresentationRequestHandler);
   
-  // Set members
+  /* Set members */
   m_sIPAddress                  = p_sIPAddress;
   m_sUUID                       = p_sUUID;
   m_pPresentationRequestHandler = pPresentationRequestHandler;
 
   CSharedLog::Shared()->Log(LOGNAME, "initializing devices");
   
-  // Init HTTP server
+  /* Init HTTP server */
   m_pHTTPServer = new CHTTPServer(m_sIPAddress);
   m_pHTTPServer->SetReceiveHandler(this);
 	m_pHTTPServer->Start();
   
-  // Init SSDP receiver
+  /* Init SSDP receiver */
   m_pSSDPCtrl = new CSSDPCtrl(m_sIPAddress, m_pHTTPServer->GetURL());
 	m_pSSDPCtrl->SetReceiveHandler(this);
 	m_pSSDPCtrl->Start();
 
-  // Create MediaServer
+  /* Create MediaServer */
   m_pMediaServer = new CMediaServer(m_pHTTPServer->GetURL());	  
   
-  // Create ContentDirectory
+  /* Create ContentDirectory */
   m_pContentDirectory = new CContentDirectory(m_pHTTPServer->GetURL());  
   
-  // Add ContentDirectory to MediaServers service-list
+  /* Add ContentDirectory to MediaServers service-list */
 	m_pMediaServer->AddUPnPService(m_pContentDirectory);
 
-  // Logging
   CSharedLog::Shared()->Log(LOGNAME, "done");
+  
+  /* if everything is up and running,
+     multicast alive messages and search
+     for other devices */
   CSharedLog::Shared()->Log(LOGNAME, "multicasting alive messages");  
-  //m_pSSDPCtrl->send_alive();  
+  m_pSSDPCtrl->send_alive();  
   CSharedLog::Shared()->Log(LOGNAME, "done");
   CSharedLog::Shared()->Log(LOGNAME, "multicasting m-search");  
-  //m_pSSDPCtrl->send_msearch();  
+  m_pSSDPCtrl->send_msearch();  
   CSharedLog::Shared()->Log(LOGNAME, "done");
 }
 
+/** destructor
+ */
 CFuppes::~CFuppes()
 {
-  // Logging
+  /* Logging */
   CSharedLog::Shared()->Log(LOGNAME, "shutting down");
   CSharedLog::Shared()->Log(LOGNAME, "multicasting byebye messages");  
   
-  // Send ByeBye message
+  /* multicast ByeBye messages */
   ASSERT(NULL != m_pSSDPCtrl);
   if(NULL != m_pSSDPCtrl)
   {
@@ -112,12 +124,12 @@ CFuppes::~CFuppes()
   }
   CSharedLog::Shared()->Log(LOGNAME, "done");
 
-  // Stop HTTPServer
+  /* Stop HTTPServer */
   ASSERT(NULL != m_pHTTPServer);
   if(NULL != m_pHTTPServer)
     m_pHTTPServer->Stop();
 
-  // Destroy objects
+  /* Destroy objects */
   SAFE_DELETE(m_pContentDirectory);
   SAFE_DELETE(m_pMediaServer);
   SAFE_DELETE(m_pSSDPCtrl);
@@ -128,20 +140,16 @@ CFuppes::~CFuppes()
  GET
 ===============================================================================*/
 
-/*! \fn     CSSDPCtrl* CFuppes::GetSSDPCtrl()
- *  \brief  Returns a pointer to the CSSDPCtrl member
- *  \param  none
- *  \return CSSDPCtrl*
+/** Returns a pointer to the CSSDPCtrl member 
+ *  @return CSSDPCtrl*
  */
 CSSDPCtrl* CFuppes::GetSSDPCtrl()
 {
   return m_pSSDPCtrl;
 }
 
-/*! \fn     std::string CFuppes::GetHTTPServerURL()
- *  \brief  Returns URL of the HTTP member
- *  \param  none
- *  \return std::string
+/** Returns URL of the HTTP member
+ * @return std::string
  */
 std::string CFuppes::GetHTTPServerURL()
 {
@@ -151,26 +159,22 @@ std::string CFuppes::GetHTTPServerURL()
   else return "";
 }
 
-/*! \fn     std::string CFuppes::GetIPAddress()
- *  \brief  Returns IP address
- *  \param  none
- *  \return std::string
+/** Returns IP address 
+ *  @return std::string
  */
 std::string CFuppes::GetIPAddress()
 {
   return m_sIPAddress;
 }
 
-/*! \fn     std::vector<CUPnPDevice*> CFuppes::GetRemoteDevices()
- *  \brief  Returns a UPnP device
- *  \param  none
- *  \return std::vector<CUPnPDevice*>
+/** Returns a UPnP device
+ *  @return std::vector<CUPnPDevice*>
  */
 std::vector<CUPnPDevice*> CFuppes::GetRemoteDevices()
 {
   std::vector<CUPnPDevice*> vResult;
   
-  // Iterate devices
+  /* Iterate devices */
   for(m_RemoteDeviceIterator = m_RemoteDevices.begin(); m_RemoteDeviceIterator != m_RemoteDevices.end(); m_RemoteDeviceIterator++)
   {
     vResult.push_back((*m_RemoteDeviceIterator).second);
@@ -229,7 +233,7 @@ bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMe
   
   bool fRet = true;
 
-  // Handle message
+  /* Handle message */
   HTTP_MESSAGE_TYPE nMsgType = pMessageIn->GetMessageType();
   switch(nMsgType)
   {
