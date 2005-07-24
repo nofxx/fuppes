@@ -36,6 +36,12 @@
 #include "UPnPActionFactory.h"
 
 /*===============================================================================
+ CONSTANTS
+===============================================================================*/
+
+const std::string LOGNAME = "HTTPMessage";
+
+/*===============================================================================
  CLASS CHTTPMessage
 ===============================================================================*/
 
@@ -90,7 +96,7 @@ void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, HTTP_CONTENT_TYPE nCtn
 void CHTTPMessage::SetMessage(std::string p_sMessage)
 {
   CMessageBase::SetMessage(p_sMessage);  
-  CSharedLog::Shared()->Log(p_sMessage, p_sMessage);  
+  CSharedLog::Shared()->Log(LOGNAME, p_sMessage);  
   BuildFromString(p_sMessage);
 }
 

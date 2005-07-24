@@ -157,7 +157,7 @@ bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_s
     while((nBytesReceived = recv(sock, buffer, sizeof(buffer), 0)) > 0)
     {
       stringstream sMsg;
-      sMsg << "received " << nBytesReceived << " bytes" << endl;
+      sMsg << "received " << nBytesReceived << " bytes";
       CSharedLog::Shared()->Log(LOGNAME, sMsg.str());
       
       buffer[nBytesReceived] = '\0';
