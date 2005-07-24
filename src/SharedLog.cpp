@@ -26,7 +26,7 @@
 #include "Common.h"
 #include <iostream>
 
-#define DISABLELOG
+//#define DISABLELOG
 
 CSharedLog* CSharedLog::m_Instance = 0;
 
@@ -42,7 +42,7 @@ CSharedLog::CSharedLog()
   #ifndef DISABLELOG
   
   #ifdef WIN32
-  InitializeCriticalSectionAndSpinCount(&CriticalSection, 0x80000400);
+  InitializeCriticalSectionAndSpinCount(&m_Mutex, 0x80000400);
   #else
   pthread_mutex_init(&m_Mutex, NULL);
   #endif

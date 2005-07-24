@@ -26,6 +26,9 @@
 #define _SHAREDLOG_H
 
 #include <string>
+#ifdef WIN32
+#include <windows.h>
+#endif
 
 class CSharedLog
 {
