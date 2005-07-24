@@ -25,7 +25,6 @@
 #include "UPnPItem.h"
 #include "AudioItem.h"
 #include "../UPnPActions/UPnPBrowse.h"
-#include "../win32.h"
 #include "../SharedConfig.h"
 #include "../Common.h"
 #include "../RegEx.h"
@@ -41,9 +40,10 @@
 #include <sys/stat.h> 
 using namespace std;
  
-CContentDirectory::CContentDirectory(): CUPnPService(udtContentDirectory)
+CContentDirectory::CContentDirectory(std::string p_sHTTPServerURL):
+  CUPnPService(udtContentDirectory, p_sHTTPServerURL)
 {
-  m_pBaseFolder = new CStorageFolder();
+  m_pBaseFolder = new CStorageFolder(m_sHTTPServerURL);
   m_ObjectList["0"] = m_pBaseFolder;
   
   BuildObjectList();
@@ -51,15 +51,20 @@ CContentDirectory::CContentDirectory(): CUPnPService(udtContentDirectory)
 
 CContentDirectory::~CContentDirectory()
 {
+  delete m_pBaseFolder;
 }
  
-CHTTPMessage* CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction)
+bool CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut)
 {
+  // T.S.NOTE: Why do we handle a browse here?
+  // Handle UPnP browse
   string sContent = HandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);  
-  CHTTPMessage* pResult = new CHTTPMessage(http_200_ok, text_xml);
-  pResult->SetContent(sContent);
-  
-  return pResult;
+
+  // Init message
+  pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, HTTP_CONTENT_TYPE_TEXT_XML);
+  pMessageOut->SetContent(sContent);
+
+  return true;
 }
 
 std::string CContentDirectory::GetFileNameFromObjectID(std::string p_sObjectID)
@@ -165,7 +170,7 @@ void CContentDirectory::BuildObjectList()
   {
     if(DirectoryExists(CSharedConfig::Shared()->GetSharedDir(i)))
     {  
-      CStorageFolder* pTmpFolder = new CStorageFolder();            
+      CStorageFolder* pTmpFolder = new CStorageFolder(m_sHTTPServerURL);            
     
       char szObjId[11];                            
       sprintf(szObjId, "%010X", nCount);          
@@ -236,7 +241,7 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
       // mp3 file
       if(IsFile(szTemp) && (ToLower(sExt).compare("mp3") == 0))
       {
-        CAudioItem* pTmpItem = new CAudioItem();
+        CAudioItem* pTmpItem = new CAudioItem(m_sHTTPServerURL);
         char szObjId[11];                            
         sprintf(szObjId, "%010X", *p_nCount);
 
@@ -258,7 +263,7 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
       else if(IsDirectory(szTemp))
       {            
         // create folder object
-        CStorageFolder* pTmpFolder = new CStorageFolder();
+        CStorageFolder* pTmpFolder = new CStorageFolder(m_sHTTPServerURL);
 
         char szObjId[11];                            
         sprintf(szObjId, "%010X", *p_nCount);            
@@ -312,7 +317,7 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
         // mp3 file
         if(IsFile(sTmp.str()) && (ToLower(sExt).compare("mp3") == 0))
         {
-          CAudioItem* pTmpItem = new CAudioItem();
+          CAudioItem* pTmpItem = new CAudioItem(m_sHTTPServerURL);
           char szObjId[10];                            
           sprintf(szObjId, "%010X", *p_nCount);
             
@@ -334,7 +339,7 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
         else if(IsDirectory(sTmp.str()))
         {            
           // create folder object
-          CStorageFolder* pTmpFolder = new CStorageFolder();
+          CStorageFolder* pTmpFolder = new CStorageFolder(m_sHTTPServerURL);
           
           char szObjId[10];                            
           sprintf(szObjId, "%010X", *p_nCount);            

@@ -24,7 +24,11 @@
 #ifndef _MESSAGEBASE_H
 #define _MESSAGEBASE_H
 
-#include "win32.h"
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
+#include "Common.h"
 
 #ifndef WIN32
 #include <arpa/inet.h>
@@ -34,25 +38,75 @@
 
 #include <string>
 
+using namespace std;
+
+/*===============================================================================
+ CLASS CMessageBase
+===============================================================================*/
+
 class CMessageBase
 {
+
+// <PROTECTED>
+
 	protected:
-		CMessageBase(std::string);
-	  ~CMessageBase();
-	
-	public:
-		sockaddr_in GetLocalEndPoint();
-	  void        SetLocalEndPoint(sockaddr_in);
-	
-		sockaddr_in GetRemoteEndPoint();
-	  void        SetRemoteEndPoint(sockaddr_in);		
-	
-		std::string GetContent();	
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+		CMessageBase();
+	  virtual ~CMessageBase();
+
+// <\PROTECTED>
+
+// <PUBLIC>
+
+public:
+
+/*===============================================================================
+ INIT
+===============================================================================*/
+
+  virtual void SetMessage(std::string p_sMessage);
+
+/*===============================================================================
+ GET MESSAGE DATA
+===============================================================================*/
+
+	std::string GetContent()         { return m_sContent;                     }
+  std::string	GetMessage()         { return m_sMessage;                     }
+  std::string GetHeader()          { return m_sHeader;                      }
+  std::string GetRemoteIPAddress() { return inet_ntoa(m_RemoteEp.sin_addr); }
+
+/*===============================================================================
+ ENDPOINT
+===============================================================================*/
+
+  sockaddr_in GetLocalEndPoint()	 { return m_LocalEp;                      }
+  sockaddr_in GetRemoteEndPoint()  { return m_RemoteEp;                     }
+		
+	void        SetLocalEndPoint(sockaddr_in);
+	void        SetRemoteEndPoint(sockaddr_in);		
   
-	protected:
+// <\PUBLIC>
+
+// <PROTECTED>
+
+protected:
+
+/*===============================================================================
+ MEMBERS
+===============================================================================*/
+
 	  sockaddr_in m_LocalEp;
 		sockaddr_in m_RemoteEp;
 	  std::string m_sContent;
+    std::string m_sHeader;
+    std::string m_sMessage;
+
+// <\PROTECTED>
+
 };
 
 #endif /* _MESSAGEBASE_H */

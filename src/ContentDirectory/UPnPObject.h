@@ -37,7 +37,10 @@ enum eUPnPObjectType
 class CUPnPObject
 {
   protected:
-    CUPnPObject(eUPnPObjectType p_UPnPObjectType) { m_UPnPObjectType = p_UPnPObjectType; };
+    CUPnPObject(eUPnPObjectType p_UPnPObjectType, std::string p_sHTTPServerURL) 
+      { m_UPnPObjectType = p_UPnPObjectType;
+        m_sHTTPServerURL = p_sHTTPServerURL;
+      }
     virtual ~CUPnPObject() { };
   
   public:
@@ -54,12 +57,16 @@ class CUPnPObject
     
     virtual void GetDescription(xmlTextWriterPtr pWriter) = 0;
     
+  protected:
+    std::string GetHTTPServerURL() { return m_sHTTPServerURL; }
+    
   private:
     std::string m_sObjectID;
     eUPnPObjectType m_UPnPObjectType;
     CUPnPObject* m_ParentObject;
     std::string m_sName;
     std::string m_sFileName;
+    std::string m_sHTTPServerURL;
 };
 
 #endif /* _UPNPOBJECT_H */

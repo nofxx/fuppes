@@ -29,7 +29,8 @@
 class CUPnPItem: public CUPnPObject
 {
   public:
-    CUPnPItem(eUPnPObjectType p_UPnPObjectType): CUPnPObject(p_UPnPObjectType) {}
+    CUPnPItem(eUPnPObjectType p_UPnPObjectType, std::string p_sHTTPServerURL):
+      CUPnPObject(p_UPnPObjectType, p_sHTTPServerURL) {}
       
     void GetDescription(xmlTextWriterPtr pWriter) { }
 };

@@ -28,21 +28,29 @@
 
 enum eUPnPDeviceType
 {
+  udtUnknown,
   udtRootDevice,
   udtMediaServer,
-  udtContentDirectory
+  udtContentDirectory,
+  udtRenderingControl,
+  udtConnectionManager,
+  udtAVTransport
 };
 
 class CUPnPBase
 {
   protected:
-    CUPnPBase(eUPnPDeviceType);  
+    CUPnPBase(eUPnPDeviceType, std::string p_sHTTPServerURL);  
   
   public:
     std::string GetUPnPDeviceTypeAsString();
   
+  protected:
+    std::string m_sHTTPServerURL;
+  
   private:
     eUPnPDeviceType m_UPnPDeviceType;
+    
 };
 
 #endif /* _UPNPBASE_H */

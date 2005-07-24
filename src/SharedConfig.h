@@ -40,9 +40,9 @@ class CSharedConfig
 	  std::string GetHostname();
 	  std::string GetUDN();
 	
-		std::string GetIP();
-    void        SetHTTPServerURL(std::string);
-    std::string GetHTTPServerURL();
+		std::string GetIPv4Address();
+    /*void        SetHTTPServerURL(std::string);
+    std::string GetHTTPServerURL();*/
 	
     std::string GetSharedDir(int);
     int         SharedDirCount();
@@ -60,7 +60,7 @@ class CSharedConfig
   
 	  std::string m_sHostname;
 	  std::string m_sIP;
-    std::string m_sHTTPServerURL;
+    //std::string m_sHTTPServerURL;
     std::vector<std::string> m_vSharedDirectories;
   
     bool WriteDefaultConfig(std::string p_sFileName); 

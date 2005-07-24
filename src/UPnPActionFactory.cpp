@@ -21,6 +21,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
+#include "Common.h"
 #include "UPnPActionFactory.h"
 #include "UPnPActions/UPnPBrowse.h"
 #include "RegEx.h"
@@ -28,8 +29,13 @@
 #include <iostream>
 using namespace std;
 
-CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent)
+bool CUPnPActionFactory::BuildActionFromString(std::string p_sContent, CUPnPBrowse* pBrowse)
 {  
+  ASSERT(NULL != pBrowse);
+  if(NULL == pBrowse)
+    return false;
+
+  // T.S.TODO: Parse whole description here
 /*<?xml version="1.0" encoding="utf-8"?>
   <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
   <s:Body>
@@ -44,31 +50,29 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent)
   </s:Body>
   </s:Envelope>*/
   
-  CUPnPAction* pResult = new CUPnPBrowse();
-  
   RegEx rxObjId("<ObjectID>(.+)</ObjectID>");
   if (rxObjId.Search(p_sContent.c_str()))  
-    ((CUPnPBrowse*)pResult)->m_sObjectID = rxObjId.Match(1);
+    pBrowse->m_sObjectID = rxObjId.Match(1);
   
-  ((CUPnPBrowse*)pResult)->m_BrowseFlag = ubfBrowseDirectChildren;
-  ((CUPnPBrowse*)pResult)->m_sFilter    = "*";
+  pBrowse->m_BrowseFlag = ubfBrowseDirectChildren;
+  pBrowse->m_sFilter    = "*";
 
   RegEx rxStartIdx("<StartingIndex>(.+)</StartingIndex>");
   if(rxStartIdx.Search(p_sContent.c_str()))  
-    ((CUPnPBrowse*)pResult)->m_nStartingIndex = atoi(rxStartIdx.Match(1));
+    pBrowse->m_nStartingIndex = atoi(rxStartIdx.Match(1));
 
   RegEx rxReqCnt("<RequestedCount>(.+)</RequestedCount>");
   if(rxReqCnt.Search(p_sContent.c_str()))  
-    ((CUPnPBrowse*)pResult)->m_nRequestedCount = atoi(rxReqCnt.Match(1));  
+    pBrowse->m_nRequestedCount = atoi(rxReqCnt.Match(1));  
   
-  ((CUPnPBrowse*)pResult)->m_sSortCriteria = "";
+  pBrowse->m_sSortCriteria = "";
 
-  pResult->m_TargetDevice = udtContentDirectory;
+  pBrowse->m_TargetDevice = udtContentDirectory;
   
   /*cout << "[UPnPActionFactory] Browse Action:" << endl;
   cout << "\tObjectID: " << ((CUPnPBrowse*)pResult)->m_sObjectID << endl;
   cout << "\tStartingIndex: " << ((CUPnPBrowse*)pResult)->m_nStartingIndex << endl;
   cout << "\tRequestedCount: " << ((CUPnPBrowse*)pResult)->m_nRequestedCount << endl;*/
   
-  return pResult;
+  return true;
 }

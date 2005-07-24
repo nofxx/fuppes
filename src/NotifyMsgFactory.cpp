@@ -21,6 +21,10 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "NotifyMsgFactory.h"
 #include "SharedConfig.h"
 
@@ -29,57 +33,24 @@
 
 using namespace std;
 
-CNotifyMsgFactory* CNotifyMsgFactory::instance = 0;
+/*===============================================================================
+ CLASS CNotifyMsgFactory
+===============================================================================*/
 
-CNotifyMsgFactory* CNotifyMsgFactory::shared()
+// <PUBLIC>
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+CNotifyMsgFactory::CNotifyMsgFactory(std::string p_sHTTPServerURL)
 {
-	if (instance == 0)
-		instance = new CNotifyMsgFactory();
-	return instance;
+  m_sHTTPServerURL = p_sHTTPServerURL;
 }
 
-CNotifyMsgFactory::CNotifyMsgFactory()
-{
-}
-
-void CNotifyMsgFactory::SetHTTPServerURL(std::string sURL)
-{
-	m_sHTTPServerURL = sURL;
-}
-
-std::string CNotifyMsgFactory::type_to_string(msg_type a_type)
-{
-	stringstream result;
-	
-	switch(a_type)
-	{
-		case mt_usn:
-			result << "uuid:" << CSharedConfig::Shared()->GetUDN();
-			break;
-		
-		case mt_root_device:
-			result.str("upnp:rootdevice");
-		  break;
-		
-		case mt_connection_manager:
-			result.str("urn:schemas-upnp-org:service:ConnectionManager:1");
-		  break;
-		
-		case mt_content_directory:
-			result.str("urn:schemas-upnp-org:service:ContentDirectory:1");
-		  break;
-		
-		case mt_media_server:
-			result.str("urn:schemas-upnp-org:device:MediaServer:1");
-		  break;
-		
-		default:
-			result.str("");	 
-		  break;
-	}
-				
-	return result.str();
-}
+/*===============================================================================
+ NOTIFICATIONS
+===============================================================================*/
 
 std::string CNotifyMsgFactory::msearch()
 {
@@ -88,13 +59,13 @@ std::string CNotifyMsgFactory::msearch()
 	result << "M-SEARCH * HTTP/1.1\r\n";
 	result << "MX: 10\r\n";
 	result << "ST: ssdp:all\r\n";
-	result << "HOST: 239.255.255.250:1900\r\n";
+	result << "HOST: 239.255.255.250:1900\r\n"; // UPnP broadcast address
 	result << "MAN: \"ssdp:discover\"\r\n\r\n";
 		
 	return result.str();
 }
 
-std::string CNotifyMsgFactory::notify_alive(msg_type a_type)
+std::string CNotifyMsgFactory::notify_alive(MESSAGE_TYPE a_type)
 {
 	stringstream result;
 	
@@ -107,7 +78,7 @@ std::string CNotifyMsgFactory::notify_alive(msg_type a_type)
   result << "NTS: ssdp:alive\r\n";
 	
 	result << "USN: uuid:" << CSharedConfig::Shared()->GetUDN();
-	if(a_type == mt_usn)
+	if(a_type == MESSAGE_TYPE_USN)
 		result << "\r\n";
 	else
 	  result << "::" << type_to_string(a_type) << "\r\n";
@@ -119,7 +90,7 @@ std::string CNotifyMsgFactory::notify_alive(msg_type a_type)
 	return result.str();
 }
 
-std::string CNotifyMsgFactory::notify_bye_bye(msg_type a_type)
+std::string CNotifyMsgFactory::notify_bye_bye(MESSAGE_TYPE a_type)
 {
 	stringstream result;
 	
@@ -128,7 +99,7 @@ std::string CNotifyMsgFactory::notify_bye_bye(msg_type a_type)
   result << "NTS: ssdp:byebye\r\n";
 	
 	result << "USN: uuid:" << CSharedConfig::Shared()->GetUDN();
-	if(a_type == mt_usn)
+	if(a_type == MESSAGE_TYPE_USN)
 	{
 		result << "\r\n";
 		result << "NT: " << CSharedConfig::Shared()->GetUDN() << "\r\n";
@@ -144,7 +115,7 @@ std::string CNotifyMsgFactory::notify_bye_bye(msg_type a_type)
 	return result.str();	
 }
 
-std::string CNotifyMsgFactory::GetMSearchResponse(msg_type p_MessageType)
+std::string CNotifyMsgFactory::GetMSearchResponse(MESSAGE_TYPE p_MessageType)
 {	
   stringstream result;
 	
@@ -158,7 +129,7 @@ std::string CNotifyMsgFactory::GetMSearchResponse(msg_type p_MessageType)
   result << "ST: " << type_to_string(p_MessageType) << "\r\n";  
   result << "NTS: ssdp:alive\r\n";	
 	result << "USN: uuid:" << CSharedConfig::Shared()->GetUDN();
-	if(p_MessageType == mt_usn)
+	if(p_MessageType == MESSAGE_TYPE_USN)
 		result << "\r\n";
 	else
 	  result << "::" << type_to_string(p_MessageType) << "\r\n";
@@ -166,3 +137,48 @@ std::string CNotifyMsgFactory::GetMSearchResponse(msg_type p_MessageType)
 	
 	return result.str();
 }
+
+// <\PUBLIC>
+
+/*===============================================================================
+ HELPER
+===============================================================================*/
+
+// <PRIVATE>
+
+std::string CNotifyMsgFactory::type_to_string(MESSAGE_TYPE a_type)
+{
+	// Convert message type to string
+  stringstream result;
+	
+	switch(a_type)
+	{
+		case MESSAGE_TYPE_USN:
+			result << "uuid:" << CSharedConfig::Shared()->GetUDN();
+			break;
+		
+		case MESSAGE_TYPE_ROOT_DEVICE:
+			result.str("upnp:rootdevice");
+		  break;
+		
+		case MESSAGE_TYPE_CONNECTION_MANAGER:
+			result.str("urn:schemas-upnp-org:service:ConnectionManager:1");
+		  break;
+		
+		case MESSAGE_TYPE_CONTENT_DIRECTORY:
+			result.str("urn:schemas-upnp-org:service:ContentDirectory:1");
+		  break;
+		
+		case MESSAGE_TYPE_MEDIA_SERVER:
+			result.str("urn:schemas-upnp-org:device:MediaServer:1");
+		  break;
+		
+		default:
+			result.str("");	 
+		  break;
+	}
+				
+	return result.str();
+}
+
+// <\PRIVATE>

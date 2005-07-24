@@ -1,6 +1,6 @@
 /***************************************************************************
- *            MediaServer.cpp
- * 
+ *            HTTPClient.h
+ *
  *  FUPPES - Free UPnP Entertainment Service
  *  Copyright (C) 2005 Ulrich Völkel
  ****************************************************************************/
@@ -21,66 +21,66 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
+#ifndef _HTTPCLIENT_H
+#define _HTTPCLIENT_H
+
 /*===============================================================================
  INCLUDES
 ===============================================================================*/
 
-#include "MediaServer.h"
-#include "SharedConfig.h"
-
-#include <iostream>
-#include <sstream>
-
-using namespace std;
+#include "HTTPMessage.h"
 
 /*===============================================================================
- CLASS CMediaServer
+ CLASS CHTTPClient
 ===============================================================================*/
+
+class CHTTPClient
+{
 
 // <PUBLIC>
 
+public:   
+
 /*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
+ MESSAGES
 ===============================================================================*/
 
-CMediaServer::CMediaServer(std::string p_sHTTPServerURL):
-  CUPnPDevice(udtMediaServer, p_sHTTPServerURL)
-{
-  // Set common data for FUPPES
-
-  stringstream stream;
-
-  //stream << "Free UPnP Entertainment Service (" << CSharedConfig::Shared()->GetHostname() << ")";	
-  stream << CSharedConfig::Shared()->GetAppName() << " ";
-  stream << CSharedConfig::Shared()->GetAppVersion() << " (";
-  stream << CSharedConfig::Shared()->GetHostname() << ")";  
-  m_sFriendlyName = stream.str();
-  stream.str("");
-  stream.clear();
-
-  m_sManufacturer     = "Ulrich Völkel";
-  m_sManufacturerURL  = "http://www.ulrich-voelkel.de";      
-  m_sModelDescription = "Free UPnP Media Server licensed under the terms of the GPL";
-
-  stream << "Free UPnP Entertainment Service " << CSharedConfig::Shared()->GetAppVersion();
-  m_sModelName = stream.str();
-  stream.str("");
-  stream.clear();
-
-  stream << CSharedConfig::Shared()->GetAppVersion();   
-  m_sModelNumber = stream.str();
-  stream.str("");
-  stream.clear();
-
-  m_sModelURL        = "http://fuppes.sourceforge.net";
-  m_sSerialNumber    = "012345678910";
-  m_sUDN  			     = CSharedConfig::Shared()->GetUDN();
-  m_sUPC				     = "";
-  m_sPresentationURL = "index.html";      
-}
+  bool Send(
+    CHTTPMessage* pMessage,
+    std::string   p_sTargetIPAddress,
+    unsigned int  p_nTargetPort = 80
+    );
   
-CMediaServer::~CMediaServer()
-{
-}
+  bool Get(
+    std::string   p_sGetURL,
+    CHTTPMessage* pResult
+    );
+
+  bool Get(
+    std::string   p_sGet,
+    CHTTPMessage* pResult,
+    std::string   p_sTargetIPAddress,
+    unsigned int  p_nTargetPort = 80
+    );
 
 // <\PUBLIC>
+
+// <PRIVATE>
+
+private:
+
+/*===============================================================================
+ HELPER
+===============================================================================*/
+
+  std::string BuildGetHeader(
+    std::string  p_sGet,
+    std::string  p_sTargetIPAddress,
+    unsigned int p_nTargetPort
+    );
+
+// <\PRIVATE>
+
+};
+
+#endif /* _HTTPCLIENT_H */

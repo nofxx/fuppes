@@ -24,13 +24,32 @@
 #ifndef _MEDIASERVER_H
 #define _MEDIASERVER_H
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "UPnPDevice.h"
+
+/*===============================================================================
+ CLASS CMediaServer
+===============================================================================*/
 
 class CMediaServer: public CUPnPDevice
 {
-  public:
-		CMediaServer();
-	  ~CMediaServer();
+
+// <PUBLIC>
+
+public:
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+  CMediaServer(std::string p_sHTTPServerURL);
+  ~CMediaServer();
+
+// <\PUBLIC>
+
 };
 
-#endif /* _MEDIA_SERVER_H */
+#endif /* _MEDIASERVER_H */

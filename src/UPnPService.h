@@ -29,7 +29,7 @@
 class CUPnPService: public CUPnPBase
 {
 	protected:
-		CUPnPService(eUPnPDeviceType);
+		CUPnPService(eUPnPDeviceType, std::string p_sHTTPServerURL);
 		virtual ~CUPnPService();
 	
 	public:		

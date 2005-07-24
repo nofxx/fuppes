@@ -21,25 +21,49 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "HTTPServer.h"
-#include "SharedConfig.h"
+#include "HTTPMessage.h"
 
 #include <iostream>
 #include <sstream>
 
 using namespace std;
 
+/*===============================================================================
+ CONSTANTS
+===============================================================================*/
+
+const string LOGNAME = "HTTPServer";
+
+/*===============================================================================
+ CALLBACKS
+===============================================================================*/
+
 upnpThreadCallback AcceptLoop(void *arg);
 upnpThreadCallback SessionLoop(void *arg);
 
-CHTTPServer::CHTTPServer()
+/*===============================================================================
+ CLASS CHTTPServer
+===============================================================================*/
+
+// <PUBLIC>
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 {
 	accept_thread = (upnpThread)NULL;
 	
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 	
 	local_ep.sin_family      = PF_INET;
-	local_ep.sin_addr.s_addr = inet_addr(CSharedConfig::Shared()->GetIP().c_str());
+	local_ep.sin_addr.s_addr = inet_addr(p_sIPAddress.c_str());
 	local_ep.sin_port				 = htons(0);
 	
 	bind(sock, (struct sockaddr*)&local_ep, sizeof(local_ep));	
@@ -51,31 +75,81 @@ CHTTPServer::~CHTTPServer()
 {
 }
 
+/*===============================================================================
+ COMMON
+===============================================================================*/
+
+void CHTTPServer::Start()
+{
+  do_break = false;			
+  listen(sock, 3);
+
+  // Start thread
+  upnpThreadStart(accept_thread, AcceptLoop);
+}
+
+void CHTTPServer::Stop()
+{
+  // Stop thread
+  upnpThreadExit(accept_thread, 2000);
+}
+
 upnpSocket CHTTPServer::GetSocket()
 {
-	return sock;
+  return sock;
 }
 
 std::string CHTTPServer::GetURL()
 {
-	stringstream result;
-	result << inet_ntoa(local_ep.sin_addr) << ":" << ntohs(local_ep.sin_port);
-	return result.str();
+  stringstream result;
+  result << inet_ntoa(local_ep.sin_addr) << ":" << ntohs(local_ep.sin_port);
+  return result.str();
 }
 
-void CHTTPServer::Start()
+/*===============================================================================
+ MESSAGE HANDLING
+===============================================================================*/
+
+bool CHTTPServer::SetReceiveHandler(IHTTPServer* pHandler)
 {
-	do_break = false;			
-	listen(sock, 3);
-	
-	upnpThreadStart(accept_thread, AcceptLoop);
+	ASSERT(NULL != pHandler);
+  if(NULL == pHandler)
+    return false;
+  
+  // Save pointer to message handler
+  m_pReceiveHandler = pHandler;
+
+  return true;
 }
+
+bool CHTTPServer::CallOnReceive(std::string p_sMessage, CHTTPMessage* pMessageOut)
+{
+  ASSERT(NULL != pMessageOut);
+  if(NULL == pMessageOut)
+    return false;
+
+  if(m_pReceiveHandler != NULL)
+  {
+    // Create message
+    CHTTPMessage Message;
+    Message.SetMessage(p_sMessage);
+
+    // Parse message
+    return m_pReceiveHandler->OnHTTPServerReceiveMsg(&Message, pMessageOut);
+  }
+  else return false;
+}
+
+/*===============================================================================
+ CALLBACKS
+===============================================================================*/
 
 upnpThreadCallback AcceptLoop(void *arg)
 {
-	CHTTPServer* pHTTPServer = (CHTTPServer*)arg;
-	cout << "[HTTPServer] listening on " << pHTTPServer->GetURL() << endl;	
-	
+	CHTTPServer* pHTTPServer = (CHTTPServer*)arg;	
+  string sMsg[] = { "listening on", pHTTPServer->GetURL() };
+	CSharedLog::Shared()->Log(LOGNAME, sMsg, 2, " ");
+  
 	upnpSocket nSocket     = pHTTPServer->GetSocket();			
 	upnpSocket nConnection = 0;	
 	
@@ -84,14 +158,18 @@ upnpThreadCallback AcceptLoop(void *arg)
 	
 	for(;;)
 	{
-		nConnection = accept(nSocket, (struct sockaddr*)&remote_ep, &size);
-		if(nConnection != -1)
+		// T.S.TODO: Error on exit here
+    nConnection = accept(nSocket, (struct sockaddr*)&remote_ep, &size);
+		if(nConnection != -1)      
 		{	
-			cout << "[HTTPServer] new connection from " <<  inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port) << endl;
+      stringstream sMsg;
+      sMsg << "new connection from " << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port);
+			CSharedLog::Shared()->Log(LOGNAME, sMsg.str());
 			
       // start session thread
       CHTTPSessionInfo pSession(pHTTPServer, nConnection);      
       upnpThread Session = (upnpThread)NULL;
+      // T.S.TODO: Where do we need to exit thread???
       upnpThreadStartArg(Session, SessionLoop, pSession);
 		}
 	}	
@@ -108,51 +186,35 @@ upnpThreadCallback SessionLoop(void *arg)
   nBytesReceived = recv(pSession.GetConnection(), szBuffer, 4096, 0); // MSG_DONTWAIT  
   if(nBytesReceived != -1)			
   {
-    cout << "[HTTPServer] bytes received: " << nBytesReceived << endl;
+    stringstream sMsg;
+    sMsg << "bytes received: " << nBytesReceived;
+    CSharedLog::Shared()->Log(LOGNAME, sMsg.str());
     szBuffer[nBytesReceived] = '\0';
     //cout << szBuffer << endl;
     
-    CHTTPMessage* pResponse = pSession.GetHTTPServer()->CallOnReceive(szBuffer);
-    if(pResponse != NULL)				
+    CHTTPMessage ResponseMsg;
+    bool fRet = pSession.GetHTTPServer()->CallOnReceive(szBuffer, &ResponseMsg);
+    if(true == fRet)				
     {
-      cout << "[HTTPServer] sending response" << endl;
+      CSharedLog::Shared()->Log(LOGNAME, "sending response");
       //cout << pResponse->GetMessageAsString() << endl;
       
-      if(pResponse->GetBinContentLength() > 0)
+      if(ResponseMsg.GetBinContentLength() > 0)
       {
-        send(pSession.GetConnection(), pResponse->GetHeaderAsString().c_str(), (int)strlen(pResponse->GetMessageAsString().c_str()), 0);            
-        send(pSession.GetConnection(), pResponse->GetBinContent(), pResponse->GetBinContentLength(), 0);                        
+        send(pSession.GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetMessageAsString().c_str()), 0);            
+        send(pSession.GetConnection(), ResponseMsg.GetBinContent(), ResponseMsg.GetBinContentLength(), 0);                        
       }
       else            
-        send(pSession.GetConnection(), pResponse->GetMessageAsString().c_str(), (int)strlen(pResponse->GetMessageAsString().c_str()), 0);
+        send(pSession.GetConnection(), ResponseMsg.GetMessageAsString().c_str(), (int)strlen(ResponseMsg.GetMessageAsString().c_str()), 0);
       
       
-      upnpSocketClose(pSession.GetConnection());
-      cout << "[HTTPServer] done" << endl;
+      upnpSocketClose(pSession.GetConnection());      
+      CSharedLog::Shared()->Log(LOGNAME, "done");
     }
     
-    delete pResponse;
   }
   
   return 0;
 }
 
-void CHTTPServer::SetReceiveHandler(IHTTPServer* pHandler)
-{
-	m_pReceiveHandler = pHandler;
-}
-
-CHTTPMessage* CHTTPServer::CallOnReceive(std::string p_sMessage)
-{
-	if(m_pReceiveHandler != NULL)
-	{
-		// parse message
-		CHTTPMessage* pMsg = new CHTTPMessage(p_sMessage);
-		return m_pReceiveHandler->OnHTTPServerReceiveMsg(pMsg);
-    delete pMsg;
-	}
-	else
-	{
-		return NULL;
-	}
-}
+// <\PUBLIC>

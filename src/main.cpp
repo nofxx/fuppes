@@ -21,56 +21,77 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
 
 #include <iostream>
-
+#include "Common.h"
 #include "SharedConfig.h"
 #include "Fuppes.h"
-
-#include "win32.h"
+#include "Presentation/PresentationHandler.h"
 
 using namespace std;
 
+/*===============================================================================
+ MAIN
+===============================================================================*/
+
 int main()
 {
-	//setup winsockets	
-  #ifdef WIN32
+  // Setup winsockets	
+#ifdef WIN32
   WSADATA wsa;
-  WSAStartup(MAKEWORD(2,0),&wsa);
-  #endif
+  WSAStartup(MAKEWORD(2,0), &wsa);
+#endif
   
-	cout << "FUPPES - Free UPnP(tm) Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;
-	if(!CSharedConfig::Shared()->SetupConfig())
+  cout << "FUPPES - Free UPnP(tm) Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;
+  if(!CSharedConfig::Shared()->SetupConfig())
     return 0;
   cout << "hostname: " << CSharedConfig::Shared()->GetHostname() << endl;
-	cout << "address : " << CSharedConfig::Shared()->GetIP() << endl;
-	cout << endl;
+  cout << "address : " << CSharedConfig::Shared()->GetIPv4Address() << endl;
+  cout << endl;
 	
-	CFuppes* pFuppes = new CFuppes();	
-	cout << endl;
-  cout << "Webinterface: http://" << CSharedConfig::Shared()->GetHTTPServerURL() << "/index.html" << endl;
+  // Create presentation handler
+  CPresentationHandler* pPresentationHandler = new CPresentationHandler();
+  
+  // Create main server object (CFuppes)
+  
+	CFuppes* pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUDN(), pPresentationHandler);	
+  pPresentationHandler->AddFuppesInstance(pFuppes);
+  
+  // todo: create a fuppes instance for each network interface
+  //CFuppes* pFuppes2 = new CFuppes("127.0.0.1", pPresentationHandler);	
+  //pPresentationHandler->AddFuppesInstance(pFuppes2);
+  	
+  cout << "Webinterface: http://" << pFuppes->GetHTTPServerURL() << "/index.html" << endl;
+  //cout << "Webinterface: http://" << pFuppes2->GetHTTPServerURL() << "/index.html" << endl;
+  cout << endl;
   cout << "press \"q\" to  quit" << endl;
   cout << endl;
   
-	string input = "";
-	while(input != "q")
-	{		
-		getline(cin, input);
-		
-		if (input == "m")
-			pFuppes->GetSSDPCtrl()->send_msearch();
-		else if (input == "a")
-			pFuppes->GetSSDPCtrl()->send_alive();
-		else if (input == "b")
-			pFuppes->GetSSDPCtrl()->send_byebye();
-	}
+  // Handle input
+  string input = "";
+  while(input != "q")
+  {		
+    getline(cin, input);
+
+    if (input == "m")
+      pFuppes->GetSSDPCtrl()->send_msearch();
+    else if (input == "a")
+      pFuppes->GetSSDPCtrl()->send_alive();
+    else if (input == "b")
+      pFuppes->GetSSDPCtrl()->send_byebye();
+  }
   
-	delete pFuppes;
-		
+  // Destroy objects
+  SAFE_DELETE(pFuppes);
+  SAFE_DELETE(pPresentationHandler);
+
   // Cleanup winsockets
-  #ifdef WIN32  
+#ifdef WIN32  
   WSACleanup();
-  #endif
-  
-	return 0;
+#endif
+
+  return 0;
 }

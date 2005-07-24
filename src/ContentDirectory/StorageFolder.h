@@ -46,7 +46,7 @@ enum eSortCriteria
 class CStorageFolder: public CUPnPObject
 {
   public:
-    CStorageFolder();
+    CStorageFolder(std::string p_sHTTPServerURL);
     ~CStorageFolder();
   
     void AddUPnPObject(CUPnPObject*);

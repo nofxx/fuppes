@@ -24,37 +24,75 @@
 #ifndef _NOTIFYMSGFACTORY_H
 #define _NOTIFYMSGFACTORY_H
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include <string>
 
-enum msg_type
+/*===============================================================================
+ DEFINITIONS
+===============================================================================*/
+
+typedef enum tagMESSAGE_TYPE
 {
-	mt_usn,
-	mt_root_device,
-	mt_connection_manager,
-	mt_content_directory,
-	mt_media_server
-};
+	MESSAGE_TYPE_INVALID              = -1,
+  MESSAGE_TYPE_UNKNOWN              =  0,
+  MESSAGE_TYPE_USN                  =  1,
+  MESSAGE_TYPE_ROOT_DEVICE          =  2,
+  MESSAGE_TYPE_CONNECTION_MANAGER   =  3,
+  MESSAGE_TYPE_CONTENT_DIRECTORY    =  4,
+  MESSAGE_TYPE_MEDIA_SERVER         =  5,
+  MESSAGE_TYPE_MAX
+}MESSAGE_TYPE;
+
+/*===============================================================================
+ CLASS CNotifyMsgFactory
+===============================================================================*/
 
 class CNotifyMsgFactory
 {
-	public:
-		static CNotifyMsgFactory* shared();
-		
+
+// <PUBLIC>
+
+public:		
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+    CNotifyMsgFactory(std::string p_sHTTPServerURL); 
+
+/*===============================================================================
+ NOTIFICATIONS
+===============================================================================*/
+
 		std::string msearch();	
-	  std::string notify_alive(msg_type);	
-	  std::string notify_bye_bye(msg_type);
-    std::string GetMSearchResponse(msg_type);
-  
-		void SetHTTPServerURL(std::string);
-	
-	protected:
-		CNotifyMsgFactory();
-	
-	private:
-		static CNotifyMsgFactory* instance;
-	  static std::string type_to_string(msg_type);
-	
-		std::string m_sHTTPServerURL;
-};	
+	  std::string notify_alive(MESSAGE_TYPE);	
+	  std::string notify_bye_bye(MESSAGE_TYPE);
+    std::string GetMSearchResponse(MESSAGE_TYPE);		
+
+// <\PUBLIC>
+
+// <PRIVATE>
+
+private:
+
+/*===============================================================================
+ MEMBERS
+===============================================================================*/
+    
+    static CNotifyMsgFactory* instance;
+	  std::string               m_sHTTPServerURL;
+
+/*===============================================================================
+ HELPER
+===============================================================================*/
+
+    static std::string type_to_string(MESSAGE_TYPE);
+
+// <\PRIVATE>
+
+};
 
 #endif /* _NOTIFYMSGFACTORY_H */

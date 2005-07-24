@@ -22,11 +22,69 @@
  */
  
 #include "SSDPMessage.h"
+#include "RegEx.h"
+#include "SharedLog.h"
+#include <sstream>
 
-CSSDPMessage::CSSDPMessage(std::string p_sMessage): CMessageBase(p_sMessage)
+const std::string LOGNAME = "SSDPMessage";
+
+CSSDPMessage::CSSDPMessage()
 {
+  
+
+  
 }
 
 CSSDPMessage::~CSSDPMessage()
 {
+}
+
+void CSSDPMessage::SetMessage(std::string p_sMessage)
+{
+  CMessageBase::SetMessage(p_sMessage);
+  /*
+  HTTP/1.1 200 OK
+  CACHE-CONTROL: max-age=1800
+  EXT:
+  LOCATION: http://192.168.0.2:47224/
+  SERVER: Free UPnP Entertainment Service/0.1.1 UPnP/1.0 libfuppes/0.1
+  ST: urn:schemas-upnp-org:service:ContentDirectory:1
+  NTS: ssdp:alive
+  USN: uuid:45645678-aabb-0000-ccdd-1234eeff0000::urn:schemas-upnp-org:service:ContentDirectory:1
+  Content-Length: 0 */
+  
+	RegEx rxLocation("LOCATION: +(http://.+)", PCRE_CASELESS);
+	if(rxLocation.Search(m_sMessage.c_str()))
+	{
+    m_sLocation = rxLocation.Match(1);
+    //CSharedLog::Shared()->Log(LOGNAME, m_sLocation);    
+	}
+  
+  RegEx rxServer("SERVER: +(.*)", PCRE_CASELESS);
+	if(rxServer.Search(m_sMessage.c_str()))
+	{
+    m_sServer = rxServer.Match(1);
+    //CSharedLog::Shared()->Log(LOGNAME, m_sServer);
+	}
+  
+  RegEx rxUSN("USN: +(.*)", PCRE_CASELESS);
+  if(rxUSN.Search(m_sMessage.c_str()))
+  {
+    m_sUSN = rxUSN.Match(1);
+    //CSharedLog::Shared()->Log(LOGNAME, m_sUSN);
+    
+    RegEx rxUUID("uuid:([A-Z|0-9|-]+)", PCRE_CASELESS);
+    if(rxUUID.Search(m_sUSN.c_str()))
+    {
+      m_sUUID = rxUUID.Match(1);
+      //CSharedLog::Shared()->Log(LOGNAME, m_sUUID);
+    }    
+  }
+}
+
+std::string CSSDPMessage::GetDeviceID()
+{
+  std::stringstream sDeviceID;
+  sDeviceID << this->GetRemoteIPAddress() << "::" << this->GetUUID();
+  return sDeviceID.str();  
 }

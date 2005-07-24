@@ -22,9 +22,6 @@
  */
  
 #include "AudioItem.h"
-
-#include "../SharedConfig.h"
-
 #include <sstream>
 
 void CAudioItem::GetDescription(xmlTextWriterPtr pWriter)
@@ -72,8 +69,8 @@ void CAudioItem::GetDescription(xmlTextWriterPtr pWriter)
     // get url
     xmlTextWriterStartElement(pWriter, BAD_CAST "res");
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST "http-get:*:audio/mpeg:*");
-    stringstream sTmp;
-    sTmp << "http://" << CSharedConfig::Shared()->GetHTTPServerURL() << "/MediaServer/AudioItems/" << this->GetObjectID();
+    std::stringstream sTmp;
+    sTmp << "http://" << this->GetHTTPServerURL() << "/MediaServer/AudioItems/" << this->GetObjectID();
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
     xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
     xmlTextWriterEndElement(pWriter);                  

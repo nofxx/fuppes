@@ -21,38 +21,56 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "MessageBase.h"
 
-CMessageBase::CMessageBase(std::string p_sMessage)
-{
-	m_sContent = p_sMessage;
+/*===============================================================================
+ CLASS CMessageBase
+===============================================================================*/
+
+// <PROTECTED>
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+CMessageBase::CMessageBase()
+{	
 }
 
 CMessageBase::~CMessageBase()
 {
 }
 
-sockaddr_in CMessageBase::GetLocalEndPoint()
+// <\PROTECTED>
+
+// <PUBLIC>
+
+/*===============================================================================
+ INIT
+===============================================================================*/
+
+void CMessageBase::SetMessage(std::string p_sMessage)
 {
-	return m_LocalEp;
+  m_sMessage = p_sMessage;  
+  m_sContent = p_sMessage;
 }
+
+/*===============================================================================
+ ENDPOINT
+===============================================================================*/
 
 void CMessageBase::SetLocalEndPoint(sockaddr_in p_EndPoint)
 {
-	m_LocalEp = p_EndPoint;
-}
-
-sockaddr_in CMessageBase::GetRemoteEndPoint()
-{
-	return m_RemoteEp;
+  m_LocalEp = p_EndPoint;
 }
 
 void CMessageBase::SetRemoteEndPoint(sockaddr_in p_EndPoint)
 {
-	m_RemoteEp = p_EndPoint;
+  m_RemoteEp = p_EndPoint;
 }
 
-std::string CMessageBase::GetContent()
-{
-	return m_sContent;
-}
+// <\PUBLIC>

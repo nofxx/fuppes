@@ -1,5 +1,5 @@
 /***************************************************************************
- *            AudioItem.h
+ *            Stylesheet.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *  Copyright (C) 2005 Ulrich Völkel
@@ -21,18 +21,29 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _AUDIOITEM_H
-#define _AUDIOITEM_H
+#ifndef _STYLESHEET_H
+#define _STYLESHEET_H
 
-#include "UPnPItem.h"
+#include <sstream>
 
-class CAudioItem: public CUPnPItem
+std::string GetStylesheet()
 {
-  public:
-    CAudioItem(std::string p_sHTTPServerURL):
-      CUPnPItem(uotAudioItem, p_sHTTPServerURL) {}
-      
-    void GetDescription(xmlTextWriterPtr pWriter);
-};
+  std::stringstream sStylesheet;
+  sStylesheet << "body {";
+  sStylesheet << "  margin:      0;";
+  sStylesheet << "  padding:     0;";
+  sStylesheet << "  font-family: Verdana, Arial, Helvetica;";
+  sStylesheet << "  font-size:   10pt;";
+  sStylesheet << "  background-color: #CCCCFF;"; // #EBEBEB
+  sStylesheet <<"}";
+  
+  return sStylesheet.str();
+}
 
-#endif /* _AUDIOITEM_H */
+
+/*#F9F9F9; */
+
+
+  
+
+#endif /* _STYLESHEET_H */

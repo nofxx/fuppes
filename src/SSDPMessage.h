@@ -30,8 +30,23 @@
 class CSSDPMessage: public CMessageBase
 {
 	public:
-		CSSDPMessage(std::string);
-	  ~CSSDPMessage();	
+		CSSDPMessage();
+	  virtual ~CSSDPMessage();
+  
+virtual void SetMessage(std::string p_sMessage);
+
+    std::string GetLocation() { return m_sLocation; }
+    std::string GetUUID() { return m_sUUID; }
+    
+    std::string GetDeviceID();
+    
+  private:
+    std::string m_sLocation;
+    std::string m_sServer;
+    std::string m_sST;
+    std::string m_sNTS;
+    std::string m_sUSN;
+    std::string m_sUUID;
 };
 
 #endif /* _SSDPMESSAGE_H */

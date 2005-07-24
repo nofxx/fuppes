@@ -24,16 +24,33 @@
 #ifndef _PRESENTATIONHANDLER_H
 #define _PRESENTATIONHANDLER_H
 
-#include <string>
+#include "../Fuppes.h"
+#include "../UPnPDevice.h"
+#include "../HTTPMessage.h"
 
-class CPresentationHandler
+#include <string>
+#include <vector>
+
+class CPresentationHandler: public IFuppes
 {
   public:
     CPresentationHandler();
-    ~CPresentationHandler();
+    virtual ~CPresentationHandler();
+    
+    void AddFuppesInstance(CFuppes* pFuppes);
   
+  private:
+    void OnReceivePresentationRequest(CFuppes* pSender, CHTTPMessage* pMessage, CHTTPMessage* pResult);
+  
+    std::string HandleRequest(std::string p_sRequest);  
+    
+    std::string GetXHTMLHeader();  
     std::string GetIndexHTML();
-    std::string HandleRequest(std::string p_sRequest);
+    std::string BuildFuppesDeviceList(CFuppes* pFuppes);
+    
+  
+    std::vector<CFuppes*> m_vFuppesInstances;
+    
 };
 
 #endif /* _PRESENTATIONHANDLER_H */

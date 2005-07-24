@@ -30,8 +30,10 @@
 
 using namespace std;
 
-CSSDPSession::CSSDPSession()
+CSSDPSession::CSSDPSession(std::string p_sIPAddress, ISSDPSession* pReceiveHandler)
 {
+  m_sIPAddress      = p_sIPAddress;
+  m_pReceiveHandler = pReceiveHandler;
 	udp = new CUDPSocket();
 }
 
@@ -57,9 +59,16 @@ void CSSDPSession::begin_receive_unicast()
 	udp->begin_receive();
 }
 
+void CSSDPSession::end_receive_unicast()
+{
+  udp->end_receive();
+}
+
 void CSSDPSession::OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pSSDPMessage)
 {
-	cout << "ssdp_session::OnUDPSocketReceive" << endl << pSSDPMessage->GetContent() << endl;
+	//cout << "ssdp_session::OnUDPSocketReceive" << endl << pSSDPMessage->GetContent() << endl;
+	if(this->m_pReceiveHandler != NULL)
+	  m_pReceiveHandler->OnSessionReceive(this, pSSDPMessage);
 }
 
 void CSSDPSession::start()
@@ -67,9 +76,11 @@ void CSSDPSession::start()
 }
 
 
-CMSearchSession::CMSearchSession(): CSSDPSession()
+CMSearchSession::CMSearchSession(std::string p_sIPAddress, ISSDPSession* pReceiveHandler, CNotifyMsgFactory* pNotifyMsgFactory):
+  CSSDPSession(p_sIPAddress, pReceiveHandler)
 {
-	udp->setup_socket(false);	
+  m_pNotifyMsgFactory = pNotifyMsgFactory;
+	udp->SetupSocket(false, m_sIPAddress);	
 }
 
 CMSearchSession::~CMSearchSession()
@@ -78,10 +89,15 @@ CMSearchSession::~CMSearchSession()
 
 void CMSearchSession::start()
 {
-	cout << "msearch_session::start" << endl;
+	//cout << "msearch_session::start" << endl;
 	begin_receive_unicast();
 	upnpSleep(200);
-	send_multicast(CNotifyMsgFactory::shared()->msearch());
+	send_multicast(m_pNotifyMsgFactory->msearch());
+}
+
+void CMSearchSession::Stop()
+{
+	end_receive_unicast();
 }
 
 sockaddr_in CMSearchSession:: GetLocalEndPoint()

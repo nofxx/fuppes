@@ -30,7 +30,8 @@
 
 using namespace std;
 
-CStorageFolder::CStorageFolder(): CUPnPObject(uotStorageFolder)
+CStorageFolder::CStorageFolder(std::string p_sHTTPServerURL):
+  CUPnPObject(uotStorageFolder, p_sHTTPServerURL)
 {
 }
 

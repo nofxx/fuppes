@@ -1,7 +1,7 @@
 [Project]
 FileName=fuppes.dev
 Name=fuppes
-UnitCount=48
+UnitCount=53
 Type=1
 Ver=1
 ObjFiles=
@@ -12,7 +12,7 @@ ResourceIncludes=
 MakeIncludes=
 Compiler=
 CppCompiler=
-Linker=../../../Dev-Cpp/lib/libxml2.a_@@_../../../Dev-Cpp/lib/libpcre.dll.a_@@_../../../Dev-Cpp/lib/libwsock32.a_@@_../../../Dev-Cpp/lib/iconv.lib_@@_
+Linker=../../../../Dev-Cpp/lib/libxml2.a_@@_../../../../Dev-Cpp/lib/libpcre.dll.a_@@_../../../../Dev-Cpp/lib/libwsock32.a_@@_../../../../Dev-Cpp/lib/iconv.lib_@@_
 IsCpp=1
 Icon=
 ExeOutput=win32
@@ -121,9 +121,9 @@ BuildCmd=
 
 [VersionInfo]
 Major=0
-Minor=1
-Release=1
-Build=31
+Minor=2
+Release=0
+Build=10
 LanguageID=1033
 CharsetID=1252
 CompanyName=
@@ -134,7 +134,7 @@ LegalCopyright=
 LegalTrademarks=
 OriginalFilename=fuppes.exe
 ProductName=Free UPnP Entertainment Service
-ProductVersion=0.1.1
+ProductVersion=0.2
 AutoIncBuildNr=1
 
 [Unit10]
@@ -519,6 +519,56 @@ BuildCmd=
 
 [Unit48]
 FileName=src\Presentation\PresentationHandler.cpp
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit49]
+FileName=src\HTTPClient.cpp
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit50]
+FileName=src\HTTPClient.h
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit51]
+FileName=src\SharedLog.cpp
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit52]
+FileName=src\SharedLog.h
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit53]
+FileName=src\Presentation\Stylesheet.h
 CompileCpp=1
 Folder=fuppes
 Compile=1

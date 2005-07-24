@@ -24,67 +24,140 @@
 #ifndef _HTTPMESSAGE_H
 #define _HTTPMESSAGE_H
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "MessageBase.h"
-#include "UPnPAction.h"
-#include "win32.h"
 #include <string>
 
-enum eHTTPVersion
-{
-	http_1_0,
-	http_1_1	
-};
+using namespace std;
 
-enum eHTTPMessageType
-{
-	http_get,
-	http_post,
-	http_200_ok,
-	http_404_not_found
-};
+/*===============================================================================
+ FORWARD DECLARATIONS
+===============================================================================*/
 
-enum eHTTPContentType
+class CUPnPBrowse;
+
+/*===============================================================================
+ DEFINITIONS
+===============================================================================*/
+
+typedef enum tagHTTP_VERSION
 {
-	text_html,
-	text_xml,
-	audio_mpeg
-};
+	HTTP_VERSION_INVALID            = -1,
+  HTTP_VERSION_UNKNOWN            =  0,
+  HTTP_VERSION_1_0                =  1,
+	HTTP_VERSION_1_1                =  2,
+  HTTP_VERSION_MAX                =  3
+}HTTP_VERSION;
+
+typedef enum tagHTTP_MESSAGE_TYPE
+{
+  HTTP_MESSAGE_TYPE_INVALID       = -1,
+  HTTP_MESSAGE_TYPE_UNKNOWN       =  0,
+  HTTP_MESSAGE_TYPE_GET           =  1,
+	HTTP_MESSAGE_TYPE_POST          =  2,
+	HTTP_MESSAGE_TYPE_200_OK        =  3,
+	HTTP_MESSAGE_TYPE_404_NOT_FOUND =  4,
+  HTTP_MESSAGE_TYPE_MAX           =  5
+}HTTP_MESSAGE_TYPE;
+
+typedef enum tagHTTP_CONTENT_TYPE
+{
+	HTTP_CONTENT_TYPE_INVALID       = -1,
+  HTTP_CONTENT_TYPE_UNKNOWN       =  0,
+  HTTP_CONTENT_TYPE_TEXT_HTML     =  1,
+	HTTP_CONTENT_TYPE_TEXT_XML      =  2,
+	HTTP_CONTENT_TYPE_AUDIO_MPEG    =  3,
+  HTTP_CONTENT_TYPE_MAX           =  4
+}HTTP_CONTENT_TYPE;
+
+/*===============================================================================
+ CLASS CHTTPMessage
+===============================================================================*/
 
 class CHTTPMessage: public CMessageBase
 {
-  public:
-		CHTTPMessage(eHTTPMessageType, eHTTPVersion);
-	  CHTTPMessage(eHTTPMessageType, eHTTPContentType);
-    CHTTPMessage(std::string);
-		
-		eHTTPMessageType GetMessageType();
-	  std::string			 GetRequest();
-	  eHTTPContentType GetContentType();
-		
-		void						SetContent(std::string);
-	
-		bool             LoadContentFromFile(std::string);	
-		std::string 		 GetHeaderAsString();		  
-	  std::string			 GetMessageAsString();
-    CUPnPAction*     GetAction();
+
+// <PUBLIC>
   
-    bool             IsChunked() { return m_bIsChunked; }
+public:
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+  CHTTPMessage();
+  virtual ~CHTTPMessage();
+
+/*===============================================================================
+ INIT
+===============================================================================*/
+
+  void         SetMessage(HTTP_MESSAGE_TYPE nMsgType, HTTP_VERSION nVersion);
+  void         SetMessage(HTTP_MESSAGE_TYPE nMsgType, HTTP_CONTENT_TYPE nCtntType);
+  virtual void SetMessage(std::string p_sMessage);
+
+/*===============================================================================
+ GET MESSAGE DATA
+===============================================================================*/
+
+  std::string			  GetRequest()          { return m_sRequest;          }  
+  HTTP_CONTENT_TYPE GetContentType()      { return m_HTTPContentType;   }
+  HTTP_MESSAGE_TYPE GetMessageType()      { return m_HTTPMessageType;   }
+  std::string       GetContent()          { return m_sContent;          }
+  unsigned int      GetBinContentLength() { return m_nBinContentLength; }
+  char*             GetBinContent()       { return m_pszBinContent;     }
+	bool              IsChunked()           { return m_bIsChunked;        }
+
+  bool              GetAction(CUPnPBrowse* pBrowse);
+  std::string 		  GetHeaderAsString();		  
+	std::string			  GetMessageAsString();
+
+/*===============================================================================
+ SET MESSAGE DATA
+===============================================================================*/
+
+  void             SetMessageType(HTTP_MESSAGE_TYPE p_HTTPMessageType) { m_HTTPMessageType = p_HTTPMessageType; }
+  void             SetContentType(HTTP_CONTENT_TYPE p_HTTPContentType) { m_HTTPContentType = p_HTTPContentType; }
+	void						 SetContent(std::string p_sContent)                  { m_sContent        = p_sContent;        }
+
+/*===============================================================================
+ OTHER
+===============================================================================*/
+
+  void             BuildFromString(std::string p_sMessage);
+  bool             LoadContentFromFile(std::string);	
   
-    unsigned int     GetBinContentLength() { return m_nBinContentLength; }
-    char*            GetBinContent() { return m_szBinContent; }
+
+// <\PUBLIC>
+
+// <PRIVATE>
+
+private:
+    
+/*===============================================================================
+ MEMBERS
+===============================================================================*/
   
-	private:
-    void             ParsePOSTMessage(std::string);
-  
-    CUPnPAction*     m_pUPnPAction;
-		eHTTPVersion     m_HTTPVersion;
-		eHTTPMessageType m_HTTPMessageType;
-		std::string	     m_sRequest;
-		eHTTPContentType m_HTTPContentType;
-    int              m_nContentLength;  
-    char*            m_szBinContent;
-    unsigned int     m_nBinContentLength;  
-    bool             m_bIsChunked;
+  HTTP_VERSION       m_HTTPVersion;
+  HTTP_MESSAGE_TYPE  m_HTTPMessageType;
+  HTTP_CONTENT_TYPE  m_HTTPContentType;
+  std::string	       m_sRequest;
+  int                m_nContentLength;  
+  char*              m_pszBinContent;
+  unsigned int       m_nBinContentLength;  
+  bool               m_bIsChunked;
+
+/*===============================================================================
+ HELPER
+===============================================================================*/    
+
+  void ParsePOSTMessage(std::string);
+
+// <\PRIVATE>
+
 };
 
 #endif /* _HTTPMESSAGE_H */

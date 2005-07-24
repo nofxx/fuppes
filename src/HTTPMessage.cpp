@@ -21,94 +21,185 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "HTTPMessage.h"
+#include "Common.h"
 
 #include <iostream>
-#include <string>
 #include <sstream>
 #include <fstream>
 
 #include "RegEx.h"
 #include "UPnPActionFactory.h"
 
-using namespace std;
+/*===============================================================================
+ CLASS CHTTPMessage
+===============================================================================*/
 
-CHTTPMessage::CHTTPMessage(eHTTPMessageType p_HTTPMessageType, 
-													 eHTTPVersion p_HTTPVersion)
-                           : CMessageBase("")
+// <PUBLIC>
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+CHTTPMessage::CHTTPMessage()
 {
-	m_HTTPMessageType = p_HTTPMessageType;
-	m_HTTPVersion			= p_HTTPVersion;
-//	m_HTTPContentType	= unknown;
-  m_nBinContentLength = 0;  
+  // Init
+  m_HTTPVersion			  = HTTP_VERSION_1_1;
+  m_HTTPMessageType   = HTTP_MESSAGE_TYPE_UNKNOWN;
+	m_HTTPContentType   = HTTP_CONTENT_TYPE_UNKNOWN;
+  m_nBinContentLength = 0; 
+  m_nContentLength    = 0;
+  m_pszBinContent     = NULL;
+  m_bIsChunked        = false;
 }
 
-CHTTPMessage::CHTTPMessage(eHTTPMessageType p_HTTPMessageType,													 
- 													 eHTTPContentType p_HTTPContentType)
-                          : CMessageBase("")
+CHTTPMessage::~CHTTPMessage()
 {
-	m_HTTPMessageType = p_HTTPMessageType;
-	m_HTTPVersion			= http_1_1;
-	m_HTTPContentType = p_HTTPContentType;
+  // Cleanup
+  SAFE_DELETE(m_pszBinContent);
+}
+
+/*===============================================================================
+ INIT
+===============================================================================*/
+
+void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, HTTP_VERSION nVersion)
+{
+  CMessageBase::SetMessage("");
+  
+  m_HTTPMessageType   = nMsgType;
+  m_HTTPVersion			  = nVersion;
+  m_HTTPContentType   = HTTP_CONTENT_TYPE_UNKNOWN;
   m_nBinContentLength = 0;
 }
 
-CHTTPMessage::CHTTPMessage(std::string p_sContent): CMessageBase(p_sContent)
+void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, HTTP_CONTENT_TYPE nCtntType)
 {
-	//cout << p_sContent << endl;
-	m_nBinContentLength = 0;
+	CMessageBase::SetMessage("");
   
-	RegEx rxGET("GET +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
-	if(rxGET.Search(p_sContent.c_str()))
-	{
-		m_HTTPMessageType = http_get;
-		
-		string sVersion = rxGET.Match(2);
-		if(sVersion.compare("0"))		
-			m_HTTPVersion = http_1_0;		
-		else if(sVersion.compare("1"))		
-			m_HTTPVersion = http_1_1;
+  m_HTTPMessageType   = nMsgType;
+	m_HTTPVersion			  = HTTP_VERSION_1_1;
+	m_HTTPContentType   = nCtntType;
+  m_nBinContentLength = 0;
+}
 
-		m_sRequest = rxGET.Match(1);	
-		cout << "[HTTPMessage] GET " << m_sRequest << endl;
+void CHTTPMessage::SetMessage(std::string p_sMessage)
+{
+  CMessageBase::SetMessage(p_sMessage);
+  
+  cout << p_sMessage << endl;
+  BuildFromString(p_sMessage);
+}
+
+/*===============================================================================
+ GET MESSAGE DATA
+===============================================================================*/
+
+bool CHTTPMessage::GetAction(CUPnPBrowse* pBrowse)
+{
+  ASSERT(NULL != pBrowse);
+  if(NULL == pBrowse)
+    return false;
+
+  // Build UPnPAction
+  CUPnPActionFactory ActionFactory;
+  return ActionFactory.BuildActionFromString(m_sContent, pBrowse);
+}
+
+std::string CHTTPMessage::GetHeaderAsString()
+{
+	stringstream sResult;
+	string sVersion;
+	string sType;
+	string sContentType;
+	
+  // Version
+	switch(m_HTTPVersion)
+	{
+		case HTTP_VERSION_1_0: sVersion = "HTTP/1.0"; break;
+		case HTTP_VERSION_1_1: sVersion = "HTTP/1.1"; break;
+    default:               ASSERT(0);             break;
+  }
+	
+  // Message Type
+	switch(m_HTTPMessageType)
+	{
+		case HTTP_MESSAGE_TYPE_GET:	          /* todo */			                            break;
+		case HTTP_MESSAGE_TYPE_POST:          /* todo */		                              break;
+		case HTTP_MESSAGE_TYPE_200_OK:        sResult << sVersion << " " << "200 OK\r\n"; break;
+	  case HTTP_MESSAGE_TYPE_404_NOT_FOUND:	/* todo */			                            break;
+    default:                              ASSERT(0);                                  break;
 	}
 	
-	RegEx rxPOST("POST +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
-	if(rxPOST.Search(p_sContent.c_str()))
+  // Content length
+	sResult << "CONTENT-LENGTH: " << (int)strlen(m_sContent.c_str()) << "\r\n";
+	
+  // Content type
+	switch(m_HTTPContentType)
 	{
-		m_HTTPMessageType = http_post;
-		
-		string sVersion = rxPOST.Match(2);
-		if(sVersion.compare("0"))		
-			m_HTTPVersion = http_1_0;		
-		else if(sVersion.compare("1"))
-			m_HTTPVersion = http_1_1;
-		
-		m_sRequest = rxPOST.Match(1);	
-		cout << "[HTTPMessage] POST " << m_sRequest << endl;
-    
-    ParsePOSTMessage(p_sContent);
+		case HTTP_CONTENT_TYPE_TEXT_HTML:  sContentType = "text/html";  break;
+		case HTTP_CONTENT_TYPE_TEXT_XML:   sContentType = "text/xml";   break;
+		case HTTP_CONTENT_TYPE_AUDIO_MPEG: sContentType = "audio/mpeg"; break;
+    default:                           ASSERT(0);                   break;	
 	}
+	
+	sResult << "CONTENT-TYPE: " << sContentType << "\r\n\r\n";
+	return sResult.str();
 }
 
-eHTTPMessageType CHTTPMessage::GetMessageType()
+std::string CHTTPMessage::GetMessageAsString()
 {
-	return m_HTTPMessageType;
+  stringstream sResult;
+  sResult << GetHeaderAsString();
+  sResult << m_sContent;
+  return sResult.str();
 }
 
-std::string CHTTPMessage::GetRequest()
-{
-	return m_sRequest;
-}
+/*===============================================================================
+ OTHER
+===============================================================================*/
 
-eHTTPContentType CHTTPMessage::GetContentType()
+void CHTTPMessage::BuildFromString(std::string p_sMessage)
 {
-	return m_HTTPContentType;
-}
+  m_nBinContentLength = 0;
+  m_sMessage = p_sMessage;
+  m_sContent = p_sMessage;  
 
-void	CHTTPMessage::SetContent(std::string p_sContent)
-{
-	m_sContent = p_sContent;
+  // Message GET
+  RegEx rxGET("GET +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
+  if(rxGET.Search(p_sMessage.c_str()))
+  {
+    m_HTTPMessageType = HTTP_MESSAGE_TYPE_GET;
+
+    string sVersion = rxGET.Match(2);
+    if(sVersion.compare("0"))		
+      m_HTTPVersion = HTTP_VERSION_1_0;		
+    else if(sVersion.compare("1"))		
+      m_HTTPVersion = HTTP_VERSION_1_1;
+
+    m_sRequest = rxGET.Match(1);			
+  }
+
+  // Message POST
+  RegEx rxPOST("POST +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
+  if(rxPOST.Search(p_sMessage.c_str()))
+  {
+    m_HTTPMessageType = HTTP_MESSAGE_TYPE_POST;
+
+    string sVersion = rxPOST.Match(2);
+    if(sVersion.compare("0"))		
+      m_HTTPVersion = HTTP_VERSION_1_0;		
+    else if(sVersion.compare("1"))
+      m_HTTPVersion = HTTP_VERSION_1_1;
+
+    m_sRequest = rxPOST.Match(1);			
+
+    ParsePOSTMessage(p_sMessage);
+  }
 }
 
 bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
@@ -120,80 +211,24 @@ bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
     fFile.seekg(0, ios::end); 
     m_nBinContentLength = streamoff(fFile.tellg()); 
     fFile.seekg(0, ios::beg);
-    
-    m_szBinContent = new char[m_nBinContentLength + 1];     
-    fFile.read(m_szBinContent, m_nBinContentLength); 
-    m_szBinContent[m_nBinContentLength] = '\0';    
-    
+
+    m_pszBinContent = new char[m_nBinContentLength + 1];     
+    fFile.read(m_pszBinContent, m_nBinContentLength); 
+    m_pszBinContent[m_nBinContentLength] = '\0';    
+
     fFile.close();
-  }  
-	return true;
+  } 
+	
+  return true;
 }
 
-std::string CHTTPMessage::GetHeaderAsString()
-{
-	stringstream sResult;
-	string sVersion;
-	string sType;
-	string sContentType;
-	
-	switch(m_HTTPVersion)
-	{
-		case http_1_0:
-			sVersion = "HTTP/1.0";
-		  break;
-		case http_1_1:
-			sVersion = "HTTP/1.1";
-		  break;
-	}
-	
-	switch(m_HTTPMessageType)
-	{
-		case http_get:
-			// todo
-			break;
-		case http_post:
-			// todo
-		  break;
-		case http_200_ok:
-			sResult << sVersion << " " << "200 OK\r\n";
-			break;
-	  case http_404_not_found:
-			// todo
-			break;
-	}
-	
-	sResult << "CONTENT-LENGTH: " << (int)strlen(m_sContent.c_str()) << "\r\n";
-	
-	switch(m_HTTPContentType)
-	{
-		case text_html:
-			sContentType = "text/html";
-		  break;
-		case text_xml:
-			sContentType = "text/xml";
-		  break;
-		case audio_mpeg:
-			sContentType = "audio/mpeg";
-		  break;	
-	}
-	
-	sResult << "CONTENT-TYPE: " << sContentType << "\r\n\r\n";
-	return sResult.str();
-}
+// <\PUBLIC>
 
-std::string CHTTPMessage::GetMessageAsString()
-{
-	stringstream sResult;
-	sResult << GetHeaderAsString();
-	sResult << m_sContent;
-	return sResult.str();
-}
+// <PRIVATE>
 
-CUPnPAction* CHTTPMessage::GetAction()
-{
-  return m_pUPnPAction;
-}
+/*===============================================================================
+ HELPER
+===============================================================================*/
 
 void CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
 {
@@ -210,6 +245,7 @@ void CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
 		//cout << "[HTTPMessage] SOAPACTION " << sSOAP << endl;
 	}
       
+  // Content length
   RegEx rxContentLength("CONTENT-LENGTH: *(\\d+)", PCRE_CASELESS);
   if(rxContentLength.Search(p_sMessage.c_str()))
   {
@@ -220,6 +256,6 @@ void CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
   
   m_sContent = p_sMessage.substr(p_sMessage.length() - m_nContentLength, m_nContentLength);
   
-  CUPnPActionFactory* pFactory = new CUPnPActionFactory();
-  m_pUPnPAction = pFactory->BuildActionFromString(m_sContent);
 }
+
+// <\PRIVATE>

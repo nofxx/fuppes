@@ -3,6 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *  Copyright (C) 2005 Ulrich Völkel
+ *  Copyright (C) 2005 Thomas Schnitzler
  ****************************************************************************/
 
 /*
@@ -20,37 +21,113 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef _FUPPES_H
 #define _FUPPES_H
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
+#include <map>
+#include <vector>
 #include "SSDPCtrl.h"
 #include "HTTPServer.h"
-#include "HTTPMessage.h"
-#include "MediaServer.h"
-#include "ContentDirectory/ContentDirectory.h"
-#include "Presentation/PresentationHandler.h"
+
+/*===============================================================================
+ FORWARD DECLARATIONS
+===============================================================================*/
+
+class CFuppes;
+class CHTTPMessage;
+class CMediaServer;
+class CContentDirectory;
+class CUPnPDevice;
+
+/*===============================================================================
+ CLASS IFuppes
+===============================================================================*/
+
+class IFuppes
+{
+
+// <PUBLIC>
+
+public:
+
+  virtual void OnReceivePresentationRequest(
+    CFuppes* pSender,
+    CHTTPMessage* pMessage,
+    CHTTPMessage* pResult) = 0;
+
+// <\PUBLIC>
+
+};
+
+/*===============================================================================
+ CLASS CFuppes
+===============================================================================*/
 
 class CFuppes: public ISSDPCtrl, IHTTPServer
 {
-	public:
-		CFuppes();
-	  virtual ~CFuppes();
-		
-    CSSDPCtrl* GetSSDPCtrl();
-	
-	private:
-		CSSDPCtrl            m_SSDPCtrl;
-	  CHTTPServer          m_HTTPServer;
-	  CMediaServer         m_MediaServer;
-	  CContentDirectory    m_ContentDirectory;
-    CPresentationHandler m_PresentationHandler;
+
+// <PUBLIC>
+
+public:
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
   
-		CHTTPMessage* HandleHTTPGet(CHTTPMessage*);
-	  CHTTPMessage* HandleHTTPPost(CHTTPMessage*);
+  CFuppes(
+    std::string p_sIPAddress,
+    std::string p_sUUID,
+    IFuppes*    pPresentationRequestHandler
+    );
+  virtual ~CFuppes();
+
+/*==============================================================================
+ GET
+===============================================================================*/
+
+  CSSDPCtrl*                GetSSDPCtrl();
+  std::string               GetHTTPServerURL();
+  std::string               GetIPAddress();
+  std::vector<CUPnPDevice*> GetRemoteDevices();
+
+// <\PUBLIC>
+
+// <PRIVATE>
+
+private:
+
+/*===============================================================================
+ MEMBERS
+===============================================================================*/
+  
+  CSSDPCtrl*            m_pSSDPCtrl;
+  CHTTPServer*          m_pHTTPServer;
+  CMediaServer*         m_pMediaServer;
+  CContentDirectory*    m_pContentDirectory;    
+  std::string           m_sIPAddress;
+  std::string           m_sUUID;
+  IFuppes*              m_pPresentationRequestHandler;
+  
+  std::map<std::string, CUPnPDevice*>           m_RemoteDevices;
+  std::map<std::string, CUPnPDevice*>::iterator m_RemoteDeviceIterator;
+  
+/*===============================================================================
+ MESSAGE HANDLING
+===============================================================================*/
+
+  void OnSSDPCtrlReceiveMsg(CSSDPMessage*);
+  bool OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
+
+  bool HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
+  bool HandleHTTPPost(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
 	
-	  void OnSSDPCtrlReceiveMsg(CSSDPMessage*);
-	  CHTTPMessage* OnHTTPServerReceiveMsg(CHTTPMessage*);
+// <\PRIVATE>
+
 };
 
 #endif /* _FUPPES_H */

@@ -22,13 +22,15 @@
  */
 
 #include "UDPSocket.h"
-#include "SharedConfig.h"
+#include "SharedLog.h"
 
 #include <iostream>
 #include <sstream>
 
 
 using namespace std;
+
+const string LOGNAME = "UDPSocket";
 
 #define MULTICAST_PORT 1900
 #define MULTICAST_IP   "239.255.255.250"
@@ -51,44 +53,44 @@ upnpSocket CUDPSocket::get_socket_fd()
 	return sock;
 }
 
-void CUDPSocket::setup_socket(bool do_multicast)
+void CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress)
 {
   // create socket
 	sock = socket(PF_INET, SOCK_DGRAM, 0);
 	if(sock == -1)
-		cout << "error: creating socket" << endl;
+    CSharedLog::Shared()->Error(LOGNAME, "creating socket");
 	
 	int ret  = 0;
   upnpSocketFlag(flag);
   ret = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, flag, sizeof(flag));
-	if(ret == -1)	
-		cout << "error: setsockopt" << endl;
+	if(ret == -1)
+    CSharedLog::Shared()->Error(LOGNAME, "setsockopt");		
 	
 	// set local endpoint		
   local_ep.sin_family = AF_INET;	
-	if(do_multicast)
+	if(p_bDoMulticast)
 	{
     local_ep.sin_addr.s_addr = INADDR_ANY;
     local_ep.sin_port		     = htons(MULTICAST_PORT);
 	}
   else 
 	{
-    local_ep.sin_addr.s_addr = inet_addr(CSharedConfig::Shared()->GetIP().c_str());		
+    local_ep.sin_addr.s_addr = inet_addr(p_sIPAddress.c_str());		
     local_ep.sin_port		     = htons(0); // use random port
 	}
 	
 	// bind socket
 	ret = bind(sock, (struct sockaddr*)&local_ep, sizeof(local_ep)); 
   if(ret == -1)
-		cout << "error: bind" << endl;
+    CSharedLog::Shared()->Error(LOGNAME, "bind");	
 	
 	// get random port
 	socklen_t size = sizeof(local_ep);
 	getsockname(sock, (struct sockaddr*)&local_ep, &size);
 	
 	// join multicast group
-	is_multicast = do_multicast;
-	if(do_multicast)
+	is_multicast = p_bDoMulticast;
+	if(p_bDoMulticast)
 	{	
 		struct ip_mreq stMreq; // Multicast interface structure  
 			
@@ -96,7 +98,7 @@ void CUDPSocket::setup_socket(bool do_multicast)
 		stMreq.imr_interface.s_addr = INADDR_ANY; 	
 		ret = setsockopt(sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&stMreq,sizeof(stMreq)); 	
 		if(ret == -1)
-			cout << "error: setsockopt multicast" << endl;
+      CSharedLog::Shared()->Error(LOGNAME, "setsockopt multicast");			
 	}
 }	
 
@@ -108,7 +110,7 @@ void CUDPSocket::teardown_socket()
 	{
 		struct ip_mreq stMreq;
 		
-	  stMreq.imr_multiaddr.s_addr = inet_addr("239.255.255.250"); 
+	  stMreq.imr_multiaddr.s_addr = inet_addr(MULTICAST_IP); 
 		stMreq.imr_interface.s_addr = INADDR_ANY; 	
 		setsockopt(sock, IPPROTO_IP, IP_DROP_MEMBERSHIP,(char *)&stMreq,sizeof(stMreq)); 		
 	}	
@@ -117,7 +119,14 @@ void CUDPSocket::teardown_socket()
 
 void CUDPSocket::begin_receive()
 {
+  // Start thread
   upnpThreadStart(receive_thread, receive_loop);
+}
+
+void CUDPSocket::end_receive()
+{
+  // Exit thread
+  upnpThreadExit(receive_thread, 2000);
 }
 
 void CUDPSocket::send_multicast(std::string p_sMessage)
@@ -154,7 +163,9 @@ sockaddr_in CUDPSocket::get_local_ep()
 upnpThreadCallback receive_loop(void *arg)
 {
   CUDPSocket* udp_sock = (CUDPSocket*)arg;
-	cout << "[udp_socket] listening on " << udp_sock->get_ip() << ":" << udp_sock->get_port() << endl;
+  stringstream sMsg;
+  sMsg << "listening on " << udp_sock->get_ip() << ":" << udp_sock->get_port();
+	CSharedLog::Shared()->Log(LOGNAME, sMsg.str());
 	
 	char buffer[4096];	
 	int  bytes_received = 0;
@@ -167,15 +178,20 @@ upnpThreadCallback receive_loop(void *arg)
 	while((bytes_received = recvfrom(udp_sock->get_socket_fd(), buffer, sizeof(buffer), 0, (struct sockaddr*)&remote_ep, &size)) != -1)
 	{
 		buffer[bytes_received] = '\0';		
-		msg << buffer;
-			
+		msg << buffer;   
+    
+    //cout << msg.str();    
+    /*cout << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port) << endl;
+    cout << inet_ntoa(udp_sock->get_local_ep().sin_addr) << ":" << ntohs(udp_sock->get_local_ep().sin_port) << endl;*/
+    
 		if((remote_ep.sin_addr.s_addr != udp_sock->get_local_ep().sin_addr.s_addr) || 
 			 (remote_ep.sin_port != udp_sock->get_local_ep().sin_port))		
 		{
-			CSSDPMessage* result = new CSSDPMessage(msg.str());		
-			result->SetRemoteEndPoint(remote_ep);
-			result->SetLocalEndPoint(udp_sock->get_local_ep());
-			udp_sock->call_on_receive(result);			
+			CSSDPMessage SSDPMessage;
+      SSDPMessage.SetMessage(msg.str());
+			SSDPMessage.SetRemoteEndPoint(remote_ep);
+			SSDPMessage.SetLocalEndPoint(udp_sock->get_local_ep());
+			udp_sock->call_on_receive(&SSDPMessage);
 		}
 		
 		msg.str("");

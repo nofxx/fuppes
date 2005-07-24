@@ -36,6 +36,8 @@
 #include <algorithm>
 #include <cctype>
 
+using namespace std;
+
 bool FileExists(std::string p_sFileName)
 {
   std::fstream fFile;
@@ -112,4 +114,23 @@ std::string ToLower(std::string p_sInput)
     p_sInput[i] = tolower(p_sInput[i]);
   }  
   return p_sInput;
+}
+
+bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPort)
+{
+  RegEx rxSplit("[http://]*([0-9|\\.]+):*([0-9]*)");
+  if(rxSplit.Search(p_sURL.c_str()))
+  {    
+    (*p_sIPAddress) = rxSplit.Match(1);
+    if(rxSplit.SubStrings() == 3)
+      *p_nPort = atoi(rxSplit.Match(2));
+    else
+      *p_nPort = 80;
+    
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }

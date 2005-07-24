@@ -44,7 +44,7 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/xmlwriter.h>
-#include "win32.h"
+#include "Common.h"
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN     64
@@ -91,7 +91,7 @@ string CSharedConfig::GetAppFullname()
 
 string CSharedConfig::GetAppVersion()
 {
-	return "0.1.1";
+	return "0.1.2a";
 }
 
 string CSharedConfig::GetHostname()
@@ -99,7 +99,7 @@ string CSharedConfig::GetHostname()
 	return m_sHostname;
 }
 
-string CSharedConfig::GetIP()
+string CSharedConfig::GetIPv4Address()
 {
 	return m_sIP;
 }
@@ -109,7 +109,7 @@ string CSharedConfig::GetUDN()
 	return "12345678-aabb-0000-ccdd-1234eeff0000";
 }
 
-void CSharedConfig::SetHTTPServerURL(string p_sURL)
+/*void CSharedConfig::SetHTTPServerURL(string p_sURL)
 {
   m_sHTTPServerURL = p_sURL;
 }
@@ -117,7 +117,7 @@ void CSharedConfig::SetHTTPServerURL(string p_sURL)
 string CSharedConfig::GetHTTPServerURL()
 {
   return m_sHTTPServerURL;
-}
+}*/
 
 std::string CSharedConfig::GetSharedDir(int p_nIndex)
 {

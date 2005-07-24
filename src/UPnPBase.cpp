@@ -23,9 +23,10 @@
  
  #include "UPnPBase.h"
  
- CUPnPBase::CUPnPBase(eUPnPDeviceType p_UPnPDeviceType)
+ CUPnPBase::CUPnPBase(eUPnPDeviceType p_UPnPDeviceType, std::string p_sHTTPServerURL)
  {
    m_UPnPDeviceType = p_UPnPDeviceType;
+   m_sHTTPServerURL = p_sHTTPServerURL;
  } 
 
 std::string	CUPnPBase::GetUPnPDeviceTypeAsString()

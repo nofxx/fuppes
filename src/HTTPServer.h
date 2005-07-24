@@ -24,7 +24,11 @@
 #ifndef _HTTPSERVER_H
 #define _HTTPSERVER_H
 
-#include "win32.h"
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
+#include "Common.h"
 
 #ifndef WIN32
 #include <arpa/inet.h>
@@ -35,57 +39,136 @@
 #endif
 
 #include <string>
-#include "HTTPMessage.h"
-
 #include <iostream>
+
 using namespace std;
+
+/*===============================================================================
+ FORWARD DECLARATIONS
+===============================================================================*/
+
+class CHTTPServer;
+class CHTTPMessage;
+
+/*===============================================================================
+ CLASS IHTTPServer
+===============================================================================*/
 
 class IHTTPServer
 {
+
+// <PUBLIC>
+
   public:
-	  virtual CHTTPMessage* OnHTTPServerReceiveMsg(CHTTPMessage*) = 0;
+
+	  virtual bool OnHTTPServerReceiveMsg(
+      CHTTPMessage* pMessageIn,
+      CHTTPMessage* pMessageOut) = 0;
+
+// <\PUBLIC>
+
 };
 
-class CHTTPServer;
+/*===============================================================================
+ CLASS CHTTPSessionInfo
+===============================================================================*/
 
 class CHTTPSessionInfo
 {
-  public:
-    CHTTPSessionInfo(CHTTPServer* pHTTPServer, upnpSocket p_Connection)
-    {
-      m_pHTTPServer = pHTTPServer;
-      m_Connection  = p_Connection;
-    }
+
+// <PUBLIC>
+
+public:
     
-    upnpSocket GetConnection() { return m_Connection; }
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+  CHTTPSessionInfo(CHTTPServer* pHTTPServer, upnpSocket p_Connection)
+  {
+    m_pHTTPServer = pHTTPServer;
+    m_Connection  = p_Connection;
+  }
+
+/*===============================================================================
+ GET
+===============================================================================*/
+
+    upnpSocket   GetConnection() { return m_Connection;  }
     CHTTPServer* GetHTTPServer() { return m_pHTTPServer; }
   
-  private:
-    CHTTPServer* m_pHTTPServer;
-    upnpSocket   m_Connection;
+// <\PUBLIC>
+
+// <PRIVATE>
+
+private:
+  
+/*===============================================================================
+ MEMBERS
+===============================================================================*/
+  
+  CHTTPServer* m_pHTTPServer;
+  upnpSocket   m_Connection;
+
+// <\PRIVATE>
+
 };
+
+/*===============================================================================
+ CLASS CHTTPServer
+===============================================================================*/
 
 class CHTTPServer
 {
-	public:
-	  CHTTPServer();	
-	  ~CHTTPServer();
-		  
-		void          Start();		
-	  upnpSocket    GetSocket();
-	  std::string   GetURL();	
-		void				  SetReceiveHandler(IHTTPServer*);		
-		CHTTPMessage* CallOnReceive(std::string);		
-	
-	private:
-	  sockaddr_in local_ep;
-		bool				do_break;
-	
-    upnpSocket sock;					      
-    upnpThread accept_thread;			  
 
-		// eventhandler
-		IHTTPServer* m_pReceiveHandler;
+// <PUBLIC>
+
+public:
+    
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+	  
+  CHTTPServer(std::string p_sIPAddress);	
+  ~CHTTPServer();
+
+/*===============================================================================
+ COMMON
+===============================================================================*/
+
+  void          Start();		
+  void          Stop();
+  upnpSocket    GetSocket();
+  std::string   GetURL();	
+
+/*===============================================================================
+ MESSAGE HANDLING
+===============================================================================*/
+
+  bool				  SetReceiveHandler(IHTTPServer* pHandler);
+  bool          CallOnReceive(std::string p_sMessage, CHTTPMessage* pMessageOut);
+  
+// <\PUBLIC>
+
+// <PRIVATE>
+
+private:
+	 
+/*===============================================================================
+ MEMBERS
+===============================================================================*/
+
+  // Eventhandler
+  IHTTPServer* m_pReceiveHandler;
+
+  sockaddr_in local_ep;
+  bool				do_break;
+
+  upnpSocket  sock;					      
+  upnpThread  accept_thread;
+
+// <\PRIVATE>
+
 };
 
 #endif /* _HTTPSERVER_H */

@@ -24,7 +24,7 @@
 #ifndef _SSDPCTRL_H
 #define _SSDPCTRL_H
 
-#include "win32.h"
+#include "Common.h"
 
 #ifndef WIN32
 #include <pthread.h>
@@ -37,6 +37,8 @@
 
 #include "UDPSocket.h"
 #include "SSDPMessage.h"
+#include "SSDPSession.h"
+#include "NotifyMsgFactory.h"
 
 class ISSDPCtrl
 {
@@ -44,13 +46,14 @@ class ISSDPCtrl
 	  virtual void OnSSDPCtrlReceiveMsg(CSSDPMessage*) = 0;
 };
 
-class CSSDPCtrl: public IUDPSocket
+class CSSDPCtrl: public IUDPSocket, ISSDPSession
 {
 	public:
-		CSSDPCtrl();
+		CSSDPCtrl(std::string p_sIPAddress, std::string p_sHTTPServerURL);
 		virtual ~CSSDPCtrl();
 	
 		void Start();
+    void Stop();
 	
 		void send_msearch();
 	  void send_alive();
@@ -60,12 +63,16 @@ class CSSDPCtrl: public IUDPSocket
 	
 	  void SetReceiveHandler(ISSDPCtrl*);
 	  void OnUDPSocketReceive(CUDPSocket*, CSSDPMessage*);
+   	void OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage);
 	
 	private:
 		CUDPSocket *listener;	
+    CNotifyMsgFactory* m_pNotifyMsgFactory;
 		upnpThread  msearch_thread;
 	  sockaddr_in last_multicast_ep;  
-	
+    std::string m_sIPAddress;    
+  
+  
 		ISSDPCtrl* m_pReceiveHandler;
 };
 

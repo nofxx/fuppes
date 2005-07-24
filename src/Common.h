@@ -21,13 +21,28 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#ifndef _COMMON_H
+#define _COMMON_H
+
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include <string>
+#include <assert.h>
+#include "SharedLog.h"
 
 /*===============================================================================
  MACROS
 ===============================================================================*/
 
 #define SAFE_DELETE(_x_) if(_x_){delete(_x_); _x_ = NULL;}
+
+/*===============================================================================
+ DEFINITIONS
+===============================================================================*/
+
+#define ASSERT assert
 
 /*===============================================================================
  File Functions
@@ -44,3 +59,66 @@ std::string ExtractFileExt(std::string p_sFileName);
 ===============================================================================*/
 
 std::string ToLower(std::string p_sInput);
+bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPort);
+
+/*===============================================================================
+ WIN32 specific definitions
+===============================================================================*/
+
+#ifdef WIN32
+
+#pragma comment(lib,"Wsock32.lib") 
+#pragma comment(lib,"Ws2_32.lib")
+#pragma comment(lib,"shlwapi.lib")
+
+#include <Winsock2.h>
+#include <Ws2tcpip.h>
+#include <shlwapi.h> // For PathXXX functions
+
+// Common
+#define upnpSleep               Sleep
+#define upnpPathDelim           "\\"
+
+// Sockets
+#define upnpSocket              SOCKET
+#define upnpSocketSuccess       0
+#define upnpSocketClose         closesocket
+#define upnpSocketFlag(_x_)     const char _x_[256] = ""
+
+// Threads
+#define upnpThread              HANDLE
+#define upnpThreadStart(_handle_, _callback_)             _handle_ = CreateThread(NULL, 0, &_callback_, this, 0, NULL)
+#define upnpThreadExit(_handle_, _timeoutms_)             WaitForSingleObject(_handle_, _timeoutms_); CloseHandle(_handle_)
+#define upnpThreadStartArg(_handle_, _callback_, __arg__) _handle_ = CreateThread(NULL, 0, &_callback_, &__arg__, 0, NULL)
+#define upnpThreadCallback      DWORD WINAPI
+//#define upnpThreadExitCallback  return 0
+
+#else
+
+/*===============================================================================
+ NOT WIN32 specific definitions
+===============================================================================*/
+
+// Common
+#define upnpSleep               usleep
+#define upnpPathDelim           "/"
+
+// Sockets
+#define upnpSocket              int
+#define upnpSocketSuccess       -1
+
+#define upnpSocketClose         close
+#define upnpSocketFlag(_x_)     int* _x_
+
+// Threads
+#define upnpThread              pthread_t
+#define upnpThreadStart(_handle_, _callback_) pthread_create(&_handle_, NULL, &_callback_, this);
+// T.S.TODO: define upnpThreadExit
+#define upnpThreadExit(_handle_, _timeoutms_)
+#define upnpThreadStartArg(_handle_, _callback_, __arg__) pthread_create(&_handle_, NULL, &_callback_, &__arg__);
+#define upnpThreadCallback      void*
+//#define upnpThreadExitCallback  return
+
+#endif
+
+#endif /* _COMMON_H */

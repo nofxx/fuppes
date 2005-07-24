@@ -22,6 +22,11 @@
  */
  
 #include "UPnPDevice.h"
+#include "HTTPMessage.h"
+#include "HTTPClient.h"
+#include "Common.h"
+#include "SharedLog.h"
+#include "RegEx.h"
 
 #include <sstream>
 #include <iostream>
@@ -29,12 +34,36 @@
 
 using namespace std;
 
-CUPnPDevice::CUPnPDevice(eUPnPDeviceType p_UPnPDeviceType): CUPnPBase(p_UPnPDeviceType)
-{
+const string LOGNAME = "UPNPDevice";
+
+CUPnPDevice::CUPnPDevice(eUPnPDeviceType p_UPnPDeviceType, std::string p_sHTTPServerURL):
+  CUPnPBase(p_UPnPDeviceType, p_sHTTPServerURL)
+{  
 }
 
 CUPnPDevice::~CUPnPDevice()
 {
+}
+
+CUPnPDevice::CUPnPDevice():
+  CUPnPBase(udtUnknown, "")
+{
+}
+
+bool CUPnPDevice::BuildFromDescriptionURL(std::string p_sDescriptionURL)
+{    
+  CHTTPClient*  pClient = new CHTTPClient();
+  CHTTPMessage* pResult = new CHTTPMessage();    
+    
+  if(pClient->Get(p_sDescriptionURL, pResult))
+  {    
+    return ParseDescription(pResult->GetContent());
+  }
+  else
+  {
+    CSharedLog::Shared()->Error(LOGNAME, "BuildFromDescriptionURL");
+    return false;
+  }
 }
 
 void CUPnPDevice::AddUPnPService(CUPnPService* pUPnPService)
@@ -55,13 +84,6 @@ CUPnPService* CUPnPDevice::GetUPnPService(int p_nIndex)
 eUPnPDeviceType CUPnPDevice::GetDeviceType()
 {
 	return m_UPnPDeviceType;
-}
-
-
-
-void CUPnPDevice::SetHTTPServerURL(std::string p_sHTTPServerURL)
-{
-	m_sHTTPServerURL = p_sHTTPServerURL;
 }
 
 std::string CUPnPDevice::GetDeviceDescription()
@@ -234,4 +256,69 @@ std::string CUPnPDevice::GetDeviceDescription()
 	
 	//cout << "upnp description: " << output.str() << endl;
 	return output.str();
+}
+
+bool CUPnPDevice::ParseDescription(std::string p_sDescription)
+{
+  //cout << p_sDescription << endl;
+  
+  RegEx rxFriendlyName("<friendlyName>(.*)</friendlyName>");
+  if(rxFriendlyName.Search(p_sDescription.c_str()))
+  {
+    m_sFriendlyName = rxFriendlyName.Match(1);
+  }
+  
+  /*<?xml version="1.0"?>
+<root
+  xmlns="urn:schemas-upnp-org:device-1-0">
+        <specVersion>
+                <major>1</major>
+                <minor>0</minor>
+        </specVersion>
+        <INMPR03>1.0</INMPR03>
+        <device>
+                <deviceType>urn:schemas-upnp-org:device:MediaRenderer:1</deviceType>
+                <friendlyName>NOXON audio</friendlyName>
+                <manufacturer>TerraTec GmbH</manufacturer>
+                <manufacturerURL>www.TerraTec.de</manufacturerURL>
+                <modelDescription>NOXON audio</modelDescription>
+                <modelName>NOXON 1.0</modelName>
+                <modelNumber>1.0</modelNumber>
+                <modelURL>http://www.TerraTec.de</modelURL>
+                <serialNumber>0010C64ABF59</serialNumber>
+                <UDN>uuid:00000000-0000-0000-0000-08000E200000</UDN>
+                <UPC>123810928305556upc</UPC>
+                <serviceList>
+                        <service>
+                                <serviceType>urn:schemas-upnp-org:service:RenderingControl:1</serviceType>
+                                <serviceId>urn:upnp-org:serviceId:RenderingControlServiceID</serviceId>
+                                <SCPDURL>/RenderingControl/desc.xml</SCPDURL>
+                                <controlURL>/RenderingControl/ctrl</controlURL>
+                                <eventSubURL>/RenderingControl/evt</eventSubURL>                        </service>
+                        <service>
+                                <serviceType>urn:schemas-upnp-org:service:ConnectionManager:1</serviceType>
+                                <serviceId>urn:upnp-org:serviceId:ConnectionManagerServiceID</serviceId>
+                                <SCPDURL>/ConnectionManager/desc.xml</SCPDURL>
+                                <controlURL>/ConnectionManager/ctrl</controlURL>                                <eventSubURL>/ConnectionManager/evt</eventSubURL>
+                        </service>
+                        <service>
+                                <serviceType>urn:schemas-upnp-org:service:AVTransport:1</serviceType>
+                                <serviceId>urn:upnp-org:serviceId:AVTransportServiceID</serviceId>
+                                <SCPDURL>/AVTransport/desc.xml</SCPDURL>
+                                <controlURL>/AVTransport/ctrl</controlURL>
+                                <eventSubURL>/AVTransport/evt</eventSubURL>
+                        </service>
+                        <service>
+                                <serviceType>urn:schemas-upnp-org:service:HtmlPageHandler:1</serviceType>
+                                <serviceId>urn:upnp-org:serviceId:HtmlPageServiceID</serviceId>
+                                <SCPDURL>/HtmlPageHandler/desc.xml</SCPDURL>
+                                <controlURL>/HtmlPageHandler/ctrl</controlURL>
+                                <eventSubURL>/HtmlPageHandler/evt</eventSubURL>
+                        </service>
+                </serviceList>
+                <presentationURL>/index.html</presentationURL>
+        </device>
+</root>*/
+
+  return true;
 }

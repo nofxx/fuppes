@@ -20,6 +20,7 @@ h_sources = \
   NotifyMsgFactory.h\
 	HTTPMessage.h\
 	HTTPServer.h\
+  HTTPClient.h\
   UPnPBase.h\
 	UPnPDevice.h\
 	UPnPService.h\
@@ -33,9 +34,10 @@ h_sources = \
   ContentDirectory/AudioItem.h\
   ContentDirectory/ContentDirectory.h\
   Presentation/PresentationHandler.h\
+  Presentation/Stylesheet.h\
 	SharedConfig.h\
+  SharedLog.h\
 	Fuppes.h\
-	win32.h\
 	RegEx.h
 	
 cpp_sources = \
@@ -48,6 +50,7 @@ cpp_sources = \
 	NotifyMsgFactory.cpp\
 	HTTPMessage.cpp\
 	HTTPServer.cpp\
+  HTTPClient.cpp\
   UPnPBase.cpp\
 	UPnPDevice.cpp\
 	UPnPService.cpp\
@@ -59,6 +62,7 @@ cpp_sources = \
 	ContentDirectory/ContentDirectory.cpp\
   Presentation/PresentationHandler.cpp\
 	SharedConfig.cpp\
+  SharedLog.cpp\
 	Fuppes.cpp\
 	main.cpp
 	

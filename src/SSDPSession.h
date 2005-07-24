@@ -28,6 +28,15 @@
 
 #include "UDPSocket.h"
 #include "SSDPMessage.h"
+#include "NotifyMsgFactory.h"
+
+class CSSDPSession;
+
+class ISSDPSession
+{
+  public:
+    virtual void OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage) = 0;
+};
 
 class CSSDPSession: public IUDPSocket
 {
@@ -35,28 +44,34 @@ class CSSDPSession: public IUDPSocket
 		void OnUDPSocketReceive(CUDPSocket*, CSSDPMessage*);
 	
 	protected:
-		CSSDPSession();
+		CSSDPSession(std::string p_sIPAddress, ISSDPSession* pReceiveHandler);
 	  virtual ~CSSDPSession();
 	
 	  void send_multicast(std::string);
 	  void send_unicast(std::string);
 	  
-	  void begin_receive_unicast();	  
+	  void begin_receive_unicast();
+    void end_receive_unicast();
 
 	  virtual void start();	  
 	
-		int timeout;
-	  CUDPSocket* udp;	  
+		int           timeout;
+	  CUDPSocket*   udp;
+    std::string   m_sIPAddress;
+    ISSDPSession* m_pReceiveHandler;
 };
 
 class CMSearchSession: public CSSDPSession
 {
 	public:
-	  CMSearchSession();
+	  CMSearchSession(std::string p_sIPAddress, ISSDPSession* pReceiveHandler, CNotifyMsgFactory* pNotifyMsgFactory);
     ~CMSearchSession();
 	
 	  void start();
+    void Stop();
 	  sockaddr_in  GetLocalEndPoint();
+  private:
+    CNotifyMsgFactory* m_pNotifyMsgFactory;
 };
 
 #endif /* _SSDPSESSION_H */

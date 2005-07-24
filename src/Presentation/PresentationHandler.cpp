@@ -22,6 +22,7 @@
  */
  
 #include "PresentationHandler.h"
+#include "Stylesheet.h"
 #include "../SharedConfig.h"
 
 #include <sstream>
@@ -34,14 +35,76 @@ CPresentationHandler::~CPresentationHandler()
 {
 }
 
-std::string CPresentationHandler::GetIndexHTML()
+void CPresentationHandler::AddFuppesInstance(CFuppes* pFuppes)
+{
+  m_vFuppesInstances.push_back(pFuppes);
+}
+
+std::string CPresentationHandler::GetXHTMLHeader()
 {
   std::stringstream sResult;
-  sResult << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion();  
+  
+  sResult << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+  sResult << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN" ;
+  sResult << "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd";
+  
   return sResult.str();
 }
 
-std::string CPresentationHandler::HandleRequest(std::string p_sRequest)
+std::string CPresentationHandler::GetIndexHTML()
 {
-  return "";
+  std::stringstream sResult;
+  sResult << this->GetXHTMLHeader();
+  sResult << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n";
+  sResult << "<head>";  
+  sResult << "<title>" << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion() << "</title>";
+  
+  sResult << "<style type=\"text/css\">";
+  sResult << GetStylesheet();
+  sResult << "</style>";  
+  sResult << "</head>";
+  
+  sResult << "<body>";  
+  
+  sResult << "<h1>" << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion() << "</h1>";
+  
+  for (unsigned int i = 0; i < m_vFuppesInstances.size(); i++)
+  {
+    sResult << "FUPPES Instance No. " << i + 1 << "<br />";    
+    sResult << "IP-Address: " << ((CFuppes*)m_vFuppesInstances[i])->GetIPAddress() << "<br />";
+    sResult << "HTTP-Server URL: " << ((CFuppes*)m_vFuppesInstances[i])->GetHTTPServerURL() << "<br />";
+    sResult << "Status: " << "<i>todo</i>" << "<br />";
+    sResult << "<br />";
+    sResult << "<br />";
+    
+    sResult << "<h3>Remote Devices</h3>";
+    sResult << this->BuildFuppesDeviceList((CFuppes*)m_vFuppesInstances[i]);
+  }
+  
+  sResult << "</body>";
+  sResult << "</html>";
+  
+  return sResult.str();
+}
+
+void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPMessage* pMessage, CHTTPMessage* pResult)
+{
+  pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
+  pResult->SetContentType(HTTP_CONTENT_TYPE_TEXT_HTML);
+  pResult->SetContent(this->GetIndexHTML());
+}
+
+
+std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes)
+{
+  stringstream sResult;
+  
+  for(unsigned int i = 0; i < pFuppes->GetRemoteDevices().size(); i++)
+  {
+    CUPnPDevice* pDevice = pFuppes->GetRemoteDevices()[i];
+    sResult << "No. " << i + 1 << "<br />";
+    sResult << "Name: " << pDevice->GetFriendlyName() << "<br />";
+  }
+  
+  return sResult.str();
 }

@@ -24,7 +24,7 @@
 #ifndef _UDPSOCKET_H
 #define _UDPSOCKET_H
 
-#include "win32.h"
+#include "Common.h"
 
 #ifndef WIN32
 #include <arpa/inet.h>
@@ -56,7 +56,8 @@ class CUDPSocket
     void SendUnicast(std::string p_sMessage, sockaddr_in p_RemoteEndPoint);
   
 		void begin_receive();
-		void setup_socket(bool do_multicast);
+    void end_receive();
+		void SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress = "");
 	  void teardown_socket();
 	  void setup_random_port();
 	

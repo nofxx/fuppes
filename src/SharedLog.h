@@ -1,5 +1,5 @@
 /***************************************************************************
- *            AudioItem.h
+ *            SharedLog.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *  Copyright (C) 2005 Ulrich Völkel
@@ -21,18 +21,23 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _AUDIOITEM_H
-#define _AUDIOITEM_H
+#ifndef _SHAREDLOG_H
+#define _SHAREDLOG_H
 
-#include "UPnPItem.h"
+#include <string>
 
-class CAudioItem: public CUPnPItem
+class CSharedLog
 {
   public:
-    CAudioItem(std::string p_sHTTPServerURL):
-      CUPnPItem(uotAudioItem, p_sHTTPServerURL) {}
-      
-    void GetDescription(xmlTextWriterPtr pWriter);
+    static CSharedLog* Shared();
+    void   Log(std::string p_sSender, std::string p_sMessage);
+    void   Log(std::string p_sSender, std::string p_asMessages[], unsigned int p_nCount, std::string p_sSeparator = "");    
+    void   Error(std::string p_sSender, std::string p_sMessage);
+  
+  private:
+    CSharedLog();
+		static CSharedLog* m_Instance;
+    bool m_bLocked;
 };
 
-#endif /* _AUDIOITEM_H */
+#endif /* _SHAREDLOG_H */

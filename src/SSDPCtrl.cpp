@@ -22,23 +22,26 @@
  */
  
  
-#include <iostream>
-
 #include "SSDPCtrl.h"
-#include "NotifyMsgFactory.h"
- 
-#include "SSDPSession.h"
+#include "SharedLog.h"
+#include <iostream>
  
 using namespace std;
+
+const std::string LOGNAME = "SSDPDCtrl";
  
-CSSDPCtrl::CSSDPCtrl()
+CSSDPCtrl::CSSDPCtrl(std::string p_sIPAddress, std::string p_sHTTPServerURL)
 {
+  m_pNotifyMsgFactory = new CNotifyMsgFactory(p_sHTTPServerURL);
+
+  m_sIPAddress   = p_sIPAddress;
 	msearch_thread = (upnpThread)NULL;
 	listener       = new CUDPSocket();
 }
 
 CSSDPCtrl::~CSSDPCtrl()
 {
+  delete m_pNotifyMsgFactory;
 	delete listener;
 }
 
@@ -49,73 +52,79 @@ CUDPSocket* CSSDPCtrl::get_socket()
 
 void CSSDPCtrl::Start()
 {	
-	listener->setup_socket(true);
+	listener->SetupSocket(true, m_sIPAddress);
 	listener->SetReceiveHandler(this);
 	listener->begin_receive();	
 }
 
+void CSSDPCtrl::Stop()
+{	
+	listener->end_receive();	
+}
+
 void CSSDPCtrl::send_msearch()
 {
-	CMSearchSession* msearch = new CMSearchSession();
+	CMSearchSession* msearch = new CMSearchSession(m_sIPAddress, this, m_pNotifyMsgFactory);
 	this->last_multicast_ep = msearch->GetLocalEndPoint();
-	msearch->start();	
+	// T.S.TODO: Where could we call CMSearchSession::Stop() to terminate thread???
+  msearch->start();	
 }
 
 void CSSDPCtrl::send_alive()
 {
-	CUDPSocket* sock = new CUDPSocket();
-	sock->setup_socket(false);
+	CUDPSocket* pSock = new CUDPSocket();
+	pSock->SetupSocket(false, m_sIPAddress);
 	
-	this->last_multicast_ep = sock->get_local_ep();
+	this->last_multicast_ep = pSock->get_local_ep();
 	
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_alive(mt_root_device));	
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_alive(mt_root_device));
+	pSock->send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_ROOT_DEVICE));	
+	pSock->send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_ROOT_DEVICE));
 	upnpSleep(200);
 	
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_alive(mt_connection_manager));
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_alive(mt_connection_manager));
+	pSock->send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_CONNECTION_MANAGER));
+	pSock->send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_CONNECTION_MANAGER));
 	upnpSleep(200);
 	
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_alive(mt_content_directory));
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_alive(mt_content_directory));
+	pSock->send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_CONTENT_DIRECTORY));
+	pSock->send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_CONTENT_DIRECTORY));
 	upnpSleep(200);
 	
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_alive(mt_media_server));
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_alive(mt_media_server));
+	pSock->send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_MEDIA_SERVER));
+	pSock->send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_MEDIA_SERVER));
 	upnpSleep(200);
 	
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_alive(mt_usn));
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_alive(mt_usn));
+	pSock->send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_USN));
+	pSock->send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_USN));
 	
-	sock->teardown_socket();
-	delete sock;
+	pSock->teardown_socket();
+	delete pSock;
 }
 
 void CSSDPCtrl::send_byebye()
 {
 	CUDPSocket* sock = new CUDPSocket();
-	sock->setup_socket(false);
+	sock->SetupSocket(false, m_sIPAddress);
 	
   this->last_multicast_ep = sock->get_local_ep();	
 	
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_bye_bye(mt_root_device));
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_bye_bye(mt_root_device));
+	sock->send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_ROOT_DEVICE));
+	sock->send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_ROOT_DEVICE));
 	upnpSleep(200);
 	
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_bye_bye(mt_connection_manager));
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_bye_bye(mt_connection_manager));
+	sock->send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_CONNECTION_MANAGER));
+	sock->send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_CONNECTION_MANAGER));
 	upnpSleep(200);
 	
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_bye_bye(mt_content_directory));
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_bye_bye(mt_content_directory));
+	sock->send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_CONTENT_DIRECTORY));
+	sock->send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_CONTENT_DIRECTORY));
 	upnpSleep(200);
 	
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_bye_bye(mt_media_server));
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_bye_bye(mt_media_server));
+	sock->send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_MEDIA_SERVER));
+	sock->send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_MEDIA_SERVER));
 	upnpSleep(200);
 	
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_bye_bye(mt_usn));
-	sock->send_multicast(CNotifyMsgFactory::shared()->notify_bye_bye(mt_usn));
+	sock->send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_USN));
+	sock->send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_USN));
 	
 	sock->teardown_socket();
 	delete sock;
@@ -135,13 +144,13 @@ void CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMe
     {
       cout << "[SSDPCtrl] received m-search. unicasting response" << endl;
       CUDPSocket* pSock = new CUDPSocket();
-      pSock->setup_socket(false);
+      pSock->SetupSocket(false, m_sIPAddress);
       
-      pSock->SendUnicast(CNotifyMsgFactory::shared()->GetMSearchResponse(mt_root_device), pSSDPMessage->GetRemoteEndPoint());
-      pSock->SendUnicast(CNotifyMsgFactory::shared()->GetMSearchResponse(mt_connection_manager), pSSDPMessage->GetRemoteEndPoint());
-      pSock->SendUnicast(CNotifyMsgFactory::shared()->GetMSearchResponse(mt_content_directory), pSSDPMessage->GetRemoteEndPoint());
-      pSock->SendUnicast(CNotifyMsgFactory::shared()->GetMSearchResponse(mt_media_server), pSSDPMessage->GetRemoteEndPoint());
-      pSock->SendUnicast(CNotifyMsgFactory::shared()->GetMSearchResponse(mt_usn), pSSDPMessage->GetRemoteEndPoint());
+      pSock->SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_ROOT_DEVICE), pSSDPMessage->GetRemoteEndPoint());
+      pSock->SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_CONNECTION_MANAGER), pSSDPMessage->GetRemoteEndPoint());
+      pSock->SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_CONTENT_DIRECTORY), pSSDPMessage->GetRemoteEndPoint());
+      pSock->SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_MEDIA_SERVER), pSSDPMessage->GetRemoteEndPoint());
+      pSock->SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_USN), pSSDPMessage->GetRemoteEndPoint());
       
       pSock->teardown_socket();
       delete pSock;      
@@ -150,4 +159,13 @@ void CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMe
     else if(m_pReceiveHandler !=NULL)
       m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pSSDPMessage);
 	}	
+}
+
+void CSSDPCtrl::OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage)
+{
+  CSharedLog::Shared()->Log(LOGNAME, "OnSessionReceive");
+  if(m_pReceiveHandler !=NULL)
+      m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pMessage);
+  
+  //cout << pMessage->GetContent() << endl;
 }

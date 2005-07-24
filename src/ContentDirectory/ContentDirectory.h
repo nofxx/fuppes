@@ -36,10 +36,10 @@
 class CContentDirectory: public CUPnPService
 {
 	public:
-		CContentDirectory();
+		CContentDirectory(std::string p_sHTTPServerURL);
 	  ~CContentDirectory();
     
-    CHTTPMessage* HandleUPnPAction(CUPnPAction*);
+    bool HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut);
     std::string   GetFileNameFromObjectID(std::string p_sObjectID);
     CUPnPObject*  GetItemFromObjectID(std::string p_sObjectID);
   private:
