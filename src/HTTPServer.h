@@ -57,7 +57,7 @@ class CHTTPMessage;
 class IHTTPServer
 {
 
-// <PUBLIC>
+/* <PUBLIC> */
 
   public:
 
@@ -65,7 +65,7 @@ class IHTTPServer
       CHTTPMessage* pMessageIn,
       CHTTPMessage* pMessageOut) = 0;
 
-// <\PUBLIC>
+/* <\PUBLIC> */
 
 };
 
@@ -76,7 +76,7 @@ class IHTTPServer
 class CHTTPSessionInfo
 {
 
-// <PUBLIC>
+/* <PUBLIC> */
 
 public:
     
@@ -97,9 +97,9 @@ public:
     upnpSocket   GetConnection() { return m_Connection;  }
     CHTTPServer* GetHTTPServer() { return m_pHTTPServer; }
   
-// <\PUBLIC>
+/* <\PUBLIC> */
 
-// <PRIVATE>
+/* <PRIVATE> */
 
 private:
   
@@ -110,7 +110,7 @@ private:
   CHTTPServer* m_pHTTPServer;
   upnpSocket   m_Connection;
 
-// <\PRIVATE>
+/* <\PRIVATE> */
 
 };
 
@@ -121,7 +121,7 @@ private:
 class CHTTPServer
 {
 
-// <PUBLIC>
+/* <PUBLIC> */
 
 public:
     
@@ -148,9 +148,9 @@ public:
   bool				  SetReceiveHandler(IHTTPServer* pHandler);
   bool          CallOnReceive(std::string p_sMessage, CHTTPMessage* pMessageOut);
   
-// <\PUBLIC>
+/* <\PUBLIC> */
 
-// <PRIVATE>
+/* <PRIVATE> */
 
 private:
 	 
@@ -167,7 +167,7 @@ private:
   upnpSocket  sock;					      
   fuppesThread  accept_thread;
 
-// <\PRIVATE>
+/* <\PRIVATE> */
 
 };
 

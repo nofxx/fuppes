@@ -45,7 +45,7 @@ const std::string LOGNAME = "HTTPMessage";
  CLASS CHTTPMessage
 ===============================================================================*/
 
-// <PUBLIC>
+/* <PUBLIC> */
 
 /*===============================================================================
  CONSTRUCTOR / DESTRUCTOR
@@ -53,7 +53,7 @@ const std::string LOGNAME = "HTTPMessage";
 
 CHTTPMessage::CHTTPMessage()
 {
-  // Init
+  /* Init */
   m_HTTPVersion			  = HTTP_VERSION_1_1;
   m_HTTPMessageType   = HTTP_MESSAGE_TYPE_UNKNOWN;
 	m_HTTPContentType   = HTTP_CONTENT_TYPE_UNKNOWN;
@@ -65,7 +65,7 @@ CHTTPMessage::CHTTPMessage()
 
 CHTTPMessage::~CHTTPMessage()
 {
-  // Cleanup
+  /* Cleanup */
   SAFE_DELETE(m_pszBinContent);
 }
 
@@ -110,7 +110,7 @@ bool CHTTPMessage::GetAction(CUPnPBrowse* pBrowse)
   if(NULL == pBrowse)
     return false;
 
-  // Build UPnPAction
+  /* Build UPnPAction */
   CUPnPActionFactory ActionFactory;
   return ActionFactory.BuildActionFromString(m_sContent, pBrowse);
 }
@@ -122,7 +122,7 @@ std::string CHTTPMessage::GetHeaderAsString()
 	string sType;
 	string sContentType;
 	
-  // Version
+  /* Version */
 	switch(m_HTTPVersion)
 	{
 		case HTTP_VERSION_1_0: sVersion = "HTTP/1.0"; break;
@@ -130,7 +130,7 @@ std::string CHTTPMessage::GetHeaderAsString()
     default:               ASSERT(0);             break;
   }
 	
-  // Message Type
+  /* Message Type */
 	switch(m_HTTPMessageType)
 	{
 		case HTTP_MESSAGE_TYPE_GET:	          /* todo */			                            break;
@@ -140,10 +140,10 @@ std::string CHTTPMessage::GetHeaderAsString()
     default:                              ASSERT(0);                                  break;
 	}
 	
-  // Content length
+  /* Content length */
 	sResult << "CONTENT-LENGTH: " << (int)strlen(m_sContent.c_str()) << "\r\n";
 	
-  // Content type
+  /* Content type */
 	switch(m_HTTPContentType)
 	{
 		case HTTP_CONTENT_TYPE_TEXT_HTML:  sContentType = "text/html";  break;
@@ -174,7 +174,7 @@ void CHTTPMessage::BuildFromString(std::string p_sMessage)
   m_sMessage = p_sMessage;
   m_sContent = p_sMessage;  
 
-  // Message GET
+  /* Message GET */
   RegEx rxGET("GET +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
   if(rxGET.Search(p_sMessage.c_str()))
   {
@@ -189,7 +189,7 @@ void CHTTPMessage::BuildFromString(std::string p_sMessage)
     m_sRequest = rxGET.Match(1);			
   }
 
-  // Message POST
+  /* Message POST */
   RegEx rxPOST("POST +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
   if(rxPOST.Search(p_sMessage.c_str()))
   {
@@ -227,9 +227,9 @@ bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
   return true;
 }
 
-// <\PUBLIC>
+/* <\PUBLIC> */
 
-// <PRIVATE>
+/* <PRIVATE> */
 
 /*===============================================================================
  HELPER
@@ -250,7 +250,7 @@ void CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
 		//cout << "[HTTPMessage] SOAPACTION " << sSOAP << endl;
 	}
       
-  // Content length
+  /* Content length */
   RegEx rxContentLength("CONTENT-LENGTH: *(\\d+)", PCRE_CASELESS);
   if(rxContentLength.Search(p_sMessage.c_str()))
   {
@@ -263,4 +263,4 @@ void CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
   
 }
 
-// <\PRIVATE>
+/* <\PRIVATE> */

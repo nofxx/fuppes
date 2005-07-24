@@ -53,7 +53,7 @@ const std::string LOGNAME = "HTTPClient";
  CLASS CHTTPClient
 ===============================================================================*/
 
-// <PUBLIC>
+/* <PUBLIC> */
 
 /*===============================================================================
  MESSAGES
@@ -61,21 +61,21 @@ const std::string LOGNAME = "HTTPClient";
 
 bool CHTTPClient::Send(CHTTPMessage* pMessage, std::string p_sTargetIPAddress, unsigned int p_nTargetPort)
 {
-  // Init socket
+  /* Init socket */
   upnpSocket sock = socket(AF_INET, SOCK_STREAM, 0);
   sockaddr_in addr;
   addr.sin_family      = PF_INET;
   addr.sin_addr.s_addr = inet_addr(p_sTargetIPAddress.c_str());
   addr.sin_port        = htons(p_nTargetPort);
   
-  // Connect
+  /* Connect */
   if(connect(sock, (struct sockaddr*)&addr, sizeof(addr)) == -1)
   {
     CSharedLog::Shared()->Error(LOGNAME, "connect()");
     return false;
   }
   
-  // Send
+  /* Send */
   std::string sMsg = pMessage->GetMessageAsString();  
   CSharedLog::Shared()->Log(LOGNAME, sMsg);  
   if(send(sock, sMsg.c_str(), (int)strlen(sMsg.c_str()), 0) == -1)
@@ -122,25 +122,25 @@ bool CHTTPClient::Get(std::string p_sGetURL, CHTTPMessage* pResult)
  */
 bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_sTargetIPAddress, unsigned int p_nTargetPort)
 {
-  // Init socket
+  /* Init socket */
   upnpSocket sock = socket(AF_INET, SOCK_STREAM, 0);
   sockaddr_in addr;
   addr.sin_family      = PF_INET;
   addr.sin_addr.s_addr = inet_addr(p_sTargetIPAddress.c_str());
   addr.sin_port        = htons(p_nTargetPort);
 
-  // Connect
+  /* Connect */
   if(connect(sock, (struct sockaddr*)&addr, sizeof(addr)) == -1)
   {
     CSharedLog::Shared()->Error(LOGNAME, "connect()");
     return false;
   }
 
-  // Get header
+  /* Get header */
   std::string sMsg = BuildGetHeader(p_sGet, p_sTargetIPAddress, p_nTargetPort);  
   CSharedLog::Shared()->Log(LOGNAME, "send GET Header");
 
-  // Send
+  /* Send */
   if(-1 == send(sock, sMsg.c_str(), (int)strlen(sMsg.c_str()), 0))
   {
     CSharedLog::Shared()->Error(LOGNAME, "send()");    
@@ -181,9 +181,9 @@ bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_s
   return false;
 }
 
-// <\PUBLIC>
+/* <\PUBLIC> */
 
-// <PRIVATE>
+/* <PRIVATE> */
 
 /*===============================================================================
  HELPER
@@ -193,7 +193,7 @@ std::string CHTTPClient::BuildGetHeader(std::string p_sGet, std::string p_sTarge
 {
   std::stringstream sHeader;
   
-  // Build header
+  /* Build header */
   sHeader << "GET " << p_sGet << " HTTP/1.0" << "\r\n";
   sHeader << "HOST: " << p_sTargetIPAddress << ":" << p_nTargetPort << "\r\n";
   //sHeader << "USER_AGENT: " << "FUPPES-HTTPClient Mozilla/4.0 (compatible)" << "\r\n";
@@ -203,4 +203,4 @@ std::string CHTTPClient::BuildGetHeader(std::string p_sGet, std::string p_sTarge
   return sHeader.str();
 }
 
-// <\PRIVATE>
+/* <\PRIVATE> */

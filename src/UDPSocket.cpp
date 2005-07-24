@@ -55,7 +55,7 @@ upnpSocket CUDPSocket::get_socket_fd()
 
 void CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress)
 {
-  // create socket
+  /* Create socket */
 	sock = socket(PF_INET, SOCK_DGRAM, 0);
 	if(sock == -1)
     CSharedLog::Shared()->Error(LOGNAME, "creating socket");
@@ -66,7 +66,7 @@ void CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress)
 	if(ret == -1)
     CSharedLog::Shared()->Error(LOGNAME, "setsockopt");		
 	
-	// set local endpoint		
+	/* Set local endpoint */
   local_ep.sin_family = AF_INET;	
 	if(p_bDoMulticast)
 	{
@@ -79,16 +79,16 @@ void CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress)
     local_ep.sin_port		     = htons(0); // use random port
 	}
 	
-	// bind socket
+	/* Bind socket */
 	ret = bind(sock, (struct sockaddr*)&local_ep, sizeof(local_ep)); 
   if(ret == -1)
     CSharedLog::Shared()->Error(LOGNAME, "bind");	
 	
-	// get random port
+	/* Get random port */
 	socklen_t size = sizeof(local_ep);
 	getsockname(sock, (struct sockaddr*)&local_ep, &size);
 	
-	// join multicast group
+	/* Join multicast group */
 	is_multicast = p_bDoMulticast;
 	if(p_bDoMulticast)
 	{	
@@ -105,7 +105,7 @@ void CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress)
 
 void CUDPSocket::teardown_socket()
 {
-	// leave multicast group
+	/* Leave multicast group */
 	if(is_multicast)
 	{
 		struct ip_mreq stMreq;
@@ -119,19 +119,19 @@ void CUDPSocket::teardown_socket()
 
 void CUDPSocket::begin_receive()
 {
-  // Start thread
+  /* Start thread */
   fuppesThreadStart(receive_thread, receive_loop);
 }
 
 void CUDPSocket::end_receive()
 {
-  // Exit thread
+  /* Exit thread */
   fuppesThreadClose(receive_thread, 2000);
 }
 
 void CUDPSocket::send_multicast(std::string p_sMessage)
 {
-	// create remote end point
+	/* Create remote end point */
 	sockaddr_in remote_ep;	
 	remote_ep.sin_family      = AF_INET;
   remote_ep.sin_addr.s_addr = inet_addr(MULTICAST_IP);

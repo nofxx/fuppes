@@ -59,14 +59,14 @@ bool IsFile(std::string p_sFileName)
 #ifdef WIN32
 bool DirectoryExists(std::string p_sDirName)
 {
-  // Convert string
+  /* Convert string */
   const char* pszDirName = p_sDirName.c_str();
   
-  // Get file information
+  /* Get file information */
   struct _stat info;
   memset(&info, 0, sizeof(info));
 
-  // Check directory exists
+  /* Check directory exists */
   _stat(pszDirName, &info);
   if(0 == (info.st_mode & _S_IFDIR))
     return false;

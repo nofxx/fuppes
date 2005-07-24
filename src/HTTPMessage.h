@@ -80,7 +80,7 @@ typedef enum tagHTTP_CONTENT_TYPE
 class CHTTPMessage: public CMessageBase
 {
 
-// <PUBLIC>
+/* <PUBLIC> */
   
 public:
 
@@ -131,9 +131,9 @@ public:
   bool             LoadContentFromFile(std::string);	
   
 
-// <\PUBLIC>
+/* <\PUBLIC> */
 
-// <PRIVATE>
+/* <PRIVATE> */
 
 private:
     
@@ -156,7 +156,7 @@ private:
 
   void ParsePOSTMessage(std::string);
 
-// <\PRIVATE>
+/* <\PRIVATE> */
 
 };
 

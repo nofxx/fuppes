@@ -37,7 +37,7 @@ using namespace std;
  CLASS CNotifyMsgFactory
 ===============================================================================*/
 
-// <PUBLIC>
+/* <PUBLIC> */
 
 /*===============================================================================
  CONSTRUCTOR / DESTRUCTOR
@@ -138,17 +138,17 @@ std::string CNotifyMsgFactory::GetMSearchResponse(MESSAGE_TYPE p_MessageType)
 	return result.str();
 }
 
-// <\PUBLIC>
+/* <\PUBLIC> */
 
 /*===============================================================================
  HELPER
 ===============================================================================*/
 
-// <PRIVATE>
+/* <PRIVATE> */
 
 std::string CNotifyMsgFactory::type_to_string(MESSAGE_TYPE a_type)
 {
-	// Convert message type to string
+	/* Convert message type to string */
   stringstream result;
 	
 	switch(a_type)
@@ -181,4 +181,4 @@ std::string CNotifyMsgFactory::type_to_string(MESSAGE_TYPE a_type)
 	return result.str();
 }
 
-// <\PRIVATE>
+/* <\PRIVATE> */

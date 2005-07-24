@@ -53,7 +53,7 @@ typedef enum tagMESSAGE_TYPE
 class CNotifyMsgFactory
 {
 
-// <PUBLIC>
+/* <PUBLIC> */
 
 public:		
 
@@ -72,9 +72,9 @@ public:
 	  std::string notify_bye_bye(MESSAGE_TYPE);
     std::string GetMSearchResponse(MESSAGE_TYPE);		
 
-// <\PUBLIC>
+/* <\PUBLIC> */
 
-// <PRIVATE>
+/* <PRIVATE> */
 
 private:
 
@@ -91,7 +91,7 @@ private:
 
     static std::string type_to_string(MESSAGE_TYPE);
 
-// <\PRIVATE>
+/* <\PRIVATE> */
 
 };
 

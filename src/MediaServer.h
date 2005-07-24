@@ -37,7 +37,7 @@
 class CMediaServer: public CUPnPDevice
 {
 
-// <PUBLIC>
+/* <PUBLIC> */
 
 public:
 
@@ -48,7 +48,7 @@ public:
   CMediaServer(std::string p_sHTTPServerURL);
   ~CMediaServer();
 
-// <\PUBLIC>
+/* <\PUBLIC> */
 
 };
 

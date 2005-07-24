@@ -105,7 +105,7 @@ int main()
   /* Create presentation handler */
   CPresentationHandler* pPresentationHandler = new CPresentationHandler();
   
-  // Create main server object (CFuppes)
+  /* Create main server object (CFuppes) */
   
 	CFuppes* pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUDN(), pPresentationHandler);	
   pPresentationHandler->AddFuppesInstance(pFuppes);

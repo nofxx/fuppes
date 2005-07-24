@@ -100,151 +100,151 @@ std::string CUPnPDevice::GetDeviceDescription()
 	writer = xmlNewTextWriterMemory(buf, 0);    
 	xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL);
 
-	// root
+	/* root */
 	xmlTextWriterStartElementNS(writer, NULL, BAD_CAST "root", BAD_CAST "urn:schemas-upnp-org:device-1-0");
 	
-		// specVersion
+		/* specVersion */
 		xmlTextWriterStartElement(writer, BAD_CAST "specVersion");
 		
-			// major
+			/* major */
 			xmlTextWriterStartElement(writer, BAD_CAST "major");  	
 			xmlTextWriterWriteString(writer, BAD_CAST "1");
 			xmlTextWriterEndElement(writer);		
-			// minor
+			/* minor */
 			xmlTextWriterStartElement(writer, BAD_CAST "minor");  	
 			xmlTextWriterWriteString(writer, BAD_CAST "0");
 			xmlTextWriterEndElement(writer);		
 	
-		// end specVersion
+		/* end specVersion */
 		xmlTextWriterEndElement(writer);
 
-		// url base
+		/* url base */
 		sTmp << "http://" << m_sHTTPServerURL << "/";
 		xmlTextWriterStartElement(writer, BAD_CAST "URLBase");
 		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
 		sTmp.str("");
 		xmlTextWriterEndElement(writer);
 
-		// device
+		/* device */
 		xmlTextWriterStartElement(writer, BAD_CAST "device");
 		
-		  // deviceType			
+		  /* deviceType */
 			sTmp << "urn:schemas-upnp-org:device:" << GetUPnPDeviceTypeAsString() << ":1";
 			xmlTextWriterStartElement(writer, BAD_CAST "deviceType");
 			xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
 			sTmp.str("");
       xmlTextWriterEndElement(writer);
 		
-			// friendlyName			
+			/* friendlyName */
 			xmlTextWriterStartElement(writer, BAD_CAST "friendlyName");
 			xmlTextWriterWriteString(writer, BAD_CAST m_sFriendlyName.c_str());
       xmlTextWriterEndElement(writer);
 			
-			// manufacturer
+			/* manufacturer */
 			xmlTextWriterStartElement(writer, BAD_CAST "manufacturer");
       xmlTextWriterWriteString(writer, BAD_CAST m_sManufacturer.c_str());
 			xmlTextWriterEndElement(writer);
 			
-      // manufacturerURL
+      /* manufacturerURL */
 			xmlTextWriterStartElement(writer, BAD_CAST "manufacturerURL");
       xmlTextWriterWriteString(writer, BAD_CAST m_sManufacturerURL.c_str());
 			xmlTextWriterEndElement(writer);
 			
-      // modelDescription
+      /* modelDescription */
 			xmlTextWriterStartElement(writer, BAD_CAST "modelDescription");
       xmlTextWriterWriteString(writer, BAD_CAST m_sModelDescription.c_str());
 			xmlTextWriterEndElement(writer);
 			
-			// modelName
+			/* modelName */
 			xmlTextWriterStartElement(writer, BAD_CAST "modelName");
       xmlTextWriterWriteString(writer, BAD_CAST m_sModelName.c_str());
 			xmlTextWriterEndElement(writer);
 			
-			// modelNumber
+			/* modelNumber */
 			xmlTextWriterStartElement(writer, BAD_CAST "modelNumber");
       xmlTextWriterWriteString(writer, BAD_CAST m_sModelNumber.c_str());
 			xmlTextWriterEndElement(writer);
       
-			// modelURL
+			/* modelURL */
 			xmlTextWriterStartElement(writer, BAD_CAST "modelURL");
       xmlTextWriterWriteString(writer, BAD_CAST m_sModelURL.c_str());
 			xmlTextWriterEndElement(writer);
 			
-			// serialNumber
+			/* serialNumber */
 			xmlTextWriterStartElement(writer, BAD_CAST "serialNumber");
       xmlTextWriterWriteString(writer, BAD_CAST m_sSerialNumber.c_str());
 			xmlTextWriterEndElement(writer);
 			
-			// UDN
+			/* UDN */
 			xmlTextWriterStartElement(writer, BAD_CAST "UDN");
 			sTmp << "uuid:" << m_sUDN;
       xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
       sTmp.str("");
 			xmlTextWriterEndElement(writer);
 			
-			// UPC
+			/* UPC */
 			xmlTextWriterStartElement(writer, BAD_CAST "UPC");
       xmlTextWriterWriteString(writer, BAD_CAST m_sUPC.c_str());
 			xmlTextWriterEndElement(writer);		
 		
-		  // serviceList
+		  /* serviceList */
 			xmlTextWriterStartElement(writer, BAD_CAST "serviceList");			
       for(unsigned int i = 0; i < m_vUPnPServices.size(); i++)
 			{
 				CUPnPService* pTmp = m_vUPnPServices[i];				
-				// service
+				/* service */
 				xmlTextWriterStartElement(writer, BAD_CAST "service");
 				
-					// serviceType
+					/* serviceType */
 					sTmp << "urn:schemas-upnp-org:service:" << pTmp->GetUPnPDeviceTypeAsString() << ":1";
 					xmlTextWriterStartElement(writer, BAD_CAST "serviceType");
       		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
 					sTmp.str("");
 					xmlTextWriterEndElement(writer);
 				
-					// serviceId
+					/* serviceId */
 					sTmp << "urn:upnp-org:serviceId:" << pTmp->GetUPnPDeviceTypeAsString() << "ServiceID";
 					xmlTextWriterStartElement(writer, BAD_CAST "serviceId");
       		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
 					sTmp.str("");
 					xmlTextWriterEndElement(writer);
 				
-					// SCPDURL
+					/* SCPDURL */
 					sTmp << "/UPnPServices/" << pTmp->GetUPnPDeviceTypeAsString() << "/description.xml";
 					xmlTextWriterStartElement(writer, BAD_CAST "SCPDURL");
       		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
 					sTmp.str("");
 					xmlTextWriterEndElement(writer);					
 
-					// controlURL
+					/* controlURL */
 					sTmp << "/UPnPServices/" << pTmp->GetUPnPDeviceTypeAsString() << "/control/";
 					xmlTextWriterStartElement(writer, BAD_CAST "controlURL");
       		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
 					sTmp.str("");
 					xmlTextWriterEndElement(writer);					
 
-					// eventSubURL
+					/* eventSubURL */
 					sTmp << "/UPnPServices/" << pTmp->GetUPnPDeviceTypeAsString() << "/event/";
 					xmlTextWriterStartElement(writer, BAD_CAST "eventSubURL");
       		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
 					sTmp.str("");
 					xmlTextWriterEndElement(writer);
 				
-				// end service
+				/* end service */
 				xmlTextWriterEndElement(writer);				
 			}			
-			// end serviceList			
+			/* end serviceList */
 			xmlTextWriterEndElement(writer);
 			
-      // presentationURL
+      /* presentationURL */
       xmlTextWriterStartElement(writer, BAD_CAST "presentationURL");
       xmlTextWriterWriteString(writer, BAD_CAST m_sPresentationURL.c_str());
 			xmlTextWriterEndElement(writer);
       
-		// end device
+		/* end device */
 		xmlTextWriterEndElement(writer);
 
-	// end root
+	/* end root */
 	xmlTextWriterEndElement(writer);	
 	xmlTextWriterEndDocument(writer);
 	xmlFreeTextWriter(writer);

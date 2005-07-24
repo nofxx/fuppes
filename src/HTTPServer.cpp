@@ -50,7 +50,7 @@ fuppesThreadCallback SessionLoop(void *arg);
  CLASS CHTTPServer
 ===============================================================================*/
 
-// <PUBLIC>
+/* <PUBLIC> */
 
 /*===============================================================================
  CONSTRUCTOR / DESTRUCTOR
@@ -84,13 +84,13 @@ void CHTTPServer::Start()
   do_break = false;			
   listen(sock, 3);
 
-  // Start thread
+  /* Start thread */
   fuppesThreadStart(accept_thread, AcceptLoop);
 }
 
 void CHTTPServer::Stop()
 {
-  // Stop thread
+  /* Stop thread */
   fuppesThreadClose(accept_thread, 2000);
 }
 
@@ -116,7 +116,7 @@ bool CHTTPServer::SetReceiveHandler(IHTTPServer* pHandler)
   if(NULL == pHandler)
     return false;
   
-  // Save pointer to message handler
+  /* Save pointer to message handler */
   m_pReceiveHandler = pHandler;
 
   return true;
@@ -130,11 +130,11 @@ bool CHTTPServer::CallOnReceive(std::string p_sMessage, CHTTPMessage* pMessageOu
 
   if(m_pReceiveHandler != NULL)
   {
-    // Create message
+    /* Create message */
     CHTTPMessage Message;
     Message.SetMessage(p_sMessage);
 
-    // Parse message
+    /* Parse message */
     return m_pReceiveHandler->OnHTTPServerReceiveMsg(&Message, pMessageOut);
   }
   else return false;
@@ -166,7 +166,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
       sMsg << "new connection from " << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port);
 			CSharedLog::Shared()->Log(LOGNAME, sMsg.str());
 			
-      // start session thread
+      /* Start session thread */
       CHTTPSessionInfo pSession(pHTTPServer, nConnection);      
       fuppesThread Session = (fuppesThread)NULL;
       // T.S.TODO: Where do we need to exit thread???
@@ -186,7 +186,7 @@ fuppesThreadCallback SessionLoop(void *arg)
   int  nBytesReceived = 0;
   char szBuffer[4096];
   
-  nBytesReceived = recv(pSession.GetConnection(), szBuffer, 4096, 0); // MSG_DONTWAIT  
+  nBytesReceived = recv(pSession.GetConnection(), szBuffer, 4096, 0); /* MSG_DONTWAIT */
   if(nBytesReceived != -1)			
   {
     stringstream sMsg;
@@ -220,4 +220,4 @@ fuppesThreadCallback SessionLoop(void *arg)
   return 0;  
 }
 
-// <\PUBLIC>
+/* <\PUBLIC> */

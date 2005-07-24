@@ -51,7 +51,7 @@ class CUPnPDevice;
 class IFuppes
 {
 
-// <PUBLIC>
+/* <PUBLIC> */
 
 public:
 
@@ -60,7 +60,7 @@ public:
     CHTTPMessage* pMessage,
     CHTTPMessage* pResult) = 0;
 
-// <\PUBLIC>
+/* <\PUBLIC> */
 
 };
 
@@ -71,7 +71,7 @@ public:
 class CFuppes: public ISSDPCtrl, IHTTPServer
 {
 
-// <PUBLIC>
+/* <PUBLIC> */
 
 public:
 
@@ -95,9 +95,9 @@ public:
   std::string               GetIPAddress();
   std::vector<CUPnPDevice*> GetRemoteDevices();
 
-// <\PUBLIC>
+/* <\PUBLIC> */
 
-// <PRIVATE>
+/* <PRIVATE> */
 
 private:
 
@@ -126,7 +126,7 @@ private:
   bool HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
   bool HandleHTTPPost(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
 	
-// <\PRIVATE>
+/* <\PRIVATE> */
 
 };
 

@@ -52,7 +52,7 @@ const string LOGNAME = "FUPPES";
  CLASS CFuppes
 ===============================================================================*/
 
-// <PUBLIC>
+/* <PUBLIC> */
 
 /*===============================================================================
  CONSTRUCTOR / DESTRUCTOR
@@ -183,9 +183,9 @@ std::vector<CUPnPDevice*> CFuppes::GetRemoteDevices()
   return vResult; 
 }
 
-// <\PUBLIC>
+/* <\PUBLIC> */
 
-// <PRIVATE>
+/* <PRIVATE> */
 
 /*===============================================================================
  MESSAGE HANDLING
@@ -262,10 +262,10 @@ bool CFuppes::HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
   if(NULL == pMessageOut)
     return false;
 
-  // Get request
+  /* Get request */
   std::string strRequest = pMessageIn->GetRequest();
 
-  // Root description
+  /* Root description */
   if(0 == strRequest.compare("/"))
   {
     ASSERT(NULL != m_pMediaServer);
@@ -276,7 +276,7 @@ bool CFuppes::HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
     return true;
   }
   
-  // ContentDirectory description
+  /* ContentDirectory description */
   else if(0 == strRequest.compare("/UPnPServices/ContentDirectory/description.xml"))
   {
     ASSERT(NULL != m_pContentDirectory);
@@ -287,7 +287,7 @@ bool CFuppes::HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
     return true;
   }
   
-  // Presentation
+  /* Presentation */
   else if(0 == ToLower(strRequest).compare("/index.html"))
   {
     ASSERT(NULL != m_pPresentationRequestHandler);
@@ -297,7 +297,7 @@ bool CFuppes::HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
     return true;
   }
   
-  // AudioItem
+  /* AudioItem */
   else if((strRequest.length() > 24)  &&
           ((strRequest.length() > 24) && (strRequest.substr(24).compare("/MediaServer/AudioItems/")))
          )
@@ -331,18 +331,18 @@ bool CFuppes::HandleHTTPPost(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut
   if(NULL == pMessageOut)
     return false;
   
-  // Get UPnP action
+  /* Get UPnP action */
   CUPnPBrowse UPnPBrowse;
   bool fRet = pMessageIn->GetAction(&UPnPBrowse);
   ASSERT(true == fRet);
   if(false == fRet)
     return false;
   
-  // Handle UPnP action
+  /* Handle UPnP action */
   if(UPnPBrowse.m_TargetDevice == udtContentDirectory)
        fRet = m_pContentDirectory->HandleUPnPAction((CUPnPAction*)&UPnPBrowse, pMessageOut);
   
   return fRet;
 }
 
-// <\PRIVATE>
+/* <\PRIVATE> */

@@ -31,7 +31,7 @@
  CLASS CMessageBase
 ===============================================================================*/
 
-// <PROTECTED>
+/* <PROTECTED> */
 
 /*===============================================================================
  CONSTRUCTOR / DESTRUCTOR
@@ -45,9 +45,9 @@ CMessageBase::~CMessageBase()
 {
 }
 
-// <\PROTECTED>
+/* <\PROTECTED> */
 
-// <PUBLIC>
+/* <PUBLIC> */
 
 /*===============================================================================
  INIT
@@ -72,4 +72,4 @@ void CMessageBase::SetRemoteEndPoint(sockaddr_in p_EndPoint)
 {
   m_RemoteEp = p_EndPoint;
 }
-// <\PUBLIC>
+/* <\PUBLIC> */

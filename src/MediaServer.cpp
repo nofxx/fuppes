@@ -37,7 +37,7 @@ using namespace std;
  CLASS CMediaServer
 ===============================================================================*/
 
-// <PUBLIC>
+/* <PUBLIC> */
 
 /*===============================================================================
  CONSTRUCTOR / DESTRUCTOR
@@ -46,7 +46,7 @@ using namespace std;
 CMediaServer::CMediaServer(std::string p_sHTTPServerURL):
   CUPnPDevice(udtMediaServer, p_sHTTPServerURL)
 {
-  // Set common data for FUPPES
+  /* Set common data for FUPPES */
 
   stringstream stream;
 
@@ -83,4 +83,4 @@ CMediaServer::~CMediaServer()
 {
 }
 
-// <\PUBLIC>
+/* <\PUBLIC> */

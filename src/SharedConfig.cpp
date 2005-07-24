@@ -241,11 +241,11 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
   xmlTextWriterSetIndent(pWriter, 4);
 	xmlTextWriterStartDocument(pWriter, NULL, "UTF-8", NULL);
 
-	// fuppes_config
+	/* fuppes_config */
 	xmlTextWriterStartElement(pWriter, BAD_CAST "fuppes_config");  
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "version", BAD_CAST "0.1"); 
 	
-    // shared_directories
+    /* shared_directories */
     xmlTextWriterStartElement(pWriter, BAD_CAST "shared_directories");
         
       xmlTextWriterStartElement(pWriter, BAD_CAST "dir");
@@ -264,10 +264,10 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
       #endif
       xmlTextWriterEndElement(pWriter); 
   
-    // end shared_directories
+    /* end shared_directories */
     xmlTextWriterEndElement(pWriter);	  
   
-	// end fuppes_config
+	/* end fuppes_config */
 	xmlTextWriterEndElement(pWriter);	
 	xmlTextWriterEndDocument(pWriter);
 	xmlFreeTextWriter(pWriter);

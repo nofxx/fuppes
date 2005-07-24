@@ -47,7 +47,7 @@ using namespace std;
 class CMessageBase
 {
 
-// <PROTECTED>
+/* <PROTECTED> */
 
 	protected:
 
@@ -58,9 +58,9 @@ class CMessageBase
 		CMessageBase();
 	  virtual ~CMessageBase();
 
-// <\PROTECTED>
+/* <\PROTECTED> */
 
-// <PUBLIC>
+/* <PUBLIC> */
 
 public:
 
@@ -89,9 +89,9 @@ public:
 	void        SetLocalEndPoint(sockaddr_in);
 	void        SetRemoteEndPoint(sockaddr_in);		
   
-// <\PUBLIC>
+/* <\PUBLIC> */
 
-// <PROTECTED>
+/* <PROTECTED> */
 
 protected:
 
@@ -105,7 +105,7 @@ protected:
     std::string m_sHeader;
     std::string m_sMessage;
 
-// <\PROTECTED>
+/* <\PROTECTED> */
 
 };
 

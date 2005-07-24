@@ -37,7 +37,7 @@
 class CHTTPClient
 {
 
-// <PUBLIC>
+/* <PUBLIC> */
 
 public:   
 
@@ -63,9 +63,9 @@ public:
     unsigned int  p_nTargetPort = 80
     );
 
-// <\PUBLIC>
+/* <\PUBLIC> */
 
-// <PRIVATE>
+/* <PRIVATE> */
 
 private:
 
@@ -79,7 +79,7 @@ private:
     unsigned int p_nTargetPort
     );
 
-// <\PRIVATE>
+/* <\PRIVATE> */
 
 };
 
