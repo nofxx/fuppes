@@ -26,47 +26,47 @@
 
 void CAudioItem::GetDescription(xmlTextWriterPtr pWriter)
 {
-  // item
+  /* item */
   xmlTextWriterStartElement(pWriter, BAD_CAST "item");
 
-    // id
+    /* id */
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "id", BAD_CAST this->GetObjectID().c_str());
-    // parentID
+    /* parentID */
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "parentID", BAD_CAST this->GetParent()->GetObjectID().c_str());
-    // restricted
+    /* restricted */
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "restricted", BAD_CAST "0");    
   
-    // title
+    /* title */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");    
     xmlTextWriterWriteString(pWriter, BAD_CAST this->GetName().c_str());
     xmlTextWriterEndElement(pWriter);
   
-    // class
+    /* class */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
     xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.audioItem.musicTrack");
     xmlTextWriterEndElement(pWriter);
   
-    // creator
+    /* creator */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "creator", BAD_CAST "http://purl.org/dc/elements/1.1/");    
     xmlTextWriterWriteString(pWriter, BAD_CAST "-Unknown-");
     xmlTextWriterEndElement(pWriter);
   
-    // storageMedium
+    /* storageMedium */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "storageMedium", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
     xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN");
     xmlTextWriterEndElement(pWriter);
   
-    // date
+    /* date */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "date", BAD_CAST "http://purl.org/dc/elements/1.1/");    
     xmlTextWriterWriteString(pWriter, BAD_CAST "2005-06-19");
     xmlTextWriterEndElement(pWriter);
     
-    // writeStatus
+    /* writeStatus */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "writeStatus", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
     xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN");
     xmlTextWriterEndElement(pWriter);
     
-    // get url
+    /* get url */
     xmlTextWriterStartElement(pWriter, BAD_CAST "res");
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST "http-get:*:audio/mpeg:*");
     std::stringstream sTmp;
@@ -75,6 +75,6 @@ void CAudioItem::GetDescription(xmlTextWriterPtr pWriter)
     xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
     xmlTextWriterEndElement(pWriter);                  
   
-  // end iten
+  /* end item */
   xmlTextWriterEndElement(pWriter);
 }

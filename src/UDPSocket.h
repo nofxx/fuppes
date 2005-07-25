@@ -43,7 +43,7 @@ class CUDPSocket;
 class IUDPSocket
 {
 	public:
-		virtual void OnUDPSocketReceive(CUDPSocket*, CSSDPMessage*) = 0;
+		virtual bool OnUDPSocketReceive(CUDPSocket*, CSSDPMessage*) = 0;
 };
 
 class CUDPSocket

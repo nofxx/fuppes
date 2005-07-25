@@ -2,7 +2,9 @@
  *            NotifyMsgFactory.h
  * 
  *  Copyright  2005  Ulrich Völkel
- *  mail@ulrich-voelkel.de
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*

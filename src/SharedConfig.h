@@ -2,7 +2,9 @@
  *            SharedConfig.h
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -24,46 +26,98 @@
 #ifndef _SHAREDCONFIG_H
 #define _SHAREDCONFIG_H
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include <string>
 #include <vector>
+
 using namespace std;
+
+/*===============================================================================
+ CLASS CSharedConfig
+===============================================================================*/
 
 class CSharedConfig
 {
-	public:
-		static CSharedConfig* Shared();
-	
-		std::string GetAppName();
-	  std::string GetAppFullname();
-	  std::string GetAppVersion();
-	
-	  std::string GetHostname();
-	  std::string GetUDN();
-	
-		std::string GetIPv4Address();
-    /*void        SetHTTPServerURL(std::string);
-    std::string GetHTTPServerURL();*/
-	
-    std::string GetSharedDir(int);
-    int         SharedDirCount();
-  
-    bool        SetupConfig();
-  
-	protected:
+
+/* <PROTECTED> */
+
+protected:
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
 		CSharedConfig();
+
+/* <\PROTECTED> */
+
+/* <PUBLIC> */
+
+	public:
+
+/*===============================================================================
+ INSTANCE
+===============================================================================*/
+
+  static CSharedConfig* Shared();
+
+/*===============================================================================
+ INIT
+===============================================================================*/
+
+  bool        SetupConfig();
+
+/*===============================================================================
+ GET
+===============================================================================*/
+
+  std::string GetAppName();
+	std::string GetAppFullname();
+	std::string GetAppVersion();
 	
-	private:
-		static CSharedConfig* m_Instance;
-    bool   ReadConfigFile();
-    bool   ResolveHostAndIP();
-    bool   FileExists(std::string p_sFileName);
+	std::string GetHostname();
+	std::string GetUDN();
+	
+	std::string GetIPv4Address();
+	
+  std::string GetSharedDir(int);
+
+  int         SharedDirCount();
   
-	  std::string m_sHostname;
-	  std::string m_sIP;
-    //std::string m_sHTTPServerURL;
-    std::vector<std::string> m_vSharedDirectories;
-  
-    bool WriteDefaultConfig(std::string p_sFileName); 
+/* <\PUBLIC> */
+	
+/* <PRIVATE> */
+
+private:
+
+/*===============================================================================
+ INSTANCE
+===============================================================================*/
+    
+  static CSharedConfig* m_Instance;
+
+/*===============================================================================
+ MEMBERS
+===============================================================================*/
+
+  std::string m_sHostname;
+	std::string m_sIP;
+  std::vector<std::string> m_vSharedDirectories;
+
+/*===============================================================================
+ HELPER
+===============================================================================*/
+
+  bool ReadConfigFile();
+  bool ResolveHostAndIP();
+  bool FileExists(std::string p_sFileName);
+  bool WriteDefaultConfig(std::string p_sFileName); 
+
+/* <\PRIVATE> */
+
 };
 
 #endif /* _SHAREDCONFIG_H */

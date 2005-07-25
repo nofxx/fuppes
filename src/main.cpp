@@ -110,7 +110,7 @@ int main()
 	CFuppes* pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUDN(), pPresentationHandler);	
   pPresentationHandler->AddFuppesInstance(pFuppes);
   
-  // todo: create a fuppes instance for each network interface
+  /* todo: create a fuppes instance for each network interface */
   //CFuppes* pFuppes2 = new CFuppes("127.0.0.1", pPresentationHandler);	
   //pPresentationHandler->AddFuppesInstance(pFuppes2);
   	

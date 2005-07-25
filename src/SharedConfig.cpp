@@ -2,7 +2,9 @@
  *            SharedConfig.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich VÃ¶lkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -21,6 +23,10 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include <iostream>
 
 #include "SharedConfig.h"
@@ -44,13 +50,20 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/xmlwriter.h>
-#include "Common.h"
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN     64
 #endif
 
-//using namespace std;
+/*===============================================================================
+ CLASS CSharedConfig
+===============================================================================*/
+
+/* <PUBLIC> */
+
+/*===============================================================================
+ INSTANCE
+===============================================================================*/
 
 CSharedConfig* CSharedConfig::m_Instance = 0;
 
@@ -61,32 +74,52 @@ CSharedConfig* CSharedConfig::Shared()
 	return m_Instance;
 }
 
+/* <\PUBLIC> */
+
+/* <PROTECTED> */
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
 CSharedConfig::CSharedConfig()
 {
 }
+
+/* <\PROTECTED> */
+
+/* <PUBLIC> */
+
+/*===============================================================================
+ INIT
+===============================================================================*/
 
 bool CSharedConfig::SetupConfig()
 {
   bool bResult = true;  
   bResult = ReadConfigFile();
-  
+
   if(bResult && !ResolveHostAndIP())
   {
     cout << "[ERROR] can'r resolve hostname and address" << endl;
     bResult = false;
   }
-  
+
   return bResult;
 }
 
+/*===============================================================================
+ GET
+===============================================================================*/
+
 string CSharedConfig::GetAppName()
 {
-	return "FUPPES";
+  return "FUPPES";
 }
 
 string CSharedConfig::GetAppFullname()
 {
-	return "Free UPnP Entertainment Service";
+  return "Free UPnP Entertainment Service";
 }
 
 string CSharedConfig::GetAppVersion()
@@ -96,28 +129,18 @@ string CSharedConfig::GetAppVersion()
 
 string CSharedConfig::GetHostname()
 {
-	return m_sHostname;
-}
-
-string CSharedConfig::GetIPv4Address()
-{
-	return m_sIP;
+  return m_sHostname;
 }
 
 string CSharedConfig::GetUDN()
 {	
-	return "12345678-aabb-0000-ccdd-1234eeff0000";
+  return "12345678-aabb-0000-ccdd-1234eeff0000";
 }
 
-/*void CSharedConfig::SetHTTPServerURL(string p_sURL)
+string CSharedConfig::GetIPv4Address()
 {
-  m_sHTTPServerURL = p_sURL;
+  return m_sIP;
 }
-
-string CSharedConfig::GetHTTPServerURL()
-{
-  return m_sHTTPServerURL;
-}*/
 
 std::string CSharedConfig::GetSharedDir(int p_nIndex)
 {
@@ -128,6 +151,14 @@ int CSharedConfig::SharedDirCount()
 {
   return (int)m_vSharedDirectories.size();
 }
+
+/* <\PUBLIC> */
+	
+/* <PRIVATE> */
+
+/*===============================================================================
+ HELPER
+===============================================================================*/
 
 bool CSharedConfig::ReadConfigFile()
 {
@@ -203,7 +234,7 @@ bool CSharedConfig::ResolveHostAndIP()
 
   char name[MAXHOSTNAMELEN];
   int nRet = gethostname(name, MAXHOSTNAMELEN);
-  if(nRet == 0)
+  if(0 == nRet)
   {    
     m_sHostname = name;
 
@@ -214,10 +245,7 @@ bool CSharedConfig::ResolveHostAndIP()
     
     return true;
   }
-  else
-  {
-    return false;
-  }  
+  else return false;
 }
 
 bool CSharedConfig::FileExists(std::string p_sFileName)
@@ -225,6 +253,7 @@ bool CSharedConfig::FileExists(std::string p_sFileName)
   ifstream fsTmp;
   bool     bResult = false;
   
+  /* Try to open the file to check it exists */
   fsTmp.open(p_sFileName.c_str(),ios::in);  
   bResult = fsTmp.is_open();
   fsTmp.close();
@@ -276,3 +305,5 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
   
   return true;
 }
+
+/* <\PRIVATE> */

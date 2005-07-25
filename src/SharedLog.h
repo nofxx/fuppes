@@ -4,6 +4,7 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -25,22 +26,65 @@
 #ifndef _SHAREDLOG_H
 #define _SHAREDLOG_H
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "Common.h"
 #include <string>
 
+/*===============================================================================
+ CLASS CMessageBase
+===============================================================================*/
+
 class CSharedLog
 {
-  public:
-    static CSharedLog* Shared();
-    void   Log(std::string p_sSender, std::string p_sMessage);
-    void   Log(std::string p_sSender, std::string p_asMessages[], unsigned int p_nCount, std::string p_sSeparator = "");    
-    void   Error(std::string p_sSender, std::string p_sMessage);
-  
-  private:
-    CSharedLog();
-		static CSharedLog* m_Instance;
 
-    fuppesThreadMutex m_Mutex;
+/* <PRIVATE> */
+
+private:
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+  CSharedLog();
+
+/* <\PRIVATE> */
+
+/* <PUBLIC> */
+
+public:
+
+/*===============================================================================
+ INSTANCE
+===============================================================================*/
+
+  static CSharedLog* Shared();
+
+/*===============================================================================
+ LOGGING
+===============================================================================*/
+
+  void   Log(std::string p_sSender, std::string p_sMessage);
+  void   Log(std::string p_sSender, std::string p_asMessages[], unsigned int p_nCount, std::string p_sSeparator = "");    
+  void   Error(std::string p_sSender, std::string p_sMessage);
+
+/* <\PUBLIC> */
+    
+/* <PRIVATE> */
+
+private:
+
+/*===============================================================================
+ MEMBERS
+===============================================================================*/
+		
+  static CSharedLog* m_Instance;
+  fuppesThreadMutex  m_Mutex;
+
+/* <\PRIVATE> */
+
 };
 
 #endif /* _SHAREDLOG_H */

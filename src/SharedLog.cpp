@@ -4,6 +4,7 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,10 +23,29 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "SharedLog.h"
 #include <iostream>
 
+/*===============================================================================
+ DEFINITIONS
+===============================================================================*/
+
+/* Define this to disable logging */
 //#define DISABLELOG
+
+/*===============================================================================
+ CLASS CMessageBase
+===============================================================================*/
+
+/* <PUBLIC> */
+
+/*===============================================================================
+ INSTANCE
+===============================================================================*/
 
 CSharedLog* CSharedLog::m_Instance = 0;
 
@@ -36,12 +56,28 @@ CSharedLog* CSharedLog::Shared()
 	return m_Instance;
 }
 
+/* <\PUBLIC> */
+
+/* <PRIVATE> */
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
 CSharedLog::CSharedLog()
 {
 #ifndef DISABLELOG
   fuppesThreadInitMutex(&m_Mutex);
 #endif
 }
+
+/* <\PRIVATE> */
+
+/* <PUBLIC> */
+
+/*===============================================================================
+ LOGGING
+===============================================================================*/
 
 void CSharedLog::Log(std::string p_sSender, std::string p_sMessage)
 {
@@ -89,3 +125,5 @@ void CSharedLog::Error(std::string p_sSender, std::string p_sMessage)
   
   #endif
 }
+
+/* <\PUBLIC> */

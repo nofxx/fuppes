@@ -76,7 +76,7 @@ void CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress)
   else 
 	{
     local_ep.sin_addr.s_addr = inet_addr(p_sIPAddress.c_str());		
-    local_ep.sin_port		     = htons(0); // use random port
+    local_ep.sin_port		     = htons(0); /* use random port */
 	}
 	
 	/* Bind socket */
@@ -92,7 +92,7 @@ void CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress)
 	is_multicast = p_bDoMulticast;
 	if(p_bDoMulticast)
 	{	
-		struct ip_mreq stMreq; // Multicast interface structure  
+		struct ip_mreq stMreq; /* Multicast interface structure */
 			
 		stMreq.imr_multiaddr.s_addr = inet_addr(MULTICAST_IP); 
 		stMreq.imr_interface.s_addr = INADDR_ANY; 	
@@ -174,7 +174,7 @@ fuppesThreadCallback receive_loop(void *arg)
 	
 	sockaddr_in remote_ep;	
 	socklen_t   size = sizeof(remote_ep);	
-		
+		/* T.S. TODO: Error on exit here */
 	while((bytes_received = recvfrom(udp_sock->get_socket_fd(), buffer, sizeof(buffer), 0, (struct sockaddr*)&remote_ep, &size)) != -1)
 	{
 		buffer[bytes_received] = '\0';		

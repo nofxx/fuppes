@@ -35,7 +35,7 @@ bool CUPnPActionFactory::BuildActionFromString(std::string p_sContent, CUPnPBrow
   if(NULL == pBrowse)
     return false;
 
-  // T.S.TODO: Parse whole description here
+  /* T.S.TODO: Parse whole description here */
 /*<?xml version="1.0" encoding="utf-8"?>
   <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
   <s:Body>

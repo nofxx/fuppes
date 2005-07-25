@@ -35,13 +35,13 @@ class CSSDPSession;
 class ISSDPSession
 {
   public:
-    virtual void OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage) = 0;
+    virtual bool OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage) = 0;
 };
 
 class CSSDPSession: public IUDPSocket
 {
 	public:	
-		void OnUDPSocketReceive(CUDPSocket*, CSSDPMessage*);
+		bool OnUDPSocketReceive(CUDPSocket*, CSSDPMessage*);
 	
 	protected:
 		CSSDPSession(std::string p_sIPAddress, ISSDPSession* pReceiveHandler);

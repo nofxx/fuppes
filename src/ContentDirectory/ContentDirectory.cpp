@@ -56,11 +56,11 @@ CContentDirectory::~CContentDirectory()
  
 bool CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut)
 {
-  // T.S.NOTE: Why do we handle a browse here?
-  // Handle UPnP browse
+  /* T.S.NOTE: Why do we handle a browse here? */
+  /* Handle UPnP browse */
   string sContent = HandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);  
 
-  // Init message
+  /* Init message */
   pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, HTTP_CONTENT_TYPE_TEXT_XML);
   pMessageOut->SetContent(sContent);
 
@@ -95,22 +95,22 @@ std::string CContentDirectory::HandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
 	writer = xmlNewTextWriterMemory(buf, 0);    
 	xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL);
   
-  // root  
+  /* root */
   xmlTextWriterStartElementNS(writer, BAD_CAST "s", BAD_CAST "Envelope", NULL);    
   xmlTextWriterWriteAttributeNS(writer, BAD_CAST "s", 
     BAD_CAST "encodingStyle", 
     BAD_CAST  "http://schemas.xmlsoap.org/soap/envelope/", 
     BAD_CAST "http://schemas.xmlsoap.org/soap/encoding/");
    
-    // body
+    /* body */
     xmlTextWriterStartElementNS(writer, BAD_CAST "s", BAD_CAST "Body", NULL);    
   
-      // browse response
+      /* browse response */
       xmlTextWriterStartElementNS(writer, BAD_CAST "u",        
         BAD_CAST "BrowseResponse", 
         BAD_CAST "urn:schemas-upnp-org:service:ContentDirectory:1");
   
-        // result
+        /* result */
         xmlTextWriterStartElement(writer, BAD_CAST "Result");
       
         unsigned int nNumberReturned = 0;
@@ -122,35 +122,35 @@ std::string CContentDirectory::HandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
             BAD_CAST ((CStorageFolder*)m_ObjectList[pUPnPBrowse->m_sObjectID])->GetContentAsString(pUPnPBrowse, &nNumberReturned, &nTotalMatches).c_str());        
         }
       
-        // end result
+        /* end result */
         xmlTextWriterEndElement(writer);
         
-        // number returned
+        /* number returned */
         xmlTextWriterStartElement(writer, BAD_CAST "NumberReturned");
         sTmp << nNumberReturned;
         xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
         sTmp.str("");
         xmlTextWriterEndElement(writer);
         
-        // total matches
+        /* total matches */
         xmlTextWriterStartElement(writer, BAD_CAST "TotalMatches");
         sTmp << nTotalMatches;
         xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
         sTmp.str("");
         xmlTextWriterEndElement(writer);
         
-        // update id
+        /* update id */
         xmlTextWriterStartElement(writer, BAD_CAST "UpdateID");
         xmlTextWriterWriteString(writer, BAD_CAST "0");
         xmlTextWriterEndElement(writer);
   
-      // end browse response
+      /* end browse response */
       xmlTextWriterEndElement(writer);
       
-    // end body
+    /* end body */
     xmlTextWriterEndElement(writer);
    
-	// end root
+	/* end root */
 	xmlTextWriterEndElement(writer);
   xmlTextWriterEndDocument(writer);
 	xmlFreeTextWriter(writer);
@@ -191,11 +191,11 @@ void CContentDirectory::BuildObjectList()
       else
         pTmpFolder->SetName(CSharedConfig::Shared()->GetSharedDir(i));
       
-      // add folder to list and parent folder
+      /* Add folder to list and parent folder */
       m_ObjectList[szObjId] = pTmpFolder;
       m_pBaseFolder->AddUPnPObject(pTmpFolder);
               
-      // increment counter
+      /* increment counter */
       nCount++;
       
       ScanDirectory(CSharedConfig::Shared()->GetSharedDir(i), &nCount, pTmpFolder);
@@ -208,7 +208,7 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
 { 
 #ifdef WIN32
   
-  // Add slash, if neccessary
+  /* Add slash, if neccessary */
   char szTemp[MAX_PATH];
   if(p_sDirectory.substr(p_sDirectory.length()-1).compare(upnpPathDelim) != 0)
   {
@@ -216,29 +216,29 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
     strcat(szTemp, upnpPathDelim);
   }
   
-  // Add search criteria
+  /* Add search criteria */
   strcat(szTemp, "*");
   
-  // Find first file
+  /* Find first file */
   WIN32_FIND_DATA data;
   HANDLE hFile = FindFirstFile(szTemp, &data);
   if(NULL == hFile)
     return;
 
-  // Loop trough all subdirectories and files
+  /* Loop trough all subdirectories and files */
   while(TRUE == FindNextFile(hFile, &data))
   {
     if(((string(".").compare(data.cFileName) != 0) && 
       (string("..").compare(data.cFileName) != 0)))
     {        
       
-      // Save current filename
+      /* Save current filename */
       strcpy(szTemp, p_sDirectory.c_str());
       strcat(szTemp, upnpPathDelim);
       strcat(szTemp, data.cFileName);
 
       string sExt = ExtractFileExt(szTemp);
-      // mp3 file
+      /* MP3 file */
       if(IsFile(szTemp) && (ToLower(sExt).compare("mp3") == 0))
       {
         CAudioItem* pTmpItem = new CAudioItem(m_sHTTPServerURL);
@@ -250,19 +250,19 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
         pTmpItem->SetName(data.cFileName);
         pTmpItem->SetFileName(szTemp);
 
-        // add folder to list and parent folder
+        /* Add folder to list and parent folder */
         m_ObjectList[szObjId] = pTmpItem;
         pParentFolder->AddUPnPObject(pTmpItem);
 
-        // increment counter
+        /* increment counter */
         int nTmp = *p_nCount;
         nTmp++;
         *p_nCount = nTmp;         
       }
-      // folder
+      /* Folder */
       else if(IsDirectory(szTemp))
       {            
-        // create folder object
+        /* Create folder object */
         CStorageFolder* pTmpFolder = new CStorageFolder(m_sHTTPServerURL);
 
         char szObjId[11];                            
@@ -273,16 +273,16 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
         pTmpFolder->SetName(data.cFileName);
         pTmpFolder->SetFileName(szTemp);
 
-        // add folder to list and parent folder
+        /* Add folder to list and parent folder */
         m_ObjectList[szObjId] = pTmpFolder;
         pParentFolder->AddUPnPObject(pTmpFolder);
 
-        // increment counter
+        /* Increment counter */
         int nTmp = *p_nCount;
         nTmp++;
         *p_nCount = nTmp;
 
-        // scan subdirectories
+        /* Scan subdirectories */
         ScanDirectory(szTemp, p_nCount, pTmpFolder);          
       }
     }
@@ -314,7 +314,7 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
         stringstream sObjId;
         
         string sExt = ExtractFileExt(sTmp.str());
-        // mp3 file
+        /* MP3 file */
         if(IsFile(sTmp.str()) && (ToLower(sExt).compare("mp3") == 0))
         {
           CAudioItem* pTmpItem = new CAudioItem(m_sHTTPServerURL);
@@ -326,19 +326,19 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
           pTmpItem->SetName(pDirEnt->d_name);
           pTmpItem->SetFileName(sTmp.str());
         
-          // add folder to list and parent folder
+          /* Add folder to list and parent folder */
           m_ObjectList[szObjId] = pTmpItem;
           pParentFolder->AddUPnPObject(pTmpItem);
           
-          // increment counter
+          /* increment counter */
           int nTmp = *p_nCount;
           nTmp++;
           *p_nCount = nTmp;         
         }
-        // folder
+        /* folder */
         else if(IsDirectory(sTmp.str()))
         {            
-          // create folder object
+          /* create folder object */
           CStorageFolder* pTmpFolder = new CStorageFolder(m_sHTTPServerURL);
           
           char szObjId[10];                            
@@ -349,16 +349,16 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
           pTmpFolder->SetName(pDirEnt->d_name);
           pTmpFolder->SetFileName(sTmp.str());
           
-          // add folder to list and parent folder
+          /* Add folder to list and parent folder */
           m_ObjectList[szObjId] = pTmpFolder;
           pParentFolder->AddUPnPObject(pTmpFolder);
           
-          // increment counter
+          /* increment counter */
           int nTmp = *p_nCount;
           nTmp++;
           *p_nCount = nTmp;
           
-          // scan subdirectories
+          /* scan subdirectories */
           ScanDirectory(sTmp.str(), p_nCount, pTmpFolder);          
         }
         sTmp.str("");

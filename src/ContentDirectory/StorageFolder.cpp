@@ -71,7 +71,7 @@ std::string CStorageFolder::GetContentAsString(CUPnPBrowse* pBrowseAction,
   else
     *p_nNumberReturned = pBrowseAction->m_nStartingIndex + pBrowseAction->m_nRequestedCount;
   
-  // root  
+  /* root */
   xmlTextWriterStartElementNS(writer, NULL, BAD_CAST "DIDL-Lite", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite");
         
   std::vector<CUPnPObject*> vTmp = m_vObjects;
@@ -94,7 +94,7 @@ std::string CStorageFolder::GetContentAsString(CUPnPBrowse* pBrowseAction,
     }
   }  
   
-	// end root
+	/* end root */
 	xmlTextWriterEndElement(writer);
   xmlTextWriterEndDocument(writer);
 	xmlFreeTextWriter(writer);
@@ -108,42 +108,42 @@ std::string CStorageFolder::GetContentAsString(CUPnPBrowse* pBrowseAction,
 
 void CStorageFolder::GetDescription(xmlTextWriterPtr pWriter)
 {
-  // container 
+  /* container  */
   xmlTextWriterStartElement(pWriter, BAD_CAST "container"); 
      
-    // id 
+    /* id */
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "id", BAD_CAST this->GetObjectID().c_str()); 
-    // searchable 
+    /* searchable  */
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "searchable", BAD_CAST "0"); 
-    // parentID 
+    /* parentID  */
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "parentID", BAD_CAST this->GetParent()->GetObjectID().c_str()); 
-    // restricted 
+    /* restricted */
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "restricted", BAD_CAST "0");     
-    // childCount 
+    /* childCount */
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "childCount", BAD_CAST this->GetChildCountAsString().c_str()); 
      
-    // title 
+    /* title */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");     
     xmlTextWriterWriteString(pWriter, BAD_CAST this->GetName().c_str()); 
     xmlTextWriterEndElement(pWriter); 
    
-    // class 
+    /* class */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");     
     xmlTextWriterWriteString(pWriter, BAD_CAST "object.container");  //"object.container.musicContainer"
     xmlTextWriterEndElement(pWriter); 
      
-    // writeStatus 
+    /* writeStatus */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "writeStatus", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");     
     xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN"); 
     xmlTextWriterEndElement(pWriter);            
    
-  // end container 
+  /* end container */
   xmlTextWriterEndElement(pWriter);
 }
 
 void CStorageFolder::SortContent(std::vector<CUPnPObject*>* pObjList, eSortCriteria p_SortCriteria)
 {
-  // ACHTUNG: Billiger Bubblesort :)
+  /* ACHTUNG: Billiger Bubblesort :) */
   
   CUPnPObject* pTmpObj;
   // descending by name
@@ -160,7 +160,7 @@ void CStorageFolder::SortContent(std::vector<CUPnPObject*>* pObjList, eSortCrite
     }
   }*/
     
-  // ascending by name
+  /* ascending by name */
   for(unsigned int i = 0; i < pObjList->size(); i++)
   {
     for(unsigned int j = 0; j < pObjList->size(); j++)

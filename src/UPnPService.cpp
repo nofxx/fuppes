@@ -49,25 +49,25 @@ std::string CUPnPService::GetServiceDescription()
 	writer = xmlNewTextWriterMemory(buf, 0);
 	xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL);
 
-	// root
+	/* root */
 	xmlTextWriterStartElementNS(writer, NULL, BAD_CAST "scpd", BAD_CAST "urn:schemas-upnp-org:service-1-0");
 
-		// specVersion
+		/* specVersion */
 		xmlTextWriterStartElement(writer, BAD_CAST "specVersion");
 
-			// major
+			/* major */
 			xmlTextWriterStartElement(writer, BAD_CAST "major");
 			xmlTextWriterWriteString(writer, BAD_CAST "1");
 			xmlTextWriterEndElement(writer);
-			// minor
+			/* minor */
 			xmlTextWriterStartElement(writer, BAD_CAST "minor");
 			xmlTextWriterWriteString(writer, BAD_CAST "0");
 			xmlTextWriterEndElement(writer);
 
-		// end specVersion
+		/* end specVersion */
 		xmlTextWriterEndElement(writer);
 
-	// end root
+	/* end root */
 	xmlTextWriterEndElement(writer);
 	xmlTextWriterEndDocument(writer);
 	xmlFreeTextWriter(writer);

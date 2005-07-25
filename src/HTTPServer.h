@@ -2,7 +2,9 @@
  *            HTTPServer.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -158,7 +160,7 @@ private:
  MEMBERS
 ===============================================================================*/
 
-  // Eventhandler
+  /* Eventhandler */
   IHTTPServer* m_pReceiveHandler;
 
   sockaddr_in local_ep;

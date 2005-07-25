@@ -2,7 +2,9 @@
  *            HTTPServer.cpp
  * 
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -159,7 +161,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
 	
 	for(;;)
 	{
-		// T.S.TODO: Error on exit here
+		/* T.S.TODO: Error on exit here */
     nConnection = accept(nSocket, (struct sockaddr*)&remote_ep, &size);
 		if(nConnection != -1)      
 		{	
@@ -170,7 +172,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
       /* Start session thread */
       CHTTPSessionInfo pSession(pHTTPServer, nConnection);      
       fuppesThread Session = (fuppesThread)NULL;
-      // T.S.TODO: Where do we need to exit thread???
+      /* T.S.TODO: Where do we need to exit thread??? */
       /* uv :: we put the thread handles in a list (e.g vector)
                and build a garbage-collecting thread, that
                closes all finished threads */

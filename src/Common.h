@@ -77,19 +77,19 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
 
 #include <Winsock2.h>
 #include <Ws2tcpip.h>
-#include <shlwapi.h> // For PathXXX functions
+#include <shlwapi.h> /* For PathXXX functions */
 
-// Common
+/* Common */
 #define upnpSleep               Sleep
 #define upnpPathDelim           "\\"
 
-// Sockets
+/* Sockets */
 #define upnpSocket              SOCKET
 #define upnpSocketSuccess       0
 #define upnpSocketClose         closesocket
 #define upnpSocketFlag(_x_)     const char _x_[256] = ""
 
-// Threads
+/* Threads */
 #define fuppesThread                                        HANDLE
 #define fuppesThreadStart(_handle_, _callback_)             _handle_ = CreateThread(NULL, 0, &_callback_, this, 0, NULL)
 #define fuppesThreadClose(_handle_, _timeoutms_)             WaitForSingleObject(_handle_, _timeoutms_); CloseHandle(_handle_)
@@ -109,18 +109,18 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
 
 #include <pthread.h>
 
-// Common
+/* Common */
 #define upnpSleep               usleep
 #define upnpPathDelim           "/"
 
-// Sockets
+/* Sockets */
 #define upnpSocket              int
 #define upnpSocketSuccess       -1
 
 #define upnpSocketClose         close
 #define upnpSocketFlag(_x_)     int* _x_ = NULL
 
-// Threads
+/* Threads */
 #define fuppesThread                                        pthread_t
 #define fuppesThreadStart(_handle_, _callback_)             pthread_create(&_handle_, NULL, &_callback_, this);
 #define fuppesThreadClose(_handle_, _timeoutms_)            pthread_cancel(_handle_);

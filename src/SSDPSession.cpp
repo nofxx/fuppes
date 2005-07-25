@@ -21,7 +21,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-// todo: create expiration timer
+/* todo: create expiration timer */
 
 #include "SSDPSession.h"
 #include "NotifyMsgFactory.h"
@@ -64,11 +64,20 @@ void CSSDPSession::end_receive_unicast()
   udp->end_receive();
 }
 
-void CSSDPSession::OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pSSDPMessage)
+bool CSSDPSession::OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pSSDPMessage)
 {
-	//cout << "ssdp_session::OnUDPSocketReceive" << endl << pSSDPMessage->GetContent() << endl;
-	if(this->m_pReceiveHandler != NULL)
+  ASSERT(NULL != pSocket);
+  if(NULL == pSocket)
+    return false;
+  ASSERT(NULL != pSSDPMessage);
+  if(NULL == pSSDPMessage)
+    return false;
+  
+  //cout << "ssdp_session::OnUDPSocketReceive" << endl << pSSDPMessage->GetContent() << endl;
+	if(m_pReceiveHandler != NULL)
 	  m_pReceiveHandler->OnSessionReceive(this, pSSDPMessage);
+
+  return true;
 }
 
 void CSSDPSession::start()
