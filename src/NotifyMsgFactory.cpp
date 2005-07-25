@@ -59,7 +59,7 @@ std::string CNotifyMsgFactory::msearch()
 	result << "M-SEARCH * HTTP/1.1\r\n";
 	result << "MX: 10\r\n";
 	result << "ST: ssdp:all\r\n";
-	result << "HOST: 239.255.255.250:1900\r\n"; // UPnP broadcast address
+	result << "HOST: 239.255.255.250:1900\r\n"; // UPnP multicast address
 	result << "MAN: \"ssdp:discover\"\r\n\r\n";
 		
 	return result.str();

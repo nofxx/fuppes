@@ -118,7 +118,7 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
 #define upnpSocketSuccess       -1
 
 #define upnpSocketClose         close
-#define upnpSocketFlag(_x_)     int* _x_
+#define upnpSocketFlag(_x_)     int* _x_ = NULL
 
 // Threads
 #define fuppesThread                                        pthread_t
@@ -127,7 +127,7 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
 #define fuppesThreadStartArg(_handle_, _callback_, _arg_)   pthread_create(&_handle_, NULL, &_callback_, &_arg_);
 #define fuppesThreadCallback                                void*
 
-#define fuppesMutex                                         pthread_mutex_t
+#define fuppesThreadMutex                                   pthread_mutex_t
 #define fuppesInitMutex(_mutex_)                            pthread_mutex_init(_mutex_, NULL)
 #define fuppesLockMutex(_mutex_)                            pthread_mutex_lock(_mutex_)
 #define fuppesUnlockMutex(_mutex_)                          pthread_mutex_unlock(_mutex_)
