@@ -23,7 +23,6 @@
  */
  
 #include "SharedLog.h"
-#include "Common.h"
 #include <iostream>
 
 //#define DISABLELOG
@@ -39,35 +38,21 @@ CSharedLog* CSharedLog::Shared()
 
 CSharedLog::CSharedLog()
 {
-  #ifndef DISABLELOG
-  
-  #ifdef WIN32
-  InitializeCriticalSectionAndSpinCount(&m_Mutex, 0x80000400);
-  #else
-  pthread_mutex_init(&m_Mutex, NULL);
-  #endif
-  
-  #endif
+#ifndef DISABLELOG
+  fuppesThreadInitMutex(&m_Mutex);
+#endif
 }
 
 void CSharedLog::Log(std::string p_sSender, std::string p_sMessage)
 {
   #ifndef DISABLELOG
   
-  #ifdef WIN32
-  EnterCriticalSection(&m_Mutex);
-  #else
-  pthread_mutex_lock(&m_Mutex);
-  #endif
+  fuppesThreadLockMutex(&m_Mutex);
   
   std::cout << "[" << p_sSender << "] " << p_sMessage << std::endl;  
   fflush(stdout);
   
-  #ifdef WIN32
-  LeaveCriticalSection(&m_Mutex);
-  #else
-  pthread_mutex_unlock(&m_Mutex);
-  #endif
+  fuppesThreadUnlockMutex(&m_Mutex);
   
   #endif
 }
@@ -76,11 +61,7 @@ void CSharedLog::Log(std::string p_sSender, std::string p_asMessages[], unsigned
 {
   #ifndef DISABLELOG
   
-  #ifdef WIN32
-  EnterCriticalSection(&m_Mutex);
-  #else
-  pthread_mutex_lock(&m_Mutex);
-  #endif
+  fuppesThreadLockMutex(&m_Mutex);
   
   std::cout << "[" << p_sSender << "] ";
   for(unsigned int i = 0; i < p_nCount; i++)
@@ -90,11 +71,7 @@ void CSharedLog::Log(std::string p_sSender, std::string p_asMessages[], unsigned
   std::cout  << std::endl;
   fflush(stdout);
   
-  #ifdef WIN32
-  LeaveCriticalSection(&m_Mutex);
-  #else
-  pthread_mutex_unlock(&m_Mutex);
-  #endif  
+  fuppesThreadUnlockMutex(&m_Mutex);
   
   #endif
 }
@@ -103,20 +80,12 @@ void CSharedLog::Error(std::string p_sSender, std::string p_sMessage)
 {
   #ifndef DISABLELOG
   
-  #ifdef WIN32
-  /* TODO: TS - win aequivalent einbauen */
-  #else
-  pthread_mutex_lock(&m_Mutex);
-  #endif
+  fuppesThreadLockMutex(&m_Mutex);
   
   std::cout << "[ERROR :: " << p_sSender << "] " << p_sMessage << std::endl;  
   fflush(stdout);
 
-  #ifdef WIN32
-  /* TODO: TS - win aequivalent einbauen */
-  #else
-  pthread_mutex_unlock(&m_Mutex);
-  #endif
+  fuppesThreadUnlockMutex(&m_Mutex);
   
   #endif
 }

@@ -25,10 +25,8 @@
 #ifndef _SHAREDLOG_H
 #define _SHAREDLOG_H
 
+#include "Common.h"
 #include <string>
-#ifdef WIN32
-#include <windows.h>
-#endif
 
 class CSharedLog
 {
@@ -42,13 +40,7 @@ class CSharedLog
     CSharedLog();
 		static CSharedLog* m_Instance;
 
-    /* da common.h sharedlog.h einbindet muss der Kram
-       hier nochmal spezifisch abgehandelt werden */  
-    #ifdef WIN32    
-    CRITICAL_SECTION m_Mutex;
-    #else      
-    pthread_mutex_t m_Mutex;
-    #endif  
+    fuppesThreadMutex m_Mutex;
 };
 
 #endif /* _SHAREDLOG_H */

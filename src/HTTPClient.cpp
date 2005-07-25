@@ -27,6 +27,7 @@
 
 #include "HTTPClient.h"
 #include "Common.h"
+#include "SharedLog.h"
 #include "RegEx.h"
 
 #ifndef WIN32

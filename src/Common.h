@@ -32,7 +32,6 @@
 
 #include <string>
 #include <assert.h>
-#include "SharedLog.h"
 
 /*===============================================================================
  MACROS
@@ -69,6 +68,9 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
 
 #ifdef WIN32
 
+/* T.S.NOTE: This must be defined to use InitializeCriticalSectionAndSpinCount() */
+#define _WIN32_WINNT 0x0410 /* Windos 98 * or later */
+
 #pragma comment(lib,"Wsock32.lib") 
 #pragma comment(lib,"Ws2_32.lib")
 #pragma comment(lib,"shlwapi.lib")
@@ -88,17 +90,16 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
 #define upnpSocketFlag(_x_)     const char _x_[256] = ""
 
 // Threads
-typedef HANDLE  fuppesThread;
-typedef CRITICAL_SECTION fuppesThreadMutex;
-
+#define fuppesThread                                        HANDLE
 #define fuppesThreadStart(_handle_, _callback_)             _handle_ = CreateThread(NULL, 0, &_callback_, this, 0, NULL)
 #define fuppesThreadClose(_handle_, _timeoutms_)             WaitForSingleObject(_handle_, _timeoutms_); CloseHandle(_handle_)
 #define fuppesThreadStartArg(_handle_, _callback_, _arg_)   _handle_ = CreateThread(NULL, 0, &_callback_, &_arg_, 0, NULL)
-#define fuppesThreadCallback      DWORD WINAPI
-//#define upnpThreadExitCallback  return 0
+#define fuppesThreadCallback                                DWORD WINAPI
 
-void fuppesThreadLock(fuppesThreadMutex* pMutex);
-void fuppesThreadUnlock(fuppesThreadMutex* pMutex);
+#define fuppesThreadMutex                                   CRITICAL_SECTION
+#define fuppesThreadInitMutex(_mutex_)                      InitializeCriticalSectionAndSpinCount(_mutex_, 0x80000400)
+#define fuppesThreadLockMutex(_mutex_)                      EnterCriticalSection(_mutex_)
+#define fuppesThreadUnlockMutex(_mutex_)                    LeaveCriticalSection(_mutex_)
 
 #else
 
@@ -120,17 +121,16 @@ void fuppesThreadUnlock(fuppesThreadMutex* pMutex);
 #define upnpSocketFlag(_x_)     int* _x_
 
 // Threads
-typedef pthread_t       fuppesThread;
-typedef pthread_mutex_t fuppesThreadMutex;
+#define fuppesThread                                        pthread_t
+#define fuppesThreadStart(_handle_, _callback_)             pthread_create(&_handle_, NULL, &_callback_, this);
+#define fuppesThreadClose(_handle_, _timeoutms_)            pthread_cancel(_handle_);
+#define fuppesThreadStartArg(_handle_, _callback_, _arg_)   pthread_create(&_handle_, NULL, &_callback_, &_arg_);
+#define fuppesThreadCallback                                void*
 
-#define fuppesThreadStart(_handle_, _callback_)            pthread_create(&_handle_, NULL, &_callback_, this);
-#define fuppesThreadClose(_handle_, _timeoutms_)           pthread_cancel(_handle_);
-#define fuppesThreadStartArg(_handle_, _callback_, _arg_)  pthread_create(&_handle_, NULL, &_callback_, &_arg_);
-#define fuppesThreadCallback      void*
-//#define upnpThreadExitCallback  return
-
-void fuppesThreadLock(fuppesThreadMutex* pMutex);
-void fuppesThreadUnlock(fuppesThreadMutex* pMutex);
+#define fuppesMutex                                         pthread_mutex_t
+#define fuppesInitMutex(_mutex_)                            pthread_mutex_init(_mutex_, NULL)
+#define fuppesLockMutex(_mutex_)                            pthread_mutex_lock(_mutex_)
+#define fuppesUnlockMutex(_mutex_)                          pthread_mutex_unlock(_mutex_)
 
 #endif
 

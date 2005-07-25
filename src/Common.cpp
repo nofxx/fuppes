@@ -136,18 +136,3 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
     return false;
   }
 }
-
-#ifdef WIN32
-/* TODO: TS - win aequivalent einbauen */
-#else
-
-void fuppesThreadLock(fuppesThreadMutex* pMutex)
-{
-  pthread_mutex_lock(pMutex);
-};
-
-void fuppesThreadUnlock(fuppesThreadMutex* pMutex)
-{
-  pthread_mutex_unlock(pMutex);
-};
-#endif

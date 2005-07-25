@@ -27,6 +27,7 @@
 
 #include "HTTPMessage.h"
 #include "Common.h"
+#include "SharedLog.h"
 
 #include <iostream>
 #include <sstream>

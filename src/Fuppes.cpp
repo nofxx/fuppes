@@ -34,6 +34,7 @@
 #include <sstream>
 
 #include "Common.h"
+#include "SharedLog.h"
 #include "HTTPMessage.h"
 #include "MediaServer.h"
 #include "UPnPDevice.h"
