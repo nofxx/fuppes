@@ -128,9 +128,9 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
 #define fuppesThreadCallback                                void*
 
 #define fuppesThreadMutex                                   pthread_mutex_t
-#define fuppesInitMutex(_mutex_)                            pthread_mutex_init(_mutex_, NULL)
-#define fuppesLockMutex(_mutex_)                            pthread_mutex_lock(_mutex_)
-#define fuppesUnlockMutex(_mutex_)                          pthread_mutex_unlock(_mutex_)
+#define fuppesThreadInitMutex(_mutex_)                      pthread_mutex_init(_mutex_, NULL)
+#define fuppesThreadLockMutex(_mutex_)                      pthread_mutex_lock(_mutex_)
+#define fuppesThreadUnlockMutex(_mutex_)                    pthread_mutex_unlock(_mutex_)
 
 #endif
 

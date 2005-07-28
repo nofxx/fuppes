@@ -66,9 +66,9 @@ CSharedLog* CSharedLog::Shared()
 
 CSharedLog::CSharedLog()
 {
-#ifndef DISABLELOG
+  #ifndef DISABLELOG
   fuppesThreadInitMutex(&m_Mutex);
-#endif
+  #endif
 }
 
 /* <\PRIVATE> */
