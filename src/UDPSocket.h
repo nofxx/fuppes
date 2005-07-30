@@ -2,7 +2,8 @@
  *            UDPSocket.h
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -49,33 +50,74 @@ class IUDPSocket
 class CUDPSocket
 {
 	public:
+    /** constructor
+     */
 		CUDPSocket();
+  
+    /** destructor
+     */
 		~CUDPSocket();
 	
-		void send_multicast(std::string p_sMessage);
+    /** initializes the socket
+     *  @param  p_bDoMulticast  indicates whether to multicast or not
+     *  @param  p_sIPAddress    the ip address. irrelevant if p_bDoMulticast is true
+     *  @return returns true on success otherwise false
+     */
+		bool SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress = "");
+  
+    /** finalizes and closes the socket
+     */
+	  void TeardownSocket();	  
+
+    /** multicasts a message
+     *  @param  p_sMessage  the message to send
+     */
+    void SendMulticast(std::string p_sMessage);
+    
+    /** unicastcasts a message
+     *  @param  p_sMessage  the message to send
+     *  @param  p_RemoteEndPoint  the receiver
+     */
     void SendUnicast(std::string p_sMessage, sockaddr_in p_RemoteEndPoint);
   
-		void begin_receive();
-    void end_receive();
-		void SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress = "");
-	  void teardown_socket();
-	  void setup_random_port();
+    /** starts the receive thread
+     */
+		void BeginReceive();
+    
+    /** ends the receive thread
+     */
+    void EndReceive();
 	
-		upnpSocket get_socket_fd();
-			
+    /** returns the socket's descriptor
+     *  @return the descriptor
+     */
+		upnpSocket GetSocketFd();
+
+    /** returns the socket's port
+     *  @return the port number
+     */
+		int  GetPort();
+    
+    /** returns the socket's IP-Address as string
+     *  @return the address
+     */
+	  std::string GetIPAddress();
+    
+    /** returns the local end point
+     *  @return the end point structure
+     */
+	  sockaddr_in GetLocalEndPoint();	
+
 	  void SetReceiveHandler(IUDPSocket*);
-	  void call_on_receive(CSSDPMessage*);
-	
-		int  get_port();
-	  std::string get_ip();
-	  sockaddr_in get_local_ep();	
-	private:				
-		upnpSocket  sock;					
+	  void CallOnReceive(CSSDPMessage*);
+  
+	private:
+    upnpSocket    sock;					
   	fuppesThread  receive_thread;					  
-		bool        is_multicast;	
-	  sockaddr_in local_ep;	// local end point
+		bool          m_bDoMulticast;	
+	  sockaddr_in   local_ep;	// local end point
 	
-	  IUDPSocket* m_pReceiveHandler;
+	  IUDPSocket*   m_pReceiveHandler;
 	
 };
 

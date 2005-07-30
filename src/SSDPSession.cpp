@@ -2,7 +2,8 @@
  *            SSDPSession.cpp
  * 
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -44,9 +45,9 @@ CSSDPSession::~CSSDPSession()
 
 void CSSDPSession::send_multicast(std::string a_message)
 {
-	udp->send_multicast(a_message);
+	udp->SendMulticast(a_message);
 	upnpSleep(200);
-	udp->send_multicast(a_message);	
+	udp->SendMulticast(a_message);	
 }
 
 void CSSDPSession::send_unicast(std::string)
@@ -56,12 +57,12 @@ void CSSDPSession::send_unicast(std::string)
 void CSSDPSession::begin_receive_unicast()
 {	
 	udp->SetReceiveHandler(this);
-	udp->begin_receive();
+	udp->BeginReceive();
 }
 
 void CSSDPSession::end_receive_unicast()
 {
-  udp->end_receive();
+  udp->EndReceive();
 }
 
 bool CSSDPSession::OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pSSDPMessage)
@@ -111,5 +112,5 @@ void CMSearchSession::Stop()
 
 sockaddr_in CMSearchSession:: GetLocalEndPoint()
 {
-	return udp->get_local_ep();
+	return udp->GetLocalEndPoint();
 }

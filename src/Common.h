@@ -118,7 +118,6 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
 #define upnpSocketSuccess       -1
 
 #define upnpSocketClose         close
-#define upnpSocketFlag(_x_)     int* _x_ = NULL
 
 /* Threads */
 #define fuppesThread                                        pthread_t

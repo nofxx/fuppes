@@ -2,7 +2,8 @@
  *            UDPSocket.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -37,34 +38,42 @@ const string LOGNAME = "UDPSocket";
 
 fuppesThreadCallback receive_loop(void *arg);
 
+/* constructor */
 CUDPSocket::CUDPSocket()
 {	
 	local_ep.sin_port = 0;
 	receive_thread = (fuppesThread)NULL;
 }	
 	
-
+/* destructor */
 CUDPSocket::~CUDPSocket()
 {
 }
 
-upnpSocket CUDPSocket::get_socket_fd()
-{
-	return sock;
-}
-
-void CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress)
+/* SetupSocket */
+bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress)
 {
   /* Create socket */
 	sock = socket(PF_INET, SOCK_DGRAM, 0);
 	if(sock == -1)
+  {
     CSharedLog::Shared()->Error(LOGNAME, "creating socket");
+    return false;
+  }
 	
 	int ret  = 0;
-  upnpSocketFlag(flag);
+  #ifdef WIN32
+  upnpSocketFlag(flag);  
   ret = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, flag, sizeof(flag));
+  #else
+  int flag = 1;
+  ret = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
+  #endif
 	if(ret == -1)
-    CSharedLog::Shared()->Error(LOGNAME, "setsockopt");		
+  {
+    CSharedLog::Shared()->Error(LOGNAME, "setsockopt: SO_REUSEADDR");
+    return false;
+  }
 	
 	/* Set local endpoint */
   local_ep.sin_family = AF_INET;	
@@ -82,15 +91,18 @@ void CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress)
 	/* Bind socket */
 	ret = bind(sock, (struct sockaddr*)&local_ep, sizeof(local_ep)); 
   if(ret == -1)
+  {
     CSharedLog::Shared()->Error(LOGNAME, "bind");	
+    return false;
+  }
 	
 	/* Get random port */
 	socklen_t size = sizeof(local_ep);
 	getsockname(sock, (struct sockaddr*)&local_ep, &size);
 	
 	/* Join multicast group */
-	is_multicast = p_bDoMulticast;
-	if(p_bDoMulticast)
+	m_bDoMulticast = p_bDoMulticast;
+	if(m_bDoMulticast)
 	{	
 		struct ip_mreq stMreq; /* Multicast interface structure */
 			
@@ -98,15 +110,20 @@ void CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress)
 		stMreq.imr_interface.s_addr = INADDR_ANY; 	
 		ret = setsockopt(sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&stMreq,sizeof(stMreq)); 	
 		if(ret == -1)
-      CSharedLog::Shared()->Error(LOGNAME, "setsockopt multicast");			
+    {
+      CSharedLog::Shared()->Error(LOGNAME, "setsockopt: multicast");
+      return false;
+    }
 	}
+  
+  return true;
 }	
 
-
-void CUDPSocket::teardown_socket()
+/* TeardownSocket */
+void CUDPSocket::TeardownSocket()
 {
 	/* Leave multicast group */
-	if(is_multicast)
+	if(m_bDoMulticast)
 	{
 		struct ip_mreq stMreq;
 		
@@ -117,19 +134,22 @@ void CUDPSocket::teardown_socket()
 	upnpSocketClose(sock);
 }
 
-void CUDPSocket::begin_receive()
+/* BeginReceive */
+void CUDPSocket::BeginReceive()
 {
   /* Start thread */
   fuppesThreadStart(receive_thread, receive_loop);
 }
 
-void CUDPSocket::end_receive()
+/* EndReceive */
+void CUDPSocket::EndReceive()
 {
   /* Exit thread */
   fuppesThreadClose(receive_thread, 2000);
 }
 
-void CUDPSocket::send_multicast(std::string p_sMessage)
+/* SendMulticast */
+void CUDPSocket::SendMulticast(std::string p_sMessage)
 {
 	/* Create remote end point */
 	sockaddr_in remote_ep;	
@@ -140,22 +160,32 @@ void CUDPSocket::send_multicast(std::string p_sMessage)
 	sendto(sock, p_sMessage.c_str(), (int)strlen(p_sMessage.c_str()), 0, (struct sockaddr*)&remote_ep, sizeof(remote_ep));
 }
 
+/* SendUnicast */
 void CUDPSocket::SendUnicast(std::string p_sMessage, sockaddr_in p_RemoteEndPoint)
 {
   sendto(sock, p_sMessage.c_str(), (int)strlen(p_sMessage.c_str()), 0, (struct sockaddr*)&p_RemoteEndPoint, sizeof(p_RemoteEndPoint));  
 }
 
-int CUDPSocket::get_port()
+/* GetSocketFd */
+upnpSocket CUDPSocket::GetSocketFd()
+{
+	return sock;
+}
+
+/* GetPort */
+int CUDPSocket::GetPort()
 {
 	return ntohs(local_ep.sin_port);
 }
 
-std::string CUDPSocket::get_ip()
+/* GetIPAddress */
+std::string CUDPSocket::GetIPAddress()
 {
 	return inet_ntoa(local_ep.sin_addr);
 }
 
-sockaddr_in CUDPSocket::get_local_ep()
+/* GetLocalEp */
+sockaddr_in CUDPSocket::GetLocalEndPoint()
 {
 	return local_ep;
 }
@@ -164,7 +194,7 @@ fuppesThreadCallback receive_loop(void *arg)
 {
   CUDPSocket* udp_sock = (CUDPSocket*)arg;
   stringstream sMsg;
-  sMsg << "listening on " << udp_sock->get_ip() << ":" << udp_sock->get_port();
+  sMsg << "listening on " << udp_sock->GetIPAddress() << ":" << udp_sock->GetPort();
 	CSharedLog::Shared()->Log(LOGNAME, sMsg.str());
 	
 	char buffer[4096];	
@@ -175,7 +205,7 @@ fuppesThreadCallback receive_loop(void *arg)
 	sockaddr_in remote_ep;	
 	socklen_t   size = sizeof(remote_ep);	
 		/* T.S. TODO: Error on exit here */
-	while((bytes_received = recvfrom(udp_sock->get_socket_fd(), buffer, sizeof(buffer), 0, (struct sockaddr*)&remote_ep, &size)) != -1)
+	while((bytes_received = recvfrom(udp_sock->GetSocketFd(), buffer, sizeof(buffer), 0, (struct sockaddr*)&remote_ep, &size)) != -1)
 	{
 		buffer[bytes_received] = '\0';		
 		msg << buffer;   
@@ -184,14 +214,14 @@ fuppesThreadCallback receive_loop(void *arg)
     /*cout << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port) << endl;
     cout << inet_ntoa(udp_sock->get_local_ep().sin_addr) << ":" << ntohs(udp_sock->get_local_ep().sin_port) << endl;*/
     
-		if((remote_ep.sin_addr.s_addr != udp_sock->get_local_ep().sin_addr.s_addr) || 
-			 (remote_ep.sin_port != udp_sock->get_local_ep().sin_port))		
+		if((remote_ep.sin_addr.s_addr != udp_sock->GetLocalEndPoint().sin_addr.s_addr) || 
+			 (remote_ep.sin_port != udp_sock->GetLocalEndPoint().sin_port))		
 		{
 			CSSDPMessage SSDPMessage;
       SSDPMessage.SetMessage(msg.str());
 			SSDPMessage.SetRemoteEndPoint(remote_ep);
-			SSDPMessage.SetLocalEndPoint(udp_sock->get_local_ep());
-			udp_sock->call_on_receive(&SSDPMessage);
+			SSDPMessage.SetLocalEndPoint(udp_sock->GetLocalEndPoint());
+			udp_sock->CallOnReceive(&SSDPMessage);
 		}
 		
 		msg.str("");
@@ -212,7 +242,7 @@ void CUDPSocket::SetReceiveHandler(IUDPSocket* pHandler)
 	this->m_pReceiveHandler = pHandler;
 }
 
-void CUDPSocket::call_on_receive(CSSDPMessage* pSSDPMessage)
+void CUDPSocket::CallOnReceive(CSSDPMessage* pSSDPMessage)
 {
 	if(this->m_pReceiveHandler != NULL)
 	  m_pReceiveHandler->OnUDPSocketReceive(this, pSSDPMessage);

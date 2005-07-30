@@ -70,12 +70,12 @@ void CSSDPCtrl::Start()
 {	
 	m_Listener.SetupSocket(true, m_sIPAddress);
 	m_Listener.SetReceiveHandler(this);
-	m_Listener.begin_receive();	
+	m_Listener.BeginReceive();	
 }
 
 void CSSDPCtrl::Stop()
 {	
-	m_Listener.end_receive();	
+	m_Listener.EndReceive();	
 }
 
 /*===============================================================================
@@ -106,28 +106,28 @@ void CSSDPCtrl::send_alive()
 	CUDPSocket Sock;
 	Sock.SetupSocket(false, m_sIPAddress);
 	
-	m_LastMulticastEp = Sock.get_local_ep();
+	m_LastMulticastEp = Sock.GetLocalEndPoint();
 	
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_ROOT_DEVICE));	
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_ROOT_DEVICE));
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_ROOT_DEVICE));	
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_ROOT_DEVICE));
 	upnpSleep(200);
 	
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_CONNECTION_MANAGER));
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_CONNECTION_MANAGER));
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_CONNECTION_MANAGER));
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_CONNECTION_MANAGER));
 	upnpSleep(200);
 	
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_CONTENT_DIRECTORY));
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_CONTENT_DIRECTORY));
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_CONTENT_DIRECTORY));
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_CONTENT_DIRECTORY));
 	upnpSleep(200);
 	
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_MEDIA_SERVER));
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_MEDIA_SERVER));
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_MEDIA_SERVER));
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_MEDIA_SERVER));
 	upnpSleep(200);
 	
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_USN));
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_USN));
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_USN));
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_USN));
 	
-	Sock.teardown_socket();
+	Sock.TeardownSocket();
 }
 
 void CSSDPCtrl::send_byebye()
@@ -135,28 +135,28 @@ void CSSDPCtrl::send_byebye()
 	CUDPSocket Sock;
 	Sock.SetupSocket(false, m_sIPAddress);
 	
-  m_LastMulticastEp = Sock.get_local_ep();	
+  m_LastMulticastEp = Sock.GetLocalEndPoint();	
 	
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_ROOT_DEVICE));
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_ROOT_DEVICE));
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_ROOT_DEVICE));
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_ROOT_DEVICE));
 	upnpSleep(200);
 	
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_CONNECTION_MANAGER));
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_CONNECTION_MANAGER));
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_CONNECTION_MANAGER));
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_CONNECTION_MANAGER));
 	upnpSleep(200);
 	
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_CONTENT_DIRECTORY));
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_CONTENT_DIRECTORY));
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_CONTENT_DIRECTORY));
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_CONTENT_DIRECTORY));
 	upnpSleep(200);
 	
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_MEDIA_SERVER));
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_MEDIA_SERVER));
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_MEDIA_SERVER));
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_MEDIA_SERVER));
 	upnpSleep(200);
 	
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_USN));
-	Sock.send_multicast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_USN));
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_USN));
+	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_USN));
 	
-	Sock.teardown_socket();
+	Sock.TeardownSocket();
 }
 
 /*===============================================================================
@@ -198,7 +198,7 @@ bool CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMe
       Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_MEDIA_SERVER), pSSDPMessage->GetRemoteEndPoint());
       Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_USN), pSSDPMessage->GetRemoteEndPoint());
 
-      Sock.teardown_socket();
+      Sock.TeardownSocket();
       CSharedLog::Shared()->Log(LOGNAME, "[SSDPCtrl] done");
     }
     else if(NULL != m_pReceiveHandler)
