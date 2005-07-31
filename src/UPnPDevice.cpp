@@ -203,7 +203,7 @@ std::string CUPnPDevice::GetDeviceDescription()
 					xmlTextWriterEndElement(writer);
 				
 					/* serviceId */
-					sTmp << "urn:upnp-org:serviceId:" << pTmp->GetUPnPDeviceTypeAsString() << "ServiceID";
+					sTmp << "urn:upnp-org:serviceId:urn:schemas-upnp-org:service:" << pTmp->GetUPnPDeviceTypeAsString();
 					xmlTextWriterStartElement(writer, BAD_CAST "serviceId");
       		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
 					sTmp.str("");
