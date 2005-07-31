@@ -185,6 +185,12 @@ bool CSharedConfig::ReadConfigFile()
     if(pDoc != NULL)  
       bResult = true;
   }
+  else if(FileExists("fuppes.cfg"))
+  {
+    pDoc = xmlReadFile("fuppes.cfg", NULL, 0);
+    if(pDoc != NULL)  
+      bResult = true;
+  }  
   else
   { 
     cout << endl << "[ERROR] no config file found" << endl;

@@ -30,6 +30,7 @@
 #include <iostream>
 #include "Common.h"
 #include "SharedConfig.h"
+#include "SharedLog.h"
 #include "Fuppes.h"
 #include "Presentation/PresentationHandler.h"
 
@@ -132,6 +133,10 @@ int main()
       pFuppes->GetSSDPCtrl()->send_alive();
     else if (input == "b")
       pFuppes->GetSSDPCtrl()->send_byebye();
+    else if (input == "el")
+      CSharedLog::Shared()->SetShowLog(true);
+    else if (input == "dl")
+      CSharedLog::Shared()->SetShowLog(false);
   }
   
   /* Destroy objects */
