@@ -69,6 +69,7 @@ public:
   void  Log(std::string p_sSender, std::string p_sMessage);
   void  ExtendedLog(std::string p_sSender, std::string p_sMessage);
   void  Log(std::string p_sSender, std::string p_asMessages[], unsigned int p_nCount, std::string p_sSeparator = "");    
+  void  Warning(std::string p_sSender, std::string p_sMessage);
   void  Error(std::string p_sSender, std::string p_sMessage);
 
 /*===============================================================================

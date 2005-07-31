@@ -2,7 +2,8 @@
  *            ContentDirectory.cpp
  * 
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -26,6 +27,7 @@
 #include "AudioItem.h"
 #include "../UPnPActions/UPnPBrowse.h"
 #include "../SharedConfig.h"
+#include "../SharedLog.h"
 #include "../Common.h"
 #include "../RegEx.h"
  
@@ -39,6 +41,8 @@
 #include <sys/types.h>
 #include <sys/stat.h> 
 using namespace std;
+ 
+const string LOGNAME = "ContentDir";
  
 CContentDirectory::CContentDirectory(std::string p_sHTTPServerURL):
   CUPnPService(udtContentDirectory, p_sHTTPServerURL)
@@ -198,8 +202,13 @@ void CContentDirectory::BuildObjectList()
       /* increment counter */
       nCount++;
       
-      ScanDirectory(CSharedConfig::Shared()->GetSharedDir(i), &nCount, pTmpFolder);
-     
+      ScanDirectory(CSharedConfig::Shared()->GetSharedDir(i), &nCount, pTmpFolder);     
+    }
+    else
+    {
+      stringstream sLog;
+      sLog << "shared directory: \"" << CSharedConfig::Shared()->GetSharedDir(i) << "\" not found";
+      CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     }
   }
 }
@@ -294,7 +303,8 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
   DIR*    pDir;
   dirent* pDirEnt;
   stringstream sTmp;
-    
+   
+  /* append upnpPathDelim if necessary */  
   if(p_sDirectory.substr(p_sDirectory.length()-1).compare(upnpPathDelim) != 0)
   {
     sTmp << p_sDirectory << upnpPathDelim;
@@ -304,6 +314,10 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
   
   if((pDir = opendir(p_sDirectory.c_str())) != NULL)
   {
+    sTmp << "read directory: " << p_sDirectory;    
+    CSharedLog::Shared()->Log(LOGNAME, sTmp.str());
+    sTmp.str("");
+    
     while((pDirEnt = readdir(pDir)))
     {
       if(((string(".").compare(pDirEnt->d_name) != 0) && 
@@ -333,7 +347,12 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
           /* increment counter */
           int nTmp = *p_nCount;
           nTmp++;
-          *p_nCount = nTmp;         
+          *p_nCount = nTmp;
+
+          /* log */
+          sTmp.str("");
+          sTmp << "added mp3-file: \"" << pDirEnt->d_name << "\"";
+          CSharedLog::Shared()->Log(LOGNAME, sTmp.str());          
         }
         /* folder */
         else if(IsDirectory(sTmp.str()))
@@ -360,6 +379,11 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
           
           /* scan subdirectories */
           ScanDirectory(sTmp.str(), p_nCount, pTmpFolder);          
+          
+          /* log */
+          sTmp.str("");
+          sTmp << "added dir: \"" << pDirEnt->d_name << "\"";
+          CSharedLog::Shared()->Log(LOGNAME, sTmp.str()); 
         }
         sTmp.str("");
       }

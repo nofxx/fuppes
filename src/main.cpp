@@ -118,6 +118,12 @@ int main()
   cout << "Webinterface: http://" << pFuppes->GetHTTPServerURL() << "/index.html" << endl;
   //cout << "Webinterface: http://" << pFuppes2->GetHTTPServerURL() << "/index.html" << endl;
   cout << endl;
+  cout << "m  = send m-search" << endl;
+  cout << "a  = send notify-alive" << endl;
+  cout << "b  = send notify-byebye" << endl;
+  cout << "el = enable logging" << endl;
+  cout << "dl = disable logging" << endl;
+  cout << endl;
   cout << "press \"q\" to  quit" << endl;
   cout << endl;
   
