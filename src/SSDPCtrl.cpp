@@ -30,6 +30,7 @@
 #include "SSDPCtrl.h"
 #include "SharedLog.h"
 #include <iostream>
+#include <sstream>
  
 using namespace std;
 
@@ -188,7 +189,11 @@ bool CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMe
   {	
     if(pSSDPMessage->GetContent().substr(0, 8).compare("M-SEARCH") == 0)
     {
-      CSharedLog::Shared()->Log(LOGNAME, "[SSDPCtrl] received m-search. unicasting response");
+      stringstream sLog;
+      sLog << "received m-search from: \"" << inet_ntoa(pSSDPMessage->GetRemoteEndPoint().sin_addr) << ":" << ntohs(pSSDPMessage->GetRemoteEndPoint().sin_port) << "." << endl;
+      sLog << pSSDPMessage->GetMessage();
+      sLog << "unicasting response";
+      CSharedLog::Shared()->Log(LOGNAME, sLog.str());
       CUDPSocket Sock;
       Sock.SetupSocket(false, m_sIPAddress);
 
@@ -199,7 +204,7 @@ bool CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMe
       Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_USN), pSSDPMessage->GetRemoteEndPoint());
 
       Sock.TeardownSocket();
-      CSharedLog::Shared()->Log(LOGNAME, "[SSDPCtrl] done");
+      CSharedLog::Shared()->Log(LOGNAME, "done");
     }
     else if(NULL != m_pReceiveHandler)
     {
@@ -219,7 +224,9 @@ bool CSSDPCtrl::OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage)
   if(NULL == pMessage)
     return false;
   
-  //CSharedLog::Shared()->Log(LOGNAME, "OnSessionReceive");
+  stringstream sLog;
+  sLog << "OnSessionReceive" << endl << pMessage->GetMessage();
+  CSharedLog::Shared()->Log(LOGNAME, sLog.str());
   if(NULL != m_pReceiveHandler)
       m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pMessage);
   
