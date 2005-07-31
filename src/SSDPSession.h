@@ -2,7 +2,9 @@
  *            SSDPSession.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -24,54 +26,149 @@
 #ifndef _SSDPSESSION_H
 #define _SSDPSESSION_H
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include <string>
 
 #include "UDPSocket.h"
 #include "SSDPMessage.h"
 #include "NotifyMsgFactory.h"
 
+/*===============================================================================
+ FORWARD DECLARATIONS
+===============================================================================*/
+
 class CSSDPSession;
+
+/*===============================================================================
+ CLASS ISSDPSession
+===============================================================================*/
 
 class ISSDPSession
 {
-  public:
-    virtual bool OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage) = 0;
+
+/* <PUBLIC> */
+
+public:
+    
+  virtual bool OnSessionReceive(
+    CSSDPSession* pSender,
+    CSSDPMessage* pMessage) = 0;
+
+/* <\PUBLIC> */
+
 };
+
+/*===============================================================================
+ CLASS CSSDPSession
+===============================================================================*/
 
 class CSSDPSession: public IUDPSocket
 {
-	public:	
-		bool OnUDPSocketReceive(CUDPSocket*, CSSDPMessage*);
-	
-	protected:
-		CSSDPSession(std::string p_sIPAddress, ISSDPSession* pReceiveHandler);
-	  virtual ~CSSDPSession();
-	
-	  void send_multicast(std::string);
-	  void send_unicast(std::string);
-	  
-	  void begin_receive_unicast();
-    void end_receive_unicast();
 
-	  virtual void start();	  
+/* <PROTECTED> */
+
+protected:
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+  CSSDPSession(std::string p_sIPAddress, ISSDPSession* pReceiveHandler);
+  virtual ~CSSDPSession();
+
+/* <\PROTECTED> */
+
+/* <PUBLIC> */
+
+public:	
+
+/*===============================================================================
+ MESSAGE HANDLING
+===============================================================================*/
+  
+  bool OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pMessage);
+
+/* <\PUBLIC> */
 	
-		int           timeout;
-	  CUDPSocket*   udp;
+/* <PROTECTED> */
+
+/*===============================================================================
+ CONTROL
+===============================================================================*/
+
+  virtual void Start();	  
+
+/*===============================================================================
+ SEND/RECEIVE
+===============================================================================*/
+
+  void send_multicast(std::string);
+  void send_unicast(std::string);
+
+  void begin_receive_unicast();
+  void end_receive_unicast();
+
+/*===============================================================================
+ MEMBERS
+===============================================================================*/
+
+		int           m_nTimeout;
+	  CUDPSocket    m_UdpSocket;
     std::string   m_sIPAddress;
     ISSDPSession* m_pReceiveHandler;
+
+/* <\PROTECTED> */
+
 };
+
+/*===============================================================================
+ CLASS CMSearchSession
+===============================================================================*/
 
 class CMSearchSession: public CSSDPSession
 {
-	public:
+
+/* <PUBLIC> */
+
+public:
+
+/*===============================================================================
+ CONSTRUCTOR/DESTRUCTOR
+===============================================================================*/
+
 	  CMSearchSession(std::string p_sIPAddress, ISSDPSession* pReceiveHandler, CNotifyMsgFactory* pNotifyMsgFactory);
     ~CMSearchSession();
 	
-	  void start();
-    void Stop();
-	  sockaddr_in  GetLocalEndPoint();
-  private:
-    CNotifyMsgFactory* m_pNotifyMsgFactory;
+/*===============================================================================
+ CONTROL
+===============================================================================*/
+    
+  void Start();
+  void Stop();
+
+/*===============================================================================
+ GET
+===============================================================================*/    
+    
+  sockaddr_in  GetLocalEndPoint();
+
+/* <\PUBLIC> */
+
+/* <PRIVATE> */
+
+private:
+
+/*===============================================================================
+ MEMBERS
+===============================================================================*/    
+  
+  CNotifyMsgFactory* m_pNotifyMsgFactory;
+
+/* <PRIVATE> */
+
 };
 
 #endif /* _SSDPSESSION_H */

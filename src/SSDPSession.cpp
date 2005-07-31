@@ -4,6 +4,7 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -24,6 +25,10 @@
  
 /* todo: create expiration timer */
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "SSDPSession.h"
 #include "NotifyMsgFactory.h"
 
@@ -31,39 +36,33 @@
 
 using namespace std;
 
+/*===============================================================================
+ CLASS CSSDPSession
+===============================================================================*/
+
+/* <PROTECTED> */
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
 CSSDPSession::CSSDPSession(std::string p_sIPAddress, ISSDPSession* pReceiveHandler)
 {
   m_sIPAddress      = p_sIPAddress;
   m_pReceiveHandler = pReceiveHandler;
-	udp = new CUDPSocket();
 }
 
 CSSDPSession::~CSSDPSession()
 {
-	delete udp;
 }
 
-void CSSDPSession::send_multicast(std::string a_message)
-{
-	udp->SendMulticast(a_message);
-	upnpSleep(200);
-	udp->SendMulticast(a_message);	
-}
+/* <\PROTECTED> */
 
-void CSSDPSession::send_unicast(std::string)
-{
-}
-	  
-void CSSDPSession::begin_receive_unicast()
-{	
-	udp->SetReceiveHandler(this);
-	udp->BeginReceive();
-}
+/* <PUBLIC> */
 
-void CSSDPSession::end_receive_unicast()
-{
-  udp->EndReceive();
-}
+/*===============================================================================
+ MESSAGE HANDLING
+===============================================================================*/
 
 bool CSSDPSession::OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pSSDPMessage)
 {
@@ -73,31 +72,86 @@ bool CSSDPSession::OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pSSDPMe
   ASSERT(NULL != pSSDPMessage);
   if(NULL == pSSDPMessage)
     return false;
-  
+
   //cout << "ssdp_session::OnUDPSocketReceive" << endl << pSSDPMessage->GetContent() << endl;
-	if(m_pReceiveHandler != NULL)
-	  m_pReceiveHandler->OnSessionReceive(this, pSSDPMessage);
+  if(m_pReceiveHandler != NULL)
+    m_pReceiveHandler->OnSessionReceive(this, pSSDPMessage);
 
   return true;
 }
 
-void CSSDPSession::start()
+/* <\PUBLIC> */
+
+/* <PROTECTED> */
+
+/*===============================================================================
+ CONTROL
+===============================================================================*/
+
+void CSSDPSession::Start()
 {
 }
 
+/*===============================================================================
+ SEND/RECEIVE
+===============================================================================*/
+
+void CSSDPSession::send_multicast(std::string a_message)
+{
+	/* Send message twice */
+  m_UdpSocket.SendMulticast(a_message);
+	upnpSleep(200);
+	m_UdpSocket.SendMulticast(a_message);	
+}
+
+void CSSDPSession::send_unicast(std::string)
+{
+}
+
+void CSSDPSession::begin_receive_unicast()
+{	
+	/* Start receiving messages */
+  m_UdpSocket.SetReceiveHandler(this);
+	m_UdpSocket.BeginReceive();
+}
+
+void CSSDPSession::end_receive_unicast()
+{
+  /* End receiving messages */
+  m_UdpSocket.EndReceive();
+}
+
+/* <\PROTECTED> */
+
+/*===============================================================================
+ CLASS CMSearchSession
+===============================================================================*/
+
+/* <PUBLIC> */
+
+/*===============================================================================
+ CONSTRUCTOR/DESTRUCTOR
+===============================================================================*/
 
 CMSearchSession::CMSearchSession(std::string p_sIPAddress, ISSDPSession* pReceiveHandler, CNotifyMsgFactory* pNotifyMsgFactory):
   CSSDPSession(p_sIPAddress, pReceiveHandler)
 {
+  ASSERT(NULL != pReceiveHandler);
+  ASSERT(NULL != pNotifyMsgFactory);
+  
   m_pNotifyMsgFactory = pNotifyMsgFactory;
-	udp->SetupSocket(false, m_sIPAddress);	
+	m_UdpSocket.SetupSocket(false, m_sIPAddress);	
 }
 
 CMSearchSession::~CMSearchSession()
 {
 }
 
-void CMSearchSession::start()
+/*===============================================================================
+ CONTROL
+===============================================================================*/
+
+void CMSearchSession::Start()
 {
 	//cout << "msearch_session::start" << endl;
 	begin_receive_unicast();
@@ -110,7 +164,13 @@ void CMSearchSession::Stop()
 	end_receive_unicast();
 }
 
+/*===============================================================================
+ GET
+===============================================================================*/
+
 sockaddr_in CMSearchSession:: GetLocalEndPoint()
 {
-	return udp->GetLocalEndPoint();
+	return m_UdpSocket.GetLocalEndPoint();
 }
+
+/* <\PUBLIC> */

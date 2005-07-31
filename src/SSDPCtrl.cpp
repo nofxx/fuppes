@@ -98,7 +98,7 @@ void CSSDPCtrl::send_msearch()
 	/* T.S.TODO: Where could we call CMSearchSession::Stop() to terminate thread??? */
   /* uv :: UPnP says that remote devices have to answer within iirc 30 seconds
            so let's start a timer and kill the thread when the time is over */
-  msearch->start();	
+  msearch->Start();	
 }
 
 void CSSDPCtrl::send_alive()

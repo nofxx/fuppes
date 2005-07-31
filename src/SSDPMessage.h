@@ -2,7 +2,9 @@
  *            SSDPMessage.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -24,29 +26,64 @@
 #ifndef _SSDPMESSAGE_H
 #define _SSDPMESSAGE_H
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "MessageBase.h"
 #include <string>
 
+/*===============================================================================
+ CLASS CSSDPMessage
+===============================================================================*/
+
 class CSSDPMessage: public CMessageBase
 {
-	public:
+	
+/* <PUBLIC> */
+
+public:
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
 		CSSDPMessage();
 	  virtual ~CSSDPMessage();
-  
-virtual void SetMessage(std::string p_sMessage);
+
+/*===============================================================================
+ MESSAGES
+===============================================================================*/
+
+  virtual void SetMessage(std::string p_sMessage);
+
+/*===============================================================================
+ GET
+===============================================================================*/
 
     std::string GetLocation() { return m_sLocation; }
-    std::string GetUUID() { return m_sUUID; }
-    
+    std::string GetUUID()     { return m_sUUID;     }
     std::string GetDeviceID();
     
-  private:
-    std::string m_sLocation;
-    std::string m_sServer;
-    std::string m_sST;
-    std::string m_sNTS;
-    std::string m_sUSN;
-    std::string m_sUUID;
+/* <\PUBLIC> */
+
+/* <PRIVATE> */
+
+private:
+
+/*===============================================================================
+ MEMBERS
+===============================================================================*/
+
+  std::string m_sLocation;
+  std::string m_sServer;
+  std::string m_sST;
+  std::string m_sNTS;
+  std::string m_sUSN;
+  std::string m_sUUID;
+
+/* <\PRIVATE> */
+
 };
 
 #endif /* _SSDPMESSAGE_H */

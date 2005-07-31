@@ -2,7 +2,9 @@
  *            SSDPMessage.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -21,27 +23,48 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "SSDPMessage.h"
 #include "RegEx.h"
 #include "SharedLog.h"
 #include <sstream>
 
+/*===============================================================================
+ CONSTANTS
+===============================================================================*/
+
 const std::string LOGNAME = "SSDPMessage";
+
+/*===============================================================================
+ CLASS CSSDPMessage
+===============================================================================*/
+
+/* <PUBLIC> */
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
 
 CSSDPMessage::CSSDPMessage()
 {
-  
-
-  
 }
 
 CSSDPMessage::~CSSDPMessage()
 {
 }
 
+/*===============================================================================
+ MESSAGES
+===============================================================================*/
+
 void CSSDPMessage::SetMessage(std::string p_sMessage)
 {
   CMessageBase::SetMessage(p_sMessage);
+  
+  /* This is a sample message */
   /*
   HTTP/1.1 200 OK
   CACHE-CONTROL: max-age=1800
@@ -53,13 +76,15 @@ void CSSDPMessage::SetMessage(std::string p_sMessage)
   USN: uuid:45645678-aabb-0000-ccdd-1234eeff0000::urn:schemas-upnp-org:service:ContentDirectory:1
   Content-Length: 0 */
   
-	RegEx rxLocation("LOCATION: +(http://.+)", PCRE_CASELESS);
+	/* Location */
+  RegEx rxLocation("LOCATION: +(http://.+)", PCRE_CASELESS);
 	if(rxLocation.Search(m_sMessage.c_str()))
 	{
     m_sLocation = rxLocation.Match(1);
     //CSharedLog::Shared()->Log(LOGNAME, m_sLocation);    
 	}
   
+  /* Server */
   RegEx rxServer("SERVER: +(.*)", PCRE_CASELESS);
 	if(rxServer.Search(m_sMessage.c_str()))
 	{
@@ -67,6 +92,7 @@ void CSSDPMessage::SetMessage(std::string p_sMessage)
     //CSharedLog::Shared()->Log(LOGNAME, m_sServer);
 	}
   
+  /* USN */
   RegEx rxUSN("USN: +(.*)", PCRE_CASELESS);
   if(rxUSN.Search(m_sMessage.c_str()))
   {
@@ -82,9 +108,18 @@ void CSSDPMessage::SetMessage(std::string p_sMessage)
   }
 }
 
+/*===============================================================================
+ GET
+===============================================================================*/
+
 std::string CSSDPMessage::GetDeviceID()
 {
+  /* Format string */
   std::stringstream sDeviceID;
-  sDeviceID << this->GetRemoteIPAddress() << "::" << this->GetUUID();
-  return sDeviceID.str();  
+  sDeviceID << GetRemoteIPAddress() << "::" << GetUUID();
+  
+  /* Return device id */
+  return sDeviceID.str();
 }
+
+/* <\PUBLIC> */
