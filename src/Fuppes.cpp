@@ -312,12 +312,17 @@ bool CFuppes::HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
     if(pItem && FileExists(pItem->GetFileName()))
     {
       pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, HTTP_CONTENT_TYPE_AUDIO_MPEG);
-      pMessageOut->LoadContentFromFile(pItem->GetFileName());
-    }  
-    stringstream sLog;
-    sLog << "[FUPPES] sending audio file " << pItem->GetFileName();
-    CSharedLog::Shared()->Log(LOGNAME, sLog.str());
-    return true;
+      pMessageOut->LoadContentFromFile(pItem->GetFileName());    
+      stringstream sLog;
+      sLog << "[FUPPES] sending audio file " << pItem->GetFileName();
+      CSharedLog::Shared()->Log(LOGNAME, sLog.str());
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+
   }
   
   return false;
