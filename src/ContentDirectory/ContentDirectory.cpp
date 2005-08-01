@@ -162,6 +162,8 @@ std::string CContentDirectory::HandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
 	std::stringstream output;
 	output << (const char*)buf->content;
 	
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, output.str());
+  
 	xmlBufferFree(buf);
 	return output.str();
 }

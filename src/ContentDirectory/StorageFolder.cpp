@@ -66,10 +66,18 @@ std::string CStorageFolder::GetContentAsString(CUPnPBrowse* pBrowseAction,
   CUPnPObject* pTmpObj = NULL;  
   
   *p_nTotalMatches = (int)m_vObjects.size();
-  if((pBrowseAction->m_nStartingIndex + pBrowseAction->m_nRequestedCount) > m_vObjects.size())
-    *p_nNumberReturned = pBrowseAction->m_nStartingIndex + (m_vObjects.size() - pBrowseAction->m_nStartingIndex);
+  /* if requestCount is 0 then show everything */
+  if(pBrowseAction->m_nRequestedCount == 0)
+  {
+    *p_nNumberReturned = (int)m_vObjects.size();
+  }
   else
-    *p_nNumberReturned = pBrowseAction->m_nStartingIndex + pBrowseAction->m_nRequestedCount;
+  {
+    if((pBrowseAction->m_nStartingIndex + pBrowseAction->m_nRequestedCount) > m_vObjects.size())
+      *p_nNumberReturned = pBrowseAction->m_nStartingIndex + (m_vObjects.size() - pBrowseAction->m_nStartingIndex);
+    else
+      *p_nNumberReturned = pBrowseAction->m_nStartingIndex + pBrowseAction->m_nRequestedCount;
+  }
   
   /* root */
   xmlTextWriterStartElementNS(writer, NULL, BAD_CAST "DIDL-Lite", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite");
