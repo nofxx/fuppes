@@ -2,7 +2,9 @@
  *            UPnPBase.h
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -24,33 +26,90 @@
 #ifndef _UPNPBASE_H
 #define _UPNPBASE_H
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include <string>
 
-enum eUPnPDeviceType
+/*===============================================================================
+ DEFINITIONS
+===============================================================================*/
+
+typedef enum tagUPNP_DEVICE_TYPE
 {
-  udtUnknown,
-  udtRootDevice,
-  udtMediaServer,
-  udtContentDirectory,
-  udtRenderingControl,
-  udtConnectionManager,
-  udtAVTransport
-};
+  UPNP_DEVICE_TYPE_UNKNOWN,
+  UPNP_DEVICE_TYPE_ROOT_DEVICE,
+  UPNP_DEVICE_TYPE_MEDIA_SERVER,
+  UPNP_DEVICE_TYPE_CONTENT_DIRECTORY,
+  UPNP_DEVICE_TYPE_RENDERING_CONTROL,
+  UPNP_DEVICE_TYPE_CONNECTION_MANAGER,
+  UPNP_DEVICE_TYPE_AV_TRANSPOR,
+  UPNP_DEVICE_TYPE_MAX
+}UPNP_DEVICE_TYPE;
+
+/*===============================================================================
+ CLASS CUPnPBase
+===============================================================================*/
 
 class CUPnPBase
 {
-  protected:
-    CUPnPBase(eUPnPDeviceType, std::string p_sHTTPServerURL);  
+
+/* <PROTECTED> */
+
+protected:
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+  /** constructor
+  *  @param  nType  the device type
+  *  @param  p_sHTTPServerURL  URL of the HTTP server
+  */
+  CUPnPBase(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL);  
+
+/* <\PROTECTED> */ 
   
-  public:
-    std::string GetUPnPDeviceTypeAsString();
+/* <PUBLIC> */
+
+public:
+
+/*===============================================================================
+ GET
+===============================================================================*/
   
-  protected:
-    std::string m_sHTTPServerURL;
+  /** returns the device type
+  *  @return device type as string
+  */
+  std::string GetUPnPDeviceTypeAsString();
+
+/* <\PUBLIC> */
+
+/* <PROTECTED> */
   
-  private:
-    eUPnPDeviceType m_UPnPDeviceType;
-    
+protected:
+
+/*===============================================================================
+ MEMBERS
+===============================================================================*/
+
+  std::string m_sHTTPServerURL;
+
+/* <\PROTECTED> */
+
+/* <PRIVATE> */
+
+private:
+
+/*===============================================================================
+ MEMBERS
+===============================================================================*/
+
+  UPNP_DEVICE_TYPE m_nUPnPDeviceType;
+
+/* <\PRIVATE> */
+
 };
 
 #endif /* _UPNPBASE_H */

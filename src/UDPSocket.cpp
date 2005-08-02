@@ -4,6 +4,7 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,74 +23,107 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "UDPSocket.h"
 #include "SharedLog.h"
 
 #include <iostream>
 #include <sstream>
 
-
 using namespace std;
 
+/*===============================================================================
+ CONSTANTS
+===============================================================================*/
+
 const string LOGNAME = "UDPSocket";
+
+/*===============================================================================
+ DEFINITIONS
+===============================================================================*/
 
 #define MULTICAST_PORT 1900
 #define MULTICAST_IP   "239.255.255.250"
 
-fuppesThreadCallback receive_loop(void *arg);
+/*===============================================================================
+ THREAD
+===============================================================================*/
+
+fuppesThreadCallback ReceiveLoop(void *arg);
+
+/*===============================================================================
+ CLASS CUDPSocket
+===============================================================================*/
+
+/* <PUBLIC> */
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
 
 /* constructor */
 CUDPSocket::CUDPSocket()
 {	
-	local_ep.sin_port = 0;
-	receive_thread = (fuppesThread)NULL;
+	/* Init members */
+  m_LocalEndpoint.sin_port = 0;
+	m_ReceiveThread          = (fuppesThread)NULL;
+  m_pReceiveHandler        = NULL;
 }	
 	
 /* destructor */
 CUDPSocket::~CUDPSocket()
 {
+  /* Cleanup */
 }
 
+/*===============================================================================
+ CONTROL SOCKET
+===============================================================================*/
+
 /* SetupSocket */
-bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress)
+bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = "" */)
 {
   /* Create socket */
-	sock = socket(PF_INET, SOCK_DGRAM, 0);
-	if(sock == -1)
+	m_Socket = socket(PF_INET, SOCK_DGRAM, 0);
+	if(m_Socket == -1)
   {
     CSharedLog::Shared()->Error(LOGNAME, "creating socket");
     return false;
   }
 	
-	int ret  = 0;
-  #ifdef WIN32
+  /* Set socket options */
+  int ret  = 0;
+#ifdef WIN32
   upnpSocketFlag(flag);  
-  ret = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, flag, sizeof(flag));
-  #else
+  ret = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, flag, sizeof(flag));
+#else
   int flag = 1;
   ret = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
-  #endif
-	if(ret == -1)
+#endif
+  if(ret == -1)
   {
     CSharedLog::Shared()->Error(LOGNAME, "setsockopt: SO_REUSEADDR");
     return false;
   }
 	
 	/* Set local endpoint */
-  local_ep.sin_family = AF_INET;	
+  m_LocalEndpoint.sin_family = AF_INET;	
 	if(p_bDoMulticast)
 	{
-    local_ep.sin_addr.s_addr = INADDR_ANY;
-    local_ep.sin_port		     = htons(MULTICAST_PORT);
+    m_LocalEndpoint.sin_addr.s_addr  = INADDR_ANY;
+    m_LocalEndpoint.sin_port		     = htons(MULTICAST_PORT);
 	}
   else 
 	{
-    local_ep.sin_addr.s_addr = inet_addr(p_sIPAddress.c_str());		
-    local_ep.sin_port		     = htons(0); /* use random port */
+    m_LocalEndpoint.sin_addr.s_addr  = inet_addr(p_sIPAddress.c_str());		
+    m_LocalEndpoint.sin_port		     = htons(0); /* use random port */
 	}
 	
 	/* Bind socket */
-	ret = bind(sock, (struct sockaddr*)&local_ep, sizeof(local_ep)); 
+	ret = bind(m_Socket, (struct sockaddr*)&m_LocalEndpoint, sizeof(m_LocalEndpoint)); 
   if(ret == -1)
   {
     CSharedLog::Shared()->Error(LOGNAME, "bind");	
@@ -97,8 +131,8 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress)
   }
 	
 	/* Get random port */
-	socklen_t size = sizeof(local_ep);
-	getsockname(sock, (struct sockaddr*)&local_ep, &size);
+	socklen_t size = sizeof(m_LocalEndpoint);
+	getsockname(m_Socket, (struct sockaddr*)&m_LocalEndpoint, &size);
 	
 	/* Join multicast group */
 	m_bDoMulticast = p_bDoMulticast;
@@ -108,7 +142,7 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress)
 			
 		stMreq.imr_multiaddr.s_addr = inet_addr(MULTICAST_IP); 
 		stMreq.imr_interface.s_addr = INADDR_ANY; 	
-		ret = setsockopt(sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&stMreq,sizeof(stMreq)); 	
+		ret = setsockopt(m_Socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&stMreq,sizeof(stMreq)); 	
 		if(ret == -1)
     {
       CSharedLog::Shared()->Error(LOGNAME, "setsockopt: multicast");
@@ -129,24 +163,20 @@ void CUDPSocket::TeardownSocket()
 		
 	  stMreq.imr_multiaddr.s_addr = inet_addr(MULTICAST_IP); 
 		stMreq.imr_interface.s_addr = INADDR_ANY; 	
-		setsockopt(sock, IPPROTO_IP, IP_DROP_MEMBERSHIP,(char *)&stMreq,sizeof(stMreq)); 		
+		setsockopt(m_Socket, IPPROTO_IP, IP_DROP_MEMBERSHIP,(char *)&stMreq,sizeof(stMreq)); 		
 	}	
-	upnpSocketClose(sock);
-}
-
-/* BeginReceive */
-void CUDPSocket::BeginReceive()
-{
-  /* Start thread */
-  fuppesThreadStart(receive_thread, receive_loop);
-}
-
-/* EndReceive */
-void CUDPSocket::EndReceive()
-{
+	
+  /* T.S.TEST: We have to exit thread here?! */
   /* Exit thread */
-  fuppesThreadClose(receive_thread, 2000);
+  EndReceive();
+
+  /* Close socket */
+  upnpSocketClose(m_Socket);
 }
+
+/*===============================================================================
+ SEND MESSAGES
+===============================================================================*/
 
 /* SendMulticast */
 void CUDPSocket::SendMulticast(std::string p_sMessage)
@@ -157,40 +187,96 @@ void CUDPSocket::SendMulticast(std::string p_sMessage)
   remote_ep.sin_addr.s_addr = inet_addr(MULTICAST_IP);
   remote_ep.sin_port				= htons(MULTICAST_PORT);
 		
-	sendto(sock, p_sMessage.c_str(), (int)strlen(p_sMessage.c_str()), 0, (struct sockaddr*)&remote_ep, sizeof(remote_ep));
+  /* Send message */
+	sendto(m_Socket, p_sMessage.c_str(), (int)strlen(p_sMessage.c_str()), 0, (struct sockaddr*)&remote_ep, sizeof(remote_ep));
 }
 
 /* SendUnicast */
 void CUDPSocket::SendUnicast(std::string p_sMessage, sockaddr_in p_RemoteEndPoint)
 {
-  sendto(sock, p_sMessage.c_str(), (int)strlen(p_sMessage.c_str()), 0, (struct sockaddr*)&p_RemoteEndPoint, sizeof(p_RemoteEndPoint));  
+  /* Send message */
+  sendto(m_Socket, p_sMessage.c_str(), (int)strlen(p_sMessage.c_str()), 0, (struct sockaddr*)&p_RemoteEndPoint, sizeof(p_RemoteEndPoint));  
 }
+
+/*===============================================================================
+ RECEIVE MESSAGES
+===============================================================================*/
+
+/* BeginReceive */
+void CUDPSocket::BeginReceive()
+{
+  /* Start thread */
+  fuppesThreadStart(m_ReceiveThread, ReceiveLoop);
+}
+
+/* EndReceive */
+void CUDPSocket::EndReceive()
+{
+  /* Exit thread */
+  fuppesThreadClose(m_ReceiveThread, 2000);
+}
+
+/**
+ * SetReceiveHandler
+ */
+void CUDPSocket::SetReceiveHandler(IUDPSocket* pHandler)
+{
+  ASSERT(NULL != pHandler);
+  if(NULL == pHandler)
+    return;
+  
+  /* Save pointer to the receive handler */
+  m_pReceiveHandler = pHandler;
+}
+
+/**
+ * CallOnReceive
+ */
+void CUDPSocket::CallOnReceive(CSSDPMessage* pSSDPMessage)
+{
+	ASSERT(NULL != pSSDPMessage);
+  if(NULL == pSSDPMessage)
+    return;
+  
+  /* Call receive handler */
+  ASSERT(NULL != m_pReceiveHandler);
+  if(NULL != m_pReceiveHandler)
+	  m_pReceiveHandler->OnUDPSocketReceive(this, pSSDPMessage);
+}
+
+/*===============================================================================
+ GET
+===============================================================================*/
 
 /* GetSocketFd */
 upnpSocket CUDPSocket::GetSocketFd()
 {
-	return sock;
+	return m_Socket;
 }
 
 /* GetPort */
 int CUDPSocket::GetPort()
 {
-	return ntohs(local_ep.sin_port);
+	return ntohs(m_LocalEndpoint.sin_port);
 }
 
 /* GetIPAddress */
 std::string CUDPSocket::GetIPAddress()
 {
-	return inet_ntoa(local_ep.sin_addr);
+	return inet_ntoa(m_LocalEndpoint.sin_addr);
 }
 
 /* GetLocalEp */
 sockaddr_in CUDPSocket::GetLocalEndPoint()
 {
-	return local_ep;
+	return m_LocalEndpoint;
 }
 
-fuppesThreadCallback receive_loop(void *arg)
+/*===============================================================================
+ THREAD
+===============================================================================*/
+
+fuppesThreadCallback ReceiveLoop(void *arg)
 {
   CUDPSocket* udp_sock = (CUDPSocket*)arg;
   stringstream sMsg;
@@ -231,19 +317,4 @@ fuppesThreadCallback receive_loop(void *arg)
 	}
 
   return 0;
-}
-
-
-/**
- * on_receive
- */
-void CUDPSocket::SetReceiveHandler(IUDPSocket* pHandler)
-{
-	this->m_pReceiveHandler = pHandler;
-}
-
-void CUDPSocket::CallOnReceive(CSSDPMessage* pSSDPMessage)
-{
-	if(this->m_pReceiveHandler != NULL)
-	  m_pReceiveHandler->OnUDPSocketReceive(this, pSSDPMessage);
 }

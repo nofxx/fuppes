@@ -29,8 +29,8 @@
 #include <iostream>
 #include <libxml/xmlwriter.h>
 
-CUPnPService::CUPnPService(eUPnPDeviceType p_UPnPDeviceType, std::string p_sHTTPServerURL):
-  CUPnPBase(p_UPnPDeviceType, p_sHTTPServerURL)
+CUPnPService::CUPnPService(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL):
+  CUPnPBase(nType, p_sHTTPServerURL)
 {
   
 }

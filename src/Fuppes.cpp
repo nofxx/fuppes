@@ -354,7 +354,7 @@ bool CFuppes::HandleHTTPPost(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut
     return false;
   
   /* Handle UPnP action */
-  if(UPnPBrowse.m_TargetDevice == udtContentDirectory)
+  if(UPnPBrowse.m_nTargetDevice == UPNP_DEVICE_TYPE_CONTENT_DIRECTORY)
        fRet = m_pContentDirectory->HandleUPnPAction((CUPnPAction*)&UPnPBrowse, pMessageOut);
   
   return fRet;

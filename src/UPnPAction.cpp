@@ -2,7 +2,9 @@
  *            UPnPAction.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -21,13 +23,31 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "UPnPAction.h"
  
+/*===============================================================================
+ CLASS CUPnPAction
+===============================================================================*/
+
+/* <PUBLIC> */
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+/* constructor */
 /*CUPnPAction::CUPnPAction(std::string p_sContent)
 {
-}
-
-CUPnPAction::CUPnPAction(eUPnPActionType p_UPnPActionType)
-{
-  m_ActionType = p_UPnPActionType;
 }*/
+
+/* destructor */
+/*CUPnPAction::CUPnPAction(UPNP_ACTION_TYPE nType)
+{
+  m_nActionType = nType;
+}*/
+
+/* <\PUBLIC> */

@@ -2,7 +2,9 @@
  *            UPnPBase.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -21,30 +23,50 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
- #include "UPnPBase.h"
- 
- CUPnPBase::CUPnPBase(eUPnPDeviceType p_UPnPDeviceType, std::string p_sHTTPServerURL)
- {
-   m_UPnPDeviceType = p_UPnPDeviceType;
-   m_sHTTPServerURL = p_sHTTPServerURL;
- } 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
 
+#include "Common.h"
+#include "UPnPBase.h"
+
+/*===============================================================================
+ CLASS CUPnPBase
+===============================================================================*/
+
+/* <PROTECTED> */
+
+/* constructor */
+CUPnPBase::CUPnPBase(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL)
+{
+  /* Save data */
+  m_nUPnPDeviceType = nType;
+  m_sHTTPServerURL  = p_sHTTPServerURL;
+}
+
+/* <\PROTECTED> */
+
+/* <PUBLIC> */
+
+/*===============================================================================
+ GET
+===============================================================================*/
+
+/* GetUPnPDeviceTypeAsString */
 std::string	CUPnPBase::GetUPnPDeviceTypeAsString()
 {
 	std::string sResult;
 	
-	switch(m_UPnPDeviceType)
+	/* Set string for the corrseponding device type */
+  switch(m_nUPnPDeviceType)
 	{
-		case udtRootDevice:
-			sResult = "RootDevice";
-		  break;
-		case udtMediaServer:
-			sResult = "MediaServer";
-		  break;
-    case udtContentDirectory:
-      sResult = "ContentDirectory";
-      break;
+		case UPNP_DEVICE_TYPE_ROOT_DEVICE:       sResult = "RootDevice";       break;
+		case UPNP_DEVICE_TYPE_MEDIA_SERVER:			 sResult = "MediaServer";      break;
+    case UPNP_DEVICE_TYPE_CONTENT_DIRECTORY: sResult = "ContentDirectory"; break;
+    default:                                 ASSERT(0);                    break;
 	}
 	
 	return sResult;
 }
+
+/* <\PUBLIC> */

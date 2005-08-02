@@ -2,7 +2,9 @@
  *            UPnPAction.h
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -24,23 +26,55 @@
 #ifndef _UPNPACTION_H
 #define _UPNPACTION_H
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "UPnPBase.h"
 #include <string>
 
-enum eUPnPActionType
+/*===============================================================================
+ DEFINITIONS
+===============================================================================*/
+
+typedef enum tagUPNP_ACTION_TYPE
 {
-  uatBrowse
-};
+  UPNP_ACTION_TYPE_BROWSE,
+  UPNP_ACTION_TYPE_MAX
+}UPNP_ACTION_TYPE;
+
+/*===============================================================================
+ CLASS CUPnPAction
+===============================================================================*/
 
 class CUPnPAction
 {
-  public:
-    /*CUPnPAction(eUPnPActionType);
-    CUPnPAction(std::string);*/
-  
-  public:
-    eUPnPDeviceType m_TargetDevice;
-    eUPnPActionType m_ActionType;
+
+/* <PUBLIC> */
+
+public:
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+  /** constructor
+  */
+  /*CUPnPAction(UPNP_ACTION_TYPE nType);*/
+
+  /** destructor
+  */
+  /*CUPnPAction(std::string);*/
+
+/*===============================================================================
+ MEMBERS
+===============================================================================*/
+
+  UPNP_DEVICE_TYPE m_nTargetDevice;
+  UPNP_ACTION_TYPE m_nActionType;
+
+/* <\PUBLIC> */
+
 };
 
 #endif /* _UPNPACTION_H */

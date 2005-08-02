@@ -4,6 +4,7 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -25,6 +26,10 @@
 #ifndef _UDPSOCKET_H
 #define _UDPSOCKET_H
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "Common.h"
 
 #ifndef WIN32
@@ -36,89 +41,153 @@
 #endif
 
 #include <string>
-
 #include "SSDPMessage.h"
+
+/*===============================================================================
+ FORWARD DECLARATIONS
+===============================================================================*/
 
 class CUDPSocket;
 
+/*===============================================================================
+ CLASS IUDPSocket
+===============================================================================*/
+
 class IUDPSocket
 {
-	public:
-		virtual bool OnUDPSocketReceive(CUDPSocket*, CSSDPMessage*) = 0;
+
+/* <PUBLIC> */
+
+public:
+
+  virtual bool OnUDPSocketReceive(
+    CUDPSocket*   pSocket,
+    CSSDPMessage* pMessage) = 0;
+
+/* <\PUBLIC> */
+
 };
+
+/*===============================================================================
+ CLASS CUDPSocket
+===============================================================================*/
 
 class CUDPSocket
 {
-	public:
-    /** constructor
-     */
-		CUDPSocket();
-  
-    /** destructor
-     */
-		~CUDPSocket();
-	
-    /** initializes the socket
-     *  @param  p_bDoMulticast  indicates whether to multicast or not
-     *  @param  p_sIPAddress    the ip address. irrelevant if p_bDoMulticast is true
-     *  @return returns true on success otherwise false
-     */
-		bool SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress = "");
-  
-    /** finalizes and closes the socket
-     */
-	  void TeardownSocket();	  
 
-    /** multicasts a message
-     *  @param  p_sMessage  the message to send
-     */
-    void SendMulticast(std::string p_sMessage);
-    
-    /** unicastcasts a message
-     *  @param  p_sMessage  the message to send
-     *  @param  p_RemoteEndPoint  the receiver
-     */
-    void SendUnicast(std::string p_sMessage, sockaddr_in p_RemoteEndPoint);
-  
-    /** starts the receive thread
-     */
-		void BeginReceive();
-    
-    /** ends the receive thread
-     */
-    void EndReceive();
-	
-    /** returns the socket's descriptor
-     *  @return the descriptor
-     */
-		upnpSocket GetSocketFd();
+/* <PUBLIC> */
 
-    /** returns the socket's port
-     *  @return the port number
-     */
-		int  GetPort();
-    
-    /** returns the socket's IP-Address as string
-     *  @return the address
-     */
-	  std::string GetIPAddress();
-    
-    /** returns the local end point
-     *  @return the end point structure
-     */
-	  sockaddr_in GetLocalEndPoint();	
+public:
 
-	  void SetReceiveHandler(IUDPSocket*);
-	  void CallOnReceive(CSSDPMessage*);
-  
-	private:
-    upnpSocket    sock;					
-  	fuppesThread  receive_thread;					  
-		bool          m_bDoMulticast;	
-	  sockaddr_in   local_ep;	// local end point
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+  /** constructor
+  */
+  CUDPSocket();
+
+  /** destructor
+  */
+  ~CUDPSocket();
+
+/*===============================================================================
+ CONTROL SOCKET
+===============================================================================*/
+
+  /** initializes the socket
+  *  @param  p_bDoMulticast  indicates whether to multicast or not
+  *  @param  p_sIPAddress    the ip address. irrelevant if p_bDoMulticast is true
+  *  @return returns true on success otherwise false
+  */
+  bool SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress = "");
+
+  /** finalizes and closes the socket
+  */
+  void TeardownSocket();
+
+/*===============================================================================
+ SEND MESSAGES
+===============================================================================*/
+
+  /** multicasts a message
+  *  @param  p_sMessage  the message to send
+  */
+  void SendMulticast(std::string p_sMessage);
+
+  /** unicasts a message
+  *  @param  p_sMessage  the message to send
+  *  @param  p_RemoteEndPoint  the receiver
+  */
+  void SendUnicast(std::string p_sMessage, sockaddr_in p_RemoteEndPoint);
+
+/*===============================================================================
+ RECEIVE MESSAGES
+===============================================================================*/
+
+  /** starts the receive thread
+  */
+  void BeginReceive();
+
+  /** ends the receive thread
+  */
+  void EndReceive();
+
+  /** sets the receive handler
+  *  @param  pISocket  the receiver handler
+  */	
+  void SetReceiveHandler(IUDPSocket* pISocket);
+
+  /** lets the receiver handler handle a message
+  *  @param  pMessage  the message to handle
+  */	    
+  void CallOnReceive(CSSDPMessage* pMessage);
+
+/*===============================================================================
+ GET
+===============================================================================*/
+
+  /** returns the socket's descriptor
+  *  @return the descriptor
+  */
+  upnpSocket GetSocketFd();
+
+  /** returns the socket's port
+  *  @return the port number
+  */
+  int  GetPort();
+
+  /** returns the socket's IP-Address as string
+  *  @return the address
+  */
+  std::string GetIPAddress();
+
+  /** returns the local end point
+  *  @return the end point structure
+  */
+  sockaddr_in GetLocalEndPoint();	
+
+/* <PRIVATE> */
+
+private:
+
+/*===============================================================================
+ MEMBERS
+===============================================================================*/
+
+  /* Flags */
+  bool          m_bDoMulticast;	
+
+  /* Socket */
+  upnpSocket    m_Socket;					
+  sockaddr_in   m_LocalEndpoint;
+
+  /* Message handling */
+  fuppesThread  m_ReceiveThread;					  
+  IUDPSocket*   m_pReceiveHandler;
 	
-	  IUDPSocket*   m_pReceiveHandler;
-	
+/* <\PRIVATE> */
+
 };
 
 #endif /* _UDPSOCKET_H */

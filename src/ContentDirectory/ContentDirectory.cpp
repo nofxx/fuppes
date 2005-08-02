@@ -45,7 +45,7 @@ using namespace std;
 const string LOGNAME = "ContentDir";
  
 CContentDirectory::CContentDirectory(std::string p_sHTTPServerURL):
-  CUPnPService(udtContentDirectory, p_sHTTPServerURL)
+  CUPnPService(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, p_sHTTPServerURL)
 {
   m_pBaseFolder = new CStorageFolder(m_sHTTPServerURL);
   m_ObjectList["0"] = m_pBaseFolder;

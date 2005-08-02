@@ -2,7 +2,9 @@
  *            UPnPActionFactory.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -20,7 +22,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "Common.h"
 #include "UPnPActionFactory.h"
 #include "UPnPActions/UPnPBrowse.h"
@@ -29,13 +35,23 @@
 #include <iostream>
 using namespace std;
 
+/*===============================================================================
+ CLASS CUPnPActionFactory
+===============================================================================*/
+
+/* <PUBLIC> */
+
+/*===============================================================================
+ UPNP ACTIONS
+===============================================================================*/
+
 bool CUPnPActionFactory::BuildActionFromString(std::string p_sContent, CUPnPBrowse* pBrowse)
 {  
   ASSERT(NULL != pBrowse);
   if(NULL == pBrowse)
     return false;
 
-  /* T.S.TODO: Parse whole description here */
+  /* T.S.TODO: We have to parse the whole description here */
 /*<?xml version="1.0" encoding="utf-8"?>
   <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
   <s:Body>
@@ -50,24 +66,32 @@ bool CUPnPActionFactory::BuildActionFromString(std::string p_sContent, CUPnPBrow
   </s:Body>
   </s:Envelope>*/
   
+  /* Object ID */
   RegEx rxObjId("<ObjectID>(.+)</ObjectID>");
   if (rxObjId.Search(p_sContent.c_str()))  
     pBrowse->m_sObjectID = rxObjId.Match(1);
   
-  pBrowse->m_BrowseFlag = ubfBrowseDirectChildren;
+  /* Browse flag */
+  pBrowse->m_nBrowseFlag = UPNP_BROWSE_FLAG_DIRECT_CHILDREN;
+  
+  /* Filter */
   pBrowse->m_sFilter    = "*";
 
+  /* Starting index */
   RegEx rxStartIdx("<StartingIndex>(.+)</StartingIndex>");
   if(rxStartIdx.Search(p_sContent.c_str()))  
     pBrowse->m_nStartingIndex = atoi(rxStartIdx.Match(1));
 
+  /* Requested count */
   RegEx rxReqCnt("<RequestedCount>(.+)</RequestedCount>");
   if(rxReqCnt.Search(p_sContent.c_str()))  
     pBrowse->m_nRequestedCount = atoi(rxReqCnt.Match(1));  
   
+  /* Sort */
   pBrowse->m_sSortCriteria = "";
 
-  pBrowse->m_TargetDevice = udtContentDirectory;
+  /* Target */
+  pBrowse->m_nTargetDevice = UPNP_DEVICE_TYPE_CONTENT_DIRECTORY;
   
   /*cout << "[UPnPActionFactory] Browse Action:" << endl;
   cout << "\tObjectID: " << ((CUPnPBrowse*)pResult)->m_sObjectID << endl;
@@ -76,3 +100,5 @@ bool CUPnPActionFactory::BuildActionFromString(std::string p_sContent, CUPnPBrow
   
   return true;
 }
+
+/* <\PUBLIC> */

@@ -36,8 +36,8 @@ using namespace std;
 
 const string LOGNAME = "UPNPDevice";
 
-CUPnPDevice::CUPnPDevice(eUPnPDeviceType p_UPnPDeviceType, std::string p_sHTTPServerURL):
-  CUPnPBase(p_UPnPDeviceType, p_sHTTPServerURL)
+CUPnPDevice::CUPnPDevice(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL):
+  CUPnPBase(nType, p_sHTTPServerURL)
 {  
 }
 
@@ -46,7 +46,7 @@ CUPnPDevice::~CUPnPDevice()
 }
 
 CUPnPDevice::CUPnPDevice():
-  CUPnPBase(udtUnknown, "")
+  CUPnPBase(UPNP_DEVICE_TYPE_UNKNOWN, "")
 {
 }
 
@@ -81,9 +81,9 @@ CUPnPService* CUPnPDevice::GetUPnPService(int p_nIndex)
 	return m_vUPnPServices[p_nIndex];
 }
 
-eUPnPDeviceType CUPnPDevice::GetDeviceType()
+UPNP_DEVICE_TYPE CUPnPDevice::GetDeviceType()
 {
-	return m_UPnPDeviceType;
+	return m_nUPnPDeviceType;
 }
 
 std::string CUPnPDevice::GetDeviceDescription()

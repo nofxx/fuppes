@@ -26,16 +26,17 @@
 
 #include "../UPnPAction.h"
 
-enum eUPnPBrowseFlag
+typedef enum tagUPNP_BROWSE_FLAG
 {
-  ubfBrowseDirectChildren
-};
+  UPNP_BROWSE_FLAG_DIRECT_CHILDREN,
+  UPNP_BROWSE_FLAG_MAX
+}UPNP_BROWSE_FLAG;
 
 class CUPnPBrowse: public CUPnPAction
 {
   public:
     std::string     m_sObjectID;
-    eUPnPBrowseFlag m_BrowseFlag;
+    UPNP_BROWSE_FLAG m_nBrowseFlag;
     std::string     m_sFilter;
     unsigned int    m_nStartingIndex;
     unsigned int    m_nRequestedCount;

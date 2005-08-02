@@ -2,7 +2,9 @@
  *            UPnPActionFactory.h
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -24,17 +26,45 @@
 #ifndef _UPNPACTIONFACTORY_H
 #define _UPNPACTIONFACTORY_H
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include <string>
+
+/*===============================================================================
+ FORWARD DECLARATIONS
+===============================================================================*/
 
 class CUPnPBrowse;
 
+/*===============================================================================
+ CLASS CUPnPActionFactory
+===============================================================================*/
+
 class CUPnPActionFactory
 {
-  public:
-    bool BuildActionFromString(
-      std::string p_sContent,
-      CUPnPBrowse* pBrowse
-      );
+
+/* <PUBLIC> */
+
+public:
+
+/*===============================================================================
+ UPNP ACTIONS
+===============================================================================*/
+
+  /** builds an UPnP action from a string
+  *  @param  p_sContent  the string to build th message from
+  *  @param  pBrowse  the built UPnP action
+  *  @return returns true on success otherwise false
+  */
+  bool BuildActionFromString(
+    std::string  p_sContent,
+    CUPnPBrowse* pBrowse
+    );
+
+/* <\PUBLIC> */
+
 };
 
 #endif /* _UPNPACTIONFACTORY_H */

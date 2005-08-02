@@ -36,7 +36,7 @@ using namespace std;
 class CUPnPDevice: public CUPnPBase
 {
   protected:
-	  CUPnPDevice(eUPnPDeviceType, std::string p_sHTTPServerURL);		
+	  CUPnPDevice(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL);		
   
 	public:
     CUPnPDevice();
@@ -47,13 +47,13 @@ class CUPnPDevice: public CUPnPBase
     int  GetUPnPServiceCount();
     CUPnPService* GetUPnPService(int);	
 	
-		eUPnPDeviceType GetDeviceType();	  
+		UPNP_DEVICE_TYPE GetDeviceType();	  
 		std::string			GetDeviceDescription();		
 	
     std::string GetFriendlyName() { return m_sFriendlyName; }
   
 	private:
-		eUPnPDeviceType m_UPnPDeviceType;			
+		UPNP_DEVICE_TYPE m_nUPnPDeviceType;			
 		std::vector<CUPnPService*> m_vUPnPServices;    
     bool ParseDescription(std::string p_sDescription);
   
