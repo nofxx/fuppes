@@ -2,7 +2,9 @@
  *            UPnPDevice.cpp
  * 
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -21,6 +23,10 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "UPnPDevice.h"
 #include "HTTPMessage.h"
 #include "HTTPClient.h"
@@ -34,58 +40,102 @@
 
 using namespace std;
 
+/*===============================================================================
+ CONSTANTS
+===============================================================================*/
+
 const string LOGNAME = "UPNPDevice";
 
+/*===============================================================================
+ CLASS CUPnPDevice
+===============================================================================*/
+
+/* <PROTECTED> */
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+/* constructor */
 CUPnPDevice::CUPnPDevice(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL):
   CUPnPBase(nType, p_sHTTPServerURL)
 {  
 }
 
-CUPnPDevice::~CUPnPDevice()
-{
-}
+/* <\PROTECTED> */
+
+/* <PUBLIC> */
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
 
 CUPnPDevice::CUPnPDevice():
   CUPnPBase(UPNP_DEVICE_TYPE_UNKNOWN, "")
 {
 }
 
+CUPnPDevice::~CUPnPDevice()
+{
+}
+
+/*===============================================================================
+ BUILD DEVICE
+===============================================================================*/
+
+/* BuildFromDescriptionURL */
 bool CUPnPDevice::BuildFromDescriptionURL(std::string p_sDescriptionURL)
 {    
-  CHTTPClient*  pClient = new CHTTPClient();
-  CHTTPMessage* pResult = new CHTTPMessage();    
+  CHTTPClient  HTTPClient;
+  CHTTPMessage HTTPMessage;
     
-  if(pClient->Get(p_sDescriptionURL, pResult))
+  /* Get description message */
+  if(true == HTTPClient.Get(p_sDescriptionURL, &HTTPMessage))
   {    
-    return ParseDescription(pResult->GetContent());
+    return ParseDescription(HTTPMessage.GetContent());
   }
   else
   {
+    /* We could not get the device description */
     CSharedLog::Shared()->Error(LOGNAME, "BuildFromDescriptionURL");
     return false;
   }
 }
 
+/* AddUPnPService */
 void CUPnPDevice::AddUPnPService(CUPnPService* pUPnPService)
 {
-	m_vUPnPServices.push_back(pUPnPService);
+	/* Add service to vector */
+  m_vUPnPServices.push_back(pUPnPService);
 }
 
-int  CUPnPDevice::GetUPnPServiceCount()
+/*===============================================================================
+ GET
+===============================================================================*/
+
+/* GetUPnPServiceCount */
+int CUPnPDevice::GetUPnPServiceCount()
 {
 	return (int)m_vUPnPServices.size();
 }
 
+/* GetUPnPService */
 CUPnPService* CUPnPDevice::GetUPnPService(int p_nIndex)
 {
-	return m_vUPnPServices[p_nIndex];
+	ASSERT(p_nIndex >= 0);
+  if(p_nIndex < 0)
+    return NULL;
+
+  return m_vUPnPServices[p_nIndex];
 }
 
+/* GetDeviceType */
 UPNP_DEVICE_TYPE CUPnPDevice::GetDeviceType()
 {
 	return m_nUPnPDeviceType;
 }
 
+/* GetDeviceDescription */
 std::string CUPnPDevice::GetDeviceDescription()
 {		
 	xmlTextWriterPtr writer;
@@ -258,6 +308,21 @@ std::string CUPnPDevice::GetDeviceDescription()
 	return output.str();
 }
 
+/* GetFriendlyName */
+std::string CUPnPDevice::GetFriendlyName()
+{
+  return m_sFriendlyName;
+}
+
+/* <\PUBLIC> */
+
+/* <PRIVATE> */
+
+/*===============================================================================
+ HELPER
+===============================================================================*/
+
+/* ParseDescription */
 bool CUPnPDevice::ParseDescription(std::string p_sDescription)
 {
   //cout << p_sDescription << endl;
@@ -267,6 +332,8 @@ bool CUPnPDevice::ParseDescription(std::string p_sDescription)
   {
     m_sFriendlyName = rxFriendlyName.Match(1);
   }
+  
+  /* T.S.TODO: Get all other information from the device description */
   
   /*<?xml version="1.0"?>
 <root
@@ -322,3 +389,5 @@ bool CUPnPDevice::ParseDescription(std::string p_sDescription)
 
   return true;
 }
+
+/* <\PRIVATE> */

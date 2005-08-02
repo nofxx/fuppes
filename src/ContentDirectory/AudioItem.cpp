@@ -21,24 +21,54 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
+#include "..\Common.h"
 #include "AudioItem.h"
 #include <sstream>
 
+/*===============================================================================
+ CLASS CAudioItem
+===============================================================================*/
+
+/* <PUBLIC> */
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+/* constructor */
+CAudioItem::CAudioItem(std::string p_sHTTPServerURL):
+CUPnPItem(UPNP_OBJECT_TYPE_AUDIO_ITEM, p_sHTTPServerURL)
+{
+}
+
+/*===============================================================================
+ GET
+===============================================================================*/
+
+/* GetDescription */
 void CAudioItem::GetDescription(xmlTextWriterPtr pWriter)
 {
+  ASSERT(NULL != pWriter);
+  if(NULL == pWriter)
+    return;
+
   /* item */
   xmlTextWriterStartElement(pWriter, BAD_CAST "item");
 
     /* id */
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "id", BAD_CAST this->GetObjectID().c_str());
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "id", BAD_CAST GetObjectID().c_str());
     /* parentID */
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "parentID", BAD_CAST this->GetParent()->GetObjectID().c_str());
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "parentID", BAD_CAST GetParent()->GetObjectID().c_str());
     /* restricted */
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "restricted", BAD_CAST "0");    
   
     /* title */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");    
-    xmlTextWriterWriteString(pWriter, BAD_CAST this->GetName().c_str());
+    xmlTextWriterWriteString(pWriter, BAD_CAST GetName().c_str());
     xmlTextWriterEndElement(pWriter);
   
     /* class */
@@ -70,7 +100,7 @@ void CAudioItem::GetDescription(xmlTextWriterPtr pWriter)
     xmlTextWriterStartElement(pWriter, BAD_CAST "res");
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST "http-get:*:audio/mpeg:*");
     std::stringstream sTmp;
-    sTmp << "http://" << this->GetHTTPServerURL() << "/MediaServer/AudioItems/" << this->GetObjectID();
+    sTmp << "http://" << GetHTTPServerURL() << "/MediaServer/AudioItems/" << GetObjectID();
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
     xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
     xmlTextWriterEndElement(pWriter);                  
@@ -78,3 +108,5 @@ void CAudioItem::GetDescription(xmlTextWriterPtr pWriter)
   /* end item */
   xmlTextWriterEndElement(pWriter);
 }
+
+/* <\PUBLIC> */

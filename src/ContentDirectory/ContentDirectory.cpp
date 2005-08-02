@@ -4,6 +4,7 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -21,6 +22,10 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
+
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
  
 #include "ContentDirectory.h" 
 #include "UPnPItem.h"
@@ -42,55 +47,124 @@
 #include <sys/stat.h> 
 using namespace std;
  
+/*===============================================================================
+ CONSTANTS
+===============================================================================*/
+
 const string LOGNAME = "ContentDir";
  
+/*===============================================================================
+ CLASS CContentDirectory
+===============================================================================*/
+
+/* <PUBLIC> */
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+/* constructor */
 CContentDirectory::CContentDirectory(std::string p_sHTTPServerURL):
-  CUPnPService(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, p_sHTTPServerURL)
+CUPnPService(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, p_sHTTPServerURL)
 {
+  /* Init members */
   m_pBaseFolder = new CStorageFolder(m_sHTTPServerURL);
   m_ObjectList["0"] = m_pBaseFolder;
-  
+
+  /* Init object list */
   BuildObjectList();
 }
 
+/* destructor */
 CContentDirectory::~CContentDirectory()
 {
-  delete m_pBaseFolder;
+  SAFE_DELETE(m_pBaseFolder);
+  
+  // Cleanup object list
+  m_ObjectList.clear();
 }
+
+/*===============================================================================
+ UPNP ACTION HANDLING
+===============================================================================*/
  
+/* HandleUPnPAction */
 bool CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut)
 {
-  /* T.S.NOTE: Why do we handle a browse here? */
+  ASSERT(NULL != pUPnPAction);
+  if(NULL == pUPnPAction)
+    return false;
+  ASSERT(NULL != pMessageOut);
+  if(NULL == pMessageOut)
+    return false;
+  
   /* Handle UPnP browse */
   string sContent = HandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);  
 
-  /* Init message */
+  /* Set a message for the incoming action */
   pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, HTTP_CONTENT_TYPE_TEXT_XML);
   pMessageOut->SetContent(sContent);
 
   return true;
 }
 
+/*===============================================================================
+ GET
+===============================================================================*/
+
+/* GetFileNameFromObjectID */
 std::string CContentDirectory::GetFileNameFromObjectID(std::string p_sObjectID)
 { 
+  /* Find object id in list */
   m_ListIterator = m_ObjectList.find(p_sObjectID.c_str());
-  if(m_ListIterator != m_ObjectList.end())      
+
+  if(m_ListIterator != m_ObjectList.end())
+  {
+    /* return filename */
     return ((CUPnPObject*)m_ObjectList[p_sObjectID.c_str()])->GetFileName();
+  }
   else
+  {
+    /* object not found, return empty string */
+    ASSERT(0);
     return "";
-}
- 
-CUPnPObject* CContentDirectory::GetItemFromObjectID(std::string p_sObjectID)
-{
-  m_ListIterator = m_ObjectList.find(p_sObjectID.c_str());
-  if(m_ListIterator != m_ObjectList.end())      
-    return ((CUPnPObject*)m_ObjectList[p_sObjectID.c_str()]);
-  else
-    return NULL;
+  }
 }
 
+/* GetItemFromObjectID */
+CUPnPObject* CContentDirectory::GetItemFromObjectID(std::string p_sObjectID)
+{
+  /* Find object id in list */
+  m_ListIterator = m_ObjectList.find(p_sObjectID.c_str());
+
+  if(m_ListIterator != m_ObjectList.end())
+  {
+    /* return object */
+    return ((CUPnPObject*)m_ObjectList[p_sObjectID.c_str()]);
+  }
+  else
+  {
+    /* object not found, return NULL */
+    ASSERT(0);
+    return NULL;
+  }
+}
+
+/* <\PUBLIC> */
+
+/* <PRIVATE> */
+
+/*===============================================================================
+ HELPER
+===============================================================================*/
+
+/* HandleUPnPBrowse */
 std::string CContentDirectory::HandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
 {
+  ASSERT(NULL != pUPnPBrowse);
+  if(NULL == pUPnPBrowse)
+    return "";
+
   xmlTextWriterPtr writer;
 	xmlBufferPtr buf;
 	std::stringstream sTmp;	
@@ -168,42 +242,43 @@ std::string CContentDirectory::HandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
 	return output.str();
 }
 
+/* BuildObjectList */
 void CContentDirectory::BuildObjectList()
 {
   int  nCount = 1;
-  
-  for (int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
+
+  for(int i=0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
   {
     if(DirectoryExists(CSharedConfig::Shared()->GetSharedDir(i)))
     {  
-      CStorageFolder* pTmpFolder = new CStorageFolder(m_sHTTPServerURL);            
-    
+      CStorageFolder* pTmpFolder = new CStorageFolder(m_sHTTPServerURL);
+
       char szObjId[11];                            
       sprintf(szObjId, "%010X", nCount);          
       pTmpFolder->SetObjectID(szObjId);    
-      
+
       pTmpFolder->SetParent(m_pBaseFolder);
       pTmpFolder->SetFileName(CSharedConfig::Shared()->GetSharedDir(i));
 
-      #ifdef WIN32
+#ifdef WIN32
       RegEx rxDirName("\\\\([^\\\\|\\.]*)$", PCRE_CASELESS);
-      #else
+#else
       RegEx rxDirName("/([^/|\\.]*)$", PCRE_CASELESS);
-      #endif
+#endif
       std::string sSharedDir = CSharedConfig::Shared()->GetSharedDir(i);
       const char* pszDir = sSharedDir.c_str();
       if(rxDirName.Search(pszDir))
         pTmpFolder->SetName(rxDirName.Match(1));
       else
         pTmpFolder->SetName(CSharedConfig::Shared()->GetSharedDir(i));
-      
+
       /* Add folder to list and parent folder */
       m_ObjectList[szObjId] = pTmpFolder;
       m_pBaseFolder->AddUPnPObject(pTmpFolder);
-              
+
       /* increment counter */
       nCount++;
-      
+
       ScanDirectory(CSharedConfig::Shared()->GetSharedDir(i), &nCount, pTmpFolder);     
     }
     else
@@ -215,8 +290,16 @@ void CContentDirectory::BuildObjectList()
   }
 }
 
-void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, CStorageFolder* pParentFolder)
+/* ScanDirectory */
+void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_pnCount, CStorageFolder* pParentFolder)
 { 
+  ASSERT(NULL != p_pnCount);
+  if(NULL == p_pnCount)
+    return;
+  ASSERT(NULL != pParentFolder);
+  if(NULL == pParentFolder)
+    return;
+
 #ifdef WIN32
   
   /* Add slash, if neccessary */
@@ -254,7 +337,7 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
       {
         CAudioItem* pTmpItem = new CAudioItem(m_sHTTPServerURL);
         char szObjId[11];                            
-        sprintf(szObjId, "%010X", *p_nCount);
+        sprintf(szObjId, "%010X", *p_pnCount);
 
         pTmpItem->SetObjectID(szObjId);            
         pTmpItem->SetParent(pParentFolder);
@@ -266,9 +349,9 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
         pParentFolder->AddUPnPObject(pTmpItem);
 
         /* increment counter */
-        int nTmp = *p_nCount;
+        int nTmp = *p_pnCount;
         nTmp++;
-        *p_nCount = nTmp;         
+        *p_pnCount = nTmp;         
       }
       /* Folder */
       else if(IsDirectory(szTemp))
@@ -277,7 +360,7 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
         CStorageFolder* pTmpFolder = new CStorageFolder(m_sHTTPServerURL);
 
         char szObjId[11];                            
-        sprintf(szObjId, "%010X", *p_nCount);            
+        sprintf(szObjId, "%010X", *p_pnCount);            
 
         pTmpFolder->SetObjectID(szObjId);            
         pTmpFolder->SetParent(pParentFolder);
@@ -289,12 +372,12 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
         pParentFolder->AddUPnPObject(pTmpFolder);
 
         /* Increment counter */
-        int nTmp = *p_nCount;
+        int nTmp = *p_pnCount;
         nTmp++;
-        *p_nCount = nTmp;
+        *p_pnCount = nTmp;
 
         /* Scan subdirectories */
-        ScanDirectory(szTemp, p_nCount, pTmpFolder);          
+        ScanDirectory(szTemp, p_pnCount, pTmpFolder);          
       }
     }
   }    
@@ -335,7 +418,7 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
         {
           CAudioItem* pTmpItem = new CAudioItem(m_sHTTPServerURL);
           char szObjId[10];                            
-          sprintf(szObjId, "%010X", *p_nCount);
+          sprintf(szObjId, "%010X", *p_pnCount);
             
           pTmpItem->SetObjectID(szObjId);            
           pTmpItem->SetParent(pParentFolder);
@@ -347,9 +430,9 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
           pParentFolder->AddUPnPObject(pTmpItem);
           
           /* increment counter */
-          int nTmp = *p_nCount;
+          int nTmp = *p_pnCount;
           nTmp++;
-          *p_nCount = nTmp;
+          *p_pnCount = nTmp;
 
           /* log */
           sTmp.str("");
@@ -363,7 +446,7 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
           CStorageFolder* pTmpFolder = new CStorageFolder(m_sHTTPServerURL);
           
           char szObjId[10];                            
-          sprintf(szObjId, "%010X", *p_nCount);            
+          sprintf(szObjId, "%010X", *p_pnCount);            
           
           pTmpFolder->SetObjectID(szObjId);            
           pTmpFolder->SetParent(pParentFolder);
@@ -375,12 +458,12 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
           pParentFolder->AddUPnPObject(pTmpFolder);
           
           /* increment counter */
-          int nTmp = *p_nCount;
+          int nTmp = *p_pnCount;
           nTmp++;
-          *p_nCount = nTmp;
+          *p_pnCount = nTmp;
           
           /* scan subdirectories */
-          ScanDirectory(sTmp.str(), p_nCount, pTmpFolder);          
+          ScanDirectory(sTmp.str(), p_pnCount, pTmpFolder);          
           
           /* log */
           sTmp.str("");
@@ -394,3 +477,5 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_nCount, C
   }
 #endif
 }
+
+/* <\PRIVATE> */

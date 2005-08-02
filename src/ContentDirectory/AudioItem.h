@@ -2,7 +2,9 @@
  *            AudioItem.h
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -24,15 +26,43 @@
 #ifndef _AUDIOITEM_H
 #define _AUDIOITEM_H
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "UPnPItem.h"
+
+/*===============================================================================
+ CLASS CAudioItem
+===============================================================================*/
 
 class CAudioItem: public CUPnPItem
 {
+
+/* <PUBLIC> */
+
   public:
-    CAudioItem(std::string p_sHTTPServerURL):
-      CUPnPItem(uotAudioItem, p_sHTTPServerURL) {}
-      
-    void GetDescription(xmlTextWriterPtr pWriter);
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+  
+  /** constructor
+  *  @param  p_sHTTPServerURL  URL of the HTTP server
+  */
+  CAudioItem(std::string p_sHTTPServerURL);
+
+/*===============================================================================
+ GET
+===============================================================================*/
+
+  /** writes the whole description of an audio item
+  *  @param  pWriter  the XML container to write to
+  */
+  void GetDescription(xmlTextWriterPtr pWriter);
+
+/* <\PUBLIC> */
+
 };
 
 #endif /* _AUDIOITEM_H */

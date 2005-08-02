@@ -2,7 +2,9 @@
  *            UPnPService.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -24,16 +26,54 @@
 #ifndef _UPNPSERVICE_H
 #define _UPNPSERVICE_H
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "UPnPBase.h"
+
+/*===============================================================================
+ CLASS CUPnPService
+===============================================================================*/
 
 class CUPnPService: public CUPnPBase
 {
-	protected:
-		CUPnPService(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL);
-		virtual ~CUPnPService();
+
+/* <PROTECTED> */
+
+protected:
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+  
+  /** constructor
+  *  @param  nType  the device type
+  *  @param  p_sHTTPServerURL  URL of the HTTP server
+  */
+  CUPnPService(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL);
+		
+  /** destructor
+  */
+  virtual ~CUPnPService();
 	
-	public:		
-		std::string GetServiceDescription();	
+/* <\PROTECTED> */
+
+/* <PUBLIC> */
+
+public:
+
+/*===============================================================================
+ GET
+===============================================================================*/
+
+  /** returns the service description as string
+  *  @return  the service description
+  */
+  std::string GetServiceDescription();	
+
+/* <\PUBLIC> */
+
 };
 
 #endif /* _UPNPSERVICE_H */

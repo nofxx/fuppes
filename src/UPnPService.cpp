@@ -2,7 +2,9 @@
  *            UPnPService.cpp
  * 
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -20,25 +22,48 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
-#include "UPnPService.h"
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
+#include "UPnPService.h"
 //#include "xmlencode.h"
 
 #include <sstream>
 #include <iostream>
 #include <libxml/xmlwriter.h>
 
+/*===============================================================================
+ CLASS CUPnPService
+===============================================================================*/
+
+/* <PROTECTED> */
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+/* constructor */
 CUPnPService::CUPnPService(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL):
   CUPnPBase(nType, p_sHTTPServerURL)
 {
-  
 }
 
+/* destructor */
 CUPnPService::~CUPnPService()
 {
 }
 
+/* <\PROTECTED> */
+
+/* <PUBLIC> */
+
+/*===============================================================================
+ GET
+===============================================================================*/
+
+/* GetServiceDescription */
 std::string CUPnPService::GetServiceDescription()
 {
 	xmlTextWriterPtr writer;
@@ -92,6 +117,10 @@ std::string CUPnPService::GetServiceDescription()
 	//cout << "upnp description: " << output.str() << endl;
 	return output.str();
 }
+
+/* <\PUBLIC> */
+
+/* T.S.NOTE: Here are some examples of service description, that we need to parse here */
 
 /*
 <scpd>

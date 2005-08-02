@@ -2,7 +2,9 @@
  *            StorageFolder.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -21,8 +23,12 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "StorageFolder.h"
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
 
+#include "..\Common.h"
+#include "StorageFolder.h"
 #include "../SharedConfig.h"
 
 #include <sstream> 
@@ -30,27 +36,47 @@
 
 using namespace std;
 
+/*===============================================================================
+ CLASS CStorageFolder
+===============================================================================*/
+
+/* <PUBLIC> */
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+/* constructor */
 CStorageFolder::CStorageFolder(std::string p_sHTTPServerURL):
-  CUPnPObject(uotStorageFolder, p_sHTTPServerURL)
+  CUPnPObject(UPNP_OBJECT_TYPE_STORAGE_FOLDER, p_sHTTPServerURL)
 {
 }
 
+/* destructor */
 CStorageFolder::~CStorageFolder()
 {
 }
 
+/*===============================================================================
+ ADD
+===============================================================================*/
+
+/* AddUPnPObject */
 void CStorageFolder::AddUPnPObject(CUPnPObject* pUPnPObject)
 {
+  ASSERT(NULL != pUPnPObject);
+  if(NULL == pUPnPObject)
+    return;
+
+  /* Add object to list */
   m_vObjects.push_back(pUPnPObject);
 }
 
-string CStorageFolder::GetChildCountAsString()
-{
-  stringstream sTmp;
-  sTmp << (int)m_vObjects.size();
-  return sTmp.str();
-}
+/*===============================================================================
+ GET
+===============================================================================*/
 
+/* GetContentAsString */
 std::string CStorageFolder::GetContentAsString(CUPnPBrowse* pBrowseAction, 
                                                unsigned int* p_nNumberReturned, 
                                                unsigned int* p_nTotalMatches)
@@ -83,7 +109,7 @@ std::string CStorageFolder::GetContentAsString(CUPnPBrowse* pBrowseAction,
   xmlTextWriterStartElementNS(writer, NULL, BAD_CAST "DIDL-Lite", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite");
         
   std::vector<CUPnPObject*> vTmp = m_vObjects;
-  SortContent(&vTmp, scNone);
+  SortContent(&vTmp, SORT_CRITERIA_NONE);
   
   for(unsigned int i = pBrowseAction->m_nStartingIndex; i < *p_nNumberReturned; i++)
   { 
@@ -91,13 +117,13 @@ std::string CStorageFolder::GetContentAsString(CUPnPBrowse* pBrowseAction,
     
     switch(pTmpObj->GetObjectType())
     {
-      case uotStorageFolder:        
+      case UPNP_OBJECT_TYPE_STORAGE_FOLDER:        
         pTmpObj->GetDescription(writer);
         break;
-      case uotAudioItem:        
+      case UPNP_OBJECT_TYPE_AUDIO_ITEM:        
         pTmpObj->GetDescription(writer);
         break;
-      case uotItem:
+      case UPNP_OBJECT_TYPE_ITEM:
         break;
     }
   }  
@@ -114,25 +140,41 @@ std::string CStorageFolder::GetContentAsString(CUPnPBrowse* pBrowseAction,
 	return output.str().substr(strlen("<?xml version=\"1.0\" encoding=\"UTF-8\"?> "));
 }
 
+/* GetChildCountAsString */
+string CStorageFolder::GetChildCountAsString()
+{
+  /* Get list count */
+  stringstream sTmp;
+  sTmp << (int)m_vObjects.size();
+  
+  /* return count */
+  return sTmp.str();
+}
+
+/* GetDescription */ 
 void CStorageFolder::GetDescription(xmlTextWriterPtr pWriter)
 {
+  ASSERT(NULL != pWriter);
+  if(NULL == pWriter)
+    return;
+
   /* container  */
   xmlTextWriterStartElement(pWriter, BAD_CAST "container"); 
      
     /* id */
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "id", BAD_CAST this->GetObjectID().c_str()); 
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "id", BAD_CAST GetObjectID().c_str()); 
     /* searchable  */
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "searchable", BAD_CAST "0"); 
     /* parentID  */
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "parentID", BAD_CAST this->GetParent()->GetObjectID().c_str()); 
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "parentID", BAD_CAST GetParent()->GetObjectID().c_str()); 
     /* restricted */
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "restricted", BAD_CAST "0");     
     /* childCount */
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "childCount", BAD_CAST this->GetChildCountAsString().c_str()); 
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "childCount", BAD_CAST GetChildCountAsString().c_str()); 
      
     /* title */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");     
-    xmlTextWriterWriteString(pWriter, BAD_CAST this->GetName().c_str()); 
+    xmlTextWriterWriteString(pWriter, BAD_CAST GetName().c_str()); 
     xmlTextWriterEndElement(pWriter); 
    
     /* class */
@@ -149,7 +191,15 @@ void CStorageFolder::GetDescription(xmlTextWriterPtr pWriter)
   xmlTextWriterEndElement(pWriter);
 }
 
-void CStorageFolder::SortContent(std::vector<CUPnPObject*>* pObjList, eSortCriteria p_SortCriteria)
+/* <\PUBLIC> */
+
+/* <PRIVATE> */
+
+/*===============================================================================
+ HELPER
+===============================================================================*/
+
+void CStorageFolder::SortContent(std::vector<CUPnPObject*>* pObjList, SORT_CRITERIA p_nSortCriteria)
 {
   /* ACHTUNG: Billiger Bubblesort :) */
   
@@ -182,3 +232,5 @@ void CStorageFolder::SortContent(std::vector<CUPnPObject*>* pObjList, eSortCrite
     }
   }  
 }
+
+/* <\PRIVATE> */

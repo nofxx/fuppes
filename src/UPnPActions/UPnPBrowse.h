@@ -2,7 +2,9 @@
  *            UPnPBrowse.h
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -24,7 +26,15 @@
 #ifndef _UPNPBROWSE_H
 #define _UPNPBROWSE_H
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "../UPnPAction.h"
+
+/*===============================================================================
+ DEFINITIONS
+===============================================================================*/
 
 typedef enum tagUPNP_BROWSE_FLAG
 {
@@ -32,15 +42,30 @@ typedef enum tagUPNP_BROWSE_FLAG
   UPNP_BROWSE_FLAG_MAX
 }UPNP_BROWSE_FLAG;
 
+/*===============================================================================
+ CLASS CUPnPBrowse
+===============================================================================*/
+
 class CUPnPBrowse: public CUPnPAction
 {
+
+/* <PUBLIC> */
+
   public:
-    std::string     m_sObjectID;
+
+/*===============================================================================
+ MEMBERS
+===============================================================================*/
+
+    std::string      m_sObjectID;
     UPNP_BROWSE_FLAG m_nBrowseFlag;
-    std::string     m_sFilter;
-    unsigned int    m_nStartingIndex;
-    unsigned int    m_nRequestedCount;
-    std::string     m_sSortCriteria;
+    std::string      m_sFilter;
+    unsigned int     m_nStartingIndex;
+    unsigned int     m_nRequestedCount;
+    std::string      m_sSortCriteria;
+
+/* <\PUBLIC> */
+
 };
 
 #endif /* _UPNPBROWSE_H */

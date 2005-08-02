@@ -2,7 +2,9 @@
  *            ContentDirectory.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -24,6 +26,10 @@
 #ifndef _CONTENTDIRECTORY_H
 #define _CONTENTDIRECTORY_H
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "../UPnPService.h"
 #include "../HTTPMessage.h"
 #include <map>
@@ -33,22 +39,96 @@
 #include "StorageFolder.h"
 #include "../UPnPActions/UPnPBrowse.h"
 
+/*===============================================================================
+ CLASS CContentDirectory
+===============================================================================*/
+
 class CContentDirectory: public CUPnPService
 {
-	public:
-		CContentDirectory(std::string p_sHTTPServerURL);
-	  ~CContentDirectory();
+	
+/* <PUBLIC> */
+
+public:
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+  /** constructor
+  *  @param  p_sHTTPServerURL  URL of the HTTP server
+  */
+  CContentDirectory(std::string p_sHTTPServerURL);
+
+  /** destructor
+  */
+  ~CContentDirectory();
+
+/*===============================================================================
+ UPNP ACTION HANDLING
+===============================================================================*/
+
+  /** handles a UPnP action and creates the corresponding message
+  *  @param  pUPnPAction  UPnP action to handle
+  *  @param  pMessageOut  the message, that was created for the action
+  *  @return returns true on success otherwise false
+  */
+  bool HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut);
+
+/*===============================================================================
+ GET
+===============================================================================*/
+
+  /** returns the filename of a specific object id
+  *  @param  p_sObjectID  object id to identify object
+  *  @return  the filename, "" if the object was not found
+  */
+  std::string GetFileNameFromObjectID(std::string p_sObjectID);
+
+  /** returns a UPnP object for a specific object id
+  *  @param  p_sObjectID  object id to identify object
+  *  @return  the UPnP object or NULL
+  */
+  CUPnPObject* GetItemFromObjectID(std::string p_sObjectID);
+
+/* <\PUBLIC> */
+
+/* <PRIVATE> */
+
+private:
+
+/*===============================================================================
+ MEMBERS
+===============================================================================*/
+
+  std::map<std::string, CUPnPObject*>           m_ObjectList;
+  std::map<std::string, CUPnPObject*>::iterator m_ListIterator;
+  CStorageFolder*                               m_pBaseFolder;
+
+/*===============================================================================
+ HELPER
+===============================================================================*/
+  
+  /** handles a UPnP browse action
+  *  @param  pBrowse  the browse action to handle
+  *  @return string with the message content to send for the browse action
+  */
+  std::string HandleUPnPBrowse(CUPnPBrowse* pBrowse);
+
     
-    bool HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut);
-    std::string   GetFileNameFromObjectID(std::string p_sObjectID);
-    CUPnPObject*  GetItemFromObjectID(std::string p_sObjectID);
-  private:
-    std::string HandleUPnPBrowse(CUPnPBrowse*);
-    std::map<std::string, CUPnPObject*> m_ObjectList;
-    std::map<std::string, CUPnPObject*>::iterator m_ListIterator;
-    void BuildObjectList();
-    void ScanDirectory(std::string, int*, CStorageFolder*);
-    CStorageFolder* m_pBaseFolder;
+  /** Adds files and folders to the object list
+  */
+  void BuildObjectList();
+
+  /** scans a specific directory
+  *  @param  p_sDirectory  path to the directory to scan
+  *  @param  p_pnCount  count of found objects
+  *  @param  pParentFolder  the parent folder
+  */
+  void ScanDirectory(std::string p_sDirectory, int* p_pnCount, CStorageFolder* pParentFolder);
+  
+
+/* <\PRIVATE> */
+
 };
 
 #endif /* _CONTENTDIRECTORY_H */

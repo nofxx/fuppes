@@ -2,7 +2,9 @@
  *            PresentationHandler.h
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -24,6 +26,10 @@
 #ifndef _PRESENTATIONHANDLER_H
 #define _PRESENTATIONHANDLER_H
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "../Fuppes.h"
 #include "../UPnPDevice.h"
 #include "../HTTPMessage.h"
@@ -31,26 +37,92 @@
 #include <string>
 #include <vector>
 
+/*===============================================================================
+ CLASS CPresentationHandler
+===============================================================================*/
+
 class CPresentationHandler: public IFuppes
 {
-  public:
-    CPresentationHandler();
-    virtual ~CPresentationHandler();
-    
-    void AddFuppesInstance(CFuppes* pFuppes);
+
+/* <PUBLIC> */
+
+public:
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+  /** constructor
+  */  
+  CPresentationHandler();
+
+  /** destructor
+  */
+  virtual ~CPresentationHandler();
+
+/*===============================================================================
+ INSTANCE
+===============================================================================*/
   
-  private:
-    void OnReceivePresentationRequest(CFuppes* pSender, CHTTPMessage* pMessage, CHTTPMessage* pResult);
+  /** adds a instance of FUPPES
+  *  @param pFuppes  the instance to add
+  */
+  void AddFuppesInstance(CFuppes* pFuppes);
   
-    std::string HandleRequest(std::string p_sRequest);  
-    
-    std::string GetXHTMLHeader();  
-    std::string GetIndexHTML();
-    std::string BuildFuppesDeviceList(CFuppes* pFuppes);
-    
+/* <\PUBLIC> */
+
+/* <PRIVATE> */
+
+private:
+
+/*===============================================================================
+ REQUESTS
+===============================================================================*/
   
-    std::vector<CFuppes*> m_vFuppesInstances;
+  /** handles HTTP messages add returns a corresponding message
+  *  @param pSender  sender of the incoming message
+  *  @param pMessage  the incoming message
+  *  @param pResult  the outgoing message
+  */
+  void OnReceivePresentationRequest(CFuppes* pSender, CHTTPMessage* pMessage, CHTTPMessage* pResult);
+  
+  /** handles HTTP requests
+  *  @param p_sRequest  the message to handle
+  */
+  std::string HandleRequest(std::string p_sRequest);  
+
+/*===============================================================================
+ GET
+===============================================================================*/
+
+  /** returns the HTML header
+  *  @return the HTML header as string
+  */
+  std::string GetXHTMLHeader();  
+
+  /** returns the main HTML page
+  *  @return the content of the index.html
+  */
+  std::string GetIndexHTML();
+
+/*===============================================================================
+ HELPER
+===============================================================================*/
+  
+  /** builds a stringlist for all devices connected to a FUPPES instance
+  *  @param pFuppes a pointer to a FUPPES instance
+  *  @return the device list as string
+  */
+  std::string BuildFuppesDeviceList(CFuppes* pFuppes);
     
+/*===============================================================================
+ MEMBERS
+===============================================================================*/
+  
+  std::vector<CFuppes*> m_vFuppesInstances;
+    
+/* <\PRIVATE> */
+
 };
 
 #endif /* _PRESENTATIONHANDLER_H */

@@ -205,25 +205,6 @@
 					RelativePath=".\src\Presentation\PresentationHandler.cpp">
 				</File>
 			</Filter>
-			<Filter
-				Name="Transcoding"
-				Filter="">
-				<File
-					RelativePath=".\src\Transcoding\TranscodingMgr.cpp">
-					<FileConfiguration
-						Name="Debug|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						ExcludedFromBuild="TRUE">
-						<Tool
-							Name="VCCLCompilerTool"/>
-					</FileConfiguration>
-				</File>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="Header files"
@@ -289,9 +270,6 @@
 			<File
 				RelativePath=".\src\UPnPService.h">
 			</File>
-			<File
-				RelativePath=".\src\win32.h">
-			</File>
 			<Filter
 				Name="UPnPActions"
 				Filter="">
@@ -326,13 +304,6 @@
 				</File>
 				<File
 					RelativePath=".\src\Presentation\Stylesheet.h">
-				</File>
-			</Filter>
-			<Filter
-				Name="Transcoding"
-				Filter="">
-				<File
-					RelativePath=".\src\Transcoding\TranscodingMgr.h">
 				</File>
 			</Filter>
 		</Filter>

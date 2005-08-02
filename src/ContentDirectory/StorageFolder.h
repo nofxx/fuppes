@@ -2,7 +2,9 @@
  *            StorageFolder.h
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -24,6 +26,10 @@
 #ifndef _STORAGEFOLDER_H
 #define _STORAGEFOLDER_H
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "UPnPObject.h"
 #include "UPnPItem.h"
 #include "../UPnPActions/UPnPBrowse.h"
@@ -32,33 +38,102 @@
 #include <string>
 #include <libxml/xmlwriter.h>
 
-enum eContainerType
-{
-  ftObjectContainer,
-  ftMusicContainer
-};
+/*===============================================================================
+ DEFINITIONS
+===============================================================================*/
 
-enum eSortCriteria
+typedef enum tagCONTAINER_TYPE
 {
-  scNone
-};
+  CONTAINER_TYPE_OBJECT,
+  CONTAINER_TYPE_MUSIC,
+  CONTAINER_TYPE_MAX
+}CONTAINER_TYPE;
+
+typedef enum tagSORT_CRITERIA
+{
+  SORT_CRITERIA_NONE,
+  SORT_CRITERIA_MAX
+}SORT_CRITERIA;
+
+/*===============================================================================
+ CLASS CStorageFolder
+===============================================================================*/
 
 class CStorageFolder: public CUPnPObject
 {
-  public:
-    CStorageFolder(std::string p_sHTTPServerURL);
-    ~CStorageFolder();
+
+/* <PUBLIC> */
+
+public:
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+  /** constructor
+  *  @param  p_sHTTPServerURL  URL of the HTTP server
+  */
+  CStorageFolder(std::string p_sHTTPServerURL);
   
-    void AddUPnPObject(CUPnPObject*);
-    std::string GetContentAsString(CUPnPBrowse* pBrowseAction, unsigned int* p_nNumberReturned, unsigned int* p_nTotalMatches);
-    std::string GetChildCountAsString();
-      
-    void GetDescription(xmlTextWriterPtr pWriter);
+  /** destructor
+  */
+  ~CStorageFolder();
+
+/*===============================================================================
+ ADD
+===============================================================================*/
+
+  /** adds a UPnP object to the storage folder
+  *  @param  pObject  the object to add
+  */
+  void AddUPnPObject(CUPnPObject* pObject);
+
+/*===============================================================================
+ GET
+===============================================================================*/
+
+  /** returns the content to show after a UPnP browse action
+  *  @param  pBrowseAction  the action to handle
+  *  @param  p_nNumberReturned  number of returned objects
+  *  @param  p_nTotalMatches  number of all matching objects
+  *  @return  
+  */
+  std::string GetContentAsString(CUPnPBrowse* pBrowseAction, unsigned int* p_nNumberReturned, unsigned int* p_nTotalMatches);
+
+  /** returns count of all objects
+  *  @return  the object count as string
+  */
+  std::string GetChildCountAsString();
   
+  /** Writes a description to a XML container
+  *  @param  pWriter  the XML container to write description to
+  */
+  void GetDescription(xmlTextWriterPtr pWriter);
+  
+/* <\PUBLIC> */
+
+/* <PRIVATE> */
+
   private:
+
+/*===============================================================================
+ MEMBER
+===============================================================================*/
+
     std::vector<CUPnPObject*> m_vObjects;
-    void SortContent(std::vector<CUPnPObject*>* pObjList, eSortCriteria p_SortCriteria);
+
+/*===============================================================================
+ HELPER
+===============================================================================*/
+
+  /** sorts a object list
+  *  @param  pObjList  the object list to sort
+  *  @param  p_nSortCriteria  the sort criteria to sort by
+  */
+  void SortContent(std::vector<CUPnPObject*>* pObjList, SORT_CRITERIA p_nSortCriteria);
   
+/* <\PRIVATE> */
+
 };
 
 #endif /* _STORAGEFOLDER_H */

@@ -167,6 +167,8 @@ public:
   */
   sockaddr_in GetLocalEndPoint();	
 
+/* <\PUBLIC> */
+
 /* <PRIVATE> */
 
 private:

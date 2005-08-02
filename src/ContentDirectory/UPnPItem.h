@@ -2,7 +2,9 @@
  *            UPnPItem.h
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -24,15 +26,49 @@
 #ifndef _UPNPITEM_H
 #define _UPNPITEM_H
 
+/*===============================================================================
+ INCLUDES
+===============================================================================*/
+
 #include "UPnPObject.h"
+
+/*===============================================================================
+ CLASS CUPnPItem
+===============================================================================*/
 
 class CUPnPItem: public CUPnPObject
 {
-  public:
-    CUPnPItem(eUPnPObjectType p_UPnPObjectType, std::string p_sHTTPServerURL):
-      CUPnPObject(p_UPnPObjectType, p_sHTTPServerURL) {}
+
+/* <PUBLIC> */
+
+public:
+
+/*===============================================================================
+ CONSTRUCTOR / DESTRUCTOR
+===============================================================================*/
+
+  /** constructor
+  *  @param  p_nUPnPObjectType  type of the UPnP object
+  *  @param  p_sHTTPServerURL  URL of the HTTP server
+  */
+  CUPnPItem(UPNP_OBJECT_TYPE p_nUPnPObjectType, std::string p_sHTTPServerURL):
+      CUPnPObject(p_nUPnPObjectType, p_sHTTPServerURL)
+      {
+      }
       
-    void GetDescription(xmlTextWriterPtr pWriter) { }
+/*===============================================================================
+ GET
+===============================================================================*/
+  
+  /** empty base class method
+  *  @param  pWriter  XML container to write to
+  */
+  void GetDescription(xmlTextWriterPtr pWriter)
+  {
+  }
+
+/* <\PUBLIC> */
+
 };
 
 #endif /* _UPNPITEM_H */
