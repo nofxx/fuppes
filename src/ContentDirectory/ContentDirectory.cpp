@@ -78,10 +78,10 @@ CUPnPService(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, p_sHTTPServerURL)
 /* destructor */
 CContentDirectory::~CContentDirectory()
 {
-  SAFE_DELETE(m_pBaseFolder);
+  /* T.S.TODO: Delete all objects that were created with 'new'.
+               'm_Objectlist' has the pointers to these objects */
   
-  // Cleanup object list
-  m_ObjectList.clear();
+  SAFE_DELETE(m_pBaseFolder);
 }
 
 /*===============================================================================

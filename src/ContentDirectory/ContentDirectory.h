@@ -60,6 +60,7 @@ public:
   CContentDirectory(std::string p_sHTTPServerURL);
 
   /** destructor
+  *  @todo  Delete all objects that were created with 'new'. 'm_Objectlist' has the pointers to these objects
   */
   ~CContentDirectory();
 
