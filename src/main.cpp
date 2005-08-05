@@ -108,7 +108,7 @@ int main()
   
   /* Create main server object (CFuppes) */
   
-	CFuppes* pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUDN(), pPresentationHandler);	
+	CFuppes* pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUUID(), pPresentationHandler);	
   pPresentationHandler->AddFuppesInstance(pFuppes);
   
   /* todo: create a fuppes instance for each network interface */
