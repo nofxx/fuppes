@@ -25,7 +25,7 @@
  INCLUDES
 ===============================================================================*/
 
-#include "..\Common.h"
+#include "../Common.h"
 #include "AudioItem.h"
 #include <sstream>
 
@@ -52,7 +52,7 @@ CUPnPItem(UPNP_OBJECT_TYPE_AUDIO_ITEM, p_sHTTPServerURL)
 /* GetDescription */
 void CAudioItem::GetDescription(xmlTextWriterPtr pWriter)
 {
-  ASSERT(NULL != pWriter);
+  assert(NULL != pWriter);
   if(NULL == pWriter)
     return;
 

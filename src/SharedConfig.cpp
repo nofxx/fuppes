@@ -41,6 +41,7 @@
 #endif
 
 #include "Common.h"
+#include "UUID.h"
 
 #include <sys/types.h>
 #include <fcntl.h>
@@ -84,6 +85,7 @@ CSharedConfig* CSharedConfig::Shared()
 
 CSharedConfig::CSharedConfig()
 {
+  m_sUUID = GenerateUUID();  
 }
 
 /* <\PROTECTED> */
@@ -132,9 +134,9 @@ string CSharedConfig::GetHostname()
   return m_sHostname;
 }
 
-string CSharedConfig::GetUDN()
-{	
-  return "12345678-aabb-0000-ccdd-1234eeff0000";
+string CSharedConfig::GetUUID()
+{
+  return m_sUUID; 
 }
 
 string CSharedConfig::GetIPv4Address()

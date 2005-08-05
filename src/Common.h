@@ -108,6 +108,7 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
 ===============================================================================*/
 
 #include <pthread.h>
+#include <unistd.h>
 
 /* Common */
 #define upnpSleep               usleep

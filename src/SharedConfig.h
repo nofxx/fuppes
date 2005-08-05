@@ -79,7 +79,7 @@ protected:
 	std::string GetAppVersion();
 	
 	std::string GetHostname();
-	std::string GetUDN();
+	std::string GetUUID();
 	
 	std::string GetIPv4Address();
 	
@@ -105,6 +105,7 @@ private:
 
   std::string m_sHostname;
 	std::string m_sIP;
+  std::string m_sUUID;
   std::vector<std::string> m_vSharedDirectories;
 
 /*===============================================================================

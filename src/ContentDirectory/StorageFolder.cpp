@@ -27,7 +27,7 @@
  INCLUDES
 ===============================================================================*/
 
-#include "..\Common.h"
+#include "../Common.h"
 #include "StorageFolder.h"
 #include "../SharedConfig.h"
 
@@ -64,7 +64,7 @@ CStorageFolder::~CStorageFolder()
 /* AddUPnPObject */
 void CStorageFolder::AddUPnPObject(CUPnPObject* pUPnPObject)
 {
-  ASSERT(NULL != pUPnPObject);
+  assert(NULL != pUPnPObject);
   if(NULL == pUPnPObject)
     return;
 
@@ -154,7 +154,7 @@ string CStorageFolder::GetChildCountAsString()
 /* GetDescription */ 
 void CStorageFolder::GetDescription(xmlTextWriterPtr pWriter)
 {
-  ASSERT(NULL != pWriter);
+  assert(NULL != pWriter);
   if(NULL == pWriter)
     return;
 

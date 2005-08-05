@@ -124,7 +124,9 @@ module.source.files=\
 	RegEx.h\
 	Presentation/Stylesheet.h\
 	Transcoding/TranscodingMgr.cpp\
-	Transcoding/TranscodingMgr.h
+	Transcoding/TranscodingMgr.h\
+	UUID.cpp\
+	UUID.h
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

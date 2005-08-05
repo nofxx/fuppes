@@ -12,6 +12,7 @@ bin_PROGRAMS = fuppes
 
 h_sources = \
   Common.h\
+  UUID.h\
   UDPSocket.h\
   MessageBase.h\
   SSDPCtrl.h\
@@ -42,6 +43,7 @@ h_sources = \
 	
 cpp_sources = \
   Common.cpp\
+  UUID.cpp\
   UDPSocket.cpp\
   MessageBase.cpp\
 	SSDPCtrl.cpp\

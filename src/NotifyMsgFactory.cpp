@@ -79,7 +79,7 @@ std::string CNotifyMsgFactory::notify_alive(MESSAGE_TYPE a_type)
 	  result << "libfuppes/0.1\r\n";
   result << "NTS: ssdp:alive\r\n";
 	
-	result << "USN: uuid:" << CSharedConfig::Shared()->GetUDN();
+	result << "USN: uuid:" << CSharedConfig::Shared()->GetUUID();
 	if(a_type == MESSAGE_TYPE_USN)
 		result << "\r\n";
 	else
@@ -100,11 +100,11 @@ std::string CNotifyMsgFactory::notify_bye_bye(MESSAGE_TYPE a_type)
 	result << "HOST: 239.255.255.250:1900\r\n";
   result << "NTS: ssdp:byebye\r\n";
 	
-	result << "USN: uuid:" << CSharedConfig::Shared()->GetUDN();
+	result << "USN: uuid:" << CSharedConfig::Shared()->GetUUID();
 	if(a_type == MESSAGE_TYPE_USN)
 	{
 		result << "\r\n";
-		result << "NT: " << CSharedConfig::Shared()->GetUDN() << "\r\n";
+		result << "NT: " << CSharedConfig::Shared()->GetUUID() << "\r\n";
   }
 	else
 	{
@@ -130,7 +130,7 @@ std::string CNotifyMsgFactory::GetMSearchResponse(MESSAGE_TYPE p_MessageType)
 	  result << "libfuppes/0.1\r\n";
   result << "ST: " << type_to_string(p_MessageType) << "\r\n";  
   result << "NTS: ssdp:alive\r\n";	
-	result << "USN: uuid:" << CSharedConfig::Shared()->GetUDN();
+	result << "USN: uuid:" << CSharedConfig::Shared()->GetUUID();
 	if(p_MessageType == MESSAGE_TYPE_USN)
 		result << "\r\n";
 	else
@@ -156,7 +156,7 @@ std::string CNotifyMsgFactory::type_to_string(MESSAGE_TYPE a_type)
 	switch(a_type)
 	{
 		case MESSAGE_TYPE_USN:
-			result << "uuid:" << CSharedConfig::Shared()->GetUDN();
+			result << "uuid:" << CSharedConfig::Shared()->GetUUID();
 			break;
 		
 		case MESSAGE_TYPE_ROOT_DEVICE:
