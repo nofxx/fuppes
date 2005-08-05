@@ -23,24 +23,53 @@
  */
 
 #include "UUID.h"
+#include "Common.h"
+
+#ifdef WIN32 
+#include <objbase.h> /* for CoCreateGuid() */
+#endif
 
 #include <sstream>
 using namespace std;
 
 std::string GenerateUUID()
 {
-  srand(time(0));
+  stringstream sResult;
+
+#ifdef WIN32
+
+  /* Generate GUID */
+  GUID guid;
+  CoCreateGuid(&guid);
+  wchar_t szTemp[64];
   
+  /* Get UUID as string */
+  StringFromGUID2(guid, szTemp, sizeof(szTemp));
+  
+  /* Convert wide char string to ansi string */
+  char szUUID[64];
+  int nRet = WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, szTemp, sizeof(szTemp),
+    szUUID, sizeof(szUUID), NULL, NULL);
+
+  /* Set result */
+  sResult << szUUID;
+
+#else
+  
+  srand(time(0));
+
   int nRandom;
   stringstream sRandom;
-  
+
   do {
     nRandom = (rand() % 10000) + 1;
     sRandom << nRandom;
   } while (sRandom.str().length() < 8);
-     
-  stringstream sResult;
+
+
   sResult << sRandom.str().substr(0, 8) << "-aabb-0000-ccdd-1234eeff0000";
-  
+
+#endif
+
   return sResult.str();
 }

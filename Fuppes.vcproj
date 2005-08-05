@@ -185,6 +185,9 @@
 			<File
 				RelativePath=".\src\UPnPService.cpp">
 			</File>
+			<File
+				RelativePath=".\src\UUID.cpp">
+			</File>
 			<Filter
 				Name="ContentDirectory"
 				Filter="">
@@ -269,6 +272,9 @@
 			</File>
 			<File
 				RelativePath=".\src\UPnPService.h">
+			</File>
+			<File
+				RelativePath=".\src\UUID.h">
 			</File>
 			<Filter
 				Name="UPnPActions"
