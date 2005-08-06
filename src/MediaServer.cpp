@@ -76,7 +76,7 @@ CMediaServer::CMediaServer(std::string p_sHTTPServerURL):
 
   m_sModelURL        = "http://fuppes.sourceforge.net";
   m_sSerialNumber    = "012345678910";
-  m_sUDN  			     = CSharedConfig::Shared()->GetUUID();
+  m_sUUID  			     = CSharedConfig::Shared()->GetUUID();
   m_sUPC				     = "";
   m_sPresentationURL = "index.html";      
 }

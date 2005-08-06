@@ -400,7 +400,7 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_pnCount, 
   if((pDir = opendir(p_sDirectory.c_str())) != NULL)
   {
     sTmp << "read directory: " << p_sDirectory;    
-    CSharedLog::Shared()->Log(LOGNAME, sTmp.str());
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, sTmp.str());
     sTmp.str("");
     
     while((pDirEnt = readdir(pDir)))
@@ -437,7 +437,7 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_pnCount, 
           /* log */
           sTmp.str("");
           sTmp << "added mp3-file: \"" << pDirEnt->d_name << "\"";
-          CSharedLog::Shared()->Log(LOGNAME, sTmp.str());          
+          CSharedLog::Shared()->ExtendedLog(LOGNAME, sTmp.str());          
         }
         /* folder */
         else if(IsDirectory(sTmp.str()))
@@ -468,7 +468,7 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_pnCount, 
           /* log */
           sTmp.str("");
           sTmp << "added dir: \"" << pDirEnt->d_name << "\"";
-          CSharedLog::Shared()->Log(LOGNAME, sTmp.str()); 
+          CSharedLog::Shared()->ExtendedLog(LOGNAME, sTmp.str()); 
         }
         sTmp.str("");
       }

@@ -68,6 +68,7 @@ public:
   
   void  Log(std::string p_sSender, std::string p_sMessage);
   void  ExtendedLog(std::string p_sSender, std::string p_sMessage);
+  void  DebugLog(std::string p_sSender, std::string p_sMessage);
   void  Log(std::string p_sSender, std::string p_asMessages[], unsigned int p_nCount, std::string p_sSeparator = "");    
   void  Warning(std::string p_sSender, std::string p_sMessage);
   void  Error(std::string p_sSender, std::string p_sMessage);
@@ -75,10 +76,12 @@ public:
 /*===============================================================================
  SET
 ===============================================================================*/  
-  /** toggle whether to show log or not
-   *  @param  p_bShowLog  true = show log, false = don't show log
+  /** set the level of log verbosity
+   *  @param  p_nLogLevel  0 = no log, 1 = std log, 2 = extended log, 3 = debug log
    */
-  void  SetShowLog(bool p_bShowLog);
+  void  SetLogLevel(int p_nLogLevel);
+  
+  void  ToggleLog();
   
 /* <\PUBLIC> */
     
@@ -93,6 +96,9 @@ private:
   static CSharedLog* m_Instance;
   fuppesThreadMutex  m_Mutex;
   bool               m_bShowLog;
+  bool               m_bShowExtendedLog;
+  bool               m_bShowDebugLog;
+  int                m_nLogLevel;
 
 /* <\PRIVATE> */
 

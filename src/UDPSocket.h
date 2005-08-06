@@ -60,7 +60,7 @@ class IUDPSocket
 
 public:
 
-  virtual bool OnUDPSocketReceive(
+  virtual void OnUDPSocketReceive(
     CUDPSocket*   pSocket,
     CSSDPMessage* pMessage) = 0;
 

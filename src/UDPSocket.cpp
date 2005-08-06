@@ -221,10 +221,6 @@ void CUDPSocket::EndReceive()
  */
 void CUDPSocket::SetReceiveHandler(IUDPSocket* pHandler)
 {
-  ASSERT(NULL != pHandler);
-  if(NULL == pHandler)
-    return;
-  
   /* Save pointer to the receive handler */
   m_pReceiveHandler = pHandler;
 }
@@ -281,7 +277,7 @@ fuppesThreadCallback ReceiveLoop(void *arg)
   CUDPSocket* udp_sock = (CUDPSocket*)arg;
   stringstream sMsg;
   sMsg << "listening on " << udp_sock->GetIPAddress() << ":" << udp_sock->GetPort();
-	CSharedLog::Shared()->Log(LOGNAME, sMsg.str());
+	CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
 	
 	char buffer[4096];	
 	int  bytes_received = 0;

@@ -74,7 +74,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID, IFuppes* pPresen
   m_sUUID                       = p_sUUID;
   m_pPresentationRequestHandler = pPresentationRequestHandler;
 
-  CSharedLog::Shared()->Log(LOGNAME, "initializing devices");
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "initializing devices");
   
   /* Init HTTP server */
   m_pHTTPServer = new CHTTPServer(m_sIPAddress);
@@ -95,17 +95,17 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID, IFuppes* pPresen
   /* Add ContentDirectory to MediaServers service-list */
 	m_pMediaServer->AddUPnPService(m_pContentDirectory);
 
-  CSharedLog::Shared()->Log(LOGNAME, "done");
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");
   
   /* if everything is up and running,
      multicast alive messages and search
      for other devices */
-  CSharedLog::Shared()->Log(LOGNAME, "multicasting alive messages");  
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "multicasting alive messages");  
   m_pSSDPCtrl->send_alive();  
-  CSharedLog::Shared()->Log(LOGNAME, "done");
-  CSharedLog::Shared()->Log(LOGNAME, "multicasting m-search");  
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "multicasting m-search");  
   m_pSSDPCtrl->send_msearch();  
-  CSharedLog::Shared()->Log(LOGNAME, "done");
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");
 }
 
 /** destructor
@@ -114,21 +114,15 @@ CFuppes::~CFuppes()
 {
   /* Logging */
   CSharedLog::Shared()->Log(LOGNAME, "shutting down");
-  CSharedLog::Shared()->Log(LOGNAME, "multicasting byebye messages");  
   
-  /* multicast ByeBye messages */
-  ASSERT(NULL != m_pSSDPCtrl);
-  if(NULL != m_pSSDPCtrl)
-  {
-    m_pSSDPCtrl->send_byebye();  
-    m_pSSDPCtrl->Stop();
-  }
-  CSharedLog::Shared()->Log(LOGNAME, "done");
+  /* multicast notify-byebye */
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "multicasting byebye messages");  
+  m_pSSDPCtrl->send_byebye();  
+  m_pSSDPCtrl->Stop();
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");
 
   /* Stop HTTPServer */
-  ASSERT(NULL != m_pHTTPServer);
-  if(NULL != m_pHTTPServer)
-    m_pHTTPServer->Stop();
+  m_pHTTPServer->Stop();
 
   /* Destroy objects */
   SAFE_DELETE(m_pContentDirectory);
@@ -154,10 +148,7 @@ CSSDPCtrl* CFuppes::GetSSDPCtrl()
  */
 std::string CFuppes::GetHTTPServerURL()
 {
-  ASSERT(NULL != m_pHTTPServer);
-  if(NULL != m_pHTTPServer)
-    return m_pHTTPServer->GetURL();
-  else return "";
+  return m_pHTTPServer->GetURL();
 }
 
 /** Returns IP address 
@@ -225,13 +216,6 @@ void CFuppes::OnSSDPCtrlReceiveMsg(CSSDPMessage* pMessage)
 
 bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
 {
-	ASSERT(NULL != pMessageIn);
-  if(NULL == pMessageIn)
-    return false;
-  ASSERT(NULL != pMessageOut);
-  if(NULL == pMessageOut)
-    return false;
-  
   bool fRet = true;
 
   /* Handle message */
@@ -256,22 +240,12 @@ bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMe
 
 bool CFuppes::HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
 {
-	ASSERT(NULL != pMessageIn);
-  if(NULL == pMessageIn)
-    return false;
-  ASSERT(NULL != pMessageOut);
-  if(NULL == pMessageOut)
-    return false;
-
   /* Get request */
   std::string strRequest = pMessageIn->GetRequest();
 
   /* Root description */
   if(0 == strRequest.compare("/"))
   {
-    ASSERT(NULL != m_pMediaServer);
-    if(NULL == m_pMediaServer)
-      return false;
     pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, HTTP_CONTENT_TYPE_TEXT_XML);
     pMessageOut->SetContent(m_pMediaServer->GetDeviceDescription());
     return true;
@@ -280,9 +254,6 @@ bool CFuppes::HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
   /* ContentDirectory description */
   else if(0 == strRequest.compare("/UPnPServices/ContentDirectory/description.xml"))
   {
-    ASSERT(NULL != m_pContentDirectory);
-    if(NULL == m_pContentDirectory)
-      return false;
     pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, HTTP_CONTENT_TYPE_TEXT_XML);
     pMessageOut->SetContent(m_pContentDirectory->GetServiceDescription());
     return true;
@@ -291,9 +262,6 @@ bool CFuppes::HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
   /* Presentation */
   else if(0 == ToLower(strRequest).compare("/index.html"))
   {
-    ASSERT(NULL != m_pPresentationRequestHandler);
-    if(NULL == m_pPresentationRequestHandler)
-      return false;
     m_pPresentationRequestHandler->OnReceivePresentationRequest(this, pMessageIn, pMessageOut);
     return true;
   }
@@ -303,9 +271,6 @@ bool CFuppes::HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
           ((strRequest.length() > 24) && (strRequest.substr(24).compare("/MediaServer/AudioItems/")))
          )
   {
-    ASSERT(NULL != m_pContentDirectory);
-    if(NULL == m_pContentDirectory)
-      return false;
     string sItemObjId = pMessageIn->GetRequest().substr(24, pMessageIn->GetRequest().length());
     CAudioItem* pItem = (CAudioItem*)m_pContentDirectory->GetItemFromObjectID(sItemObjId);
 
@@ -326,7 +291,7 @@ bool CFuppes::HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
       {
         stringstream sLog;
         sLog << "requested file: \"" << pItem->GetFileName() << "\" not found";
-        CSharedLog::Shared()->Error(LOGNAME, sLog.str());
+        CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
       }      
       
       return false;
@@ -339,23 +304,15 @@ bool CFuppes::HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
 
 bool CFuppes::HandleHTTPPost(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
 {
-  ASSERT(NULL != pMessageIn);
-  if(NULL == pMessageIn)
-    return false;
-  ASSERT(NULL != pMessageOut);
-  if(NULL == pMessageOut)
-    return false;
-  
   /* Get UPnP action */
   CUPnPBrowse UPnPBrowse;
-  bool fRet = pMessageIn->GetAction(&UPnPBrowse);
-  ASSERT(true == fRet);
+  bool fRet = pMessageIn->GetAction(&UPnPBrowse);  
   if(false == fRet)
     return false;
   
   /* Handle UPnP action */
   if(UPnPBrowse.m_nTargetDevice == UPNP_DEVICE_TYPE_CONTENT_DIRECTORY)
-       fRet = m_pContentDirectory->HandleUPnPAction((CUPnPAction*)&UPnPBrowse, pMessageOut);
+    fRet = m_pContentDirectory->HandleUPnPAction((CUPnPAction*)&UPnPBrowse, pMessageOut);
   
   return fRet;
 }

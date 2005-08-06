@@ -50,6 +50,7 @@ const std::string LOGNAME = "SSDPMessage";
 
 CSSDPMessage::CSSDPMessage()
 {
+  m_nMessageType = SSDP_MESSAGE_TYPE_UNKNOWN;
 }
 
 CSSDPMessage::~CSSDPMessage()
@@ -62,10 +63,24 @@ CSSDPMessage::~CSSDPMessage()
 
 void CSSDPMessage::SetMessage(std::string p_sMessage)
 {
-  CMessageBase::SetMessage(p_sMessage);
+  CMessageBase::SetMessage(p_sMessage);  
+  CSharedLog::Shared()->DebugLog(LOGNAME, p_sMessage);
   
   /* This is a sample message */
-  /*
+  
+  /* notify-alive
+  
+  NOTIFY * HTTP/1.1
+  HOST: 239.255.255.250:1900
+  CACHE-CONTROL: max-age=1800
+  LOCATION: http://192.168.0.22:80/description.xml
+  NT: upnp:rootdevice
+  NTS: ssdp:alive
+  SERVER: ThreadX/1.0 UPnP/1.0 Product/1.0
+  USN: uuid:00000000-0000-0000-0000-08000E200000::upnp:rootdevice*/
+
+  /* m-search response
+  
   HTTP/1.1 200 OK
   CACHE-CONTROL: max-age=1800
   EXT:
@@ -75,6 +90,35 @@ void CSSDPMessage::SetMessage(std::string p_sMessage)
   NTS: ssdp:alive
   USN: uuid:45645678-aabb-0000-ccdd-1234eeff0000::urn:schemas-upnp-org:service:ContentDirectory:1
   Content-Length: 0 */
+  
+  /* notify-byebye
+  
+  NOTIFY * HTTP/1.1
+  HOST: 239.255.255.250:1900
+  CACHE-CONTROL: max-age=1800
+  CONTENT-LENGTH: 0
+  LOCATION: http://192.168.0.22:80/description.xml
+  NT: urn:schemas-upnp-org:service:HtmlPageHandler:1
+  NTS: ssdp:byebye
+  USN: uuid:00000000-0000-0000-0000-08000E200000::urn:schemas-upnp-org:service:HtmlPageHandler:1
+  */
+  
+  /* m-search
+  
+  M-SEARCH * HTTP/1.1
+  MX: 10
+  ST: urn:schemas-upnp-org:service:ContentDirectory:1
+  HOST: 239.255.255.250:1900
+  MAN: "ssdp:discover"
+  Content-Length: 0 
+  */
+  
+  RegEx rxMSearch("M-SEARCH", PCRE_CASELESS);
+  if(rxMSearch.Search(m_sMessage.c_str()))
+  {
+    m_nMessageType = SSDP_MESSAGE_TYPE_M_SEARCH;
+  }
+  
   
 	/* Location */
   RegEx rxLocation("LOCATION: +(http://.+)", PCRE_CASELESS);

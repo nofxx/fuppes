@@ -53,7 +53,7 @@ class ISSDPSession
 
 public:
     
-  virtual bool OnSessionReceive(
+  virtual void OnSessionReceive(
     CSSDPSession* pSender,
     CSSDPMessage* pMessage) = 0;
 
@@ -89,7 +89,7 @@ public:
  MESSAGE HANDLING
 ===============================================================================*/
   
-  bool OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pMessage);
+  void OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pMessage);
 
 /* <\PUBLIC> */
 	

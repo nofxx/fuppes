@@ -66,7 +66,7 @@ CSharedLog* CSharedLog::Shared()
 
 CSharedLog::CSharedLog()
 {
-  m_bShowLog = true;
+  SetLogLevel(1);
   #ifndef DISABLELOG
   fuppesThreadInitMutex(&m_Mutex);
   #endif
@@ -76,13 +76,47 @@ CSharedLog::CSharedLog()
 
 /* <PUBLIC> */
 
-void CSharedLog::SetShowLog(bool p_bShowLog)
+void CSharedLog::SetLogLevel(int p_nLogLevel)
 {
-  m_bShowLog = p_bShowLog;
-  if(m_bShowLog)  
-    std::cout << "Logging enabled" << std::endl;  
+  m_bShowLog         = false;
+  m_bShowExtendedLog = false;
+  m_bShowDebugLog    = false;
+
+  m_nLogLevel = p_nLogLevel;  
+  switch(m_nLogLevel)
+  {
+    case 0:
+      std::cout << "logging disabled" << std::endl;
+      break;    
+    case 1:
+      m_bShowLog = true;
+      std::cout << "normal logging" << std::endl;
+      break;
+    case 2:
+      m_bShowLog         = true;
+      m_bShowExtendedLog = true;
+      std::cout << "extended logging" << std::endl;
+      break;
+    case 3:
+      m_bShowLog         = true;
+      m_bShowExtendedLog = true;
+      m_bShowDebugLog    = true;
+      std::cout << "debug logging" << std::endl;
+      break;
+    default:
+      break;
+  }
+
+}
+
+void CSharedLog::ToggleLog()
+{
+  if(m_nLogLevel < 3)
+    m_nLogLevel++;
   else
-    std::cout << "Logging disabled" << std::endl;
+    m_nLogLevel = 0;
+  
+  SetLogLevel(m_nLogLevel);
 }
 
 /*===============================================================================
@@ -92,7 +126,7 @@ void CSharedLog::SetShowLog(bool p_bShowLog)
 void CSharedLog::Log(std::string p_sSender, std::string p_sMessage)
 {
   #ifndef DISABLELOG  
-  if (m_bShowLog)
+  if(m_bShowLog)
   {
     fuppesThreadLockMutex(&m_Mutex);  
     std::cout << "[" << p_sSender << "] " << p_sMessage << std::endl;  
@@ -104,13 +138,20 @@ void CSharedLog::Log(std::string p_sSender, std::string p_sMessage)
 
 void CSharedLog::ExtendedLog(std::string p_sSender, std::string p_sMessage)
 {
-  this->Log(p_sSender, p_sMessage);
+  if(m_bShowExtendedLog)
+    this->Log(p_sSender, p_sMessage);
+}
+
+void CSharedLog::DebugLog(std::string p_sSender, std::string p_sMessage)
+{
+  if(m_bShowDebugLog)
+    this->Log(p_sSender, p_sMessage);
 }
 
 void CSharedLog::Log(std::string p_sSender, std::string p_asMessages[], unsigned int p_nCount, std::string p_sSeparator)
 {
   #ifndef DISABLELOG  
-  if (m_bShowLog)
+  if(m_bShowLog)
   {
     fuppesThreadLockMutex(&m_Mutex);
     
@@ -130,7 +171,7 @@ void CSharedLog::Log(std::string p_sSender, std::string p_asMessages[], unsigned
 void CSharedLog::Warning(std::string p_sSender, std::string p_sMessage)
 {
   #ifndef DISABLELOG  
-  if (m_bShowLog)
+  if(m_bShowLog)
   {
     fuppesThreadLockMutex(&m_Mutex);    
     std::cout << "[WARNING :: " << p_sSender << "] " << p_sMessage << std::endl;  

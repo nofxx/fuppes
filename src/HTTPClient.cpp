@@ -141,7 +141,7 @@ bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_s
 
   /* Get header */
   std::string sMsg = BuildGetHeader(p_sGet, p_sTargetIPAddress, p_nTargetPort);  
-  CSharedLog::Shared()->Log(LOGNAME, "send GET Header");
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "send GET Header");
 
   /* Send */
   if(-1 == send(sock, sMsg.c_str(), (int)strlen(sMsg.c_str()), 0))
@@ -151,7 +151,7 @@ bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_s
   }
   else
   {
-    CSharedLog::Shared()->Log(LOGNAME, "receive answer");
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, "receive answer");
 
     char buffer[4096];
     int nBytesReceived;
@@ -161,7 +161,7 @@ bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_s
     {
       stringstream sMsg;
       sMsg << "received " << nBytesReceived << " bytes";
-      CSharedLog::Shared()->Log(LOGNAME, sMsg.str());
+      CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
       
       buffer[nBytesReceived] = '\0';
       sReceived << buffer;
@@ -169,9 +169,9 @@ bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_s
 
     if(sReceived.str().length() > 0)
     {
-      CSharedLog::Shared()->Log(LOGNAME, "done receive");      
+      CSharedLog::Shared()->ExtendedLog(LOGNAME, "done receive");      
       pResult->BuildFromString(sReceived.str());
-      CSharedLog::Shared()->Log(LOGNAME, "done build msg");      
+      CSharedLog::Shared()->ExtendedLog(LOGNAME, "done build msg");      
       return true;
     }
     else

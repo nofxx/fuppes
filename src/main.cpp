@@ -118,11 +118,10 @@ int main()
   cout << "Webinterface: http://" << pFuppes->GetHTTPServerURL() << "/index.html" << endl;
   //cout << "Webinterface: http://" << pFuppes2->GetHTTPServerURL() << "/index.html" << endl;
   cout << endl;
-  cout << "m  = send m-search" << endl;
-  cout << "a  = send notify-alive" << endl;
-  cout << "b  = send notify-byebye" << endl;
-  cout << "el = enable logging" << endl;
-  cout << "dl = disable logging" << endl;
+  cout << "m = send m-search" << endl;
+  cout << "a = send notify-alive" << endl;
+  cout << "b = send notify-byebye" << endl;
+  cout << "l = toggle logging" << endl;  
   cout << endl;
   cout << "press \"q\" to  quit" << endl;
   cout << endl;
@@ -139,10 +138,8 @@ int main()
       pFuppes->GetSSDPCtrl()->send_alive();
     else if (input == "b")
       pFuppes->GetSSDPCtrl()->send_byebye();
-    else if (input == "el")
-      CSharedLog::Shared()->SetShowLog(true);
-    else if (input == "dl")
-      CSharedLog::Shared()->SetShowLog(false);
+    else if (input == "l")
+      CSharedLog::Shared()->ToggleLog();    
   }
   
   /* Destroy objects */

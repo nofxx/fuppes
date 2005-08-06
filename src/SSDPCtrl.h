@@ -106,9 +106,9 @@ public:
  MESSAGE HANDLING
 ===============================================================================*/
 
-	  bool SetReceiveHandler(ISSDPCtrl* pHandler);
-	  bool OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMessage);
-   	bool OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage);
+	  void SetReceiveHandler(ISSDPCtrl* pHandler);
+	  void OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMessage);
+   	void OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage);
 	
 /* <\PUBLIC> */
 

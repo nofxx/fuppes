@@ -64,20 +64,11 @@ CSSDPSession::~CSSDPSession()
  MESSAGE HANDLING
 ===============================================================================*/
 
-bool CSSDPSession::OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pSSDPMessage)
+void CSSDPSession::OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pSSDPMessage)
 {
-  ASSERT(NULL != pSocket);
-  if(NULL == pSocket)
-    return false;
-  ASSERT(NULL != pSSDPMessage);
-  if(NULL == pSSDPMessage)
-    return false;
-
   //cout << "ssdp_session::OnUDPSocketReceive" << endl << pSSDPMessage->GetContent() << endl;
   if(m_pReceiveHandler != NULL)
     m_pReceiveHandler->OnSessionReceive(this, pSSDPMessage);
-
-  return true;
 }
 
 /* <\PUBLIC> */

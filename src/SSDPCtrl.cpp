@@ -164,36 +164,24 @@ void CSSDPCtrl::send_byebye()
  MESSAGE HANDLING
 ===============================================================================*/
 
-bool CSSDPCtrl::SetReceiveHandler(ISSDPCtrl* pHandler)
-{
-  ASSERT(NULL != pHandler);
-  if(NULL == pHandler)
-    return false;
-  
+void CSSDPCtrl::SetReceiveHandler(ISSDPCtrl* pHandler)
+{ 
   m_pReceiveHandler = pHandler;
-
-  return true;
 }
 
-bool CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMessage)
+void CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMessage)
 {		
-  ASSERT(NULL != pUDPSocket);
-  if(NULL == pUDPSocket)
-    return false;
-  ASSERT(NULL != pSSDPMessage);
-  if(NULL == pSSDPMessage)
-    return false;
-  
   if((m_LastMulticastEp.sin_addr.s_addr != pSSDPMessage->GetRemoteEndPoint().sin_addr.s_addr) ||
     (m_LastMulticastEp.sin_port != pSSDPMessage->GetRemoteEndPoint().sin_port))
   {	
     if(pSSDPMessage->GetContent().substr(0, 8).compare("M-SEARCH") == 0)
     {
       stringstream sLog;
-      sLog << "received m-search from: \"" << inet_ntoa(pSSDPMessage->GetRemoteEndPoint().sin_addr) << ":" << ntohs(pSSDPMessage->GetRemoteEndPoint().sin_port) << "." << endl;
-      sLog << pSSDPMessage->GetMessage();
-      sLog << "unicasting response";
-      CSharedLog::Shared()->Log(LOGNAME, sLog.str());
+      sLog << "received m-search from: \"" << inet_ntoa(pSSDPMessage->GetRemoteEndPoint().sin_addr) << ":" << ntohs(pSSDPMessage->GetRemoteEndPoint().sin_port) << "\"";      
+      CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());
+      CSharedLog::Shared()->DebugLog(LOGNAME, pSSDPMessage->GetMessage());
+      CSharedLog::Shared()->ExtendedLog(LOGNAME, "unicasting response");
+      
       CUDPSocket Sock;
       Sock.SetupSocket(false, m_sIPAddress);
 
@@ -204,35 +192,23 @@ bool CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMe
       Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_USN), pSSDPMessage->GetRemoteEndPoint());
 
       Sock.TeardownSocket();
-      CSharedLog::Shared()->Log(LOGNAME, "done");
+      CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");
     }
     else if(NULL != m_pReceiveHandler)
     {
       m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pSSDPMessage);
     }
-  }	
-  
-  return true;
+  }
 }
 
-bool CSSDPCtrl::OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage)
+void CSSDPCtrl::OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage)
 {
-  ASSERT(NULL != pSender);
-  if(NULL == pSender)
-    return false;
-  ASSERT(NULL != pMessage);
-  if(NULL == pMessage)
-    return false;
-  
-  stringstream sLog;
-  sLog << "OnSessionReceive" << endl << pMessage->GetMessage();
-  CSharedLog::Shared()->Log(LOGNAME, sLog.str());
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "OnSessionReceive");
+  CSharedLog::Shared()->DebugLog(LOGNAME, pMessage->GetMessage());
   if(NULL != m_pReceiveHandler)
       m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pMessage);
   
   //cout << pMessage->GetContent() << endl;
-
-  return true;
 }
 
 /* <\PUBLIC> */

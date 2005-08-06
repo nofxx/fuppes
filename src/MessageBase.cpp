@@ -57,6 +57,7 @@ CMessageBase::~CMessageBase()
 
 void CMessageBase::SetMessage(std::string p_sMessage)
 {
+  /* TODO: split message into header and content */
   m_sMessage = p_sMessage;  
   m_sContent = p_sMessage;
 }

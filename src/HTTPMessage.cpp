@@ -69,7 +69,11 @@ CHTTPMessage::CHTTPMessage()
 CHTTPMessage::~CHTTPMessage()
 {
   /* Cleanup */
-  SAFE_DELETE(m_pszBinContent);
+  /* uv 2005-08-05 :: memory allocated with new[] 
+     has to be freed with delete[] instead of delete */
+  //SAFE_DELETE(m_pszBinContent);
+  if(m_pszBinContent)
+    delete[] m_pszBinContent;
 }
 
 /*===============================================================================
@@ -99,7 +103,7 @@ void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, HTTP_CONTENT_TYPE nCtn
 void CHTTPMessage::SetMessage(std::string p_sMessage)
 {
   CMessageBase::SetMessage(p_sMessage);  
-  CSharedLog::Shared()->Log(LOGNAME, p_sMessage);  
+  CSharedLog::Shared()->DebugLog(LOGNAME, p_sMessage);  
   BuildFromString(p_sMessage);
 }
 

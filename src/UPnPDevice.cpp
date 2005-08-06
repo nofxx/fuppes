@@ -227,7 +227,7 @@ std::string CUPnPDevice::GetDeviceDescription()
 			
 			/* UDN */
 			xmlTextWriterStartElement(writer, BAD_CAST "UDN");
-			sTmp << "uuid:" << m_sUDN;
+			sTmp << "uuid:" << m_sUUID;
       xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
       sTmp.str("");
 			xmlTextWriterEndElement(writer);
@@ -308,12 +308,6 @@ std::string CUPnPDevice::GetDeviceDescription()
 	return output.str();
 }
 
-/* GetFriendlyName */
-std::string CUPnPDevice::GetFriendlyName()
-{
-  return m_sFriendlyName;
-}
-
 /* <\PUBLIC> */
 
 /* <PRIVATE> */
@@ -327,10 +321,16 @@ bool CUPnPDevice::ParseDescription(std::string p_sDescription)
 {
   //cout << p_sDescription << endl;
   
-  RegEx rxFriendlyName("<friendlyName>(.*)</friendlyName>");
+  RegEx rxFriendlyName("<friendlyName>(.*)</friendlyName>", PCRE_CASELESS);
   if(rxFriendlyName.Search(p_sDescription.c_str()))
   {
     m_sFriendlyName = rxFriendlyName.Match(1);
+  }
+  
+  RegEx rxUUID("<UDN>uuid:(.+)</UDN>", PCRE_CASELESS);
+  if(rxUUID.Search(p_sDescription.c_str()))
+  {
+    m_sUUID = rxUUID.Match(1);
   }
   
   /* T.S.TODO: Get all other information from the device description */

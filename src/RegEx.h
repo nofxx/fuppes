@@ -95,7 +95,7 @@ class RegEx
       ~RegEx()
       {
          ClearMatchList();
-         delete ovector;
+         delete[] ovector;
          if (pe)
             pcre_free(pe);
          pcre_free(re);

@@ -152,6 +152,7 @@ std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes)
     CUPnPDevice* pDevice = pFuppes->GetRemoteDevices()[i];
     sResult << "No. " << i + 1 << "<br />";
     sResult << "Name: " << pDevice->GetFriendlyName() << "<br />";
+    sResult << "UUID: " << pDevice->GetUUID() << "<br />";
   }
 
   return sResult.str();

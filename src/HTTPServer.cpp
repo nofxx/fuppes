@@ -149,9 +149,10 @@ bool CHTTPServer::CallOnReceive(std::string p_sMessage, CHTTPMessage* pMessageOu
 
 fuppesThreadCallback AcceptLoop(void *arg)
 {
-	CHTTPServer* pHTTPServer = (CHTTPServer*)arg;	
-  string sMsg[] = { "listening on", pHTTPServer->GetURL() };
-	CSharedLog::Shared()->Log(LOGNAME, sMsg, 2, " ");
+	CHTTPServer* pHTTPServer = (CHTTPServer*)arg;
+  stringstream sLog;
+  sLog << "listening on" << pHTTPServer->GetURL();  
+	CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());
   
 	upnpSocket nSocket     = pHTTPServer->GetSocket();			
 	upnpSocket nConnection = 0;	
@@ -167,7 +168,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
 		{	
       stringstream sMsg;
       sMsg << "new connection from " << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port);
-			CSharedLog::Shared()->Log(LOGNAME, sMsg.str());
+			CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
 			
       /* Start session thread */
       CHTTPSessionInfo pSession(pHTTPServer, nConnection);      
@@ -194,7 +195,7 @@ fuppesThreadCallback SessionLoop(void *arg)
   {
     stringstream sMsg;
     sMsg << "bytes received: " << nBytesReceived;
-    CSharedLog::Shared()->Log(LOGNAME, sMsg.str());
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
     szBuffer[nBytesReceived] = '\0';
     //cout << szBuffer << endl;
     
@@ -202,7 +203,7 @@ fuppesThreadCallback SessionLoop(void *arg)
     bool fRet = pSession.GetHTTPServer()->CallOnReceive(szBuffer, &ResponseMsg);
     if(true == fRet)				
     {
-      CSharedLog::Shared()->Log(LOGNAME, "sending response");
+      CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending response");
       //cout << pResponse->GetMessageAsString() << endl;
       
       if(ResponseMsg.GetBinContentLength() > 0)
@@ -215,7 +216,7 @@ fuppesThreadCallback SessionLoop(void *arg)
       
       
       upnpSocketClose(pSession.GetConnection());      
-      CSharedLog::Shared()->Log(LOGNAME, "done");
+      CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");
     }
     
   }

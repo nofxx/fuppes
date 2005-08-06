@@ -34,6 +34,19 @@
 #include <string>
 
 /*===============================================================================
+ DEFINITIONS
+===============================================================================*/
+
+typedef enum tagSSDP_MESSAGE_TYPE
+{
+  SSDP_MESSAGE_TYPE_UNKNOWN,
+  SSDP_MESSAGE_TYPE_M_SEARCH,
+  SSDP_MESSAGE_TYPE_M_SEARCH_RESPONSE,
+  SSDP_MESSAGE_TYPE_NOTIFY_ALIVE,
+  SSDP_MESSAGE_TYPE_NOTIFY_BYEBYE
+}SSDP_MESSAGE_TYPE;
+
+/*===============================================================================
  CLASS CSSDPMessage
 ===============================================================================*/
 
@@ -62,8 +75,9 @@ public:
 ===============================================================================*/
 
     std::string GetLocation() { return m_sLocation; }
-    std::string GetUUID()     { return m_sUUID;     }
+    std::string GetUUID()     { return m_sUUID;     }    
     std::string GetDeviceID();
+    SSDP_MESSAGE_TYPE GetMessageType() { return m_nMessageType; }     
     
 /* <\PUBLIC> */
 
@@ -81,6 +95,7 @@ private:
   std::string m_sNTS;
   std::string m_sUSN;
   std::string m_sUUID;
+  SSDP_MESSAGE_TYPE m_nMessageType;
 
 /* <\PRIVATE> */
 
