@@ -37,7 +37,10 @@
  MACROS
 ===============================================================================*/
 
-#define SAFE_DELETE(_x_) if(_x_){delete(_x_); _x_ = NULL;}
+#define SAFE_DELETE(_x_)            if(_x_){delete(_x_); _x_ = NULL;}
+#define BOOL_CHK_RET_POINTER(_x_)   assert(_x_); if(!_x_) return false
+#define STRING_CHK_RET_POINTER(_x_) assert(_x_); if(!_x_) return ""
+#define VOID_CHK_RET_POINTER(_x_)   assert(_x_); if(!_x_) return
 
 /*===============================================================================
  DEFINITIONS

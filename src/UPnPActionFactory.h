@@ -57,6 +57,7 @@ public:
   *  @param  p_sContent  the string to build th message from
   *  @param  pBrowse  the built UPnP action
   *  @return returns true on success otherwise false
+  *  @todo   Parse whole description
   */
   bool BuildActionFromString(
     std::string  p_sContent,

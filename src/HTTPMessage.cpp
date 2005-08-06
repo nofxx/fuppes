@@ -113,9 +113,7 @@ void CHTTPMessage::SetMessage(std::string p_sMessage)
 
 bool CHTTPMessage::GetAction(CUPnPBrowse* pBrowse)
 {
-  ASSERT(NULL != pBrowse);
-  if(NULL == pBrowse)
-    return false;
+  BOOL_CHK_RET_POINTER(pBrowse);
 
   /* Build UPnPAction */
   CUPnPActionFactory ActionFactory;

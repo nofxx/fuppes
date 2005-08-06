@@ -115,9 +115,7 @@ std::string CHTTPServer::GetURL()
 
 bool CHTTPServer::SetReceiveHandler(IHTTPServer* pHandler)
 {
-	ASSERT(NULL != pHandler);
-  if(NULL == pHandler)
-    return false;
+	BOOL_CHK_RET_POINTER(pHandler);
   
   /* Save pointer to message handler */
   m_pReceiveHandler = pHandler;
@@ -127,9 +125,7 @@ bool CHTTPServer::SetReceiveHandler(IHTTPServer* pHandler)
 
 bool CHTTPServer::CallOnReceive(std::string p_sMessage, CHTTPMessage* pMessageOut)
 {
-  ASSERT(NULL != pMessageOut);
-  if(NULL == pMessageOut)
-    return false;
+  BOOL_CHK_RET_POINTER(pMessageOut);
 
   if(m_pReceiveHandler != NULL)
   {

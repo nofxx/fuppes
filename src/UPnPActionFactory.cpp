@@ -47,9 +47,7 @@ using namespace std;
 
 bool CUPnPActionFactory::BuildActionFromString(std::string p_sContent, CUPnPBrowse* pBrowse)
 {  
-  ASSERT(NULL != pBrowse);
-  if(NULL == pBrowse)
-    return false;
+  BOOL_CHK_RET_POINTER(pBrowse);
 
   /* T.S.TODO: We have to parse the whole description here */
 /*<?xml version="1.0" encoding="utf-8"?>

@@ -91,12 +91,8 @@ CContentDirectory::~CContentDirectory()
 /* HandleUPnPAction */
 bool CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut)
 {
-  ASSERT(NULL != pUPnPAction);
-  if(NULL == pUPnPAction)
-    return false;
-  ASSERT(NULL != pMessageOut);
-  if(NULL == pMessageOut)
-    return false;
+  BOOL_CHK_RET_POINTER(pUPnPAction);
+  BOOL_CHK_RET_POINTER(pMessageOut);
   
   /* Handle UPnP browse */
   string sContent = HandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);  
@@ -161,9 +157,7 @@ CUPnPObject* CContentDirectory::GetItemFromObjectID(std::string p_sObjectID)
 /* HandleUPnPBrowse */
 std::string CContentDirectory::HandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
 {
-  ASSERT(NULL != pUPnPBrowse);
-  if(NULL == pUPnPBrowse)
-    return "";
+  STRING_CHK_RET_POINTER(pUPnPBrowse);
 
   xmlTextWriterPtr writer;
 	xmlBufferPtr buf;
@@ -293,12 +287,8 @@ void CContentDirectory::BuildObjectList()
 /* ScanDirectory */
 void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_pnCount, CStorageFolder* pParentFolder)
 { 
-  ASSERT(NULL != p_pnCount);
-  if(NULL == p_pnCount)
-    return;
-  ASSERT(NULL != pParentFolder);
-  if(NULL == pParentFolder)
-    return;
+  VOID_CHK_RET_POINTER(p_pnCount);
+  VOID_CHK_RET_POINTER(pParentFolder);
 
 #ifdef WIN32
   

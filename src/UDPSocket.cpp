@@ -230,9 +230,7 @@ void CUDPSocket::SetReceiveHandler(IUDPSocket* pHandler)
  */
 void CUDPSocket::CallOnReceive(CSSDPMessage* pSSDPMessage)
 {
-	ASSERT(NULL != pSSDPMessage);
-  if(NULL == pSSDPMessage)
-    return;
+	VOID_CHK_RET_POINTER(pSSDPMessage);
   
   /* Call receive handler */
   ASSERT(NULL != m_pReceiveHandler);

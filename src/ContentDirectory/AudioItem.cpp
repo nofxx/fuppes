@@ -52,9 +52,7 @@ CUPnPItem(UPNP_OBJECT_TYPE_AUDIO_ITEM, p_sHTTPServerURL)
 /* GetDescription */
 void CAudioItem::GetDescription(xmlTextWriterPtr pWriter)
 {
-  assert(NULL != pWriter);
-  if(NULL == pWriter)
-    return;
+  VOID_CHK_RET_POINTER(pWriter);
 
   /* item */
   xmlTextWriterStartElement(pWriter, BAD_CAST "item");

@@ -64,9 +64,7 @@ CStorageFolder::~CStorageFolder()
 /* AddUPnPObject */
 void CStorageFolder::AddUPnPObject(CUPnPObject* pUPnPObject)
 {
-  assert(NULL != pUPnPObject);
-  if(NULL == pUPnPObject)
-    return;
+  VOID_CHK_RET_POINTER(pUPnPObject);
 
   /* Add object to list */
   m_vObjects.push_back(pUPnPObject);
@@ -154,9 +152,7 @@ string CStorageFolder::GetChildCountAsString()
 /* GetDescription */ 
 void CStorageFolder::GetDescription(xmlTextWriterPtr pWriter)
 {
-  assert(NULL != pWriter);
-  if(NULL == pWriter)
-    return;
+  VOID_CHK_RET_POINTER(pWriter);
 
   /* container  */
   xmlTextWriterStartElement(pWriter, BAD_CAST "container"); 
