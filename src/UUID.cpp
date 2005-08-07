@@ -25,10 +25,15 @@
 #include "UUID.h"
 #include "Common.h"
 
-#ifdef WIN32 
+#ifdef WIN32
 #include <objbase.h> /* for CoCreateGuid() */
 #endif
 
+#ifndef WC_NO_BEST_FIT_CHARS
+#define WC_NO_BEST_FIT_CHARS        0x00000400
+#endif
+
+#include <iostream>
 #include <sstream>
 using namespace std;
 
@@ -52,9 +57,13 @@ std::string GenerateUUID()
     szUUID, sizeof(szUUID), NULL, NULL);
 
   /* Set result */
-  sResult << szUUID;
+  string sTmp = szUUID;
+  /* remove leading and trailing brackets */
+  sResult << sTmp.substr(1, sTmp.length() - 2);
 
 #else
+  
+  /* todo: create real UUIDs */
   
   srand(time(0));
 

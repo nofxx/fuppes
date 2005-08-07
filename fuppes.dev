@@ -1,7 +1,7 @@
 [Project]
 FileName=fuppes.dev
 Name=fuppes
-UnitCount=52
+UnitCount=54
 Type=1
 Ver=1
 ObjFiles=
@@ -12,7 +12,7 @@ ResourceIncludes=
 MakeIncludes=
 Compiler=
 CppCompiler=
-Linker=../../../../Dev-Cpp/lib/libxml2.a_@@_../../../../Dev-Cpp/lib/libpcre.dll.a_@@_../../../../Dev-Cpp/lib/libwsock32.a_@@_../../../../Dev-Cpp/lib/iconv.lib_@@_
+Linker=../../../../Dev-Cpp/lib/libxml2.a_@@_../../../../Dev-Cpp/lib/libpcre.dll.a_@@_../../../../Dev-Cpp/lib/libwsock32.a_@@_../../../../Dev-Cpp/lib/iconv.lib_@@_../../../Dev-Cpp/lib/libole32.a_@@_
 IsCpp=1
 Icon=
 ExeOutput=win32
@@ -568,7 +568,17 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit53]
-FileName=src\Presentation\Stylesheet.h
+FileName=src\UUID.cpp
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit54]
+FileName=src\UUID.h
 CompileCpp=1
 Folder=fuppes
 Compile=1
