@@ -303,5 +303,6 @@ fuppesThreadCallback ReceiveLoop(void *arg)
 		upnpSleep(100);
 	}
 
+  fuppesThreadExit(NULL);
   return 0;
 }
