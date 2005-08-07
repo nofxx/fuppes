@@ -38,6 +38,8 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
 #endif
 
 #include "Common.h"
@@ -238,36 +240,51 @@ bool CSharedConfig::ReadConfigFile()
 
 bool CSharedConfig::ResolveHostAndIP()
 {
-  in_addr* addr;
-
   char name[MAXHOSTNAMELEN];
   int nRet = gethostname(name, MAXHOSTNAMELEN);
   if(0 == nRet)
   {    
     m_sHostname = name;
     
-    #ifdef OPENNAS
-    struct ifreq ifa;
-    struct sockaddr_in *saddr;
-    int    fd;
-    
-    strcpy (ifa.ifr_name, "eth0");
-    if(((fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) || ioctl(fd, SIOCGIFADDR, &ifa))
-        return false;
-    saddr = (struct sockaddr_in*)&ifa.ifr_addr;
-    m_sIP = inet_ntoa(saddr->sin_addr);        
-    
-    #else
-    struct hostent* host;
-    host = gethostbyname(name);
-    addr = (struct in_addr*)host->h_addr;
-    m_sIP = inet_ntoa(*addr);    
-    #endif
-    
-    return true;    
+    if(!ResolveIPByHostname() || m_sIP == "127.0.0.1")
+    {
+      return ResolveIPByInterface("eth0");    
+    }
+    else    
+      return true;    
   }
   else 
     return false;
+}
+
+bool CSharedConfig::ResolveIPByHostname()
+{
+    in_addr* addr;
+    struct hostent* host;
+      
+    host = gethostbyname(m_sHostname.c_str());
+    if(host != NULL)
+    {
+      addr = (struct in_addr*)host->h_addr;
+      m_sIP = inet_ntoa(*addr);
+      return true;
+    }
+    else
+      return false;
+}
+
+bool CSharedConfig::ResolveIPByInterface(std::string p_sInterfaceName)
+{
+    struct ifreq ifa;
+    struct sockaddr_in *saddr;
+    int       fd;
+    
+    strcpy (ifa.ifr_name, p_sInterfaceName.c_str());
+    if(((fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) || ioctl(fd, SIOCGIFADDR, &ifa))
+        return false;
+    saddr = (struct sockaddr_in*)&ifa.ifr_addr;
+    m_sIP = inet_ntoa(saddr->sin_addr);
+    return true;
 }
 
 bool CSharedConfig::FileExists(std::string p_sFileName)

@@ -141,7 +141,7 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
 		struct ip_mreq stMreq; /* Multicast interface structure */
 			
 		stMreq.imr_multiaddr.s_addr = inet_addr(MULTICAST_IP); 
-		stMreq.imr_interface.s_addr = INADDR_ANY; 	
+		stMreq.imr_interface.s_addr  = INADDR_ANY; 	
 		ret = setsockopt(m_Socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&stMreq,sizeof(stMreq)); 	
 		if(ret == -1)
     {
@@ -162,13 +162,14 @@ void CUDPSocket::TeardownSocket()
 		struct ip_mreq stMreq;
 		
 	  stMreq.imr_multiaddr.s_addr = inet_addr(MULTICAST_IP); 
-		stMreq.imr_interface.s_addr = INADDR_ANY; 	
+		stMreq.imr_interface.s_addr  = INADDR_ANY; 	
 		setsockopt(m_Socket, IPPROTO_IP, IP_DROP_MEMBERSHIP,(char *)&stMreq,sizeof(stMreq)); 		
 	}	
 	
   /* T.S.TEST: We have to exit thread here?! */
-  /* Exit thread */
-  EndReceive();
+  /* Exit thread */  
+  if(m_ReceiveThread != (fuppesThread)NULL)
+    EndReceive();
 
   /* Close socket */
   upnpSocketClose(m_Socket);
@@ -214,6 +215,7 @@ void CUDPSocket::EndReceive()
 {
   /* Exit thread */
   fuppesThreadClose(m_ReceiveThread, 2000);
+  m_ReceiveThread = (fuppesThread)NULL;
 }
 
 /* SetReceiveHandler */
@@ -287,6 +289,7 @@ fuppesThreadCallback ReceiveLoop(void *arg)
     /*cout << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port) << endl;
     cout << inet_ntoa(udp_sock->get_local_ep().sin_addr) << ":" << ntohs(udp_sock->get_local_ep().sin_port) << endl;*/
     
+    /* ensure we don't receive our own message */
 		if((remote_ep.sin_addr.s_addr != udp_sock->GetLocalEndPoint().sin_addr.s_addr) || 
 			 (remote_ep.sin_port != udp_sock->GetLocalEndPoint().sin_port))		
 		{
@@ -300,9 +303,10 @@ fuppesThreadCallback ReceiveLoop(void *arg)
 		msg.str("");
 		msg.clear();
 		
-		upnpSleep(100);
+		upnpSleep(100);    
 	}
 
+  CSharedLog::Shared()->Error(LOGNAME, "ReceiveLoop() abortet");
   fuppesThreadExit(NULL);
   return 0;
 }

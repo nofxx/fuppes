@@ -96,6 +96,7 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
 #define fuppesThread                                        HANDLE
 #define fuppesThreadStart(_handle_, _callback_)             _handle_ = CreateThread(NULL, 0, &_callback_, this, 0, NULL)
 #define fuppesThreadClose(_handle_, _timeoutms_)             WaitForSingleObject(_handle_, _timeoutms_); CloseHandle(_handle_)
+#define fuppesThreadExit(_status_) 
 #define fuppesThreadStartArg(_handle_, _callback_, _arg_)   _handle_ = CreateThread(NULL, 0, &_callback_, &_arg_, 0, NULL)
 #define fuppesThreadCallback                                DWORD WINAPI
 
@@ -103,6 +104,7 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
 #define fuppesThreadInitMutex(_mutex_)                      InitializeCriticalSectionAndSpinCount(_mutex_, 0x80000400)
 #define fuppesThreadLockMutex(_mutex_)                      EnterCriticalSection(_mutex_)
 #define fuppesThreadUnlockMutex(_mutex_)                    LeaveCriticalSection(_mutex_)
+#define fuppesThreadDestroyMutex(_mutex_) 
 
 #else
 
@@ -120,8 +122,7 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
 /* Sockets */
 #define upnpSocket              int
 #define upnpSocketSuccess       -1
-
-#define upnpSocketClose         close
+#define upnpSocketClose(_socket_)         close(_socket_)
 
 /* Threads */
 #define fuppesThread                                        pthread_t
@@ -135,6 +136,7 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
 #define fuppesThreadInitMutex(_mutex_)                      pthread_mutex_init(_mutex_, NULL)
 #define fuppesThreadLockMutex(_mutex_)                      pthread_mutex_lock(_mutex_)
 #define fuppesThreadUnlockMutex(_mutex_)                    pthread_mutex_unlock(_mutex_)
+#define fuppesThreadDestroyMutex(_mutex_)                      pthread_mutex_destroy(_mutex_)
 
 #endif
 

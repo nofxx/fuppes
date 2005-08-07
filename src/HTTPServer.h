@@ -166,7 +166,7 @@ private:
   sockaddr_in local_ep;
   bool				do_break;
 
-  upnpSocket  sock;					      
+  upnpSocket  m_Socket;					      
   fuppesThread  accept_thread;
 
 /* <\PRIVATE> */

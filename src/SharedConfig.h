@@ -114,6 +114,8 @@ private:
 
   bool ReadConfigFile();
   bool ResolveHostAndIP();
+  bool ResolveIPByHostname();
+  bool ResolveIPByInterface(std::string p_sInterfaceName);
   bool FileExists(std::string p_sFileName);
   bool WriteDefaultConfig(std::string p_sFileName); 
 

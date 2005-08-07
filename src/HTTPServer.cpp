@@ -63,15 +63,20 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 {
 	accept_thread = (fuppesThread)NULL;
 	
-	sock = socket(AF_INET, SOCK_STREAM, 0);
+	m_Socket = socket(AF_INET, SOCK_STREAM, 0);
+  if(m_Socket == -1)  
+    CSharedLog::Shared()->Error(LOGNAME, "creating socket");  
 	
 	local_ep.sin_family      = PF_INET;
 	local_ep.sin_addr.s_addr = inet_addr(p_sIPAddress.c_str());
-	local_ep.sin_port				 = htons(0);
+	local_ep.sin_port				 = htons(5080);//htons(0);
 	
-	bind(sock, (struct sockaddr*)&local_ep, sizeof(local_ep));	
+	int nRet = bind(m_Socket, (struct sockaddr*)&local_ep, sizeof(local_ep));	
+  if(nRet == -1)
+    CSharedLog::Shared()->Error(LOGNAME, "bind()");  
+    
 	socklen_t size = sizeof(local_ep);
-	getsockname(sock, (struct sockaddr*)&local_ep, &size);	
+	getsockname(m_Socket, (struct sockaddr*)&local_ep, &size);	
 }
 
 CHTTPServer::~CHTTPServer()
@@ -85,7 +90,9 @@ CHTTPServer::~CHTTPServer()
 void CHTTPServer::Start()
 {
   do_break = false;			
-  listen(sock, 3);
+  int nRet = listen(m_Socket, 0);
+  if(nRet == -1)
+    CSharedLog::Shared()->Error(LOGNAME, "listen()");    
 
   /* Start thread */
   fuppesThreadStart(accept_thread, AcceptLoop);
@@ -95,11 +102,14 @@ void CHTTPServer::Stop()
 {
   /* Stop thread */
   fuppesThreadClose(accept_thread, 2000);
+  
+  /* close socket */
+  upnpSocketClose(m_Socket);
 }
 
 upnpSocket CHTTPServer::GetSocket()
 {
-  return sock;
+  return m_Socket;
 }
 
 std::string CHTTPServer::GetURL()
@@ -151,8 +161,8 @@ fuppesThreadCallback AcceptLoop(void *arg)
 	CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());
   
 	upnpSocket nSocket     = pHTTPServer->GetSocket();			
-	upnpSocket nConnection = 0;	
-	
+	upnpSocket nConnection = 0;
+  
 	struct sockaddr_in remote_ep;
 	socklen_t size = sizeof(remote_ep);
 	
@@ -168,14 +178,17 @@ fuppesThreadCallback AcceptLoop(void *arg)
 			
       /* Start session thread */
       CHTTPSessionInfo pSession(pHTTPServer, nConnection);      
-      fuppesThread Session = (fuppesThread)NULL;
+      fuppesThread Session = (fuppesThread)NULL;  
+      
       /* T.S.TODO: Where do we need to exit thread??? */
       /* uv :: we put the thread handles in a list (e.g vector)
                and build a garbage-collecting thread, that
                closes all finished threads */
       fuppesThreadStartArg(Session, SessionLoop, pSession);
 		}
-	}	
+    
+    /* todo: close finished threads */    
+	}  
 	
 	return 0;
 }
@@ -217,6 +230,7 @@ fuppesThreadCallback SessionLoop(void *arg)
     
   }
   
+  fuppesThreadExit(NULL);
   return 0;  
 }
 
