@@ -41,8 +41,7 @@ typedef enum tagUPNP_OBJECT_TYPE
 {
   UPNP_OBJECT_TYPE_STORAGE_FOLDER,
   UPNP_OBJECT_TYPE_ITEM,
-  UPNP_OBJECT_TYPE_AUDIO_ITEM,
-  UPNP_OBJECT_TYPE_MAX
+  UPNP_OBJECT_TYPE_AUDIO_ITEM
 }UPNP_OBJECT_TYPE;
 
 /*===============================================================================
