@@ -95,6 +95,7 @@ public:
   std::string               GetHTTPServerURL();
   std::string               GetIPAddress();
   std::vector<CUPnPDevice*> GetRemoteDevices();
+  std::string               GetUUID() { return m_sUUID; }
 
 /* <\PUBLIC> */
 
@@ -127,6 +128,9 @@ private:
   bool HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
   bool HandleHTTPPost(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
 	
+  void HandleSSDPAlive(CSSDPMessage* pMessage);
+  void HandleSSDPByeBye(CSSDPMessage* pMessage);
+  
 /* <\PRIVATE> */
 
 };

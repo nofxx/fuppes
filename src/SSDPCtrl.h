@@ -115,17 +115,23 @@ public:
 /* <PRIVATE> */
 
 	private:
-
+    
+/*===============================================================================
+ MESSAGE HANDLING
+===============================================================================*/
+    void HandleMSearch(CSSDPMessage* pSSDPMessage);  
+  
+  
 /*===============================================================================
  MEMBERS
 ===============================================================================*/
 
-  CUDPSocket         m_Listener;	
-  CNotifyMsgFactory* m_pNotifyMsgFactory;
-	fuppesThread       msearch_thread;
-	sockaddr_in        m_LastMulticastEp;  
-  std::string        m_sIPAddress;    
-  ISSDPCtrl*         m_pReceiveHandler;
+    CUDPSocket         m_Listener;	
+    CNotifyMsgFactory* m_pNotifyMsgFactory;
+    fuppesThread       msearch_thread;
+    sockaddr_in        m_LastMulticastEp;  
+    std::string        m_sIPAddress;    
+    ISSDPCtrl*         m_pReceiveHandler;
 
 /* <\PRIVATE> */
 

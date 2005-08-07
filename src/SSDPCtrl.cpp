@@ -174,30 +174,16 @@ void CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMe
   if((m_LastMulticastEp.sin_addr.s_addr != pSSDPMessage->GetRemoteEndPoint().sin_addr.s_addr) ||
     (m_LastMulticastEp.sin_port != pSSDPMessage->GetRemoteEndPoint().sin_port))
   {	
-    if(pSSDPMessage->GetContent().substr(0, 8).compare("M-SEARCH") == 0)
+    switch(pSSDPMessage->GetMessageType())
     {
-      stringstream sLog;
-      sLog << "received m-search from: \"" << inet_ntoa(pSSDPMessage->GetRemoteEndPoint().sin_addr) << ":" << ntohs(pSSDPMessage->GetRemoteEndPoint().sin_port) << "\"";      
-      CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());
-      CSharedLog::Shared()->DebugLog(LOGNAME, pSSDPMessage->GetMessage());
-      CSharedLog::Shared()->ExtendedLog(LOGNAME, "unicasting response");
-      
-      CUDPSocket Sock;
-      Sock.SetupSocket(false, m_sIPAddress);
-
-      Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_ROOT_DEVICE), pSSDPMessage->GetRemoteEndPoint());
-      Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_CONNECTION_MANAGER), pSSDPMessage->GetRemoteEndPoint());
-      Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_CONTENT_DIRECTORY), pSSDPMessage->GetRemoteEndPoint());
-      Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_MEDIA_SERVER), pSSDPMessage->GetRemoteEndPoint());
-      Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_USN), pSSDPMessage->GetRemoteEndPoint());
-
-      Sock.TeardownSocket();
-      CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");
-    }
-    else if(NULL != m_pReceiveHandler)
-    {
-      m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pSSDPMessage);
-    }
+      case SSDP_MESSAGE_TYPE_M_SEARCH:
+        HandleMSearch(pSSDPMessage);
+        break;
+      default:
+        if(m_pReceiveHandler != NULL)
+          m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pSSDPMessage);
+        break;
+    }    
   }
 }
 
@@ -212,3 +198,30 @@ void CSSDPCtrl::OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage)
 }
 
 /* <\PUBLIC> */
+
+
+/* <PRIVATE> */
+
+void CSSDPCtrl::HandleMSearch(CSSDPMessage* pSSDPMessage)
+{
+  stringstream sLog;
+  sLog << "received m-search from: \"" << inet_ntoa(pSSDPMessage->GetRemoteEndPoint().sin_addr) << ":" << ntohs(pSSDPMessage->GetRemoteEndPoint().sin_port) << "\"";      
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());
+  CSharedLog::Shared()->DebugLog(LOGNAME, pSSDPMessage->GetMessage());
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "unicasting response");
+  
+  CUDPSocket Sock;
+  Sock.SetupSocket(false, m_sIPAddress);
+
+  Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_ROOT_DEVICE), pSSDPMessage->GetRemoteEndPoint());
+  Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_CONNECTION_MANAGER), pSSDPMessage->GetRemoteEndPoint());
+  Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_CONTENT_DIRECTORY), pSSDPMessage->GetRemoteEndPoint());
+  Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_MEDIA_SERVER), pSSDPMessage->GetRemoteEndPoint());
+  Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_USN), pSSDPMessage->GetRemoteEndPoint());
+
+  Sock.TeardownSocket();
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");    
+}
+
+
+/* <\PRIVATE> */

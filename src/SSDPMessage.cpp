@@ -66,7 +66,7 @@ void CSSDPMessage::SetMessage(std::string p_sMessage)
   CMessageBase::SetMessage(p_sMessage);  
   CSharedLog::Shared()->DebugLog(LOGNAME, p_sMessage);
   
-  /* This is a sample message */
+  /* some sample messages */
   
   /* notify-alive
   
@@ -113,43 +113,79 @@ void CSSDPMessage::SetMessage(std::string p_sMessage)
   Content-Length: 0 
   */
   
+  /* let's find out the message type */  
   RegEx rxMSearch("M-SEARCH", PCRE_CASELESS);
   if(rxMSearch.Search(m_sMessage.c_str()))
   {
     m_nMessageType = SSDP_MESSAGE_TYPE_M_SEARCH;
   }
-  
-  
-	/* Location */
-  RegEx rxLocation("LOCATION: +(http://.+)", PCRE_CASELESS);
-	if(rxLocation.Search(m_sMessage.c_str()))
-	{
-    m_sLocation = rxLocation.Match(1);
-    //CSharedLog::Shared()->Log(LOGNAME, m_sLocation);    
-	}
-  
-  /* Server */
-  RegEx rxServer("SERVER: +(.*)", PCRE_CASELESS);
-	if(rxServer.Search(m_sMessage.c_str()))
-	{
-    m_sServer = rxServer.Match(1);
-    //CSharedLog::Shared()->Log(LOGNAME, m_sServer);
-	}
-  
-  /* USN */
-  RegEx rxUSN("USN: +(.*)", PCRE_CASELESS);
-  if(rxUSN.Search(m_sMessage.c_str()))
+  else
   {
-    m_sUSN = rxUSN.Match(1);
-    //CSharedLog::Shared()->Log(LOGNAME, m_sUSN);
-    
-    RegEx rxUUID("uuid:([A-Z|0-9|-]+)", PCRE_CASELESS);
-    if(rxUUID.Search(m_sUSN.c_str()))
+    /* check if it's a notify message */
+    RegEx rxNotify("NOTIFY", PCRE_CASELESS);
+    if(rxNotify.Search(m_sMessage.c_str()))
     {
-      m_sUUID = rxUUID.Match(1);
-      //CSharedLog::Shared()->Log(LOGNAME, m_sUUID);
+      /* found notify. check whether it's alive or byebye */
+      RegEx rxNTS("NTS: +ssdp:(\\w+)", PCRE_CASELESS);
+      if(rxNTS.Search(m_sMessage.c_str()))
+      {        
+        if(ToLower(rxNTS.Match(1)).compare("alive") == 0)        
+          m_nMessageType = SSDP_MESSAGE_TYPE_NOTIFY_ALIVE;        
+        else if(ToLower(rxNTS.Match(1)).compare("byebye") == 0)        
+          m_nMessageType = SSDP_MESSAGE_TYPE_NOTIFY_BYEBYE;        
+      }
+    }
+    else
+    {
+      /* msearch response */
+      RegEx rxHTTP("HTTP */* *1.\\d +(\\d+) +(\\w+)", PCRE_CASELESS);
+      if(rxHTTP.Search(m_sMessage.c_str()))              
+        m_nMessageType = SSDP_MESSAGE_TYPE_M_SEARCH_RESPONSE;      
     }    
   }
+  /* end find out message type */
+  
+  
+  if(m_nMessageType != SSDP_MESSAGE_TYPE_UNKNOWN)
+  {
+    
+    if(m_nMessageType != SSDP_MESSAGE_TYPE_M_SEARCH)
+    {
+      /* Location */
+      RegEx rxLocation("LOCATION: +(http://.+)", PCRE_CASELESS);
+      if(rxLocation.Search(m_sMessage.c_str()))
+      {
+        m_sLocation = rxLocation.Match(1);
+        //CSharedLog::Shared()->Log(LOGNAME, m_sLocation);    
+      }
+      
+      /* Server */
+      RegEx rxServer("SERVER: +(.*)", PCRE_CASELESS);
+      if(rxServer.Search(m_sMessage.c_str()))
+      {
+        m_sServer = rxServer.Match(1);
+        //CSharedLog::Shared()->Log(LOGNAME, m_sServer);
+      }
+      
+      /* USN */
+      RegEx rxUSN("USN: +(.*)", PCRE_CASELESS);
+      if(rxUSN.Search(m_sMessage.c_str()))
+      {
+        m_sUSN = rxUSN.Match(1);
+        //CSharedLog::Shared()->Log(LOGNAME, m_sUSN);
+        
+        RegEx rxUUID("uuid:([A-Z|0-9|-]+)", PCRE_CASELESS);
+        if(rxUUID.Search(m_sUSN.c_str()))
+        {
+          m_sUUID = rxUUID.Match(1);
+          //CSharedLog::Shared()->Log(LOGNAME, m_sUUID);
+        }    
+      }
+      
+    } /* if(m_nMessageType != SSDP_MESSAGE_TYPE_M_SEARCH)  */
+    
+  } /* if(m_nMessageType != SSDP_MESSAGE_TYPE_UNKNOWN) */
+
 }
 
 /*===============================================================================

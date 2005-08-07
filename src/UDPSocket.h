@@ -84,11 +84,11 @@ public:
 ===============================================================================*/
 
   /** constructor
-  */
+   */
   CUDPSocket();
 
   /** destructor
-  */
+   */
   ~CUDPSocket();
 
 /*===============================================================================
@@ -96,14 +96,14 @@ public:
 ===============================================================================*/
 
   /** initializes the socket
-  *  @param  p_bDoMulticast  indicates whether to multicast or not
-  *  @param  p_sIPAddress    the ip address. irrelevant if p_bDoMulticast is true
-  *  @return returns true on success otherwise false
-  */
+   *  @param  p_bDoMulticast  indicates whether to multicast or not
+   *  @param  p_sIPAddress    the ip address. irrelevant if p_bDoMulticast is true
+   *  @return returns true on success otherwise false
+   */
   bool SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress = "");
 
   /** finalizes and closes the socket
-  */
+   */
   void TeardownSocket();
 
 /*===============================================================================
@@ -111,14 +111,14 @@ public:
 ===============================================================================*/
 
   /** multicasts a message
-  *  @param  p_sMessage  the message to send
-  */
+   *  @param  p_sMessage  the message to send
+   */
   void SendMulticast(std::string p_sMessage);
 
   /** unicasts a message
-  *  @param  p_sMessage  the message to send
-  *  @param  p_RemoteEndPoint  the receiver
-  */
+   *  @param  p_sMessage  the message to send
+   *  @param  p_RemoteEndPoint  the receiver
+   */
   void SendUnicast(std::string p_sMessage, sockaddr_in p_RemoteEndPoint);
 
 /*===============================================================================
@@ -126,21 +126,21 @@ public:
 ===============================================================================*/
 
   /** starts the receive thread
-  */
+   */
   void BeginReceive();
 
   /** ends the receive thread
-  */
+   */
   void EndReceive();
 
   /** sets the receive handler
-  *  @param  pISocket  the receiver handler
-  */	
+   *  @param  pISocket  the receiver handler
+   */	
   void SetReceiveHandler(IUDPSocket* pISocket);
 
   /** lets the receiver handler handle a message
-  *  @param  pMessage  the message to handle
-  */	    
+   *  @param  pMessage  the message to handle
+   */	    
   void CallOnReceive(CSSDPMessage* pMessage);
 
 /*===============================================================================
@@ -148,25 +148,25 @@ public:
 ===============================================================================*/
 
   /** returns the socket's descriptor
-  *  @return the descriptor
-  */
+   *  @return the descriptor
+   */
   upnpSocket GetSocketFd();
 
   /** returns the socket's port
-  *  @return the port number
-  */
+   *  @return the port number
+   */
   int  GetPort();
 
   /** returns the socket's IP-Address as string
-  *  @return the address
-  */
+   *  @return the address
+   */
   std::string GetIPAddress();
 
   /** returns the local end point
-  *  @return the end point structure
-  */
+   *  @return the end point structure
+   */
   sockaddr_in GetLocalEndPoint();	
-
+ 
 /* <\PUBLIC> */
 
 /* <PRIVATE> */
@@ -185,7 +185,7 @@ private:
   sockaddr_in   m_LocalEndpoint;
 
   /* Message handling */
-  fuppesThread  m_ReceiveThread;					  
+  fuppesThread  m_ReceiveThread;
   IUDPSocket*   m_pReceiveHandler;
 	
 /* <\PRIVATE> */

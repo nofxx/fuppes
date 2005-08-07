@@ -2,7 +2,8 @@
  *            Stylesheet.h
  *
  *  FUPPES - Free UPnP Entertainment Service
- *  Copyright (C) 2005 Ulrich Völkel
+ *
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -30,8 +31,8 @@ std::string GetStylesheet()
 {
   std::stringstream sStylesheet;
   sStylesheet << "body {";
-  sStylesheet << "  margin:      0;";
-  sStylesheet << "  padding:     0;";
+  sStylesheet << "  margin:      5;";
+  sStylesheet << "  padding:     5;";
   sStylesheet << "  font-family: Verdana, Arial, Helvetica;";
   sStylesheet << "  font-size:   10pt;";
   sStylesheet << "  background-color: #CCCCFF;"; // #EBEBEB

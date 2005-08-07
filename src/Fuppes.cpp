@@ -198,19 +198,19 @@ void CFuppes::OnSSDPCtrlReceiveMsg(CSSDPMessage* pMessage)
     }
     else
     {
-      std::stringstream sMsg;
-      sMsg << "new device id: " << pMessage->GetDeviceID();      
-      CSharedLog::Shared()->Log(LOGNAME, sMsg.str());
-      
-      if((pMessage->GetLocation().compare("")) == 0)
-        return;
-      
-      CUPnPDevice* pDevice = new CUPnPDevice();
-      if(pDevice->BuildFromDescriptionURL(pMessage->GetLocation()))
-        m_RemoteDevices[pMessage->GetDeviceID()] = pDevice;      
-      else      
-        delete pDevice;     
-    }    
+      switch(pMessage->GetMessageType())
+      {
+        case SSDP_MESSAGE_TYPE_NOTIFY_ALIVE:
+          HandleSSDPAlive(pMessage);
+          break;
+        case SSDP_MESSAGE_TYPE_M_SEARCH_RESPONSE:
+          HandleSSDPAlive(pMessage);
+          break;
+        case SSDP_MESSAGE_TYPE_NOTIFY_BYEBYE:
+          HandleSSDPByeBye(pMessage);
+          break;
+      }
+    }
   }
 }
 
@@ -315,6 +315,29 @@ bool CFuppes::HandleHTTPPost(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut
     fRet = m_pContentDirectory->HandleUPnPAction((CUPnPAction*)&UPnPBrowse, pMessageOut);
   
   return fRet;
+}
+
+void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
+{
+      
+      
+      std::stringstream sMsg;
+      sMsg << "new device id: " << pMessage->GetDeviceID();      
+      CSharedLog::Shared()->Log(LOGNAME, sMsg.str());
+      
+      if((pMessage->GetLocation().compare("")) == 0)
+        return;
+      
+      CUPnPDevice* pDevice = new CUPnPDevice();
+      if(pDevice->BuildFromDescriptionURL(pMessage->GetLocation()))
+        m_RemoteDevices[pMessage->GetDeviceID()] = pDevice;      
+      else      
+        delete pDevice;   
+  
+}
+
+void CFuppes::HandleSSDPByeBye(CSSDPMessage* pMessage)
+{
 }
 
 /* <\PRIVATE> */

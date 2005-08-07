@@ -123,7 +123,7 @@ std::string CPresentationHandler::GetIndexHTML()
     sResult << "FUPPES Instance No. " << i + 1 << "<br />";    
     sResult << "IP-Address: " << ((CFuppes*)m_vFuppesInstances[i])->GetIPAddress() << "<br />";
     sResult << "HTTP-Server URL: " << ((CFuppes*)m_vFuppesInstances[i])->GetHTTPServerURL() << "<br />";
-    sResult << "Status: " << "<i>todo</i>" << "<br />";
+    sResult << "UUID: " << ((CFuppes*)m_vFuppesInstances[i])->GetUUID() << "<br />";    
     sResult << "<br />";
     sResult << "<br />";
     
@@ -153,6 +153,7 @@ std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes)
     sResult << "No. " << i + 1 << "<br />";
     sResult << "Name: " << pDevice->GetFriendlyName() << "<br />";
     sResult << "UUID: " << pDevice->GetUUID() << "<br />";
+    sResult << "Status: " << "<i>todo</i>" << "<br />";
   }
 
   return sResult.str();

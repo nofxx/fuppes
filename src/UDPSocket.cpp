@@ -216,24 +216,17 @@ void CUDPSocket::EndReceive()
   fuppesThreadClose(m_ReceiveThread, 2000);
 }
 
-/**
- * SetReceiveHandler
- */
+/* SetReceiveHandler */
 void CUDPSocket::SetReceiveHandler(IUDPSocket* pHandler)
 {
   /* Save pointer to the receive handler */
   m_pReceiveHandler = pHandler;
 }
 
-/**
- * CallOnReceive
- */
+/* CallOnReceive */
 void CUDPSocket::CallOnReceive(CSSDPMessage* pSSDPMessage)
-{
-	VOID_CHK_RET_POINTER(pSSDPMessage);
-  
-  /* Call receive handler */
-  ASSERT(NULL != m_pReceiveHandler);
+{ 
+  /* Call receive handler */  
   if(NULL != m_pReceiveHandler)
 	  m_pReceiveHandler->OnUDPSocketReceive(this, pSSDPMessage);
 }
@@ -301,7 +294,7 @@ fuppesThreadCallback ReceiveLoop(void *arg)
       SSDPMessage.SetMessage(msg.str());
 			SSDPMessage.SetRemoteEndPoint(remote_ep);
 			SSDPMessage.SetLocalEndPoint(udp_sock->GetLocalEndPoint());
-			udp_sock->CallOnReceive(&SSDPMessage);
+			udp_sock->CallOnReceive(&SSDPMessage);      
 		}
 		
 		msg.str("");
