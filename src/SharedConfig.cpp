@@ -245,15 +245,29 @@ bool CSharedConfig::ResolveHostAndIP()
   if(0 == nRet)
   {    
     m_sHostname = name;
-
+    
+    #ifdef OPENNAS
+    struct ifreq ifa;
+    struct sockaddr_in *saddr;
+    int    fd;
+    
+    strcpy (ifa.ifr_name, "eth0");
+    if(((fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) || ioctl(fd, SIOCGIFADDR, &ifa))
+        return false;
+    saddr = (struct sockaddr_in*)&ifa.ifr_addr;
+    m_sIP = inet_ntoa(saddr->sin_addr);        
+    
+    #else
     struct hostent* host;
     host = gethostbyname(name);
     addr = (struct in_addr*)host->h_addr;
-    m_sIP = inet_ntoa(*addr);
+    m_sIP = inet_ntoa(*addr);    
+    #endif
     
-    return true;
+    return true;    
   }
-  else return false;
+  else 
+    return false;
 }
 
 bool CSharedConfig::FileExists(std::string p_sFileName)
