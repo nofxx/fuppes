@@ -99,7 +99,7 @@ public:
 
   void         SetMessage(HTTP_MESSAGE_TYPE nMsgType, HTTP_VERSION nVersion);
   void         SetMessage(HTTP_MESSAGE_TYPE nMsgType, HTTP_CONTENT_TYPE nCtntType);
-  virtual void SetMessage(std::string p_sMessage);
+  virtual bool SetMessage(std::string p_sMessage);
 
 /*===============================================================================
  GET MESSAGE DATA
@@ -129,7 +129,7 @@ public:
  OTHER
 ===============================================================================*/
 
-  void             BuildFromString(std::string p_sMessage);
+  bool             BuildFromString(std::string p_sMessage);
   bool             LoadContentFromFile(std::string);	
   
 

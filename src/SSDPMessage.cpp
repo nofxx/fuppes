@@ -61,7 +61,7 @@ CSSDPMessage::~CSSDPMessage()
  MESSAGES
 ===============================================================================*/
 
-void CSSDPMessage::SetMessage(std::string p_sMessage)
+bool CSSDPMessage::SetMessage(std::string p_sMessage)
 {
   CMessageBase::SetMessage(p_sMessage);  
   CSharedLog::Shared()->DebugLog(LOGNAME, p_sMessage);

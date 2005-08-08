@@ -28,6 +28,10 @@
 ===============================================================================*/
 
 #include "MessageBase.h"
+#include "RegEx.h"
+
+#include <iostream>
+using namespace std;
 
 /*===============================================================================
  CLASS CMessageBase
@@ -55,11 +59,20 @@ CMessageBase::~CMessageBase()
  INIT
 ===============================================================================*/
 
-void CMessageBase::SetMessage(std::string p_sMessage)
+bool CMessageBase::SetMessage(std::string p_sMessage)
 {
-  /* TODO: split message into header and content */
-  m_sMessage = p_sMessage;  
-  m_sContent = p_sMessage;
+  m_sMessage = p_sMessage;
+
+  unsigned int nPos = m_sMessage.find("\r\n\r\n");  
+  if(nPos != string::npos)
+  {
+    m_sHeader  = m_sMessage.substr(0, nPos);
+    m_sContent = m_sMessage.substr(nPos, m_sMessage.length() - nPos);    
+    
+    return true;
+  }
+  else
+    return false;  
 }
 
 /*===============================================================================
@@ -76,3 +89,8 @@ void CMessageBase::SetRemoteEndPoint(sockaddr_in p_EndPoint)
   m_RemoteEp = p_EndPoint;
 }
 /* <\PUBLIC> */
+
+
+void CMessageBase::TrySplitMessage()
+{
+}

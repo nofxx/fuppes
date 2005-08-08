@@ -70,7 +70,7 @@ public:
  INIT
 ===============================================================================*/
 
-  virtual void SetMessage(std::string p_sMessage);
+  virtual bool SetMessage(std::string p_sMessage);
 
 /*===============================================================================
  GET MESSAGE DATA
@@ -108,6 +108,9 @@ protected:
     std::string m_sMessage;
 
 /* <\PROTECTED> */
+
+  private:
+    void TrySplitMessage();
 
 };
 

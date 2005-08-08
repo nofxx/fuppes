@@ -100,7 +100,7 @@ void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, HTTP_CONTENT_TYPE nCtn
   m_nBinContentLength = 0;
 }
 
-void CHTTPMessage::SetMessage(std::string p_sMessage)
+bool CHTTPMessage::SetMessage(std::string p_sMessage)
 {
   CMessageBase::SetMessage(p_sMessage);  
   CSharedLog::Shared()->DebugLog(LOGNAME, p_sMessage);  
@@ -173,7 +173,7 @@ std::string CHTTPMessage::GetMessageAsString()
  OTHER
 ===============================================================================*/
 
-void CHTTPMessage::BuildFromString(std::string p_sMessage)
+bool CHTTPMessage::BuildFromString(std::string p_sMessage)
 {
   m_nBinContentLength = 0;
   m_sMessage = p_sMessage;

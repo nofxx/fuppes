@@ -1,4 +1,4 @@
-# Anjuta Version 1.2.2 
+# Anjuta Version 1.2.3 
 Compatibility Level: 1 
 
 <PROJECT_DESCRIPTION_START>
@@ -22,7 +22,7 @@ FUPPES - Free UPnP Entertainment Service<PROJECT_DESCRIPTION_END>
 
 props.file.type=project
 
-anjuta.version=1.2.2
+anjuta.version=1.2.3
 anjuta.compatibility.level=1
 
 project.name=fuppes
@@ -158,7 +158,7 @@ compiler.options.defines.selected=1 1
 compiler.options.warning.buttons=0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 
 compiler.options.optimize.buttons=1 0 0 0 
 compiler.options.other.buttons=1 0 
-compiler.options.other.c.flags=
+compiler.options.other.c.flags=-D__cplusplus
 compiler.options.other.l.flags=-lpthread -lpcre
 compiler.options.other.l.libs=
 

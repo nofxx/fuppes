@@ -68,7 +68,7 @@ public:
  MESSAGES
 ===============================================================================*/
 
-  virtual void SetMessage(std::string p_sMessage);
+  virtual bool SetMessage(std::string p_sMessage);
 
 /*===============================================================================
  GET
