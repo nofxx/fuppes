@@ -105,7 +105,7 @@ bool CSharedConfig::SetupConfig()
 
   if(bResult && !ResolveHostAndIP())
   {
-    cout << "[ERROR] can'r resolve hostname and address" << endl;
+    cout << "[ERROR] can't resolve hostname and address" << endl;
     bResult = false;
   }
 
