@@ -121,6 +121,8 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
     m_LocalEndpoint.sin_addr.s_addr  = inet_addr(p_sIPAddress.c_str());		
     m_LocalEndpoint.sin_port		     = htons(0); /* use random port */
 	}
+	/* fill the rest of the structure with zero */
+	memset(&(m_LocalEndpoint.sin_zero), '\0', 8);
 	
 	/* Bind socket */
 	ret = bind(m_Socket, (struct sockaddr*)&m_LocalEndpoint, sizeof(m_LocalEndpoint)); 

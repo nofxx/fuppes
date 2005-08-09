@@ -70,6 +70,8 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 	local_ep.sin_family      = PF_INET;
 	local_ep.sin_addr.s_addr = inet_addr(p_sIPAddress.c_str());
 	local_ep.sin_port				 = htons(0); // htons(5080);
+	/* fill the rest of the structure with zero */
+	memset(&(local_ep.sin_zero), '\0', 8);
 	
 	int nRet = bind(m_Socket, (struct sockaddr*)&local_ep, sizeof(local_ep));	
   if(nRet == -1)
