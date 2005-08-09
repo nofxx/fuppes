@@ -104,7 +104,8 @@ bool CHTTPMessage::SetMessage(std::string p_sMessage)
 {
   CMessageBase::SetMessage(p_sMessage);  
   CSharedLog::Shared()->DebugLog(LOGNAME, p_sMessage);  
-  BuildFromString(p_sMessage);
+  
+  return BuildFromString(p_sMessage);
 }
 
 /*===============================================================================
@@ -210,6 +211,8 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
 
     ParsePOSTMessage(p_sMessage);
   }
+  
+  return true;
 }
 
 bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)

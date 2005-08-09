@@ -186,6 +186,7 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
     
   } /* if(m_nMessageType != SSDP_MESSAGE_TYPE_UNKNOWN) */
 
+  return true;
 }
 
 /*===============================================================================

@@ -66,7 +66,7 @@ CSharedLog* CSharedLog::Shared()
 
 CSharedLog::CSharedLog()
 {
-  SetLogLevel(1);
+  SetLogLevel(0, false);
   #ifndef DISABLELOG
   fuppesThreadInitMutex(&m_Mutex);
   #endif
@@ -83,7 +83,7 @@ CSharedLog::~CSharedLog()
 
 /* <PUBLIC> */
 
-void CSharedLog::SetLogLevel(int p_nLogLevel)
+void CSharedLog::SetLogLevel(int p_nLogLevel, bool p_bPrintLogLevel)
 {
   m_bShowLog         = false;
   m_bShowExtendedLog = false;
@@ -93,22 +93,26 @@ void CSharedLog::SetLogLevel(int p_nLogLevel)
   switch(m_nLogLevel)
   {
     case 0:
-      std::cout << "logging disabled" << std::endl;
+      if(p_bPrintLogLevel)
+        std::cout << "logging disabled" << std::endl;
       break;    
     case 1:
       m_bShowLog = true;
-      std::cout << "normal logging" << std::endl;
+      if(p_bPrintLogLevel)
+        std::cout << "normal logging" << std::endl;
       break;
     case 2:
       m_bShowLog         = true;
       m_bShowExtendedLog = true;
-      std::cout << "extended logging" << std::endl;
+      if(p_bPrintLogLevel)
+        std::cout << "extended logging" << std::endl;
       break;
     case 3:
       m_bShowLog         = true;
       m_bShowExtendedLog = true;
       m_bShowDebugLog    = true;
-      std::cout << "debug logging" << std::endl;
+      if(p_bPrintLogLevel)
+        std::cout << "debug logging" << std::endl;
       break;
     default:
       break;

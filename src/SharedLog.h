@@ -80,7 +80,7 @@ public:
   /** set the level of log verbosity
    *  @param  p_nLogLevel  0 = no log, 1 = std log, 2 = extended log, 3 = debug log
    */
-  void  SetLogLevel(int p_nLogLevel);
+  void  SetLogLevel(int p_nLogLevel, bool p_bPrintLogLevel = true);
   
   void  ToggleLog();
   
