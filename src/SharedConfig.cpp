@@ -275,6 +275,9 @@ bool CSharedConfig::ResolveIPByHostname()
 
 bool CSharedConfig::ResolveIPByInterface(std::string p_sInterfaceName)
 {
+#ifdef WIN32
+  return true;
+#else
     struct ifreq ifa;
     struct sockaddr_in *saddr;
     int       fd;
@@ -285,6 +288,7 @@ bool CSharedConfig::ResolveIPByInterface(std::string p_sInterfaceName)
     saddr = (struct sockaddr_in*)&ifa.ifr_addr;
     m_sIP = inet_ntoa(saddr->sin_addr);
     return true;
+#endif
 }
 
 bool CSharedConfig::FileExists(std::string p_sFileName)
