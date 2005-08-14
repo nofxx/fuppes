@@ -193,14 +193,14 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
  GET
 ===============================================================================*/
 
-std::string CSSDPMessage::GetDeviceID()
-{
-  /* Format string */
-  std::stringstream sDeviceID;
-  sDeviceID << GetRemoteIPAddress() << "::" << GetUUID();
+//~ std::string CSSDPMessage::GetDeviceID()
+//~ {
+  //~ /* Format string */
+  //~ std::stringstream sDeviceID;
+  //~ sDeviceID << GetRemoteIPAddress() << "::" << GetUUID();
   
-  /* Return device id */
-  return sDeviceID.str();
-}
+  //~ /* Return device id */
+  //~ return sDeviceID.str();
+//~ }
 
 /* <\PUBLIC> */

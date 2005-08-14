@@ -57,9 +57,14 @@ const string LOGNAME = "UPNPDevice";
 ===============================================================================*/
 
 /* constructor */
-CUPnPDevice::CUPnPDevice(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL):
+CUPnPDevice::CUPnPDevice(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL, IUPnPDevice* pOnTimerHandler):
   CUPnPBase(nType, p_sHTTPServerURL)
-{  
+{
+  /* this constructor is for local devices only */
+  m_bIsLocalDevice  = true;  
+  m_pOnTimerHandler = pOnTimerHandler;
+  
+  m_pTimer = new CTimer(this);
 }
 
 /* <\PROTECTED> */
@@ -70,13 +75,48 @@ CUPnPDevice::CUPnPDevice(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL):
  CONSTRUCTOR / DESTRUCTOR
 ===============================================================================*/
 
-CUPnPDevice::CUPnPDevice():
+CUPnPDevice::CUPnPDevice(IUPnPDevice* pOnTimerHandler):
   CUPnPBase(UPNP_DEVICE_TYPE_UNKNOWN, "")
 {
+  /* this constructor is for remote devices only */
+  m_bIsLocalDevice  = false;
+  m_pOnTimerHandler = pOnTimerHandler;
+  
+  m_pTimer = new CTimer(this);
 }
 
 CUPnPDevice::~CUPnPDevice()
 {
+  delete m_pTimer;
+}
+
+
+/*===============================================================================
+ TIMER
+===============================================================================*/
+
+void CUPnPDevice::OnTimer()
+{
+  CSharedLog::Shared()->Log(LOGNAME, "OnTimer()");
+  if(m_pOnTimerHandler != NULL)
+    m_pOnTimerHandler->OnTimer(this);
+}
+
+
+void CUPnPDevice::TimerStart(unsigned int p_nSeconds)
+{ 
+  m_pTimer->SetInterval(p_nSeconds);
+  m_pTimer->Start();
+}
+
+void CUPnPDevice::TimerStop()
+{
+  m_pTimer->Stop();
+}
+
+void CUPnPDevice::TimerReset()
+{
+  m_pTimer->Reset();
 }
 
 /*===============================================================================

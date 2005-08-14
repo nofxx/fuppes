@@ -67,7 +67,7 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
   if(m_Socket == -1)  
     CSharedLog::Shared()->Error(LOGNAME, "creating socket");  
 	
-	local_ep.sin_family      = PF_INET;
+	local_ep.sin_family      = AF_INET;
 	local_ep.sin_addr.s_addr = inet_addr(p_sIPAddress.c_str());
 	local_ep.sin_port				 = htons(0); // htons(5080);
 	/* fill the rest of the structure with zero */

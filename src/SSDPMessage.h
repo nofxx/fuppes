@@ -76,7 +76,7 @@ public:
 
     std::string GetLocation() { return m_sLocation; }
     std::string GetUUID()     { return m_sUUID;     }    
-    std::string GetDeviceID();
+    //~ std::string GetDeviceID();
     SSDP_MESSAGE_TYPE GetMessageType() { return m_nMessageType; }     
     
 /* <\PUBLIC> */

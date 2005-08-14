@@ -47,7 +47,7 @@ public:
  CONSTRUCTOR / DESTRUCTOR
 ===============================================================================*/
 
-  CMediaServer(std::string p_sHTTPServerURL);
+  CMediaServer(std::string p_sHTTPServerURL, IUPnPDevice* pOnTimerHandler);
   ~CMediaServer();
 
 /* <\PUBLIC> */

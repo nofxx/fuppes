@@ -87,7 +87,7 @@ CUDPSocket::~CUDPSocket()
 bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = "" */)
 {
   /* Create socket */
-	m_Socket = socket(PF_INET, SOCK_DGRAM, 0);
+	m_Socket = socket(AF_INET, SOCK_DGRAM, 0);
 	if(m_Socket == -1)
   {
     CSharedLog::Shared()->Error(LOGNAME, "creating socket");
@@ -167,8 +167,7 @@ void CUDPSocket::TeardownSocket()
 		stMreq.imr_interface.s_addr  = INADDR_ANY; 	
 		setsockopt(m_Socket, IPPROTO_IP, IP_DROP_MEMBERSHIP,(char *)&stMreq,sizeof(stMreq)); 		
 	}	
-	
-  /* T.S.TEST: We have to exit thread here?! */
+
   /* Exit thread */  
   if(m_ReceiveThread != (fuppesThread)NULL)
     EndReceive();

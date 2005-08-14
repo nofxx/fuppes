@@ -45,8 +45,8 @@ using namespace std;
  CONSTRUCTOR / DESTRUCTOR
 ===============================================================================*/
 
-CMediaServer::CMediaServer(std::string p_sHTTPServerURL):
-  CUPnPDevice(UPNP_DEVICE_TYPE_MEDIA_SERVER, p_sHTTPServerURL)
+CMediaServer::CMediaServer(std::string p_sHTTPServerURL, IUPnPDevice* pOnTimerHandler):
+  CUPnPDevice(UPNP_DEVICE_TYPE_MEDIA_SERVER, p_sHTTPServerURL, pOnTimerHandler)
 {
   /* Set common data for FUPPES */
 

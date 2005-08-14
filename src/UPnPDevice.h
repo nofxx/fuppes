@@ -36,14 +36,23 @@
 
 #include "UPnPBase.h"
 #include "UPnPService.h"
+#include "Timer.h"
 
 using namespace std;
+
+class CUPnPDevice;
+  
+class IUPnPDevice
+{
+  public:
+    virtual void OnTimer(CUPnPDevice* pSender) = 0;
+};
 
 /*===============================================================================
  CLASS CUPnPDevice
 ===============================================================================*/
 
-class CUPnPDevice: public CUPnPBase
+class CUPnPDevice: public CUPnPBase, ITimer
 {
 
 /* <PROTECTED> */
@@ -58,7 +67,7 @@ protected:
    *  @param  nType  the device type
    *  @param  p_sHTTPServerURL  URL of the HTTP server
    */
-  CUPnPDevice(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL);		
+  CUPnPDevice(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL, IUPnPDevice* pOnTimerHandler);		
 
 /* <\PROTECTED> */
 
@@ -72,11 +81,32 @@ public:
   
   /** constructor
    */
-  CUPnPDevice();
+  CUPnPDevice(IUPnPDevice* pOnTimerHandler);
 
   /** destructor
    */
-  ~CUPnPDevice();
+  virtual ~CUPnPDevice();
+
+
+  /** OnTimer
+   */
+  void OnTimer();
+
+  /** StartTimer
+   */
+  void TimerStart(unsigned int p_nSeconds);
+  
+  /** StopTimer
+   */
+  void TimerStop();
+  
+  /** ResetTimer
+   */
+  void TimerReset();
+   
+  
+  
+
 
 /*===============================================================================
  BUILD DEVICE
@@ -128,32 +158,38 @@ public:
    */  
   std::string GetUUID() { return m_sUUID; }
   
+  bool GetIsLocalDevice() { return m_bIsLocalDevice; }
+  
 /* <\PUBLIC> */
 
 /* <PROTECTED> */
 
-protected:
-
+  protected:
+  
 /*===============================================================================
  MEMBERS
 ===============================================================================*/
-
-  std::string   m_sFriendlyName;
-  std::string   m_sManufacturer;
-  std::string   m_sManufacturerURL;
-  std::string   m_sModelDescription;
-  std::string   m_sModelName;
-  std::string   m_sModelNumber;
-  std::string   m_sModelURL;
-  std::string   m_sSerialNumber;
-  std::string   m_sUUID;
-  std::string   m_sUPC;
-  std::string   m_sPresentationURL;
+  
+    std::string   m_sFriendlyName;
+    std::string   m_sManufacturer;
+    std::string   m_sManufacturerURL;
+    std::string   m_sModelDescription;
+    std::string   m_sModelName;
+    std::string   m_sModelNumber;
+    std::string   m_sModelURL;
+    std::string   m_sSerialNumber;
+    std::string   m_sUUID;
+    std::string   m_sUPC;
+    std::string   m_sPresentationURL;
 
 /* <\PROTECTED> */
 
 	private:
-
+    bool         m_bIsLocalDevice;
+    CTimer*      m_pTimer;
+    IUPnPDevice* m_pOnTimerHandler;
+  
+  
 /* <PRIVATE> */
 
 /*===============================================================================

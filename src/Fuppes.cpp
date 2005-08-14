@@ -87,7 +87,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID, IFuppes* pPresen
 	m_pSSDPCtrl->Start();
 
   /* Create MediaServer */
-  m_pMediaServer = new CMediaServer(m_pHTTPServer->GetURL());	  
+  m_pMediaServer = new CMediaServer(m_pHTTPServer->GetURL(), this);	  
   
   /* Create ContentDirectory */
   m_pContentDirectory = new CContentDirectory(m_pHTTPServer->GetURL());  
@@ -106,6 +106,9 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID, IFuppes* pPresen
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "multicasting m-search");  
   m_pSSDPCtrl->send_msearch();  
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");
+  
+  /* start alive timer */
+  m_pMediaServer->TimerStart(20); // 900 sec = 15 min
 }
 
 /** destructor
@@ -129,6 +132,36 @@ CFuppes::~CFuppes()
   SAFE_DELETE(m_pMediaServer);
   SAFE_DELETE(m_pSSDPCtrl);
   SAFE_DELETE(m_pHTTPServer);
+}
+
+void CFuppes::OnTimer(CUPnPDevice* pSender)
+{
+  CSharedLog::Shared()->Log(LOGNAME, "OnTimer()");
+  /* local device must send alive message */
+  if(pSender->GetIsLocalDevice())
+  {
+    stringstream sLog;
+    sLog << "device: " << pSender->GetUUID() << " send timed alive";
+    CSharedLog::Shared()->Log(LOGNAME, sLog.str());    
+    m_pSSDPCtrl->send_alive();
+    CSharedLog::Shared()->Log(LOGNAME, "done");
+  }
+  /* remote device timed out */
+  else
+  {
+    stringstream sLog;
+    sLog << "device: " << pSender->GetUUID() << " timed out";
+    CSharedLog::Shared()->Log(LOGNAME, sLog.str());
+
+    m_RemoteDeviceIterator = m_RemoteDevices.find(pSender->GetUUID());  
+    /* found device */
+    if(m_RemoteDeviceIterator != m_RemoteDevices.end())
+    {      
+      m_RemoteDevices.erase(pSender->GetUUID());      
+      pSender->TimerStop();
+      delete pSender;
+    }
+  }
 }
 
 /*===============================================================================
@@ -189,27 +222,23 @@ void CFuppes::OnSSDPCtrlReceiveMsg(CSSDPMessage* pMessage)
   
   if((m_sIPAddress.compare(inet_ntoa(pMessage->GetRemoteEndPoint().sin_addr)) != 0) || (pMessage->GetUUID().compare(m_sUUID) != 0))
   { 
-    m_RemoteDeviceIterator = m_RemoteDevices.find(pMessage->GetDeviceID());
-    if(m_RemoteDeviceIterator != m_RemoteDevices.end())
+    switch(pMessage->GetMessageType())
     {
-      /*std::stringstream sMsg;
-      sMsg << "known device: " << pMessage->GetDeviceID();
-      CSharedLog::Shared()->Log(LOGNAME, sMsg.str()); */
-    }
-    else
-    {
-      switch(pMessage->GetMessageType())
-      {
-        case SSDP_MESSAGE_TYPE_NOTIFY_ALIVE:
-          HandleSSDPAlive(pMessage);
-          break;
-        case SSDP_MESSAGE_TYPE_M_SEARCH_RESPONSE:
-          HandleSSDPAlive(pMessage);
-          break;
-        case SSDP_MESSAGE_TYPE_NOTIFY_BYEBYE:
-          HandleSSDPByeBye(pMessage);
-          break;
-      }
+      case SSDP_MESSAGE_TYPE_NOTIFY_ALIVE:
+        HandleSSDPAlive(pMessage);
+        break;
+      case SSDP_MESSAGE_TYPE_M_SEARCH_RESPONSE:
+        HandleSSDPAlive(pMessage);
+        break;
+      case SSDP_MESSAGE_TYPE_NOTIFY_BYEBYE:
+        HandleSSDPByeBye(pMessage);
+        break;
+      case SSDP_MESSAGE_TYPE_M_SEARCH:
+        /* m-search is handled by SSDPCtrl */
+        break;
+      case SSDP_MESSAGE_TYPE_UNKNOWN:
+        /* this should never happen :) */
+        break;
     }
   }
 }
@@ -319,25 +348,53 @@ bool CFuppes::HandleHTTPPost(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut
 
 void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
 {
-      
-      
-      std::stringstream sMsg;
-      sMsg << "new device id: " << pMessage->GetDeviceID();      
-      CSharedLog::Shared()->Log(LOGNAME, sMsg.str());
-      
-      if((pMessage->GetLocation().compare("")) == 0)
-        return;
-      
-      CUPnPDevice* pDevice = new CUPnPDevice();
-      if(pDevice->BuildFromDescriptionURL(pMessage->GetLocation()))
-        m_RemoteDevices[pMessage->GetDeviceID()] = pDevice;      
-      else      
-        delete pDevice;   
+  m_RemoteDeviceIterator = m_RemoteDevices.find(pMessage->GetUUID());
   
+  /* known device */
+  if(m_RemoteDeviceIterator != m_RemoteDevices.end())
+  {
+    m_RemoteDevices[pMessage->GetUUID()]->TimerReset();
+    
+    std::stringstream sMsg;
+    sMsg << "received \"Notify-Alive\" from known device: " << pMessage->GetUUID();      
+    CSharedLog::Shared()->Log(LOGNAME, sMsg.str());
+  }
+  
+  /* new device */
+  else
+  {  
+    std::stringstream sMsg;
+    sMsg << "received \"Notify-Alive\" from new device: " << pMessage->GetUUID();      
+    CSharedLog::Shared()->Log(LOGNAME, sMsg.str());
+      
+    if((pMessage->GetLocation().compare("")) == 0)
+      return;
+      
+    CUPnPDevice* pDevice = new CUPnPDevice(this);
+    if(pDevice->BuildFromDescriptionURL(pMessage->GetLocation()))
+    {
+      m_RemoteDevices[pMessage->GetUUID()] = pDevice;
+      pDevice->TimerStart(900); // 900 sec = 15 min
+    }
+    else      
+      delete pDevice;
+  
+  }
 }
 
 void CFuppes::HandleSSDPByeBye(CSSDPMessage* pMessage)
 {
+  std::stringstream sLog;
+  sLog << "received \"Notify-ByeBye\" from device: " << pMessage->GetUUID();
+  CSharedLog::Shared()->Log(LOGNAME, sLog.str());
+
+  m_RemoteDeviceIterator = m_RemoteDevices.find(pMessage->GetUUID());  
+  /* found device */
+  if(m_RemoteDeviceIterator != m_RemoteDevices.end())
+  {
+    delete m_RemoteDevices[pMessage->GetUUID()];
+    m_RemoteDevices.erase(pMessage->GetUUID());
+  }
 }
 
 /* <\PRIVATE> */

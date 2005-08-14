@@ -34,6 +34,7 @@
 #include <vector>
 #include "SSDPCtrl.h"
 #include "HTTPServer.h"
+#include "UPnPDevice.h"
 
 /*===============================================================================
  FORWARD DECLARATIONS
@@ -69,7 +70,7 @@ public:
  CLASS CFuppes
 ===============================================================================*/
 
-class CFuppes: public ISSDPCtrl, IHTTPServer
+class CFuppes: public ISSDPCtrl, IHTTPServer, IUPnPDevice
 {
 
 /* <PUBLIC> */
@@ -86,6 +87,8 @@ public:
     IFuppes*    pPresentationRequestHandler
     );
   virtual ~CFuppes();
+
+  void OnTimer(CUPnPDevice* pSender);
 
 /*==============================================================================
  GET
