@@ -88,4 +88,6 @@ fuppesThreadCallback TimerLoop(void *arg)
   }
   
   fuppesThreadExit(NULL);
+
+  return 0;
 }

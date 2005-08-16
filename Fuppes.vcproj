@@ -168,6 +168,9 @@
 				RelativePath=".\src\SSDPSession.cpp">
 			</File>
 			<File
+				RelativePath=".\src\Timer.cpp">
+			</File>
+			<File
 				RelativePath=".\src\UDPSocket.cpp">
 			</File>
 			<File
@@ -254,6 +257,9 @@
 			</File>
 			<File
 				RelativePath=".\src\SSDPSession.h">
+			</File>
+			<File
+				RelativePath=".\src\Timer.h">
 			</File>
 			<File
 				RelativePath=".\src\UDPSocket.h">
