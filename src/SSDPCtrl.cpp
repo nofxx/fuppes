@@ -104,10 +104,10 @@ void CSSDPCtrl::send_msearch()
 
 void CSSDPCtrl::send_alive()
 {
-	CUDPSocket Sock;
+  CUDPSocket Sock;
 	Sock.SetupSocket(false, m_sIPAddress);
 	
-	m_LastMulticastEp = Sock.GetLocalEndPoint();
+	//m_LastMulticastEp = Sock.GetLocalEndPoint();
 	
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_ROOT_DEVICE));	
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_ROOT_DEVICE));
@@ -136,7 +136,7 @@ void CSSDPCtrl::send_byebye()
 	CUDPSocket Sock;
 	Sock.SetupSocket(false, m_sIPAddress);
 	
-  m_LastMulticastEp = Sock.GetLocalEndPoint();	
+  //m_LastMulticastEp = Sock.GetLocalEndPoint();	
 	
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_ROOT_DEVICE));
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_ROOT_DEVICE));
@@ -170,18 +170,28 @@ void CSSDPCtrl::SetReceiveHandler(ISSDPCtrl* pHandler)
 }
 
 void CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMessage)
-{		
+{
+  stringstream sLog;
+  sLog << "OnUDPSocketReceive() :: " << inet_ntoa(pSSDPMessage->GetRemoteEndPoint().sin_addr) << ":" << ntohs(pSSDPMessage->GetRemoteEndPoint().sin_port) << endl;
+  sLog << inet_ntoa(m_LastMulticastEp.sin_addr) << ":" << ntohs(m_LastMulticastEp.sin_port);
+ 
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());
+  
   if((m_LastMulticastEp.sin_addr.s_addr != pSSDPMessage->GetRemoteEndPoint().sin_addr.s_addr) ||
     (m_LastMulticastEp.sin_port != pSSDPMessage->GetRemoteEndPoint().sin_port))
   {	
     switch(pSSDPMessage->GetMessageType())
     {
       case SSDP_MESSAGE_TYPE_M_SEARCH:
+        CSharedLog::Shared()->ExtendedLog(LOGNAME, "SSDP_MESSAGE_TYPE_M_SEARCH");
         HandleMSearch(pSSDPMessage);
         break;
       default:
+        CSharedLog::Shared()->ExtendedLog(LOGNAME, "default");
         if(m_pReceiveHandler != NULL)
           m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pSSDPMessage);
+        else
+          CSharedLog::Shared()->Warning(LOGNAME, "receive handler is null");          
         break;
     }    
   }
@@ -195,6 +205,11 @@ void CSSDPCtrl::OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage)
       m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pMessage);
   
   //cout << pMessage->GetContent() << endl;
+}
+
+void CSSDPCtrl::OnSessionTimeOut(CSSDPSession* pSender)
+{
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "OnSessionTimeOut()");
 }
 
 /* <\PUBLIC> */

@@ -24,16 +24,22 @@
  
 
 #include "Timer.h"
+#include "SharedLog.h"
+
+#include <string>
+#include <sstream>
+
+const std::string LOGNAME = "Timer";
 
 fuppesThreadCallback TimerLoop(void *arg);
 
-unsigned int g_nTickCount;
+//unsigned int g_nTickCount;
 
 CTimer::CTimer(ITimer* p_OnTimerHandler)
 {
   m_pOnTimerHandler = p_OnTimerHandler;
   m_TimerThread     = (fuppesThread)NULL;
-  g_nTickCount      = 0;
+  m_nTickCount      = 0;
 }
 
 CTimer::~CTimer()
@@ -45,7 +51,7 @@ CTimer::~CTimer()
 void CTimer::CallOnTimer()
 {
   if(m_pOnTimerHandler != NULL)
-    m_pOnTimerHandler->OnTimer();
+    m_pOnTimerHandler->OnTimer(); 
 }
 
 void CTimer::SetInterval(unsigned int p_nSeconds)
@@ -66,8 +72,9 @@ void CTimer::Stop()
 
 void CTimer::Reset()
 {
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "Reset");
   Stop();
-  g_nTickCount = 0;
+  m_nTickCount = 0;
   Start();  
 }
 
@@ -75,19 +82,21 @@ fuppesThreadCallback TimerLoop(void *arg)
 {
   CTimer* pTimer = (CTimer*)arg;  
  
-  while(g_nTickCount <= pTimer->GetInterval())
+  while(pTimer->m_nTickCount <= pTimer->GetInterval())
   {
-    g_nTickCount++;
+    pTimer->m_nTickCount++;
     upnpSleep(1000000);    
     
-    if(g_nTickCount == pTimer->GetInterval() - 1)
+    if(pTimer->m_nTickCount == (pTimer->GetInterval() - 1))
     {
       pTimer->CallOnTimer();
-      g_nTickCount = 0;
-    }    
-  }
+      pTimer->m_nTickCount = 0;
+    }
+  }  
   
-  fuppesThreadExit(NULL);
-
+  std::stringstream sLog;
+  sLog << "exiting timer loop. Interval: " << pTimer->GetInterval() << " Tick count: " << pTimer->m_nTickCount;  
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());  
+  fuppesThreadExit(NULL);    
   return 0;
 }

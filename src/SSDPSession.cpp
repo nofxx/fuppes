@@ -46,14 +46,16 @@ using namespace std;
  CONSTRUCTOR / DESTRUCTOR
 ===============================================================================*/
 
-CSSDPSession::CSSDPSession(std::string p_sIPAddress, ISSDPSession* pReceiveHandler)
+CSSDPSession::CSSDPSession(std::string p_sIPAddress, ISSDPSession* pEventHandler)
 {
-  m_sIPAddress      = p_sIPAddress;
-  m_pReceiveHandler = pReceiveHandler;
+  m_sIPAddress    = p_sIPAddress;
+  m_pEventHandler = pEventHandler;
+  m_Timer         = new CTimer(this);
 }
 
 CSSDPSession::~CSSDPSession()
 {
+  delete m_Timer;
 }
 
 /* <\PROTECTED> */
@@ -67,8 +69,15 @@ CSSDPSession::~CSSDPSession()
 void CSSDPSession::OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pSSDPMessage)
 {
   //cout << "ssdp_session::OnUDPSocketReceive" << endl << pSSDPMessage->GetContent() << endl;
-  if(m_pReceiveHandler != NULL)
-    m_pReceiveHandler->OnSessionReceive(this, pSSDPMessage);
+  if(m_pEventHandler != NULL)
+    m_pEventHandler->OnSessionReceive(this, pSSDPMessage);
+}
+
+void CSSDPSession::OnTimer()
+{
+  Stop();
+  if(m_pEventHandler != NULL)
+    m_pEventHandler->OnSessionTimeOut(this);
 }
 
 /* <\PUBLIC> */
@@ -80,6 +89,10 @@ void CSSDPSession::OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pSSDPMe
 ===============================================================================*/
 
 void CSSDPSession::Start()
+{
+}
+
+void CSSDPSession::Stop()
 {
 }
 
@@ -132,6 +145,8 @@ CMSearchSession::CMSearchSession(std::string p_sIPAddress, ISSDPSession* pReceiv
   
   m_pNotifyMsgFactory = pNotifyMsgFactory;
 	m_UdpSocket.SetupSocket(false, m_sIPAddress);	
+  
+  m_Timer->SetInterval(30);
 }
 
 CMSearchSession::~CMSearchSession()
@@ -148,10 +163,12 @@ void CMSearchSession::Start()
 	begin_receive_unicast();
 	upnpSleep(200);
 	send_multicast(m_pNotifyMsgFactory->msearch());
+  //m_Timer->Start();  
 }
 
 void CMSearchSession::Stop()
 {
+  //m_Timer->Stop();
 	end_receive_unicast();
 }
 

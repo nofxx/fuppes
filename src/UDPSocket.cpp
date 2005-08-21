@@ -164,7 +164,7 @@ void CUDPSocket::TeardownSocket()
 		struct ip_mreq stMreq;
 		
 	  stMreq.imr_multiaddr.s_addr = inet_addr(MULTICAST_IP); 
-		stMreq.imr_interface.s_addr  = INADDR_ANY; 	
+		stMreq.imr_interface.s_addr = INADDR_ANY; 	
 		setsockopt(m_Socket, IPPROTO_IP, IP_DROP_MEMBERSHIP,(char *)&stMreq,sizeof(stMreq)); 		
 	}	
 
@@ -294,11 +294,12 @@ fuppesThreadCallback ReceiveLoop(void *arg)
 		if((remote_ep.sin_addr.s_addr != udp_sock->GetLocalEndPoint().sin_addr.s_addr) || 
 			 (remote_ep.sin_port != udp_sock->GetLocalEndPoint().sin_port))		
 		{
-			CSSDPMessage SSDPMessage;
-      SSDPMessage.SetMessage(msg.str());
-			SSDPMessage.SetRemoteEndPoint(remote_ep);
-			SSDPMessage.SetLocalEndPoint(udp_sock->GetLocalEndPoint());
-			udp_sock->CallOnReceive(&SSDPMessage);      
+			CSSDPMessage* pSSDPMessage = new CSSDPMessage();
+      pSSDPMessage->SetMessage(msg.str());
+			pSSDPMessage->SetRemoteEndPoint(remote_ep);
+			pSSDPMessage->SetLocalEndPoint(udp_sock->GetLocalEndPoint());
+			udp_sock->CallOnReceive(pSSDPMessage);
+      delete pSSDPMessage;
 		}
 		
 		msg.str("");

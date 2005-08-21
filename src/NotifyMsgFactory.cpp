@@ -72,7 +72,7 @@ std::string CNotifyMsgFactory::notify_alive(MESSAGE_TYPE a_type)
 	stringstream result;
 	
 	result << "NOTIFY * HTTP/1.1\r\n";
-  result << "LOCATION: http://" << m_sHTTPServerURL << "/\r\n";
+  result << "LOCATION: http://" << m_sHTTPServerURL << "/description.xml\r\n";
   result << "HOST: 239.255.255.250:1900\r\n";
   result << "SERVER: " << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << " ";
 		result << "UPnP/1.0 ";
@@ -124,7 +124,7 @@ std::string CNotifyMsgFactory::GetMSearchResponse(MESSAGE_TYPE p_MessageType)
 	result << "HTTP/1.1 200 OK\r\n";
   result << "CACHE-CONTROL: max-age=1800\r\n";
   result << "EXT: \r\n";
-  result << "LOCATION: http://" << m_sHTTPServerURL << "/\r\n";
+  result << "LOCATION: http://" << m_sHTTPServerURL << "/description.xml\r\n";
   result << "SERVER: " << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << " ";
 		result << "UPnP/1.0 ";
 	  result << "libfuppes/0.1\r\n";

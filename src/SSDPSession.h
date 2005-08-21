@@ -33,6 +33,7 @@
 #include <string>
 
 #include "UDPSocket.h"
+#include "Timer.h"
 #include "SSDPMessage.h"
 #include "NotifyMsgFactory.h"
 
@@ -53,9 +54,8 @@ class ISSDPSession
 
 public:
     
-  virtual void OnSessionReceive(
-    CSSDPSession* pSender,
-    CSSDPMessage* pMessage) = 0;
+  virtual void OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage) = 0;
+  virtual void OnSessionTimeOut(CSSDPSession* pSender) = 0;
 
 /* <\PUBLIC> */
 
@@ -65,7 +65,7 @@ public:
  CLASS CSSDPSession
 ===============================================================================*/
 
-class CSSDPSession: public IUDPSocket
+class CSSDPSession: public IUDPSocket, ITimer
 {
 
 /* <PROTECTED> */
@@ -76,7 +76,7 @@ protected:
  CONSTRUCTOR / DESTRUCTOR
 ===============================================================================*/
 
-  CSSDPSession(std::string p_sIPAddress, ISSDPSession* pReceiveHandler);
+  CSSDPSession(std::string p_sIPAddress, ISSDPSession* pEventHandler);
   virtual ~CSSDPSession();
 
 /* <\PROTECTED> */
@@ -91,6 +91,8 @@ public:
   
   void OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pMessage);
 
+  void OnTimer();
+
 /* <\PUBLIC> */
 	
 /* <PROTECTED> */
@@ -100,6 +102,7 @@ public:
 ===============================================================================*/
 
   virtual void Start();	  
+  virtual void Stop();
 
 /*===============================================================================
  SEND/RECEIVE
@@ -114,11 +117,12 @@ public:
 /*===============================================================================
  MEMBERS
 ===============================================================================*/
-
+  protected:
 		int           m_nTimeout;
 	  CUDPSocket    m_UdpSocket;
     std::string   m_sIPAddress;
-    ISSDPSession* m_pReceiveHandler;
+    ISSDPSession* m_pEventHandler;
+    CTimer*       m_Timer;
 
 /* <\PROTECTED> */
 

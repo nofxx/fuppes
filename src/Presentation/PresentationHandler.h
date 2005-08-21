@@ -37,6 +37,17 @@
 #include <string>
 #include <vector>
 
+
+typedef enum tagPRESENTATION_PAGE
+{
+  PRESENTATION_PAGE_UNKNOWN,
+  PRESENTATION_PAGE_INDEX,
+  PRESENTATION_PAGE_ABOUT,
+  PRESENTATION_PAGE_HELP,
+  PRESENTATION_PAGE_OPTIONS
+}PRESENTATION_PAGE;
+
+
 /*===============================================================================
  CLASS CPresentationHandler
 ===============================================================================*/
@@ -53,11 +64,11 @@ public:
 ===============================================================================*/
 
   /** constructor
-  */  
+   */  
   CPresentationHandler();
 
   /** destructor
-  */
+   */
   virtual ~CPresentationHandler();
 
 /*===============================================================================
@@ -65,8 +76,8 @@ public:
 ===============================================================================*/
   
   /** adds a instance of FUPPES
-  *  @param pFuppes  the instance to add
-  */
+   *  @param pFuppes  the instance to add
+   */
   void AddFuppesInstance(CFuppes* pFuppes);
   
 /* <\PUBLIC> */
@@ -80,15 +91,15 @@ private:
 ===============================================================================*/
   
   /** handles HTTP messages add returns a corresponding message
-  *  @param pSender  sender of the incoming message
-  *  @param pMessage  the incoming message
-  *  @param pResult  the outgoing message
-  */
+   *  @param pSender  sender of the incoming message
+   *  @param pMessage  the incoming message
+   *  @param pResult  the outgoing message
+   */
   void OnReceivePresentationRequest(CFuppes* pSender, CHTTPMessage* pMessage, CHTTPMessage* pResult);
   
   /** handles HTTP requests
-  *  @param p_sRequest  the message to handle
-  */
+   *  @param p_sRequest  the message to handle
+   */
   std::string HandleRequest(std::string p_sRequest);  
 
 /*===============================================================================
@@ -96,23 +107,28 @@ private:
 ===============================================================================*/
 
   /** returns the HTML header
-  *  @return the HTML header as string
-  */
+   *  @return the HTML header as string
+   */
   std::string GetXHTMLHeader();  
 
+  std::string GetPageHeader(PRESENTATION_PAGE p_nPresentationPage);
+  std::string GetPageFooter(PRESENTATION_PAGE p_nPresentationPage);
+
   /** returns the main HTML page
-  *  @return the content of the index.html
-  */
+   *  @return the content of the index.html
+   */
   std::string GetIndexHTML();
+
+  std::string GetAboutHTML();
 
 /*===============================================================================
  HELPER
 ===============================================================================*/
   
   /** builds a stringlist for all devices connected to a FUPPES instance
-  *  @param pFuppes a pointer to a FUPPES instance
-  *  @return the device list as string
-  */
+   *  @param pFuppes a pointer to a FUPPES instance
+   *  @return the device list as string
+   */
   std::string BuildFuppesDeviceList(CFuppes* pFuppes);
     
 /*===============================================================================

@@ -110,6 +110,8 @@ public:
 	  void OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMessage);
    	void OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage);
 	
+    void OnSessionTimeOut(CSSDPSession* pSender);
+  
 /* <\PUBLIC> */
 
 /* <PRIVATE> */

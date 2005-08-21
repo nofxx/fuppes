@@ -115,7 +115,7 @@ int main()
   //CFuppes* pFuppes2 = new CFuppes("127.0.0.1", pPresentationHandler);	
   //pPresentationHandler->AddFuppesInstance(pFuppes2);
   	
-  cout << "Webinterface: http://" << pFuppes->GetHTTPServerURL() << "/index.html" << endl;
+  cout << "Webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
   //cout << "Webinterface: http://" << pFuppes2->GetHTTPServerURL() << "/index.html" << endl;
   cout << endl;
   cout << "m = send m-search" << endl;

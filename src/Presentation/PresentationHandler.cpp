@@ -30,8 +30,11 @@
 #include "PresentationHandler.h"
 #include "Stylesheet.h"
 #include "../SharedConfig.h"
+#include "../SharedLog.h"
 
 #include <sstream>
+
+const std::string LOGNAME = "PresentationHandler"; 
 
 /*===============================================================================
  CLASS CPresentationHandler
@@ -76,9 +79,42 @@ void CPresentationHandler::AddFuppesInstance(CFuppes* pFuppes)
 
 void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPMessage* pMessage, CHTTPMessage* pResult)
 {
-  pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
-  pResult->SetContentType(HTTP_CONTENT_TYPE_TEXT_HTML);
-  pResult->SetContent(this->GetIndexHTML());
+  PRESENTATION_PAGE nPresentationPage = PRESENTATION_PAGE_UNKNOWN;
+  string sContent;
+  
+  if((pMessage->GetRequest().compare("/") == 0) || (ToLower(pMessage->GetRequest()).compare("/index.html") == 0))
+  {
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send index.html");
+    nPresentationPage = PRESENTATION_PAGE_INDEX;
+    sContent = this->GetIndexHTML();
+  }
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/about.html") == 0)
+  {
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send about.html");
+    nPresentationPage = PRESENTATION_PAGE_ABOUT;
+    sContent = this->GetAboutHTML();
+  }  
+  
+  
+  if(nPresentationPage != PRESENTATION_PAGE_UNKNOWN)
+  {
+    stringstream sResult;   
+    
+    sResult << GetXHTMLHeader();
+    sResult << GetPageHeader(nPresentationPage);    
+    sResult << sContent;    
+    sResult << GetPageFooter(nPresentationPage);    
+    
+    pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    
+    pResult->SetContentType(HTTP_CONTENT_TYPE_TEXT_HTML);
+    pResult->SetContent(sResult.str());
+  }  
+  else if(nPresentationPage == PRESENTATION_PAGE_UNKNOWN) 
+  {
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send 404");
+    pResult->SetMessageType(HTTP_MESSAGE_TYPE_404_NOT_FOUND); 
+    pResult->SetContentType(HTTP_CONTENT_TYPE_TEXT_HTML);
+  }
 }
 
 
@@ -87,6 +123,44 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
 /*===============================================================================
  GET
 ===============================================================================*/
+std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentationPage)
+{
+  std::stringstream sResult;
+  
+  sResult << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n";
+  sResult << "<head>";  
+  sResult << "<title>" << CSharedConfig::Shared()->GetAppName() << " - " << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion() << "</title>";
+  
+  sResult << "<style type=\"text/css\">";
+  sResult << GetStylesheet();
+  sResult << "</style>";  
+  sResult << "</head>";
+  
+  sResult << "<body>";
+  
+  sResult << "<h1>" << CSharedConfig::Shared()->GetAppName() << " - " << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion() << "</h1>";
+    
+  sResult << "<p>" << endl;
+  sResult << "<a href=\"/index.html\">Start</a>" << endl;
+  sResult << " | ";
+  sResult << "<a href=\"/presentation/about.html\">About</a>" << endl;
+  sResult << "</p>" << endl;  
+  
+  return sResult.str();
+}
+
+
+std::string CPresentationHandler::GetPageFooter(PRESENTATION_PAGE p_nPresentationPage)
+{
+  std::stringstream sResult;
+  
+  sResult << "<p><small>copyright &copy; 2005 - the FUPPES development team<br />distributed under the GPL</small></p>";
+  
+  sResult << "</body>";
+  sResult << "</html>";
+  
+  return sResult.str();
+}
 
 /* GetXHTMLHeader */
 std::string CPresentationHandler::GetXHTMLHeader()
@@ -104,20 +178,7 @@ std::string CPresentationHandler::GetXHTMLHeader()
 std::string CPresentationHandler::GetIndexHTML()
 {
   std::stringstream sResult;
-  sResult << GetXHTMLHeader();
-  sResult << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n";
-  sResult << "<head>";  
-  sResult << "<title>" << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion() << "</title>";
-  
-  sResult << "<style type=\"text/css\">";
-  sResult << GetStylesheet();
-  sResult << "</style>";  
-  sResult << "</head>";
-  
-  sResult << "<body>";  
-  
-  sResult << "<h1>" << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion() << "</h1>";
-  
+    
   for (unsigned int i = 0; i < m_vFuppesInstances.size(); i++)
   {
     sResult << "FUPPES Instance No. " << i + 1 << "<br />";    
@@ -131,9 +192,15 @@ std::string CPresentationHandler::GetIndexHTML()
     sResult << BuildFuppesDeviceList((CFuppes*)m_vFuppesInstances[i]);
   }
   
-  sResult << "</body>";
-  sResult << "</html>";
+  return sResult.str();
+}
+
+std::string CPresentationHandler::GetAboutHTML()
+{
+  std::stringstream sResult;
   
+  sResult << __DATE__ << " " << __TIME__ " - " << __VERSION__;  
+
   return sResult.str();
 }
 

@@ -136,7 +136,7 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
 #define fuppesThreadInitMutex(_mutex_)                      pthread_mutex_init(_mutex_, NULL)
 #define fuppesThreadLockMutex(_mutex_)                      pthread_mutex_lock(_mutex_)
 #define fuppesThreadUnlockMutex(_mutex_)                    pthread_mutex_unlock(_mutex_)
-#define fuppesThreadDestroyMutex(_mutex_)                      pthread_mutex_destroy(_mutex_)
+#define fuppesThreadDestroyMutex(_mutex_)                   pthread_mutex_destroy(_mutex_)
 
 #endif
 

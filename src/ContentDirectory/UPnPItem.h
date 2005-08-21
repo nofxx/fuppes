@@ -69,6 +69,9 @@ public:
 
 /* <\PUBLIC> */
 
+  protected:
+    std::string m_sMimeType;
+  
 };
 
 #endif /* _UPNPITEM_H */
