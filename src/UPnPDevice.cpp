@@ -97,7 +97,7 @@ CUPnPDevice::~CUPnPDevice()
 
 void CUPnPDevice::OnTimer()
 {
-  CSharedLog::Shared()->Log(LOGNAME, "OnTimer()");
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "OnTimer()");
   if(m_pOnTimerHandler != NULL)
     m_pOnTimerHandler->OnTimer(this);
 }

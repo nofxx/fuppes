@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <fuppes_config version="0.1">
+
   <shared_directories>
     <!-- unix -->
     <dir>/mnt/nfs/data/Musik/Alben/Genesis</dir>
@@ -12,11 +13,19 @@
     <dir>I:\Musik\Alben\The Flower Kings</dir>
     <dir>I:\Musik\Alben\Transatlantic</dir>
   </shared_directories>
+
+  <shared_file_extensions>
+    <ext>mp3</ext>
+    <ext>mpeg</ext>
+  <shared_file_extensions>
+
   <!-- network settings -->
   <network_settings>
     <!-- empty or 0 = automatic detection -->
-    <ip_address/>    
+    <ip_address/>
     <!-- empty or 0 = random port -->
     <http_port/>
   </network_settings>
+  <!-- end network settings -->
+
 </fuppes_config>

@@ -142,7 +142,7 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
   {
     stringstream sLog;
     sLog << "device: " << pSender->GetUUID() << " send timed alive";
-    CSharedLog::Shared()->Log(LOGNAME, sLog.str());    
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());    
     m_pSSDPCtrl->send_alive();
     CSharedLog::Shared()->Log(LOGNAME, "done");
   }

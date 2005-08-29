@@ -32,6 +32,8 @@
 #include "../SharedConfig.h"
 #include "../SharedLog.h"
 
+#include "Images/fuppes_png.cpp"
+
 #include <sstream>
 
 const std::string LOGNAME = "PresentationHandler"; 
@@ -93,10 +95,25 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "send about.html");
     nPresentationPage = PRESENTATION_PAGE_ABOUT;
     sContent = this->GetAboutHTML();
+  }
+  
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/fuppes.png") == 0)
+  {
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send fuppes logo");
+    nPresentationPage = PRESENTATION_BINARY_IMAGE;
+  }    
+  
+  
+  if(nPresentationPage == PRESENTATION_BINARY_IMAGE)
+  {
+    pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    
+    pResult->SetContentType(HTTP_CONTENT_TYPE_IMAGE_PNG);
+    
+    stringstream sImg(ios::binary);
+    sImg << fuppes_png;    
+    pResult->SetBinContent((char*)sImg.str().c_str(), sizeof(sImg.str().c_str()));
   }  
-  
-  
-  if(nPresentationPage != PRESENTATION_PAGE_UNKNOWN)
+  else if((nPresentationPage != PRESENTATION_BINARY_IMAGE) && (nPresentationPage != PRESENTATION_PAGE_UNKNOWN))
   {
     stringstream sResult;   
     
@@ -127,6 +144,7 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
 {
   std::stringstream sResult;
   
+  /* header */
   sResult << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n";
   sResult << "<head>";  
   sResult << "<title>" << CSharedConfig::Shared()->GetAppName() << " - " << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion() << "</title>";
@@ -135,16 +153,31 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
   sResult << GetStylesheet();
   sResult << "</style>";  
   sResult << "</head>";
+  /* header end */
   
-  sResult << "<body>";
+  sResult << "<body>";  
+  sResult << "<div id=\"title\">" << endl;
+  sResult << "<img src=\"/presentation/images/fuppes.png\" />" << endl; //  alt=\"fuppes logo\"   
+  sResult << CSharedConfig::Shared()->GetAppName() << " - " << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion() << endl;  
+  sResult << "</div>" << endl;
   
-  sResult << "<h1>" << CSharedConfig::Shared()->GetAppName() << " - " << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion() << "</h1>";
-    
-  sResult << "<p>" << endl;
+  /* menu */
+  sResult << "<div id=\"menu\">" << endl;
+  
   sResult << "<a href=\"/index.html\">Start</a>" << endl;
-  sResult << " | ";
+  sResult << "<br />";
   sResult << "<a href=\"/presentation/about.html\">About</a>" << endl;
-  sResult << "</p>" << endl;  
+  sResult << "<br />";
+  sResult << "Options" << endl;
+  sResult << "<br />";
+  sResult << "Status" << endl;
+  sResult << "<br />";
+  sResult << "Debug" << endl;
+  
+  sResult << "</div>" << endl;  
+  /* menu end */
+  
+  sResult << "<div id=\"content\">" << endl;
   
   return sResult.str();
 }
@@ -154,7 +187,9 @@ std::string CPresentationHandler::GetPageFooter(PRESENTATION_PAGE p_nPresentatio
 {
   std::stringstream sResult;
   
-  sResult << "<p><small>copyright &copy; 2005 - the FUPPES development team<br />distributed under the GPL</small></p>";
+  sResult << "<p style=\"padding-top: 20pt; text-align: center;\"><small>copyright &copy; 2005 Ulrich V&ouml;lkel<!--<br />distributed under the GPL--></small></p>";
+
+  sResult << "</div>" << endl;
   
   sResult << "</body>";
   sResult << "</html>";
@@ -167,9 +202,9 @@ std::string CPresentationHandler::GetXHTMLHeader()
 {
   std::stringstream sResult;
   
-  sResult << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-  sResult << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN" ;
-  sResult << "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd";
+  sResult << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
+  sResult << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " << endl;
+  sResult << "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">" << endl;
   
   return sResult.str();
 }
@@ -178,7 +213,9 @@ std::string CPresentationHandler::GetXHTMLHeader()
 std::string CPresentationHandler::GetIndexHTML()
 {
   std::stringstream sResult;
-    
+  
+  sResult << "<h2>Start</h2>" << endl;
+  
   for (unsigned int i = 0; i < m_vFuppesInstances.size(); i++)
   {
     sResult << "FUPPES Instance No. " << i + 1 << "<br />";    
@@ -199,7 +236,10 @@ std::string CPresentationHandler::GetAboutHTML()
 {
   std::stringstream sResult;
   
-  sResult << __DATE__ << " " << __TIME__ " - " << __VERSION__;  
+  sResult << "<h2>About</h2>" << endl;
+  sResult << "<a href=\"http://sourceforge.net/projects/fuppes/\">http://sourceforge.net/projects/fuppes/</a><br />" << endl;
+  
+  sResult << __DATE__ << " " << __TIME__ "<br /><i>build with:</i> " << __VERSION__;  
 
   return sResult.str();
 }
@@ -217,10 +257,10 @@ std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes)
   for(unsigned int i = 0; i < pFuppes->GetRemoteDevices().size(); i++)
   {
     CUPnPDevice* pDevice = pFuppes->GetRemoteDevices()[i];
-    sResult << "No. " << i + 1 << "<br />";
+    sResult << "<p>No. " << i + 1 << "<br />";
     sResult << "Name: " << pDevice->GetFriendlyName() << "<br />";
     sResult << "UUID: " << pDevice->GetUUID() << "<br />";
-    sResult << "Status: " << "<i>todo</i>" << "<br />";
+    sResult << "Status: " << "<i>todo</i>" << "</p>";
   }
 
   return sResult.str();

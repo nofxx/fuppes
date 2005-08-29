@@ -1,4 +1,4 @@
-# Anjuta Version 1.2.3 
+# Anjuta Version 1.2.4 
 Compatibility Level: 1 
 
 <PROJECT_DESCRIPTION_START>
@@ -22,7 +22,7 @@ FUPPES - Free UPnP Entertainment Service<PROJECT_DESCRIPTION_END>
 
 props.file.type=project
 
-anjuta.version=1.2.3
+anjuta.version=1.2.4
 anjuta.compatibility.level=1
 
 project.name=fuppes
@@ -128,7 +128,8 @@ module.source.files=\
 	UUID.cpp\
 	UUID.h\
 	Timer.cpp\
-	Timer.h
+	Timer.h\
+	Presentation/Images/fuppes_png.cpp
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

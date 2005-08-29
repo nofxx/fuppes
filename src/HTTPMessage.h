@@ -72,7 +72,7 @@ typedef enum tagHTTP_CONTENT_TYPE
   HTTP_CONTENT_TYPE_TEXT_HTML     =  1,
 	HTTP_CONTENT_TYPE_TEXT_XML      =  2,
 	HTTP_CONTENT_TYPE_AUDIO_MPEG    =  3,
-  HTTP_CONTENT_TYPE_MAX           =  4
+  HTTP_CONTENT_TYPE_IMAGE_PNG     = 4
 }HTTP_CONTENT_TYPE;
 
 /*===============================================================================
@@ -124,7 +124,8 @@ public:
   void             SetMessageType(HTTP_MESSAGE_TYPE p_HTTPMessageType) { m_HTTPMessageType = p_HTTPMessageType; }
   void             SetContentType(HTTP_CONTENT_TYPE p_HTTPContentType) { m_HTTPContentType = p_HTTPContentType; }
 	void						 SetContent(std::string p_sContent)                  { m_sContent        = p_sContent;        }
-
+  void             SetBinContent(char* p_szBinContent, unsigned int p_nBinContenLength);
+  
 /*===============================================================================
  OTHER
 ===============================================================================*/

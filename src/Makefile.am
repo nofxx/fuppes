@@ -65,6 +65,7 @@ cpp_sources = \
   ContentDirectory/AudioItem.cpp\
 	ContentDirectory/ContentDirectory.cpp\
   Presentation/PresentationHandler.cpp\
+  Presentation/Images/fuppes_png.cpp\
 	SharedConfig.cpp\
   SharedLog.cpp\
 	Fuppes.cpp\

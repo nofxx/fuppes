@@ -108,6 +108,14 @@ bool CHTTPMessage::SetMessage(std::string p_sMessage)
   return BuildFromString(p_sMessage);
 }
 
+void CHTTPMessage::SetBinContent(char* p_szBinContent, unsigned int p_nBinContenLength)
+{ 
+  m_nBinContentLength = p_nBinContenLength;      
+  m_pszBinContent     = new char[m_nBinContentLength + 1];    
+  memcpy(m_pszBinContent, p_szBinContent, m_nBinContentLength);
+  m_pszBinContent[m_nBinContentLength] = '\0';   
+}
+
 /*===============================================================================
  GET MESSAGE DATA
 ===============================================================================*/
@@ -155,6 +163,7 @@ std::string CHTTPMessage::GetHeaderAsString()
 		case HTTP_CONTENT_TYPE_TEXT_HTML:  sContentType = "text/html";  break;
 		case HTTP_CONTENT_TYPE_TEXT_XML:   sContentType = "text/xml";   break;
 		case HTTP_CONTENT_TYPE_AUDIO_MPEG: sContentType = "audio/mpeg"; break;
+    case HTTP_CONTENT_TYPE_IMAGE_PNG : sContentType = "image/png";  break;      
     default:                           ASSERT(0);                   break;	
 	}
 	

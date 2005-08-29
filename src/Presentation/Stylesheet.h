@@ -30,13 +30,56 @@
 std::string GetStylesheet()
 {
   std::stringstream sStylesheet;
-  sStylesheet << "body {";
-  sStylesheet << "  margin:      5;";
-  sStylesheet << "  padding:     5;";
-  sStylesheet << "  font-family: Verdana, Arial, Helvetica;";
-  sStylesheet << "  font-size:   10pt;";
-  sStylesheet << "  background-color: #CCCCFF;"; // #EBEBEB
-  sStylesheet <<"}";
+  sStylesheet << "body {" << endl;
+  sStylesheet << "  margin:      0;" << endl;
+  sStylesheet << "  padding:     0;" << endl;
+  sStylesheet << "  font-family: Verdana, Arial, Helvetica;" << endl;
+  sStylesheet << "  font-size:   10pt;" << endl;
+  sStylesheet << "  background-color: #CCCCFF;" << endl; // #EBEBEB
+  sStylesheet <<"}" << endl;
+  
+  
+  sStylesheet << "#title {" << endl;
+  sStylesheet << "font-size:     large;" << endl;
+  sStylesheet << "text-decoration:underline;" << endl;
+  sStylesheet << "margin-top:    5px;" << endl;
+  sStylesheet << "margin-left:   0px;" << endl;
+  sStylesheet << "margin-bottom: 5px;" << endl;
+  sStylesheet << "margin-right:  0px;" << endl;
+  sStylesheet << "padding-left:  15px;" << endl;
+  sStylesheet << "height:        40px;" << endl;
+  sStylesheet << "border-style:  solid;" << endl;
+  sStylesheet << "border-color:  black;" << endl;
+  sStylesheet << "border-width:  1px 0;" << endl;
+  sStylesheet << "background:   #FFFFFF;" << endl;
+  sStylesheet << "}" << endl;
+  
+  sStylesheet << "#content {"  << endl;
+  sStylesheet << "margin-left:   145px;" << endl;
+  sStylesheet << "margin-top:    0pt;" << endl;
+  sStylesheet << "margin-right:  5px;" << endl;
+  sStylesheet << "margin-bottom: 10px;" << endl;
+  sStylesheet << "padding-left:  10px;" << endl;
+  sStylesheet << "padding-right: 10px;" << endl;  
+  sStylesheet << "border-style:  solid;" << endl;
+  sStylesheet << "border-color:  black;" << endl;
+  sStylesheet << "border-width:  1px;" << endl;
+  sStylesheet << "background:    #FFFFFF;" << endl;
+  sStylesheet << "}" << endl;
+  
+  sStylesheet << "#menu{"  << endl;
+  sStylesheet << "position:     absolute;"  << endl;
+  sStylesheet << "top:          52px;"  << endl;
+  sStylesheet << "left:         5px;"  << endl;
+  sStylesheet << "width:        135px;"  << endl;
+  sStylesheet << "padding:      0px;"  << endl;
+  sStylesheet << "margin:       0px;"  << endl;
+  sStylesheet << "border-style: solid;"  << endl;
+  sStylesheet << "border-color: black;"  << endl;
+  sStylesheet << "border-width: 1px;"  << endl;
+  sStylesheet << "background:   #FFFFFF;"  << endl; 
+  sStylesheet << "text-align:    left;"  << endl;
+  sStylesheet << "}"  << endl;
   
   return sStylesheet.str();
 }
