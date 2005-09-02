@@ -1,4 +1,4 @@
-Version 0.1.3 (2005-09-)
+Version 0.1.3 (2005-09-02)
   * alive message is repeatedly sent every 3 mins
   * remote device timeout
   * enhanced logging
