@@ -1,6 +1,6 @@
 [Setup]
 AppName=Free UPnP Entertainment Service
-AppVerName=Free UPnP Entertainment Service 0.1.2
+AppVerName=Free UPnP Entertainment Service 0.1.3
 AppPublisher=fuppes development team
 AppPublisherURL=http://sourceforge.net/projects/fuppes
 AppSupportURL=http://sourceforge.net/projects/fuppes
@@ -9,7 +9,7 @@ DefaultDirName={pf}\Free UPnP Entertainment Service\
 DefaultGroupName=Free UPnP Entertainment Service
 LicenseFile=..\setup\license-eng.rtf
 OutputDir=..\setup
-OutputBaseFilename=fuppes-0.1.2-win32-setup
+OutputBaseFilename=fuppes-0.1.3-win32-setup
 SolidCompression=true
 ShowTasksTreeLines=true
 SourceDir=..\win32
