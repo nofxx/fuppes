@@ -219,7 +219,7 @@ fuppesThreadCallback SessionLoop(void *arg)
       
       if(ResponseMsg.GetBinContentLength() > 0)
       {
-        send(pSession.GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetMessageAsString().c_str()), 0);            
+        send(pSession.GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);            
         send(pSession.GetConnection(), ResponseMsg.GetBinContent(), ResponseMsg.GetBinContentLength(), 0);                        
       }
       else            

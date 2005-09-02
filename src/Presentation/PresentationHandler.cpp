@@ -31,10 +31,14 @@
 #include "Stylesheet.h"
 #include "../SharedConfig.h"
 #include "../SharedLog.h"
+#include "../Common.h"
 
 #include "Images/fuppes_png.cpp"
 
 #include <sstream>
+
+#include <fstream>
+#include <iostream>
 
 const std::string LOGNAME = "PresentationHandler"; 
 
@@ -109,9 +113,8 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
     pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    
     pResult->SetContentType(HTTP_CONTENT_TYPE_IMAGE_PNG);
     
-    stringstream sImg(ios::binary);
-    sImg << fuppes_png;    
-    pResult->SetBinContent((char*)sImg.str().c_str(), sizeof(sImg.str().c_str()));
+    string sImg = Base64Decode(fuppes_png);    
+    pResult->SetBinContent((char*)sImg.c_str(), sImg.length());     
   }  
   else if((nPresentationPage != PRESENTATION_BINARY_IMAGE) && (nPresentationPage != PRESENTATION_PAGE_UNKNOWN))
   {
@@ -157,7 +160,7 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
   
   sResult << "<body>";  
   sResult << "<div id=\"title\">" << endl;
-  sResult << "<img src=\"/presentation/images/fuppes.png\" />" << endl; //  alt=\"fuppes logo\"   
+  sResult << "<img src=\"/presentation/images/fuppes.png\" alt=\"fuppes logo\"  style=\"margin-top: 2px; padding-right: 5px;\" />" << endl; //  
   sResult << CSharedConfig::Shared()->GetAppName() << " - " << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion() << endl;  
   sResult << "</div>" << endl;
   

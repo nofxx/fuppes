@@ -136,3 +136,79 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
     return false;
   }
 }
+
+/* BASE64 decoding
+   taken from: http://www.adp-gmbh.ch/cpp/common/base64.html
+   modified to handle line breaks
+*/
+static inline bool IsBase64(unsigned char c) {
+  return (isalnum(c) || (c == '+') || (c == '/'));
+}
+
+static const std::string base64_chars = 
+             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+             "abcdefghijklmnopqrstuvwxyz"
+             "0123456789+/";
+
+std::string Base64Decode(const std::string p_sInputString)
+{
+  int nSize = p_sInputString.size();
+  int i     = 0;
+  int j     = 0;
+  int in_   = 0;
+  unsigned char char_array_4[4];
+  unsigned char char_array_3[3];
+  std::string   sResult;
+
+  while(nSize-- &&  (p_sInputString[in_] != '=') && 
+        (IsBase64(p_sInputString[in_]) ||
+        (p_sInputString[in_] == '\n')  ||
+        (p_sInputString[in_] == '\r'))
+        )
+  {
+    /* continue line break */
+    if ((p_sInputString[in_] == '\n') || (p_sInputString[in_] == '\r'))
+    {
+      in_++;
+      continue;
+    }
+
+    char_array_4[i] = p_sInputString[in_];
+    i++;
+    in_++;
+
+    if (i == 4) 
+    {
+      for (i = 0; i <4; i++)
+        char_array_4[i] = base64_chars.find(char_array_4[i]);
+
+      char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+      char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+      char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+      for (i = 0; (i < 3); i++)
+        sResult += char_array_3[i];
+
+      i = 0;
+    }
+  }
+
+  if (i)
+  {
+    for (j = i; j <4; j++)
+      char_array_4[j] = 0;
+
+    for (j = 0; j <4; j++)
+      char_array_4[j] = base64_chars.find(char_array_4[j]);
+
+    char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+    char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+    char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+    for (j = 0; (j < i - 1); j++)
+      sResult += char_array_3[j];
+  }
+
+  return sResult;  
+}
+/* end BASE64 decoding */

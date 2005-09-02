@@ -136,15 +136,14 @@ CFuppes::~CFuppes()
 
 void CFuppes::OnTimer(CUPnPDevice* pSender)
 {
-  CSharedLog::Shared()->Log(LOGNAME, "OnTimer()");
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "OnTimer()");
   /* local device must send alive message */
   if(pSender->GetIsLocalDevice())
   {
     stringstream sLog;
     sLog << "device: " << pSender->GetUUID() << " send timed alive";
     CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());    
-    m_pSSDPCtrl->send_alive();
-    CSharedLog::Shared()->Log(LOGNAME, "done");
+    m_pSSDPCtrl->send_alive();    
   }
   /* remote device timed out */
   else

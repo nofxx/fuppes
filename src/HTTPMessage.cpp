@@ -155,7 +155,10 @@ std::string CHTTPMessage::GetHeaderAsString()
 	}
 	
   /* Content length */
-	sResult << "CONTENT-LENGTH: " << (int)strlen(m_sContent.c_str()) << "\r\n";
+  if(m_nBinContentLength > 0)
+    sResult << "CONTENT-LENGTH: " << m_nBinContentLength << "\r\n";
+  else
+	  sResult << "CONTENT-LENGTH: " << (int)strlen(m_sContent.c_str()) << "\r\n";
 	
   /* Content type */
 	switch(m_HTTPContentType)

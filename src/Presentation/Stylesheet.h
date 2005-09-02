@@ -34,7 +34,7 @@ std::string GetStylesheet()
   sStylesheet << "  margin:      0;" << endl;
   sStylesheet << "  padding:     0;" << endl;
   sStylesheet << "  font-family: Verdana, Arial, Helvetica;" << endl;
-  sStylesheet << "  font-size:   10pt;" << endl;
+  sStylesheet << "  font-size:   10pt;" << endl;  
   sStylesheet << "  background-color: #CCCCFF;" << endl; // #EBEBEB
   sStylesheet <<"}" << endl;
   
@@ -52,6 +52,13 @@ std::string GetStylesheet()
   sStylesheet << "border-color:  black;" << endl;
   sStylesheet << "border-width:  1px 0;" << endl;
   sStylesheet << "background:   #FFFFFF;" << endl;
+  
+ /* sStylesheet << "text-indent: 2em;" << endl;  
+  sStylesheet << "background-image:url(presentation/images/fuppes.png);" << endl;
+  sStylesheet << "background-repeat:no-repeat;" << endl;
+  sStylesheet << "background-position: 0px 2px;" << endl; */
+  
+  
   sStylesheet << "}" << endl;
   
   sStylesheet << "#content {"  << endl;
