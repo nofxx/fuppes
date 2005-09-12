@@ -404,9 +404,12 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, int* p_pnCount, 
         
         string sExt = ExtractFileExt(sTmp.str());
         /* MP3 file */
-        if(IsFile(sTmp.str()) && (ToLower(sExt).compare("mp3") == 0))
+        if(IsFile(sTmp.str()) && ((ToLower(sExt).compare("mp3") == 0) || (ToLower(sExt).compare("ogg") == 0)))
         {
           CAudioItem* pTmpItem = new CAudioItem(m_sHTTPServerURL);
+          if (ToLower(sExt).compare("ogg") == 0)
+            pTmpItem->m_bDoTranscode = true;          
+          
           char szObjId[10];                            
           sprintf(szObjId, "%010X", *p_pnCount);
             

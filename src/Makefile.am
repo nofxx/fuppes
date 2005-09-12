@@ -2,8 +2,7 @@
 ## $Id: $
 
 FUPPES_CXXFLAGS = \
-	-Wall\
-	-g
+	-Wall
 
 INCLUDES = ${LIBXML_CFLAGS}\
 	$(FUPPES_CXXFLAGS)	
@@ -75,6 +74,9 @@ fuppes_SOURCES = ${h_sources} ${cpp_sources}
 
 fuppes_LDFLAGS = \
 	-lpcre\
+  -lmp3lame\
+  -lvorbisfile\
+  -lpthread\
 	${LIBXML_LIBS}
 
 fuppes_LDADD = $(FUPPES_LIBS)

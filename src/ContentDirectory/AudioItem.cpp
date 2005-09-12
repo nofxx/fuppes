@@ -44,6 +44,7 @@
 CAudioItem::CAudioItem(std::string p_sHTTPServerURL):
 CUPnPItem(UPNP_OBJECT_TYPE_AUDIO_ITEM, p_sHTTPServerURL)
 {
+  m_bDoTranscode = false;
 }
 
 /*===============================================================================

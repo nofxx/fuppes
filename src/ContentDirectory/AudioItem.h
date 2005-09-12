@@ -61,6 +61,8 @@ class CAudioItem: public CUPnPItem
   */
   void GetDescription(xmlTextWriterPtr pWriter);
 
+  
+  bool m_bDoTranscode;
 /* <\PUBLIC> */
 
 };

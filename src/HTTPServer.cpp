@@ -33,6 +33,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <list>
 
 using namespace std;
 
@@ -168,6 +169,10 @@ fuppesThreadCallback AcceptLoop(void *arg)
 	struct sockaddr_in remote_ep;
 	socklen_t size = sizeof(remote_ep);
 	
+  
+  /*std::list<fuppesThread> lAcceptThreads;
+  std::list<fuppesThread>::iterator it;*/
+  
 	for(;;)
 	{
 		/* T.S.TODO: Error on exit here */
@@ -187,9 +192,19 @@ fuppesThreadCallback AcceptLoop(void *arg)
                and build a garbage-collecting thread, that
                closes all finished threads */
       fuppesThreadStartArg(Session, SessionLoop, pSession);
+      //lAcceptThreads.push_back(Session);
 		}
     
-    /* todo: close finished threads */    
+    /* todo: close finished threads */
+    /*it = lAcceptThreads.begin();
+    while(it != lAcceptThreads.end())
+    {
+      if(*it == NULL)      
+        lAcceptThreads.erase(it);
+      else
+        ++it;      
+    }  */ 
+    
 	}  
 	
 	return 0;
@@ -217,13 +232,73 @@ fuppesThreadCallback SessionLoop(void *arg)
       CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending response");
       //cout << pResponse->GetMessageAsString() << endl;
       
-      if(ResponseMsg.GetBinContentLength() > 0)
-      {
-        send(pSession.GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);            
-        send(pSession.GetConnection(), ResponseMsg.GetBinContent(), ResponseMsg.GetBinContentLength(), 0);                        
-      }
-      else            
-        send(pSession.GetConnection(), ResponseMsg.GetMessageAsString().c_str(), (int)strlen(ResponseMsg.GetMessageAsString().c_str()), 0);
+      
+        if(!ResponseMsg.IsChunked())
+        {
+          if(ResponseMsg.GetBinContentLength() > 0)
+          {
+            send(pSession.GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);            
+            send(pSession.GetConnection(), ResponseMsg.GetBinContent(), ResponseMsg.GetBinContentLength(), 0);                        
+          }
+          else
+          {
+            send(pSession.GetConnection(), ResponseMsg.GetMessageAsString().c_str(), (int)strlen(ResponseMsg.GetMessageAsString().c_str()), 0);
+          }
+        }
+        else
+        { 
+          char szChunk[8192];
+          unsigned int nOffset = 0;
+          unsigned int nRet = 0;
+          
+          send(pSession.GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);            
+             
+          int nErr = 0;          
+          while((nErr != -1) && ((nRet = ResponseMsg.GetBinContentChunk(szChunk, 8192 + 1, nOffset)) > 0))
+          {            
+            //cout << "ret: " << nRet << endl;            
+            //szChunk[6] = '\0';            
+           /* char szLength[10]; 
+            sprintf(szLength, "%X", nRet);             
+            int nLen = strlen(szLength) + strlen("\r\n\r\n");
+            cout << "nLen: " << nLen << endl;            
+            stringstream sChunk;
+            sChunk << szLength << "\r\n";
+            sChunk << szChunk << "\r\n";                       
+            cout << sChunk.str(); // << endl; */            
+            //cout << strlen(sChunk.str().c_str()) << endl;            
+            //send(pSession.GetConnection(), sChunk.str().c_str(), nRet + nLen, 0);
+            /*cout << "chunk" << endl;
+            fflush(stdout);*/
+            
+            
+            nErr = send(pSession.GetConnection(), szChunk, nRet, MSG_NOSIGNAL);            
+            if(nErr < 0)
+            {              
+              cout << "error: " << nErr << endl;
+              fflush(stdout);
+              
+              ResponseMsg.m_bBreakTranscoding = true;
+              sleep(1); /* wait for the transcoding thread to end */
+              break;
+            }
+          }          
+  
+          
+          if(nErr != -1)
+          {
+            stringstream sEnd;
+            /*sEnd << "0\r\n";        
+            sEnd << "\r\n\r\n";          
+            send(pSession.GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), 0);*/
+            sEnd << "\r\n";
+            send(pSession.GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), MSG_NOSIGNAL);
+            cout << "end of stream" << endl;       
+          }
+          
+        }
+           
+        
       
       
       upnpSocketClose(pSession.GetConnection());      
