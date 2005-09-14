@@ -187,6 +187,7 @@ private:
   bool               m_bIsChunked;
 
   unsigned int       m_nBinContentPosition;
+  fuppesThread m_TranscodeThread;
 
 /*===============================================================================
  HELPER

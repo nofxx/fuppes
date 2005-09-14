@@ -67,6 +67,9 @@ short int pcmout[4096];
 
 CHTTPMessage::CHTTPMessage()
 {
+  cout << "NEW" << endl;
+  fflush(stdout);  
+  
   /* Init */
   m_HTTPVersion			  = HTTP_VERSION_1_1;
   m_HTTPMessageType   = HTTP_MESSAGE_TYPE_UNKNOWN;
@@ -80,12 +83,17 @@ CHTTPMessage::CHTTPMessage()
 
 CHTTPMessage::~CHTTPMessage()
 {
+  cout << "DELETE" << endl;
+  fflush(stdout);
   /* Cleanup */
   /* uv 2005-08-05 :: memory allocated with new[] 
      has to be freed with delete[] instead of delete */
   //SAFE_DELETE(m_pszBinContent);
   if(m_pszBinContent)
     delete[] m_pszBinContent;
+  
+  if(m_TranscodeThread)
+    fuppesThreadClose(m_TranscodeThread, 0);
 }
 
 /*===============================================================================
@@ -335,14 +343,14 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName)
   
   m_bBreakTranscoding = false;
   
-  fuppesThread TranscodeThread = (fuppesThread)NULL;
+  m_TranscodeThread = (fuppesThread)NULL;
   fuppesThreadInitMutex(&TranscodeMutex);
       
   CTranscodeSessionInfo* session = new CTranscodeSessionInfo();
   session->m_pHTTPMessage = this;
   session->m_sFileName    = p_sFileName;
   
-  fuppesThreadStartArg(TranscodeThread, TranscodeLoop, *session); 
+  fuppesThreadStartArg(m_TranscodeThread, TranscodeLoop, *session); 
   m_bIsTranscoding = true;
   
   sleep(1); /* let the encoder work for a second */
@@ -420,8 +428,7 @@ fuppesThreadCallback TranscodeLoop(void *arg)
       /* error in the stream.  Not a problem, just reporting it in
 	 case we (the app) cares.  In this case, we don't. */
     } else {
-      /* we don't bother dealing with sample rate changes, etc, but
-	 you'll have to*/
+
 	
     //cout << "bytesRead: " << bytesRead << endl;
     samplesRead = bytesRead / vi->channels / sizeof(short int);
@@ -432,7 +439,7 @@ fuppesThreadCallback TranscodeLoop(void *arg)
       
           
     char* tmpBuf = NULL;
-    if(sAppendBuf)
+    if(sAppendBuf != NULL)
     {
       tmpBuf = new char[nAppendSize];
       memcpy(tmpBuf, sAppendBuf, nAppendSize);
@@ -440,8 +447,11 @@ fuppesThreadCallback TranscodeLoop(void *arg)
     }
     
     sAppendBuf = new char[nAppendSize + lameret];
-    if(tmpBuf)
+    if(tmpBuf != NULL)
+    {
       memcpy(sAppendBuf, tmpBuf, nAppendSize);
+      delete[] tmpBuf;
+    }
     memcpy(&sAppendBuf[nAppendSize], mp3buffer, lameret);
     nAppendSize += lameret;
     nAppendCount++;
@@ -511,10 +521,12 @@ fuppesThreadCallback TranscodeLoop(void *arg)
     /*cout << "done appending buffer" << endl;
     cout << pSession->m_pHTTPMessage->m_nBinContentLength << endl;
     fflush(stdout);*/
-      
+
+    pSession->m_pHTTPMessage->m_bIsTranscoding = false;    
+  
     fuppesThreadUnlockMutex(&TranscodeMutex);  
     /* end append */      
-
+    
     sLog.str("");
     sLog << "done transcoding \"" << pSession->m_sFileName << "\"" << endl;
     CSharedLog::Shared()->Log(LOGNAME, sLog.str());  
@@ -527,6 +539,8 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   
   ov_clear(&vf);  
   /* end transcode */
+  
+  delete pSession;
   
   fuppesThreadExit(NULL);
   return 0;

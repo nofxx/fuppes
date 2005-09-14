@@ -104,6 +104,7 @@ void CHTTPServer::Start()
 void CHTTPServer::Stop()
 {
   /* Stop thread */
+  fuppesThreadCancel(accept_thread);
   fuppesThreadClose(accept_thread, 2000);
   
   /* close socket */
@@ -184,14 +185,14 @@ fuppesThreadCallback AcceptLoop(void *arg)
 			CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
 			
       /* Start session thread */
-      CHTTPSessionInfo pSession(pHTTPServer, nConnection);      
+      CHTTPSessionInfo* pSession = new CHTTPSessionInfo(pHTTPServer, nConnection);      
       fuppesThread Session = (fuppesThread)NULL;  
-      
+    
       /* T.S.TODO: Where do we need to exit thread??? */
       /* uv :: we put the thread handles in a list (e.g vector)
                and build a garbage-collecting thread, that
                closes all finished threads */
-      fuppesThreadStartArg(Session, SessionLoop, pSession);
+      fuppesThreadStartArg(Session, SessionLoop, *pSession);
       //lAcceptThreads.push_back(Session);
 		}
     
@@ -212,11 +213,11 @@ fuppesThreadCallback AcceptLoop(void *arg)
 
 fuppesThreadCallback SessionLoop(void *arg)
 {
-  CHTTPSessionInfo pSession = *(CHTTPSessionInfo*)arg;  
+  CHTTPSessionInfo* pSession = (CHTTPSessionInfo*)arg;  
   int  nBytesReceived = 0;
   char szBuffer[4096];
   
-  nBytesReceived = recv(pSession.GetConnection(), szBuffer, 4096, 0); /* MSG_DONTWAIT */
+  nBytesReceived = recv(pSession->GetConnection(), szBuffer, 4096, 0); /* MSG_DONTWAIT */
   if(nBytesReceived != -1)			
   {
     stringstream sMsg;
@@ -225,24 +226,24 @@ fuppesThreadCallback SessionLoop(void *arg)
     szBuffer[nBytesReceived] = '\0';
     //cout << szBuffer << endl;
     
-    CHTTPMessage ResponseMsg;
-    bool fRet = pSession.GetHTTPServer()->CallOnReceive(szBuffer, &ResponseMsg);
+    CHTTPMessage* ResponseMsg = new CHTTPMessage();
+    bool fRet = pSession->GetHTTPServer()->CallOnReceive(szBuffer, ResponseMsg);
     if(true == fRet)				
     {
       CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending response");
       //cout << pResponse->GetMessageAsString() << endl;
       
       
-        if(!ResponseMsg.IsChunked())
+        if(!ResponseMsg->IsChunked())
         {
-          if(ResponseMsg.GetBinContentLength() > 0)
+          if(ResponseMsg->GetBinContentLength() > 0)
           {
-            send(pSession.GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);            
-            send(pSession.GetConnection(), ResponseMsg.GetBinContent(), ResponseMsg.GetBinContentLength(), 0);                        
+            send(pSession->GetConnection(), ResponseMsg->GetHeaderAsString().c_str(), (int)strlen(ResponseMsg->GetHeaderAsString().c_str()), 0);            
+            send(pSession->GetConnection(), ResponseMsg->GetBinContent(), ResponseMsg->GetBinContentLength(), 0);                        
           }
           else
           {
-            send(pSession.GetConnection(), ResponseMsg.GetMessageAsString().c_str(), (int)strlen(ResponseMsg.GetMessageAsString().c_str()), 0);
+            send(pSession->GetConnection(), ResponseMsg->GetMessageAsString().c_str(), (int)strlen(ResponseMsg->GetMessageAsString().c_str()), 0);
           }
         }
         else
@@ -251,10 +252,10 @@ fuppesThreadCallback SessionLoop(void *arg)
           unsigned int nOffset = 0;
           unsigned int nRet = 0;
           
-          send(pSession.GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);            
+          send(pSession->GetConnection(), ResponseMsg->GetHeaderAsString().c_str(), (int)strlen(ResponseMsg->GetHeaderAsString().c_str()), 0);            
              
           int nErr = 0;          
-          while((nErr != -1) && ((nRet = ResponseMsg.GetBinContentChunk(szChunk, 8192 + 1, nOffset)) > 0))
+          while((nErr != -1) && ((nRet = ResponseMsg->GetBinContentChunk(szChunk, 8192 + 1, nOffset)) > 0))
           {            
             //cout << "ret: " << nRet << endl;            
             //szChunk[6] = '\0';            
@@ -272,13 +273,14 @@ fuppesThreadCallback SessionLoop(void *arg)
             fflush(stdout);*/
             
             
-            nErr = send(pSession.GetConnection(), szChunk, nRet, MSG_NOSIGNAL);            
+            nErr = send(pSession->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);
+            //delete[] szChunk;
             if(nErr < 0)
             {              
               cout << "error: " << nErr << endl;
               fflush(stdout);
               
-              ResponseMsg.m_bBreakTranscoding = true;
+              ResponseMsg->m_bBreakTranscoding = true;
               sleep(1); /* wait for the transcoding thread to end */
               break;
             }
@@ -292,7 +294,7 @@ fuppesThreadCallback SessionLoop(void *arg)
             sEnd << "\r\n\r\n";          
             send(pSession.GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), 0);*/
             sEnd << "\r\n";
-            send(pSession.GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), MSG_NOSIGNAL);
+            send(pSession->GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), MSG_NOSIGNAL);
             cout << "end of stream" << endl;       
           }
           
@@ -301,12 +303,16 @@ fuppesThreadCallback SessionLoop(void *arg)
         
       
       
-      upnpSocketClose(pSession.GetConnection());      
+      upnpSocketClose(pSession->GetConnection());      
       CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");
     }
+   
+    delete ResponseMsg;
     
-  }
+  }  
   
+  
+  delete pSession;
   fuppesThreadExit(NULL);
   return 0;  
 }
