@@ -88,8 +88,9 @@ public:
 
   CHTTPSessionInfo(CHTTPServer* pHTTPServer, upnpSocket p_Connection)
   {
-    m_pHTTPServer = pHTTPServer;
-    m_Connection  = p_Connection;
+    m_pHTTPServer   = pHTTPServer;
+    m_Connection    = p_Connection;    
+    m_bIsTerminated = false;
   }
 
 /*===============================================================================
@@ -98,11 +99,16 @@ public:
 
     upnpSocket   GetConnection() { return m_Connection;  }
     CHTTPServer* GetHTTPServer() { return m_pHTTPServer; }
+    fuppesThread GetThreadHandle() { return m_ThreadHandle; }
+    void         SetThreadHandle(fuppesThread p_ThreadHandle) { m_ThreadHandle = p_ThreadHandle; }
+    
   
 /* <\PUBLIC> */
 
-/* <PRIVATE> */
-
+    bool m_bIsTerminated;
+    
+/* <PRIVATE> */    
+    
 private:
   
 /*===============================================================================
@@ -111,6 +117,7 @@ private:
   
   CHTTPServer* m_pHTTPServer;
   upnpSocket   m_Connection;
+  fuppesThread m_ThreadHandle;
 
 /* <\PRIVATE> */
 

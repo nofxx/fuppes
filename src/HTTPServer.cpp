@@ -33,6 +33,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <list>
 
 using namespace std;
 
@@ -101,9 +102,11 @@ void CHTTPServer::Start()
 }
 
 void CHTTPServer::Stop()
-{
+{  
   /* Stop thread */
-  fuppesThreadClose(accept_thread, 2000);
+  /* todo kill thread properly */
+  fuppesThreadCancel(accept_thread);
+  fuppesThreadClose(accept_thread, 0);
   
   /* close socket */
   upnpSocketClose(m_Socket);
@@ -168,6 +171,8 @@ fuppesThreadCallback AcceptLoop(void *arg)
 	struct sockaddr_in remote_ep;
 	socklen_t size = sizeof(remote_ep);
 	
+  std::list<CHTTPSessionInfo*> m_ThreadList;
+  
 	for(;;)
 	{
 		/* T.S.TODO: Error on exit here */
@@ -179,17 +184,39 @@ fuppesThreadCallback AcceptLoop(void *arg)
 			CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
 			
       /* Start session thread */
-      CHTTPSessionInfo pSession(pHTTPServer, nConnection);      
+      CHTTPSessionInfo* pSession = new CHTTPSessionInfo(pHTTPServer, nConnection);      
       fuppesThread Session = (fuppesThread)NULL;  
       
       /* T.S.TODO: Where do we need to exit thread??? */
       /* uv :: we put the thread handles in a list (e.g vector)
                and build a garbage-collecting thread, that
                closes all finished threads */
-      fuppesThreadStartArg(Session, SessionLoop, pSession);
+      fuppesThreadStartArg(Session, SessionLoop, *pSession);      
+      pSession->SetThreadHandle(Session);
+      m_ThreadList.push_back(pSession);
 		}
     
-    /* todo: close finished threads */    
+    /* close finished threads */        
+    std::list<CHTTPSessionInfo*>::iterator m_ThreadListIterator;
+    for(m_ThreadListIterator = m_ThreadList.begin(); m_ThreadListIterator != m_ThreadList.end(); m_ThreadListIterator++)
+    {
+      CHTTPSessionInfo* pInfo = *m_ThreadListIterator;
+      cout << pInfo->GetThreadHandle() << endl;
+      cout << pInfo->GetConnection() << endl;
+      fflush(stdout);
+     
+      if(pInfo->m_bIsTerminated)
+      {
+        cout << "terminated thread" << endl;
+        fflush(stdout);
+        fuppesThreadClose(pInfo->GetThreadHandle(), 0);
+        
+        m_ThreadList.erase(m_ThreadListIterator);
+        m_ThreadListIterator--;
+      }      
+    }
+    
+    
 	}  
 	
 	return 0;
@@ -197,11 +224,11 @@ fuppesThreadCallback AcceptLoop(void *arg)
 
 fuppesThreadCallback SessionLoop(void *arg)
 {
-  CHTTPSessionInfo pSession = *(CHTTPSessionInfo*)arg;  
+  CHTTPSessionInfo* pSession = (CHTTPSessionInfo*)arg;  
   int  nBytesReceived = 0;
   char szBuffer[4096];
   
-  nBytesReceived = recv(pSession.GetConnection(), szBuffer, 4096, 0); /* MSG_DONTWAIT */
+  nBytesReceived = recv(pSession->GetConnection(), szBuffer, 4096, 0); /* MSG_DONTWAIT */
   if(nBytesReceived != -1)			
   {
     stringstream sMsg;
@@ -211,7 +238,7 @@ fuppesThreadCallback SessionLoop(void *arg)
     //cout << szBuffer << endl;
     
     CHTTPMessage ResponseMsg;
-    bool fRet = pSession.GetHTTPServer()->CallOnReceive(szBuffer, &ResponseMsg);
+    bool fRet = pSession->GetHTTPServer()->CallOnReceive(szBuffer, &ResponseMsg);
     if(true == fRet)				
     {
       CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending response");
@@ -219,19 +246,22 @@ fuppesThreadCallback SessionLoop(void *arg)
       
       if(ResponseMsg.GetBinContentLength() > 0)
       {
-        send(pSession.GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);            
-        send(pSession.GetConnection(), ResponseMsg.GetBinContent(), ResponseMsg.GetBinContentLength(), 0);                        
+        send(pSession->GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);            
+        send(pSession->GetConnection(), ResponseMsg.GetBinContent(), ResponseMsg.GetBinContentLength(), 0);                        
       }
       else            
-        send(pSession.GetConnection(), ResponseMsg.GetMessageAsString().c_str(), (int)strlen(ResponseMsg.GetMessageAsString().c_str()), 0);
+        send(pSession->GetConnection(), ResponseMsg.GetMessageAsString().c_str(), (int)strlen(ResponseMsg.GetMessageAsString().c_str()), 0);
       
       
-      upnpSocketClose(pSession.GetConnection());      
+      upnpSocketClose(pSession->GetConnection());      
       CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");
     }
     
   }
   
+  cout << "closing thread " << pSession->GetThreadHandle() << endl;
+  fflush(stdout);
+  pSession->m_bIsTerminated = true;
   fuppesThreadExit(NULL);
   return 0;  
 }

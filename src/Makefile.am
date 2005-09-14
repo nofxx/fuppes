@@ -75,6 +75,7 @@ fuppes_SOURCES = ${h_sources} ${cpp_sources}
 
 fuppes_LDFLAGS = \
 	-lpcre\
+  -lpthread\
 	${LIBXML_LIBS}
 
 fuppes_LDADD = $(FUPPES_LIBS)

@@ -44,8 +44,7 @@ CTimer::CTimer(ITimer* p_OnTimerHandler)
 
 CTimer::~CTimer()
 {
-  if(m_TimerThread != (fuppesThread)NULL)
-    fuppesThreadClose(m_TimerThread, 500);
+  Stop();
 }
   
 void CTimer::CallOnTimer()
@@ -67,7 +66,10 @@ void CTimer::Start()
 void CTimer::Stop()
 {
   if(m_TimerThread != (fuppesThread)NULL)
+  {
+    fuppesThreadCancel(m_TimerThread);
     fuppesThreadClose(m_TimerThread, 500);
+  }
 }
 
 void CTimer::Reset()

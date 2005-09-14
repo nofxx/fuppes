@@ -77,6 +77,7 @@ CUDPSocket::CUDPSocket()
 CUDPSocket::~CUDPSocket()
 {
   /* Cleanup */
+  EndReceive();
 }
 
 /*===============================================================================
@@ -215,6 +216,7 @@ void CUDPSocket::BeginReceive()
 void CUDPSocket::EndReceive()
 {
   /* Exit thread */
+  fuppesThreadCancel(m_ReceiveThread);
   fuppesThreadClose(m_ReceiveThread, 2000);
   m_ReceiveThread = (fuppesThread)NULL;
 }
