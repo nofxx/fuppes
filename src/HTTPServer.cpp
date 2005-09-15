@@ -281,7 +281,7 @@ fuppesThreadCallback SessionLoop(void *arg)
               fflush(stdout);
               
               ResponseMsg->m_bBreakTranscoding = true;
-              sleep(1); /* wait for the transcoding thread to end */
+              upnpSleep(1); /* wait for the transcoding thread to end */
               break;
             }
           }          

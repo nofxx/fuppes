@@ -240,7 +240,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     cout << "[critical] we are sending faster then we can transcode" << endl;
     cout << "           delaying send-process for a second" << endl;
     fflush(stdout);
-    sleep(1);
+    upnpSleep(1);
     fuppesThreadLockMutex(&TranscodeMutex);
     memcpy(p_sContentChunk, &m_pszBinContent[m_nBinContentPosition], nRest);
     m_nBinContentPosition += nRest;
@@ -353,7 +353,7 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName)
   fuppesThreadStartArg(m_TranscodeThread, TranscodeLoop, *session); 
   m_bIsTranscoding = true;
   
-  sleep(1); /* let the encoder work for a second */
+  upnpSleep(1); /* let the encoder work for a second */
   
   return true;
 }
