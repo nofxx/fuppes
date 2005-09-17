@@ -209,6 +209,7 @@ void CUDPSocket::SendUnicast(std::string p_sMessage, sockaddr_in p_RemoteEndPoin
 void CUDPSocket::BeginReceive()
 {
   /* Start thread */
+  m_bBreakReceive = false;
   fuppesThreadStart(m_ReceiveThread, ReceiveLoop);
 }
 
@@ -216,7 +217,10 @@ void CUDPSocket::BeginReceive()
 void CUDPSocket::EndReceive()
 {
   /* Exit thread */
-  fuppesThreadCancel(m_ReceiveThread);
+  DWORD nExitCode = 0;
+  m_bBreakReceive = true;
+  WaitForSingleObject(m_ReceiveThread, INFINITE);
+  fuppesThreadCancel(m_ReceiveThread, nExitCode);
   fuppesThreadClose(m_ReceiveThread, 2000);
   m_ReceiveThread = (fuppesThread)NULL;
 }
@@ -283,12 +287,13 @@ fuppesThreadCallback ReceiveLoop(void *arg)
 	sockaddr_in remote_ep;	
 	socklen_t   size = sizeof(remote_ep);	
 		/* T.S. TODO: Error on exit here */
-	while((bytes_received = recvfrom(udp_sock->GetSocketFd(), buffer, sizeof(buffer), 0, (struct sockaddr*)&remote_ep, &size)) != -1)
+	while(!udp_sock->m_bBreakReceive && ((bytes_received = recvfrom(udp_sock->GetSocketFd(), buffer, sizeof(buffer), 0, (struct sockaddr*)&remote_ep, &size)) != -1))
 	{
 		buffer[bytes_received] = '\0';		
 		msg << buffer; 
     
-    //cout << msg.str();    
+    cout << "SOCKET LOOP" << endl;
+    fflush(stdout);
     /*cout << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port) << endl;
     cout << inet_ntoa(udp_sock->get_local_ep().sin_addr) << ":" << ntohs(udp_sock->get_local_ep().sin_port) << endl;*/
     

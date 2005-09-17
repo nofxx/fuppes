@@ -108,7 +108,8 @@ void CHTTPServer::Stop()
   
   /* Stop thread */
   /* todo kill thread properly */
-  fuppesThreadCancel(accept_thread);
+  DWORD nExitCode = 0;
+  fuppesThreadCancel(accept_thread, nExitCode);
   fuppesThreadClose(accept_thread, 0);
   
   /* close socket */

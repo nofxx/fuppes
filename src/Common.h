@@ -97,8 +97,8 @@ std::string Base64Decode(const std::string p_sInputString);
 #define fuppesThread                                        HANDLE
 #define fuppesThreadStart(_handle_, _callback_)             _handle_ = CreateThread(NULL, 0, &_callback_, this, 0, NULL)
 #define fuppesThreadClose(_handle_, _timeoutms_)             WaitForSingleObject(_handle_, _timeoutms_); CloseHandle(_handle_)
-#define fuppesThreadCancel(_handle_)                        /* TODO */
-#define fuppesThreadExit(_status_) 
+#define fuppesThreadCancel(_handle_, _exit_code_)           TerminateThread(_handle_, _exit_code_);
+#define fuppesThreadExit(_status_)                          ExitThread(0);
 #define fuppesThreadStartArg(_handle_, _callback_, _arg_)   _handle_ = CreateThread(NULL, 0, &_callback_, &_arg_, 0, NULL)
 #define fuppesThreadCallback                                DWORD WINAPI
 

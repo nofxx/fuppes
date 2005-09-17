@@ -69,6 +69,9 @@ void CTimer::Stop()
 {
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "Stop");
   m_bDoBreak = true;
+  DWORD nExitCode = 0;
+  WaitForSingleObject(m_TimerThread, INFINITE);
+  fuppesThreadCancel(m_TimerThread, nExitCode);
   fuppesThreadClose(m_TimerThread, 0);
   m_TimerThread = (fuppesThread)NULL;
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "Stopped");
@@ -88,8 +91,14 @@ fuppesThreadCallback TimerLoop(void *arg)
  
   while(!pTimer->m_bDoBreak && (pTimer->m_nTickCount <= pTimer->GetInterval()))
   {
+    std::stringstream sLog;
+    sLog << "timer loop. Interval: " << pTimer->GetInterval() << " Tick count: " << pTimer->m_nTickCount;  
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());                             
+  
+    Sleep(1000);
+                            
     pTimer->m_nTickCount++;
-    upnpSleep(1000000);    
+    //upnpSleep(1000000);    
     
     if(!pTimer->m_bDoBreak && (pTimer->m_nTickCount >= (pTimer->GetInterval() - 1)))
     {

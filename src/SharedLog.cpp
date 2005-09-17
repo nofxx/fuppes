@@ -66,7 +66,7 @@ CSharedLog* CSharedLog::Shared()
 
 CSharedLog::CSharedLog()
 {
-  SetLogLevel(1, false);
+  SetLogLevel(2, false);
   #ifndef DISABLELOG
   fuppesThreadInitMutex(&m_Mutex);
   #endif
