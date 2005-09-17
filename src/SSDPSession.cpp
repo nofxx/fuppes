@@ -47,15 +47,18 @@ using namespace std;
 ===============================================================================*/
 
 CSSDPSession::CSSDPSession(std::string p_sIPAddress, ISSDPSession* pEventHandler)
+  :m_Timer(this)
 {
   m_sIPAddress    = p_sIPAddress;
   m_pEventHandler = pEventHandler;
-  m_Timer         = new CTimer(this);
+  //m_Timer         = new CTimer(this);
 }
 
 CSSDPSession::~CSSDPSession()
 {
-  delete m_Timer;
+  cout << "~CSSDPSession" << endl;
+  Stop();
+  //delete m_Timer;
 }
 
 /* <\PROTECTED> */
@@ -75,9 +78,15 @@ void CSSDPSession::OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pSSDPMe
 
 void CSSDPSession::OnTimer()
 {
+  cout << "CSSDPSession::OnTimer" << endl;
   Stop();
   if(m_pEventHandler != NULL)
+  {
+    cout << "CSSDPSession::CallOnTimeOut" << endl;
     m_pEventHandler->OnSessionTimeOut(this);
+  }
+  else
+    cout << "CSSDPSession::handler = NULL" << endl;
 }
 
 /* <\PUBLIC> */
@@ -146,11 +155,13 @@ CMSearchSession::CMSearchSession(std::string p_sIPAddress, ISSDPSession* pReceiv
   m_pNotifyMsgFactory = pNotifyMsgFactory;
 	m_UdpSocket.SetupSocket(false, m_sIPAddress);	
   
-  m_Timer->SetInterval(30);
+  m_Timer.SetInterval(5);
 }
 
 CMSearchSession::~CMSearchSession()
 {
+  cout << "~CMSearchSession" << endl;
+  m_UdpSocket.TeardownSocket();
 }
 
 /*===============================================================================
@@ -163,13 +174,15 @@ void CMSearchSession::Start()
 	begin_receive_unicast();
 	upnpSleep(200);
 	send_multicast(m_pNotifyMsgFactory->msearch());
-  //m_Timer->Start();  
+  m_Timer.Start();  
 }
 
 void CMSearchSession::Stop()
 {
-  //m_Timer->Stop();
+  cout << "CMSearchSession::Stop" << endl;
+  m_Timer.Stop();
 	end_receive_unicast();
+  cout << "CMSearchSession::Stopped" << endl;
 }
 
 /*===============================================================================

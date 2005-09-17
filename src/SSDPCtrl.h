@@ -40,6 +40,7 @@
 #endif
 
 #include <string>
+#include <list>
 
 #include "UDPSocket.h"
 #include "SSDPMessage.h"
@@ -123,6 +124,7 @@ public:
 ===============================================================================*/
     void HandleMSearch(CSSDPMessage* pSSDPMessage);  
   
+    void CleanupSessions();
   
 /*===============================================================================
  MEMBERS
@@ -134,6 +136,9 @@ public:
     sockaddr_in        m_LastMulticastEp;  
     std::string        m_sIPAddress;    
     ISSDPCtrl*         m_pReceiveHandler;
+
+    std::list<CSSDPSession*> m_SessionList;    
+    std::list<CSSDPSession*>::iterator m_SessionListIterator;
 
 /* <\PRIVATE> */
 

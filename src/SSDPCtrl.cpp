@@ -60,6 +60,7 @@ CSSDPCtrl::CSSDPCtrl(std::string p_sIPAddress, std::string p_sHTTPServerURL)
 
 CSSDPCtrl::~CSSDPCtrl()
 {
+  CleanupSessions();
   SAFE_DELETE(m_pNotifyMsgFactory);
 }
 
@@ -88,22 +89,38 @@ CUDPSocket* CSSDPCtrl::get_socket()
 	return &m_Listener;
 }
 
+void CSSDPCtrl::CleanupSessions()
+{
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "CleanupSessions");
+  for(m_SessionListIterator = m_SessionList.begin(); m_SessionListIterator != m_SessionList.end(); m_SessionListIterator++)
+  {
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, "CleanupSessions----");
+    CSSDPSession* pSession = *m_SessionListIterator;
+    delete pSession;
+    m_SessionList.erase(m_SessionListIterator);
+    m_SessionListIterator--;    
+  }
+}
+
 /*===============================================================================
  SEND
 ===============================================================================*/
 
 void CSSDPCtrl::send_msearch()
 {
-	CMSearchSession* msearch = new CMSearchSession(m_sIPAddress, this, m_pNotifyMsgFactory);
-	m_LastMulticastEp = msearch->GetLocalEndPoint();
+	CMSearchSession* pSession = new CMSearchSession(m_sIPAddress, this, m_pNotifyMsgFactory);
+	m_LastMulticastEp = pSession->GetLocalEndPoint();
 	/* T.S.TODO: Where could we call CMSearchSession::Stop() to terminate thread??? */
   /* uv :: UPnP says that remote devices have to answer within iirc 30 seconds
            so let's start a timer and kill the thread when the time is over */
-  msearch->Start();	
+  pSession->Start();
+  CleanupSessions();  
 }
 
 void CSSDPCtrl::send_alive()
 {
+  CleanupSessions();
+  
   CUDPSocket Sock;
 	Sock.SetupSocket(false, m_sIPAddress);
 	
@@ -210,6 +227,7 @@ void CSSDPCtrl::OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage)
 void CSSDPCtrl::OnSessionTimeOut(CSSDPSession* pSender)
 {
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "OnSessionTimeOut()");
+   m_SessionList.push_back(pSender);
 }
 
 /* <\PUBLIC> */
@@ -235,7 +253,9 @@ void CSSDPCtrl::HandleMSearch(CSSDPMessage* pSSDPMessage)
   Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_USN), pSSDPMessage->GetRemoteEndPoint());
 
   Sock.TeardownSocket();
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");    
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");
+  
+  CleanupSessions();
 }
 
 

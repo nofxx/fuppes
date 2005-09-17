@@ -77,6 +77,8 @@ protected:
 ===============================================================================*/
 
   CSSDPSession(std::string p_sIPAddress, ISSDPSession* pEventHandler);
+
+public:
   virtual ~CSSDPSession();
 
 /* <\PROTECTED> */
@@ -122,7 +124,7 @@ public:
 	  CUDPSocket    m_UdpSocket;
     std::string   m_sIPAddress;
     ISSDPSession* m_pEventHandler;
-    CTimer*       m_Timer;
+    CTimer        m_Timer;
 
 /* <\PROTECTED> */
 

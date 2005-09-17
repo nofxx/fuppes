@@ -146,6 +146,9 @@ int main()
   SAFE_DELETE(pFuppes);
   SAFE_DELETE(pPresentationHandler);
 
+  delete CSharedConfig::Shared();
+  delete CSharedLog::Shared();
+  
   /* Cleanup winsockets */
   #ifdef WIN32
   WSACleanup();

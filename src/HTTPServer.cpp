@@ -33,7 +33,7 @@
 
 #include <iostream>
 #include <sstream>
-#include <list>
+
 
 using namespace std;
 
@@ -84,6 +84,7 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 
 CHTTPServer::~CHTTPServer()
 {
+  Stop();
 }
 
 /*===============================================================================
@@ -103,6 +104,8 @@ void CHTTPServer::Start()
 
 void CHTTPServer::Stop()
 {  
+  CleanupSessions();
+  
   /* Stop thread */
   /* todo kill thread properly */
   fuppesThreadCancel(accept_thread);
@@ -154,6 +157,28 @@ bool CHTTPServer::CallOnReceive(std::string p_sMessage, CHTTPMessage* pMessageOu
   else return false;
 }
 
+void CHTTPServer::CleanupSessions()
+{
+  /* close finished threads */            
+  for(m_ThreadListIterator = m_ThreadList.begin(); m_ThreadListIterator != m_ThreadList.end(); m_ThreadListIterator++)
+  {
+    CHTTPSessionInfo* pInfo = *m_ThreadListIterator;
+    cout << pInfo->GetThreadHandle() << endl;
+    cout << pInfo->GetConnection() << endl;
+    fflush(stdout);
+   
+    if(pInfo->m_bIsTerminated)
+    {
+      cout << "terminated thread" << endl;
+      fflush(stdout);
+      fuppesThreadClose(pInfo->GetThreadHandle(), 0);
+      
+      m_ThreadList.erase(m_ThreadListIterator);
+      m_ThreadListIterator--;
+    }      
+  }    
+}
+
 /*===============================================================================
  CALLBACKS
 ===============================================================================*/
@@ -161,9 +186,9 @@ bool CHTTPServer::CallOnReceive(std::string p_sMessage, CHTTPMessage* pMessageOu
 fuppesThreadCallback AcceptLoop(void *arg)
 {
 	CHTTPServer* pHTTPServer = (CHTTPServer*)arg;
-  stringstream sLog;
+  /*stringstream sLog;
   sLog << "listening on" << pHTTPServer->GetURL();  
-	CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());
+	CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());*/
   
 	upnpSocket nSocket     = pHTTPServer->GetSocket();			
 	upnpSocket nConnection = 0;
@@ -171,7 +196,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
 	struct sockaddr_in remote_ep;
 	socklen_t size = sizeof(remote_ep);
 	
-  std::list<CHTTPSessionInfo*> m_ThreadList;
+  
   
 	for(;;)
 	{
@@ -179,9 +204,9 @@ fuppesThreadCallback AcceptLoop(void *arg)
     nConnection = accept(nSocket, (struct sockaddr*)&remote_ep, &size);
 		if(nConnection != -1)      
 		{	
-      stringstream sMsg;
+      /*stringstream sMsg;
       sMsg << "new connection from " << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port);
-			CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
+			CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());*/
 			
       /* Start session thread */
       CHTTPSessionInfo* pSession = new CHTTPSessionInfo(pHTTPServer, nConnection);      
@@ -193,30 +218,10 @@ fuppesThreadCallback AcceptLoop(void *arg)
                closes all finished threads */
       fuppesThreadStartArg(Session, SessionLoop, *pSession);      
       pSession->SetThreadHandle(Session);
-      m_ThreadList.push_back(pSession);
-		}
+      pHTTPServer->m_ThreadList.push_back(pSession);
+		} 
     
-    /* close finished threads */        
-    std::list<CHTTPSessionInfo*>::iterator m_ThreadListIterator;
-    for(m_ThreadListIterator = m_ThreadList.begin(); m_ThreadListIterator != m_ThreadList.end(); m_ThreadListIterator++)
-    {
-      CHTTPSessionInfo* pInfo = *m_ThreadListIterator;
-      cout << pInfo->GetThreadHandle() << endl;
-      cout << pInfo->GetConnection() << endl;
-      fflush(stdout);
-     
-      if(pInfo->m_bIsTerminated)
-      {
-        cout << "terminated thread" << endl;
-        fflush(stdout);
-        fuppesThreadClose(pInfo->GetThreadHandle(), 0);
-        
-        m_ThreadList.erase(m_ThreadListIterator);
-        m_ThreadListIterator--;
-      }      
-    }
-    
-    
+    pHTTPServer->CleanupSessions();
 	}  
 	
 	return 0;

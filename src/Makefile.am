@@ -1,12 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id: $
 
-FUPPES_CXXFLAGS = \
-	-Wall\
-	-g
-
-INCLUDES = ${LIBXML_CFLAGS}\
-	$(FUPPES_CXXFLAGS)	
+INCLUDES = ${LIBXML_CFLAGS}
 
 bin_PROGRAMS = fuppes
 

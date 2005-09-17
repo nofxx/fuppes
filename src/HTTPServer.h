@@ -42,6 +42,7 @@
 
 #include <string>
 #include <iostream>
+#include <list>
 
 using namespace std;
 
@@ -111,6 +112,8 @@ public:
     
 private:
   
+  void CleanupSessions();
+
 /*===============================================================================
  MEMBERS
 ===============================================================================*/
@@ -149,6 +152,7 @@ public:
   void          Stop();
   upnpSocket    GetSocket();
   std::string   GetURL();	
+  void          CleanupSessions();
 
 /*===============================================================================
  MESSAGE HANDLING
@@ -156,13 +160,13 @@ public:
 
   bool				  SetReceiveHandler(IHTTPServer* pHandler);
   bool          CallOnReceive(std::string p_sMessage, CHTTPMessage* pMessageOut);
-  
+   
 /* <\PUBLIC> */
 
 /* <PRIVATE> */
 
-private:
-	 
+private: 
+
 /*===============================================================================
  MEMBERS
 ===============================================================================*/
@@ -175,6 +179,10 @@ private:
 
   upnpSocket  m_Socket;					      
   fuppesThread  accept_thread;
+
+public:
+  std::list<CHTTPSessionInfo*> m_ThreadList;
+  std::list<CHTTPSessionInfo*>::iterator m_ThreadListIterator;
 
 /* <\PRIVATE> */
 
