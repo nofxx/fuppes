@@ -56,16 +56,12 @@ CMSearchSession::CMSearchSession(std::string p_sIPAddress, IMSearchSession* pRec
   m_pEventHandler     = pReceiveHandler;
   m_pNotifyMsgFactory = pNotifyMsgFactory;
   
-  m_Timer.SetInterval(5);
+  m_Timer.SetInterval(30);
   m_UdpSocket.SetupSocket(false, m_sIPAddress);	
-  
-  
-  s_test = "m-session";
 }
 
 CMSearchSession::~CMSearchSession()
 {
-  cout << "~CSSDPSession" << endl;
   m_UdpSocket.TeardownSocket();  
 }
 
@@ -79,22 +75,17 @@ CMSearchSession::~CMSearchSession()
 
 void CMSearchSession::OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pSSDPMessage)
 {
-  cout << "ssdp_session::OnUDPSocketReceive" << endl << pSSDPMessage->GetContent() << endl;
   if(m_pEventHandler != NULL)
     m_pEventHandler->OnSessionReceive(this, pSSDPMessage);
 }
 
 void CMSearchSession::OnTimer()
 {
-  cout << "CSSDPSession::OnTimer" << endl;
   Stop();
   if(m_pEventHandler != NULL)
   {
-    cout << "CSSDPSession::CallOnTimeOut" << endl;
     m_pEventHandler->OnSessionTimeOut(this);
-  }
-  else
-    cout << "CSSDPSession::handler = NULL" << endl;
+  }  
 }
 
 /*===============================================================================
@@ -103,20 +94,16 @@ void CMSearchSession::OnTimer()
 
 void CMSearchSession::Start()
 {
-	cout << "CMSearchSession::Start" << endl;  
 	begin_receive_unicast();
 	upnpSleep(200);
 	send_multicast(m_pNotifyMsgFactory->msearch());
-  m_Timer.Start();  
-  cout << "CMSearchSession::Started" << endl;
+  m_Timer.Start();
 }
 
 void CMSearchSession::Stop()
 {
-  cout << "CMSearchSession::Stop" << endl;
   m_Timer.Stop();
-	end_receive_unicast();
-  cout << "CMSearchSession::Stopped" << endl;
+	end_receive_unicast(); 
 }
 
 /*===============================================================================

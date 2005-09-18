@@ -97,6 +97,7 @@ int main()
   #endif
   
   cout << "FUPPES - Free UPnP(tm) Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;
+  cout << "http://fuppes.sourceforge.net" << endl;
   if(!CSharedConfig::Shared()->SetupConfig())
     return 0;
   cout << "hostname: " << CSharedConfig::Shared()->GetHostname() << endl;

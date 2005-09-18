@@ -94,10 +94,7 @@ void CSSDPCtrl::CleanupSessions()
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "CleanupSessions");
   for(m_SessionListIterator = m_SessionList.begin(); m_SessionListIterator != m_SessionList.end(); m_SessionListIterator++)
   {
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, "CleanupSessions----");
     CMSearchSession* pSession = *m_SessionListIterator;
-    cout << "DELETE: " << pSession->s_test << endl;
-    fflush(stdout);
     m_SessionList.erase(m_SessionListIterator);
     delete pSession;
     m_SessionListIterator--;    
@@ -230,9 +227,6 @@ void CSSDPCtrl::OnSessionTimeOut(CMSearchSession* pSender)
 {
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "OnSessionTimeOut()");
    m_SessionList.push_back(pSender);
-  
-  cout << "TIMEOUT " << pSender->s_test << endl;
-  fflush(stdout);  
 }
 
 /* <\PUBLIC> */

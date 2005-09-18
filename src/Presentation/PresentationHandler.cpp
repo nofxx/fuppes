@@ -150,7 +150,9 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
   /* header */
   sResult << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n";
   sResult << "<head>";  
-  sResult << "<title>" << CSharedConfig::Shared()->GetAppName() << " - " << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion() << "</title>";
+  sResult << "<title>" << CSharedConfig::Shared()->GetAppName() << " - " << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion() << endl;
+  sResult << " (" << CSharedConfig::Shared()->GetHostname() << ")" << endl;
+  sResult << "</title>" << endl;
   
   sResult << "<style type=\"text/css\">";
   sResult << GetStylesheet();
@@ -161,7 +163,8 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
   sResult << "<body>";  
   sResult << "<div id=\"title\">" << endl;
   //sResult << "<img src=\"/presentation/images/fuppes.png\" alt=\"fuppes logo\"  style=\"margin-top: 2px; padding-right: 5px;\" />" << endl; //  
-  sResult << CSharedConfig::Shared()->GetAppName() << " - " << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion() << endl;  
+  sResult << CSharedConfig::Shared()->GetAppName() << " - " << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion() << endl;    
+  sResult << "<br />" << CSharedConfig::Shared()->GetHostname() << endl;
   sResult << "</div>" << endl;
   
   /* menu */

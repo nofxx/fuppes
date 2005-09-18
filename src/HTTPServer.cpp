@@ -75,7 +75,7 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
   
 	local_ep.sin_family      = AF_INET;
 	local_ep.sin_addr.s_addr = inet_addr(p_sIPAddress.c_str());
-	local_ep.sin_port				 = htons(0); // htons(5080);
+	local_ep.sin_port				 = htons(5080); // htons(0);
 	/* fill the rest of the structure with zero */
 	memset(&(local_ep.sin_zero), '\0', 8);
 	
@@ -167,15 +167,15 @@ void CHTTPServer::CleanupSessions()
   for(m_ThreadListIterator = m_ThreadList.begin(); m_ThreadListIterator != m_ThreadList.end(); m_ThreadListIterator++)
   {
     CHTTPSessionInfo* pInfo = *m_ThreadListIterator;
-    cout << pInfo->GetThreadHandle() << endl;
+    /*cout << pInfo->GetThreadHandle() << endl;
     cout << pInfo->GetConnection() << endl;
-    fflush(stdout);
+    fflush(stdout);*/
    
     if(pInfo->m_bIsTerminated)
     {
-      cout << "terminated thread" << endl;
-      fflush(stdout);
-      fuppesSleep(100);
+      /*cout << "terminated thread" << endl;
+      fflush(stdout);*/
+      fuppesSleep(50);
       fuppesThreadClose(pInfo->GetThreadHandle());      
       m_ThreadList.erase(m_ThreadListIterator);
       delete pInfo;
@@ -241,8 +241,8 @@ fuppesThreadCallback SessionLoop(void *arg)
   char szBuffer[4096];  
   
   //fuppesSocketSetNonBlocking(pSession->GetConnection());  
-  nBytesReceived = recv(pSession->GetConnection(), szBuffer, 4096, 0); /* MSG_DONTWAIT */  
-  cout << "BYTES RECEIVED: " << nBytesReceived << endl;
+  nBytesReceived = recv(pSession->GetConnection(), szBuffer, 4096, 0);
+  //cout << "BYTES RECEIVED: " << nBytesReceived << endl;
   if(nBytesReceived != -1)			
   {
     stringstream sMsg;
@@ -273,8 +273,8 @@ fuppesThreadCallback SessionLoop(void *arg)
     
   }
   
-  cout << "closing thread " << pSession->GetThreadHandle() << endl;
-  fflush(stdout);
+  /*cout << "closing thread " << pSession->GetThreadHandle() << endl;
+  fflush(stdout);*/
   pSession->m_bIsTerminated = true;
   fuppesThreadExit(NULL);
   //return 0;  

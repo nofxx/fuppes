@@ -78,7 +78,6 @@ class CMSearchSession: public IUDPSocket, ITimer
 public:
   CMSearchSession(std::string p_sIPAddress, IMSearchSession* pReceiveHandler, CNotifyMsgFactory* pNotifyMsgFactory);
   virtual ~CMSearchSession();
-  std::string s_test;
 
 
 /*===============================================================================

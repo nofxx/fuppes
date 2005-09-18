@@ -303,16 +303,15 @@ fuppesThreadCallback ReceiveLoop(void *arg)
       fuppesSleep(100);
       continue;
     }
-    cout << "SOCKET LOOP - BYTES RECEIVED: " << bytes_received << endl;
-    fflush(stdout);
+    /*cout << "SOCKET LOOP - BYTES RECEIVED: " << bytes_received << endl;
+    fflush(stdout);*/
     
 		buffer[bytes_received] = '\0';		
 		msg << buffer;
     
-    //cout << msg.str() << endl;
-    
-    cout << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port) << endl;
-    cout << inet_ntoa(udp_sock->GetLocalEndPoint().sin_addr) << ":" << ntohs(udp_sock->GetLocalEndPoint().sin_port) << endl;
+    //cout << msg.str() << endl;    
+    /*cout << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port) << endl;
+    cout << inet_ntoa(udp_sock->GetLocalEndPoint().sin_addr) << ":" << ntohs(udp_sock->GetLocalEndPoint().sin_port) << endl;*/
     
     /* ensure we don't receive our own message */
 		if((remote_ep.sin_addr.s_addr != udp_sock->GetLocalEndPoint().sin_addr.s_addr) || 
@@ -331,7 +330,7 @@ fuppesThreadCallback ReceiveLoop(void *arg)
 		fuppesSleep(100);	
 	}
   
-  CSharedLog::Shared()->Error(LOGNAME, "ReceiveLoop() abortet");
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "exiting ReceiveLoop()");
   fuppesThreadExit(NULL);
   //return 0;
 }
