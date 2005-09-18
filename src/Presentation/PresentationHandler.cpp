@@ -123,11 +123,11 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
     sResult << GetXHTMLHeader();
     sResult << GetPageHeader(nPresentationPage);    
     sResult << sContent;    
-    sResult << GetPageFooter(nPresentationPage);    
+    sResult << GetPageFooter(nPresentationPage);
     
     pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    
     pResult->SetContentType(HTTP_CONTENT_TYPE_TEXT_HTML);
-    pResult->SetContent(sResult.str());
+    pResult->SetContent(sResult.str());    
   }  
   else if(nPresentationPage == PRESENTATION_PAGE_UNKNOWN) 
   {
@@ -160,7 +160,7 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
   
   sResult << "<body>";  
   sResult << "<div id=\"title\">" << endl;
-  sResult << "<img src=\"/presentation/images/fuppes.png\" alt=\"fuppes logo\"  style=\"margin-top: 2px; padding-right: 5px;\" />" << endl; //  
+  //sResult << "<img src=\"/presentation/images/fuppes.png\" alt=\"fuppes logo\"  style=\"margin-top: 2px; padding-right: 5px;\" />" << endl; //  
   sResult << CSharedConfig::Shared()->GetAppName() << " - " << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion() << endl;  
   sResult << "</div>" << endl;
   

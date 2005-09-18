@@ -84,7 +84,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID, IFuppes* pPresen
   /* Init SSDP receiver */
   m_pSSDPCtrl = new CSSDPCtrl(m_sIPAddress, m_pHTTPServer->GetURL());
 	m_pSSDPCtrl->SetReceiveHandler(this);
-	m_pSSDPCtrl->Start();
+  m_pSSDPCtrl->Start();
 
   /* Create MediaServer */
   m_pMediaServer = new CMediaServer(m_pHTTPServer->GetURL(), this);	  
@@ -361,7 +361,7 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
   /* known device */
   if(m_RemoteDeviceIterator != m_RemoteDevices.end())
   {
-    m_RemoteDevices[pMessage->GetUUID()]->TimerReset();
+    //m_RemoteDevices[pMessage->GetUUID()]->TimerReset();
     
     std::stringstream sMsg;
     sMsg << "received \"Notify-Alive\" from known device id: " << pMessage->GetUUID();      

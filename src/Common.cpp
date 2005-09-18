@@ -37,8 +37,13 @@
 #include <iostream>
 #include <algorithm>
 #include <cctype>
+#include <fcntl.h>
 
 using namespace std;
+
+/*===============================================================================
+ File Functions
+===============================================================================*/
 
 bool FileExists(std::string p_sFileName)
 {
@@ -93,6 +98,10 @@ bool IsDirectory(std::string p_sDirName)
 {
   return DirectoryExists(p_sDirName);
 }
+
+/*===============================================================================
+ String Functions
+===============================================================================*/
 
 std::string ExtractFileExt(std::string p_sFileName)
 {
@@ -212,3 +221,68 @@ std::string Base64Decode(const std::string p_sInputString)
   return sResult;  
 }
 /* end BASE64 decoding */
+
+
+/*===============================================================================
+ Common Functions
+===============================================================================*/
+
+void fuppesSleep(unsigned int p_nMilliseconds)
+{
+  #ifdef WIN32
+    Sleep(p_nMillisecinds);
+  #else
+    usleep(p_nMilliseconds * 1000);
+  #endif
+}
+
+/*===============================================================================
+ Socket functions
+===============================================================================*/
+
+bool fuppesSocketSetNonBlocking(upnpSocket p_SocketHandle)
+{
+  int opts;
+	opts = fcntl(p_SocketHandle, F_GETFL);
+	if (opts < 0) {
+    return false;
+	}
+	opts = (opts | O_NONBLOCK);
+	if (fcntl(p_SocketHandle, F_SETFL,opts) < 0) {		
+    return false;
+	} 
+  return true;
+}
+
+/*===============================================================================
+ Thread functions
+===============================================================================*/
+
+bool fuppesThreadClose(fuppesThread p_ThreadHandle)
+{
+  #ifdef WIN32  
+  WaitForSingleObject(p_ThreadHandle, INFINITE);
+  CloseHandle(p_ThreadHandle);
+  #else    
+  bool bResult = true;
+  int nErrNo = pthread_join(p_ThreadHandle, NULL);
+  if (nErrNo != 0)
+  {
+    bResult = false;
+    switch(nErrNo)
+    {
+      case EINVAL:
+        cout << "pthread_join() :: " << nErrNo << " EINVAL = handle does not refer to a joinable thread" << endl;      
+        break;
+      case ESRCH:
+        cout << "pthread_join() :: " << nErrNo << " ESRCH = No thread found with the given thread handle" << endl;
+        break;
+      case EDEADLK:
+        cout << "pthread_join() :: " << nErrNo << " EDEADLK = deadlock detected" << endl;      
+        break;        
+    }
+    fflush(stdout);
+  }
+  return bResult;  
+  #endif
+}

@@ -12,8 +12,8 @@ h_sources = \
   UDPSocket.h\
   MessageBase.h\
   SSDPCtrl.h\
-	SSDPSession.h\
 	SSDPMessage.h\
+  MSearchSession.h\
   NotifyMsgFactory.h\
 	HTTPMessage.h\
 	HTTPServer.h\
@@ -44,8 +44,8 @@ cpp_sources = \
   UDPSocket.cpp\
   MessageBase.cpp\
 	SSDPCtrl.cpp\
-	SSDPSession.cpp\
 	SSDPMessage.cpp\
+  MSearchSession.cpp\
 	NotifyMsgFactory.cpp\
 	HTTPMessage.cpp\
 	HTTPServer.cpp\

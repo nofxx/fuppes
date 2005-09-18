@@ -47,12 +47,13 @@ class CTimer
     void Reset();
   
     unsigned int m_nTickCount;    
-    bool         m_bDoBreak;
+    bool         m_bDoBreak;    
     
   private:
     fuppesThread  m_TimerThread;    
     ITimer*       m_pOnTimerHandler;
     unsigned int  m_nInterval;        
+    void          Cleanup();
 };
 
 #endif /* _TIMER_H */

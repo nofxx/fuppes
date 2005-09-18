@@ -44,7 +44,7 @@
 
 #include "UDPSocket.h"
 #include "SSDPMessage.h"
-#include "SSDPSession.h"
+#include "MSearchSession.h"
 #include "NotifyMsgFactory.h"
 
 /*===============================================================================
@@ -68,7 +68,7 @@ public:
  CLASS CSSDPCtrl
 ===============================================================================*/
 
-class CSSDPCtrl: public IUDPSocket, ISSDPSession
+class CSSDPCtrl: public IUDPSocket, IMSearchSession
 {
 
 /* <PUBLIC> */
@@ -109,9 +109,9 @@ public:
 
 	  void SetReceiveHandler(ISSDPCtrl* pHandler);
 	  void OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMessage);
-   	void OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage);
+   	void OnSessionReceive(CMSearchSession* pSender, CSSDPMessage* pMessage);
 	
-    void OnSessionTimeOut(CSSDPSession* pSender);
+    void OnSessionTimeOut(CMSearchSession* pSender);
   
 /* <\PUBLIC> */
 
@@ -137,8 +137,8 @@ public:
     std::string        m_sIPAddress;    
     ISSDPCtrl*         m_pReceiveHandler;
 
-    std::list<CSSDPSession*> m_SessionList;    
-    std::list<CSSDPSession*>::iterator m_SessionListIterator;
+    std::list<CMSearchSession*> m_SessionList;    
+    std::list<CMSearchSession*>::iterator m_SessionListIterator;
 
 /* <\PRIVATE> */
 

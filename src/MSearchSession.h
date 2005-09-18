@@ -1,5 +1,5 @@
 /***************************************************************************
- *            SSDPSession.h
+ *            MSearchSession.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -23,8 +23,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _SSDPSESSION_H
-#define _SSDPSESSION_H
+#ifndef _MSEARCHSESSION_H
+#define _MSEARCHSESSION_H
 
 /*===============================================================================
  INCLUDES
@@ -41,21 +41,21 @@
  FORWARD DECLARATIONS
 ===============================================================================*/
 
-class CSSDPSession;
+class CMSearchSession;
 
 /*===============================================================================
  CLASS ISSDPSession
 ===============================================================================*/
 
-class ISSDPSession
+class IMSearchSession
 {
 
 /* <PUBLIC> */
 
 public:
     
-  virtual void OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage) = 0;
-  virtual void OnSessionTimeOut(CSSDPSession* pSender) = 0;
+  virtual void OnSessionReceive(CMSearchSession* pSender, CSSDPMessage* pMessage) = 0;
+  virtual void OnSessionTimeOut(CMSearchSession* pSender) = 0;
 
 /* <\PUBLIC> */
 
@@ -65,27 +65,21 @@ public:
  CLASS CSSDPSession
 ===============================================================================*/
 
-class CSSDPSession: public IUDPSocket, ITimer
+class CMSearchSession: public IUDPSocket, ITimer
 {
 
-/* <PROTECTED> */
-
-protected:
-
+/* <PUBLIC> */
 /*===============================================================================
  CONSTRUCTOR / DESTRUCTOR
 ===============================================================================*/
 
-  CSSDPSession(std::string p_sIPAddress, ISSDPSession* pEventHandler);
+  //CSSDPSession(std::string p_sIPAddress, ISSDPSession* pEventHandler);
 
 public:
-  virtual ~CSSDPSession();
+  CMSearchSession(std::string p_sIPAddress, IMSearchSession* pReceiveHandler, CNotifyMsgFactory* pNotifyMsgFactory);
+  virtual ~CMSearchSession();
+  std::string s_test;
 
-/* <\PROTECTED> */
-
-/* <PUBLIC> */
-
-public:	
 
 /*===============================================================================
  MESSAGE HANDLING
@@ -97,14 +91,12 @@ public:
 
 /* <\PUBLIC> */
 	
-/* <PROTECTED> */
-
 /*===============================================================================
  CONTROL
 ===============================================================================*/
 
-  virtual void Start();	  
-  virtual void Stop();
+  void Start();	  
+  void Stop();
 
 /*===============================================================================
  SEND/RECEIVE
@@ -116,65 +108,21 @@ public:
   void begin_receive_unicast();
   void end_receive_unicast();
 
+  sockaddr_in  GetLocalEndPoint();
 /*===============================================================================
  MEMBERS
 ===============================================================================*/
-  protected:
-		int           m_nTimeout;
-	  CUDPSocket    m_UdpSocket;
-    std::string   m_sIPAddress;
-    ISSDPSession* m_pEventHandler;
-    CTimer        m_Timer;
-
-/* <\PROTECTED> */
-
+  private:
+		int                m_nTimeout;
+	  CUDPSocket         m_UdpSocket;
+    std::string        m_sIPAddress;
+    IMSearchSession*   m_pEventHandler;
+    CTimer             m_Timer;    
+    CNotifyMsgFactory* m_pNotifyMsgFactory;
 };
 
 /*===============================================================================
  CLASS CMSearchSession
 ===============================================================================*/
 
-class CMSearchSession: public CSSDPSession
-{
-
-/* <PUBLIC> */
-
-public:
-
-/*===============================================================================
- CONSTRUCTOR/DESTRUCTOR
-===============================================================================*/
-
-	  CMSearchSession(std::string p_sIPAddress, ISSDPSession* pReceiveHandler, CNotifyMsgFactory* pNotifyMsgFactory);
-    ~CMSearchSession();
-	
-/*===============================================================================
- CONTROL
-===============================================================================*/
-    
-  void Start();
-  void Stop();
-
-/*===============================================================================
- GET
-===============================================================================*/    
-    
-  sockaddr_in  GetLocalEndPoint();
-
-/* <\PUBLIC> */
-
-/* <PRIVATE> */
-
-private:
-
-/*===============================================================================
- MEMBERS
-===============================================================================*/    
-  
-  CNotifyMsgFactory* m_pNotifyMsgFactory;
-
-/* <PRIVATE> */
-
-};
-
-#endif /* _SSDPSESSION_H */
+#endif /* _MSEARCHSESSION_H */

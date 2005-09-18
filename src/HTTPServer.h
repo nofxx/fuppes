@@ -98,7 +98,7 @@ public:
  GET
 ===============================================================================*/
 
-    upnpSocket   GetConnection() { return m_Connection;  }
+    fuppesSocket GetConnection() { return m_Connection;  }
     CHTTPServer* GetHTTPServer() { return m_pHTTPServer; }
     fuppesThread GetThreadHandle() { return m_ThreadHandle; }
     void         SetThreadHandle(fuppesThread p_ThreadHandle) { m_ThreadHandle = p_ThreadHandle; }
@@ -119,7 +119,7 @@ private:
 ===============================================================================*/
   
   CHTTPServer* m_pHTTPServer;
-  upnpSocket   m_Connection;
+  fuppesSocket m_Connection;
   fuppesThread m_ThreadHandle;
 
 /* <\PRIVATE> */
@@ -163,6 +163,8 @@ public:
    
 /* <\PUBLIC> */
 
+  bool m_bBreakAccept;
+
 /* <PRIVATE> */
 
 private: 
@@ -177,7 +179,7 @@ private:
   sockaddr_in local_ep;
   bool				do_break;
 
-  upnpSocket  m_Socket;					      
+  fuppesSocket  m_Socket;					      
   fuppesThread  accept_thread;
 
 public:

@@ -77,7 +77,6 @@ module.source.files=\
 	HTTPServer.cpp\
 	MediaServer.cpp\
 	NotifyMsgFactory.cpp\
-	SSDPSession.cpp\
 	SharedConfig.cpp\
 	UPnPDevice.cpp\
 	HTTPMessage.cpp\
@@ -91,7 +90,6 @@ module.source.files=\
 	NotifyMsgFactory.h\
 	SSDPCtrl.h\
 	SSDPMessage.h\
-	SSDPSession.h\
 	SharedConfig.h\
 	UDPSocket.h\
 	UPnPDevice.h\
@@ -127,7 +125,9 @@ module.source.files=\
 	UUID.h\
 	Timer.cpp\
 	Timer.h\
-	Presentation/Images/fuppes_png.cpp
+	Presentation/Images/fuppes_png.cpp\
+	MSearchSession.cpp\
+	MSearchSession.h
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

@@ -66,6 +66,37 @@ std::string ToLower(std::string p_sInput);
 bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPort);
 std::string Base64Decode(const std::string p_sInputString);
 
+
+/*===============================================================================
+ Common Functions
+===============================================================================*/
+void fuppesSleep(unsigned int p_nMilliseconds);
+
+/*===============================================================================
+ Socket definitions and functions
+===============================================================================*/
+
+#ifdef WIN32
+  typedef SOCKET fuppesSocket;
+#else
+  typedef int fuppesSocket;
+#endif
+
+bool fuppesSocketSetNonBlocking(fuppesSocket p_SocketHandle);
+
+
+/*===============================================================================
+ Thread definitions and functions
+===============================================================================*/
+
+#ifdef WIN32
+  typedef HANDLE fuppesThread;
+#else
+  typedef pthread_t fuppesThread;
+#endif
+
+bool fuppesThreadClose(fuppesThread p_ThreadHandle);
+
 /*===============================================================================
  WIN32 specific definitions
 ===============================================================================*/
@@ -93,11 +124,12 @@ std::string Base64Decode(const std::string p_sInputString);
 #define upnpSocketClose         closesocket
 #define upnpSocketFlag(_x_)     const char _x_[256] = ""
 
+
 /* Threads */
-#define fuppesThread                                        HANDLE
+//#define fuppesThread                                        HANDLE
 #define fuppesThreadStart(_handle_, _callback_)             _handle_ = CreateThread(NULL, 0, &_callback_, this, 0, NULL)
-#define fuppesThreadClose(_handle_, _timeoutms_)             WaitForSingleObject(_handle_, _timeoutms_); CloseHandle(_handle_)
-#define fuppesThreadCancel(_handle_, _exit_code_)           TerminateThread(_handle_, _exit_code_);
+//#define fuppesThreadClose(_handle_)                         WaitForSingleObject(_handle_, INFINITE); CloseHandle(_handle_)
+//#define fuppesThreadCancel(_handle_, _exit_code_)           TerminateThread(_handle_, _exit_code_);
 #define fuppesThreadExit(_status_)                          ExitThread(0);
 #define fuppesThreadStartArg(_handle_, _callback_, _arg_)   _handle_ = CreateThread(NULL, 0, &_callback_, &_arg_, 0, NULL)
 #define fuppesThreadCallback                                DWORD WINAPI
@@ -127,10 +159,10 @@ std::string Base64Decode(const std::string p_sInputString);
 #define upnpSocketClose(_socket_)         close(_socket_)
 
 /* Threads */
-#define fuppesThread                                        pthread_t
+//#define fuppesThread                                        pthread_t
 #define fuppesThreadStart(_handle_, _callback_)             pthread_create(&_handle_, NULL, &_callback_, this);
-#define fuppesThreadClose(_handle_, _timeoutms_)            pthread_join(_handle_, NULL);
-#define fuppesThreadCancel(_handle_)                        pthread_cancel(_handle_);
+//#define fuppesThreadClose(_handle_)                         pthread_join(_handle_, NULL);
+//#define fuppesThreadCancel(_handle_)                        pthread_cancel(_handle_);
 #define fuppesThreadExit(_status_)                          pthread_exit(_status_);
 #define fuppesThreadStartArg(_handle_, _callback_, _arg_)   pthread_create(&_handle_, NULL, &_callback_, &_arg_);
 #define fuppesThreadCallback                                void*

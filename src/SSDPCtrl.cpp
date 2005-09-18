@@ -95,7 +95,9 @@ void CSSDPCtrl::CleanupSessions()
   for(m_SessionListIterator = m_SessionList.begin(); m_SessionListIterator != m_SessionList.end(); m_SessionListIterator++)
   {
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "CleanupSessions----");
-    CSSDPSession* pSession = *m_SessionListIterator;
+    CMSearchSession* pSession = *m_SessionListIterator;
+    cout << "DELETE: " << pSession->s_test << endl;
+    fflush(stdout);
     delete pSession;
     m_SessionList.erase(m_SessionListIterator);
     m_SessionListIterator--;    
@@ -214,7 +216,7 @@ void CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMe
   }
 }
 
-void CSSDPCtrl::OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage)
+void CSSDPCtrl::OnSessionReceive(CMSearchSession* pSender, CSSDPMessage* pMessage)
 {
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "OnSessionReceive");
   CSharedLog::Shared()->DebugLog(LOGNAME, pMessage->GetMessage());
@@ -224,10 +226,13 @@ void CSSDPCtrl::OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage)
   //cout << pMessage->GetContent() << endl;
 }
 
-void CSSDPCtrl::OnSessionTimeOut(CSSDPSession* pSender)
+void CSSDPCtrl::OnSessionTimeOut(CMSearchSession* pSender)
 {
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "OnSessionTimeOut()");
    m_SessionList.push_back(pSender);
+  
+  cout << "TIMEOUT " << pSender->s_test << endl;
+  fflush(stdout);  
 }
 
 /* <\PUBLIC> */

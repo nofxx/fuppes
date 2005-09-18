@@ -68,6 +68,11 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
   if(m_Socket == -1)  
     CSharedLog::Shared()->Error(LOGNAME, "creating socket");  
 	
+  
+  if(!fuppesSocketSetNonBlocking(m_Socket))
+    CSharedLog::Shared()->Error(LOGNAME, "fuppesSocketSetNonBlocking");		
+  
+  
 	local_ep.sin_family      = AF_INET;
 	local_ep.sin_addr.s_addr = inet_addr(p_sIPAddress.c_str());
 	local_ep.sin_port				 = htons(0); // htons(5080);
@@ -93,7 +98,7 @@ CHTTPServer::~CHTTPServer()
 
 void CHTTPServer::Start()
 {
-  do_break = false;			
+  m_bBreakAccept = false;  
   int nRet = listen(m_Socket, 0);
   if(nRet == -1)
     CSharedLog::Shared()->Error(LOGNAME, "listen()");    
@@ -104,13 +109,14 @@ void CHTTPServer::Start()
 
 void CHTTPServer::Stop()
 {  
-  CleanupSessions();
+  m_bBreakAccept = true;
+  //CleanupSessions();
   
   /* Stop thread */
   /* todo kill thread properly */
-  DWORD nExitCode = 0;
-  fuppesThreadCancel(accept_thread, nExitCode);
-  fuppesThreadClose(accept_thread, 0);
+  //DWORD nExitCode = 0;
+  //fuppesThreadCancel(accept_thread); //, nExitCode);
+  fuppesThreadClose(accept_thread);
   
   /* close socket */
   upnpSocketClose(m_Socket);
@@ -172,8 +178,8 @@ void CHTTPServer::CleanupSessions()
     {
       cout << "terminated thread" << endl;
       fflush(stdout);
-      fuppesThreadClose(pInfo->GetThreadHandle(), 0);
-      
+      fuppesThreadClose(pInfo->GetThreadHandle());
+      delete pInfo;
       m_ThreadList.erase(m_ThreadListIterator);
       m_ThreadListIterator--;
     }      
@@ -196,19 +202,19 @@ fuppesThreadCallback AcceptLoop(void *arg)
   
 	struct sockaddr_in remote_ep;
 	socklen_t size = sizeof(remote_ep);
-	
-  
-  
-	for(;;)
+	  
+	while(!pHTTPServer->m_bBreakAccept)
 	{
 		/* T.S.TODO: Error on exit here */
     nConnection = accept(nSocket, (struct sockaddr*)&remote_ep, &size);
+    //cout << "ACCEPT: " << nConnection << endl;    
+    //cout << nConnection << endl;
 		if(nConnection != -1)      
 		{	
-      /*stringstream sMsg;
+      stringstream sMsg;
       sMsg << "new connection from " << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port);
-			CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());*/
-			
+			CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
+			     
       /* Start session thread */
       CHTTPSessionInfo* pSession = new CHTTPSessionInfo(pHTTPServer, nConnection);      
       fuppesThread Session = (fuppesThread)NULL;  
@@ -221,20 +227,24 @@ fuppesThreadCallback AcceptLoop(void *arg)
       pSession->SetThreadHandle(Session);
       pHTTPServer->m_ThreadList.push_back(pSession);
 		} 
-    
+        
     pHTTPServer->CleanupSessions();
+    fuppesSleep(100);
 	}  
 	
-	return 0;
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "exiting accept loop");
+	fuppesThreadExit(NULL);
 }
 
 fuppesThreadCallback SessionLoop(void *arg)
 {
   CHTTPSessionInfo* pSession = (CHTTPSessionInfo*)arg;  
   int  nBytesReceived = 0;
-  char szBuffer[4096];
+  char szBuffer[4096];  
   
-  nBytesReceived = recv(pSession->GetConnection(), szBuffer, 4096, 0); /* MSG_DONTWAIT */
+  //fuppesSocketSetNonBlocking(pSession->GetConnection());  
+  nBytesReceived = recv(pSession->GetConnection(), szBuffer, 4096, 0); /* MSG_DONTWAIT */  
+  cout << "BYTES RECEIVED: " << nBytesReceived << endl;
   if(nBytesReceived != -1)			
   {
     stringstream sMsg;
@@ -269,7 +279,7 @@ fuppesThreadCallback SessionLoop(void *arg)
   fflush(stdout);
   pSession->m_bIsTerminated = true;
   fuppesThreadExit(NULL);
-  return 0;  
+  //return 0;  
 }
 
 /* <\PUBLIC> */
