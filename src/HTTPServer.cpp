@@ -108,15 +108,12 @@ void CHTTPServer::Start()
 }
 
 void CHTTPServer::Stop()
-{  
-  m_bBreakAccept = true;
-  //CleanupSessions();
-  
+{   
   /* Stop thread */
-  /* todo kill thread properly */
-  //DWORD nExitCode = 0;
-  //fuppesThreadCancel(accept_thread); //, nExitCode);
+  m_bBreakAccept = true;  
   fuppesThreadClose(accept_thread);
+  
+ //CleanupSessions();
   
   /* close socket */
   upnpSocketClose(m_Socket);
@@ -178,11 +175,12 @@ void CHTTPServer::CleanupSessions()
     {
       cout << "terminated thread" << endl;
       fflush(stdout);
-      fuppesThreadClose(pInfo->GetThreadHandle());
-      delete pInfo;
+      fuppesSleep(100);
+      fuppesThreadClose(pInfo->GetThreadHandle());      
       m_ThreadList.erase(m_ThreadListIterator);
+      delete pInfo;
       m_ThreadListIterator--;
-    }      
+    }
   }    
 }
 

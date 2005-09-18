@@ -60,7 +60,6 @@ CSSDPCtrl::CSSDPCtrl(std::string p_sIPAddress, std::string p_sHTTPServerURL)
 
 CSSDPCtrl::~CSSDPCtrl()
 {
-  CleanupSessions();
   SAFE_DELETE(m_pNotifyMsgFactory);
 }
 
@@ -77,6 +76,7 @@ void CSSDPCtrl::Start()
 
 void CSSDPCtrl::Stop()
 {	
+  CleanupSessions();
 	m_Listener.EndReceive();	
 }
 
@@ -98,8 +98,8 @@ void CSSDPCtrl::CleanupSessions()
     CMSearchSession* pSession = *m_SessionListIterator;
     cout << "DELETE: " << pSession->s_test << endl;
     fflush(stdout);
-    delete pSession;
     m_SessionList.erase(m_SessionListIterator);
+    delete pSession;
     m_SessionListIterator--;    
   }
 }

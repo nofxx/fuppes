@@ -33,6 +33,21 @@
 #include <string>
 #include <assert.h>
 
+#ifdef WIN32
+
+/* T.S.NOTE: This must be defined to use InitializeCriticalSectionAndSpinCount() */
+#define _WIN32_WINNT 0x0410 /* Windos 98 * or later */
+
+#pragma comment(lib,"Wsock32.lib") 
+#pragma comment(lib,"Ws2_32.lib")
+#pragma comment(lib,"shlwapi.lib")
+
+#include <Winsock2.h>
+#include <Ws2tcpip.h>
+#include <shlwapi.h> /* For PathXXX functions */
+
+#endif
+
 /*===============================================================================
  MACROS
 ===============================================================================*/
@@ -102,17 +117,6 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle);
 ===============================================================================*/
 
 #ifdef WIN32
-
-/* T.S.NOTE: This must be defined to use InitializeCriticalSectionAndSpinCount() */
-#define _WIN32_WINNT 0x0410 /* Windos 98 * or later */
-
-#pragma comment(lib,"Wsock32.lib") 
-#pragma comment(lib,"Ws2_32.lib")
-#pragma comment(lib,"shlwapi.lib")
-
-#include <Winsock2.h>
-#include <Ws2tcpip.h>
-#include <shlwapi.h> /* For PathXXX functions */
 
 /* Common */
 #define upnpSleep               Sleep

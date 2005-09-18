@@ -230,7 +230,7 @@ std::string Base64Decode(const std::string p_sInputString)
 void fuppesSleep(unsigned int p_nMilliseconds)
 {
   #ifdef WIN32
-    Sleep(p_nMillisecinds);
+    Sleep(p_nMilliseconds);
   #else
     usleep(p_nMilliseconds * 1000);
   #endif
@@ -242,6 +242,11 @@ void fuppesSleep(unsigned int p_nMilliseconds)
 
 bool fuppesSocketSetNonBlocking(upnpSocket p_SocketHandle)
 {
+  #ifdef WIN32     
+  int nonblocking = 1;
+  if(ioctlsocket(p_SocketHandle, FIONBIO, (unsigned long*) &nonblocking) != 0)
+    return false;
+  #else     
   int opts;
 	opts = fcntl(p_SocketHandle, F_GETFL);
 	if (opts < 0) {
@@ -251,6 +256,7 @@ bool fuppesSocketSetNonBlocking(upnpSocket p_SocketHandle)
 	if (fcntl(p_SocketHandle, F_SETFL,opts) < 0) {		
     return false;
 	} 
+	#endif
   return true;
 }
 

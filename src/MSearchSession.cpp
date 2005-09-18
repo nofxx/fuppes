@@ -56,7 +56,7 @@ CMSearchSession::CMSearchSession(std::string p_sIPAddress, IMSearchSession* pRec
   m_pEventHandler     = pReceiveHandler;
   m_pNotifyMsgFactory = pNotifyMsgFactory;
   
-  m_Timer.SetInterval(30);
+  m_Timer.SetInterval(5);
   m_UdpSocket.SetupSocket(false, m_sIPAddress);	
   
   
