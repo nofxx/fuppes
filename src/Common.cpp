@@ -175,7 +175,7 @@ std::string Base64Decode(const std::string p_sInputString)
         (p_sInputString[in_] == '\r'))
         )
   {
-    /* continue line break */
+    /* continue on line break */
     if ((p_sInputString[in_] == '\n') || (p_sInputString[in_] == '\r'))
     {
       in_++;

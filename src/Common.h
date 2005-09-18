@@ -134,7 +134,7 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle);
 #define fuppesThreadStart(_handle_, _callback_)             _handle_ = CreateThread(NULL, 0, &_callback_, this, 0, NULL)
 //#define fuppesThreadClose(_handle_)                         WaitForSingleObject(_handle_, INFINITE); CloseHandle(_handle_)
 //#define fuppesThreadCancel(_handle_, _exit_code_)           TerminateThread(_handle_, _exit_code_);
-#define fuppesThreadExit(_status_)                          ExitThread(0);
+#define fuppesThreadExit()                                  ExitThread(0);
 #define fuppesThreadStartArg(_handle_, _callback_, _arg_)   _handle_ = CreateThread(NULL, 0, &_callback_, &_arg_, 0, NULL)
 #define fuppesThreadCallback                                DWORD WINAPI
 
@@ -167,7 +167,7 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle);
 #define fuppesThreadStart(_handle_, _callback_)             pthread_create(&_handle_, NULL, &_callback_, this);
 //#define fuppesThreadClose(_handle_)                         pthread_join(_handle_, NULL);
 //#define fuppesThreadCancel(_handle_)                        pthread_cancel(_handle_);
-#define fuppesThreadExit(_status_)                          pthread_exit(_status_);
+#define fuppesThreadExit()                                  pthread_exit(NULL);
 #define fuppesThreadStartArg(_handle_, _callback_, _arg_)   pthread_create(&_handle_, NULL, &_callback_, &_arg_);
 #define fuppesThreadCallback                                void*
 

@@ -119,9 +119,11 @@ fuppesThreadCallback TimerLoop(void *arg)
     }
   }
   
+  /* logging */
   std::stringstream sLog;
   sLog << "exiting timer loop. Interval: " << pTimer->GetInterval() << " Tick count: " << pTimer->m_nTickCount;  
   CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());  
   
-  fuppesThreadExit(NULL);
+  /* exit thread */
+  fuppesThreadExit();
 }

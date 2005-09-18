@@ -63,26 +63,28 @@ fuppesThreadCallback SessionLoop(void *arg);
 CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 {
 	accept_thread = (fuppesThread)NULL;
-	
+  	
+  /* create socket */
 	m_Socket = socket(AF_INET, SOCK_STREAM, 0);
   if(m_Socket == -1)  
-    CSharedLog::Shared()->Error(LOGNAME, "creating socket");  
-	
+    CSharedLog::Shared()->Error(LOGNAME, "creating socket");	
   
+  /* set socket non blocking */
   if(!fuppesSocketSetNonBlocking(m_Socket))
-    CSharedLog::Shared()->Error(LOGNAME, "fuppesSocketSetNonBlocking");		
+    CSharedLog::Shared()->Error(LOGNAME, "fuppesSocketSetNonBlocking");  
   
-  
+  /* set loacl end point */
 	local_ep.sin_family      = AF_INET;
 	local_ep.sin_addr.s_addr = inet_addr(p_sIPAddress.c_str());
-	local_ep.sin_port				 = htons(5080); // htons(0);
-	/* fill the rest of the structure with zero */
-	memset(&(local_ep.sin_zero), '\0', 8);
+	local_ep.sin_port				 = htons(5080); // htons(0);	
+	memset(&(local_ep.sin_zero), '\0', 8); // fill the rest of the structure with zero
 	
+  /* try to bind the socket */
 	int nRet = bind(m_Socket, (struct sockaddr*)&local_ep, sizeof(local_ep));	
   if(nRet == -1)
     CSharedLog::Shared()->Error(LOGNAME, "bind()");  
-    
+  
+  /* get local end point to retreive port number on random ports */
 	socklen_t size = sizeof(local_ep);
 	getsockname(m_Socket, (struct sockaddr*)&local_ep, &size);	
 }
@@ -98,23 +100,24 @@ CHTTPServer::~CHTTPServer()
 
 void CHTTPServer::Start()
 {
-  m_bBreakAccept = false;  
+  m_bBreakAccept = false;
+  
+  /* listen on socket */
   int nRet = listen(m_Socket, 0);
   if(nRet == -1)
     CSharedLog::Shared()->Error(LOGNAME, "listen()");    
 
-  /* Start thread */
+  /* start accept thread */
   fuppesThreadStart(accept_thread, AcceptLoop);
 }
 
 void CHTTPServer::Stop()
 {   
-  /* Stop thread */
+  /* stop accept thread */
   m_bBreakAccept = true;  
   fuppesThreadClose(accept_thread);
-  
- //CleanupSessions();
-  
+  accept_thread = (fuppesThread)NULL;
+    
   /* close socket */
   upnpSocketClose(m_Socket);
 }
@@ -161,21 +164,19 @@ bool CHTTPServer::CallOnReceive(std::string p_sMessage, CHTTPMessage* pMessageOu
   else return false;
 }
 
+/**
+ * closes finished session threads
+ */
 void CHTTPServer::CleanupSessions()
 {
-  /* close finished threads */            
+  /* iterate session list */            
   for(m_ThreadListIterator = m_ThreadList.begin(); m_ThreadListIterator != m_ThreadList.end(); m_ThreadListIterator++)
   {
-    CHTTPSessionInfo* pInfo = *m_ThreadListIterator;
-    /*cout << pInfo->GetThreadHandle() << endl;
-    cout << pInfo->GetConnection() << endl;
-    fflush(stdout);*/
-   
-    if(pInfo->m_bIsTerminated)
+    /* and close terminated threads */
+    CHTTPSessionInfo* pInfo = *m_ThreadListIterator;   
+    if(pInfo && pInfo->m_bIsTerminated)
     {
-      /*cout << "terminated thread" << endl;
-      fflush(stdout);*/
-      fuppesSleep(50);
+      fuppesSleep(20);
       fuppesThreadClose(pInfo->GetThreadHandle());      
       m_ThreadList.erase(m_ThreadListIterator);
       delete pInfo;
@@ -191,9 +192,9 @@ void CHTTPServer::CleanupSessions()
 fuppesThreadCallback AcceptLoop(void *arg)
 {
 	CHTTPServer* pHTTPServer = (CHTTPServer*)arg;
-  /*stringstream sLog;
+  stringstream sLog;
   sLog << "listening on" << pHTTPServer->GetURL();  
-	CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());*/
+	CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());
   
 	upnpSocket nSocket     = pHTTPServer->GetSocket();			
 	upnpSocket nConnection = 0;
@@ -203,35 +204,31 @@ fuppesThreadCallback AcceptLoop(void *arg)
 	  
 	while(!pHTTPServer->m_bBreakAccept)
 	{
-		/* T.S.TODO: Error on exit here */
-    nConnection = accept(nSocket, (struct sockaddr*)&remote_ep, &size);
-    //cout << "ACCEPT: " << nConnection << endl;    
-    //cout << nConnection << endl;
+    /* accept new connections */
+    nConnection = accept(nSocket, (struct sockaddr*)&remote_ep, &size);   
 		if(nConnection != -1)      
 		{	
       stringstream sMsg;
       sMsg << "new connection from " << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port);
 			CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
 			     
-      /* Start session thread */
+      /* start session thread */
       CHTTPSessionInfo* pSession = new CHTTPSessionInfo(pHTTPServer, nConnection);      
-      fuppesThread Session = (fuppesThread)NULL;  
-      
-      /* T.S.TODO: Where do we need to exit thread??? */
-      /* uv :: we put the thread handles in a list (e.g vector)
-               and build a garbage-collecting thread, that
-               closes all finished threads */
-      fuppesThreadStartArg(Session, SessionLoop, *pSession);      
-      pSession->SetThreadHandle(Session);
+      fuppesThread SessionThread = (fuppesThread)NULL;      
+      fuppesThreadStartArg(SessionThread, SessionLoop, *pSession);      
+      pSession->SetThreadHandle(SessionThread);
+      /* and store the thread in the session list */
       pHTTPServer->m_ThreadList.push_back(pSession);
 		} 
-        
+    
+    /* cleanup closed sessions and sleep am moment */
     pHTTPServer->CleanupSessions();
     fuppesSleep(100);
 	}  
-	
+	  
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "exiting accept loop");
-	fuppesThreadExit(NULL);
+  pHTTPServer->CleanupSessions();
+	fuppesThreadExit();
 }
 
 fuppesThreadCallback SessionLoop(void *arg)
@@ -240,44 +237,46 @@ fuppesThreadCallback SessionLoop(void *arg)
   int  nBytesReceived = 0;
   char szBuffer[4096];  
   
-  //fuppesSocketSetNonBlocking(pSession->GetConnection());  
-  nBytesReceived = recv(pSession->GetConnection(), szBuffer, 4096, 0);
-  //cout << "BYTES RECEIVED: " << nBytesReceived << endl;
+  /* receive message */
+  nBytesReceived = recv(pSession->GetConnection(), szBuffer, 4096, 0);  
   if(nBytesReceived != -1)			
   {
+    /* logging */
     stringstream sMsg;
     sMsg << "bytes received: " << nBytesReceived;
     CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
-    szBuffer[nBytesReceived] = '\0';
-    //cout << szBuffer << endl;
     
+    /* zero-terminate buffer */
+    szBuffer[nBytesReceived] = '\0';    
+    
+    /* send response */
     CHTTPMessage ResponseMsg;
-    bool fRet = pSession->GetHTTPServer()->CallOnReceive(szBuffer, &ResponseMsg);
-    if(true == fRet)				
+    bool bResult = pSession->GetHTTPServer()->CallOnReceive(szBuffer, &ResponseMsg);
+    if(bResult)	
     {
-      CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending response");
-      //cout << pResponse->GetMessageAsString() << endl;
+      CSharedLog::Shared()->ExtendedLog(LOGNAME, "send response");     
       
+      /* send binary content */
       if(ResponseMsg.GetBinContentLength() > 0)
       {
         send(pSession->GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);            
         send(pSession->GetConnection(), ResponseMsg.GetBinContent(), ResponseMsg.GetBinContentLength(), 0);                        
       }
-      else            
+      /* send text content */
+      else
+      {
         send(pSession->GetConnection(), ResponseMsg.GetMessageAsString().c_str(), (int)strlen(ResponseMsg.GetMessageAsString().c_str()), 0);
+      }
       
-      
-      upnpSocketClose(pSession->GetConnection());      
-      CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");
+      /* close connection */
+      upnpSocketClose(pSession->GetConnection());
     }
     
   }
   
-  /*cout << "closing thread " << pSession->GetThreadHandle() << endl;
-  fflush(stdout);*/
+  /* exit thread */
   pSession->m_bIsTerminated = true;
-  fuppesThreadExit(NULL);
-  //return 0;  
+  fuppesThreadExit();  
 }
 
 /* <\PUBLIC> */

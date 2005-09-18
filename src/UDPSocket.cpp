@@ -331,6 +331,5 @@ fuppesThreadCallback ReceiveLoop(void *arg)
 	}
   
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "exiting ReceiveLoop()");
-  fuppesThreadExit(NULL);
-  //return 0;
+  fuppesThreadExit();
 }
