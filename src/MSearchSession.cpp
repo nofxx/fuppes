@@ -95,7 +95,7 @@ void CMSearchSession::OnTimer()
 void CMSearchSession::Start()
 {
 	begin_receive_unicast();
-	upnpSleep(200);
+	fuppesSleep(200);
 	send_multicast(m_pNotifyMsgFactory->msearch());
   m_Timer.Start();
 }
@@ -103,7 +103,7 @@ void CMSearchSession::Start()
 void CMSearchSession::Stop()
 {
   m_Timer.Stop();
-	end_receive_unicast(); 
+	end_receive_unicast();
 }
 
 /*===============================================================================
@@ -114,7 +114,7 @@ void CMSearchSession::send_multicast(std::string a_message)
 {
 	/* Send message twice */
   m_UdpSocket.SendMulticast(a_message);
-	upnpSleep(200);
+	fuppesSleep(200);
 	m_UdpSocket.SendMulticast(a_message);	
 }
 

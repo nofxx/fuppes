@@ -32,6 +32,7 @@
 
 #include <map>
 #include <vector>
+#include <list>
 #include "SSDPCtrl.h"
 #include "HTTPServer.h"
 #include "UPnPDevice.h"
@@ -117,10 +118,16 @@ private:
   std::string           m_sIPAddress;
   std::string           m_sUUID;
   IFuppes*              m_pPresentationRequestHandler;
-  
+  fuppesThreadMutex     m_OnTimerMutex;  
+
   std::map<std::string, CUPnPDevice*>           m_RemoteDevices;
   std::map<std::string, CUPnPDevice*>::iterator m_RemoteDeviceIterator;
   
+  std::list<CUPnPDevice*>           m_TimedOutDevices;
+  std::list<CUPnPDevice*>::iterator m_TimedOutDevicesIterator;
+
+  void CleanupTimedOutDevices();
+
 /*===============================================================================
  MESSAGE HANDLING
 ===============================================================================*/

@@ -73,15 +73,16 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID, IFuppes* pPresen
   m_sIPAddress                  = p_sIPAddress;
   m_sUUID                       = p_sUUID;
   m_pPresentationRequestHandler = pPresentationRequestHandler;
-
+  fuppesThreadInitMutex(&m_OnTimerMutex);
+  
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "initializing devices");
   
-  /* Init HTTP server */
+  /* init HTTP-server */
   m_pHTTPServer = new CHTTPServer(m_sIPAddress);
   m_pHTTPServer->SetReceiveHandler(this);
 	m_pHTTPServer->Start();
   
-  /* Init SSDP receiver */
+  /* init SSDP-controller */
   m_pSSDPCtrl = new CSSDPCtrl(m_sIPAddress, m_pHTTPServer->GetURL());
 	m_pSSDPCtrl->SetReceiveHandler(this);
   m_pSSDPCtrl->Start();
@@ -101,41 +102,62 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID, IFuppes* pPresen
      multicast alive messages and search
      for other devices */
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "multicasting alive messages");  
-  m_pSSDPCtrl->send_alive();  
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");
+  m_pSSDPCtrl->send_alive();
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "multicasting m-search");  
-  m_pSSDPCtrl->send_msearch();  
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");
+  m_pSSDPCtrl->send_msearch();
   
   /* start alive timer */
-  m_pMediaServer->TimerStart(1800); // 900 sec = 15 min
+  m_pMediaServer->TimerStart(840); // 900 sec = 15 min
 }
 
 /** destructor
  */
 CFuppes::~CFuppes()
 {
-  /* Logging */
+  /* logging */
   CSharedLog::Shared()->Log(LOGNAME, "shutting down");
   
   /* multicast notify-byebye */
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "multicasting byebye messages");  
   m_pSSDPCtrl->send_byebye();  
+  
+  /* stop SSDP-controller */
   m_pSSDPCtrl->Stop();
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");
 
-  /* Stop HTTPServer */
+  /* stop HTTP-server */
   m_pHTTPServer->Stop();
 
-  /* Destroy objects */
+  CleanupTimedOutDevices();  
+  
+  fuppesThreadDestroyMutex(&m_OnTimerMutex);
+  
+  /* destroy objects */
   SAFE_DELETE(m_pContentDirectory);
   SAFE_DELETE(m_pMediaServer);
   SAFE_DELETE(m_pSSDPCtrl);
   SAFE_DELETE(m_pHTTPServer);
 }
 
+
+void CFuppes::CleanupTimedOutDevices()
+{  
+  /* iterate device list */            
+  for(m_TimedOutDevicesIterator = m_TimedOutDevices.begin(); m_TimedOutDevicesIterator != m_TimedOutDevices.end(); m_TimedOutDevicesIterator++)
+  {
+    /* and delete timed out devices */
+    CUPnPDevice* pTimedOutDevice = *m_TimedOutDevicesIterator;      
+    m_TimedOutDevices.erase(m_TimedOutDevicesIterator);
+    delete pTimedOutDevice;
+    m_TimedOutDevicesIterator--;    
+  }  
+}
+
 void CFuppes::OnTimer(CUPnPDevice* pSender)
 {
+  fuppesThreadLockMutex(&m_OnTimerMutex);
+  
+  CleanupTimedOutDevices();
+  
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "OnTimer()");
   /* local device must send alive message */
   if(pSender->GetIsLocalDevice())
@@ -155,13 +177,18 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
     m_RemoteDeviceIterator = m_RemoteDevices.find(pSender->GetUUID());  
     /* found device */
     if(m_RemoteDeviceIterator != m_RemoteDevices.end())
-    {      
-      m_RemoteDevices.erase(pSender->GetUUID());      
-      pSender->TimerStop();
-      /* todo: create some kind of object waste */
-      //delete pSender;
+    { 
+      /* remove device from list of remote devices */
+      m_RemoteDevices.erase(pSender->GetUUID());
+      
+      /* stop the deivce's timer and */
+      pSender->TimerStop();      
+      /* push it to the list containing timed out devices */
+      m_TimedOutDevices.push_back(pSender);
     }
   }
+  
+  fuppesThreadUnlockMutex(&m_OnTimerMutex);
 }
 
 /*===============================================================================
@@ -386,7 +413,7 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
       CSharedLog::Shared()->Log(LOGNAME, sMsg.str());      
       
       m_RemoteDevices[pMessage->GetUUID()] = pDevice;
-      pDevice->TimerStart(1800); // 900 sec = 15 min
+      pDevice->TimerStart(900); // 900 sec = 15 min
     }
     else      
       delete pDevice;

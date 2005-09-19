@@ -136,7 +136,9 @@ public:
     sockaddr_in        m_LastMulticastEp;  
     std::string        m_sIPAddress;    
     ISSDPCtrl*         m_pReceiveHandler;
-
+    fuppesThreadMutex  m_SessionReceiveMutex;
+    fuppesThreadMutex  m_SessionTimedOutMutex;
+  
     std::list<CMSearchSession*> m_SessionList;    
     std::list<CMSearchSession*>::iterator m_SessionListIterator;
 
