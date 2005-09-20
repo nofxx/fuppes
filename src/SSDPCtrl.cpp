@@ -128,9 +128,6 @@ void CSSDPCtrl::send_msearch()
 {
 	CMSearchSession* pSession = new CMSearchSession(m_sIPAddress, this, m_pNotifyMsgFactory);
 	m_LastMulticastEp = pSession->GetLocalEndPoint();
-	/* T.S.TODO: Where could we call CMSearchSession::Stop() to terminate thread??? */
-  /* uv :: UPnP says that remote devices have to answer within iirc 30 seconds
-           so let's start a timer and kill the thread when the time is over */
   pSession->Start();
   CleanupSessions();  
 }

@@ -56,7 +56,7 @@ void CTimer::Cleanup()
 {
   if(m_TimerThread)
   {
-    fuppesThreadClose("TIMER", m_TimerThread);   
+    fuppesThreadClose(m_TimerThread);   
     m_TimerThread = (fuppesThread)NULL;
   }
 }

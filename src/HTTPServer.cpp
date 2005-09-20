@@ -115,7 +115,7 @@ void CHTTPServer::Stop()
 {   
   /* stop accept thread */
   m_bBreakAccept = true;  
-  fuppesThreadClose("HTTPSERVER accept", accept_thread);
+  fuppesThreadClose(accept_thread);
   accept_thread = (fuppesThread)NULL;
     
   /* close socket */
@@ -172,25 +172,17 @@ void CHTTPServer::CleanupSessions()
   if(m_ThreadList.size() == 0)
     return;
  
-  /* iterate session list */            
-  int i = 0;
+  /* iterate session list */  
   for(m_ThreadListIterator = m_ThreadList.begin(); m_ThreadListIterator != m_ThreadList.end(); m_ThreadListIterator++)
   {
-    cout << "size = " << m_ThreadList.size() << endl;
     if(m_ThreadList.size() == 0)
       break;
-                           
-    cout << "i = " << i << endl;
-    fflush(stdout);
-    i++;
-                           
+    
     /* and close terminated threads */
     CHTTPSessionInfo* pInfo = *m_ThreadListIterator;   
     if(pInfo && pInfo->m_bIsTerminated)
     {
-      cout << "closing: " << pInfo->GetThreadHandle() << endl;
-      fflush(stdout);
-      if(fuppesThreadClose("HTTPSERVER - Session", pInfo->GetThreadHandle()))
+      if(fuppesThreadClose(pInfo->GetThreadHandle()))
       {
         m_ThreadList.erase(m_ThreadListIterator);
         delete pInfo;
@@ -234,9 +226,6 @@ fuppesThreadCallback AcceptLoop(void *arg)
       pSession->SetThreadHandle(SessionThread);
       /* and store the thread in the session list */
       pHTTPServer->m_ThreadList.push_back(pSession);
-     
-      cout << "started: " << pSession->GetThreadHandle() << endl;
-      fflush(stdout);
 		} 
     
     /* cleanup closed sessions and sleep am moment */

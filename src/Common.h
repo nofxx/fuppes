@@ -112,7 +112,7 @@ bool fuppesSocketSetNonBlocking(fuppesSocket p_SocketHandle);
   typedef pthread_mutex_t   fuppesThreadMutex;
 #endif
 
-bool fuppesThreadClose(std::string p_sSender, fuppesThread p_ThreadHandle);
+bool fuppesThreadClose(fuppesThread p_ThreadHandle);
 
 /*===============================================================================
  WIN32 specific definitions

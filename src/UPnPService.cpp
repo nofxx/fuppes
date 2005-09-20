@@ -93,16 +93,16 @@ std::string CUPnPService::GetServiceDescription()
 		xmlTextWriterEndElement(writer);
 
     /* actionList */
-    xmlTextWriterStartElement(writer, BAD_CAST "actionList");
+    //xmlTextWriterStartElement(writer, BAD_CAST "actionList");
     
     /* end actionList */
-    xmlTextWriterEndElement(writer);
+    //xmlTextWriterEndElement(writer);
     
     /* serviceStateTable */
-    xmlTextWriterStartElement(writer, BAD_CAST "serviceStateTable");
+    //xmlTextWriterStartElement(writer, BAD_CAST "serviceStateTable");
     
     /* end serviceStateTable */
-    xmlTextWriterEndElement(writer);
+    //xmlTextWriterEndElement(writer);
     
 	/* end root */
 	xmlTextWriterEndElement(writer);
