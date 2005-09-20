@@ -203,7 +203,7 @@ bool CSharedConfig::ReadConfigFile()
     cout << "please edit the config-file and restart FUPPES" << endl;
     bResult = false;
     #ifdef WIN32
-    upnpSleep(4000);
+    fuppesSleep(4000);
     #endif
   }
   

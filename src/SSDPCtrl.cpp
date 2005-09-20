@@ -97,14 +97,27 @@ CUDPSocket* CSSDPCtrl::get_socket()
 
 void CSSDPCtrl::CleanupSessions()
 {
+  fuppesThreadLockMutex(&m_SessionTimedOutMutex); 
+     
+  if(m_SessionList.size() == 0)
+  {
+    fuppesThreadUnlockMutex(&m_SessionTimedOutMutex); 
+    return;  
+  }
+     
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "CleanupSessions");
   for(m_SessionListIterator = m_SessionList.begin(); m_SessionListIterator != m_SessionList.end(); m_SessionListIterator++)
   {
-    CMSearchSession* pSession = *m_SessionListIterator;
+    if(m_SessionList.size() == 0)
+      break;
+                            
+    CMSearchSession* pSession = *m_SessionListIterator;   
     m_SessionList.erase(m_SessionListIterator);
     delete pSession;
-    m_SessionListIterator--;    
+    m_SessionListIterator--;
   }
+  
+  fuppesThreadUnlockMutex(&m_SessionTimedOutMutex); 
 }
 
 /*===============================================================================
@@ -238,6 +251,8 @@ void CSSDPCtrl::OnSessionReceive(CMSearchSession* pSender, CSSDPMessage* pMessag
 
 void CSSDPCtrl::OnSessionTimeOut(CMSearchSession* pSender)
 {
+  CleanupSessions();
+  
   /* lock timeout mutex */
   fuppesThreadLockMutex(&m_SessionTimedOutMutex); 
   

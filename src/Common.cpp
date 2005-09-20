@@ -264,11 +264,40 @@ bool fuppesSocketSetNonBlocking(upnpSocket p_SocketHandle)
  Thread functions
 ===============================================================================*/
 
-bool fuppesThreadClose(fuppesThread p_ThreadHandle)
+bool fuppesThreadClose(std::string p_sSender, fuppesThread p_ThreadHandle)
 {
+  cout << p_sSender << " - ";
+  fflush(stdout);
+     
   #ifdef WIN32  
-  WaitForSingleObject(p_ThreadHandle, INFINITE);
-  CloseHandle(p_ThreadHandle);
+  bool bResult = false;
+  DWORD nErrNo = WaitForSingleObject(p_ThreadHandle, INFINITE);
+  switch(nErrNo)
+  {
+    case WAIT_ABANDONED:
+      cout << "WAIT_ABANDONED :: " << nErrNo << endl;
+        fflush(stdout);
+      break;
+    case WAIT_OBJECT_0:
+      cout << "WAIT_OBJECT_0 :: " << nErrNo << endl;
+      CloseHandle(p_ThreadHandle);
+      bResult = true;
+      break;
+    case WAIT_TIMEOUT:
+      cout << "WAIT_TIMEOUT :: " << nErrNo << endl;
+      fflush(stdout);
+      break;
+    case WAIT_FAILED:
+      cout << "WAIT_FAILED :: " << nErrNo << endl;
+      fflush(stdout);
+      break;
+    default:
+      cout << "fuppesThreadClose - DEFAULT :: " << nErrNo << endl;
+      CloseHandle(p_ThreadHandle);
+      bResult = true;
+      break;            
+  }
+  return bResult;
   #else    
   bool bResult = true;
   int nErrNo = pthread_join(p_ThreadHandle, NULL);
