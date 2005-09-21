@@ -127,7 +127,8 @@ module.source.files=\
 	Timer.h\
 	Presentation/Images/fuppes_png.cpp\
 	MSearchSession.cpp\
-	MSearchSession.h
+	MSearchSession.h\
+	Presentation/Images/fuppes_small_png.cpp
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

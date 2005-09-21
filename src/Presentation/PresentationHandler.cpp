@@ -34,6 +34,7 @@
 #include "../Common.h"
 
 #include "Images/fuppes_png.cpp"
+#include "Images/fuppes_small_png.cpp"
 
 #include <sstream>
 
@@ -105,16 +106,22 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
   {
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "send fuppes logo");
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
+    string sImg = Base64Decode(fuppes_png);    
+    pResult->SetBinContent((char*)sImg.c_str(), sImg.length());  
   }    
   
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/fuppes-small.png") == 0)
+  {
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send small fuppes logo");
+    nPresentationPage = PRESENTATION_BINARY_IMAGE;
+    string sImg = Base64Decode(fuppes_small_png);    
+    pResult->SetBinContent((char*)sImg.c_str(), sImg.length());  
+  } 
   
   if(nPresentationPage == PRESENTATION_BINARY_IMAGE)
   {
     pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    
     pResult->SetContentType(HTTP_CONTENT_TYPE_IMAGE_PNG);
-    
-    string sImg = Base64Decode(fuppes_png);    
-    pResult->SetBinContent((char*)sImg.c_str(), sImg.length());     
   }  
   else if((nPresentationPage != PRESENTATION_BINARY_IMAGE) && (nPresentationPage != PRESENTATION_PAGE_UNKNOWN))
   {
@@ -155,20 +162,37 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
   sResult << "</title>" << endl;
   
   sResult << "<style type=\"text/css\">";
-  sResult << GetStylesheet();
+  if(p_nPresentationPage == PRESENTATION_PAGE_INDEX)
+    sResult << GetStylesheet("presentation/images/");
+  else
+    sResult << GetStylesheet("images/");
   sResult << "</style>";  
   sResult << "</head>";
   /* header end */
   
-  sResult << "<body>";  
+  sResult << "<body>";
+  
+  /* title */
   sResult << "<div id=\"title\">" << endl;
-  sResult << "<img src=\"/presentation/images/fuppes.png\" alt=\"fuppes logo\"  style=\"margin-top: 2px; padding-right: 5px;\" />" << endl; //  
-  sResult << CSharedConfig::Shared()->GetAppName() << " - " << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion() << endl;    
-  sResult << "<br />" << CSharedConfig::Shared()->GetHostname() << endl;
+  
+  sResult << "<p style=\"font-size: large; margin-top: 10px; margin-left: 65px; margin-bottom: 0px; padding: 0px;\">" << endl <<
+    "FUPPES - Free UPnP Entertainment Service<br />" << endl <<
+    "<span style=\"font-size: small; margin-left: 10px; padding: 0px;\">" <<
+    "Version: " << CSharedConfig::Shared()->GetAppVersion() << "&nbsp;&nbsp;&nbsp;" <<
+    "Host: " << CSharedConfig::Shared()->GetHostname() << "&nbsp;&nbsp;&nbsp;" <<
+    "Address: " << CSharedConfig::Shared()->GetIPv4Address() <<
+    "</span>" << endl <<
+    "</p>" << endl;
+  
   sResult << "</div>" << endl;
+  /* title end */
   
   /* menu */
   sResult << "<div id=\"menu\">" << endl;
+  
+  sResult << "<p style=\"background: #FF0000; margin: 0px; padding-bottom: 2px; padding-top: 0px; text-indent: 5px;\">" <<
+    "&bull; Menu" <<
+    "</p>" << endl;
   
   sResult << "<a href=\"/index.html\">Start</a>" << endl;
   sResult << "<br />";
@@ -224,11 +248,11 @@ std::string CPresentationHandler::GetIndexHTML()
   
   for (unsigned int i = 0; i < m_vFuppesInstances.size(); i++)
   {
-    sResult << "FUPPES Instance No. " << i + 1 << "<br />";    
-    sResult << "IP-Address: " << ((CFuppes*)m_vFuppesInstances[i])->GetIPAddress() << "<br />";
+    //sResult << "FUPPES Instance No. " << i + 1 << "<br />";    
+    //sResult << "IP-Address: " << ((CFuppes*)m_vFuppesInstances[i])->GetIPAddress() << "<br />";
     sResult << "HTTP-Server URL: " << ((CFuppes*)m_vFuppesInstances[i])->GetHTTPServerURL() << "<br />";
     sResult << "UUID: " << ((CFuppes*)m_vFuppesInstances[i])->GetUUID() << "<br />";    
-    sResult << "<br />";
+    //sResult << "<br />";
     sResult << "<br />";
     
     sResult << "<h3>Remote Devices</h3>";

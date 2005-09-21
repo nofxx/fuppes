@@ -61,6 +61,7 @@ cpp_sources = \
 	ContentDirectory/ContentDirectory.cpp\
   Presentation/PresentationHandler.cpp\
   Presentation/Images/fuppes_png.cpp\
+  Presentation/Images/fuppes_small_png.cpp\
 	SharedConfig.cpp\
   SharedLog.cpp\
 	Fuppes.cpp\
