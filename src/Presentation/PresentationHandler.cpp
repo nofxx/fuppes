@@ -162,7 +162,7 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
   
   sResult << "<body>";  
   sResult << "<div id=\"title\">" << endl;
-  //sResult << "<img src=\"/presentation/images/fuppes.png\" alt=\"fuppes logo\"  style=\"margin-top: 2px; padding-right: 5px;\" />" << endl; //  
+  sResult << "<img src=\"/presentation/images/fuppes.png\" alt=\"fuppes logo\"  style=\"margin-top: 2px; padding-right: 5px;\" />" << endl; //  
   sResult << CSharedConfig::Shared()->GetAppName() << " - " << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion() << endl;    
   sResult << "<br />" << CSharedConfig::Shared()->GetHostname() << endl;
   sResult << "</div>" << endl;

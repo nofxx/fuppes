@@ -2,6 +2,7 @@ Version 0.1.4 (2005-09-20)
   * fixed timer bug
   * fixed memory-leaks
   * improved thread handling
+  * (win32) updated pcre-lib from 5.0.1779.29128 to 6.3.2058.19251
   
 Version 0.1.3 (2005-09-03)
   * alive message is repeatedly sent every 3 mins
