@@ -1,7 +1,7 @@
 [Project]
 FileName=fuppes.dev
 Name=fuppes
-UnitCount=56
+UnitCount=57
 Type=1
 Ver=1
 ObjFiles=
@@ -599,6 +599,16 @@ BuildCmd=
 
 [Unit56]
 FileName=src\MSearchSession.h
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit57]
+FileName=src\Presentation\Images\fuppes_small_png.cpp
 CompileCpp=1
 Folder=fuppes
 Compile=1
