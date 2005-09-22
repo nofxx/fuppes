@@ -33,6 +33,21 @@
 #include <string>
 #include <assert.h>
 
+#ifdef WIN32
+
+/* T.S.NOTE: This must be defined to use InitializeCriticalSectionAndSpinCount() */
+#define _WIN32_WINNT 0x0410 /* Windos 98 * or later */
+
+#pragma comment(lib,"Wsock32.lib") 
+#pragma comment(lib,"Ws2_32.lib")
+#pragma comment(lib,"shlwapi.lib")
+
+#include <Winsock2.h>
+#include <Ws2tcpip.h>
+#include <shlwapi.h> /* For PathXXX functions */
+
+#endif
+
 /*===============================================================================
  MACROS
 ===============================================================================*/
@@ -66,25 +81,47 @@ std::string ToLower(std::string p_sInput);
 bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPort);
 std::string Base64Decode(const std::string p_sInputString);
 
+
+/*===============================================================================
+ Common Functions
+===============================================================================*/
+void fuppesSleep(unsigned int p_nMilliseconds);
+
+/*===============================================================================
+ Socket definitions and functions
+===============================================================================*/
+
+#ifdef WIN32
+  typedef SOCKET fuppesSocket;  
+#else
+  typedef int fuppesSocket;
+#endif
+
+bool fuppesSocketSetNonBlocking(fuppesSocket p_SocketHandle);
+
+
+/*===============================================================================
+ Thread definitions and functions
+===============================================================================*/
+
+#ifdef WIN32
+  typedef HANDLE            fuppesThread;
+  typedef CRITICAL_SECTION  fuppesThreadMutex;
+#else
+  typedef pthread_t         fuppesThread;
+  typedef pthread_mutex_t   fuppesThreadMutex;
+#endif
+
+bool fuppesThreadClose(fuppesThread p_ThreadHandle);
+
 /*===============================================================================
  WIN32 specific definitions
 ===============================================================================*/
 
 #ifdef WIN32
 
-/* T.S.NOTE: This must be defined to use InitializeCriticalSectionAndSpinCount() */
-#define _WIN32_WINNT 0x0410 /* Windos 98 * or later */
-
-#pragma comment(lib,"Wsock32.lib") 
-#pragma comment(lib,"Ws2_32.lib")
-#pragma comment(lib,"shlwapi.lib")
-
-#include <Winsock2.h>
-#include <Ws2tcpip.h>
-#include <shlwapi.h> /* For PathXXX functions */
-
 /* Common */
-#define upnpSleep               Sleep
+//#define upnpSleep               Sleep
 #define upnpPathDelim           "\\"
 
 /* Sockets */
@@ -93,16 +130,17 @@ std::string Base64Decode(const std::string p_sInputString);
 #define upnpSocketClose         closesocket
 #define upnpSocketFlag(_x_)     const char _x_[256] = ""
 
+
 /* Threads */
-#define fuppesThread                                        HANDLE
+//#define fuppesThread                                        HANDLE
 #define fuppesThreadStart(_handle_, _callback_)             _handle_ = CreateThread(NULL, 0, &_callback_, this, 0, NULL)
-#define fuppesThreadClose(_handle_, _timeoutms_)             WaitForSingleObject(_handle_, _timeoutms_); CloseHandle(_handle_)
-#define fuppesThreadCancel(_handle_)                        /* TODO */
-#define fuppesThreadExit(_status_) 
+//#define fuppesThreadClose(_handle_)                         WaitForSingleObject(_handle_, INFINITE); CloseHandle(_handle_)
+//#define fuppesThreadCancel(_handle_, _exit_code_)           TerminateThread(_handle_, _exit_code_);
+#define fuppesThreadExit()                                  ExitThread(0);
 #define fuppesThreadStartArg(_handle_, _callback_, _arg_)   _handle_ = CreateThread(NULL, 0, &_callback_, &_arg_, 0, NULL)
 #define fuppesThreadCallback                                DWORD WINAPI
 
-#define fuppesThreadMutex                                   CRITICAL_SECTION
+//#define fuppesThreadMutex                                   CRITICAL_SECTION
 #define fuppesThreadInitMutex(_mutex_)                      InitializeCriticalSectionAndSpinCount(_mutex_, 0x80000400)
 #define fuppesThreadLockMutex(_mutex_)                      EnterCriticalSection(_mutex_)
 #define fuppesThreadUnlockMutex(_mutex_)                    LeaveCriticalSection(_mutex_)
@@ -118,7 +156,7 @@ std::string Base64Decode(const std::string p_sInputString);
 #include <unistd.h>
 
 /* Common */
-#define upnpSleep               usleep
+//#define upnpSleep               usleep
 #define upnpPathDelim           "/"
 
 /* Sockets */
@@ -127,15 +165,15 @@ std::string Base64Decode(const std::string p_sInputString);
 #define upnpSocketClose(_socket_)         close(_socket_)
 
 /* Threads */
-#define fuppesThread                                        pthread_t
+//#define fuppesThread                                        pthread_t
 #define fuppesThreadStart(_handle_, _callback_)             pthread_create(&_handle_, NULL, &_callback_, this);
-#define fuppesThreadClose(_handle_, _timeoutms_)            pthread_join(_handle_, NULL);
-#define fuppesThreadCancel(_handle_)                        pthread_cancel(_handle_);
-#define fuppesThreadExit(_status_)                          pthread_exit(_status_);
+//#define fuppesThreadClose(_handle_)                         pthread_join(_handle_, NULL);
+//#define fuppesThreadCancel(_handle_)                        pthread_cancel(_handle_);
+#define fuppesThreadExit()                                  pthread_exit(NULL);
 #define fuppesThreadStartArg(_handle_, _callback_, _arg_)   pthread_create(&_handle_, NULL, &_callback_, &_arg_);
 #define fuppesThreadCallback                                void*
 
-#define fuppesThreadMutex                                   pthread_mutex_t
+//#define fuppesThreadMutex                                   pthread_mutex_t
 #define fuppesThreadInitMutex(_mutex_)                      pthread_mutex_init(_mutex_, NULL)
 #define fuppesThreadLockMutex(_mutex_)                      pthread_mutex_lock(_mutex_)
 #define fuppesThreadUnlockMutex(_mutex_)                    pthread_mutex_unlock(_mutex_)

@@ -37,8 +37,13 @@
 #include <iostream>
 #include <algorithm>
 #include <cctype>
+#include <fcntl.h>
 
 using namespace std;
+
+/*===============================================================================
+ File Functions
+===============================================================================*/
 
 bool FileExists(std::string p_sFileName)
 {
@@ -93,6 +98,10 @@ bool IsDirectory(std::string p_sDirName)
 {
   return DirectoryExists(p_sDirName);
 }
+
+/*===============================================================================
+ String Functions
+===============================================================================*/
 
 std::string ExtractFileExt(std::string p_sFileName)
 {
@@ -166,7 +175,7 @@ std::string Base64Decode(const std::string p_sInputString)
         (p_sInputString[in_] == '\r'))
         )
   {
-    /* continue line break */
+    /* continue on line break */
     if ((p_sInputString[in_] == '\n') || (p_sInputString[in_] == '\r'))
     {
       in_++;
@@ -212,3 +221,98 @@ std::string Base64Decode(const std::string p_sInputString)
   return sResult;  
 }
 /* end BASE64 decoding */
+
+
+/*===============================================================================
+ Common Functions
+===============================================================================*/
+
+void fuppesSleep(unsigned int p_nMilliseconds)
+{
+  #ifdef WIN32
+    Sleep(p_nMilliseconds);
+  #else
+    usleep(p_nMilliseconds * 1000);
+  #endif
+}
+
+/*===============================================================================
+ Socket functions
+===============================================================================*/
+
+bool fuppesSocketSetNonBlocking(upnpSocket p_SocketHandle)
+{
+  #ifdef WIN32     
+  int nonblocking = 1;
+  if(ioctlsocket(p_SocketHandle, FIONBIO, (unsigned long*) &nonblocking) != 0)
+    return false;
+  #else     
+  int opts;
+	opts = fcntl(p_SocketHandle, F_GETFL);
+	if (opts < 0) {
+    return false;
+	}
+	opts = (opts | O_NONBLOCK);
+	if (fcntl(p_SocketHandle, F_SETFL,opts) < 0) {		
+    return false;
+	} 
+	#endif
+  return true;
+}
+
+/*===============================================================================
+ Thread functions
+===============================================================================*/
+
+bool fuppesThreadClose(fuppesThread p_ThreadHandle)
+{     
+  #ifdef WIN32  
+  bool bResult = false;
+  DWORD nErrNo = WaitForSingleObject(p_ThreadHandle, INFINITE);
+  switch(nErrNo)
+  {
+    case WAIT_ABANDONED:
+      /*cout << "WAIT_ABANDONED :: " << nErrNo << endl;
+      fflush(stdout);*/
+      break;
+    case WAIT_OBJECT_0:
+      //cout << "WAIT_OBJECT_0 :: " << nErrNo << endl;
+      CloseHandle(p_ThreadHandle);
+      bResult = true;
+      break;
+    case WAIT_TIMEOUT:
+      cout << "WAIT_TIMEOUT :: " << nErrNo << endl;
+      fflush(stdout);
+      break;
+    case WAIT_FAILED:
+      cout << "WAIT_FAILED :: " << nErrNo << endl;
+      fflush(stdout);
+      break;
+    default:
+      cout << "fuppesThreadClose - DEFAULT :: " << nErrNo << endl;      
+      break;            
+  }
+  return bResult;
+  #else    
+  bool bResult = true;
+  int nErrNo = pthread_join(p_ThreadHandle, NULL);
+  if (nErrNo != 0)
+  {
+    bResult = false;
+    switch(nErrNo)
+    {
+      case EINVAL:
+        cout << "pthread_join() :: " << nErrNo << " EINVAL = handle does not refer to a joinable thread" << endl;      
+        break;
+      case ESRCH:
+        cout << "pthread_join() :: " << nErrNo << " ESRCH = No thread found with the given thread handle" << endl;
+        break;
+      case EDEADLK:
+        cout << "pthread_join() :: " << nErrNo << " EDEADLK = deadlock detected" << endl;      
+        break;        
+    }
+    fflush(stdout);
+  }
+  return bResult;  
+  #endif
+}

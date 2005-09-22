@@ -28,6 +28,9 @@
 
 #include <string>
 #include <sstream>
+#include <iostream>
+
+using namespace std;
 
 const std::string LOGNAME = "Timer";
 
@@ -40,14 +43,24 @@ CTimer::CTimer(ITimer* p_OnTimerHandler)
   m_pOnTimerHandler = p_OnTimerHandler;
   m_TimerThread     = (fuppesThread)NULL;
   m_nTickCount      = 0;
+  m_bDoBreak        = false;
 }
 
 CTimer::~CTimer()
 {
-  if(m_TimerThread != (fuppesThread)NULL)
-    fuppesThreadClose(m_TimerThread, 500);
+  Stop();
+  Cleanup();  
 }
   
+void CTimer::Cleanup()
+{
+  if(m_TimerThread)
+  {
+    fuppesThreadClose(m_TimerThread);   
+    m_TimerThread = (fuppesThread)NULL;
+  }
+}
+
 void CTimer::CallOnTimer()
 {
   if(m_pOnTimerHandler != NULL)
@@ -61,13 +74,18 @@ void CTimer::SetInterval(unsigned int p_nSeconds)
 
 void CTimer::Start()
 {
+  void Cleanup(); 
+  m_bDoBreak = false;
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "Start");
   fuppesThreadStart(m_TimerThread, TimerLoop);
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "Started");
 }
 
 void CTimer::Stop()
 {
-  if(m_TimerThread != (fuppesThread)NULL)
-    fuppesThreadClose(m_TimerThread, 500);
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "Stop");
+  m_bDoBreak = true;  
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "Stopped");
 }
 
 void CTimer::Reset()
@@ -80,23 +98,32 @@ void CTimer::Reset()
 
 fuppesThreadCallback TimerLoop(void *arg)
 {
-  CTimer* pTimer = (CTimer*)arg;  
- 
-  while(pTimer->m_nTickCount <= pTimer->GetInterval())
+  CTimer* pTimer = (CTimer*)arg;   
+  
+  while(!pTimer->m_bDoBreak && (pTimer->m_nTickCount <= pTimer->GetInterval()))
   {
-    pTimer->m_nTickCount++;
-    upnpSleep(1000000);    
+    if (pTimer->m_bDoBreak)
+      break;
     
-    if(pTimer->m_nTickCount == (pTimer->GetInterval() - 1))
+    /*std::stringstream sLog;
+    sLog << "timer loop. Interval: " << pTimer->GetInterval() << " Tick count: " << pTimer->m_nTickCount;  
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());  */
+                            
+    pTimer->m_nTickCount++;
+    fuppesSleep(1000);    
+    
+    if(!pTimer->m_bDoBreak && (pTimer->m_nTickCount >= (pTimer->GetInterval() - 1)))
     {
       pTimer->CallOnTimer();
       pTimer->m_nTickCount = 0;
     }
-  }  
+  }
   
+  /* logging */
   std::stringstream sLog;
   sLog << "exiting timer loop. Interval: " << pTimer->GetInterval() << " Tick count: " << pTimer->m_nTickCount;  
   CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());  
-  fuppesThreadExit(NULL);    
-  return 0;
+  
+  /* exit thread */
+  fuppesThreadExit();
 }

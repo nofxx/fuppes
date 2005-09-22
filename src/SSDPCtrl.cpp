@@ -56,10 +56,16 @@ CSSDPCtrl::CSSDPCtrl(std::string p_sIPAddress, std::string p_sHTTPServerURL)
 
   m_sIPAddress   = p_sIPAddress;
 	msearch_thread = (fuppesThread)NULL;
+  
+  fuppesThreadInitMutex(&m_SessionReceiveMutex);
+  fuppesThreadInitMutex(&m_SessionTimedOutMutex);
 }
 
 CSSDPCtrl::~CSSDPCtrl()
 {
+  fuppesThreadDestroyMutex(&m_SessionReceiveMutex);
+  fuppesThreadDestroyMutex(&m_SessionTimedOutMutex);
+  
   SAFE_DELETE(m_pNotifyMsgFactory);
 }
 
@@ -76,6 +82,7 @@ void CSSDPCtrl::Start()
 
 void CSSDPCtrl::Stop()
 {	
+  CleanupSessions();
 	m_Listener.EndReceive();	
 }
 
@@ -88,22 +95,47 @@ CUDPSocket* CSSDPCtrl::get_socket()
 	return &m_Listener;
 }
 
+void CSSDPCtrl::CleanupSessions()
+{
+  fuppesThreadLockMutex(&m_SessionTimedOutMutex); 
+     
+  if(m_SessionList.size() == 0)
+  {
+    fuppesThreadUnlockMutex(&m_SessionTimedOutMutex); 
+    return;  
+  }
+     
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "CleanupSessions");
+  for(m_SessionListIterator = m_SessionList.begin(); m_SessionListIterator != m_SessionList.end(); m_SessionListIterator++)
+  {
+    if(m_SessionList.size() == 0)
+      break;
+                            
+    CMSearchSession* pSession = *m_SessionListIterator;   
+    m_SessionList.erase(m_SessionListIterator);
+    delete pSession;
+    m_SessionListIterator--;
+  }
+  
+  fuppesThreadUnlockMutex(&m_SessionTimedOutMutex); 
+}
+
 /*===============================================================================
  SEND
 ===============================================================================*/
 
 void CSSDPCtrl::send_msearch()
 {
-	CMSearchSession* msearch = new CMSearchSession(m_sIPAddress, this, m_pNotifyMsgFactory);
-	m_LastMulticastEp = msearch->GetLocalEndPoint();
-	/* T.S.TODO: Where could we call CMSearchSession::Stop() to terminate thread??? */
-  /* uv :: UPnP says that remote devices have to answer within iirc 30 seconds
-           so let's start a timer and kill the thread when the time is over */
-  msearch->Start();	
+	CMSearchSession* pSession = new CMSearchSession(m_sIPAddress, this, m_pNotifyMsgFactory);
+	m_LastMulticastEp = pSession->GetLocalEndPoint();
+  pSession->Start();
+  CleanupSessions();  
 }
 
 void CSSDPCtrl::send_alive()
 {
+  CleanupSessions();
+  
   CUDPSocket Sock;
 	Sock.SetupSocket(false, m_sIPAddress);
 	
@@ -111,19 +143,19 @@ void CSSDPCtrl::send_alive()
 	
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_ROOT_DEVICE));	
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_ROOT_DEVICE));
-	upnpSleep(200);
+	fuppesSleep(200);
 	
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_CONNECTION_MANAGER));
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_CONNECTION_MANAGER));
-	upnpSleep(200);
+	fuppesSleep(200);
 	
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_CONTENT_DIRECTORY));
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_CONTENT_DIRECTORY));
-	upnpSleep(200);
+	fuppesSleep(200);
 	
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_MEDIA_SERVER));
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_MEDIA_SERVER));
-	upnpSleep(200);
+	fuppesSleep(200);
 	
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_USN));
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_alive(MESSAGE_TYPE_USN));
@@ -140,19 +172,19 @@ void CSSDPCtrl::send_byebye()
 	
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_ROOT_DEVICE));
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_ROOT_DEVICE));
-	upnpSleep(200);
+	fuppesSleep(200);
 	
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_CONNECTION_MANAGER));
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_CONNECTION_MANAGER));
-	upnpSleep(200);
+	fuppesSleep(200);
 	
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_CONTENT_DIRECTORY));
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_CONTENT_DIRECTORY));
-	upnpSleep(200);
+	fuppesSleep(200);
 	
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_MEDIA_SERVER));
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_MEDIA_SERVER));
-	upnpSleep(200);
+	fuppesSleep(200);
 	
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_USN));
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_USN));
@@ -197,19 +229,35 @@ void CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMe
   }
 }
 
-void CSSDPCtrl::OnSessionReceive(CSSDPSession* pSender, CSSDPMessage* pMessage)
+void CSSDPCtrl::OnSessionReceive(CMSearchSession* pSender, CSSDPMessage* pMessage)
 {
+  /* lock receive mutex */
+  fuppesThreadLockMutex(&m_SessionReceiveMutex);  
+  
+  /* logging */
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "OnSessionReceive");
   CSharedLog::Shared()->DebugLog(LOGNAME, pMessage->GetMessage());
+  
+  /* pass message to the main fuppes instance */
   if(NULL != m_pReceiveHandler)
       m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pMessage);
   
-  //cout << pMessage->GetContent() << endl;
+  /* unlock receive mutex */
+  fuppesThreadUnlockMutex(&m_SessionReceiveMutex);
 }
 
-void CSSDPCtrl::OnSessionTimeOut(CSSDPSession* pSender)
+void CSSDPCtrl::OnSessionTimeOut(CMSearchSession* pSender)
 {
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "OnSessionTimeOut()");
+  CleanupSessions();
+  
+  /* lock timeout mutex */
+  fuppesThreadLockMutex(&m_SessionTimedOutMutex); 
+  
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "OnSessionTimeOut()");  
+  m_SessionList.push_back(pSender);
+  
+  /* unlock timeout mutex */
+  fuppesThreadUnlockMutex(&m_SessionTimedOutMutex); 
 }
 
 /* <\PUBLIC> */
@@ -235,7 +283,9 @@ void CSSDPCtrl::HandleMSearch(CSSDPMessage* pSSDPMessage)
   Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_USN), pSSDPMessage->GetRemoteEndPoint());
 
   Sock.TeardownSocket();
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");    
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");
+  
+  CleanupSessions();
 }
 
 

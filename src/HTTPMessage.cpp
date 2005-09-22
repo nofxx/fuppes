@@ -71,29 +71,28 @@ CHTTPMessage::CHTTPMessage()
   fflush(stdout);  
   
   /* Init */
-  m_HTTPVersion			  = HTTP_VERSION_1_1;
-  m_HTTPMessageType   = HTTP_MESSAGE_TYPE_UNKNOWN;
-	m_HTTPContentType   = HTTP_CONTENT_TYPE_UNKNOWN;
-  m_nBinContentLength = 0; 
+  m_HTTPVersion			    = HTTP_VERSION_1_1;
+  m_HTTPMessageType     = HTTP_MESSAGE_TYPE_UNKNOWN;
+	m_HTTPContentType     = HTTP_CONTENT_TYPE_UNKNOWN;
+  m_nBinContentLength   = 0; 
   m_nBinContentPosition = 0;
-  m_nContentLength    = 0;
-  m_pszBinContent     = NULL;
-  m_bIsChunked        = false;  
+  m_nContentLength      = 0;
+  m_pszBinContent       = NULL;
+  m_bIsChunked          = false;
+  m_TranscodeThread     = (fuppesThread)NULL;
 }
 
 CHTTPMessage::~CHTTPMessage()
 {
   cout << "DELETE" << endl;
   fflush(stdout);
-  /* Cleanup */
-  /* uv 2005-08-05 :: memory allocated with new[] 
-     has to be freed with delete[] instead of delete */
-  //SAFE_DELETE(m_pszBinContent);
+  
+  /* Cleanup */  
   if(m_pszBinContent)
     delete[] m_pszBinContent;
   
   if(m_TranscodeThread)
-    fuppesThreadClose(m_TranscodeThread, 0);
+    fuppesThreadClose(m_TranscodeThread);
 }
 
 /*===============================================================================
@@ -240,7 +239,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     cout << "[critical] we are sending faster then we can transcode" << endl;
     cout << "           delaying send-process for a second" << endl;
     fflush(stdout);
-    upnpSleep(1);
+    fuppesSleep(1000);
     fuppesThreadLockMutex(&TranscodeMutex);
     memcpy(p_sContentChunk, &m_pszBinContent[m_nBinContentPosition], nRest);
     m_nBinContentPosition += nRest;
@@ -353,7 +352,7 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName)
   fuppesThreadStartArg(m_TranscodeThread, TranscodeLoop, *session); 
   m_bIsTranscoding = true;
   
-  upnpSleep(1); /* let the encoder work for a second */
+  fuppesSleep(1000); /* let the encoder work for a second */
   
   return true;
 }
@@ -542,7 +541,7 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   
   delete pSession;
   
-  fuppesThreadExit(NULL);
+  fuppesThreadExit();
   return 0;
 }
 

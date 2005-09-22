@@ -42,6 +42,7 @@
 
 #include <string>
 #include <iostream>
+#include <list>
 
 using namespace std;
 
@@ -88,29 +89,38 @@ public:
 
   CHTTPSessionInfo(CHTTPServer* pHTTPServer, upnpSocket p_Connection)
   {
-    m_pHTTPServer = pHTTPServer;
-    m_Connection  = p_Connection;
+    m_pHTTPServer   = pHTTPServer;
+    m_Connection    = p_Connection;    
+    m_bIsTerminated = false;
   }
 
 /*===============================================================================
  GET
 ===============================================================================*/
 
-    upnpSocket   GetConnection() { return m_Connection;  }
+    fuppesSocket GetConnection() { return m_Connection;  }
     CHTTPServer* GetHTTPServer() { return m_pHTTPServer; }
+    fuppesThread GetThreadHandle() { return m_ThreadHandle; }
+    void         SetThreadHandle(fuppesThread p_ThreadHandle) { m_ThreadHandle = p_ThreadHandle; }
+    
   
 /* <\PUBLIC> */
 
-/* <PRIVATE> */
-
+    bool m_bIsTerminated;
+    
+/* <PRIVATE> */    
+    
 private:
   
+  void CleanupSessions();
+
 /*===============================================================================
  MEMBERS
 ===============================================================================*/
   
   CHTTPServer* m_pHTTPServer;
-  upnpSocket   m_Connection;
+  fuppesSocket m_Connection;
+  fuppesThread m_ThreadHandle;
 
 /* <\PRIVATE> */
 
@@ -142,6 +152,7 @@ public:
   void          Stop();
   upnpSocket    GetSocket();
   std::string   GetURL();	
+  void          CleanupSessions();
 
 /*===============================================================================
  MESSAGE HANDLING
@@ -149,13 +160,15 @@ public:
 
   bool				  SetReceiveHandler(IHTTPServer* pHandler);
   bool          CallOnReceive(std::string p_sMessage, CHTTPMessage* pMessageOut);
-  
+   
 /* <\PUBLIC> */
+
+  bool m_bBreakAccept;
 
 /* <PRIVATE> */
 
-private:
-	 
+private: 
+
 /*===============================================================================
  MEMBERS
 ===============================================================================*/
@@ -166,8 +179,12 @@ private:
   sockaddr_in local_ep;
   bool				do_break;
 
-  upnpSocket  m_Socket;					      
+  fuppesSocket  m_Socket;					      
   fuppesThread  accept_thread;
+
+public:
+  std::list<CHTTPSessionInfo*> m_ThreadList;
+  std::list<CHTTPSessionInfo*>::iterator m_ThreadListIterator;
 
 /* <\PRIVATE> */
 

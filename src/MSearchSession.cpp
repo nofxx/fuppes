@@ -1,5 +1,5 @@
 /***************************************************************************
- *            SSDPSession.cpp
+ *            MSearchSession.cpp
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -29,7 +29,7 @@
  INCLUDES
 ===============================================================================*/
 
-#include "SSDPSession.h"
+#include "MSearchSession.h"
 #include "NotifyMsgFactory.h"
 
 #include <iostream>
@@ -46,16 +46,23 @@ using namespace std;
  CONSTRUCTOR / DESTRUCTOR
 ===============================================================================*/
 
-CSSDPSession::CSSDPSession(std::string p_sIPAddress, ISSDPSession* pEventHandler)
+CMSearchSession::CMSearchSession(std::string p_sIPAddress, IMSearchSession* pReceiveHandler, CNotifyMsgFactory* pNotifyMsgFactory)
+  :m_Timer(this)
 {
-  m_sIPAddress    = p_sIPAddress;
-  m_pEventHandler = pEventHandler;
-  m_Timer         = new CTimer(this);
+  ASSERT(NULL != pReceiveHandler);
+  ASSERT(NULL != pNotifyMsgFactory);
+  
+  m_sIPAddress        = p_sIPAddress;
+  m_pEventHandler     = pReceiveHandler;
+  m_pNotifyMsgFactory = pNotifyMsgFactory;
+  
+  m_Timer.SetInterval(30);
+  m_UdpSocket.SetupSocket(false, m_sIPAddress);	
 }
 
-CSSDPSession::~CSSDPSession()
+CMSearchSession::~CMSearchSession()
 {
-  delete m_Timer;
+  m_UdpSocket.TeardownSocket();  
 }
 
 /* <\PROTECTED> */
@@ -66,91 +73,19 @@ CSSDPSession::~CSSDPSession()
  MESSAGE HANDLING
 ===============================================================================*/
 
-void CSSDPSession::OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pSSDPMessage)
+void CMSearchSession::OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pSSDPMessage)
 {
-  //cout << "ssdp_session::OnUDPSocketReceive" << endl << pSSDPMessage->GetContent() << endl;
   if(m_pEventHandler != NULL)
     m_pEventHandler->OnSessionReceive(this, pSSDPMessage);
 }
 
-void CSSDPSession::OnTimer()
+void CMSearchSession::OnTimer()
 {
   Stop();
   if(m_pEventHandler != NULL)
+  {
     m_pEventHandler->OnSessionTimeOut(this);
-}
-
-/* <\PUBLIC> */
-
-/* <PROTECTED> */
-
-/*===============================================================================
- CONTROL
-===============================================================================*/
-
-void CSSDPSession::Start()
-{
-}
-
-void CSSDPSession::Stop()
-{
-}
-
-/*===============================================================================
- SEND/RECEIVE
-===============================================================================*/
-
-void CSSDPSession::send_multicast(std::string a_message)
-{
-	/* Send message twice */
-  m_UdpSocket.SendMulticast(a_message);
-	upnpSleep(200);
-	m_UdpSocket.SendMulticast(a_message);	
-}
-
-void CSSDPSession::send_unicast(std::string)
-{
-}
-
-void CSSDPSession::begin_receive_unicast()
-{	
-	/* Start receiving messages */
-  m_UdpSocket.SetReceiveHandler(this);
-	m_UdpSocket.BeginReceive();
-}
-
-void CSSDPSession::end_receive_unicast()
-{
-  /* End receiving messages */
-  m_UdpSocket.EndReceive();
-}
-
-/* <\PROTECTED> */
-
-/*===============================================================================
- CLASS CMSearchSession
-===============================================================================*/
-
-/* <PUBLIC> */
-
-/*===============================================================================
- CONSTRUCTOR/DESTRUCTOR
-===============================================================================*/
-
-CMSearchSession::CMSearchSession(std::string p_sIPAddress, ISSDPSession* pReceiveHandler, CNotifyMsgFactory* pNotifyMsgFactory):
-  CSSDPSession(p_sIPAddress, pReceiveHandler)
-{
-  ASSERT(NULL != pReceiveHandler);
-  ASSERT(NULL != pNotifyMsgFactory);
-  
-  m_pNotifyMsgFactory = pNotifyMsgFactory;
-	m_UdpSocket.SetupSocket(false, m_sIPAddress);	
-  
-  m_Timer->SetInterval(30);
-}
-
-CMSearchSession::~CMSearchSession()
-{
+  }  
 }
 
 /*===============================================================================
@@ -159,22 +94,46 @@ CMSearchSession::~CMSearchSession()
 
 void CMSearchSession::Start()
 {
-	//cout << "msearch_session::start" << endl;
 	begin_receive_unicast();
-	upnpSleep(200);
+	fuppesSleep(200);
 	send_multicast(m_pNotifyMsgFactory->msearch());
-  //m_Timer->Start();  
+  m_Timer.Start();
 }
 
 void CMSearchSession::Stop()
 {
-  //m_Timer->Stop();
+  m_Timer.Stop();
 	end_receive_unicast();
 }
 
 /*===============================================================================
- GET
+ SEND/RECEIVE
 ===============================================================================*/
+
+void CMSearchSession::send_multicast(std::string a_message)
+{
+	/* Send message twice */
+  m_UdpSocket.SendMulticast(a_message);
+	fuppesSleep(200);
+	m_UdpSocket.SendMulticast(a_message);	
+}
+
+void CMSearchSession::send_unicast(std::string)
+{
+}
+
+void CMSearchSession::begin_receive_unicast()
+{	
+	/* Start receiving messages */
+  m_UdpSocket.SetReceiveHandler(this);
+	m_UdpSocket.BeginReceive();
+}
+
+void CMSearchSession::end_receive_unicast()
+{
+  /* End receiving messages */
+  m_UdpSocket.EndReceive();
+}
 
 sockaddr_in CMSearchSession:: GetLocalEndPoint()
 {

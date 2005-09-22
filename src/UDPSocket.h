@@ -150,7 +150,7 @@ public:
   /** returns the socket's descriptor
    *  @return the descriptor
    */
-  upnpSocket GetSocketFd();
+  fuppesSocket GetSocketFd();
 
   /** returns the socket's port
    *  @return the port number
@@ -171,6 +171,8 @@ public:
 
 /* <PRIVATE> */
 
+   bool m_bBreakReceive;
+
 private:
 
 /*===============================================================================
@@ -181,7 +183,7 @@ private:
   bool          m_bDoMulticast;	
 
   /* Socket */
-  upnpSocket    m_Socket;					
+  fuppesSocket  m_Socket;					
   sockaddr_in   m_LocalEndpoint;
 
   /* Message handling */

@@ -1,11 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id: $
 
-FUPPES_CXXFLAGS = \
-	-Wall
-
-INCLUDES = ${LIBXML_CFLAGS}\
-	$(FUPPES_CXXFLAGS)	
+INCLUDES = ${LIBXML_CFLAGS}
 
 bin_PROGRAMS = fuppes
 
@@ -16,8 +12,8 @@ h_sources = \
   UDPSocket.h\
   MessageBase.h\
   SSDPCtrl.h\
-	SSDPSession.h\
 	SSDPMessage.h\
+  MSearchSession.h\
   NotifyMsgFactory.h\
 	HTTPMessage.h\
 	HTTPServer.h\
@@ -48,8 +44,8 @@ cpp_sources = \
   UDPSocket.cpp\
   MessageBase.cpp\
 	SSDPCtrl.cpp\
-	SSDPSession.cpp\
 	SSDPMessage.cpp\
+  MSearchSession.cpp\
 	NotifyMsgFactory.cpp\
 	HTTPMessage.cpp\
 	HTTPServer.cpp\
@@ -65,6 +61,7 @@ cpp_sources = \
 	ContentDirectory/ContentDirectory.cpp\
   Presentation/PresentationHandler.cpp\
   Presentation/Images/fuppes_png.cpp\
+  Presentation/Images/fuppes_small_png.cpp\
 	SharedConfig.cpp\
   SharedLog.cpp\
 	Fuppes.cpp\
@@ -74,9 +71,9 @@ fuppes_SOURCES = ${h_sources} ${cpp_sources}
 
 fuppes_LDFLAGS = \
 	-lpcre\
+  -lpthread\
   -lmp3lame\
   -lvorbisfile\
-  -lpthread\
-	${LIBXML_LIBS}
+  ${LIBXML_LIBS}
 
 fuppes_LDADD = $(FUPPES_LIBS)

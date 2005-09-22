@@ -27,39 +27,38 @@
 
 #include <sstream>
 
-std::string GetStylesheet()
+std::string GetStylesheet(std::string p_sRelativeImagePath)
 {
   std::stringstream sStylesheet;
-  sStylesheet << "body {" << endl;
-  sStylesheet << "  margin:      0;" << endl;
-  sStylesheet << "  padding:     0;" << endl;
-  sStylesheet << "  font-family: Verdana, Arial, Helvetica;" << endl;
-  sStylesheet << "  font-size:   10pt;" << endl;  
-  sStylesheet << "  background-color: #CCCCFF;" << endl; // #EBEBEB
-  sStylesheet <<"}" << endl;
+  sStylesheet << "body {" << endl <<
+    "margin:      0;" << endl <<
+    "padding:     0;" << endl <<
+    "font-family: Verdana, Arial, Helvetica;" << endl <<
+    "font-size:   10pt;" << endl <<
+    "background-color: #DACECE;" << endl <<
+    "background-image: url(\"" << p_sRelativeImagePath << "fuppes.png\");" << endl <<
+    "background-repeat: no-repeat;"
+    "background-position: center;" << endl << 
+    "}" << endl << endl;  
   
   
-  sStylesheet << "#title {" << endl;
-  sStylesheet << "font-size:     large;" << endl;
-  sStylesheet << "text-decoration:underline;" << endl;
-  sStylesheet << "margin-top:    5px;" << endl;
-  sStylesheet << "margin-left:   0px;" << endl;
-  sStylesheet << "margin-bottom: 5px;" << endl;
-  sStylesheet << "margin-right:  0px;" << endl;
-  sStylesheet << "padding-left:  15px;" << endl;
-  sStylesheet << "height:        40px;" << endl;
-  sStylesheet << "border-style:  solid;" << endl;
-  sStylesheet << "border-color:  black;" << endl;
-  sStylesheet << "border-width:  1px 0;" << endl;
-  sStylesheet << "background:   #FFFFFF;" << endl;
+  sStylesheet << "#title {" << endl <<
+    "margin-top:    5px;" << endl <<
+    "margin-left:   0px;" << endl <<
+    "margin-bottom: 5px;" << endl <<
+    "margin-right:  0px;" << endl <<
+    "padding-top:   0px;" << endl <<
+    "height:        65px;" << endl <<
+    "border-style:  solid;" << endl <<
+    "border-color:  black;" << endl <<
+    "border-width:  1px 0;" << endl <<
+    "background:    #FF0000;" << endl <<
+    "vertical-align: middle;" << endl <<
+    "background-image: url(\"" << p_sRelativeImagePath << "fuppes-small.png\");" << endl <<
+    "background-repeat:no-repeat;" << endl <<
+    "background-position: 5px;" << endl <<
+    "}" << endl << endl;
   
- /* sStylesheet << "text-indent: 2em;" << endl;  
-  sStylesheet << "background-image:url(presentation/images/fuppes.png);" << endl;
-  sStylesheet << "background-repeat:no-repeat;" << endl;
-  sStylesheet << "background-position: 0px 2px;" << endl; */
-  
-  
-  sStylesheet << "}" << endl;
   
   sStylesheet << "#content {"  << endl;
   sStylesheet << "margin-left:   145px;" << endl;
@@ -76,7 +75,7 @@ std::string GetStylesheet()
   
   sStylesheet << "#menu{"  << endl;
   sStylesheet << "position:     absolute;"  << endl;
-  sStylesheet << "top:          52px;"  << endl;
+  sStylesheet << "top:          77px;"  << endl;
   sStylesheet << "left:         5px;"  << endl;
   sStylesheet << "width:        135px;"  << endl;
   sStylesheet << "padding:      0px;"  << endl;
