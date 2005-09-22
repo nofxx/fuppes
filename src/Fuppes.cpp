@@ -171,7 +171,7 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
   else
   {
     stringstream sLog;
-    sLog << "device: " << pSender->GetUUID() << " timed out";
+    sLog << "device: " << pSender->GetFriendlyName() << " timed out";
     CSharedLog::Shared()->Log(LOGNAME, sLog.str());
 
     m_RemoteDeviceIterator = m_RemoteDevices.find(pSender->GetUUID());  
@@ -388,7 +388,7 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
   /* known device */
   if(m_RemoteDeviceIterator != m_RemoteDevices.end())
   {
-    //m_RemoteDevices[pMessage->GetUUID()]->TimerReset();
+    m_RemoteDevices[pMessage->GetUUID()]->TimerReset();
     
     std::stringstream sMsg;
     sMsg << "received \"Notify-Alive\" from known device id: " << pMessage->GetUUID();      

@@ -35,7 +35,7 @@ using namespace std;
 const std::string LOGNAME = "Timer";
 
 fuppesThreadCallback TimerLoop(void *arg);
-
+fuppesThreadMutex TimerMutex;
 //unsigned int g_nTickCount;
 
 CTimer::CTimer(ITimer* p_OnTimerHandler)
@@ -44,12 +44,16 @@ CTimer::CTimer(ITimer* p_OnTimerHandler)
   m_TimerThread     = (fuppesThread)NULL;
   m_nTickCount      = 0;
   m_bDoBreak        = false;
+  
+  fuppesThreadInitMutex(&TimerMutex);
 }
 
 CTimer::~CTimer()
 {
   Stop();
   Cleanup();  
+  
+  fuppesThreadDestroyMutex(&TimerMutex);
 }
   
 void CTimer::Cleanup()
@@ -91,9 +95,9 @@ void CTimer::Stop()
 void CTimer::Reset()
 {
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "Reset");
-  Stop();
+  fuppesThreadLockMutex(&TimerMutex);
   m_nTickCount = 0;
-  Start();  
+  fuppesThreadUnlockMutex(&TimerMutex);
 }
 
 fuppesThreadCallback TimerLoop(void *arg)
@@ -108,14 +112,18 @@ fuppesThreadCallback TimerLoop(void *arg)
     /*std::stringstream sLog;
     sLog << "timer loop. Interval: " << pTimer->GetInterval() << " Tick count: " << pTimer->m_nTickCount;  
     CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());  */
-                            
+                          
+    fuppesThreadLockMutex(&TimerMutex);
     pTimer->m_nTickCount++;
+    fuppesThreadUnlockMutex(&TimerMutex);
     fuppesSleep(1000);    
     
     if(!pTimer->m_bDoBreak && (pTimer->m_nTickCount >= (pTimer->GetInterval() - 1)))
     {
       pTimer->CallOnTimer();
+      fuppesThreadLockMutex(&TimerMutex);
       pTimer->m_nTickCount = 0;
+      fuppesThreadUnlockMutex(&TimerMutex);
     }
   }
   
