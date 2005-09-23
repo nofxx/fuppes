@@ -148,6 +148,7 @@ std::string CHTTPMessage::GetHeaderAsString()
 	switch(m_HTTPMessageType)
 	{
 		case HTTP_MESSAGE_TYPE_GET:	          /* todo */			                            break;
+    case HTTP_MESSAGE_TYPE_HEAD:	        /* todo */			                            break;
 		case HTTP_MESSAGE_TYPE_POST:          /* todo */		                              break;
 		case HTTP_MESSAGE_TYPE_200_OK:        sResult << sVersion << " " << "200 OK\r\n"; break;
 	  case HTTP_MESSAGE_TYPE_404_NOT_FOUND:	/* todo */			                            break;
@@ -207,6 +208,21 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
     m_sRequest = rxGET.Match(1);			
   }
 
+  /* Message HEAD */
+  RegEx rxHEAD("HEAD +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
+  if(rxHEAD.Search(p_sMessage.c_str()))
+  {
+    m_HTTPMessageType = HTTP_MESSAGE_TYPE_HEAD;
+
+    string sVersion = rxHEAD.Match(2);
+    if(sVersion.compare("0"))		
+      m_HTTPVersion = HTTP_VERSION_1_0;		
+    else if(sVersion.compare("1"))		
+      m_HTTPVersion = HTTP_VERSION_1_1;
+
+    m_sRequest = rxHEAD.Match(1);			
+  }
+  
   /* Message POST */
   RegEx rxPOST("POST +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
   if(rxPOST.Search(p_sMessage.c_str()))

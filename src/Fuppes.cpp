@@ -283,23 +283,27 @@ bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMe
   HTTP_MESSAGE_TYPE nMsgType = pMessageIn->GetMessageType();
   switch(nMsgType)
   {
-  case HTTP_MESSAGE_TYPE_GET:
-    fRet = HandleHTTPGet(pMessageIn, pMessageOut);
-    break;
-  case HTTP_MESSAGE_TYPE_POST:
-    fRet = HandleHTTPPost(pMessageIn, pMessageOut);
-    break;
-  case HTTP_MESSAGE_TYPE_200_OK:
-    break;
-  case HTTP_MESSAGE_TYPE_404_NOT_FOUND:
-    break;
-  default: break;
+    case HTTP_MESSAGE_TYPE_GET:
+      fRet = HandleHTTPGetOrHead(pMessageIn, pMessageOut);
+      break;
+    case HTTP_MESSAGE_TYPE_HEAD:
+      fRet = HandleHTTPGetOrHead(pMessageIn, pMessageOut);
+      break;
+    case HTTP_MESSAGE_TYPE_POST:
+      fRet = HandleHTTPPost(pMessageIn, pMessageOut);
+      break;
+    case HTTP_MESSAGE_TYPE_200_OK:
+      break;
+    case HTTP_MESSAGE_TYPE_404_NOT_FOUND:
+      break;
+    default:
+      break;
   }
 
   return fRet;
 }
 
-bool CFuppes::HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
+bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
 {
   /* Get request */
   std::string strRequest = pMessageIn->GetRequest();
@@ -341,10 +345,14 @@ bool CFuppes::HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
     if(pItem && FileExists(pItem->GetFileName()))
     {
       pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, HTTP_CONTENT_TYPE_AUDIO_MPEG);
-      pMessageOut->LoadContentFromFile(pItem->GetFileName());    
-      stringstream sLog;
-      sLog << "sending audio file " << pItem->GetFileName();
-      CSharedLog::Shared()->Log(LOGNAME, sLog.str());
+      /* HEAD response MUST NOT send content */
+      if(pMessageIn->GetMessageType() == HTTP_MESSAGE_TYPE_GET)
+      {
+        pMessageOut->LoadContentFromFile(pItem->GetFileName());    
+        stringstream sLog;
+        sLog << "sending audio file " << pItem->GetFileName();
+        CSharedLog::Shared()->Log(LOGNAME, sLog.str());
+      }
       return true;
     }
     else

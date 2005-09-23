@@ -1,5 +1,6 @@
-Version 0.2 (2005-09-??)
+Version 0.1.5 (2005-09-??)
   * fixed device time-out bug
+  * implemented HTTP 1.1 HEAD-request handling
 
 Version 0.1.4 (2005-09-21)
   * fixed timer bug
@@ -7,7 +8,7 @@ Version 0.1.4 (2005-09-21)
   * improved thread handling
   * (win32) updated pcre-lib from 5.0.1779.29128 to 6.3.2058.19251
   * enhanced webinterface
-  
+
 Version 0.1.3 (2005-09-03)
   * alive message is repeatedly sent every 3 mins
   * remote device timeout

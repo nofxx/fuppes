@@ -47,32 +47,28 @@ class CUPnPBrowse;
 
 typedef enum tagHTTP_VERSION
 {
-	HTTP_VERSION_INVALID            = -1,
   HTTP_VERSION_UNKNOWN            =  0,
   HTTP_VERSION_1_0                =  1,
-	HTTP_VERSION_1_1                =  2,
-  HTTP_VERSION_MAX                =  3
+	HTTP_VERSION_1_1                =  2
 }HTTP_VERSION;
 
 typedef enum tagHTTP_MESSAGE_TYPE
 {
-  HTTP_MESSAGE_TYPE_INVALID       = -1,
   HTTP_MESSAGE_TYPE_UNKNOWN       =  0,
   HTTP_MESSAGE_TYPE_GET           =  1,
-	HTTP_MESSAGE_TYPE_POST          =  2,
-	HTTP_MESSAGE_TYPE_200_OK        =  3,
-	HTTP_MESSAGE_TYPE_404_NOT_FOUND =  4,
-  HTTP_MESSAGE_TYPE_MAX           =  5
+  HTTP_MESSAGE_TYPE_HEAD          =  2,
+	HTTP_MESSAGE_TYPE_POST          =  3,
+	HTTP_MESSAGE_TYPE_200_OK        =  4,
+	HTTP_MESSAGE_TYPE_404_NOT_FOUND =  5
 }HTTP_MESSAGE_TYPE;
 
 typedef enum tagHTTP_CONTENT_TYPE
 {
-	HTTP_CONTENT_TYPE_INVALID       = -1,
   HTTP_CONTENT_TYPE_UNKNOWN       =  0,
   HTTP_CONTENT_TYPE_TEXT_HTML     =  1,
 	HTTP_CONTENT_TYPE_TEXT_XML      =  2,
 	HTTP_CONTENT_TYPE_AUDIO_MPEG    =  3,
-  HTTP_CONTENT_TYPE_IMAGE_PNG     = 4
+  HTTP_CONTENT_TYPE_IMAGE_PNG     =  4
 }HTTP_CONTENT_TYPE;
 
 /*===============================================================================

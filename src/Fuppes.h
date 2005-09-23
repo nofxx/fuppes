@@ -135,7 +135,7 @@ private:
   void OnSSDPCtrlReceiveMsg(CSSDPMessage*);
   bool OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
 
-  bool HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
+  bool HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
   bool HandleHTTPPost(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
 	
   void HandleSSDPAlive(CSSDPMessage* pMessage);
