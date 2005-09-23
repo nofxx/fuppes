@@ -165,13 +165,18 @@ std::string CHTTPMessage::GetHeaderAsString()
 	switch(m_HTTPContentType)
 	{
 		case HTTP_CONTENT_TYPE_TEXT_HTML:  sContentType = "text/html";  break;
-		case HTTP_CONTENT_TYPE_TEXT_XML:   sContentType = "text/xml";   break;
+		case HTTP_CONTENT_TYPE_TEXT_XML:   sContentType = "text/xml; charset=\"utf-8\"";   break;
 		case HTTP_CONTENT_TYPE_AUDIO_MPEG: sContentType = "audio/mpeg"; break;
     case HTTP_CONTENT_TYPE_IMAGE_PNG : sContentType = "image/png";  break;      
     default:                           ASSERT(0);                   break;	
 	}
+
+	sResult << "CONTENT-TYPE: " << sContentType << "\r\n";	
+	sResult << "SERVER: Windows/2000 UPnP/1.0 fuppes/0.1.5 \r\n";
+	//sResult << "DATE: \r\n";
+	sResult << "EXT: \r\n";
 	
-	sResult << "CONTENT-TYPE: " << sContentType << "\r\n\r\n";
+	sResult << "\r\n";
 	return sResult.str();
 }
 

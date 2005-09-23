@@ -50,6 +50,8 @@ const string LOGNAME = "HTTPServer";
 fuppesThreadCallback AcceptLoop(void *arg);
 fuppesThreadCallback SessionLoop(void *arg);
 
+fuppesThreadMutex ReceiveMutex;
+
 /*===============================================================================
  CLASS CHTTPServer
 ===============================================================================*/
@@ -63,6 +65,7 @@ fuppesThreadCallback SessionLoop(void *arg);
 CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 {
 	accept_thread = (fuppesThread)NULL;
+	fuppesThreadInitMutex(&ReceiveMutex);
   	
   /* create socket */
 	m_Socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -92,6 +95,7 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 CHTTPServer::~CHTTPServer()
 {
   Stop();
+	fuppesThreadDestroyMutex(&ReceiveMutex);
 }
 
 /*===============================================================================
@@ -251,35 +255,47 @@ fuppesThreadCallback SessionLoop(void *arg)
     /* logging */
     stringstream sMsg;
     sMsg << "bytes received: " << nBytesReceived;
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
+    CSharedLog::Shared()->Log(LOGNAME, sMsg.str());
     
     /* zero-terminate buffer */
     szBuffer[nBytesReceived] = '\0';    
     
+    cout << szBuffer << endl << endl << endl;
+    
     /* send response */
     CHTTPMessage ResponseMsg;
+  	fuppesThreadLockMutex(&ReceiveMutex);
     bool bResult = pSession->GetHTTPServer()->CallOnReceive(szBuffer, &ResponseMsg);
-    if(bResult)	
+  	fuppesThreadUnlockMutex(&ReceiveMutex);    
+    if(!bResult)
+      cout << "ERROR parsing HTTP Message" << endl;
+    if(bResult)
     {
-      CSharedLog::Shared()->ExtendedLog(LOGNAME, "send response");     
+      CSharedLog::Shared()->Log(LOGNAME, "send response");     
       
       /* send binary content */
       if(ResponseMsg.GetBinContentLength() > 0)
       {
+        CSharedLog::Shared()->Log(LOGNAME, "send BIN response");     
         send(pSession->GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);            
         send(pSession->GetConnection(), ResponseMsg.GetBinContent(), ResponseMsg.GetBinContentLength(), 0);                        
       }
       /* send text content */
       else
       {
+        CSharedLog::Shared()->Log(LOGNAME, "send TEXT response"); 
+        cout << ResponseMsg.GetHeaderAsString() << endl;    
+        cout << ResponseMsg.GetMessageAsString().length() - ResponseMsg.GetHeaderAsString().length() << endl;
+        
         send(pSession->GetConnection(), ResponseMsg.GetMessageAsString().c_str(), (int)strlen(ResponseMsg.GetMessageAsString().c_str()), 0);
       }
       
-      /* close connection */
-      upnpSocketClose(pSession->GetConnection());
+      CSharedLog::Shared()->Log(LOGNAME, "DONE send response");     
     }
-    
   }
+  
+  /* close connection */
+  upnpSocketClose(pSession->GetConnection());    
   
   /* exit thread */
   pSession->m_bIsTerminated = true;
