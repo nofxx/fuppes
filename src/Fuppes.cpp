@@ -107,7 +107,8 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID, IFuppes* pPresen
   m_pSSDPCtrl->send_msearch();
   
   /* start alive timer */
-  m_pMediaServer->TimerStart(840); // 900 sec = 15 min
+  m_pMediaServer->GetTimer()->SetInterval(840);  // 900 sec = 15 min
+  m_pMediaServer->GetTimer()->Start();
 }
 
 /** destructor
@@ -182,7 +183,7 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
       m_RemoteDevices.erase(pSender->GetUUID());
       
       /* stop the deivce's timer and */
-      pSender->TimerStop();      
+      pSender->GetTimer()->Stop();      
       /* push it to the list containing timed out devices */
       m_TimedOutDevices.push_back(pSender);
     }
@@ -396,7 +397,7 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
   /* known device */
   if(m_RemoteDeviceIterator != m_RemoteDevices.end())
   {
-    m_RemoteDevices[pMessage->GetUUID()]->TimerReset();
+    m_RemoteDevices[pMessage->GetUUID()]->GetTimer()->Reset();
     
     std::stringstream sMsg;
     sMsg << "received \"Notify-Alive\" from known device id: " << pMessage->GetUUID();      
@@ -421,7 +422,8 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
       CSharedLog::Shared()->Log(LOGNAME, sMsg.str());      
       
       m_RemoteDevices[pMessage->GetUUID()] = pDevice;
-      pDevice->TimerStart(900); // 900 sec = 15 min
+      pDevice->GetTimer()->SetInterval(900);  // 900 sec = 15 min
+      pDevice->GetTimer()->Start();
     }
     else      
       delete pDevice;

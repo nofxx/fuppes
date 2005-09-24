@@ -179,9 +179,9 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
     "FUPPES - Free UPnP Entertainment Service<br />" << endl <<
     "<span style=\"font-size: small; margin-left: 10px; padding: 0px;\">" <<
     "Version: " << CSharedConfig::Shared()->GetAppVersion() << "&nbsp;&nbsp;&nbsp;" <<
-    "Host: " << CSharedConfig::Shared()->GetHostname() << "&nbsp;&nbsp;&nbsp;" <<
+    "Host: "    << CSharedConfig::Shared()->GetHostname() << "&nbsp;&nbsp;&nbsp;" <<
     "Address: " << CSharedConfig::Shared()->GetIPv4Address() <<
-    "</span>" << endl <<
+    "</span>"   << endl <<
     "</p>" << endl;
   
   sResult << "</div>" << endl;
@@ -250,7 +250,7 @@ std::string CPresentationHandler::GetIndexHTML()
   {
     //sResult << "FUPPES Instance No. " << i + 1 << "<br />";    
     //sResult << "IP-Address: " << ((CFuppes*)m_vFuppesInstances[i])->GetIPAddress() << "<br />";
-    sResult << "HTTP-Server URL: " << ((CFuppes*)m_vFuppesInstances[i])->GetHTTPServerURL() << "<br />";
+    //sResult << "HTTP-Server URL: " << ((CFuppes*)m_vFuppesInstances[i])->GetHTTPServerURL() << "<br />";
     sResult << "UUID: " << ((CFuppes*)m_vFuppesInstances[i])->GetUUID() << "<br />";    
     //sResult << "<br />";
     sResult << "<br />";
@@ -283,16 +283,23 @@ std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes)
 {
   stringstream sResult;
 
-  /* Find devices and add them to the list */
   for(unsigned int i = 0; i < pFuppes->GetRemoteDevices().size(); i++)
   {
+    sResult << 
+      "<table border=\"1\" style=\"font-size: 10pt;\">" <<
+        "<tbody>";               
+               
     CUPnPDevice* pDevice = pFuppes->GetRemoteDevices()[i];
-    sResult << "<p>No. " << i + 1 << "<br />";
-    sResult << "Name: " << pDevice->GetFriendlyName() << "<br />";
-    sResult << "UUID: " << pDevice->GetUUID() << "<br />";
-    sResult << "Status: " << "<i>todo</i>" << "</p>";
+    sResult << "<tr><th colspan=\"2\">"    << pDevice->GetFriendlyName() << "</th></tr>" << endl;
+    sResult << "<tr><td>UUID</td><td>"     << pDevice->GetUUID() << "</td></tr>" << endl;
+    sResult << "<tr><td>Time Out</td><td>" << pDevice->GetTimer()->GetCount() / 60 << "min. " << pDevice->GetTimer()->GetCount() % 60 << "sec.</td></tr>" << endl;
+    //sResult << "<tr><td>Status</td><td>"   << "<i>todo</i>" << "</td></tr>" << endl;
+    
+    sResult << 
+        "<tbody>" <<
+      "</table><br />";    
   }
-
+  
   return sResult.str();
 }
 
