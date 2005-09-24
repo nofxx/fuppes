@@ -1,5 +1,6 @@
 Version 0.1.5 (2005-09-??)
   * fixed device time-out bug
+  * fixed socket reuse bug (win32 only)
   * implemented HTTP 1.1 HEAD-request handling
 
 Version 0.1.4 (2005-09-21)
