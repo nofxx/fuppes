@@ -102,8 +102,14 @@ void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, HTTP_CONTENT_TYPE nCtn
 
 bool CHTTPMessage::SetMessage(std::string p_sMessage)
 {
+  cout << "SET MESSAGE" << endl;
+  fflush(stdout);
+     
   CMessageBase::SetMessage(p_sMessage);  
   CSharedLog::Shared()->DebugLog(LOGNAME, p_sMessage);  
+
+  cout << "IN SET MESSAGE" << endl;
+  fflush(stdout);
   
   return BuildFromString(p_sMessage);
 }
@@ -172,7 +178,7 @@ std::string CHTTPMessage::GetHeaderAsString()
 	}
 
 	sResult << "CONTENT-TYPE: " << sContentType << "\r\n";	
-	sResult << "SERVER: Windows/2000 UPnP/1.0 fuppes/0.1.5 \r\n";
+	//sResult << "SERVER: Windows/2000 UPnP/1.0 fuppes/0.1.5 \r\n";
 	//sResult << "DATE: \r\n";
 	sResult << "EXT: \r\n";
 	
@@ -197,6 +203,11 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
   m_nBinContentLength = 0;
   m_sMessage = p_sMessage;
   m_sContent = p_sMessage;  
+  
+  bool bResult = false;
+
+  cout << "BUILD FROM STR" << endl;
+  fflush(stdout);
 
   /* Message GET */
   RegEx rxGET("GET +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
@@ -211,6 +222,7 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
       m_HTTPVersion = HTTP_VERSION_1_1;
 
     m_sRequest = rxGET.Match(1);			
+    bResult = true;
   }
 
   /* Message HEAD */
@@ -226,6 +238,7 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
       m_HTTPVersion = HTTP_VERSION_1_1;
 
     m_sRequest = rxHEAD.Match(1);			
+    bResult = true;
   }
   
   /* Message POST */
@@ -242,10 +255,13 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
 
     m_sRequest = rxPOST.Match(1);			
 
-    ParsePOSTMessage(p_sMessage);
+    bResult = ParsePOSTMessage(p_sMessage);
   }
   
-  return true;
+  cout << "END BUILD FROM STR" << endl;
+  fflush(stdout);  
+  
+  return bResult;
 }
 
 bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
@@ -276,13 +292,16 @@ bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
  HELPER
 ===============================================================================*/
 
-void CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
+bool CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
 {
   /*POST /UPnPServices/ContentDirectory/control HTTP/1.1
     Host: 192.168.0.3:32771
     SOAPACTION: "urn:schemas-upnp-org:service:ContentDirectory:1#Browse"
     CONTENT-TYPE: text/xml ; charset="utf-8"
     Content-Length: 467*/
+  
+  cout << "BEGIN PARSE POST" << endl;
+  fflush(stdout);    
   
   RegEx rxSOAP("SOAPACTION: *\"(.+)\"", PCRE_CASELESS);
 	if(rxSOAP.Search(p_sMessage.c_str()))
@@ -291,17 +310,41 @@ void CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
 		//cout << "[HTTPMessage] SOAPACTION " << sSOAP << endl;
 	}
       
+  cout << "IN PARSE POST" << endl;
+  fflush(stdout);        
+      
   /* Content length */
   RegEx rxContentLength("CONTENT-LENGTH: *(\\d+)", PCRE_CASELESS);
   if(rxContentLength.Search(p_sMessage.c_str()))
   {
     string sContentLength = rxContentLength.Match(1);
+    
+      cout << "2. IN PARSE POST - " << sContentLength << endl;
+    fflush(stdout);        
+    
     m_nContentLength = std::atoi(sContentLength.c_str());
     //cout << "[HTTPMessage] CONTENT-LENGTH  " << m_nContentLength << endl;
+    
+    cout << "3. IN PARSE POST" << endl;
+    fflush(stdout);   
+  }
+
+    cout << "4. IN PARSE POST :: " << m_nContentLength << "-" << p_sMessage.length() << endl;
+    fflush(stdout);   
+  
+  if(m_nContentLength >= p_sMessage.length())
+  {
+    cout << "ERROR MSG TOO SMALL" << endl;
+    fflush(stdout);                         
+    return false;
   }
   
   m_sContent = p_sMessage.substr(p_sMessage.length() - m_nContentLength, m_nContentLength);
   
+  cout << "END PARSE POST" << endl;
+  fflush(stdout);
+  
+  return true;
 }
 
 /* <\PRIVATE> */

@@ -74,7 +74,7 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
   
   /* set socket non blocking */
   if(!fuppesSocketSetNonBlocking(m_Socket))
-    CSharedLog::Shared()->Error(LOGNAME, "fuppesSocketSetNonBlocking");  
+    CSharedLog::Shared()->Error(LOGNAME, "fuppesSocketSetNonBlocking");
   
   /* set loacl end point */
 	local_ep.sin_family      = AF_INET;
@@ -240,8 +240,11 @@ fuppesThreadCallback AcceptLoop(void *arg)
     
     /* cleanup closed sessions and sleep am moment */
     pHTTPServer->CleanupSessions();     
-    fuppesSleep(100);
+    fuppesSleep(50);
 	}  
+	  
+	  cout << "ACCEPT END" << endl;
+	  fflush(stdout);
 	  
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "exiting accept loop");
   pHTTPServer->CleanupSessions();
@@ -252,24 +255,47 @@ fuppesThreadCallback SessionLoop(void *arg)
 {
   CHTTPSessionInfo* pSession = (CHTTPSessionInfo*)arg;  
   int  nBytesReceived = 0;
-  char szBuffer[4096];  
+  int  nTryCnt  = 0;
+  int  nRecvCnt = 0;
+  char szBuffer[4096];
+    
+  do {
+    
+    cout << "recv try " << nTryCnt + 1 << endl;
+    fflush(stdout);
+    
+    /* receive message */
+    int nTmpRecv = 0;
+    nRecvCnt = 0;
+    while((nTmpRecv = recv(pSession->GetConnection(), szBuffer, 4096, 0)) != -1)
+    {
+      if(nRecvCnt == 10)
+        break;
+                    
+      if(nTmpRecv == 0)      
+        nRecvCnt++;    
+      else
+        nRecvCnt = 0;
+                    
+      cout << "recv: "  << nRecvCnt << " - "<< nBytesReceived << endl;
+      fflush(stdout);
+      nBytesReceived += nTmpRecv;
+    }
+    nTryCnt++;
+    
+    cout << "recv try " << nTryCnt << " end" << endl;
+    fflush(stdout);
+    
+  } while((nBytesReceived == -1) && (nTryCnt < 3));
   
-  /* receive message */
-  nBytesReceived = recv(pSession->GetConnection(), szBuffer, 4096, 0);  
   /*cout << "RECEIVED: " << nBytesReceived << endl;
   fflush(stdout);*/
-  
-  if(nBytesReceived == -1)
-  {
-    cout << "RECEIVED -1 TRY AGAIN" << endl;
-    fflush(stdout);
-    nBytesReceived = recv(pSession->GetConnection(), szBuffer, 4096, 0);  
-    cout << "2. RECEIVED: " << nBytesReceived << endl;
-    fflush(stdout);
-  }
-  
 
-  if(nBytesReceived != -1)			
+  /* build received message */
+  bool bResult = false;
+  CHTTPMessage ReceivedMessage;
+  
+  if(nBytesReceived > 0)			
   {
     /* logging */
     stringstream sMsg;
@@ -279,18 +305,31 @@ fuppesThreadCallback SessionLoop(void *arg)
     /* zero-terminate buffer */
     szBuffer[nBytesReceived] = '\0';    
   	                       
-    /* Create message */
-    CHTTPMessage ReceivedMessage;
-    ReceivedMessage.SetMessage(szBuffer);
-
-    /* send response */
-    CHTTPMessage ResponseMsg;
-
-  	cout << "BUILD RESPONSE" << endl;
+  	cout << nBytesReceived << " BUILD RESPONSE" << endl;
     fflush(stdout);
+
+    /* Create message */    
+    bResult = ReceivedMessage.SetMessage(szBuffer);
+  }
+  	
+  	cout << "MSG: " << szBuffer << endl;
+  	fflush(stdout);
+  	
+  	if(nBytesReceived == 0)
+  	{
+  	  cout << "ALERT" << endl;
+  	  fflush(stdout);
+    }
+
+
+  /* build response message and send it */
+  if(bResult)
+  {
+    /* build response */
+    CHTTPMessage ResponseMsg;
   	
   	//fuppesThreadLockMutex(&ReceiveMutex);
-    bool bResult = pSession->GetHTTPServer()->CallOnReceive(&ReceivedMessage, &ResponseMsg);
+    bResult = pSession->GetHTTPServer()->CallOnReceive(&ReceivedMessage, &ResponseMsg);
   	//fuppesThreadUnlockMutex(&ReceiveMutex);    
     if(!bResult)
       cout << "ERROR parsing HTTP Message" << endl;

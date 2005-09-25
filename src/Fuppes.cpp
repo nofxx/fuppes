@@ -298,6 +298,7 @@ bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMe
     case HTTP_MESSAGE_TYPE_404_NOT_FOUND:
       break;
     default:
+        fRet = false;
       break;
   }
 

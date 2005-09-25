@@ -1,13 +1,14 @@
   FUPPES- Free UPnP Entertainment Service
 
-    copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
-    copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
-
   http://fuppes.sourceforge.net/
   http://sourceforge.net/projects/fuppes/
 
+  copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
 
-Read the file 'INSTALL' for instructions to compile and install the software.
+
+For information how to compile and install the software read the file INSTALL
+shipped with this package.
+
 
 dependencies:
   PCRE library (BSD license):
@@ -17,9 +18,14 @@ dependencies:
   libxml2 library (MIT license):
   http://xmlsoft.org/
 
+
 using:
   regex.hpp 1.0 Copyright (c) 2003 Peter Petersen (pp@on-time.de)
   Simple C++ wrapper for PCRE
+
+  BASE64 decoding functions
+  taken from: http://www.adp-gmbh.ch/cpp/common/base64.html
+  modified to handle line breaks
 
 
 The "Free UPnP Entertainment Service" is distributed under the terms of the

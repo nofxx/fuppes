@@ -153,7 +153,7 @@ private:
  HELPER
 ===============================================================================*/    
 
-  void ParsePOSTMessage(std::string);
+  bool ParsePOSTMessage(std::string);
 
 /* <\PRIVATE> */
 
