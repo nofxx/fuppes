@@ -172,13 +172,13 @@ bool CHTTPServer::CallOnReceive(CHTTPMessage* pMessageIn, CHTTPMessage* pMessage
  */
 void CHTTPServer::CleanupSessions()
 {
-  if(m_ThreadList.size() == 0)
+  if(m_ThreadList.empty())
     return;
  
   /* iterate session list */  
   for(m_ThreadListIterator = m_ThreadList.begin(); m_ThreadListIterator != m_ThreadList.end(); m_ThreadListIterator++)
   {
-    if(m_ThreadList.size() == 0)
+    if(m_ThreadList.empty())
       break;
     
     /* and close terminated threads */
@@ -187,9 +187,9 @@ void CHTTPServer::CleanupSessions()
     {
       if(fuppesThreadClose(pInfo->GetThreadHandle()))
       {
-        m_ThreadList.erase(m_ThreadListIterator);
+        m_ThreadListIterator = m_ThreadList.erase(m_ThreadListIterator);
         delete pInfo;
-        m_ThreadListIterator--;
+        //m_ThreadListIterator--;
       }
       else
       {

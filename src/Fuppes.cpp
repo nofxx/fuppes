@@ -147,9 +147,9 @@ void CFuppes::CleanupTimedOutDevices()
   {
     /* and delete timed out devices */
     CUPnPDevice* pTimedOutDevice = *m_TimedOutDevicesIterator;      
-    m_TimedOutDevices.erase(m_TimedOutDevicesIterator);
+    m_TimedOutDevicesIterator = m_TimedOutDevices.erase(m_TimedOutDevicesIterator);
     delete pTimedOutDevice;
-    m_TimedOutDevicesIterator--;    
+    //m_TimedOutDevicesIterator--;    
   }  
 }
 
