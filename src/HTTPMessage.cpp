@@ -102,14 +102,14 @@ void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, HTTP_CONTENT_TYPE nCtn
 
 bool CHTTPMessage::SetMessage(std::string p_sMessage)
 {
-  cout << "SET MESSAGE" << endl;
-  fflush(stdout);
+  /*cout << "SET MESSAGE" << endl;
+  fflush(stdout);*/
      
   CMessageBase::SetMessage(p_sMessage);  
   CSharedLog::Shared()->DebugLog(LOGNAME, p_sMessage);  
 
-  cout << "IN SET MESSAGE" << endl;
-  fflush(stdout);
+  /*cout << "IN SET MESSAGE" << endl;
+  fflush(stdout);*/
   
   return BuildFromString(p_sMessage);
 }
@@ -206,8 +206,8 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
   
   bool bResult = false;
 
-  cout << "BUILD FROM STR" << endl;
-  fflush(stdout);
+  /*cout << "BUILD FROM STR" << endl;
+  fflush(stdout);*/
 
   /* Message GET */
   RegEx rxGET("GET +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
@@ -258,8 +258,8 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
     bResult = ParsePOSTMessage(p_sMessage);
   }
   
-  cout << "END BUILD FROM STR" << endl;
-  fflush(stdout);  
+  /*cout << "END BUILD FROM STR" << endl;
+  fflush(stdout);  */
   
   return bResult;
 }
@@ -300,8 +300,8 @@ bool CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
     CONTENT-TYPE: text/xml ; charset="utf-8"
     Content-Length: 467*/
   
-  cout << "BEGIN PARSE POST" << endl;
-  fflush(stdout);    
+  /*cout << "BEGIN PARSE POST" << endl;
+  fflush(stdout);    */
   
   RegEx rxSOAP("SOAPACTION: *\"(.+)\"", PCRE_CASELESS);
 	if(rxSOAP.Search(p_sMessage.c_str()))
@@ -310,8 +310,8 @@ bool CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
 		//cout << "[HTTPMessage] SOAPACTION " << sSOAP << endl;
 	}
       
-  cout << "IN PARSE POST" << endl;
-  fflush(stdout);        
+  /*cout << "IN PARSE POST" << endl;
+  fflush(stdout);        */
       
   /* Content length */
   RegEx rxContentLength("CONTENT-LENGTH: *(\\d+)", PCRE_CASELESS);
@@ -319,18 +319,18 @@ bool CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
   {
     string sContentLength = rxContentLength.Match(1);
     
-      cout << "2. IN PARSE POST - " << sContentLength << endl;
-    fflush(stdout);        
+    /*  cout << "2. IN PARSE POST - " << sContentLength << endl;
+    fflush(stdout);        */
     
     m_nContentLength = std::atoi(sContentLength.c_str());
     //cout << "[HTTPMessage] CONTENT-LENGTH  " << m_nContentLength << endl;
     
-    cout << "3. IN PARSE POST" << endl;
-    fflush(stdout);   
+    /*cout << "3. IN PARSE POST" << endl;
+    fflush(stdout);   */
   }
 
-    cout << "4. IN PARSE POST :: " << m_nContentLength << "-" << p_sMessage.length() << endl;
-    fflush(stdout);   
+    /*cout << "4. IN PARSE POST :: " << m_nContentLength << "-" << p_sMessage.length() << endl;
+    fflush(stdout);   */
   
   if(m_nContentLength >= p_sMessage.length())
   {
@@ -341,8 +341,8 @@ bool CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
   
   m_sContent = p_sMessage.substr(p_sMessage.length() - m_nContentLength, m_nContentLength);
   
-  cout << "END PARSE POST" << endl;
-  fflush(stdout);
+  /*cout << "END PARSE POST" << endl;
+  fflush(stdout);*/
   
   return true;
 }
