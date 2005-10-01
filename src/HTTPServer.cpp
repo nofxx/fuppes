@@ -30,6 +30,7 @@
 #include "HTTPServer.h"
 #include "HTTPMessage.h"
 #include "SharedLog.h"
+#include "SharedConfig.h"
 #include "RegEx.h"
 
 #include <iostream>
@@ -80,7 +81,7 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
   /* set loacl end point */
 	local_ep.sin_family      = AF_INET;
 	local_ep.sin_addr.s_addr = inet_addr(p_sIPAddress.c_str());
-	local_ep.sin_port				 = htons(0); // htons(5080);	
+	local_ep.sin_port				 = htons(CSharedConfig::Shared()->GetHTTPPort());
 	memset(&(local_ep.sin_zero), '\0', 8); // fill the rest of the structure with zero
 	
   /* try to bind the socket */

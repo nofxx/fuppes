@@ -1,8 +1,9 @@
-Version 0.1.5 (2005-09-??)
+Version 0.1.5 (2005-10-??)
   * fixed device time-out bug
   * fixed HTTP-session handling
   * fixed socket reuse bug (win32 only)
   * implemented HTTP 1.1 HEAD-request handling
+  * IP-address and HTTP-port configurable
 
 Version 0.1.4 (2005-09-21)
   * fixed timer bug

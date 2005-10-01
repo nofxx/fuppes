@@ -87,7 +87,8 @@ CSharedConfig* CSharedConfig::Shared()
 
 CSharedConfig::CSharedConfig()
 {
-  m_sUUID = GenerateUUID();  
+  m_sUUID     = GenerateUUID();  
+  m_nHTTPPort = 0;
 }
 
 /* <\PROTECTED> */
@@ -166,8 +167,8 @@ int CSharedConfig::SharedDirCount()
 
 bool CSharedConfig::ReadConfigFile()
 {
-  xmlDocPtr pDoc;  
-  bool      bResult   = false;
+  xmlDocPtr pDoc    = NULL;  
+  bool      bResult = false;
   stringstream sFileName;
   stringstream sDir;
   
@@ -213,25 +214,61 @@ bool CSharedConfig::ReadConfigFile()
     xmlNode* pTmpNode  = NULL;   
     pRootNode = xmlDocGetRootElement(pDoc);
     
-    for(pTmpNode = pRootNode; pTmpNode; pTmpNode = pTmpNode->next)
+    
+    for(pTmpNode = pRootNode->children->next; pTmpNode; pTmpNode = pTmpNode->next)
     { 
-      xmlNode* pDirsNode = NULL;
-      pDirsNode = pTmpNode->children->next;     
+      string sName = (char*)pTmpNode->name;
       
-      xmlNode* pDirNode = NULL;
-      pDirNode = pDirsNode->children;
-      for(pDirNode = pDirNode->next; pDirNode; pDirNode = pDirNode->next)
+      /* shared_directories */
+      if(sName.compare("shared_directories") == 0)
       {
-        if(pDirNode->type == XML_ELEMENT_NODE)
+        xmlNode* pDirNode = pTmpNode->children;
+        for(pDirNode = pDirNode->next; pDirNode; pDirNode = pDirNode->next)
         {
-          stringstream sDirName;
-          sDirName << pDirNode->children->content;          
-          m_vSharedDirectories.push_back(sDirName.str());
-          sDirName.str("");
+          if(pDirNode->type == XML_ELEMENT_NODE)
+          {
+            string sDirName = (char*)pDirNode->children->content;          
+            m_vSharedDirectories.push_back(sDirName);
+          }        
         }
       }
-    }
-    
+      
+      /* network_settings */
+      else if(sName.compare("network_settings") == 0)
+      {
+        xmlNode* pNetNode = NULL;
+        for(pNetNode = pTmpNode->children->next; pNetNode; pNetNode = pNetNode->next)
+        {
+          string sNet = (char*)pNetNode->name;
+          
+          /* ip address */
+          if(sNet.compare("ip_address") == 0)
+          {
+            if(pNetNode->children)
+            {
+              string sIP = (char*)pNetNode->children->content;
+              if(sIP.compare("0") != 0)
+                m_sIP = sIP;
+            }           
+          }
+          
+          /* http_port */
+          else if(sNet.compare("http_port") == 0)
+          {
+            if(pNetNode->children)
+            {
+              string sPort = (char*)pNetNode->children->content;
+              if(sPort.compare("0") != 0)
+                m_nHTTPPort = atoi(sPort.c_str());
+            }
+          }
+
+          
+        }
+      }
+      /* end network_settings */
+      
+    }   
     xmlFreeDoc(pDoc);
   }  
   xmlCleanupParser();  
@@ -246,7 +283,7 @@ bool CSharedConfig::ResolveHostAndIP()
   {    
     m_sHostname = name;
     
-    if(!ResolveIPByHostname() || m_sIP == "127.0.0.1")
+    if(((m_sIP == "") && !ResolveIPByHostname()) || m_sIP == "127.0.0.1")
     {
       return ResolveIPByInterface("eth0");    
     }
@@ -337,7 +374,21 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
       xmlTextWriterEndElement(pWriter); 
   
     /* end shared_directories */
-    xmlTextWriterEndElement(pWriter);	  
+    xmlTextWriterEndElement(pWriter);
+    
+    /* network_settings */
+    xmlTextWriterStartElement(pWriter, BAD_CAST "network_settings");
+        
+      xmlTextWriterWriteComment(pWriter, BAD_CAST "empty or 0 = automatic detection");
+      xmlTextWriterStartElement(pWriter, BAD_CAST "ip_address");
+      xmlTextWriterEndElement(pWriter); 
+      
+      xmlTextWriterWriteComment(pWriter, BAD_CAST "empty or 0 = random port");
+      xmlTextWriterStartElement(pWriter, BAD_CAST "http_port");
+      xmlTextWriterEndElement(pWriter); 
+  
+    /* end network_settings */
+    xmlTextWriterEndElement(pWriter);	     
   
 	/* end fuppes_config */
 	xmlTextWriterEndElement(pWriter);	
