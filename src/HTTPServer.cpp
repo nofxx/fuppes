@@ -160,9 +160,6 @@ bool CHTTPServer::CallOnReceive(CHTTPMessage* pMessageIn, CHTTPMessage* pMessage
 
   if(m_pReceiveHandler != NULL)
   {
-    /*cout << "call on receive" << endl;
-    fflush(stdout);*/
-  
     /* Parse message */
     return m_pReceiveHandler->OnHTTPServerReceiveMsg(pMessageIn, pMessageOut);
   }
@@ -192,14 +189,7 @@ void CHTTPServer::CleanupSessions()
         m_ThreadListIterator = m_ThreadList.erase(m_ThreadListIterator);
         delete pInfo;
         //m_ThreadListIterator--;
-      }
-      else
-      {
-          cout << "ERROR " << endl;
-          fflush(stdout);
-          break;
-      }
-      
+      }      
     }
   }    
 }
@@ -254,12 +244,11 @@ fuppesThreadCallback SessionLoop(void *arg)
 {
   CHTTPSessionInfo* pSession = (CHTTPSessionInfo*)arg;  
   int   nBytesReceived = 0;
-  int   nTryCnt  = 0;
   int   nRecvCnt = 0;
   char  szBuffer[4096];    
-  char* szMsg;
+  char* szMsg = NULL;
     
-  int nContentLength = 0;
+  unsigned int nContentLength = 0;
   CHTTPMessage ReceivedMessage;        
   bool bDoReceive = true;
       
@@ -272,11 +261,11 @@ fuppesThreadCallback SessionLoop(void *arg)
                    
     /* receive */     
     nTmpRecv = recv(pSession->GetConnection(), szBuffer, 4096, 0);
-    cout << "new: " << nTmpRecv << " have: " << nBytesReceived << endl;
-    fflush(stdout);
+    /*cout << "new: " << nTmpRecv << " have: " << nBytesReceived << endl;
+    fflush(stdout);*/
     if(nTmpRecv == -1)
     {
-      cout << "ERROR :: lost connection" << endl;
+      CSharedLog::Shared()->Error(LOGNAME, "lost connection");
       bDoReceive = false;
       break;
     }                  
@@ -315,8 +304,8 @@ fuppesThreadCallback SessionLoop(void *arg)
     unsigned int nPos = sMsg.find("\r\n\r\n");  
     if(nPos != string::npos)
     {
-      cout << "full header" << endl;
-      fflush(stdout);              
+      /*cout << "full header" << endl;
+      fflush(stdout);*/
             
       sHeader = sMsg.substr(0, nPos);
       nPos += string("\r\n\r\n").length();
@@ -324,8 +313,7 @@ fuppesThreadCallback SessionLoop(void *arg)
     }
     else
     {
-      cout << "WARNING :: did not received the full header. try again. " << nRecvCnt << endl;
-      fflush(stdout);
+      CSharedLog::Shared()->Warning(LOGNAME, "did not received the full header.");
       fuppesSleep(100);
       nRecvCnt++;
       continue;
@@ -342,24 +330,19 @@ fuppesThreadCallback SessionLoop(void *arg)
     /* check if we received the full content */
     if(sContent.length() < nContentLength)
     {
-      cout << "received less data then given in CONTENT-LENGTH" << endl;
+      stringstream sLog;
+      sLog << "received less data then given in CONTENT-LENGTH. should: " << nContentLength << " have: " << sContent.length();
+      CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
       continue;
     }
     else
     {
-      cout << "received full content - should: " << nContentLength << " have: " << sContent.length() << endl;
-      if (sContent.length() < 10)
-        cout << sContent << endl;
-        
-      fflush(stdout);
+      /* full content */
       bDoReceive = false;
     }
                   
     if(nTmpRecv == 0)      
-      nRecvCnt++;                
-                  
-    cout << "recv: "  << nRecvCnt << " - "<< nBytesReceived << endl;
-    fflush(stdout);
+      nRecvCnt++;    
   }
   /* end receive */  
 
@@ -377,57 +360,34 @@ fuppesThreadCallback SessionLoop(void *arg)
     /* Create message */    
     bResult = ReceivedMessage.SetMessage(szMsg);
   }
- 	else
- 	{
-	  cout << "ALERT :: bytes Received == 0" << endl;
-	  fflush(stdout);
-  }
 
   /* build response message and send it */
   if(bResult)
   {
     /* build response */
-    CHTTPMessage ResponseMsg;
-  	
-  	//fuppesThreadLockMutex(&ReceiveMutex);
-    bResult = pSession->GetHTTPServer()->CallOnReceive(&ReceivedMessage, &ResponseMsg);
-  	//fuppesThreadUnlockMutex(&ReceiveMutex);    
+    CHTTPMessage ResponseMsg;  	  	
+    bResult = pSession->GetHTTPServer()->CallOnReceive(&ReceivedMessage, &ResponseMsg);  	
     if(!bResult)
-      cout << "ERROR parsing HTTP Message" << endl;
+      CSharedLog::Shared()->Error(LOGNAME, "parsing HTTP message");      
     if(bResult)
     {
-      //CSharedLog::Shared()->Log(LOGNAME, "send response");     
-      /*cout << "SEND RESPONSE" << endl;
-      fflush(stdout);*/
+      CSharedLog::Shared()->ExtendedLog(LOGNAME, "send response");
       
       /* send binary content */
       if(ResponseMsg.GetBinContentLength() > 0)
       {
-        //CSharedLog::Shared()->Log(LOGNAME, "send BIN response");     
         send(pSession->GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);            
         send(pSession->GetConnection(), ResponseMsg.GetBinContent(), ResponseMsg.GetBinContentLength(), 0);                        
       }
       /* send text content */
       else
-      {
-        //CSharedLog::Shared()->Log(LOGNAME, "send TEXT response"); 
-        //cout << ResponseMsg.GetHeaderAsString() << endl;    
-        //cout << ResponseMsg.GetMessageAsString().length() - ResponseMsg.GetHeaderAsString().length() << endl;
-        /*cout << "BEGIN SEND: " << ResponseMsg.GetMessageAsString().length() << endl;
-        fflush(stdout);*/
-        
+      {       
         int nSend = 0;
-        nSend = send(pSession->GetConnection(), ResponseMsg.GetMessageAsString().c_str(), (int)strlen(ResponseMsg.GetMessageAsString().c_str()), 0);
-        /*cout << "END SEND " << nSend << endl;
-        fflush(stdout);*/
-      }
-      
-      //CSharedLog::Shared()->Log(LOGNAME, "DONE send response");     
+        nSend = send(pSession->GetConnection(), ResponseMsg.GetMessageAsString().c_str(), (int)strlen(ResponseMsg.GetMessageAsString().c_str()), 0);        
+      }      
     }
   }
-  
-  cout << "done send" << endl << endl;
-  fflush(stdout);  
+
   
   /* close connection */
   upnpSocketClose(pSession->GetConnection());    
