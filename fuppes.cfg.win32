@@ -1,7 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <fuppes_config version="0.1">
+
   <shared_directories>
     <dir>C:\Musik\mp3s\Marillion</dir>
     <dir>C:\Musik\mp3s\Porcupine Tree</dir>
   </shared_directories>
+
+  <network_settings>
+    <!-- empty or 0 = automatic detection -->
+    <ip_address/>
+    <!-- empty or 0 = random port -->
+    <http_port/>
+  </network_settings>
+
 </fuppes_config>
