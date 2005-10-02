@@ -1,4 +1,4 @@
-Version 0.1.5 (2005-10-??)
+Version 0.1.5 (2005-10-02)
   * fixed device time-out bug
   * fixed HTTP-session handling
   * fixed socket reuse bug (win32 only)

@@ -300,49 +300,24 @@ bool CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
     CONTENT-TYPE: text/xml ; charset="utf-8"
     Content-Length: 467*/
   
-  /*cout << "BEGIN PARSE POST" << endl;
-  fflush(stdout);    */
-  
   RegEx rxSOAP("SOAPACTION: *\"(.+)\"", PCRE_CASELESS);
 	if(rxSOAP.Search(p_sMessage.c_str()))
 	{
     string sSOAP = rxSOAP.Match(1);
-		//cout << "[HTTPMessage] SOAPACTION " << sSOAP << endl;
 	}
-      
-  /*cout << "IN PARSE POST" << endl;
-  fflush(stdout);        */
       
   /* Content length */
   RegEx rxContentLength("CONTENT-LENGTH: *(\\d+)", PCRE_CASELESS);
   if(rxContentLength.Search(p_sMessage.c_str()))
   {
-    string sContentLength = rxContentLength.Match(1);
-    
-    /*  cout << "2. IN PARSE POST - " << sContentLength << endl;
-    fflush(stdout);        */
-    
+    string sContentLength = rxContentLength.Match(1);    
     m_nContentLength = std::atoi(sContentLength.c_str());
-    //cout << "[HTTPMessage] CONTENT-LENGTH  " << m_nContentLength << endl;
-    
-    /*cout << "3. IN PARSE POST" << endl;
-    fflush(stdout);   */
   }
-
-    /*cout << "4. IN PARSE POST :: " << m_nContentLength << "-" << p_sMessage.length() << endl;
-    fflush(stdout);   */
   
-  if(m_nContentLength >= p_sMessage.length())
-  {
-    cout << "ERROR MSG TOO SMALL" << endl;
-    fflush(stdout);                         
+  if((unsigned int)m_nContentLength >= p_sMessage.length())                      
     return false;
-  }
   
   m_sContent = p_sMessage.substr(p_sMessage.length() - m_nContentLength, m_nContentLength);
-  
-  /*cout << "END PARSE POST" << endl;
-  fflush(stdout);*/
   
   return true;
 }
