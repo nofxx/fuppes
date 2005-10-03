@@ -35,10 +35,10 @@
 #include <sstream>
 #include <fstream>
 
-//#include <vorbis/codec.h>
-#include <vorbis/vorbisfile.h>
-//#include <lame/lame.h>
+#ifndef DISABLE_TRANSCODING
 #include "Transcoding/LameWrapper.h"
+#include "Transcoding/VorbisWrapper.h"
+#endif
 
 #include "RegEx.h"
 #include "UPnPActionFactory.h"
@@ -376,55 +376,32 @@ fuppesThreadCallback TranscodeLoop(void *arg)
 {
   CTranscodeSessionInfo* pSession = (CTranscodeSessionInfo*)arg;
 	
-  /* init lame wrapper */
+  /* init lame encoder */
   CLameWrapper* pLameWrapper = new CLameWrapper();
   if(!pLameWrapper->LoadLibrary())
-  {
-    pSession->m_pHTTPMessage->m_bIsTranscoding = false; 
-    delete pSession;  
+  {    
+    delete pLameWrapper;
+    delete pSession; 
+    pSession->m_pHTTPMessage->m_bIsTranscoding = false;     
     fuppesThreadExit();
-  }  
+  }
   pLameWrapper->SetBitrate(LAME_BITRATE_320);
   pLameWrapper->Init();	
 
+  /* init vorbis decoder */
+  CVorbisDecoder* pVorbisDecoder = new CVorbisDecoder();
+  if(!pVorbisDecoder->OpenFile(pSession->m_sFileName))
+  {
+    delete pVorbisDecoder;
+    delete pLameWrapper;
+    delete pSession;
+    pSession->m_pHTTPMessage->m_bIsTranscoding = false;
+    fuppesThreadExit();
+  }  
   
-  /* determine endianness (clever trick courtesy of Nicholas Devillard,
-   * (http://www.eso.org/~ndevilla/endian/) */
-  int testvar = 1, endian;
-  if(*(char *)&testvar)
-    endian = 0;  // little endian
-  else
-    endian = 1;  // big endian	
-	
-  OggVorbis_File vf;	
-  FILE* ogg_file;
-  if ((ogg_file = fopen(pSession->m_sFileName.c_str(), "r")) == NULL)
-    fprintf(stderr, "Cannot open %s\n", pSession->m_sFileName.c_str()); 
-	
-  if(ov_open(ogg_file, &vf, NULL, 0) < 0) {
-      fprintf(stderr,"Input does not appear to be an Ogg bitstream.\n");      
-  }	 
-
-  vorbis_info *vi=ov_info(&vf,-1);
-   /*
-    char **ptr=ov_comment(&vf,-1)->user_comments;
-    while(*ptr){
-      fprintf(stderr,"%s\n",*ptr);
-      ++ptr;
-    }
-    fprintf(stderr,"\nBitstream is %d channel, %ldHz\n",vi->channels,vi->rate);
-    fprintf(stderr,"\nDecoded length: %ld samples\n",
-            (long)ov_pcm_total(&vf,-1));
-    fprintf(stderr,"Encoded by: %s\n\n",ov_comment(&vf,-1)->vendor);  */
-  
-
-  
-  
+   
   /* begin transcode */
-
-  long  samplesRead  = 0;
-  long  bytesRead    = 0;
-  int   bitstream    = 0;  
+  long  samplesRead  = 0;    
   int   nLameRet     = 0;
   int   nAppendCount = 0;
   int   nAppendSize  = 0;
@@ -433,78 +410,69 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   stringstream sLog;
   sLog << "start transcoding \"" << pSession->m_sFileName << "\"" << endl;
   CSharedLog::Shared()->Log(LOGNAME, sLog.str());
+    
+  while(((samplesRead = pVorbisDecoder->DecodeInterleaved((char*)pcmout, sizeof(pcmout))) >= 0) && !pSession->m_pHTTPMessage->m_bBreakTranscoding)
+  {
+    /* encode */
+    nLameRet = pLameWrapper->EncodeInterleaved(pcmout, samplesRead);      
   
-  do {
-    bytesRead = ov_read(&vf, (char*)pcmout, sizeof(pcmout), endian, 2, 1, &bitstream);
-    if (bytesRead == 0)
+    /* append encoded mp3 frames to the append buffer */
+    char* tmpBuf = NULL;
+    if(sAppendBuf != NULL)
     {
-      /* todo: error handling */
+      tmpBuf = new char[nAppendSize];
+      memcpy(tmpBuf, sAppendBuf, nAppendSize);
+      delete[] sAppendBuf;
     }
-    else if (bytesRead < 0) 
-    {
-      /* todo: error handling */
-      /* error in the stream */
-    }
-    else 
-    {
-      /* calc samples an encode */
-      samplesRead = bytesRead / vi->channels / sizeof(short int);	
-      nLameRet = pLameWrapper->EncodeInterleaved(pcmout, samplesRead);      
     
-      /* append encoded mp3 frames to the append buffer */
-      char* tmpBuf = NULL;
-      if(sAppendBuf != NULL)
-      {
-        tmpBuf = new char[nAppendSize];
-        memcpy(tmpBuf, sAppendBuf, nAppendSize);
-        delete[] sAppendBuf;
-      }
-      
-      sAppendBuf = new char[nAppendSize + nLameRet];
-      if(tmpBuf != NULL)
-      {
-        memcpy(sAppendBuf, tmpBuf, nAppendSize);
-        delete[] tmpBuf;
-      }
-      memcpy(&sAppendBuf[nAppendSize], pLameWrapper->GetMp3Buffer(), nLameRet);
-      nAppendSize += nLameRet;
-      nAppendCount++;
-      /* end append */
-      
-      
-      if(nAppendCount == 100)
-      {      
-        /* append encoded audio to bin content buffer */
-        fuppesThreadLockMutex(&TranscodeMutex);
-        
-        /* merge existing bin content and new buffer */
-        char* tmpBuf = new char[pSession->m_pHTTPMessage->m_nBinContentLength + nAppendSize];
-        memcpy(tmpBuf, pSession->m_pHTTPMessage->m_pszBinContent, pSession->m_pHTTPMessage->m_nBinContentLength);
-        memcpy(&tmpBuf[pSession->m_pHTTPMessage->m_nBinContentLength], sAppendBuf, nAppendSize);
-        
-        /* recreate bin content buffer */
-        delete[] pSession->m_pHTTPMessage->m_pszBinContent;
-        pSession->m_pHTTPMessage->m_pszBinContent = new char[pSession->m_pHTTPMessage->m_nBinContentLength + nAppendSize];
-        memcpy(pSession->m_pHTTPMessage->m_pszBinContent, tmpBuf, pSession->m_pHTTPMessage->m_nBinContentLength + nAppendSize);
-              
-        /* set the new content length */
-        pSession->m_pHTTPMessage->m_nBinContentLength += nAppendSize;
-        
-        delete[] tmpBuf;
-        
-        /* reset append buffer an variables */
-        nAppendCount = 0;
-        nAppendSize  = 0;
-        delete[] sAppendBuf;
-        sAppendBuf = NULL;
-        
-        fuppesThreadUnlockMutex(&TranscodeMutex);  
-        /* end append */      
-      }
-    
+    sAppendBuf = new char[nAppendSize + nLameRet];
+    if(tmpBuf != NULL)
+    {
+      memcpy(sAppendBuf, tmpBuf, nAppendSize);
+      delete[] tmpBuf;
     }
-  } while (bytesRead != 0 && bitstream == 0 && !pSession->m_pHTTPMessage->m_bBreakTranscoding);
+    memcpy(&sAppendBuf[nAppendSize], pLameWrapper->GetMp3Buffer(), nLameRet);
+    nAppendSize += nLameRet;
+    nAppendCount++;
+    /* end append */
+    
+    
+    if(nAppendCount == 100)
+    {      
+      /* append encoded audio to bin content buffer */
+      fuppesThreadLockMutex(&TranscodeMutex);
+      
+      /* merge existing bin content and new buffer */
+      char* tmpBuf = new char[pSession->m_pHTTPMessage->m_nBinContentLength + nAppendSize];
+      memcpy(tmpBuf, pSession->m_pHTTPMessage->m_pszBinContent, pSession->m_pHTTPMessage->m_nBinContentLength);
+      memcpy(&tmpBuf[pSession->m_pHTTPMessage->m_nBinContentLength], sAppendBuf, nAppendSize);
+      
+      /* recreate bin content buffer */
+      delete[] pSession->m_pHTTPMessage->m_pszBinContent;
+      pSession->m_pHTTPMessage->m_pszBinContent = new char[pSession->m_pHTTPMessage->m_nBinContentLength + nAppendSize];
+      memcpy(pSession->m_pHTTPMessage->m_pszBinContent, tmpBuf, pSession->m_pHTTPMessage->m_nBinContentLength + nAppendSize);
+            
+      /* set the new content length */
+      pSession->m_pHTTPMessage->m_nBinContentLength += nAppendSize;
+      
+      delete[] tmpBuf;
+      
+      /* reset append buffer an variables */
+      nAppendCount = 0;
+      nAppendSize  = 0;
+      delete[] sAppendBuf;
+      sAppendBuf = NULL;
+      
+      fuppesThreadUnlockMutex(&TranscodeMutex);  
+      /* end append */      
+    }
+    
+  } /* while */  
+  
 	
+  if(sAppendBuf)
+    delete[] sAppendBuf;
+  
   if(!pSession->m_pHTTPMessage->m_bBreakTranscoding)
   {
     sLog.str("");
@@ -543,9 +511,10 @@ fuppesThreadCallback TranscodeLoop(void *arg)
     fflush(stdout);
   }
   
-  ov_clear(&vf);  
+  //ov_clear(&vf);  
   /* end transcode */
   
+  delete pVorbisDecoder;
   delete pLameWrapper;
   delete pSession;  
   fuppesThreadExit();

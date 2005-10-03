@@ -54,7 +54,7 @@ AC_ARG_ENABLE(transcoding,
 if test "x$transcoding" = "xyes"; then
   
   ENABLE_TRANSCODING="true"
-  CXXFLAGS="-DENABLE_TRANSCODING $CXXFLAGS"
+  #CXXFLAGS="-DENABLE_TRANSCODING $CXXFLAGS"
   
   echo ''
   echo 'enable on the fly transcoding support'
@@ -73,14 +73,14 @@ if test "x$transcoding" = "xyes"; then
 else
   
   ENABLE_TRANSCODING="false"
-  #CXXFLAGS="-DDISABLE_TRANSCODING $CXXFLAGS"
+  CXXFLAGS="-DDISABLE_TRANSCODING $CXXFLAGS"
   
   echo ''
   echo 'disable on the fly transcoding support'
   echo ''
       
 fi
-AM_CONDITIONAL(ENABLE_TRANSCODING, test x$ENABLE_TRANSCODING = xtrue)
+AM_CONDITIONAL(DISABLE_TRANSCODING, test x$ENABLE_TRANSCODING = xfalse)
 
 
 

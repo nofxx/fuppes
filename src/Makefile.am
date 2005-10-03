@@ -33,6 +33,7 @@ h_sources = \
   Presentation/PresentationHandler.h\
   Presentation/Stylesheet.h\
   Transcoding/LameWrapper.h\
+  Transcoding/VorbisWrapper.h\
 	SharedConfig.h\
   SharedLog.h\
 	Fuppes.h\
@@ -64,6 +65,7 @@ cpp_sources = \
   Presentation/Images/fuppes_png.cpp\
   Presentation/Images/fuppes_small_png.cpp\
   Transcoding/LameWrapper.cpp\
+  Transcoding/VorbisWrapper.cpp\
 	SharedConfig.cpp\
   SharedLog.cpp\
 	Fuppes.cpp\
@@ -71,18 +73,18 @@ cpp_sources = \
 
 fuppes_SOURCES = ${h_sources} ${cpp_sources}
 
-if ENABLE_TRANSCODING
+if DISABLE_TRANSCODING
+fuppes_LDFLAGS = \
+  ${LIBXML_LIBS}\
+	${PCRE_LIBS}\
+  -lpthread
+else
 fuppes_LDFLAGS = \
   ${LIBXML_LIBS}\
 	${PCRE_LIBS}\
   -lpthread\
   -lmp3lame\
   ${VORBISFILE_LIBS}
-else
-fuppes_LDFLAGS = \
-  ${LIBXML_LIBS}\
-	${PCRE_LIBS}\
-  -lpthread
 endif
 
 fuppes_LDADD = $(FUPPES_LIBS)
