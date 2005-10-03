@@ -46,6 +46,8 @@ class CTimer
     void Stop();
     void Reset();
   
+    unsigned int GetCount();
+  
     unsigned int m_nTickCount;    
     bool         m_bDoBreak;    
     

@@ -102,23 +102,6 @@ void CUPnPDevice::OnTimer()
     m_pOnTimerHandler->OnTimer(this);
 }
 
-
-void CUPnPDevice::TimerStart(unsigned int p_nSeconds)
-{ 
-  m_pTimer->SetInterval(p_nSeconds);
-  m_pTimer->Start();
-}
-
-void CUPnPDevice::TimerStop()
-{
-  m_pTimer->Stop();
-}
-
-void CUPnPDevice::TimerReset()
-{
-  m_pTimer->Reset();
-}
-
 /*===============================================================================
  BUILD DEVICE
 ===============================================================================*/

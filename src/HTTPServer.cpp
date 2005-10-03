@@ -30,6 +30,8 @@
 #include "HTTPServer.h"
 #include "HTTPMessage.h"
 #include "SharedLog.h"
+#include "SharedConfig.h"
+#include "RegEx.h"
 
 #include <iostream>
 #include <sstream>
@@ -50,6 +52,8 @@ const string LOGNAME = "HTTPServer";
 fuppesThreadCallback AcceptLoop(void *arg);
 fuppesThreadCallback SessionLoop(void *arg);
 
+fuppesThreadMutex ReceiveMutex;
+
 /*===============================================================================
  CLASS CHTTPServer
 ===============================================================================*/
@@ -63,6 +67,7 @@ fuppesThreadCallback SessionLoop(void *arg);
 CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 {
 	accept_thread = (fuppesThread)NULL;
+	fuppesThreadInitMutex(&ReceiveMutex);
   	
   /* create socket */
 	m_Socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -71,12 +76,12 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
   
   /* set socket non blocking */
   if(!fuppesSocketSetNonBlocking(m_Socket))
-    CSharedLog::Shared()->Error(LOGNAME, "fuppesSocketSetNonBlocking");  
+    CSharedLog::Shared()->Error(LOGNAME, "fuppesSocketSetNonBlocking");
   
   /* set loacl end point */
 	local_ep.sin_family      = AF_INET;
 	local_ep.sin_addr.s_addr = inet_addr(p_sIPAddress.c_str());
-	local_ep.sin_port				 = htons(0); // htons(5080);	
+	local_ep.sin_port				 = htons(CSharedConfig::Shared()->GetHTTPPort());
 	memset(&(local_ep.sin_zero), '\0', 8); // fill the rest of the structure with zero
 	
   /* try to bind the socket */
@@ -92,6 +97,7 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 CHTTPServer::~CHTTPServer()
 {
   Stop();
+	fuppesThreadDestroyMutex(&ReceiveMutex);
 }
 
 /*===============================================================================
@@ -148,20 +154,16 @@ bool CHTTPServer::SetReceiveHandler(IHTTPServer* pHandler)
   return true;
 }
 
-bool CHTTPServer::CallOnReceive(std::string p_sMessage, CHTTPMessage* pMessageOut)
+bool CHTTPServer::CallOnReceive(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
 {
   BOOL_CHK_RET_POINTER(pMessageOut);
 
   if(m_pReceiveHandler != NULL)
   {
-    /* Create message */
-    CHTTPMessage Message;
-    Message.SetMessage(p_sMessage);
-
     /* Parse message */
-    return m_pReceiveHandler->OnHTTPServerReceiveMsg(&Message, pMessageOut);
+    return m_pReceiveHandler->OnHTTPServerReceiveMsg(pMessageIn, pMessageOut);
   }
-  else return false;
+  else return false;  
 }
 
 /**
@@ -169,13 +171,13 @@ bool CHTTPServer::CallOnReceive(std::string p_sMessage, CHTTPMessage* pMessageOu
  */
 void CHTTPServer::CleanupSessions()
 {
-  if(m_ThreadList.size() == 0)
+  if(m_ThreadList.empty())
     return;
  
   /* iterate session list */  
   for(m_ThreadListIterator = m_ThreadList.begin(); m_ThreadListIterator != m_ThreadList.end(); m_ThreadListIterator++)
   {
-    if(m_ThreadList.size() == 0)
+    if(m_ThreadList.empty())
       break;
     
     /* and close terminated threads */
@@ -184,10 +186,10 @@ void CHTTPServer::CleanupSessions()
     {
       if(fuppesThreadClose(pInfo->GetThreadHandle()))
       {
-        m_ThreadList.erase(m_ThreadListIterator);
+        m_ThreadListIterator = m_ThreadList.erase(m_ThreadListIterator);
         delete pInfo;
-        m_ThreadListIterator--;
-      }
+        //m_ThreadListIterator--;
+      }      
     }
   }    
 }
@@ -229,8 +231,8 @@ fuppesThreadCallback AcceptLoop(void *arg)
 		} 
     
     /* cleanup closed sessions and sleep am moment */
-    pHTTPServer->CleanupSessions();
-    fuppesSleep(100);
+    pHTTPServer->CleanupSessions();     
+    fuppesSleep(50);
 	}  
 	  
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "exiting accept loop");
@@ -241,28 +243,135 @@ fuppesThreadCallback AcceptLoop(void *arg)
 fuppesThreadCallback SessionLoop(void *arg)
 {
   CHTTPSessionInfo* pSession = (CHTTPSessionInfo*)arg;  
-  int  nBytesReceived = 0;
-  char szBuffer[4096];  
-  
+  int   nBytesReceived = 0;
+  int   nRecvCnt = 0;
+  char  szBuffer[4096];    
+  char* szMsg = NULL;
+    
+  unsigned int nContentLength = 0;
+  CHTTPMessage ReceivedMessage;        
+  bool bDoReceive = true;
+      
   /* receive message */
-  nBytesReceived = recv(pSession->GetConnection(), szBuffer, 4096, 0);  
-  if(nBytesReceived != -1)			
+  int nTmpRecv = 0;
+  while(bDoReceive)
+  {           
+    if(nRecvCnt == 30)
+      break;
+                   
+    /* receive */     
+    nTmpRecv = recv(pSession->GetConnection(), szBuffer, 4096, 0);
+    /*cout << "new: " << nTmpRecv << " have: " << nBytesReceived << endl;
+    fflush(stdout);*/
+    if(nTmpRecv == -1)
+    {
+      CSharedLog::Shared()->Error(LOGNAME, "lost connection");
+      bDoReceive = false;
+      break;
+    }                  
+    
+    /* append received buffer */
+    if(nBytesReceived > 0)
+    {
+      char* szTmp = new char[nBytesReceived + 1];
+      memcpy(szTmp, szMsg, nBytesReceived);
+      szTmp[nBytesReceived] = '\0';
+      
+      delete[] szMsg;        
+      szMsg = new char[nBytesReceived + nTmpRecv + 1];
+      memcpy(szMsg, szTmp, nBytesReceived);
+      memcpy(&szMsg[nBytesReceived], szBuffer, nTmpRecv);
+      szMsg[nBytesReceived + nTmpRecv] = '\0';
+      
+      delete[] szTmp;
+    }
+    else
+    {
+      szMsg = new char[nTmpRecv + 1];
+      memcpy(szMsg, szBuffer, nTmpRecv);
+      szMsg[nTmpRecv] = '\0';
+    }      
+    
+    /* clear receive buffer */
+    memset(szBuffer, '\0', 4096);
+    
+    nBytesReceived += nTmpRecv; 
+    string sMsg = szMsg;     
+    
+    /* split header and content */
+    std::string sHeader  = "";
+    std::string sContent = "";
+    unsigned int nPos = sMsg.find("\r\n\r\n");  
+    if(nPos != string::npos)
+    {
+      /*cout << "full header" << endl;
+      fflush(stdout);*/
+            
+      sHeader = sMsg.substr(0, nPos);
+      nPos += string("\r\n\r\n").length();
+      sContent = sMsg.substr(nPos, sMsg.length() - nPos);
+    }
+    else
+    {
+      CSharedLog::Shared()->Warning(LOGNAME, "did not received the full header.");
+      fuppesSleep(100);
+      nRecvCnt++;
+      continue;
+    }
+                  
+    /* read content length */
+    RegEx rxContentLength("CONTENT-LENGTH: *(\\d+)", PCRE_CASELESS);
+    if(rxContentLength.Search(sHeader.c_str()))
+    {
+      string sContentLength = rxContentLength.Match(1);    
+      nContentLength = std::atoi(sContentLength.c_str());
+    }      
+
+    /* check if we received the full content */
+    if(sContent.length() < nContentLength)
+    {
+      stringstream sLog;
+      sLog << "received less data then given in CONTENT-LENGTH. should: " << nContentLength << " have: " << sContent.length();
+      CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
+      continue;
+    }
+    else
+    {
+      /* full content */
+      bDoReceive = false;
+    }
+                  
+    if(nTmpRecv == 0)      
+      nRecvCnt++;    
+  }
+  /* end receive */  
+
+
+
+  /* build received message */
+  bool bResult = false;  
+  if(nBytesReceived > 0)			
   {
     /* logging */
     stringstream sMsg;
     sMsg << "bytes received: " << nBytesReceived;
     CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
-    
-    /* zero-terminate buffer */
-    szBuffer[nBytesReceived] = '\0';    
-    
-    /* send response */
-    CHTTPMessage ResponseMsg;
-    bool bResult = pSession->GetHTTPServer()->CallOnReceive(szBuffer, &ResponseMsg);
-    if(bResult)	
+
+    /* Create message */    
+    bResult = ReceivedMessage.SetMessage(szMsg);
+  }
+
+  /* build response message and send it */
+  if(bResult)
+  {
+    /* build response */
+    CHTTPMessage ResponseMsg;  	  	
+    bResult = pSession->GetHTTPServer()->CallOnReceive(&ReceivedMessage, &ResponseMsg);  	
+    if(!bResult)
+      CSharedLog::Shared()->Error(LOGNAME, "parsing HTTP message");      
+    if(bResult)
     {
-      CSharedLog::Shared()->ExtendedLog(LOGNAME, "send response");     
-      
+      CSharedLog::Shared()->ExtendedLog(LOGNAME, "send response");
       
       if(!ResponseMsg.IsChunked())
       { 
@@ -330,13 +439,14 @@ fuppesThreadCallback SessionLoop(void *arg)
              cout << "end of stream" << endl;        
            } 
             
-         }
-      
-      /* close connection */
-      upnpSocketClose(pSession->GetConnection());
+         }  
+            
     }
-    
   }
+
+  
+  /* close connection */
+  upnpSocketClose(pSession->GetConnection());    
   
   /* exit thread */
   pSession->m_bIsTerminated = true;

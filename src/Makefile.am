@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id: $
 
-INCLUDES = ${LIBXML_CFLAGS}
+INCLUDES = ${LIBXML_CFLAGS} ${PCRE_CFLAGS} ${VORBISFILE_CFLAGS}
 
 bin_PROGRAMS = fuppes
 
@@ -36,8 +36,8 @@ h_sources = \
 	SharedConfig.h\
   SharedLog.h\
 	Fuppes.h\
-	RegEx.h
-	
+	RegEx.h	
+
 cpp_sources = \
   Common.cpp\
   UUID.cpp\
@@ -68,14 +68,21 @@ cpp_sources = \
   SharedLog.cpp\
 	Fuppes.cpp\
 	main.cpp
-	
+
 fuppes_SOURCES = ${h_sources} ${cpp_sources}
 
+if ENABLE_TRANSCODING
 fuppes_LDFLAGS = \
-	-lpcre\
+  ${LIBXML_LIBS}\
+	${PCRE_LIBS}\
   -lpthread\
   -lmp3lame\
-  -lvorbisfile\
-  ${LIBXML_LIBS}
+  ${VORBISFILE_LIBS}
+else
+fuppes_LDFLAGS = \
+  ${LIBXML_LIBS}\
+	${PCRE_LIBS}\
+  -lpthread
+endif
 
 fuppes_LDADD = $(FUPPES_LIBS)

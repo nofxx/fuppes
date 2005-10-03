@@ -98,8 +98,9 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
   /* Set socket options */
   int ret  = 0;
 #ifdef WIN32
-  upnpSocketFlag(flag);  
-  ret = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, flag, sizeof(flag));
+  //upnpSocketFlag(flag); 
+  bool bOptVal = true;
+  ret = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, (char*)&bOptVal, sizeof(bool));
 #else
   int flag = 1;
   ret = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));

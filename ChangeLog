@@ -1,12 +1,22 @@
+Version 0.3 (2005-10-??)
+  * implemented on the fly transcoding from ogg to mp3
+
+Version 0.1.5 (2005-10-02)
+  * fixed device time-out bug
+  * fixed HTTP-session handling
+  * fixed socket reuse bug (win32 only)
+  * implemented HTTP 1.1 HEAD-request handling
+  * IP-address and HTTP-port configurable
+
 Version 0.1.4 (2005-09-21)
   * fixed timer bug
   * fixed memory-leaks
   * improved thread handling
   * (win32) updated pcre-lib from 5.0.1779.29128 to 6.3.2058.19251
   * enhanced webinterface
-  
+
 Version 0.1.3 (2005-09-03)
-  * alive message is repeatedly sent every 3 mins
+  * alive message is repeatedly send every 3 mins
   * remote device timeout
   * enhanced logging
   * enhanced webinterface

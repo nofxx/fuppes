@@ -47,23 +47,26 @@ class CUPnPBrowse;
 
 typedef enum tagHTTP_VERSION
 {
-  HTTP_VERSION_UNKNOWN            = 0,
-  HTTP_VERSION_1_0                = 1,
-	HTTP_VERSION_1_1                = 2
+  HTTP_VERSION_UNKNOWN            =  0,
+  HTTP_VERSION_1_0                =  1,
+	HTTP_VERSION_1_1                =  2
 }HTTP_VERSION;
 
 typedef enum tagHTTP_MESSAGE_TYPE
 {
-  HTTP_MESSAGE_TYPE_UNKNOWN          = 0,
-  /* HTTP 1.0 and 1.1 message types */
-  HTTP_MESSAGE_TYPE_GET              = 1,
-	HTTP_MESSAGE_TYPE_POST             = 2,
-	HTTP_MESSAGE_TYPE_200_OK           = 3,
-	HTTP_MESSAGE_TYPE_404_NOT_FOUND    = 4,
+  HTTP_MESSAGE_TYPE_UNKNOWN       =  0,
+  /* HTTP 1.0 and 1.1 message types */  
+  HTTP_MESSAGE_TYPE_GET           =  1,
+  HTTP_MESSAGE_TYPE_HEAD          =  2,
+	HTTP_MESSAGE_TYPE_POST          =  3,
+	HTTP_MESSAGE_TYPE_200_OK        =  4,
+	HTTP_MESSAGE_TYPE_404_NOT_FOUND =  5,
   /* GENA message types */
-  HTTP_MESSAGE_TYPE_SUBSCRIBE        = 5,
-  HTTP_MESSAGE_TYPE_SUBSCRIBE_200_OK = 6
-  
+  HTTP_MESSAGE_TYPE_SUBSCRIBE        = 6,
+  HTTP_MESSAGE_TYPE_SUBSCRIBE_200_OK = 7	
+}HTTP_MESSAGE_TYPE;
+
+
   /*
   SUBSCRIBE publisher path HTTP/1.1
 HOST: publisher host:publisher port
@@ -78,18 +81,15 @@ SERVER: OS/version UPnP/1.0 product/version
 SID: uuid:subscription-UUID
 TIMEOUT: Second-actual subscription duration
  */
-  
-}HTTP_MESSAGE_TYPE;
 
 typedef enum tagHTTP_CONTENT_TYPE
 {
-  HTTP_CONTENT_TYPE_UNKNOWN       = 0,
-  HTTP_CONTENT_TYPE_TEXT_HTML     = 1,
-	HTTP_CONTENT_TYPE_TEXT_XML      = 2,
-	HTTP_CONTENT_TYPE_AUDIO_MPEG    = 3,
-  HTTP_CONTENT_TYPE_IMAGE_PNG     = 4
+  HTTP_CONTENT_TYPE_UNKNOWN       =  0,
+  HTTP_CONTENT_TYPE_TEXT_HTML     =  1,
+	HTTP_CONTENT_TYPE_TEXT_XML      =  2,
+	HTTP_CONTENT_TYPE_AUDIO_MPEG    =  3,
+  HTTP_CONTENT_TYPE_IMAGE_PNG     =  4
 }HTTP_CONTENT_TYPE;
-
 
 class CHTTPMessage;
   
@@ -143,7 +143,7 @@ public:
 	std::string			  GetMessageAsString();
 
   unsigned int      GetBinContentChunk(char* p_sContentChunk, unsigned int p_nSize, unsigned int p_nOffset = 200);
-  
+
 /*===============================================================================
  SET MESSAGE DATA
 ===============================================================================*/
@@ -158,19 +158,19 @@ public:
 ===============================================================================*/
 
   bool             BuildFromString(std::string p_sMessage);
-  bool             LoadContentFromFile(std::string p_sFileName);	
+  bool             LoadContentFromFile(std::string);	
   bool             TranscodeContentFromFile(std::string p_sFileName);	
   
 
 /* <\PUBLIC> */
-
-/* <PRIVATE> */
 
 public:
   char*         m_pszBinContent;
   unsigned int  m_nBinContentLength; 
   bool          m_bBreakTranscoding;
   bool          m_bIsTranscoding;
+
+/* <PRIVATE> */
 
 private:
     
@@ -183,17 +183,16 @@ private:
   HTTP_CONTENT_TYPE  m_HTTPContentType;
   std::string	       m_sRequest;
   int                m_nContentLength;  
-   
   bool               m_bIsChunked;
-
+  
   unsigned int       m_nBinContentPosition;
-  fuppesThread m_TranscodeThread;
+  fuppesThread m_TranscodeThread;  
 
 /*===============================================================================
  HELPER
 ===============================================================================*/    
 
-  void ParsePOSTMessage(std::string);
+  bool ParsePOSTMessage(std::string);
 
 /* <\PRIVATE> */
 

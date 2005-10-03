@@ -150,6 +150,9 @@
 				RelativePath=".\src\MessageBase.cpp">
 			</File>
 			<File
+				RelativePath=".\src\MSearchSession.cpp">
+			</File>
+			<File
 				RelativePath=".\src\NotifyMsgFactory.cpp">
 			</File>
 			<File
@@ -163,9 +166,6 @@
 			</File>
 			<File
 				RelativePath=".\src\SSDPMessage.cpp">
-			</File>
-			<File
-				RelativePath=".\src\SSDPSession.cpp">
 			</File>
 			<File
 				RelativePath=".\src\Timer.cpp">
@@ -210,6 +210,16 @@
 				<File
 					RelativePath=".\src\Presentation\PresentationHandler.cpp">
 				</File>
+				<Filter
+					Name="Images"
+					Filter="">
+					<File
+						RelativePath=".\src\Presentation\Images\fuppes_png.cpp">
+					</File>
+					<File
+						RelativePath=".\src\Presentation\Images\fuppes_small_png.cpp">
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
@@ -238,6 +248,9 @@
 				RelativePath=".\src\MessageBase.h">
 			</File>
 			<File
+				RelativePath=".\src\MSearchSession.h">
+			</File>
+			<File
 				RelativePath=".\src\NotifyMsgFactory.h">
 			</File>
 			<File
@@ -254,9 +267,6 @@
 			</File>
 			<File
 				RelativePath=".\src\SSDPMessage.h">
-			</File>
-			<File
-				RelativePath=".\src\SSDPSession.h">
 			</File>
 			<File
 				RelativePath=".\src\Timer.h">

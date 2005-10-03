@@ -122,7 +122,8 @@ int main()
   cout << "m = send m-search" << endl;
   cout << "a = send notify-alive" << endl;
   cout << "b = send notify-byebye" << endl;
-  cout << "l = toggle logging" << endl;  
+  cout << "l = toggle logging" << endl;
+  cout << "i = info" << endl; 
   cout << endl;
   cout << "press \"q\" to  quit" << endl;
   cout << endl;
@@ -141,6 +142,13 @@ int main()
       pFuppes->GetSSDPCtrl()->send_byebye();
     else if (input == "l")
       CSharedLog::Shared()->ToggleLog();    
+    else if (input == "i")
+    {
+      cout << "version     : " << CSharedConfig::Shared()->GetAppVersion() << endl;
+      cout << "hostname    : " << CSharedConfig::Shared()->GetHostname() << endl;
+      cout << "address     : " << CSharedConfig::Shared()->GetIPv4Address() << endl;    
+      cout << "webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;          
+    }
   }
   
   /* Destroy objects */

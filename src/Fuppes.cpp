@@ -107,7 +107,8 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID, IFuppes* pPresen
   m_pSSDPCtrl->send_msearch();
   
   /* start alive timer */
-  m_pMediaServer->TimerStart(840); // 900 sec = 15 min
+  m_pMediaServer->GetTimer()->SetInterval(840);  // 900 sec = 15 min
+  m_pMediaServer->GetTimer()->Start();
 }
 
 /** destructor
@@ -146,9 +147,9 @@ void CFuppes::CleanupTimedOutDevices()
   {
     /* and delete timed out devices */
     CUPnPDevice* pTimedOutDevice = *m_TimedOutDevicesIterator;      
-    m_TimedOutDevices.erase(m_TimedOutDevicesIterator);
+    m_TimedOutDevicesIterator = m_TimedOutDevices.erase(m_TimedOutDevicesIterator);
     delete pTimedOutDevice;
-    m_TimedOutDevicesIterator--;    
+    //m_TimedOutDevicesIterator--;    
   }  
 }
 
@@ -182,7 +183,7 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
       m_RemoteDevices.erase(pSender->GetUUID());
       
       /* stop the deivce's timer and */
-      pSender->TimerStop();      
+      pSender->GetTimer()->Stop();      
       /* push it to the list containing timed out devices */
       m_TimedOutDevices.push_back(pSender);
     }
@@ -283,23 +284,28 @@ bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMe
   HTTP_MESSAGE_TYPE nMsgType = pMessageIn->GetMessageType();
   switch(nMsgType)
   {
-  case HTTP_MESSAGE_TYPE_GET:
-    fRet = HandleHTTPGet(pMessageIn, pMessageOut);
-    break;
-  case HTTP_MESSAGE_TYPE_POST:
-    fRet = HandleHTTPPost(pMessageIn, pMessageOut);
-    break;
-  case HTTP_MESSAGE_TYPE_200_OK:
-    break;
-  case HTTP_MESSAGE_TYPE_404_NOT_FOUND:
-    break;
-  default: break;
+    case HTTP_MESSAGE_TYPE_GET:
+      fRet = HandleHTTPGetOrHead(pMessageIn, pMessageOut);
+      break;
+    case HTTP_MESSAGE_TYPE_HEAD:
+      fRet = HandleHTTPGetOrHead(pMessageIn, pMessageOut);
+      break;
+    case HTTP_MESSAGE_TYPE_POST:
+      fRet = HandleHTTPPost(pMessageIn, pMessageOut);
+      break;
+    case HTTP_MESSAGE_TYPE_200_OK:
+      break;
+    case HTTP_MESSAGE_TYPE_404_NOT_FOUND:
+      break;
+    default:
+        fRet = false;
+      break;
   }
 
   return fRet;
 }
 
-bool CFuppes::HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
+bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
 {
   /* Get request */
   std::string strRequest = pMessageIn->GetRequest();
@@ -337,9 +343,9 @@ bool CFuppes::HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
   {
     string sItemObjId = pMessageIn->GetRequest().substr(24, pMessageIn->GetRequest().length());
     CAudioItem* pItem = (CAudioItem*)m_pContentDirectory->GetItemFromObjectID(sItemObjId);
-    
+
     if(pItem && FileExists(pItem->GetFileName()))
-    { 
+    {
       pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, HTTP_CONTENT_TYPE_AUDIO_MPEG); 
       if (!pItem->m_bDoTranscode)
         pMessageOut->LoadContentFromFile(pItem->GetFileName());
@@ -349,21 +355,23 @@ bool CFuppes::HandleHTTPGet(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
       sLog << "sending audio file " << pItem->GetFileName(); 
       CSharedLog::Shared()->Log(LOGNAME, sLog.str()); 
       return true; 
-    } 
-    else 
-    { 
-      if(!pItem) 
-        CSharedLog::Shared()->Error(LOGNAME, "HandleHTTPGet() :: pItem is NULL"); 
-      else if(!FileExists(pItem->GetFileName())) 
-      { 
-        stringstream sLog; 
-        sLog << "requested file: \"" << pItem->GetFileName() << "\" not found"; 
-        CSharedLog::Shared()->Warning(LOGNAME, sLog.str()); 
-      }       
-      return false; 
     }
-    
-  }  
+    else
+    {
+      if(!pItem)
+        CSharedLog::Shared()->Error(LOGNAME, "HandleHTTPGet() :: pItem is NULL");
+      else if(!FileExists(pItem->GetFileName()))
+      {
+        stringstream sLog;
+        sLog << "requested file: \"" << pItem->GetFileName() << "\" not found";
+        CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
+      }      
+      
+      return false;
+    }
+
+  }
+  
   return false;
 }
 
@@ -389,13 +397,11 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
   /* known device */
   if(m_RemoteDeviceIterator != m_RemoteDevices.end())
   {
-    m_RemoteDevices[pMessage->GetUUID()]->TimerReset();
+    m_RemoteDevices[pMessage->GetUUID()]->GetTimer()->Reset();
     
     std::stringstream sMsg;
     sMsg << "received \"Notify-Alive\" from known device id: " << pMessage->GetUUID();      
     CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
-    
-    /* todo reset device's timer */
   }
   
   /* new device */
@@ -416,7 +422,8 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
       CSharedLog::Shared()->Log(LOGNAME, sMsg.str());      
       
       m_RemoteDevices[pMessage->GetUUID()] = pDevice;
-      pDevice->TimerStart(900); // 900 sec = 15 min
+      pDevice->GetTimer()->SetInterval(900);  // 900 sec = 15 min
+      pDevice->GetTimer()->Start();
     }
     else      
       delete pDevice;

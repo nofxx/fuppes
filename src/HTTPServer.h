@@ -159,7 +159,7 @@ public:
 ===============================================================================*/
 
   bool				  SetReceiveHandler(IHTTPServer* pHandler);
-  bool          CallOnReceive(std::string p_sMessage, CHTTPMessage* pMessageOut);
+  bool          CallOnReceive(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
    
 /* <\PUBLIC> */
 

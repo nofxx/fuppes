@@ -6,7 +6,7 @@ AC_INIT(configure.in)
 #release versioning
 GENERIC_MAJOR_VERSION=0
 GENERIC_MINOR_VERSION=3
-#GENERIC_MICRO_VERSION=4
+#GENERIC_MICRO_VERSION=0
 #GENERIC_VERSION=$GENERIC_MAJOR_VERSION.$GENERIC_MINOR_VERSION.$GENERIC_MICRO_VERSION
 GENERIC_VERSION=$GENERIC_MAJOR_VERSION.$GENERIC_MINOR_VERSION
 AC_SUBST(GENERIC_MAJOR_VERSION)
@@ -15,15 +15,12 @@ AC_SUBST(GENERIC_MINOR_VERSION)
 AC_SUBST(GENERIC_VERSION)
 
 VERSION=$GENERIC_VERSION
-AM_INIT_AUTOMAKE(fuppes, $GENERIC_VERSION, mail@ulrich-voelkel.de)
+AM_INIT_AUTOMAKE(fuppes, $GENERIC_VERSION, u-voelkel@users.sourceforge.net)
 AM_CONFIG_HEADER(config.h)
 
-#AC_PROG_CXX
-AC_PROG_CXXCPP
-AC_LANG_CPLUSPLUS
-#AC_PROG_INSTALL
-#AC_LIBTOOL_WIN32_DLL
-#AM_PROG_LIBTOOL
+AC_PROG_CXX
+AC_PROG_CC
+AC_PROG_MAKE_SET
 
 CXXFLAGS="-Wall -g -O"
 
@@ -31,15 +28,75 @@ dnl Checks for programs.
 
 
 dnl Checks for libraries.
+PKG_CHECK_MODULES(PCRE, libpcre >= 5.0)
 PKG_CHECK_MODULES(LIBXML, libxml-2.0 >= 2.6.1)
 
+
+
+#AC_ARG_ENABLE(lame, [  --enable-transcoding     enable ont the fly transcoding support ],
+#                        TRY_LAME=$enableval , TRY_LAME=no ) 
+ 
+#  if test "x$TRY_LAME" = "xyes"
+#  then          
+#          echo  '   USING LAME'
+#  else
+#          echo  '   NOT USING LAME'
+#  fi
+
+
+transcoding=yes
+AC_ARG_ENABLE(transcoding,
+            [  --disable-transcoding  Disable on the fly transcoding support],
+            [ if test "x$enable_transcoding" = "xno" ; then
+                    transcoding=no;
+              fi ] )
+
+if test "x$transcoding" = "xyes"; then
+  
+  ENABLE_TRANSCODING="true"
+  CXXFLAGS="-DENABLE_TRANSCODING $CXXFLAGS"
+  
+  echo ''
+  echo 'enable on the fly transcoding support'
+  echo '  checking libraries'
+  
+  PKG_CHECK_MODULES(VORBISFILE, vorbisfile >= 1.0)  
+    
+  echo ''
+  echo '  transcoding'
+  echo '     lame  : yes'
+  echo '     vorbis: yes'
+  echo '     mpc   : no'
+  echo '     flac  : no'
+  echo ''
+    
+else
+  
+  ENABLE_TRANSCODING="false"
+  #CXXFLAGS="-DDISABLE_TRANSCODING $CXXFLAGS"
+  
+  echo ''
+  echo 'disable on the fly transcoding support'
+  echo ''
+      
+fi
+AM_CONDITIONAL(ENABLE_TRANSCODING, test x$ENABLE_TRANSCODING = xtrue)
+
+
+
 dnl Checks for header files.
-AC_CHECK_HEADERS(string vector)
+AC_HEADER_DIRENT
+AC_HEADER_STDC
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h netinet/in.h string.h sys/ioctl.h sys/param.h sys/socket.h unistd.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 
 
 dnl Checks for library functions.
+
+#sinclude([acx_lame.m4])
+#ACX_LAME
+#LIBS="$LAME_LIBS $FLIBS"
 
 
 dnl Checks for Additional stuffs.

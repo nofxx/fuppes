@@ -146,10 +146,7 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
   }
 }
 
-/* BASE64 decoding
-   taken from: http://www.adp-gmbh.ch/cpp/common/base64.html
-   modified to handle line breaks
-*/
+/* BASE64 decoding */
 static inline bool IsBase64(unsigned char c) {
   return (isalnum(c) || (c == '+') || (c == '/'));
 }

@@ -100,6 +100,15 @@ void CTimer::Reset()
   fuppesThreadUnlockMutex(&TimerMutex);
 }
 
+unsigned int CTimer::GetCount()
+{
+  unsigned int nResult = 0;  
+  fuppesThreadLockMutex(&TimerMutex);
+  nResult = m_nInterval - m_nTickCount;
+  fuppesThreadUnlockMutex(&TimerMutex);
+  return nResult;
+}
+
 fuppesThreadCallback TimerLoop(void *arg)
 {
   CTimer* pTimer = (CTimer*)arg;   

@@ -112,9 +112,9 @@ void CSSDPCtrl::CleanupSessions()
       break;
                             
     CMSearchSession* pSession = *m_SessionListIterator;   
-    m_SessionList.erase(m_SessionListIterator);
+    m_SessionListIterator = m_SessionList.erase(m_SessionListIterator);
     delete pSession;
-    m_SessionListIterator--;
+    //m_SessionListIterator--;
   }
   
   fuppesThreadUnlockMutex(&m_SessionTimedOutMutex); 

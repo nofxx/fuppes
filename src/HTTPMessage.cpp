@@ -35,16 +35,13 @@
 #include <sstream>
 #include <fstream>
 
-#include <math.h>
-#include <vorbis/codec.h>
+//#include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
-#include <lame/lame.h>
+//#include <lame/lame.h>
 #include "Transcoding/LameWrapper.h"
 
 #include "RegEx.h"
 #include "UPnPActionFactory.h"
-
-using namespace std;
 
 /*===============================================================================
  CONSTANTS
@@ -82,12 +79,12 @@ CHTTPMessage::CHTTPMessage()
 
 CHTTPMessage::~CHTTPMessage()
 {
-  /* Cleanup */  
+  /* Cleanup */
   if(m_pszBinContent)
     delete[] m_pszBinContent;
-  
+    
   if(m_TranscodeThread)
-    fuppesThreadClose(m_TranscodeThread);
+    fuppesThreadClose(m_TranscodeThread);    
 }
 
 /*===============================================================================
@@ -116,8 +113,14 @@ void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, HTTP_CONTENT_TYPE nCtn
 
 bool CHTTPMessage::SetMessage(std::string p_sMessage)
 {
+  /*cout << "SET MESSAGE" << endl;
+  fflush(stdout);*/
+     
   CMessageBase::SetMessage(p_sMessage);  
   CSharedLog::Shared()->DebugLog(LOGNAME, p_sMessage);  
+
+  /*cout << "IN SET MESSAGE" << endl;
+  fflush(stdout);*/
   
   return BuildFromString(p_sMessage);
 }
@@ -162,6 +165,7 @@ std::string CHTTPMessage::GetHeaderAsString()
 	switch(m_HTTPMessageType)
 	{
 		case HTTP_MESSAGE_TYPE_GET:	          /* todo */			                            break;
+    case HTTP_MESSAGE_TYPE_HEAD:	        /* todo */			                            break;
 		case HTTP_MESSAGE_TYPE_POST:          /* todo */		                              break;
 		case HTTP_MESSAGE_TYPE_200_OK:        sResult << sVersion << " " << "200 OK\r\n"; break;
 	  case HTTP_MESSAGE_TYPE_404_NOT_FOUND:	/* todo */			                            break;
@@ -183,14 +187,17 @@ std::string CHTTPMessage::GetHeaderAsString()
 	switch(m_HTTPContentType)
 	{
 		case HTTP_CONTENT_TYPE_TEXT_HTML:  sContentType = "text/html";  break;
-		case HTTP_CONTENT_TYPE_TEXT_XML:   sContentType = "text/xml";   break;
+		case HTTP_CONTENT_TYPE_TEXT_XML:   sContentType = "text/xml; charset=\"utf-8\"";   break;
 		case HTTP_CONTENT_TYPE_AUDIO_MPEG: sContentType = "audio/mpeg"; break;
     case HTTP_CONTENT_TYPE_IMAGE_PNG : sContentType = "image/png";  break;      
     default:                           ASSERT(0);                   break;	
-	}	
-	sResult << "CONTENT-TYPE: " << sContentType << "\r\n";
-  
-  
+	}
+
+	sResult << "CONTENT-TYPE: " << sContentType << "\r\n";	
+	//sResult << "SERVER: Windows/2000 UPnP/1.0 fuppes/0.1.5 \r\n";
+	//sResult << "DATE: \r\n";
+	sResult << "EXT: \r\n";
+	
   /* Transfer-Encoding */
   if(m_HTTPVersion == HTTP_VERSION_1_1)
   {
@@ -198,11 +205,9 @@ std::string CHTTPMessage::GetHeaderAsString()
     {
       sResult << "TRANSFER-ENCODING: chunked\r\n";
     }*/
-  }
-  
-  
-  sResult << "\r\n";
-  
+  }	
+	
+	sResult << "\r\n";
 	return sResult.str();
 }
 
@@ -263,6 +268,11 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
   m_nBinContentLength = 0;
   m_sMessage = p_sMessage;
   m_sContent = p_sMessage;  
+  
+  bool bResult = false;
+
+  /*cout << "BUILD FROM STR" << endl;
+  fflush(stdout);*/
 
   /* Message GET */
   RegEx rxGET("GET +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
@@ -276,10 +286,26 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
     else if(sVersion.compare("1"))		
       m_HTTPVersion = HTTP_VERSION_1_1;
 
-    m_sRequest = rxGET.Match(1);
-    return true;    
+    m_sRequest = rxGET.Match(1);			
+    bResult = true;
   }
 
+  /* Message HEAD */
+  RegEx rxHEAD("HEAD +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
+  if(rxHEAD.Search(p_sMessage.c_str()))
+  {
+    m_HTTPMessageType = HTTP_MESSAGE_TYPE_HEAD;
+
+    string sVersion = rxHEAD.Match(2);
+    if(sVersion.compare("0"))		
+      m_HTTPVersion = HTTP_VERSION_1_0;		
+    else if(sVersion.compare("1"))		
+      m_HTTPVersion = HTTP_VERSION_1_1;
+
+    m_sRequest = rxHEAD.Match(1);			
+    bResult = true;
+  }
+  
   /* Message POST */
   RegEx rxPOST("POST +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
   if(rxPOST.Search(p_sMessage.c_str()))
@@ -294,20 +320,13 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
 
     m_sRequest = rxPOST.Match(1);			
 
-    ParsePOSTMessage(p_sMessage);
-    return true;
+    bResult = ParsePOSTMessage(p_sMessage);
   }
   
-   /* SUBSCRIBE publisher path HTTP/1.1
-HOST: publisher host:publisher port
-CALLBACK: <delivery URL>
-NT: upnp:event
-TIMEOUT: Second-requested subscription duration*/
+  /*cout << "END BUILD FROM STR" << endl;
+  fflush(stdout);  */
   
-  /* SUBSCRIBE */
-  RegEx rxSUBSCRIBE("SUBSCRIBE +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
-  
-  return false;
+  return bResult;
 }
 
 bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
@@ -325,10 +344,11 @@ bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
     m_pszBinContent[m_nBinContentLength] = '\0';    
 
     fFile.close();
-  }
-  
+  } 
+	
   return true;
 }
+
 
 bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName)
 { 
@@ -540,7 +560,7 @@ fuppesThreadCallback TranscodeLoop(void *arg)
  HELPER
 ===============================================================================*/
 
-void CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
+bool CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
 {
   /*POST /UPnPServices/ContentDirectory/control HTTP/1.1
     Host: 192.168.0.3:32771
@@ -552,20 +572,23 @@ void CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
 	if(rxSOAP.Search(p_sMessage.c_str()))
 	{
     string sSOAP = rxSOAP.Match(1);
-		//cout << "[HTTPMessage] SOAPACTION " << sSOAP << endl;
+    //cout << "[HTTPMessage] SOAPACTION " << sSOAP << endl;
 	}
       
   /* Content length */
   RegEx rxContentLength("CONTENT-LENGTH: *(\\d+)", PCRE_CASELESS);
   if(rxContentLength.Search(p_sMessage.c_str()))
   {
-    string sContentLength = rxContentLength.Match(1);
+    string sContentLength = rxContentLength.Match(1);    
     m_nContentLength = std::atoi(sContentLength.c_str());
-    //cout << "[HTTPMessage] CONTENT-LENGTH  " << m_nContentLength << endl;
   }
+  
+  if((unsigned int)m_nContentLength >= p_sMessage.length())                      
+    return false;
   
   m_sContent = p_sMessage.substr(p_sMessage.length() - m_nContentLength, m_nContentLength);
   
+  return true;
 }
 
 /* <\PRIVATE> */

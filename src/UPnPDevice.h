@@ -92,20 +92,9 @@ public:
    */
   void OnTimer();
 
-  /** StartTimer
+  /** GetTimer
    */
-  void TimerStart(unsigned int p_nSeconds);
-  
-  /** StopTimer
-   */
-  void TimerStop();
-  
-  /** ResetTimer
-   */
-  void TimerReset();
-   
-  
-  
+  CTimer* GetTimer() { return m_pTimer; }
 
 
 /*===============================================================================

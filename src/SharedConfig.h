@@ -82,7 +82,8 @@ protected:
 	std::string GetUUID();
 	
 	std::string GetIPv4Address();
-	
+	unsigned int GetHTTPPort() { return m_nHTTPPort; }
+  
   std::string GetSharedDir(int);
 
   int         SharedDirCount();
@@ -107,6 +108,7 @@ private:
 	std::string m_sIP;
   std::string m_sUUID;
   std::vector<std::string> m_vSharedDirectories;
+  unsigned int m_nHTTPPort;
 
 /*===============================================================================
  HELPER
