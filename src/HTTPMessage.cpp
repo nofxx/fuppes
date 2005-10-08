@@ -422,7 +422,7 @@ fuppesThreadCallback TranscodeLoop(void *arg)
     {
       tmpBuf = new char[nAppendSize];
       memcpy(tmpBuf, sAppendBuf, nAppendSize);
-      delete[] sAppendBuf;
+      delete[] sAppendBuf;      
     }
     
     sAppendBuf = new char[nAppendSize + nLameRet];
@@ -509,16 +509,13 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   {
     cout << "break transcoding" << endl;
     fflush(stdout);
-  }
-  
-  //ov_clear(&vf);  
+  }    
   /* end transcode */
   
   delete pVorbisDecoder;
   delete pLameWrapper;
   delete pSession;  
   fuppesThreadExit();
-  return 0;
 }
 
 /* <\PUBLIC> */

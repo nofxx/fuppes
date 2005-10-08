@@ -25,6 +25,10 @@
 #ifndef _MPCWRAPPER_H
 #define _MPCWRAPPER_H
 
+#include <mpcdec/mpcdec.h>
+#include <dlfcn.h>
+#include <string>
+
 #ifdef __cplusplus
 extern "C"
 {

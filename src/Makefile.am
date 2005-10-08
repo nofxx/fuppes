@@ -34,6 +34,7 @@ h_sources = \
   Presentation/Stylesheet.h\
   Transcoding/LameWrapper.h\
   Transcoding/VorbisWrapper.h\
+  Transcoding/MpcWrapper.h\
 	SharedConfig.h\
   SharedLog.h\
 	Fuppes.h\
@@ -66,6 +67,7 @@ cpp_sources = \
   Presentation/Images/fuppes_small_png.cpp\
   Transcoding/LameWrapper.cpp\
   Transcoding/VorbisWrapper.cpp\
+  Transcoding/MpcWrapper.h\
 	SharedConfig.cpp\
   SharedLog.cpp\
 	Fuppes.cpp\
@@ -84,6 +86,7 @@ fuppes_LDFLAGS = \
 	${PCRE_LIBS}\
   -lpthread\
   -lmp3lame\
+  -lmpcdec\
   ${VORBISFILE_LIBS}
 endif
 

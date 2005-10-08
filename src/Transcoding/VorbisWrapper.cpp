@@ -39,7 +39,7 @@ CVorbisDecoder::CVorbisDecoder()
 
 CVorbisDecoder::~CVorbisDecoder()
 {
-  fclose(m_pVorbisFileHandle);
+  //fclose(m_pVorbisFileHandle);
   ov_clear(&m_VorbisFile);
 }
   

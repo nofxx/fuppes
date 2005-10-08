@@ -371,29 +371,34 @@ fuppesThreadCallback SessionLoop(void *arg)
       CSharedLog::Shared()->Error(LOGNAME, "parsing HTTP message");      
     if(bResult)
     {
-      CSharedLog::Shared()->ExtendedLog(LOGNAME, "send response");
-      
       if(!ResponseMsg.IsChunked())
       { 
         /* send complete binary stream */
         if(ResponseMsg.GetBinContentLength() > 0) 
         { 
+          CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending non chunked binary");
           send(pSession->GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);             
-          send(pSession->GetConnection(), ResponseMsg.GetBinContent(), ResponseMsg.GetBinContentLength(), 0);                         
+          CSharedLog::Shared()->ExtendedLog(LOGNAME, "header send");
+          int nSend = send(pSession->GetConnection(), ResponseMsg.GetBinContent(), ResponseMsg.GetBinContentLength(), MSG_NOSIGNAL);                         
+          cout << nSend << endl;          
+          CSharedLog::Shared()->ExtendedLog(LOGNAME, "content send");
         } 
         /* send text message */
         else 
         { 
+          CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending plain text");
           send(pSession->GetConnection(), ResponseMsg.GetMessageAsString().c_str(), (int)strlen(ResponseMsg.GetMessageAsString().c_str()), 0); 
         } 
       }
       /* send chunked message */
       else 
-      {  
+      {         
         char szChunk[8192]; 
         unsigned int nOffset = 0; 
         unsigned int nRet = 0; 
 
+        CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending chunked binary");
+        
         /* send header */
         send(pSession->GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);             
         
@@ -444,6 +449,8 @@ fuppesThreadCallback SessionLoop(void *arg)
     }
   }
 
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "done sending response");
+  
   
   /* close connection */
   upnpSocketClose(pSession->GetConnection());    
