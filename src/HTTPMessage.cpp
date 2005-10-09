@@ -411,16 +411,13 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   int   nAppendCount = 0;
   int   nAppendSize  = 0;
 	char* sAppendBuf   = NULL;
-	short int pcmout[MPC_DECODER_BUFFER_LENGTH * 4]; // 4096 || MPC_DECODER_BUFFER_LENGTH
-  cout << "SIZE: " << MPC_DECODER_BUFFER_LENGTH << " - " << sizeof(pcmout) << endl;
-  fflush(stdout);
- // sleep(2);
+	short int pcmout[MPC_DECODER_BUFFER_LENGTH * 4]; // 4096 || MPC_DECODER_BUFFER_LENGTH * 4
   
   stringstream sLog;
   sLog << "start transcoding \"" << pSession->m_sFileName << "\"" << endl;
   CSharedLog::Shared()->Log(LOGNAME, sLog.str());
     
-  while(((samplesRead = pDecoder->DecodeInterleaved((char*)pcmout, MPC_DECODER_BUFFER_LENGTH)) >= 0) && !pSession->m_pHTTPMessage->m_bBreakTranscoding)
+  while(((samplesRead = pDecoder->DecodeInterleaved((char*)pcmout, MPC_DECODER_BUFFER_LENGTH * 4)) >= 0) && !pSession->m_pHTTPMessage->m_bBreakTranscoding)
   {
     /* encode */
     nLameRet = pLameWrapper->EncodeInterleaved(pcmout, samplesRead);      

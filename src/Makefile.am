@@ -76,19 +76,11 @@ cpp_sources = \
 
 fuppes_SOURCES = ${h_sources} ${cpp_sources}
 
-if DISABLE_TRANSCODING
 fuppes_LDFLAGS = \
+  $(FUPPES_LIBS)\
+  ${PTHREAD_LIBS}\
   ${LIBXML_LIBS}\
 	${PCRE_LIBS}\
-  -lpthread
-else
-fuppes_LDFLAGS = \
-  ${LIBXML_LIBS}\
-	${PCRE_LIBS}\
-  -lpthread\
-  -lmp3lame\
-  -lmpcdec\
-  ${VORBISFILE_LIBS}
-endif
-
-fuppes_LDADD = $(FUPPES_LIBS)
+  ${LAME_LIBS}\
+  ${VORBISFILE_LIBS}\
+  ${MUSEPACK_LIBS}

@@ -1,4 +1,4 @@
-  FUPPES- Free UPnP Entertainment Service
+  FUPPES- Free UPnP Entertainment Service  
 
   http://fuppes.sourceforge.net/
   http://sourceforge.net/projects/fuppes/
@@ -11,15 +11,34 @@ shipped with this package.
 
 
 dependencies:
+
   PCRE library (BSD license):
   http://pcre.org/
   http://gnuwin32.sourceforge.net/packages/pcre.htm
 
   libxml2 library (MIT license):
   http://xmlsoft.org/
-
+    
+  to use transcoding capabilities you need
+  
+    The non-mp3 ;) encoder:
+      LAME (LGPL):
+      http://lame.sourceforge.net/
+    
+  and depeding on which formats you want to transcode one or more
+  of the following libraries
+  
+    For OGG/Voribs support:
+      Vorbis (libvorbis) (BSD like license)
+      http://xiph.org/
+  
+    For Musepack/MPC support:
+      libmpcdec (BSD license):
+      http://musepack.net/
+  
 
 using:
+
   regex.hpp 1.0 Copyright (c) 2003 Peter Petersen (pp@on-time.de)
   Simple C++ wrapper for PCRE
 
