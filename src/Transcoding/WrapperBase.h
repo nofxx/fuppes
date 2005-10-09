@@ -1,5 +1,5 @@
 /***************************************************************************
- *            VorbisWrapper.h
+ *            WrapperBase.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -21,45 +21,17 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
+ 
+#ifndef _WRAPPERBASE_H
+#define _WRAPPERBASE_H
 
-#ifndef DISABLE_TRANSCODING
+#include "../SharedLog.h"
 
-#ifndef _VORBISWRAPPER_H
-#define _VORBISWRAPPER_H
-
-#include <string>
-#include <vorbis/vorbisfile.h>
-
-#include "WrapperBase.h"
-
-#ifdef __cplusplus
-extern "C"
-{
-
-}
-#endif
-
-class CVorbisDecoder: public CDecoderBase
+class CDecoderBase
 {
   public:
-    CVorbisDecoder();
-    virtual ~CVorbisDecoder();
-  
-    bool OpenFile(std::string p_sFileName);
-    /**
-     * @param   p_PcmOut[]
-     * @return  number of decoded samples
-     */
-    long DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize);
-  
-  private:
-    OggVorbis_File m_VorbisFile;
-    FILE*          m_pVorbisFileHandle;
-    vorbis_info*   m_pVorbisInfo;
-    int            m_nEndianess;
-  
+    virtual bool OpenFile(std::string p_sFileName) = 0;
+    virtual long DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize) = 0;
 };
 
-#endif /* _VORBISWRAPPER_H */
-
-#endif /* DISABLE_TRANSCODING */
+#endif /* _WRAPPERBASE_H */

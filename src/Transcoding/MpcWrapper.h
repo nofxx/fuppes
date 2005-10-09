@@ -29,11 +29,37 @@
 #include <dlfcn.h>
 #include <string>
 
+#include "WrapperBase.h"
+
 #ifdef __cplusplus
 extern "C"
 {
 
 }
 #endif
+
+typedef struct reader_data_t {
+    FILE *file;
+    long size;
+    mpc_bool_t seekable;
+} reader_data;
+
+class CMpcDecoder: public CDecoderBase
+{
+  public:
+    CMpcDecoder();
+    virtual ~CMpcDecoder();
+  
+    bool OpenFile(std::string p_sFileName);
+    long DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize);
+  
+  private:
+    reader_data    m_ReaderData;   
+    mpc_decoder    m_Decoder;
+    mpc_reader     m_Reader;
+    mpc_streaminfo m_StreamInfo;
+    
+    
+};
 
 #endif /* _MPCWRAPPER_H */

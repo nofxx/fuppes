@@ -38,6 +38,7 @@
 #ifndef DISABLE_TRANSCODING
 #include "Transcoding/LameWrapper.h"
 #include "Transcoding/VorbisWrapper.h"
+#include "Transcoding/MpcWrapper.h"
 #endif
 
 #include "RegEx.h"
@@ -57,7 +58,6 @@ const std::string LOGNAME = "HTTPMessage";
 
 fuppesThreadCallback TranscodeLoop(void *arg);
 fuppesThreadMutex TranscodeMutex;
-short int pcmout[4096];
 
 /*===============================================================================
  CONSTRUCTOR / DESTRUCTOR
@@ -375,7 +375,7 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName)
 fuppesThreadCallback TranscodeLoop(void *arg)
 {
   CTranscodeSessionInfo* pSession = (CTranscodeSessionInfo*)arg;
-	
+	  
   /* init lame encoder */
   CLameWrapper* pLameWrapper = new CLameWrapper();
   if(!pLameWrapper->LoadLibrary())
@@ -388,17 +388,22 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   pLameWrapper->SetBitrate(LAME_BITRATE_320);
   pLameWrapper->Init();	
 
-  /* init vorbis decoder */
-  CVorbisDecoder* pVorbisDecoder = new CVorbisDecoder();
-  if(!pVorbisDecoder->OpenFile(pSession->m_sFileName))
+  string sExt = ExtractFileExt(pSession->m_sFileName);
+  CDecoderBase* pDecoder = NULL;
+  if(ToLower(sExt).compare("ogg") == 0)
+    pDecoder = new CVorbisDecoder();
+  else if(ToLower(sExt).compare("mpc") == 0)
+    pDecoder = new CMpcDecoder();
+  
+  /* init decoder */  
+  if(!pDecoder->OpenFile(pSession->m_sFileName))
   {
-    delete pVorbisDecoder;
+    delete pDecoder;
     delete pLameWrapper;
     delete pSession;
     pSession->m_pHTTPMessage->m_bIsTranscoding = false;
     fuppesThreadExit();
   }  
-  
    
   /* begin transcode */
   long  samplesRead  = 0;    
@@ -406,12 +411,16 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   int   nAppendCount = 0;
   int   nAppendSize  = 0;
 	char* sAppendBuf   = NULL;
-	
+	short int pcmout[MPC_DECODER_BUFFER_LENGTH * 4]; // 4096 || MPC_DECODER_BUFFER_LENGTH
+  cout << "SIZE: " << MPC_DECODER_BUFFER_LENGTH << " - " << sizeof(pcmout) << endl;
+  fflush(stdout);
+ // sleep(2);
+  
   stringstream sLog;
   sLog << "start transcoding \"" << pSession->m_sFileName << "\"" << endl;
   CSharedLog::Shared()->Log(LOGNAME, sLog.str());
     
-  while(((samplesRead = pVorbisDecoder->DecodeInterleaved((char*)pcmout, sizeof(pcmout))) >= 0) && !pSession->m_pHTTPMessage->m_bBreakTranscoding)
+  while(((samplesRead = pDecoder->DecodeInterleaved((char*)pcmout, MPC_DECODER_BUFFER_LENGTH)) >= 0) && !pSession->m_pHTTPMessage->m_bBreakTranscoding)
   {
     /* encode */
     nLameRet = pLameWrapper->EncodeInterleaved(pcmout, samplesRead);      
@@ -512,7 +521,7 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   }    
   /* end transcode */
   
-  delete pVorbisDecoder;
+  delete pDecoder;
   delete pLameWrapper;
   delete pSession;  
   fuppesThreadExit();

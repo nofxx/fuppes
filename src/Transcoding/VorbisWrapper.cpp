@@ -73,9 +73,9 @@ bool CVorbisDecoder::OpenFile(std::string p_sFileName)
 }
 
 long CVorbisDecoder::DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize)
-{
+{  
   int bitstream = 0; 
-  int bytesRead = ov_read(&m_VorbisFile, (char*)p_PcmOut, p_nSize, m_nEndianess, 2, 1, &bitstream);
+  int bytesRead = ov_read(&m_VorbisFile, p_PcmOut, p_nSize, m_nEndianess, 2, 1, &bitstream);
   
   if(bytesRead == 0)
   {
@@ -91,7 +91,7 @@ long CVorbisDecoder::DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize)
   else 
   {
     if(bitstream != 0)
-      return false;
+      return -1;
     
     /* calc samples an encode */
     long samplesRead = bytesRead / m_pVorbisInfo->channels / sizeof(short int);

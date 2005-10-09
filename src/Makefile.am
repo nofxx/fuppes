@@ -32,6 +32,7 @@ h_sources = \
   ContentDirectory/ContentDirectory.h\
   Presentation/PresentationHandler.h\
   Presentation/Stylesheet.h\
+  Transcoding/WrapperBase.h\
   Transcoding/LameWrapper.h\
   Transcoding/VorbisWrapper.h\
   Transcoding/MpcWrapper.h\
@@ -67,7 +68,7 @@ cpp_sources = \
   Presentation/Images/fuppes_small_png.cpp\
   Transcoding/LameWrapper.cpp\
   Transcoding/VorbisWrapper.cpp\
-  Transcoding/MpcWrapper.h\
+  Transcoding/MpcWrapper.cpp\
 	SharedConfig.cpp\
   SharedLog.cpp\
 	Fuppes.cpp\
