@@ -28,6 +28,9 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#ifndef DISABLE_TRANSCODING
+#ifndef DISABLE_MUSEPACK
+
 #include "MpcWrapper.h"
 
 #include <iostream>
@@ -123,6 +126,11 @@ CMpcDecoder::~CMpcDecoder()
 {
 }
 
+bool CMpcDecoder::LoadLibrary()
+{
+  return true;
+}
+
 bool CMpcDecoder::OpenFile(std::string p_sFileName)
 {
   FILE *input = fopen(p_sFileName.c_str(), "rb");
@@ -164,6 +172,10 @@ bool CMpcDecoder::OpenFile(std::string p_sFileName)
   return true;
 }
 
+void CMpcDecoder::CloseFile()
+{
+}
+
 long CMpcDecoder::DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize)
 {
   MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
@@ -191,3 +203,6 @@ long CMpcDecoder::DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize)
     return status;
   }
 }
+
+#endif /* DISABLE_MUSEPACK */
+#endif /* DISABLE_TRANSCODING */

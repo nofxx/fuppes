@@ -379,8 +379,7 @@ fuppesThreadCallback SessionLoop(void *arg)
           CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending non chunked binary");
           send(pSession->GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);             
           CSharedLog::Shared()->ExtendedLog(LOGNAME, "header send");
-          int nSend = send(pSession->GetConnection(), ResponseMsg.GetBinContent(), ResponseMsg.GetBinContentLength(), MSG_NOSIGNAL);                         
-          cout << nSend << endl;          
+          send(pSession->GetConnection(), ResponseMsg.GetBinContent(), ResponseMsg.GetBinContentLength(), MSG_NOSIGNAL);
           CSharedLog::Shared()->ExtendedLog(LOGNAME, "content send");
         } 
         /* send text message */

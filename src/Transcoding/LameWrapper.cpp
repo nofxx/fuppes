@@ -36,9 +36,9 @@ CLameWrapper::CLameWrapper()
 }
 
 bool CLameWrapper::LoadLibrary()
-{  
-  CSharedLog::Shared()->Log(LOGNAME, "try opening libmp3lame.so");
-  m_LibHandle = dlopen("libmp3lame.so", RTLD_LAZY);    
+{ 
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libmp3lame.so");
+  m_LibHandle = dlopen("libmp3lame.so", RTLD_LAZY);
   if(!m_LibHandle)
   {
     stringstream sLog;

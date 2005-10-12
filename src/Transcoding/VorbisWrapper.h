@@ -23,6 +23,7 @@
  */
 
 #ifndef DISABLE_TRANSCODING
+#ifndef DISABLE_VORBIS
 
 #ifndef _VORBISWRAPPER_H
 #define _VORBISWRAPPER_H
@@ -45,7 +46,11 @@ class CVorbisDecoder: public CDecoderBase
     CVorbisDecoder();
     virtual ~CVorbisDecoder();
   
+    bool LoadLibrary();
+  
     bool OpenFile(std::string p_sFileName);
+    void CloseFile();
+  
     /**
      * @param   p_PcmOut[]
      * @return  number of decoded samples
@@ -62,4 +67,5 @@ class CVorbisDecoder: public CDecoderBase
 
 #endif /* _VORBISWRAPPER_H */
 
+#endif /* DISABLE_VORBIS */
 #endif /* DISABLE_TRANSCODING */

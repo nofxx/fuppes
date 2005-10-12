@@ -84,9 +84,11 @@ protected:
 	std::string GetIPv4Address();
 	unsigned int GetHTTPPort() { return m_nHTTPPort; }
   
-  std::string GetSharedDir(int);
-
-  int         SharedDirCount();
+  std::string GetSharedDir(unsigned int p_nDirIdx);
+  unsigned int SharedDirCount();
+  
+  bool IsSupportedFileExtension(std::string p_sFileExtension);
+  bool IsTranscodingEnabled() { return m_bTranscodingEnabled; }
   
 /* <\PUBLIC> */
 	
@@ -109,6 +111,11 @@ private:
   std::string m_sUUID;
   std::vector<std::string> m_vSharedDirectories;
   unsigned int m_nHTTPPort;
+  bool m_bTranscodingEnabled;
+  bool m_bLameAvailable;
+  bool m_bVorbisAvailable;
+  bool m_bMusePackAvailable;
+  bool m_bFlacAvailable;
 
 /*===============================================================================
  HELPER
@@ -119,7 +126,9 @@ private:
   bool ResolveIPByHostname();
   bool ResolveIPByInterface(std::string p_sInterfaceName);
   bool FileExists(std::string p_sFileName);
-  bool WriteDefaultConfig(std::string p_sFileName); 
+  bool WriteDefaultConfig(std::string p_sFileName);
+  void CheckForTranscodingLibs();
+  
 
 /* <\PRIVATE> */
 

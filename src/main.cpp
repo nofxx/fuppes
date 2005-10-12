@@ -99,10 +99,7 @@ int main()
   cout << "FUPPES - Free UPnP(tm) Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;
   cout << "http://fuppes.sourceforge.net" << endl;
   if(!CSharedConfig::Shared()->SetupConfig())
-    return 0;
-  cout << "hostname: " << CSharedConfig::Shared()->GetHostname() << endl;
-  cout << "address : " << CSharedConfig::Shared()->GetIPv4Address() << endl;
-  cout << endl;
+    return 0;  
 	
   /* Create presentation handler */
   CPresentationHandler* pPresentationHandler = new CPresentationHandler();

@@ -23,6 +23,7 @@
  */
 
 #ifndef DISABLE_TRANSCODING
+#ifndef DISABLE_VORBIS
 
 #include "VorbisWrapper.h"
 
@@ -34,15 +35,18 @@ CVorbisDecoder::CVorbisDecoder()
   if(*(char *)&testvar)
     m_nEndianess = 0;  // little endian
   else
-    m_nEndianess = 1;  // big endian	   
+    m_nEndianess = 1;  // big endian  
 }
 
 CVorbisDecoder::~CVorbisDecoder()
 {
-  //fclose(m_pVorbisFileHandle);
-  ov_clear(&m_VorbisFile);
 }
   
+bool CVorbisDecoder::LoadLibrary()
+{
+  return true;
+}
+
 bool CVorbisDecoder::OpenFile(std::string p_sFileName)
 {
   if ((m_pVorbisFileHandle = fopen(p_sFileName.c_str(), "r")) == NULL)
@@ -72,6 +76,11 @@ bool CVorbisDecoder::OpenFile(std::string p_sFileName)
   return true;
 }
 
+void CVorbisDecoder::CloseFile()
+{
+  ov_clear(&m_VorbisFile);  
+}
+
 long CVorbisDecoder::DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize)
 {  
   int bitstream = 0; 
@@ -99,4 +108,5 @@ long CVorbisDecoder::DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize)
   }  
 }
 
+#endif /* DISABLE_VORBIS */
 #endif /* DISABLE_TRANSCODING */

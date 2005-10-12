@@ -22,6 +22,9 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
+#ifndef DISABLE_TRANSCODING
+#ifndef DISABLE_MUSEPACK
+ 
 #ifndef _MPCWRAPPER_H
 #define _MPCWRAPPER_H
 
@@ -50,7 +53,10 @@ class CMpcDecoder: public CDecoderBase
     CMpcDecoder();
     virtual ~CMpcDecoder();
   
+    bool LoadLibrary();  
+  
     bool OpenFile(std::string p_sFileName);
+    void CloseFile();
     long DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize);
   
   private:
@@ -63,3 +69,6 @@ class CMpcDecoder: public CDecoderBase
 };
 
 #endif /* _MPCWRAPPER_H */
+
+#endif /* DISABLE_MUSEPACK */
+#endif /* DISABLE_TRANSCODING */

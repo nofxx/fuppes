@@ -58,6 +58,22 @@
 #define MAXHOSTNAMELEN     64
 #endif
 
+/* transcoding */
+#ifndef DISABLE_TRANSCODING
+
+/* LAME is always needed */
+#include "Transcoding/LameWrapper.h"
+
+#ifndef DISABLE_VORBIS
+#include "Transcoding/VorbisWrapper.h"
+#endif
+
+#ifndef DISABLE_MUSEPACK
+#include "Transcoding/MpcWrapper.h"
+#endif
+
+#endif
+
 /*===============================================================================
  CLASS CSharedConfig
 ===============================================================================*/
@@ -89,6 +105,17 @@ CSharedConfig::CSharedConfig()
 {
   m_sUUID     = GenerateUUID();  
   m_nHTTPPort = 0;
+  
+  /* transcoding */
+  #ifdef DISABLE_TRANSCODING
+  m_bTranscodingEnabled = false;
+  #else
+  m_bTranscodingEnabled = true;
+  #endif
+  m_bLameAvailable     = false;
+  m_bVorbisAvailable   = false;
+  m_bMusePackAvailable = false;
+  m_bFlacAvailable     = false;
 }
 
 /* <\PROTECTED> */
@@ -104,12 +131,80 @@ bool CSharedConfig::SetupConfig()
   bool bResult = true;  
   bResult = ReadConfigFile();
 
+  /* Network settings */
   if(bResult && !ResolveHostAndIP())
   {
     cout << "[ERROR] can't resolve hostname and address" << endl;
-    bResult = false;
+    return false;
   }
-
+  
+  cout << "hostname: " << GetHostname() << endl; 
+  cout << "address : " << GetIPv4Address() << endl; 
+  cout << endl;  
+  
+  /* Transcoding */
+  #ifndef DISABLE_TRANSCODING  
+  CheckForTranscodingLibs();
+  if(!m_bLameAvailable)
+  {
+    cout << endl;
+    cout << "LAME not found. transcoding disabled" << endl;
+    cout << endl;
+    m_bTranscodingEnabled = false;
+  }
+  else
+  {
+    /* no decoder available */
+    if(!m_bVorbisAvailable && !m_bMusePackAvailable && !m_bFlacAvailable)
+    {
+      m_bTranscodingEnabled = false;
+      cout << endl;
+      cout << "no decoding library found. Transcoding disabled" << endl;
+      cout << endl;
+    }
+    else
+    {
+      cout << "  transcoding" << endl;
+      
+      /* vorbis */
+      cout << "   vorbis  : ";
+      #ifdef DISABLE_VORBIS
+      cout << "compiled without vorbis support" << endl;
+      #else
+      if(m_bVorbisAvailable)
+        cout << "yes" << endl;
+      else
+        cout << "no" << endl;
+      #endif      
+    
+      /* musepack */
+      cout << "   musepack: ";
+      #ifdef DISABLE_MUSEPACK
+      cout << "compiled without MusePack support" << endl;
+      #else
+      if(m_bMusePackAvailable)
+        cout << "yes" << endl;
+      else
+        cout << "no" << endl;
+      #endif
+      
+      /* flac */
+      cout << "   flac    : ";
+      #ifdef DISABLE_FLAC
+      cout << "compiled without FLAC support" << endl;
+      #else
+      cout << "coming soon" << endl;
+      /*if(m_bMusePackAvailable)
+        cout << "yes" << endl;
+      else
+        cout << "no" << endl;*/
+      #endif
+      
+      cout << endl;      
+    }
+  }  
+  #endif  
+  
   return bResult;
 }
 
@@ -147,14 +242,32 @@ string CSharedConfig::GetIPv4Address()
   return m_sIP;
 }
 
-std::string CSharedConfig::GetSharedDir(int p_nIndex)
+std::string CSharedConfig::GetSharedDir(unsigned int p_nIndex)
 {
   return m_vSharedDirectories[p_nIndex];
 }
 
-int CSharedConfig::SharedDirCount()
+unsigned int CSharedConfig::SharedDirCount()
 {
-  return (int)m_vSharedDirectories.size();
+  return (unsigned int)m_vSharedDirectories.size();
+}
+
+bool CSharedConfig::IsSupportedFileExtension(std::string p_sFileExtension)
+{  
+  /* TODO :: 
+    - bei Bedarf '.' abschneiden
+    - extensions + transcoding [ja|nein] aus der config lesen  */
+  
+  if((ToLower(p_sFileExtension).compare("mp3") == 0))
+    return true;
+  else if((ToLower(p_sFileExtension).compare("ogg") == 0) && m_bTranscodingEnabled && m_bVorbisAvailable)
+    return true;
+  else if((ToLower(p_sFileExtension).compare("mpc") == 0) && m_bTranscodingEnabled && m_bMusePackAvailable)
+    return true;
+  else if((ToLower(p_sFileExtension).compare("flac") == 0) && m_bTranscodingEnabled && m_bFlacAvailable)
+    return true;
+  else
+    return false;
 }
 
 /* <\PUBLIC> */
@@ -398,6 +511,36 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
   xmlCleanupParser();
   
   return true;
+}
+
+  
+void CSharedConfig::CheckForTranscodingLibs()
+{
+  #ifndef DISABLE_TRANSCODING
+  
+  /* LAME */
+  CLameWrapper* pLame = new CLameWrapper();
+  m_bLameAvailable = pLame->LoadLibrary();
+  delete pLame;
+  
+  if(m_bLameAvailable)
+  { 
+    /* Vorbis */
+    #ifndef DISABLE_VORBIS
+    CVorbisDecoder* pVorbis = new CVorbisDecoder();
+    m_bVorbisAvailable = pVorbis->LoadLibrary();
+    delete pVorbis;
+    #endif
+    
+    /* MusePack */
+    #ifndef DISABLE_MUSEPACK
+    CMpcDecoder* pMuse = new CMpcDecoder();
+    m_bMusePackAvailable = pMuse->LoadLibrary();
+    delete pMuse;
+    #endif
+  }  
+   
+  #endif  
 }
 
 /* <\PRIVATE> */

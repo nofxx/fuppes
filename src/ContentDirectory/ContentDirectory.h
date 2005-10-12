@@ -125,7 +125,7 @@ private:
   *  @param  p_pnCount  count of found objects
   *  @param  pParentFolder  the parent folder
   */
-  void ScanDirectory(std::string p_sDirectory, int* p_pnCount, CStorageFolder* pParentFolder);
+  void ScanDirectory(std::string p_sDirectory, unsigned int* p_pnCount, CStorageFolder* pParentFolder);
   
 
 /* <\PRIVATE> */

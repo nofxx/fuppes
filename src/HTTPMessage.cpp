@@ -518,6 +518,7 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   }    
   /* end transcode */
   
+  pDecoder->CloseFile();
   delete pDecoder;
   delete pLameWrapper;
   delete pSession;  
