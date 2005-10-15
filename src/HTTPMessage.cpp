@@ -381,6 +381,7 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName)
 
 fuppesThreadCallback TranscodeLoop(void *arg)
 {
+  #ifndef DISABLE_TRANSCODING
   CTranscodeSessionInfo* pSession = (CTranscodeSessionInfo*)arg;
 	  
   /* init lame encoder */
@@ -396,6 +397,7 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   pLameWrapper->Init();	
 
   string sExt = ExtractFileExt(pSession->m_sFileName);
+
   CDecoderBase* pDecoder = NULL;
   if(ToLower(sExt).compare("ogg") == 0)
   {
@@ -418,14 +420,15 @@ fuppesThreadCallback TranscodeLoop(void *arg)
     delete pSession;
     pSession->m_pHTTPMessage->m_bIsTranscoding = false;
     fuppesThreadExit();
-  }  
+  }
+
    
   /* begin transcode */
   long  samplesRead  = 0;    
   int   nLameRet     = 0;
   int   nAppendCount = 0;
   int   nAppendSize  = 0;
-	char* sAppendBuf   = NULL;
+	char* sAppendBuf   = NULL; 
   #ifndef DISABLE_MUSEPACK
   int nBufferLength = 0;  
   short int* pcmout;
@@ -439,7 +442,7 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   {
     pcmout = new short int[4096];    
     nBufferLength = 4096;
-  }
+  }  
   #else
   short int* pcmout = new short int[4096];
   int nBufferLength = 4096;
@@ -564,6 +567,8 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   delete pLameWrapper;
   delete pSession;  
   fuppesThreadExit();
+  
+  #endif /* ifndef DISABLE_TRANSCODING */
 }
 
 /* <\PUBLIC> */

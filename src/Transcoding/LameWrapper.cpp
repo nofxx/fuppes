@@ -22,6 +22,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
+#ifndef DISABLE_TRANSCODING
+ 
 #include "LameWrapper.h"
 #include "../SharedLog.h"
 #include <iostream>
@@ -144,3 +146,5 @@ int CLameWrapper::Flush()
 {
   return lame_encode_flush(m_LameGlobalFlags, m_sMp3Buffer, LAME_MAXMP3BUFFER);
 }
+
+#endif /* DISABLE_TRANSCODING */

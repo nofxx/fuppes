@@ -379,7 +379,11 @@ fuppesThreadCallback SessionLoop(void *arg)
           CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending non chunked binary");
           send(pSession->GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);             
           CSharedLog::Shared()->ExtendedLog(LOGNAME, "header send");
+          #ifdef WIN32
+          send(pSession->GetConnection(), ResponseMsg.GetBinContent(), ResponseMsg.GetBinContentLength(), 0);          
+          #else
           send(pSession->GetConnection(), ResponseMsg.GetBinContent(), ResponseMsg.GetBinContentLength(), MSG_NOSIGNAL);
+          #endif
           CSharedLog::Shared()->ExtendedLog(LOGNAME, "content send");
         } 
         /* send text message */
@@ -419,7 +423,11 @@ fuppesThreadCallback SessionLoop(void *arg)
             /*cout << "chunk" << endl; 
 -            fflush(stdout);*/ 
 
-            nErr = send(pSession->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);  
+            #ifdef WIN32
+            nErr = send(pSession->GetConnection(), szChunk, nRet, 0);  
+            #else
+            nErr = send(pSession->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);              
+            #endif
             if(nErr < 0) 
             {               
               cout << "error: " << nErr << endl; 
@@ -439,7 +447,11 @@ fuppesThreadCallback SessionLoop(void *arg)
 -           sEnd << "\r\n\r\n";           
 -           send(pSession.GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), 0);*/ 
             sEnd << "\r\n"; 
-            send(pSession->GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), MSG_NOSIGNAL); 
+            #ifdef WIN32
+            send(pSession->GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), 0); 
+            #else
+            send(pSession->GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), MSG_NOSIGNAL);             
+            #endif
             cout << "end of stream" << endl;        
           } 
             

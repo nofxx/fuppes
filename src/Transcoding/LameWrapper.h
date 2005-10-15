@@ -22,11 +22,16 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
+#ifndef DISABLE_TRANSCODING
+ 
 #ifndef _LAMEWRAPPER_H
 #define _LAMEWRAPPER_H
 
 #include <lame/lame.h>
+#ifdef WIN32
+#else
 #include <dlfcn.h>
+#endif
 #include <string>
 
 
@@ -113,3 +118,4 @@ class CLameWrapper
 };
 
 #endif /* _LAMEWRAPPER_H */
+#endif /* DISABLE_TRANSCODING */

@@ -352,7 +352,7 @@ bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessa
       else
         pMessageOut->TranscodeContentFromFile(pItem->GetFileName());     
       stringstream sLog;
-      sLog << "sending audio file " << pItem->GetName(); 
+      sLog << "sending audio file \"" << pItem->GetName() << "\""; 
       CSharedLog::Shared()->Log(LOGNAME, sLog.str()); 
       return true; 
     }

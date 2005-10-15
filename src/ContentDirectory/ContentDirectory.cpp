@@ -320,6 +320,11 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, unsigned int* p_
       strcpy(szTemp, p_sDirectory.c_str());
       strcat(szTemp, upnpPathDelim);
       strcat(szTemp, data.cFileName);
+      
+      stringstream sTmp;
+      sTmp << szTemp;
+      
+      string sTmpFileName = data.cFileName;
 #else
       
   DIR*    pDir;
@@ -345,8 +350,8 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, unsigned int* p_
       if(((string(".").compare(pDirEnt->d_name) != 0) && 
          (string("..").compare(pDirEnt->d_name) != 0)))
       {        
-        sTmp << p_sDirectory << pDirEnt->d_name;
-        
+        sTmp << p_sDirectory << pDirEnt->d_name;        
+        string sTmpFileName = pDirEnt->d_name;        
 #endif
       
         string sExt = ExtractFileExt(sTmp.str());
@@ -366,7 +371,7 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, unsigned int* p_
           {
             /* set object name */
             stringstream sName;
-            sName << TruncateFileExt(pDirEnt->d_name);
+            sName << TruncateFileExt(sTmpFileName);
             if(pTmpItem->GetDoTranscode() && CSharedConfig::Shared()->GetDisplaySettings().bShowTranscodingTypeInItemNames)
             {
               switch(pTmpItem->GetDecoderType())
@@ -398,7 +403,7 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, unsigned int* p_
   
             /* log */
             sTmp.str("");
-            sTmp << "added mp3-file: \"" << pDirEnt->d_name << "\"";
+            sTmp << "added mp3-file: \"" << sTmpFileName << "\"";
             CSharedLog::Shared()->ExtendedLog(LOGNAME, sTmp.str());            
           }
           else
@@ -418,7 +423,7 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, unsigned int* p_
           
           pTmpFolder->SetObjectID(szObjId);            
           pTmpFolder->SetParent(pParentFolder);
-          pTmpFolder->SetName(pDirEnt->d_name);
+          pTmpFolder->SetName(sTmpFileName);
           pTmpFolder->SetFileName(sTmp.str());
           
           /* Add folder to list and parent folder */
@@ -435,16 +440,16 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, unsigned int* p_
           
           /* log */
           sTmp.str("");
-          sTmp << "added dir: \"" << pDirEnt->d_name << "\"";
+          sTmp << "added dir: \"" << sTmpFileName << "\"";
           CSharedLog::Shared()->ExtendedLog(LOGNAME, sTmp.str()); 
         }
         sTmp.str("");
       }
     }    
-    #ifndef WIN32
+  #ifndef WIN32
     closedir(pDir);
-    #endif
-  }
+  } /* if opendir */
+  #endif  
 }
         
         
