@@ -29,6 +29,7 @@
 #include "../Common.h"
 #include "AudioItem.h"
 #include <sstream>
+#include <string>
 
 /*===============================================================================
  CLASS CAudioItem
@@ -44,7 +45,10 @@
 CAudioItem::CAudioItem(std::string p_sHTTPServerURL):
 CUPnPItem(UPNP_OBJECT_TYPE_AUDIO_ITEM, p_sHTTPServerURL)
 {
-  m_bDoTranscode = false;
+  m_bDoTranscode = false;   
+  m_nAudioFormat = AUDIO_FORMAT_UNKNOWN;
+  m_nDecoderType = AUDIO_DECODER_UNKNOWN;
+  m_nEncoderType = AUDIO_ENCODER_UNKNOWN;
 }
 
 /*===============================================================================
@@ -88,7 +92,7 @@ void CAudioItem::GetDescription(xmlTextWriterPtr pWriter)
   
     /* date */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "date", BAD_CAST "http://purl.org/dc/elements/1.1/");    
-    xmlTextWriterWriteString(pWriter, BAD_CAST "2005-06-19");
+    xmlTextWriterWriteString(pWriter, BAD_CAST "2005-10-15");
     xmlTextWriterEndElement(pWriter);
     
     /* writeStatus */
@@ -108,5 +112,40 @@ void CAudioItem::GetDescription(xmlTextWriterPtr pWriter)
   /* end item */
   xmlTextWriterEndElement(pWriter);
 }
+
+bool CAudioItem::SetupTranscoding()
+{
+  std::string sExt = ExtractFileExt(m_sFileName);  
+  if (ToLower(sExt).compare("mp3") == 0)
+  {
+    m_bDoTranscode = false;
+    m_nEncoderType = AUDIO_ENCODER_NONE;
+    m_nDecoderType = AUDIO_DECODER_NONE;    
+    return true;
+  }
+  else if (ToLower(sExt).compare("ogg") == 0)
+  {
+    m_bDoTranscode = true;
+    m_nEncoderType = AUDIO_ENCODER_LAME;
+    m_nDecoderType = AUDIO_DECODER_VORBIS;    
+    return true;
+  }
+  else if (ToLower(sExt).compare("mpc") == 0)
+  {
+    m_bDoTranscode = true;
+    m_nEncoderType = AUDIO_ENCODER_LAME;
+    m_nDecoderType = AUDIO_DECODER_MUSEPACK;    
+    return true;
+  }
+  else if (ToLower(sExt).compare("flac") == 0)
+  {
+    m_bDoTranscode = true;
+    m_nEncoderType = AUDIO_ENCODER_LAME;
+    m_nDecoderType = AUDIO_DECODER_FLAC;
+    return true;
+  }
+  else
+    return false;
+}  
 
 /* <\PUBLIC> */

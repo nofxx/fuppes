@@ -350,34 +350,62 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, unsigned int* p_
 #endif
       
         string sExt = ExtractFileExt(sTmp.str());
-        /* MP3 file */
+        /* Audio item */
         if(IsFile(sTmp.str()) && CSharedConfig::Shared()->IsSupportedFileExtension(sExt))
         {
           CAudioItem* pTmpItem = new CAudioItem(m_sHTTPServerURL);
-          if ((ToLower(sExt).compare("ogg") == 0) || (ToLower(sExt).compare("mpc") == 0) || (ToLower(sExt).compare("flac") == 0))
-            pTmpItem->m_bDoTranscode = true;          
           
-          char szObjId[10];                
+          char szObjId[10];
           sprintf(szObjId, "%010X", *p_pnCount);
             
-          pTmpItem->SetObjectID(szObjId);            
-          pTmpItem->SetParent(pParentFolder);
-          pTmpItem->SetName(pDirEnt->d_name);
+          pTmpItem->SetObjectID(szObjId);
+          pTmpItem->SetParent(pParentFolder);     
           pTmpItem->SetFileName(sTmp.str());
         
-          /* Add folder to list and parent folder */
-          m_ObjectList[szObjId] = pTmpItem;
-          pParentFolder->AddUPnPObject(pTmpItem);
-          
-          /* increment counter */
-          int nTmp = *p_pnCount;
-          nTmp++;
-          *p_pnCount = nTmp;
+          if(pTmpItem->SetupTranscoding())
+          {
+            /* set object name */
+            stringstream sName;
+            sName << TruncateFileExt(pDirEnt->d_name);
+            if(pTmpItem->GetDoTranscode() && CSharedConfig::Shared()->GetDisplaySettings().bShowTranscodingTypeInItemNames)
+            {
+              switch(pTmpItem->GetDecoderType())
+              {
+                case AUDIO_DECODER_UNKNOWN:
+                  break;
+                case AUDIO_DECODER_VORBIS:
+                  sName << " (ogg)";
+                  break;
+                case AUDIO_DECODER_MUSEPACK:
+                  sName << " (mpc)";
+                  break;
+                case AUDIO_DECODER_FLAC:
+                  sName << " (flac)";
+                case AUDIO_DECODER_NONE:
+                  break;                
+              }                     
+            } 
+            pTmpItem->SetName(sName.str());            
+            
+            /* Add audio item to list and parent folder */
+            m_ObjectList[szObjId] = pTmpItem;
+            pParentFolder->AddUPnPObject(pTmpItem);
+            
+            /* increment counter */
+            int nTmp = *p_pnCount;
+            nTmp++;
+            *p_pnCount = nTmp;
+  
+            /* log */
+            sTmp.str("");
+            sTmp << "added mp3-file: \"" << pDirEnt->d_name << "\"";
+            CSharedLog::Shared()->ExtendedLog(LOGNAME, sTmp.str());            
+          }
+          else
+          {
+            delete pTmpItem;
+          }
 
-          /* log */
-          sTmp.str("");
-          sTmp << "added mp3-file: \"" << pDirEnt->d_name << "\"";
-          CSharedLog::Shared()->ExtendedLog(LOGNAME, sTmp.str());          
         }
         /* folder */
         else if(IsDirectory(sTmp.str()))

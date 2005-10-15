@@ -37,8 +37,15 @@
 
 #ifndef DISABLE_TRANSCODING
 #include "Transcoding/LameWrapper.h"
-#include "Transcoding/VorbisWrapper.h"
-#include "Transcoding/MpcWrapper.h"
+
+  #ifndef DISABLE_VORBIS
+  #include "Transcoding/VorbisWrapper.h"
+  #endif
+  
+  #ifndef DISABLE_MUSEPACK
+  #include "Transcoding/MpcWrapper.h"
+  #endif
+
 #endif
 
 #include "RegEx.h"
@@ -391,12 +398,20 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   string sExt = ExtractFileExt(pSession->m_sFileName);
   CDecoderBase* pDecoder = NULL;
   if(ToLower(sExt).compare("ogg") == 0)
+  {
+    #ifndef DISABLE_VORBIS
     pDecoder = new CVorbisDecoder();
+    #endif
+  }
   else if(ToLower(sExt).compare("mpc") == 0)
+  {
+    #ifndef DISABLE_MUSEPACK
     pDecoder = new CMpcDecoder();
+    #endif
+  }
   
   /* init decoder */  
-  if(!pDecoder->OpenFile(pSession->m_sFileName))
+  if(!pDecoder || !pDecoder->OpenFile(pSession->m_sFileName))
   {
     delete pDecoder;
     delete pLameWrapper;
@@ -411,13 +426,30 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   int   nAppendCount = 0;
   int   nAppendSize  = 0;
 	char* sAppendBuf   = NULL;
-	short int pcmout[MPC_DECODER_BUFFER_LENGTH * 4]; // 4096 || MPC_DECODER_BUFFER_LENGTH * 4
+  #ifndef DISABLE_MUSEPACK
+  int nBufferLength = 0;  
+  short int* pcmout;
+  CMpcDecoder* pTmp = dynamic_cast<CMpcDecoder*>(pDecoder);  
+  if (pTmp)
+  {
+	  pcmout = new short int[MPC_DECODER_BUFFER_LENGTH * 4];
+    nBufferLength = MPC_DECODER_BUFFER_LENGTH * 4;
+  }
+  else
+  {
+    pcmout = new short int[4096];    
+    nBufferLength = 4096;
+  }
+  #else
+  short int* pcmout = new short int[4096];
+  int nBufferLength = 4096;
+  #endif
   
   stringstream sLog;
   sLog << "start transcoding \"" << pSession->m_sFileName << "\"" << endl;
   CSharedLog::Shared()->Log(LOGNAME, sLog.str());
     
-  while(((samplesRead = pDecoder->DecodeInterleaved((char*)pcmout, MPC_DECODER_BUFFER_LENGTH * 4)) >= 0) && !pSession->m_pHTTPMessage->m_bBreakTranscoding)
+  while(((samplesRead = pDecoder->DecodeInterleaved((char*)pcmout, nBufferLength)) >= 0) && !pSession->m_pHTTPMessage->m_bBreakTranscoding)
   {
     /* encode */
     nLameRet = pLameWrapper->EncodeInterleaved(pcmout, samplesRead);      
@@ -475,15 +507,21 @@ fuppesThreadCallback TranscodeLoop(void *arg)
     
   } /* while */  
   
+  
+  /* delete buffers */
+  if(pcmout)
+    delete[] pcmout;
 	
   if(sAppendBuf)
     delete[] sAppendBuf;
   
+  
+  /* flush and end transcoding */
   if(!pSession->m_pHTTPMessage->m_bBreakTranscoding)
   {
-    sLog.str("");
+    /*sLog.str("");
     sLog << "done transcoding loop now flushing" << endl;
-    CSharedLog::Shared()->Log(LOGNAME, sLog.str());    
+    CSharedLog::Shared()->Log(LOGNAME, sLog.str()); */
   
     /* flush mp3 */
     nLameRet = pLameWrapper->Flush();
@@ -511,6 +549,7 @@ fuppesThreadCallback TranscodeLoop(void *arg)
     sLog << "done transcoding \"" << pSession->m_sFileName << "\"" << endl;
     CSharedLog::Shared()->Log(LOGNAME, sLog.str());  
   }
+  /* break transcoding */
   else
   {
     cout << "break transcoding" << endl;
@@ -518,7 +557,9 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   }    
   /* end transcode */
   
-  pDecoder->CloseFile();
+  
+  /* cleanup and exit */
+  pDecoder->CloseFile();  
   delete pDecoder;
   delete pLameWrapper;
   delete pSession;  

@@ -116,6 +116,9 @@ CSharedConfig::CSharedConfig()
   m_bVorbisAvailable   = false;
   m_bMusePackAvailable = false;
   m_bFlacAvailable     = false;
+  
+  /* display settings */
+  m_DisplaySettings.bShowTranscodingTypeInItemNames = true;
 }
 
 /* <\PROTECTED> */
@@ -268,6 +271,21 @@ bool CSharedConfig::IsSupportedFileExtension(std::string p_sFileExtension)
     return true;
   else
     return false;
+}
+
+FILE_KIND CSharedConfig::GetFileKindByExtension(std::string p_sFileExtension)
+{
+  FILE_KIND nResult = FILE_KIND_UNKNOWN;
+  
+  if(
+     (ToLower(p_sFileExtension).compare("mp3") == 0) ||
+     (ToLower(p_sFileExtension).compare("ogg") == 0) ||
+     (ToLower(p_sFileExtension).compare("mpc") == 0) ||
+     (ToLower(p_sFileExtension).compare("flac") == 0)
+    )
+    nResult = FILE_KIND_AUDIO;  
+  
+  return nResult;
 }
 
 /* <\PUBLIC> */

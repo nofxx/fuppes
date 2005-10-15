@@ -35,6 +35,18 @@
 
 using namespace std;
 
+typedef enum tagFILE_KIND
+{
+  FILE_KIND_UNKNOWN  =  0,
+  FILE_KIND_AUDIO    =  1,
+  FILE_KIND_VIDEO    =  2
+}FILE_KIND;
+
+struct DisplaySettings
+{
+  bool bShowTranscodingTypeInItemNames;
+};
+
 /*===============================================================================
  CLASS CSharedConfig
 ===============================================================================*/
@@ -88,7 +100,9 @@ protected:
   unsigned int SharedDirCount();
   
   bool IsSupportedFileExtension(std::string p_sFileExtension);
-  bool IsTranscodingEnabled() { return m_bTranscodingEnabled; }
+  bool IsTranscodingEnabled() { return m_bTranscodingEnabled; }  
+  FILE_KIND GetFileKindByExtension(std::string p_sFileExtension);
+  DisplaySettings GetDisplaySettings() { return m_DisplaySettings; }
   
 /* <\PUBLIC> */
 	
@@ -115,7 +129,9 @@ private:
   bool m_bLameAvailable;
   bool m_bVorbisAvailable;
   bool m_bMusePackAvailable;
-  bool m_bFlacAvailable;
+  bool m_bFlacAvailable;  
+
+  DisplaySettings m_DisplaySettings;
 
 /*===============================================================================
  HELPER

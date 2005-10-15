@@ -419,31 +419,31 @@ fuppesThreadCallback SessionLoop(void *arg)
             /*cout << "chunk" << endl; 
 -            fflush(stdout);*/ 
 
-             nErr = send(pSession->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);  
-             if(nErr < 0) 
-             {               
-               cout << "error: " << nErr << endl; 
-               fflush(stdout); 
+            nErr = send(pSession->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);  
+            if(nErr < 0) 
+            {               
+              cout << "error: " << nErr << endl; 
+              fflush(stdout); 
 
-               ResponseMsg.m_bBreakTranscoding = true; 
-               fuppesSleep(1000); /* wait for the transcoding thread to end */ 
-               break; 
-             } 
-           }           
+              ResponseMsg.m_bBreakTranscoding = true; 
+              fuppesSleep(1000); /* wait for the transcoding thread to end */ 
+              break; 
+            } 
+          } /* while */           
     
             
-           if(nErr != -1) 
-           { 
-             stringstream sEnd; 
-             /*sEnd << "0\r\n";         
--            sEnd << "\r\n\r\n";           
--            send(pSession.GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), 0);*/ 
-             sEnd << "\r\n"; 
-             send(pSession->GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), MSG_NOSIGNAL); 
-             cout << "end of stream" << endl;        
-           } 
+          if(nErr != -1) 
+          { 
+            stringstream sEnd; 
+            /*sEnd << "0\r\n";         
+-           sEnd << "\r\n\r\n";           
+-           send(pSession.GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), 0);*/ 
+            sEnd << "\r\n"; 
+            send(pSession->GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), MSG_NOSIGNAL); 
+            cout << "end of stream" << endl;        
+          } 
             
-         }  
+      } /* else */
             
     }
   }

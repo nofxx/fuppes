@@ -118,6 +118,13 @@ std::string ExtractFileExt(std::string p_sFileName)
   return sResult;
 }
 
+std::string TruncateFileExt(std::string p_sFileName)
+{
+  std::string sExt = ExtractFileExt(p_sFileName);
+  std::string sResult = p_sFileName.substr(0, p_sFileName.length() - sExt.length() - 1);
+  return sResult;
+}
+
 std::string ToLower(std::string p_sInput)
 {
   for(unsigned int i = 0; i < p_sInput.length(); i++)

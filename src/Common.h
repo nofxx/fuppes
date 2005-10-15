@@ -72,6 +72,7 @@ bool IsFile(std::string p_sFileName);
 bool DirectoryExists(std::string p_sDirName);
 bool IsDirectory(std::string p_sDirName);
 std::string ExtractFileExt(std::string p_sFileName);
+std::string TruncateFileExt(std::string p_sFileName);
 
 /*===============================================================================
  String Functions

@@ -32,6 +32,31 @@
 
 #include "UPnPItem.h"
 
+typedef enum tagAUDIO_FORMAT
+{
+  AUDIO_FORMAT_UNKNOWN  =  0,
+  AUDIO_FORMAT_MP3      =  1,
+	AUDIO_FORMAT_VORBIS   =  2,
+  AUDIO_FORMAT_MPC      =  3,    
+  AUDIO_FORMAT_FLAC     =  4
+}AUDIO_FORMAT;
+
+typedef enum tagAUDIO_ENCODER
+{
+  AUDIO_ENCODER_UNKNOWN  =  0,
+  AUDIO_ENCODER_NONE     =  1,
+  AUDIO_ENCODER_LAME     =  2
+}AUDIO_ENCODER;
+
+typedef enum tagAUDIO_DECODER
+{
+  AUDIO_DECODER_UNKNOWN  =  0,
+  AUDIO_DECODER_NONE     =  1,
+  AUDIO_DECODER_VORBIS   =  2,
+  AUDIO_DECODER_MUSEPACK =  3,
+  AUDIO_DECODER_FLAC     =  4
+}AUDIO_DECODER;
+
 /*===============================================================================
  CLASS CAudioItem
 ===============================================================================*/
@@ -46,24 +71,33 @@ class CAudioItem: public CUPnPItem
 /*===============================================================================
  CONSTRUCTOR / DESTRUCTOR
 ===============================================================================*/
-  
-  /** constructor
-  *  @param  p_sHTTPServerURL  URL of the HTTP server
-  */
-  CAudioItem(std::string p_sHTTPServerURL);
+    
+    /** constructor
+     *  @param  p_sHTTPServerURL  URL of the HTTP server
+     */
+    CAudioItem(std::string p_sHTTPServerURL);
 
 /*===============================================================================
  GET
 ===============================================================================*/
 
-  /** writes the whole description of an audio item
-  *  @param  pWriter  the XML container to write to
-  */
-  void GetDescription(xmlTextWriterPtr pWriter);
-
+    /** writes the whole description of an audio item
+     *  @param  pWriter  the XML container to write to
+     */
+    void GetDescription(xmlTextWriterPtr pWriter);
+    
+    bool SetupTranscoding();
+    bool GetDoTranscode() { return m_bDoTranscode; }
+    AUDIO_DECODER GetDecoderType() { return m_nDecoderType; }
   
-  bool m_bDoTranscode;
-/* <\PUBLIC> */
+/* <\PUBLIC> */  
+  
+  private:
+  
+    bool           m_bDoTranscode;
+    AUDIO_FORMAT   m_nAudioFormat;
+    AUDIO_DECODER  m_nDecoderType;
+    AUDIO_ENCODER  m_nEncoderType;
 
 };
 

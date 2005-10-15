@@ -347,12 +347,12 @@ bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessa
     if(pItem && FileExists(pItem->GetFileName()))
     {
       pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, HTTP_CONTENT_TYPE_AUDIO_MPEG); 
-      if (!pItem->m_bDoTranscode)
+      if (!pItem->GetDoTranscode())
         pMessageOut->LoadContentFromFile(pItem->GetFileName());
       else
         pMessageOut->TranscodeContentFromFile(pItem->GetFileName());     
       stringstream sLog;
-      sLog << "sending audio file " << pItem->GetFileName(); 
+      sLog << "sending audio file " << pItem->GetName(); 
       CSharedLog::Shared()->Log(LOGNAME, sLog.str()); 
       return true; 
     }

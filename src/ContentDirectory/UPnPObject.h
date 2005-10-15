@@ -60,9 +60,9 @@ protected:
 ===============================================================================*/
 
   /** constructor
-  *  @param  p_nUPnPObjectType  type of the UPnP object
-  *  @param  p_sHTTPServerURL  URL of the HTTP server
-  */
+   *  @param  p_nUPnPObjectType  type of the UPnP object
+   *  @param  p_sHTTPServerURL  URL of the HTTP server
+   */
   CUPnPObject(UPNP_OBJECT_TYPE p_nUPnPObjectType, std::string p_sHTTPServerURL) 
   {
     m_nUPnPObjectType = p_nUPnPObjectType;
@@ -70,7 +70,7 @@ protected:
   }
     
   /** destructor
-  */
+   */
   virtual ~CUPnPObject()
   {
   }
@@ -86,23 +86,23 @@ public:
 ===============================================================================*/
 
   /** sets the object id
-  *  @param  p_sObjectID  object id to set
-  */
+   *  @param  p_sObjectID  object id to set
+   */
   void SetObjectID(std::string p_sObjectID)   { m_sObjectID = p_sObjectID;        }
 
   /** sets the parent object
-  *  @param  p_ParentObject  parent object to set
-  */
+   *  @param  p_ParentObject  parent object to set
+   */
   void SetParent(CUPnPObject* p_ParentObject) { m_pParentObject = p_ParentObject; }
   
   /** sets the object name
-  *  @param  p_sName  object name to set
-  */  
+   *  @param  p_sName  object name to set
+   */  
   void SetName(std::string p_sName)           { m_sName = p_sName;                }
   
   /** sets the file name for the object
-  *  @param  p_sFileName  file name to set
-  */  
+   *  @param  p_sFileName  file name to set
+   */  
   void SetFileName(std::string p_sFileName)   { m_sFileName = p_sFileName;        }
 
 /*===============================================================================
@@ -110,8 +110,8 @@ public:
 ===============================================================================*/
 
   /** returns the object type
-  *  @return  object type
-  */  
+   *  @return  object type
+   */  
   UPNP_OBJECT_TYPE GetObjectType()            { return m_nUPnPObjectType;         }      
 
   /** returns the object id
@@ -120,23 +120,23 @@ public:
   std::string GetObjectID()                   { return m_sObjectID;               }
   
   /** returns the parent object
-  *  @return  pointer to the parent object
-  */  
+   *  @return  pointer to the parent object
+   */  
   CUPnPObject* GetParent()                    { return m_pParentObject;           }
   
   /** returns the object name
-  *  @return  object name as string
-  */  
+   *  @return  object name as string
+   */  
   std::string GetName()                       { return m_sName;                   }
   
   /** returns the object's filename
-  *  @return  filename as string
-  */  
+   *  @return  filename as string
+   */  
   std::string GetFileName()                   { return m_sFileName;               }
   
   /** returns the object description
-  *  @param  xmlTextWriterPtr  XML container to write to
-  */  
+   *  @param  xmlTextWriterPtr  XML container to write to
+   */  
   virtual void GetDescription(xmlTextWriterPtr pWriter) = 0;
     
 /* <\PUBLIC> */
@@ -150,15 +150,15 @@ protected:
 ===============================================================================*/
   
   /** returns the URL of the HTTP server
-  *  @return  server URL as string
-  */  
+   *  @return  server URL as string
+   */  
   std::string GetHTTPServerURL() { return m_sHTTPServerURL; }
 
 /* <\PROTECTED> */
 
 /* <PRIVATE> */
 
-private:
+protected:
 
 /*===============================================================================
  MEMBERS
