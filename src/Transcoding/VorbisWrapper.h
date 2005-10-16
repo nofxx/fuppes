@@ -28,6 +28,7 @@
 #ifndef _VORBISWRAPPER_H
 #define _VORBISWRAPPER_H
 
+#include "../Common.h"
 #include <string>
 #include <vorbis/vorbisfile.h>
 
@@ -36,6 +37,20 @@
 #ifdef __cplusplus
 extern "C"
 {
+  /* int ov_open(FILE *f,OggVorbis_File *vf,char *initial,long ibytes); */
+  typedef int (*OvOpen_t)(FILE*, OggVorbis_File*, char*, long);
+
+  /* vorbis_info *ov_info(OggVorbis_File *vf,int link); */
+  typedef vorbis_info* (*OvInfo_t)(OggVorbis_File*, int);
+  
+  /* vorbis_comment *ov_comment(OggVorbis_File *vf,int link); */
+  typedef vorbis_comment* (*OvComment_t)(OggVorbis_File*, int);
+  
+  /* long ov_read(OggVorbis_File *vf, char *buffer, int length, int bigendianp, int word, int sgned, int *bitstream); */
+  typedef long (*OvRead_t)(OggVorbis_File*, char*, int, int, int, int, int*); 
+
+  /* int ov_clear(OggVorbis_File *vf); */
+  typedef int (*OvClear_t)(OggVorbis_File*);
 
 }
 #endif
@@ -46,7 +61,7 @@ class CVorbisDecoder: public CDecoderBase
     CVorbisDecoder();
     virtual ~CVorbisDecoder();
   
-    bool LoadLibrary();
+    bool LoadLib();
   
     bool OpenFile(std::string p_sFileName);
     void CloseFile();
@@ -58,10 +73,19 @@ class CVorbisDecoder: public CDecoderBase
     long DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize);
   
   private:
+    fuppesLibHandle  m_LibHandle;      
+          
     OggVorbis_File m_VorbisFile;
     FILE*          m_pVorbisFileHandle;
     vorbis_info*   m_pVorbisInfo;
     int            m_nEndianess;
+  
+    
+    OvOpen_t       m_OvOpen;
+    OvInfo_t       m_OvInfo;
+    OvComment_t    m_OvComment;
+    OvRead_t       m_OvRead;
+    OvClear_t      m_OvClear;
   
 };
 

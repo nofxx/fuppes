@@ -320,3 +320,35 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle)
   return bResult;  
   #endif
 }
+
+/*===============================================================================
+ Library functions
+===============================================================================*/
+
+fuppesLibHandle FuppesLoadLibrary(std::string p_sLibName)
+{
+  #ifdef WIN32
+    return LoadLibrary(p_sLibName.c_str());
+  #else
+    return dlopen(p_sLibName.c_str(), RTLD_LAZY);
+  #endif
+}
+
+
+fuppesProcHandle  FuppesGetProcAddress(fuppesLibHandle p_LibHandle, std::string p_sProcName)
+{
+  #ifdef WIN32
+  return GetProcAddress(p_LibHandle, p_sProcName.c_str());
+  #else
+  return dlsym(p_LibHandle, p_sProcName.c_str());
+  #endif
+}
+
+bool FuppesCloseLibrary(fuppesLibHandle p_LibHandle)
+{
+  #ifdef WIN32
+  return FreeLibrary(p_LibHandle);  
+  #else
+  return dlclose(p_LibHandle);
+  #endif
+}

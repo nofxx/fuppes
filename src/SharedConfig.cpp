@@ -538,7 +538,7 @@ void CSharedConfig::CheckForTranscodingLibs()
   
   /* LAME */
   CLameWrapper* pLame = new CLameWrapper();
-  m_bLameAvailable = pLame->LoadLibrary();
+  m_bLameAvailable = pLame->LoadLib();
   delete pLame;
   
   if(m_bLameAvailable)
@@ -546,14 +546,14 @@ void CSharedConfig::CheckForTranscodingLibs()
     /* Vorbis */
     #ifndef DISABLE_VORBIS
     CVorbisDecoder* pVorbis = new CVorbisDecoder();
-    m_bVorbisAvailable = pVorbis->LoadLibrary();
+    m_bVorbisAvailable = pVorbis->LoadLib();
     delete pVorbis;
     #endif
     
     /* MusePack */
     #ifndef DISABLE_MUSEPACK
     CMpcDecoder* pMuse = new CMpcDecoder();
-    m_bMusePackAvailable = pMuse->LoadLibrary();
+    m_bMusePackAvailable = pMuse->LoadLib();
     delete pMuse;
     #endif
   }  

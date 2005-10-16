@@ -115,6 +115,25 @@ bool fuppesSocketSetNonBlocking(fuppesSocket p_SocketHandle);
 
 bool fuppesThreadClose(fuppesThread p_ThreadHandle);
 
+
+
+/*===============================================================================
+ Library definitions and functions
+===============================================================================*/
+
+#ifdef WIN32
+  typedef HINSTANCE  fuppesLibHandle;
+  typedef FARPROC    fuppesProcHandle;
+#else
+  typedef void*      fuppesLibHandle;
+  typedef void*      fuppesProcHandle;
+#endif
+
+fuppesLibHandle   FuppesLoadLibrary(std::string p_sLibName);
+fuppesProcHandle  FuppesGetProcAddress(fuppesLibHandle p_LibHandle, std::string p_sProcName);
+bool              FuppesCloseLibrary(fuppesLibHandle p_LibHandle);
+
+
 /*===============================================================================
  WIN32 specific definitions
 ===============================================================================*/

@@ -30,7 +30,7 @@
 class CDecoderBase
 {
   public:
-    virtual bool LoadLibrary() = 0;
+    virtual bool LoadLib() = 0;
     virtual bool OpenFile(std::string p_sFileName) = 0;      
     virtual void CloseFile() = 0;    
     virtual long DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize) = 0;  

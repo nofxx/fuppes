@@ -37,6 +37,7 @@
 
 #ifndef DISABLE_TRANSCODING
 #include "Transcoding/LameWrapper.h"
+#include "Transcoding/WrapperBase.h"
 
   #ifndef DISABLE_VORBIS
   #include "Transcoding/VorbisWrapper.h"
@@ -386,7 +387,7 @@ fuppesThreadCallback TranscodeLoop(void *arg)
 	  
   /* init lame encoder */
   CLameWrapper* pLameWrapper = new CLameWrapper();
-  if(!pLameWrapper->LoadLibrary())
+  if(!pLameWrapper->LoadLib())
   {    
     delete pLameWrapper;
     delete pSession; 
@@ -411,6 +412,9 @@ fuppesThreadCallback TranscodeLoop(void *arg)
     pDecoder = new CMpcDecoder();
     #endif
   }
+
+  cout << "before init dec " << endl;
+  fflush(stdout);  
   
   /* init decoder */  
   if(!pDecoder || !pDecoder->OpenFile(pSession->m_sFileName))
@@ -421,6 +425,9 @@ fuppesThreadCallback TranscodeLoop(void *arg)
     pSession->m_pHTTPMessage->m_bIsTranscoding = false;
     fuppesThreadExit();
   }
+
+  cout << "after init dec " << endl;
+  fflush(stdout);
 
    
   /* begin transcode */

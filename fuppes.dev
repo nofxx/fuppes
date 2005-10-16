@@ -1,7 +1,7 @@
 [Project]
 FileName=fuppes.dev
 Name=fuppes
-UnitCount=66
+UnitCount=67
 Type=1
 Ver=1
 ObjFiles=
@@ -11,7 +11,7 @@ PrivateResource=fuppes_private.rc
 ResourceIncludes=
 MakeIncludes=
 Compiler=
-CppCompiler=-DDISABLE_TRANSCODING_@@_
+CppCompiler=-DDISABLE_MUSEPACK_@@_
 Linker=../../../../../Dev-Cpp/lib/libxml2.a_@@_../../../../../Dev-Cpp/lib/libpcre.dll.a_@@_../../../../../Dev-Cpp/lib/libwsock32.a_@@_../../../../../Dev-Cpp/lib/iconv.lib_@@_../../../../Dev-Cpp/lib/libole32.a_@@_
 IsCpp=1
 Icon=fuppes.ico
@@ -699,6 +699,16 @@ BuildCmd=
 
 [Unit66]
 FileName=src\UPnPActions\UPnPBrowse.h
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit67]
+FileName=src\Transcoding\WrapperBase.h
 CompileCpp=1
 Folder=fuppes
 Compile=1

@@ -35,84 +35,92 @@ using namespace std;
 
 CLameWrapper::CLameWrapper()
 {
+  FuppesCloseLibrary(m_LibHandle);
 }
 
-bool CLameWrapper::LoadLibrary()
+bool CLameWrapper::LoadLib()
 { 
+  #ifdef WIN32
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening lame_enc");
+  m_LibHandle = FuppesLoadLibrary("lame_enc.dll");
+  #else
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libmp3lame.so");
-  m_LibHandle = dlopen("libmp3lame.so", RTLD_LAZY);
+  m_LibHandle = FuppesLoadLibrary("libmp3lame");  
+  #endif
   if(!m_LibHandle)
   {
     stringstream sLog;
-    sLog << "cannot open library: " << dlerror();
+    sLog << "cannot open library: "; // dlerror();
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
-  }    
-
-  m_LameInit = (LameInit_t)dlsym(m_LibHandle, "lame_init");
+  }   
+   
+    
+  m_LameInit = (LameInit_t)FuppesGetProcAddress(m_LibHandle, "lame_init");
   if(!m_LameInit)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'lame_init': " << dlerror();
+    sLog << "cannot load symbol 'lame_init': "; // << dlerror();
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   }
+
   
-  m_LameGetVersion = (LameGetVersion_t)dlsym(m_LibHandle, "get_lame_version");
+  m_LameGetVersion = (LameGetVersion_t)FuppesGetProcAddress(m_LibHandle, "get_lame_version");
   if(!m_LameGetVersion)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'get_lame_version': " << dlerror();
+    sLog << "cannot load symbol 'get_lame_version': "; // << dlerror();
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
-    return false;
+    //return false;
   }
   
-  m_LameInitParams = (LameInitParams_t)dlsym(m_LibHandle, "lame_init_params");
+  m_LameInitParams = (LameInitParams_t)FuppesGetProcAddress(m_LibHandle, "lame_init_params");
   if(!m_LameInitParams)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'lame_init_params': " << dlerror();
+    sLog << "cannot load symbol 'lame_init_params': "; // << dlerror();
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   }
   
-  m_LamePrintConfig = (LamePrintConfig_t)dlsym(m_LibHandle, "lame_print_config");
+  m_LamePrintConfig = (LamePrintConfig_t)FuppesGetProcAddress(m_LibHandle, "lame_print_config");
   if(!m_LamePrintConfig)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'lame_print_config': " << dlerror();
+    sLog << "cannot load symbol 'lame_print_config': "; // << dlerror();
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
-    return false;
+    //return false;
   }  
   
-  m_LameSetCompressionRatio = (LameSetCompressionRatio_t)dlsym(m_LibHandle, "lame_set_compression_ratio");
+  m_LameSetCompressionRatio = (LameSetCompressionRatio_t)FuppesGetProcAddress(m_LibHandle, "lame_set_compression_ratio");
   if(!m_LameSetCompressionRatio)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'lame_set_compression_ratio': " << dlerror();
+    sLog << "cannot load symbol 'lame_set_compression_ratio': "; // << dlerror();
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
-    return false;
+    //return false;
   }  
   
-  m_LameEncodeBufferInterleaved = (LameEncodeBufferInterleaved_t)dlsym(m_LibHandle, "lame_encode_buffer_interleaved");
+  m_LameEncodeBufferInterleaved = (LameEncodeBufferInterleaved_t)FuppesGetProcAddress(m_LibHandle, "lame_encode_buffer_interleaved");
   if(!m_LameEncodeBufferInterleaved)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'lame_encode_buffer_interleaved': " << dlerror();
+    sLog << "cannot load symbol 'lame_encode_buffer_interleaved': "; // << dlerror();
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   } 
     
-  m_LameEncodeFlush = (LameEncodeFlush_t)dlsym(m_LibHandle, "lame_encode_flush");
+  m_LameEncodeFlush = (LameEncodeFlush_t)FuppesGetProcAddress(m_LibHandle, "lame_encode_flush");
   if(!m_LameEncodeFlush)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'lame_encode_flush': " << dlerror();
+    sLog << "cannot load symbol 'lame_encode_flush': "; // << dlerror();
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   } 
     
-  m_LameGlobalFlags = m_LameInit();  
+  m_LameGlobalFlags = m_LameInit();
   return true;
 }
 
@@ -124,7 +132,7 @@ void CLameWrapper::Init()
 void CLameWrapper::PrintConfig()
 {
   cout << "Closing library" << endl;
-  dlclose(m_LibHandle);
+  FuppesCloseLibrary(m_LibHandle);
 }
 
 std::string CLameWrapper::GetVersion()
@@ -134,7 +142,7 @@ std::string CLameWrapper::GetVersion()
 
 void CLameWrapper::SetBitrate(LAME_BITRATE p_nBitrate)
 {
-  m_LameSetCompressionRatio(m_LameGlobalFlags, p_nBitrate);
+  //m_LameSetCompressionRatio(m_LameGlobalFlags, p_nBitrate);
 }
 
 int CLameWrapper::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples)
@@ -144,7 +152,7 @@ int CLameWrapper::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples)
 
 int CLameWrapper::Flush()
 {
-  return lame_encode_flush(m_LameGlobalFlags, m_sMp3Buffer, LAME_MAXMP3BUFFER);
+  return m_LameEncodeFlush(m_LameGlobalFlags, m_sMp3Buffer, LAME_MAXMP3BUFFER);
 }
 
 #endif /* DISABLE_TRANSCODING */

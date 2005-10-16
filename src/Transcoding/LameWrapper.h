@@ -27,6 +27,7 @@
 #ifndef _LAMEWRAPPER_H
 #define _LAMEWRAPPER_H
 
+#include "../Common.h"
 #include <lame/lame.h>
 #ifdef WIN32
 #else
@@ -60,7 +61,7 @@ extern "C"
   typedef int (*LameEncodeBufferInterleaved_t)(lame_global_flags*, short int[], int, char*, int);                    
                
   //lame_encode_flush(gf, mp3buffer, LAME_MAXMP3BUFFER);
-  typedef int (*LameEncodeFlush_t)(lame_global_flags*, char*, int);
+  typedef int (*LameEncodeFlush_t)(lame_global_flags*, unsigned char*, int);
 
                       //lame_encode_buffer_interleaved(gf, pcmout, samplesRead, mp3buffer, LAME_MAXMP3BUFFER);
   
@@ -77,7 +78,7 @@ typedef enum tagLAME_BITRATE
 
 /*
   1. create
-  2. call LoadLibrary()
+  2. call LoadLib()
   3. set compression ratio an other properties
   4. call Init()
   5. encoding using EncodeInterleaved() oder Encode()
@@ -89,7 +90,7 @@ class CLameWrapper
 {  
   public:
     CLameWrapper();
-    bool LoadLibrary();
+    bool LoadLib();
   
     void Init();
     void PrintConfig();
@@ -102,7 +103,7 @@ class CLameWrapper
     
     
   private:
-    void*            m_LibHandle;
+    fuppesLibHandle  m_LibHandle;
     LameGlobalFlags* m_LameGlobalFlags;
     unsigned char    m_sMp3Buffer[LAME_MAXMP3BUFFER];
   
