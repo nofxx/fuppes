@@ -125,6 +125,8 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle);
   typedef HINSTANCE  fuppesLibHandle;
   typedef FARPROC    fuppesProcHandle;
 #else
+  #include <dlfcn.h>
+  
   typedef void*      fuppesLibHandle;
   typedef void*      fuppesProcHandle;
 #endif

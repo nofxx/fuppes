@@ -535,11 +535,11 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
 void CSharedConfig::CheckForTranscodingLibs()
 {
   #ifndef DISABLE_TRANSCODING
-  
+    
   /* LAME */
   CLameWrapper* pLame = new CLameWrapper();
   m_bLameAvailable = pLame->LoadLib();
-  delete pLame;
+  delete pLame;  
   
   if(m_bLameAvailable)
   { 

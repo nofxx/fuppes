@@ -89,18 +89,6 @@ PTHREAD_LIBS=""
 AC_CHECK_LIB(pthread, pthread_create, PTHREAD_LIBS="-lpthread")
 
 
-#AC_ARG_ENABLE(lame, [  --enable-transcoding     enable ont the fly transcoding support ],
-#                        TRY_LAME=$enableval , TRY_LAME=no ) 
- 
-#  if test "x$TRY_LAME" = "xyes"
-#  then          
-#          echo  '   USING LAME'
-#  else
-#          echo  '   NOT USING LAME'
-#  fi
-
-
-
 LAME_LIBS=""
 MUSEPACK_LIBS=""
 transcoding=yes
@@ -108,7 +96,6 @@ have_lame=no
 have_decoder=no
 have_vorbis=no
 have_mpc=no
-
 
 AC_ARG_ENABLE(transcoding,
             [  --disable-transcoding  Disable on the fly transcoding support],

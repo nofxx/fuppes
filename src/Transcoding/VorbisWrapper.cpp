@@ -56,7 +56,7 @@ bool CVorbisDecoder::LoadLib()
   m_LibHandle = FuppesLoadLibrary("vorbisfile.dll");  
   #else
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libvorbis");
-  m_LibHandle = FuppesLoadLibrary("libvorbis.so");
+  m_LibHandle = FuppesLoadLibrary("libvorbisfile.so");
   #endif
   if(!m_LibHandle)
   {
@@ -66,7 +66,8 @@ bool CVorbisDecoder::LoadLib()
     return false;
   } 
   
-  m_OvOpen = (OvOpen_t)FuppesGetProcAddress(m_LibHandle, "ov_open");
+  //m_OvOpen = (OvOpen_t)FuppesGetProcAddress(m_LibHandle, "ov_open");
+  m_OvOpen = (OvOpen_t)dlsym(m_LibHandle, "ov_open");
   if(!m_OvOpen)
   {
     stringstream sLog;
@@ -116,27 +117,20 @@ bool CVorbisDecoder::LoadLib()
 
 bool CVorbisDecoder::OpenFile(std::string p_sFileName)
 {
-  cout << "before open " << endl;
-  fflush(stdout);       
   if ((m_pVorbisFileHandle = fopen(p_sFileName.c_str(), "r")) == NULL)
   {
     fprintf(stderr, "Cannot open %s\n", p_sFileName.c_str()); 
     return false;
   }
   
-  cout << "after open" << endl;
-  fflush(stdout);
-
   if(m_OvOpen(m_pVorbisFileHandle, &m_VorbisFile, NULL, 0) < 0) 
   {
     fprintf(stderr,"Input does not appear to be an Ogg bitstream.\n");      
     return false;
   }	 
 
-  cout << "after ov open " << endl;
-  fflush(stdout);  
-
-  /*m_pVorbisInfo = m_OvInfo(&m_VorbisFile, -1);
+  m_pVorbisInfo = ov_info(&m_VorbisFile, -1);
+  m_OvInfo(&m_VorbisFile, -1);
      
   char **ptr = m_OvComment(&m_VorbisFile,-1)->user_comments;
   while(*ptr)
@@ -146,14 +140,13 @@ bool CVorbisDecoder::OpenFile(std::string p_sFileName)
   }
   fprintf(stderr,"\nBitstream is %d channel, %ldHz\n", m_pVorbisInfo->channels, m_pVorbisInfo->rate);
   //fprintf(stderr,"\nDecoded length: %ld samples\n", (long)ov_pcm_total(&m_VorbisFile, -1));
-  fprintf(stderr,"Encoded by: %s\n\n", m_OvComment(&m_VorbisFile,-1)->vendor);*/
+  fprintf(stderr,"Encoded by: %s\n\n", m_OvComment(&m_VorbisFile,-1)->vendor);
   
   return true;
 }
 
 void CVorbisDecoder::CloseFile()
 {
-  //ov_clear(&m_VorbisFile);
   m_OvClear(&m_VorbisFile);  
 }
 

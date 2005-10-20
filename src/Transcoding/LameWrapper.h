@@ -29,10 +29,6 @@
 
 #include "../Common.h"
 #include <lame/lame.h>
-#ifdef WIN32
-#else
-#include <dlfcn.h>
-#endif
 #include <string>
 
 
@@ -58,7 +54,7 @@ extern "C"
                             char *mp3buffer,
                             int mp3buffer_size) */
   
-  typedef int (*LameEncodeBufferInterleaved_t)(lame_global_flags*, short int[], int, char*, int);                    
+  typedef int (*LameEncodeBufferInterleaved_t)(lame_global_flags*, short int[], int, unsigned char*, int);                    
                
   //lame_encode_flush(gf, mp3buffer, LAME_MAXMP3BUFFER);
   typedef int (*LameEncodeFlush_t)(lame_global_flags*, unsigned char*, int);
@@ -90,6 +86,7 @@ class CLameWrapper
 {  
   public:
     CLameWrapper();
+    ~CLameWrapper();
     bool LoadLib();
   
     void Init();

@@ -34,6 +34,10 @@ const std::string LOGNAME = "LameWrapper";
 using namespace std;
 
 CLameWrapper::CLameWrapper()
+{  
+}
+
+CLameWrapper::~CLameWrapper()
 {
   FuppesCloseLibrary(m_LibHandle);
 }
@@ -45,7 +49,7 @@ bool CLameWrapper::LoadLib()
   m_LibHandle = FuppesLoadLibrary("lame_enc.dll");
   #else
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libmp3lame.so");
-  m_LibHandle = FuppesLoadLibrary("libmp3lame");  
+  m_LibHandle = FuppesLoadLibrary("libmp3lame.so");   
   #endif
   if(!m_LibHandle)
   {
@@ -142,12 +146,13 @@ std::string CLameWrapper::GetVersion()
 
 void CLameWrapper::SetBitrate(LAME_BITRATE p_nBitrate)
 {
-  //m_LameSetCompressionRatio(m_LameGlobalFlags, p_nBitrate);
+  if(m_LameSetCompressionRatio)
+    m_LameSetCompressionRatio(m_LameGlobalFlags, p_nBitrate);
 }
 
 int CLameWrapper::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples)
 {
-  return m_LameEncodeBufferInterleaved(m_LameGlobalFlags, p_PcmIn, p_nNumSamples, (char*)m_sMp3Buffer, LAME_MAXMP3BUFFER);
+  return m_LameEncodeBufferInterleaved(m_LameGlobalFlags, p_PcmIn, p_nNumSamples, (unsigned char*)m_sMp3Buffer, LAME_MAXMP3BUFFER);
 }
 
 int CLameWrapper::Flush()

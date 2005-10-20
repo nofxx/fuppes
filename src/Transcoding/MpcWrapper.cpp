@@ -126,7 +126,7 @@ CMpcDecoder::~CMpcDecoder()
 {
 }
 
-bool CMpcDecoder::LoadLibrary()
+bool CMpcDecoder::LoadLib()
 {
   return true;
 }

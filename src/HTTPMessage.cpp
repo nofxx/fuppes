@@ -413,11 +413,8 @@ fuppesThreadCallback TranscodeLoop(void *arg)
     #endif
   }
 
-  cout << "before init dec " << endl;
-  fflush(stdout);  
-  
   /* init decoder */  
-  if(!pDecoder || !pDecoder->OpenFile(pSession->m_sFileName))
+  if(!pDecoder || !pDecoder->LoadLib() || !pDecoder->OpenFile(pSession->m_sFileName))
   {
     delete pDecoder;
     delete pLameWrapper;
@@ -425,10 +422,6 @@ fuppesThreadCallback TranscodeLoop(void *arg)
     pSession->m_pHTTPMessage->m_bIsTranscoding = false;
     fuppesThreadExit();
   }
-
-  cout << "after init dec " << endl;
-  fflush(stdout);
-
    
   /* begin transcode */
   long  samplesRead  = 0;    
@@ -456,7 +449,7 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   #endif
   
   stringstream sLog;
-  sLog << "start transcoding \"" << pSession->m_sFileName << "\"" << endl;
+  sLog << "start transcoding \"" << pSession->m_sFileName << "\"";
   CSharedLog::Shared()->Log(LOGNAME, sLog.str());
     
   while(((samplesRead = pDecoder->DecodeInterleaved((char*)pcmout, nBufferLength)) >= 0) && !pSession->m_pHTTPMessage->m_bBreakTranscoding)
@@ -556,7 +549,7 @@ fuppesThreadCallback TranscodeLoop(void *arg)
     /* end append */      
     
     sLog.str("");
-    sLog << "done transcoding \"" << pSession->m_sFileName << "\"" << endl;
+    sLog << "done transcoding \"" << pSession->m_sFileName << "\"";
     CSharedLog::Shared()->Log(LOGNAME, sLog.str());  
   }
   /* break transcoding */

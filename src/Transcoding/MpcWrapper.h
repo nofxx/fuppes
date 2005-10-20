@@ -53,7 +53,7 @@ class CMpcDecoder: public CDecoderBase
     CMpcDecoder();
     virtual ~CMpcDecoder();
   
-    bool LoadLibrary();  
+    bool LoadLib();  
   
     bool OpenFile(std::string p_sFileName);
     void CloseFile();

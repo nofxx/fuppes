@@ -34,7 +34,7 @@
 #include "Fuppes.h"
 #include "Presentation/PresentationHandler.h"
 
-#ifdef DAEMON
+#ifndef WIN32
 #include <fcntl.h>
 #endif
 
@@ -48,8 +48,20 @@ using namespace std;
  *  @return int
  *  @todo   create a CFuppes instance for each network interface
  */
-int main()
+int main(int argc, char* argv[])
 {
+  bool bDaemonMode = false;
+  
+  if(argc > 1)
+  {
+    for(int i = 1; i < argc; i++)
+    {
+      cout << argv[i] << endl;      
+      if(strcmp(argv[i], "-d") == 0)
+        bDaemonMode = true;
+    }
+  }
+  
   /* Setup winsockets	*/
   #ifdef WIN32
   WSADATA wsa;
@@ -57,43 +69,48 @@ int main()
   #endif
   
   /* daemon process */
-  #ifdef DAEMON
-  /* Our process ID and Session ID */
-  pid_t pid, sid;
+  #ifndef WIN32
+  if(bDaemonMode)
+  {
+    cout << "daemon mode" << endl;
+    
+    /* Our process ID and Session ID */
+    pid_t pid, sid;
+    
+    /* Fork off the parent process */
+    pid = fork();
+    if (pid < 0) {
+            exit(EXIT_FAILURE);
+    }
+    /* If we got a good PID, then
+       we can exit the parent process. */
+    if (pid > 0) {
+            exit(EXIT_SUCCESS);
+    }
   
-  /* Fork off the parent process */
-  pid = fork();
-  if (pid < 0) {
-          exit(EXIT_FAILURE);
+    /* Change the file mode mask */
+    umask(0);
+            
+    /* Open any logs here */        
+            
+    /* Create a new SID for the child process */
+    sid = setsid();
+    if (sid < 0) {
+            /* Log the failure */
+            exit(EXIT_FAILURE);
+    }
+    
+    /* Change the current working directory */
+    if ((chdir("/")) < 0) {
+            /* Log the failure */
+            exit(EXIT_FAILURE);
+    }
+    
+    /* Close out the standard file descriptors */
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
   }
-  /* If we got a good PID, then
-     we can exit the parent process. */
-  if (pid > 0) {
-          exit(EXIT_SUCCESS);
-  }
-
-  /* Change the file mode mask */
-  umask(0);
-          
-  /* Open any logs here */        
-          
-  /* Create a new SID for the child process */
-  sid = setsid();
-  if (sid < 0) {
-          /* Log the failure */
-          exit(EXIT_FAILURE);
-  }
-  
-  /* Change the current working directory */
-  if ((chdir("/")) < 0) {
-          /* Log the failure */
-          exit(EXIT_FAILURE);
-  }
-  
-  /* Close out the standard file descriptors */
-  close(STDIN_FILENO);
-  close(STDOUT_FILENO);
-  close(STDERR_FILENO);  
   #endif
   
   cout << "FUPPES - Free UPnP(tm) Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;
@@ -126,26 +143,34 @@ int main()
   cout << endl;
   
   /* Handle input */
-  string input = "";
-  while(input != "q")
-  {		
-    getline(cin, input);
-
-    if (input == "m")
-      pFuppes->GetSSDPCtrl()->send_msearch();
-    else if (input == "a")
-      pFuppes->GetSSDPCtrl()->send_alive();
-    else if (input == "b")
-      pFuppes->GetSSDPCtrl()->send_byebye();
-    else if (input == "l")
-      CSharedLog::Shared()->ToggleLog();    
-    else if (input == "i")
-    {
-      cout << "version     : " << CSharedConfig::Shared()->GetAppVersion() << endl;
-      cout << "hostname    : " << CSharedConfig::Shared()->GetHostname() << endl;
-      cout << "address     : " << CSharedConfig::Shared()->GetIPv4Address() << endl;    
-      cout << "webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;          
+  if(!bDaemonMode)
+  {
+    string input = "";
+    while(input != "q")
+    {		
+      getline(cin, input);
+  
+      if (input == "m")
+        pFuppes->GetSSDPCtrl()->send_msearch();
+      else if (input == "a")
+        pFuppes->GetSSDPCtrl()->send_alive();
+      else if (input == "b")
+        pFuppes->GetSSDPCtrl()->send_byebye();
+      else if (input == "l")
+        CSharedLog::Shared()->ToggleLog();    
+      else if (input == "i")
+      {
+        cout << "version     : " << CSharedConfig::Shared()->GetAppVersion() << endl;
+        cout << "hostname    : " << CSharedConfig::Shared()->GetHostname() << endl;
+        cout << "address     : " << CSharedConfig::Shared()->GetIPv4Address() << endl;    
+        cout << "webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;          
+      }
     }
+  }
+  else
+  {
+    while(true)
+      fuppesSleep(2000);
   }
   
   /* Destroy objects */
