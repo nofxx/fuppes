@@ -66,8 +66,7 @@ bool CVorbisDecoder::LoadLib()
     return false;
   } 
   
-  //m_OvOpen = (OvOpen_t)FuppesGetProcAddress(m_LibHandle, "ov_open");
-  m_OvOpen = (OvOpen_t)dlsym(m_LibHandle, "ov_open");
+  m_OvOpen = (OvOpen_t)FuppesGetProcAddress(m_LibHandle, "ov_open");
   if(!m_OvOpen)
   {
     stringstream sLog;
@@ -127,10 +126,9 @@ bool CVorbisDecoder::OpenFile(std::string p_sFileName)
   {
     fprintf(stderr,"Input does not appear to be an Ogg bitstream.\n");      
     return false;
-  }	 
+  }
 
-  m_pVorbisInfo = ov_info(&m_VorbisFile, -1);
-  m_OvInfo(&m_VorbisFile, -1);
+  m_pVorbisInfo = m_OvInfo(&m_VorbisFile, -1);
      
   char **ptr = m_OvComment(&m_VorbisFile,-1)->user_comments;
   while(*ptr)
