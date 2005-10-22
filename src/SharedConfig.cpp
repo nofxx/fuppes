@@ -119,6 +119,8 @@ CSharedConfig::CSharedConfig()
   
   /* display settings */
   m_DisplaySettings.bShowTranscodingTypeInItemNames = true;
+  
+  m_DisplaySettings.bShowDirNamesInFirstLevel = false;
 }
 
 /* <\PROTECTED> */

@@ -241,39 +241,49 @@ void CContentDirectory::BuildObjectList()
 {
   unsigned int nCount = 1;
 
+  CSharedLog::Shared()->Log(LOGNAME, "building directory list");
+  
   for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
   {
     if(DirectoryExists(CSharedConfig::Shared()->GetSharedDir(i)))
     {  
-      CStorageFolder* pTmpFolder = new CStorageFolder(m_sHTTPServerURL);
-
-      char szObjId[11];                            
-      sprintf(szObjId, "%010X", nCount);          
-      pTmpFolder->SetObjectID(szObjId);    
-
-      pTmpFolder->SetParent(m_pBaseFolder);
-      pTmpFolder->SetFileName(CSharedConfig::Shared()->GetSharedDir(i));
-
-#ifdef WIN32
-      RegEx rxDirName("\\\\([^\\\\|\\.]*)$", PCRE_CASELESS);
-#else
-      RegEx rxDirName("/([^/|\\.]*)$", PCRE_CASELESS);
-#endif
-      std::string sSharedDir = CSharedConfig::Shared()->GetSharedDir(i);
-      const char* pszDir = sSharedDir.c_str();
-      if(rxDirName.Search(pszDir))
-        pTmpFolder->SetName(rxDirName.Match(1));
+      if(CSharedConfig::Shared()->GetDisplaySettings().bShowDirNamesInFirstLevel)
+      {      
+        CStorageFolder* pTmpFolder = new CStorageFolder(m_sHTTPServerURL);
+  
+        char szObjId[11];                            
+        sprintf(szObjId, "%010X", nCount);          
+        pTmpFolder->SetObjectID(szObjId);    
+  
+        pTmpFolder->SetParent(m_pBaseFolder);
+        pTmpFolder->SetFileName(CSharedConfig::Shared()->GetSharedDir(i));
+  
+        #ifdef WIN32
+        RegEx rxDirName("\\\\([^\\\\|\\.]*)$", PCRE_CASELESS);
+        #else
+        RegEx rxDirName("/([^/|\\.]*)$", PCRE_CASELESS);
+        #endif
+        std::string sSharedDir = CSharedConfig::Shared()->GetSharedDir(i);
+        const char* pszDir = sSharedDir.c_str();
+        if(rxDirName.Search(pszDir))
+          pTmpFolder->SetName(rxDirName.Match(1));
+        else
+          pTmpFolder->SetName(CSharedConfig::Shared()->GetSharedDir(i));
+  
+        /* Add folder to list and parent folder */
+        m_ObjectList[szObjId] = pTmpFolder;
+        m_pBaseFolder->AddUPnPObject(pTmpFolder);
+  
+        /* increment counter */
+        nCount++;      
+      
+        ScanDirectory(CSharedConfig::Shared()->GetSharedDir(i), &nCount, pTmpFolder);     
+      }
       else
-        pTmpFolder->SetName(CSharedConfig::Shared()->GetSharedDir(i));
-
-      /* Add folder to list and parent folder */
-      m_ObjectList[szObjId] = pTmpFolder;
-      m_pBaseFolder->AddUPnPObject(pTmpFolder);
-
-      /* increment counter */
-      nCount++;
-
-      ScanDirectory(CSharedConfig::Shared()->GetSharedDir(i), &nCount, pTmpFolder);     
+      {
+        ScanDirectory(CSharedConfig::Shared()->GetSharedDir(i), &nCount, m_pBaseFolder);     
+      }
+      
     }
     else
     {
@@ -282,6 +292,8 @@ void CContentDirectory::BuildObjectList()
       CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     }
   }
+  
+  CSharedLog::Shared()->Log(LOGNAME, "done building directory list");
 }
 
 /* ScanDirectory */
@@ -452,157 +464,4 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, unsigned int* p_
   #endif  
 }
         
-        
-
-      
-      //~ string sExt = ExtractFileExt(szTemp);
-      //~ /* MP3 file */
-      //~ if(IsFile(szTemp) && (ToLower(sExt).compare("mp3") == 0))
-      //~ {
-        //~ CAudioItem* pTmpItem = new CAudioItem(m_sHTTPServerURL);
-        //~ char szObjId[11];                            
-        //~ sprintf(szObjId, "%010X", *p_pnCount);
-
-        //~ pTmpItem->SetObjectID(szObjId);            
-        //~ pTmpItem->SetParent(pParentFolder);
-        //~ pTmpItem->SetName(data.cFileName);
-        //~ pTmpItem->SetFileName(szTemp);
-
-        //~ /* Add folder to list and parent folder */
-        //~ m_ObjectList[szObjId] = pTmpItem;
-        //~ pParentFolder->AddUPnPObject(pTmpItem);
-
-        //~ /* increment counter */
-        //~ int nTmp = *p_pnCount;
-        //~ nTmp++;
-        //~ *p_pnCount = nTmp;         
-      //~ }
-      //~ /* Folder */
-      //~ else if(IsDirectory(szTemp))
-      //~ {            
-        //~ /* Create folder object */
-        //~ CStorageFolder* pTmpFolder = new CStorageFolder(m_sHTTPServerURL);
-
-        //~ char szObjId[11];                            
-        //~ sprintf(szObjId, "%010X", *p_pnCount);            
-
-        //~ pTmpFolder->SetObjectID(szObjId);            
-        //~ pTmpFolder->SetParent(pParentFolder);
-        //~ pTmpFolder->SetName(data.cFileName);
-        //~ pTmpFolder->SetFileName(szTemp);
-
-        //~ /* Add folder to list and parent folder */
-        //~ m_ObjectList[szObjId] = pTmpFolder;
-        //~ pParentFolder->AddUPnPObject(pTmpFolder);
-
-        //~ /* Increment counter */
-        //~ int nTmp = *p_pnCount;
-        //~ nTmp++;
-        //~ *p_pnCount = nTmp;
-
-        //~ /* Scan subdirectories */
-        //~ ScanDirectory(szTemp, p_pnCount, pTmpFolder);          
-      //~ }
-    //~ }
-  //~ }    
-  
-
-//~ #else
-
-  //~ DIR*    pDir;
-  //~ dirent* pDirEnt;
-  //~ stringstream sTmp;
-   
-  //~ /* append upnpPathDelim if necessary */  
-  //~ if(p_sDirectory.substr(p_sDirectory.length()-1).compare(upnpPathDelim) != 0)
-  //~ {
-    //~ sTmp << p_sDirectory << upnpPathDelim;
-    //~ p_sDirectory = sTmp.str();
-    //~ sTmp.str("");
-  //~ }
-  
-  //~ if((pDir = opendir(p_sDirectory.c_str())) != NULL)
-  //~ {
-    //~ sTmp << "read directory: " << p_sDirectory;    
-    //~ CSharedLog::Shared()->ExtendedLog(LOGNAME, sTmp.str());
-    //~ sTmp.str("");
-    
-    //~ while((pDirEnt = readdir(pDir)))
-    //~ {
-      //~ if(((string(".").compare(pDirEnt->d_name) != 0) && 
-         //~ (string("..").compare(pDirEnt->d_name) != 0)))
-      //~ {        
-        //~ sTmp << p_sDirectory << pDirEnt->d_name;        
-        
-        //~ stringstream sObjId;
-        
-        //~ string sExt = ExtractFileExt(sTmp.str());
-        //~ /* MP3 file */
-        //~ if(IsFile(sTmp.str()) && IsSupportedFileExtension(sExt))
-        //~ {
-          //~ CAudioItem* pTmpItem = new CAudioItem(m_sHTTPServerURL);
-          //~ if ((ToLower(sExt).compare("ogg") == 0) || (ToLower(sExt).compare("mpc") == 0))
-            //~ pTmpItem->m_bDoTranscode = true;          
-          
-          //~ char szObjId[10];                
-          //~ sprintf(szObjId, "%010X", *p_pnCount);
-            
-          //~ pTmpItem->SetObjectID(szObjId);            
-          //~ pTmpItem->SetParent(pParentFolder);
-          //~ pTmpItem->SetName(pDirEnt->d_name);
-          //~ pTmpItem->SetFileName(sTmp.str());
-        
-          //~ /* Add folder to list and parent folder */
-          //~ m_ObjectList[szObjId] = pTmpItem;
-          //~ pParentFolder->AddUPnPObject(pTmpItem);
-          
-          //~ /* increment counter */
-          //~ int nTmp = *p_pnCount;
-          //~ nTmp++;
-          //~ *p_pnCount = nTmp;
-
-          //~ /* log */
-          //~ sTmp.str("");
-          //~ sTmp << "added mp3-file: \"" << pDirEnt->d_name << "\"";
-          //~ CSharedLog::Shared()->ExtendedLog(LOGNAME, sTmp.str());          
-        //~ }
-        //~ /* folder */
-        //~ else if(IsDirectory(sTmp.str()))
-        //~ {            
-          //~ /* create folder object */
-          //~ CStorageFolder* pTmpFolder = new CStorageFolder(m_sHTTPServerURL);
-          
-          //~ char szObjId[10];                            
-          //~ sprintf(szObjId, "%010X", *p_pnCount);            
-          
-          //~ pTmpFolder->SetObjectID(szObjId);            
-          //~ pTmpFolder->SetParent(pParentFolder);
-          //~ pTmpFolder->SetName(pDirEnt->d_name);
-          //~ pTmpFolder->SetFileName(sTmp.str());
-          
-          //~ /* Add folder to list and parent folder */
-          //~ m_ObjectList[szObjId] = pTmpFolder;
-          //~ pParentFolder->AddUPnPObject(pTmpFolder);
-          
-          //~ /* increment counter */
-          //~ int nTmp = *p_pnCount;
-          //~ nTmp++;
-          //~ *p_pnCount = nTmp;
-          
-          //~ /* scan subdirectories */
-          //~ ScanDirectory(sTmp.str(), p_pnCount, pTmpFolder);          
-          
-          //~ /* log */
-          //~ sTmp.str("");
-          //~ sTmp << "added dir: \"" << pDirEnt->d_name << "\"";
-          //~ CSharedLog::Shared()->ExtendedLog(LOGNAME, sTmp.str()); 
-        //~ }
-        //~ sTmp.str("");
-      //~ }
-    //~ }    
-    //~ closedir(pDir);
-  //~ }
-//~ #endif
-//~ }
-
 /* <\PRIVATE> */

@@ -45,6 +45,7 @@ typedef enum tagFILE_KIND
 struct DisplaySettings
 {
   bool bShowTranscodingTypeInItemNames;
+  bool bShowDirNamesInFirstLevel;
 };
 
 /*===============================================================================
