@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
   /* Setup winsockets	*/
   #ifdef WIN32
   WSADATA wsa;
-  WSAStartup(MAKEWORD(2,0), &wsa);
+  WSAStartup(MAKEWORD(2,2), &wsa);
   #endif
   
   /* daemon process */
