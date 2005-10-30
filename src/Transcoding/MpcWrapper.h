@@ -37,7 +37,28 @@
 #ifdef __cplusplus
 extern "C"
 {
+  /* void mpc_streaminfo_init (mpc_streaminfo* si);
+     Initializes a streaminfo structure. */
+  typedef void (*MpcStreaminfoInit_t)(mpc_streaminfo*);
+  
+  /* mpc_int32_t mpc_streaminfo_read(mpc_streaminfo* si, mpc_reader* r);
+     Reads streaminfo header from the mpc stream supplied by r. */
+  typedef mpc_int32_t (*MpcStreaminfoRead_t)(mpc_streaminfo*, mpc_reader*);
+    
+  /* void mpc_decoder_setup(mpc_decoder* d, mpc_reader* r);
+     Sets up decoder library. Call this first when preparing to decode an mpc stream. */
+  typedef void (*MpcDecoderSetup_t)(mpc_decoder*, mpc_reader*);
+  
+  /* mpc_bool_t mpc_decoder_initialize(mpc_decoder* d, mpc_streaminfo* si);
+     Initializes mpc decoder with the supplied stream info parameters.
+     Call this next after calling mpc_decoder_setup. */
+  typedef mpc_bool_t (*MpcDecoderInitialize_t)(mpc_decoder*, mpc_streaminfo*);
 
+  /* mpc_uint32_t mpc_decoder_decode(mpc_decoder* d, MPC_SAMPLE_FORMAT*	buffer,
+                                     mpc_uint32_t* vbr_update_acc, mpc_uint32_t* vbr_update_bits);
+     Actually reads data from previously initialized stream.
+     Call this iteratively to decode the mpc stream. */
+  typedef mpc_uint32_t (*MpcDecoderDecode_t)(mpc_decoder*, MPC_SAMPLE_FORMAT*, mpc_uint32_t*, mpc_uint32_t*);  
 }
 #endif
 
@@ -65,7 +86,13 @@ class CMpcDecoder: public CDecoderBase
     mpc_reader     m_Reader;
     mpc_streaminfo m_StreamInfo;
     
-    
+    fuppesLibHandle m_LibHandle;
+  
+    MpcStreaminfoInit_t    m_MpcStreaminfoInit;
+    MpcStreaminfoRead_t    m_MpcStreaminfoRead;
+    MpcDecoderSetup_t      m_MpcDecoderSetup;
+    MpcDecoderInitialize_t m_MpcDecoderInitialize;
+    MpcDecoderDecode_t     m_MpcDecoderDecode;    
 };
 
 #endif /* _MPCWRAPPER_H */

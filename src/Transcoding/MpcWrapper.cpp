@@ -34,6 +34,7 @@
 #include "MpcWrapper.h"
 
 #include <iostream>
+#include <sstream>
 using namespace std;
 
 const std::string LOGNAME = "MpcDecoder";
@@ -128,6 +129,66 @@ CMpcDecoder::~CMpcDecoder()
 
 bool CMpcDecoder::LoadLib()
 {
+  #ifdef WIN32
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libmpcdec.dll");
+  m_LibHandle = FuppesLoadLibrary("libmpcdec.dll");
+  #else
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libmpcdec.so");
+  m_LibHandle = FuppesLoadLibrary("libmpcdec.so");   
+  #endif
+  if(!m_LibHandle)
+  {
+    stringstream sLog;
+    sLog << "cannot open library: "; // dlerror();
+    CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
+    return false;
+  }   
+   
+  m_MpcStreaminfoInit = (MpcStreaminfoInit_t)FuppesGetProcAddress(m_LibHandle, "mpc_streaminfo_init");
+  if(!m_MpcStreaminfoInit)
+  {
+    stringstream sLog;
+    sLog << "cannot load symbol 'mpc_streaminfo_init': "; // << dlerror();
+    CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
+    return false;
+  }  
+  
+  m_MpcStreaminfoRead = (MpcStreaminfoRead_t)FuppesGetProcAddress(m_LibHandle, "mpc_streaminfo_read");
+  if(!m_MpcStreaminfoRead)
+  {
+    stringstream sLog;
+    sLog << "cannot load symbol 'mpc_streaminfo_read': "; // << dlerror();
+    CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
+    return false;
+  }  
+  
+  m_MpcDecoderSetup = (MpcDecoderSetup_t)FuppesGetProcAddress(m_LibHandle, "mpc_decoder_setup");
+  if(!m_MpcDecoderSetup)
+  {
+    stringstream sLog;
+    sLog << "cannot load symbol 'mpc_decoder_setup': "; // << dlerror();
+    CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
+    return false;
+  } 
+  
+  m_MpcDecoderInitialize = (MpcDecoderInitialize_t)FuppesGetProcAddress(m_LibHandle, "mpc_decoder_initialize");
+  if(!m_MpcDecoderInitialize)
+  {
+    stringstream sLog;
+    sLog << "cannot load symbol 'mpc_decoder_initialize': "; // << dlerror();
+    CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
+    return false;
+  } 
+  
+  m_MpcDecoderDecode = (MpcDecoderDecode_t)FuppesGetProcAddress(m_LibHandle, "mpc_decoder_decode");
+  if(!m_MpcDecoderDecode)
+  {
+    stringstream sLog;
+    sLog << "cannot load symbol 'mpc_decoder_decode': "; // << dlerror();
+    CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
+    return false;
+  } 
+  
   return true;
 }
 
@@ -156,15 +217,15 @@ bool CMpcDecoder::OpenFile(std::string p_sFileName)
   m_Reader.data = &m_ReaderData;
 
   /* read file's streaminfo data */  
-  mpc_streaminfo_init(&m_StreamInfo);
-  if (mpc_streaminfo_read(&m_StreamInfo, &m_Reader) != ERROR_CODE_OK) {
+  m_MpcStreaminfoInit(&m_StreamInfo);
+  if (m_MpcStreaminfoRead(&m_StreamInfo, &m_Reader) != ERROR_CODE_OK) {
       printf("Not a valid musepack file: \"%s\"\n", p_sFileName.c_str());
       return false;
   }
 
   /* instantiate a decoder with our file reader */
-  mpc_decoder_setup(&m_Decoder, &m_Reader);
-  if (!mpc_decoder_initialize(&m_Decoder, &m_StreamInfo)) {
+  m_MpcDecoderSetup(&m_Decoder, &m_Reader);
+  if (!m_MpcDecoderInitialize(&m_Decoder, &m_StreamInfo)) {
       printf("Error initializing decoder.\n"); //, p_sFileName.c_str());
       return false;
   }  
@@ -186,7 +247,7 @@ long CMpcDecoder::DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize)
     return -1;
   } 
 
-  unsigned status = mpc_decoder_decode(&m_Decoder, sample_buffer, 0, 0);
+  unsigned status = m_MpcDecoderDecode(&m_Decoder, sample_buffer, 0, 0);
   if (status == (unsigned)(-1)) 
   {
     //decode error
