@@ -29,7 +29,6 @@
 #define _MPCWRAPPER_H
 
 #include <mpcdec/mpcdec.h>
-#include <dlfcn.h>
 #include <string>
 
 #include "WrapperBase.h"

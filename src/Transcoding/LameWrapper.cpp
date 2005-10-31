@@ -45,7 +45,7 @@ CLameWrapper::~CLameWrapper()
 bool CLameWrapper::LoadLib()
 { 
   #ifdef WIN32
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening lame_enc");
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening lame_enc.dll");
   m_LibHandle = FuppesLoadLibrary("lame_enc.dll");
   #else
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libmp3lame.so");

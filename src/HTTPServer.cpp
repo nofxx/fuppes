@@ -405,7 +405,8 @@ fuppesThreadCallback SessionLoop(void *arg)
         /* send header */
         send(pSession->GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);             
         
-        int nErr = 0;           
+        int nErr = 0;
+        int nCnt = 0;         
         while((nErr != -1) && ((nRet = ResponseMsg.GetBinContentChunk(szChunk, 8192 + 1, nOffset)) > 0)) 
         {             
            //cout << "ret: " << nRet << endl;             
@@ -423,20 +424,40 @@ fuppesThreadCallback SessionLoop(void *arg)
             /*cout << "chunk" << endl; 
 -            fflush(stdout);*/ 
 
+
             #ifdef WIN32
-            nErr = send(pSession->GetConnection(), szChunk, nRet, 0);  
+            nErr = send(pSession->GetConnection(), szChunk, nRet, 0);
+            int nWSAErr = WSAGetLastError();
+            while(nWSAErr == 10035)
+            {
+              nErr = send(pSession->GetConnection(), szChunk, nRet, 0);              
+            }
+            
+            if(nWSAErr != 10035)
+              {
+                cout << "error: " << nWSAErr << endl; 
+                fflush(stdout);
+              }
+            
             #else
-            nErr = send(pSession->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);              
+            nErr = send(pSession->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);
             #endif
-            if(nErr < 0) 
-            {               
-              cout << "error: " << nErr << endl; 
+            
+            #ifdef WIN32
+            if(nWSAErr == 10053)
+            #else
+            if(nErr < 0)
+            #endif
+            {
+              cout << "error: " << nErr << endl;
               fflush(stdout); 
 
               ResponseMsg.m_bBreakTranscoding = true; 
-              fuppesSleep(1000); /* wait for the transcoding thread to end */ 
+              fuppesSleep(1000); // wait for the transcoding thread to end
               break; 
-            } 
+            }
+            
+            nCnt++;
           } /* while */           
     
             

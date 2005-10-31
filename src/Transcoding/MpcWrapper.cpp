@@ -130,8 +130,8 @@ CMpcDecoder::~CMpcDecoder()
 bool CMpcDecoder::LoadLib()
 {
   #ifdef WIN32
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libmpcdec.dll");
-  m_LibHandle = FuppesLoadLibrary("libmpcdec.dll");
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening mpcdec.dll");
+  m_LibHandle = FuppesLoadLibrary("mpcdec.dll");
   #else
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libmpcdec.so");
   m_LibHandle = FuppesLoadLibrary("libmpcdec.so");   

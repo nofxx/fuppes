@@ -29,6 +29,11 @@
 #include <sstream>
 #include <iostream>
 
+#ifdef _WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
+
 using namespace std;
 
 const std::string LOGNAME = "VorbisWrapper";
@@ -52,7 +57,7 @@ CVorbisDecoder::~CVorbisDecoder()
 bool CVorbisDecoder::LoadLib()
 {
   #ifdef WIN32
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening vorbisfile");
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening vorbisfile.dll");
   m_LibHandle = FuppesLoadLibrary("vorbisfile.dll");  
   #else
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libvorbis");
@@ -121,6 +126,10 @@ bool CVorbisDecoder::OpenFile(std::string p_sFileName)
     fprintf(stderr, "Cannot open %s\n", p_sFileName.c_str()); 
     return false;
   }
+  
+	#ifdef _WIN32
+  _setmode(_fileno(m_pVorbisFileHandle), _O_BINARY);
+  #endif
   
   if(m_OvOpen(m_pVorbisFileHandle, &m_VorbisFile, NULL, 0) < 0) 
   {
