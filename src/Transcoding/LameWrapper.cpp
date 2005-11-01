@@ -54,7 +54,7 @@ bool CLameWrapper::LoadLib()
   if(!m_LibHandle)
   {
     stringstream sLog;
-    sLog << "cannot open library: "; // dlerror();
+    sLog << "cannot open library";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   }   
@@ -64,7 +64,7 @@ bool CLameWrapper::LoadLib()
   if(!m_LameInit)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'lame_init': "; // << dlerror();
+    sLog << "cannot load symbol 'lame_init'";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   }
@@ -74,7 +74,7 @@ bool CLameWrapper::LoadLib()
   if(!m_LameGetVersion)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'get_lame_version': "; // << dlerror();
+    sLog << "cannot load symbol 'get_lame_version'";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     //return false;
   }
@@ -83,7 +83,7 @@ bool CLameWrapper::LoadLib()
   if(!m_LameInitParams)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'lame_init_params': "; // << dlerror();
+    sLog << "cannot load symbol 'lame_init_params'";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   }
@@ -92,7 +92,7 @@ bool CLameWrapper::LoadLib()
   if(!m_LamePrintConfig)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'lame_print_config': "; // << dlerror();
+    sLog << "cannot load symbol 'lame_print_config'";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     //return false;
   }  
@@ -101,7 +101,7 @@ bool CLameWrapper::LoadLib()
   if(!m_LameSetCompressionRatio)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'lame_set_compression_ratio': "; // << dlerror();
+    sLog << "cannot load symbol 'lame_set_compression_ratio'";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     //return false;
   }  
@@ -110,7 +110,7 @@ bool CLameWrapper::LoadLib()
   if(!m_LameEncodeBufferInterleaved)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'lame_encode_buffer_interleaved': "; // << dlerror();
+    sLog << "cannot load symbol 'lame_encode_buffer_interleaved'";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   } 
@@ -119,7 +119,7 @@ bool CLameWrapper::LoadLib()
   if(!m_LameEncodeFlush)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'lame_encode_flush': "; // << dlerror();
+    sLog << "cannot load symbol 'lame_encode_flush'";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   } 

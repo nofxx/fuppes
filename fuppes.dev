@@ -51,9 +51,9 @@ BuildCmd=
 
 [VersionInfo]
 Major=0
-Minor=1
-Release=5
-Build=0
+Minor=3
+Release=0
+Build=2
 LanguageID=1033
 CharsetID=1252
 CompanyName=
@@ -64,8 +64,8 @@ LegalCopyright=
 LegalTrademarks=
 OriginalFilename=fuppes.exe
 ProductName=Free UPnP Entertainment Service
-ProductVersion=0.1.5
-AutoIncBuildNr=0
+ProductVersion=0.3
+AutoIncBuildNr=1
 
 [Unit10]
 FileName=src\HTTPServer.h

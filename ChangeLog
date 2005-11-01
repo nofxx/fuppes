@@ -1,8 +1,6 @@
-Version 0.3 (2005-10-23)
+Version 0.3 (2005-11-01)
   * implemented on the fly transcoding from ogg-vorbis and mpc (musepack) to mp3
   * daemon mode (start with -d) (will not shutdown correctly on kill signal)
-  * new configure parameter "" toggle whether to show the shared-directories on
-    the first level or just their contents
 
 Version 0.1.5 (2005-10-02)
   * fixed device time-out bug

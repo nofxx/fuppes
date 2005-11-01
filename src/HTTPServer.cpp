@@ -426,25 +426,20 @@ fuppesThreadCallback SessionLoop(void *arg)
 
 
             #ifdef WIN32
-            nErr = send(pSession->GetConnection(), szChunk, nRet, 0);
-            int nWSAErr = WSAGetLastError();
-            while(nWSAErr == 10035)
+            nErr = send(pSession->GetConnection(), szChunk, nRet, 0);    
+            int nWSAErr = WSAGetLastError();    
+            while(nErr < 0 && nWSAErr == 10035)
             {
-              nErr = send(pSession->GetConnection(), szChunk, nRet, 0);              
-            }
-            
-            if(nWSAErr != 10035)
-              {
-                cout << "error: " << nWSAErr << endl; 
-                fflush(stdout);
-              }
-            
+              nErr    = send(pSession->GetConnection(), szChunk, nRet, 0);
+              nWSAErr = WSAGetLastError();
+              fuppesSleep(10);  
+            }            
             #else
             nErr = send(pSession->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);
             #endif
             
             #ifdef WIN32
-            if(nWSAErr == 10053)
+            if(nErr < 0) //if(nWSAErr == 10053)
             #else
             if(nErr < 0)
             #endif
@@ -453,7 +448,7 @@ fuppesThreadCallback SessionLoop(void *arg)
               fflush(stdout); 
 
               ResponseMsg.m_bBreakTranscoding = true; 
-              fuppesSleep(1000); // wait for the transcoding thread to end
+              fuppesSleep(1000); /* wait for the transcoding thread to end */
               break; 
             }
             

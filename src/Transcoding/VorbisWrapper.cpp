@@ -66,7 +66,7 @@ bool CVorbisDecoder::LoadLib()
   if(!m_LibHandle)
   {
     stringstream sLog;
-    sLog << "cannot open library: "; // dlerror();
+    sLog << "cannot open library";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   } 
@@ -75,7 +75,7 @@ bool CVorbisDecoder::LoadLib()
   if(!m_OvOpen)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'ov_open': "; // << dlerror();
+    sLog << "cannot load symbol 'ov_open'";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   }
@@ -84,7 +84,7 @@ bool CVorbisDecoder::LoadLib()
   if(!m_OvInfo)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'ov_info': "; // << dlerror();
+    sLog << "cannot load symbol 'ov_info'";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   }
@@ -93,7 +93,7 @@ bool CVorbisDecoder::LoadLib()
   if(!m_OvComment)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'ov_comment': "; // << dlerror();
+    sLog << "cannot load symbol 'ov_comment'";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     //return false;
   }  
@@ -102,7 +102,7 @@ bool CVorbisDecoder::LoadLib()
   if(!m_OvRead)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'ov_read': "; // << dlerror();
+    sLog << "cannot load symbol 'ov_read'";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   }
@@ -111,7 +111,7 @@ bool CVorbisDecoder::LoadLib()
   if(!m_OvClear)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'ov_clear': "; // << dlerror();
+    sLog << "cannot load symbol 'ov_clear'";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   }

@@ -139,7 +139,7 @@ bool CMpcDecoder::LoadLib()
   if(!m_LibHandle)
   {
     stringstream sLog;
-    sLog << "cannot open library: "; // dlerror();
+    sLog << "cannot open library";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   }   
@@ -148,7 +148,7 @@ bool CMpcDecoder::LoadLib()
   if(!m_MpcStreaminfoInit)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'mpc_streaminfo_init': "; // << dlerror();
+    sLog << "cannot load symbol 'mpc_streaminfo_init'";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   }  
@@ -157,7 +157,7 @@ bool CMpcDecoder::LoadLib()
   if(!m_MpcStreaminfoRead)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'mpc_streaminfo_read': "; // << dlerror();
+    sLog << "cannot load symbol 'mpc_streaminfo_read'";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   }  
@@ -166,7 +166,7 @@ bool CMpcDecoder::LoadLib()
   if(!m_MpcDecoderSetup)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'mpc_decoder_setup': "; // << dlerror();
+    sLog << "cannot load symbol 'mpc_decoder_setup'";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   } 
@@ -175,7 +175,7 @@ bool CMpcDecoder::LoadLib()
   if(!m_MpcDecoderInitialize)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'mpc_decoder_initialize': "; // << dlerror();
+    sLog << "cannot load symbol 'mpc_decoder_initialize'";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   } 
@@ -184,7 +184,7 @@ bool CMpcDecoder::LoadLib()
   if(!m_MpcDecoderDecode)
   {
     stringstream sLog;
-    sLog << "cannot load symbol 'mpc_decoder_decode': "; // << dlerror();
+    sLog << "cannot load symbol 'mpc_decoder_decode'";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   } 

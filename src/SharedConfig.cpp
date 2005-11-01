@@ -153,7 +153,12 @@ bool CSharedConfig::SetupConfig()
   if(!m_bLameAvailable)
   {
     cout << endl;
-    cout << "LAME not found. transcoding disabled" << endl;
+    cout << "LAME not found. transcoding disabled!" << endl;
+    #ifdef WIN32
+    //cout << "Go to http://sourceforge.net/projects/fuppes/," << endl;
+    cout << "Get a copy of the lame_enc.dll and" << endl;
+    cout << "put it in the application directory." << endl;
+    #endif
     cout << endl;
     m_bTranscodingEnabled = false;
   }

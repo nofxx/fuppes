@@ -28,14 +28,16 @@ Name: quicklaunchicon; Description: {cm:CreateQuickLaunchIcon}; GroupDescription
 
 [Files]
 Source: ..\win32\fuppes.exe; DestDir: {app}; Flags: ignoreversion
-Source: ..\win32\iconv.dll; DestDir: {app}; Flags: ignoreversion
-Source: ..\win32\pcre.dll; DestDir: {app}; Flags: ignoreversion
+Source: ..\win32\iconv.dll; DestDir: {app}
+Source: ..\win32\pcre.dll; DestDir: {app}
 Source: ..\AUTHORS; DestDir: {app}; Flags: ignoreversion
 Source: ..\ChangeLog; DestDir: {app}; Flags: ignoreversion
 Source: ..\COPYING; DestDir: {app}; Flags: ignoreversion
 Source: ..\NEWS; DestDir: {app}; Flags: ignoreversion
-Source: ..\README; DestDir: {app}; Flags: ignoreversion
-Source: ..\fuppes.cfg.win32; DestDir: {userappdata}\Free UPnP Entertainment Service\; DestName: fuppes.cfg
+Source: ..\README; DestDir: {app}; Flags: ignoreversion isreadme; DestName: README.txt
+Source: ..\fuppes.cfg.win32; DestDir: {userappdata}\Free UPnP Entertainment Service\; DestName: fuppes.cfg; Flags: confirmoverwrite
+Source: ..\win32\vorbisfile.dll; DestDir: {app}
+Source: ..\win32\mpcdec.dll; DestDir: {app}
 
 [Icons]
 Name: {group}\Free UPnP Entertainment Service; Filename: {app}\fuppes.exe
