@@ -120,7 +120,7 @@ CSharedConfig::CSharedConfig()
   /* display settings */
   m_DisplaySettings.bShowTranscodingTypeInItemNames = true;
   
-  m_DisplaySettings.bShowDirNamesInFirstLevel = false;
+  m_DisplaySettings.bShowDirNamesInFirstLevel = true;
 }
 
 /* <\PROTECTED> */
@@ -234,7 +234,7 @@ string CSharedConfig::GetAppFullname()
 
 string CSharedConfig::GetAppVersion()
 {
-	return "0.3";
+	return "0.3.1a";
 }
 
 string CSharedConfig::GetHostname()
