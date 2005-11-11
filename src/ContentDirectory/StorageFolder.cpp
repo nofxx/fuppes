@@ -9,9 +9,8 @@
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ *  it under the terms of the GNU General Public License version 2 as
+ *  published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -22,7 +21,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
+ 
 /*===============================================================================
  INCLUDES
 ===============================================================================*/
@@ -111,9 +110,10 @@ std::string CStorageFolder::GetContentAsString(CUPnPBrowse* pBrowseAction,
   
   for(unsigned int i = pBrowseAction->m_nStartingIndex; i < *p_nNumberReturned; i++)
   { 
-    pTmpObj = (CUPnPObject*)vTmp[i]; //m_vObjects[i];
+    pTmpObj = (CUPnPObject*)vTmp[i]; //m_vObjects[i];    
+    pTmpObj->GetDescription(writer);
     
-    switch(pTmpObj->GetObjectType())
+    /* switch(pTmpObj->GetObjectType())
     {
       case UPNP_OBJECT_TYPE_STORAGE_FOLDER:        
         pTmpObj->GetDescription(writer);
@@ -123,7 +123,7 @@ std::string CStorageFolder::GetContentAsString(CUPnPBrowse* pBrowseAction,
         break;
       case UPNP_OBJECT_TYPE_ITEM:
         break;
-    }
+    }*/
   }  
   
 	/* end root */

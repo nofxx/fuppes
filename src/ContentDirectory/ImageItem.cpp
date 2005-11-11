@@ -1,5 +1,5 @@
 /***************************************************************************
- *            AudioItem.cpp
+ *            ImageItem.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -20,42 +20,22 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
 
 #include "../Common.h"
-#include "AudioItem.h"
+#include "ImageItem.h"
 #include <sstream>
 #include <string>
 
-/*===============================================================================
- CLASS CAudioItem
-===============================================================================*/
+using namespace std;
 
-/* <PUBLIC> */
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-
-/* constructor */
-CAudioItem::CAudioItem(std::string p_sHTTPServerURL):
-  CUPnPItem(UPNP_OBJECT_TYPE_AUDIO_ITEM, p_sHTTPServerURL)
+CImageItem::CImageItem(std::string p_sHTTPServerURL):
+  CUPnPItem(UPNP_OBJECT_TYPE_IMAGE_ITEM, p_sHTTPServerURL)
 {
-  m_bDoTranscode = false;   
-  m_nAudioFormat = AUDIO_FORMAT_UNKNOWN;
-  m_nDecoderType = AUDIO_DECODER_UNKNOWN;
-  m_nEncoderType = AUDIO_ENCODER_UNKNOWN;
+  m_nImageType = IMAGE_TYPE_UNKNOWN;
 }
 
-/*===============================================================================
- GET
-===============================================================================*/
-
 /* GetDescription */
-void CAudioItem::GetDescription(xmlTextWriterPtr pWriter)
+void CImageItem::GetDescription(xmlTextWriterPtr pWriter)
 {
   VOID_CHK_RET_POINTER(pWriter);
 
@@ -76,28 +56,38 @@ void CAudioItem::GetDescription(xmlTextWriterPtr pWriter)
   
     /* class */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
-    xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.audioItem.musicTrack");
+    xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.imageItem");
     xmlTextWriterEndElement(pWriter);
   
-    /* creator */
-    xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "creator", BAD_CAST "http://purl.org/dc/elements/1.1/");    
-    xmlTextWriterWriteString(pWriter, BAD_CAST "-Unknown-");
-    xmlTextWriterEndElement(pWriter);
-  
+/* longDescription
+upnp
+No */
+
     /* storageMedium */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "storageMedium", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
     xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN");
     xmlTextWriterEndElement(pWriter);
-  
+
+/* rating
+upnp
+No
+
+description
+dc
+No
+
+publisher
+dc
+No */
+
     /* date */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "date", BAD_CAST "http://purl.org/dc/elements/1.1/");    
-    xmlTextWriterWriteString(pWriter, BAD_CAST "2005-10-15");
-    xmlTextWriterEndElement(pWriter);
+    xmlTextWriterWriteString(pWriter, BAD_CAST "2005-11-11");
+    xmlTextWriterEndElement(pWriter);   
     
-    /* writeStatus */
-    xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "writeStatus", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
-    xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN");
-    xmlTextWriterEndElement(pWriter);
+/* rights
+dc
+No */  
     
     /* res */
     xmlTextWriterStartElement(pWriter, BAD_CAST "res");
@@ -107,7 +97,7 @@ void CAudioItem::GetDescription(xmlTextWriterPtr pWriter)
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
     sTmp.str("");
     
-    sTmp << "http://" << GetHTTPServerURL() << "/MediaServer/AudioItems/" << GetObjectID();
+    sTmp << "http://" << GetHTTPServerURL() << "/MediaServer/ImageItems/" << GetObjectID();
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
     xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
     xmlTextWriterEndElement(pWriter);                  
@@ -116,44 +106,24 @@ void CAudioItem::GetDescription(xmlTextWriterPtr pWriter)
   xmlTextWriterEndElement(pWriter);
 }
 
-bool CAudioItem::SetupTranscoding()
+std::string CImageItem::GetMimeType()
 {
-  std::string sExt = ExtractFileExt(m_sFileName);  
-  if (ToLower(sExt).compare("mp3") == 0)
+  string sResult = "";
+  
+  switch(m_nImageType)
   {
-    m_bDoTranscode = false;
-    m_nEncoderType = AUDIO_ENCODER_NONE;
-    m_nDecoderType = AUDIO_DECODER_NONE;    
-    return true;
-  }
-  else if (ToLower(sExt).compare("ogg") == 0)
-  {
-    m_bDoTranscode = true;
-    m_nEncoderType = AUDIO_ENCODER_LAME;
-    m_nDecoderType = AUDIO_DECODER_VORBIS;    
-    return true;
-  }
-  else if (ToLower(sExt).compare("mpc") == 0)
-  {
-    m_bDoTranscode = true;
-    m_nEncoderType = AUDIO_ENCODER_LAME;
-    m_nDecoderType = AUDIO_DECODER_MUSEPACK;    
-    return true;
-  }
-  else if (ToLower(sExt).compare("flac") == 0)
-  {
-    m_bDoTranscode = true;
-    m_nEncoderType = AUDIO_ENCODER_LAME;
-    m_nDecoderType = AUDIO_DECODER_FLAC;
-    return true;
-  }
-  else
-    return false;
-}  
-
-/* <\PUBLIC> */
-
-std::string CAudioItem::GetMimeType()
-{
-  return "audio/mpeg";
+    case IMAGE_TYPE_UNKNOWN:
+      break;
+    case IMAGE_TYPE_PNG:
+      sResult = "image/png";
+      break;
+    case IMAGE_TYPE_BMP:
+      sResult = "image/bmp";
+      break;
+    case IMAGE_TYPE_JPEG:
+      sResult = "image/jpeg";
+      break;
+  }  
+  
+  return sResult;
 }

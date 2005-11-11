@@ -9,9 +9,8 @@
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ *  it under the terms of the GNU General Public License version 2 as
+ *  published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -82,14 +81,15 @@ SID: uuid:subscription-UUID
 TIMEOUT: Second-actual subscription duration
  */
 
-typedef enum tagHTTP_CONTENT_TYPE
+/*typedef enum tagHTTP_CONTENT_TYPE
 {
   HTTP_CONTENT_TYPE_UNKNOWN       =  0,
   HTTP_CONTENT_TYPE_TEXT_HTML     =  1,
 	HTTP_CONTENT_TYPE_TEXT_XML      =  2,
 	HTTP_CONTENT_TYPE_AUDIO_MPEG    =  3,
-  HTTP_CONTENT_TYPE_IMAGE_PNG     =  4
-}HTTP_CONTENT_TYPE;
+  HTTP_CONTENT_TYPE_IMAGE_PNG     =  4,
+  HTTP_CONTENT_TYPE_IMAGE_JPEG    =  5
+}HTTP_CONTENT_TYPE;*/
 
 class CHTTPMessage;
   
@@ -123,7 +123,7 @@ public:
 ===============================================================================*/
 
   void         SetMessage(HTTP_MESSAGE_TYPE nMsgType, HTTP_VERSION nVersion);
-  void         SetMessage(HTTP_MESSAGE_TYPE nMsgType, HTTP_CONTENT_TYPE nCtntType);
+  void         SetMessage(HTTP_MESSAGE_TYPE nMsgType, std::string p_sContentType);
   virtual bool SetMessage(std::string p_sMessage);
 
 /*===============================================================================
@@ -131,7 +131,7 @@ public:
 ===============================================================================*/
 
   std::string			  GetRequest()          { return m_sRequest;          }  
-  HTTP_CONTENT_TYPE GetContentType()      { return m_HTTPContentType;   }
+  std::string       GetContentType()      { return m_sHTTPContentType;   }
   HTTP_MESSAGE_TYPE GetMessageType()      { return m_HTTPMessageType;   }
   std::string       GetContent()          { return m_sContent;          }
   unsigned int      GetBinContentLength() { return m_nBinContentLength; }
@@ -149,7 +149,7 @@ public:
 ===============================================================================*/
 
   void             SetMessageType(HTTP_MESSAGE_TYPE p_HTTPMessageType) { m_HTTPMessageType = p_HTTPMessageType; }
-  void             SetContentType(HTTP_CONTENT_TYPE p_HTTPContentType) { m_HTTPContentType = p_HTTPContentType; }
+  void             SetContentType(std::string p_sContentType) { m_sHTTPContentType = p_sContentType; }
 	void						 SetContent(std::string p_sContent)                  { m_sContent        = p_sContent;        }
   void             SetBinContent(char* p_szBinContent, unsigned int p_nBinContenLength);
   
@@ -180,7 +180,7 @@ private:
   
   HTTP_VERSION       m_HTTPVersion;
   HTTP_MESSAGE_TYPE  m_HTTPMessageType;
-  HTTP_CONTENT_TYPE  m_HTTPContentType;
+  std::string        m_sHTTPContentType;
   std::string	       m_sRequest;
   int                m_nContentLength;  
   bool               m_bIsChunked;

@@ -1,10 +1,9 @@
 /***************************************************************************
- *            UPnPAction.h
+ *            ImageItem.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,58 +21,49 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _UPNPACTION_H
-#define _UPNPACTION_H
+#ifndef _IMAGEITEM_H
+#define _IMAGEITEM_H
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
+#include "UPnPItem.h"
 
-#include "UPnPBase.h"
-#include <string>
-
-/*===============================================================================
- DEFINITIONS
-===============================================================================*/
-
-typedef enum tagUPNP_ACTION_TYPE
+typedef enum tagIMAGE_TYPE
 {
-  UPNP_ACTION_TYPE_BROWSE,
-  UPNP_ACTION_TYPE_MAX
-}UPNP_ACTION_TYPE;
+  IMAGE_TYPE_UNKNOWN  =  0,
+  IMAGE_TYPE_PNG      =  1,
+	IMAGE_TYPE_BMP      =  2,
+  IMAGE_TYPE_JPEG     =  3
+}IMAGE_TYPE;
 
-/*===============================================================================
- CLASS CUPnPAction
-===============================================================================*/
-
-class CUPnPAction
+class CImageItem: public CUPnPItem
 {
 
 /* <PUBLIC> */
 
-public:
+  public:
 
 /*===============================================================================
  CONSTRUCTOR / DESTRUCTOR
 ===============================================================================*/
-
-  /** constructor
-  */
-  /*CUPnPAction(UPNP_ACTION_TYPE nType);*/
-
-  /** destructor
-  */
-  /*CUPnPAction(std::string);*/
+    
+    /** constructor
+     *  @param  p_sHTTPServerURL  URL of the HTTP server
+     */
+    CImageItem(std::string p_sHTTPServerURL);
 
 /*===============================================================================
- MEMBERS
+ GET
 ===============================================================================*/
 
-  UPNP_DEVICE_TYPE m_nTargetDevice;
-  UPNP_ACTION_TYPE m_nActionType;
-
-/* <\PUBLIC> */
-
+    /** writes the whole description of an audio item
+     *  @param  pWriter  the XML container to write to
+     */
+    void GetDescription(xmlTextWriterPtr pWriter);
+      
+    std::string  GetMimeType();
+/* <\PUBLIC> */  
+  
+  //private:      
+    IMAGE_TYPE   m_nImageType;
 };
 
-#endif /* _UPNPACTION_H */
+#endif /* _IMAGEITEM_H */

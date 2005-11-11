@@ -9,9 +9,8 @@
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ *  it under the terms of the GNU General Public License version 2 as
+ *  published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -76,7 +75,7 @@ CHTTPMessage::CHTTPMessage()
   /* Init */
   m_HTTPVersion			    = HTTP_VERSION_1_1;
   m_HTTPMessageType     = HTTP_MESSAGE_TYPE_UNKNOWN;
-	m_HTTPContentType     = HTTP_CONTENT_TYPE_UNKNOWN;
+	m_sHTTPContentType    = "";
   m_nBinContentLength   = 0; 
   m_nBinContentPosition = 0;
   m_nContentLength      = 0;
@@ -105,17 +104,17 @@ void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, HTTP_VERSION nVersion)
   
   m_HTTPMessageType   = nMsgType;
   m_HTTPVersion			  = nVersion;
-  m_HTTPContentType   = HTTP_CONTENT_TYPE_UNKNOWN;
+  m_sHTTPContentType  = "";
   m_nBinContentLength = 0;
 }
 
-void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, HTTP_CONTENT_TYPE nCtntType)
+void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, std::string p_sContentType)
 {
 	CMessageBase::SetMessage("");
   
   m_HTTPMessageType   = nMsgType;
 	m_HTTPVersion			  = HTTP_VERSION_1_1;
-	m_HTTPContentType   = nCtntType;
+	m_sHTTPContentType  = p_sContentType;
   m_nBinContentLength = 0;
 }
 
@@ -192,16 +191,16 @@ std::string CHTTPMessage::GetHeaderAsString()
     sResult << "CONTENT-LENGTH: 0\r\n";
 	
   /* Content type */
-	switch(m_HTTPContentType)
+	/*switch(m_HTTPContentType)
 	{
 		case HTTP_CONTENT_TYPE_TEXT_HTML:  sContentType = "text/html";  break;
 		case HTTP_CONTENT_TYPE_TEXT_XML:   sContentType = "text/xml; charset=\"utf-8\"";   break;
 		case HTTP_CONTENT_TYPE_AUDIO_MPEG: sContentType = "audio/mpeg"; break;
     case HTTP_CONTENT_TYPE_IMAGE_PNG : sContentType = "image/png";  break;      
     default:                           ASSERT(0);                   break;	
-	}
+	}*/
 
-	sResult << "CONTENT-TYPE: " << sContentType << "\r\n";	
+	sResult << "CONTENT-TYPE: " << m_sHTTPContentType << "\r\n";	
 	//sResult << "SERVER: Windows/2000 UPnP/1.0 fuppes/0.1.5 \r\n";
 	//sResult << "DATE: \r\n";
 	sResult << "EXT: \r\n";

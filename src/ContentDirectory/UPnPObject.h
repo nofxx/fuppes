@@ -9,9 +9,8 @@
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ *  it under the terms of the GNU General Public License version 2 as
+ *  published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -39,9 +38,12 @@
 
 typedef enum tagUPNP_OBJECT_TYPE
 {
-  UPNP_OBJECT_TYPE_STORAGE_FOLDER,
-  UPNP_OBJECT_TYPE_ITEM,
-  UPNP_OBJECT_TYPE_AUDIO_ITEM
+  UPNP_OBJECT_TYPE_STORAGE_FOLDER  = 0,
+  UPNP_OBJECT_TYPE_ITEM            = 1,
+  UPNP_OBJECT_TYPE_AUDIO_ITEM      = 2,
+  UPNP_OBJECT_TYPE_IMAGE_ITEM      = 3,
+  UPNP_OBJECT_TYPE_VIDEO_ITEM      = 4,
+  UPNP_OBJECT_TYPE_PLAYLIST_ITEM   = 5
 }UPNP_OBJECT_TYPE;
 
 /*===============================================================================

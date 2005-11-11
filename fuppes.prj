@@ -137,7 +137,9 @@ module.source.files=\
 	Transcoding/FlacWrapper.h\
 	Transcoding/MpcWrapper.cpp\
 	Transcoding/MpcWrapper.h\
-	Transcoding/WrapperBase.h
+	Transcoding/WrapperBase.h\
+	ContentDirectory/ImageItem.h\
+	ContentDirectory/ImageItem.cpp
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

@@ -9,9 +9,8 @@
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ *  it under the terms of the GNU General Public License version 2 as
+ *  published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -378,6 +377,7 @@ fuppesThreadCallback SessionLoop(void *arg)
         { 
           CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending non chunked binary");
           send(pSession->GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);             
+          CSharedLog::Shared()->DebugLog(LOGNAME, ResponseMsg.GetHeaderAsString());
           CSharedLog::Shared()->ExtendedLog(LOGNAME, "header send");
           #ifdef WIN32
           send(pSession->GetConnection(), ResponseMsg.GetBinContent(), ResponseMsg.GetBinContentLength(), 0);          
@@ -389,8 +389,9 @@ fuppesThreadCallback SessionLoop(void *arg)
         /* send text message */
         else 
         { 
-          CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending plain text");
+          CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending plain text");          
           send(pSession->GetConnection(), ResponseMsg.GetMessageAsString().c_str(), (int)strlen(ResponseMsg.GetMessageAsString().c_str()), 0); 
+          CSharedLog::Shared()->DebugLog(LOGNAME, ResponseMsg.GetMessageAsString());
         } 
       }
       /* send chunked message */

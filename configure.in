@@ -81,6 +81,8 @@ nonstandard prefix so pkg-config can find them.]), [$4])
 ])
 
 
+FUPPES_LIBS="-ldl $FUPPES_LIBS"
+AC_SUBST(FUPPES_LIBS)
 
 dnl Checks for libraries.
 PKG_CHECK_MODULES(PCRE, libpcre >= 5.0)

@@ -9,9 +9,8 @@
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ *  it under the terms of the GNU General Public License version 2 as
+ *  published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -121,7 +120,7 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
   if(nPresentationPage == PRESENTATION_BINARY_IMAGE)
   {
     pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    
-    pResult->SetContentType(HTTP_CONTENT_TYPE_IMAGE_PNG);
+    pResult->SetContentType("image/png"); // HTTP_CONTENT_TYPE_IMAGE_PNG
   }  
   else if((nPresentationPage != PRESENTATION_BINARY_IMAGE) && (nPresentationPage != PRESENTATION_PAGE_UNKNOWN))
   {
@@ -133,14 +132,14 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
     sResult << GetPageFooter(nPresentationPage);
     
     pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    
-    pResult->SetContentType(HTTP_CONTENT_TYPE_TEXT_HTML);
+    pResult->SetContentType("text/html"); // HTTP_CONTENT_TYPE_TEXT_HTML
     pResult->SetContent(sResult.str());    
   }  
   else if(nPresentationPage == PRESENTATION_PAGE_UNKNOWN) 
   {
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "send 404");
     pResult->SetMessageType(HTTP_MESSAGE_TYPE_404_NOT_FOUND); 
-    pResult->SetContentType(HTTP_CONTENT_TYPE_TEXT_HTML);
+    pResult->SetContentType("text/html");
   }
 }
 

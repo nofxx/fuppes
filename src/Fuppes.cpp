@@ -9,9 +9,8 @@
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ *  it under the terms of the GNU General Public License version 2 as
+ *  published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -39,6 +38,7 @@
 #include "MediaServer.h"
 #include "UPnPDevice.h"
 #include "ContentDirectory/AudioItem.h"
+#include "ContentDirectory/ImageItem.h"
 #include "ContentDirectory/ContentDirectory.h"
 
 using namespace std;
@@ -313,7 +313,7 @@ bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessa
   /* Root description */
   if(ToLower(strRequest).compare("/description.xml") == 0)
   {
-    pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, HTTP_CONTENT_TYPE_TEXT_XML);
+    pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml"); //HTTP_CONTENT_TYPE_TEXT_XML
     pMessageOut->SetContent(m_pMediaServer->GetDeviceDescription());
     return true;
   }
@@ -321,7 +321,7 @@ bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessa
   /* ContentDirectory description */
   else if(strRequest.compare("/UPnPServices/ContentDirectory/description.xml") == 0)
   {
-    pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, HTTP_CONTENT_TYPE_TEXT_XML);
+    pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml");
     pMessageOut->SetContent(m_pContentDirectory->GetServiceDescription());
     return true;
   }
@@ -346,7 +346,7 @@ bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessa
 
     if(pItem && FileExists(pItem->GetFileName()))
     {
-      pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, HTTP_CONTENT_TYPE_AUDIO_MPEG); 
+      pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, pItem->GetMimeType());  //HTTP_CONTENT_TYPE_AUDIO_MPEG
       if (!pItem->GetDoTranscode())
         pMessageOut->LoadContentFromFile(pItem->GetFileName());
       else
@@ -371,6 +371,36 @@ bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessa
     }
 
   }
+  
+  /* ImageItem */
+  else if((strRequest.length() > 24) && (strRequest.substr(0, 24).compare("/MediaServer/ImageItems/") == 0))
+  {
+    string sItemObjId = pMessageIn->GetRequest().substr(24, pMessageIn->GetRequest().length());
+    CImageItem* pItem = (CImageItem*)m_pContentDirectory->GetItemFromObjectID(sItemObjId);
+
+    if(pItem && FileExists(pItem->GetFileName()))
+    {
+      pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, pItem->GetMimeType()); 
+      pMessageOut->LoadContentFromFile(pItem->GetFileName());
+      
+      stringstream sLog;
+      sLog << "sending image file \"" << pItem->GetName() << "\""; 
+      CSharedLog::Shared()->Log(LOGNAME, sLog.str()); 
+      return true; 
+    }
+    else
+    {
+      if(!pItem)
+        CSharedLog::Shared()->Error(LOGNAME, "HandleHTTPGet() :: pItem is NULL");
+      else if(!FileExists(pItem->GetFileName()))
+      {
+        stringstream sLog;
+        sLog << "requested file: \"" << pItem->GetFileName() << "\" not found";
+        CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
+      }      
+      return false;
+    }
+  }  
   
   return false;
 }

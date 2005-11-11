@@ -9,9 +9,8 @@
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ *  it under the terms of the GNU General Public License version 2 as
+ *  published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -30,6 +29,7 @@
 #include "ContentDirectory.h" 
 #include "UPnPItem.h"
 #include "AudioItem.h"
+#include "ImageItem.h"
 #include "../UPnPActions/UPnPBrowse.h"
 #include "../SharedConfig.h"
 #include "../SharedLog.h"
@@ -98,7 +98,7 @@ bool CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
   string sContent = HandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);  
 
   /* Set a message for the incoming action */
-  pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, HTTP_CONTENT_TYPE_TEXT_XML);
+  pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml; charset=\"utf-8\""); // HTTP_CONTENT_TYPE_TEXT_XML
   pMessageOut->SetContent(sContent);
 
   return true;
@@ -415,7 +415,7 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, unsigned int* p_
   
             /* log */
             sTmp.str("");
-            sTmp << "added mp3-file: \"" << sTmpFileName << "\"";
+            sTmp << "added AudioItem: \"" << sTmpFileName << "\"";
             CSharedLog::Shared()->ExtendedLog(LOGNAME, sTmp.str());            
           }
           else
@@ -424,7 +424,42 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, unsigned int* p_
           }
 
         }
-        /* folder */
+        
+        /* ImageItem */
+        if(IsFile(sTmp.str()) && (sExt.compare("jpg") == 0))
+        {
+          CImageItem* pTmpItem = new CImageItem(m_sHTTPServerURL);
+          
+          pTmpItem->m_nImageType = IMAGE_TYPE_JPEG;
+          
+          char szObjId[10];
+          sprintf(szObjId, "%010X", *p_pnCount);
+            
+          pTmpItem->SetObjectID(szObjId);
+          pTmpItem->SetParent(pParentFolder);     
+          pTmpItem->SetFileName(sTmp.str());        
+       
+          /* set object name */
+          stringstream sName;
+          sName << TruncateFileExt(sTmpFileName);
+          pTmpItem->SetName(sName.str());
+          
+          /* Add audio item to list and parent folder */
+          m_ObjectList[szObjId] = pTmpItem;
+          pParentFolder->AddUPnPObject(pTmpItem);
+          
+          /* increment counter */
+          int nTmp = *p_pnCount;
+          nTmp++;
+          *p_pnCount = nTmp;
+
+          /* log */
+          sTmp.str("");
+          sTmp << "added ImageItem: \"" << sTmpFileName << "\"";
+          CSharedLog::Shared()->ExtendedLog(LOGNAME, sTmp.str());
+        }        
+        
+        /* StorageFolder */
         else if(IsDirectory(sTmp.str()))
         {            
           /* create folder object */
@@ -452,7 +487,7 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, unsigned int* p_
           
           /* log */
           sTmp.str("");
-          sTmp << "added dir: \"" << sTmpFileName << "\"";
+          sTmp << "added StorageFolder: \"" << sTmpFileName << "\"";
           CSharedLog::Shared()->ExtendedLog(LOGNAME, sTmp.str()); 
         }
         sTmp.str("");
