@@ -1,10 +1,9 @@
 /***************************************************************************
- *            AudioItem.h
+ *            VideoItem.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,45 +21,19 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _AUDIOITEM_H
-#define _AUDIOITEM_H
-
-/*===============================================================================
- INCLUDES
-===============================================================================*/
+#ifndef _VIDEOITEM_H
+#define _VIDEOITEM_H
 
 #include "UPnPItem.h"
 
-typedef enum tagAUDIO_FORMAT
+typedef enum tagVIDEO_TYPE
 {
-  AUDIO_FORMAT_UNKNOWN  =  0,
-  AUDIO_FORMAT_MP3      =  1,
-	AUDIO_FORMAT_VORBIS   =  2,
-  AUDIO_FORMAT_MPC      =  3,    
-  AUDIO_FORMAT_FLAC     =  4
-}AUDIO_FORMAT;
+  VIDEO_TYPE_UNKNOWN  =  0,
+  VIDEO_TYPE_AVI      =  1,
+	VIDEO_TYPE_MPEG     =  2
+}VIDEO_TYPE;
 
-typedef enum tagAUDIO_ENCODER
-{
-  AUDIO_ENCODER_UNKNOWN  =  0,
-  AUDIO_ENCODER_NONE     =  1,
-  AUDIO_ENCODER_LAME     =  2
-}AUDIO_ENCODER;
-
-typedef enum tagAUDIO_DECODER
-{
-  AUDIO_DECODER_UNKNOWN  =  0,
-  AUDIO_DECODER_NONE     =  1,
-  AUDIO_DECODER_VORBIS   =  2,
-  AUDIO_DECODER_MUSEPACK =  3,
-  AUDIO_DECODER_FLAC     =  4
-}AUDIO_DECODER;
-
-/*===============================================================================
- CLASS CAudioItem
-===============================================================================*/
-
-class CAudioItem: public CUPnPItem
+class CVideoItem: public CUPnPItem
 {
 
 /* <PUBLIC> */
@@ -74,7 +47,7 @@ class CAudioItem: public CUPnPItem
     /** constructor
      *  @param  p_sHTTPServerURL  URL of the HTTP server
      */
-    CAudioItem(std::string p_sHTTPServerURL);
+    CVideoItem(std::string p_sHTTPServerURL);
 
 /*===============================================================================
  GET
@@ -84,23 +57,13 @@ class CAudioItem: public CUPnPItem
      *  @param  pWriter  the XML container to write to
      */
     void GetDescription(xmlTextWriterPtr pWriter);
-    
-    bool SetupTranscoding();
-    bool GetDoTranscode() { return m_bDoTranscode; }
-    AUDIO_DECODER GetDecoderType() { return m_nDecoderType; }
-  
-    std::string GetMimeType();
+      
+    std::string  GetMimeType();
     unsigned int GetSize();
-    
 /* <\PUBLIC> */  
   
-  private:      
-  
-    bool           m_bDoTranscode;
-    AUDIO_FORMAT   m_nAudioFormat;
-    AUDIO_DECODER  m_nDecoderType;
-    AUDIO_ENCODER  m_nEncoderType;
-
+  //private:      
+    VIDEO_TYPE   m_nVideoType;
 };
 
-#endif /* _AUDIOITEM_H */
+#endif /* _VIDEOITEM_H */

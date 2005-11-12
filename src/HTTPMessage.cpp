@@ -73,8 +73,8 @@ fuppesThreadMutex TranscodeMutex;
 CHTTPMessage::CHTTPMessage()
 {
   /* Init */
-  m_HTTPVersion			    = HTTP_VERSION_1_1;
-  m_HTTPMessageType     = HTTP_MESSAGE_TYPE_UNKNOWN;
+  m_nHTTPVersion			  = HTTP_VERSION_UNKNOWN;
+  m_nHTTPMessageType    = HTTP_MESSAGE_TYPE_UNKNOWN;
 	m_sHTTPContentType    = "";
   m_nBinContentLength   = 0; 
   m_nBinContentPosition = 0;
@@ -82,6 +82,7 @@ CHTTPMessage::CHTTPMessage()
   m_pszBinContent       = NULL;
   m_bIsChunked          = false;
   m_TranscodeThread     = (fuppesThread)NULL;
+  m_pUPnPItem           = NULL;
 }
 
 CHTTPMessage::~CHTTPMessage()
@@ -98,22 +99,11 @@ CHTTPMessage::~CHTTPMessage()
  INIT
 ===============================================================================*/
 
-void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, HTTP_VERSION nVersion)
-{
-  CMessageBase::SetMessage("");
-  
-  m_HTTPMessageType   = nMsgType;
-  m_HTTPVersion			  = nVersion;
-  m_sHTTPContentType  = "";
-  m_nBinContentLength = 0;
-}
-
 void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, std::string p_sContentType)
 {
 	CMessageBase::SetMessage("");
   
-  m_HTTPMessageType   = nMsgType;
-	m_HTTPVersion			  = HTTP_VERSION_1_1;
+  m_nHTTPMessageType  = nMsgType;
 	m_sHTTPContentType  = p_sContentType;
   m_nBinContentLength = 0;
 }
@@ -161,7 +151,7 @@ std::string CHTTPMessage::GetHeaderAsString()
 	string sContentType;
 	
   /* Version */
-	switch(m_HTTPVersion)
+	switch(m_nHTTPVersion)
 	{
 		case HTTP_VERSION_1_0: sVersion = "HTTP/1.0"; break;
 		case HTTP_VERSION_1_1: sVersion = "HTTP/1.1"; break;
@@ -169,7 +159,7 @@ std::string CHTTPMessage::GetHeaderAsString()
   }
 	
   /* Message Type */
-	switch(m_HTTPMessageType)
+	switch(m_nHTTPMessageType)
 	{
 		case HTTP_MESSAGE_TYPE_GET:	          /* todo */			                            break;
     case HTTP_MESSAGE_TYPE_HEAD:	        /* todo */			                            break;
@@ -180,15 +170,22 @@ std::string CHTTPMessage::GetHeaderAsString()
 	}
 	
   /* Content length */
-  if(!m_bIsChunked)
+  if(!m_pUPnPItem)
   {
-    if(m_nBinContentLength > 0)
-      sResult << "CONTENT-LENGTH: " << m_nBinContentLength << "\r\n";
+    if(!m_bIsChunked)
+    {
+      if(m_nBinContentLength > 0)
+        sResult << "CONTENT-LENGTH: " << m_nBinContentLength << "\r\n";
+      else
+        sResult << "CONTENT-LENGTH: " << (int)strlen(m_sContent.c_str()) << "\r\n";
+    }
     else
-      sResult << "CONTENT-LENGTH: " << (int)strlen(m_sContent.c_str()) << "\r\n";
+      sResult << "CONTENT-LENGTH: 0\r\n";
   }
   else
-    sResult << "CONTENT-LENGTH: 0\r\n";
+  {
+    sResult << "CONTENT-LENGTH: " << m_pUPnPItem->GetSize() << "\r\n";
+  }
 	
   /* Content type */
 	/*switch(m_HTTPContentType)
@@ -201,12 +198,17 @@ std::string CHTTPMessage::GetHeaderAsString()
 	}*/
 
 	sResult << "CONTENT-TYPE: " << m_sHTTPContentType << "\r\n";	
-	//sResult << "SERVER: Windows/2000 UPnP/1.0 fuppes/0.1.5 \r\n";
-	//sResult << "DATE: \r\n";
+	sResult << "SERVER: Linux/2.6.x, UPnP/1.0, fuppes/0.3 \r\n";
+	sResult << "DATE: Sat, 12 Nov 2005 18:36:58 GMT\r\n";
+  sResult << "CONNECTION: close\r\n";
+  sResult << "ACCEPT-RANGES: bytes\r\n";
+  
+  sResult << "contentFeatures.dlna.org: \r\n";
+  
 	sResult << "EXT: \r\n";
 	
   /* Transfer-Encoding */
-  if(m_HTTPVersion == HTTP_VERSION_1_1)
+  if(m_nHTTPVersion == HTTP_VERSION_1_1)
   {
     /*if(m_bIsChunked)
     {
@@ -285,13 +287,13 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
   RegEx rxGET("GET +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
   if(rxGET.Search(p_sMessage.c_str()))
   {
-    m_HTTPMessageType = HTTP_MESSAGE_TYPE_GET;
+    m_nHTTPMessageType = HTTP_MESSAGE_TYPE_GET;
 
     string sVersion = rxGET.Match(2);
-    if(sVersion.compare("0"))		
-      m_HTTPVersion = HTTP_VERSION_1_0;		
-    else if(sVersion.compare("1"))		
-      m_HTTPVersion = HTTP_VERSION_1_1;
+    if(sVersion.compare("0") == 0)		
+      m_nHTTPVersion = HTTP_VERSION_1_0;		
+    else if(sVersion.compare("1") == 0)		
+      m_nHTTPVersion = HTTP_VERSION_1_1;
 
     m_sRequest = rxGET.Match(1);			
     bResult = true;
@@ -301,13 +303,13 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
   RegEx rxHEAD("HEAD +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
   if(rxHEAD.Search(p_sMessage.c_str()))
   {
-    m_HTTPMessageType = HTTP_MESSAGE_TYPE_HEAD;
+    m_nHTTPMessageType = HTTP_MESSAGE_TYPE_HEAD;
 
     string sVersion = rxHEAD.Match(2);
-    if(sVersion.compare("0"))		
-      m_HTTPVersion = HTTP_VERSION_1_0;		
-    else if(sVersion.compare("1"))		
-      m_HTTPVersion = HTTP_VERSION_1_1;
+    if(sVersion.compare("0") == 0)		
+      m_nHTTPVersion = HTTP_VERSION_1_0;		
+    else if(sVersion.compare("1") == 0)		
+      m_nHTTPVersion = HTTP_VERSION_1_1;
 
     m_sRequest = rxHEAD.Match(1);			
     bResult = true;
@@ -317,13 +319,13 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
   RegEx rxPOST("POST +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
   if(rxPOST.Search(p_sMessage.c_str()))
   {
-    m_HTTPMessageType = HTTP_MESSAGE_TYPE_POST;
+    m_nHTTPMessageType = HTTP_MESSAGE_TYPE_POST;
 
     string sVersion = rxPOST.Match(2);
-    if(sVersion.compare("0"))		
-      m_HTTPVersion = HTTP_VERSION_1_0;		
-    else if(sVersion.compare("1"))
-      m_HTTPVersion = HTTP_VERSION_1_1;
+    if(sVersion.compare("0") == 0)		
+      m_nHTTPVersion = HTTP_VERSION_1_0;		
+    else if(sVersion.compare("1") == 0)
+      m_nHTTPVersion = HTTP_VERSION_1_1;
 
     m_sRequest = rxPOST.Match(1);			
 
@@ -359,8 +361,8 @@ bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
 
 bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName)
 { 
-  m_bIsChunked  = true;
-  m_HTTPVersion = HTTP_VERSION_1_1;  
+  m_bIsChunked   = true;
+  //m_nHTTPVersion = HTTP_VERSION_1_1;  
   
   m_bBreakTranscoding = false;
   

@@ -157,3 +157,8 @@ std::string CAudioItem::GetMimeType()
 {
   return "audio/mpeg";
 }
+
+unsigned int CAudioItem::GetSize()
+{
+  return 0;
+}

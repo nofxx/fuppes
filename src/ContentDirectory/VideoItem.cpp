@@ -1,5 +1,5 @@
 /***************************************************************************
- *            ImageItem.cpp
+ *            VideoItem.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -22,20 +22,21 @@
  */
 
 #include "../Common.h"
-#include "ImageItem.h"
+#include "VideoItem.h"
 #include <sstream>
 #include <string>
 
 using namespace std;
 
-CImageItem::CImageItem(std::string p_sHTTPServerURL):
+CVideoItem::CVideoItem(std::string p_sHTTPServerURL):
   CUPnPItem(UPNP_OBJECT_TYPE_IMAGE_ITEM, p_sHTTPServerURL)
 {
-  m_nImageType = IMAGE_TYPE_UNKNOWN;
+  m_nVideoType = VIDEO_TYPE_UNKNOWN;
+  m_nSize      = 0;
 }
 
 /* GetDescription */
-void CImageItem::GetDescription(xmlTextWriterPtr pWriter)
+void CVideoItem::GetDescription(xmlTextWriterPtr pWriter)
 {
   VOID_CHK_RET_POINTER(pWriter);
 
@@ -56,38 +57,8 @@ void CImageItem::GetDescription(xmlTextWriterPtr pWriter)
   
     /* class */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
-    xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.imageItem");
+    xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.videoItem.movie");
     xmlTextWriterEndElement(pWriter);
-  
-/* longDescription
-upnp
-No */
-
-    /* storageMedium */
-    xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "storageMedium", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
-    xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN");
-    xmlTextWriterEndElement(pWriter);
-
-/* rating
-upnp
-No
-
-description
-dc
-No
-
-publisher
-dc
-No */
-
-    /* date */
-    xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "date", BAD_CAST "http://purl.org/dc/elements/1.1/");    
-    xmlTextWriterWriteString(pWriter, BAD_CAST "2005-11-11");
-    xmlTextWriterEndElement(pWriter);   
-    
-/* rights
-dc
-No */  
     
     /* res */
     xmlTextWriterStartElement(pWriter, BAD_CAST "res");
@@ -97,7 +68,7 @@ No */
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
     sTmp.str("");
     
-    sTmp << "http://" << GetHTTPServerURL() << "/MediaServer/ImageItems/" << GetObjectID();
+    sTmp << "http://" << GetHTTPServerURL() << "/MediaServer/VideoItems/" << GetObjectID();
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
     xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
     xmlTextWriterEndElement(pWriter);                  
@@ -106,29 +77,39 @@ No */
   xmlTextWriterEndElement(pWriter);
 }
 
-std::string CImageItem::GetMimeType()
+std::string CVideoItem::GetMimeType()
 {
   string sResult = "";
   
-  switch(m_nImageType)
+  switch(m_nVideoType)
   {
-    case IMAGE_TYPE_UNKNOWN:
+    case VIDEO_TYPE_UNKNOWN:
       break;
-    case IMAGE_TYPE_PNG:
-      sResult = "image/png";
+    case VIDEO_TYPE_AVI:
+      sResult = MIME_TYPE_VIDEO_X_MSVIDEO;
       break;
-    case IMAGE_TYPE_BMP:
-      sResult = "image/bmp";
-      break;
-    case IMAGE_TYPE_JPEG:
-      sResult = "image/jpeg";
+    case VIDEO_TYPE_MPEG:
+      sResult = MIME_TYPE_VIDEO_MPEG;
       break;
   }  
   
   return sResult;
 }
 
-unsigned int CImageItem::GetSize()
+/* TODO: nach UPnPItem verlagern */
+unsigned int CVideoItem::GetSize()
 {
-  return 0;
+  if(m_nSize == 0)
+  {
+    fstream fFile;    
+    fFile.open(m_sFileName.c_str(), ios::binary|ios::in);
+    if(fFile.fail() != 1)
+    { 
+      fFile.seekg(0, ios::end); 
+      m_nSize = streamoff(fFile.tellg());  
+      fFile.close();
+    }
+  }
+  
+  return m_nSize;  
 }

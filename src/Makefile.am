@@ -30,6 +30,7 @@ h_sources = \
   ContentDirectory/UPnPItem.h\
   ContentDirectory/AudioItem.h\
   ContentDirectory/ImageItem.h\
+  ContentDirectory/VideoItem.h\
   ContentDirectory/ContentDirectory.h\
   Presentation/PresentationHandler.h\
   Presentation/Stylesheet.h\
@@ -64,6 +65,7 @@ cpp_sources = \
   ContentDirectory/StorageFolder.cpp\
   ContentDirectory/AudioItem.cpp\
   ContentDirectory/ImageItem.cpp\
+  ContentDirectory/VideoItem.cpp\
 	ContentDirectory/ContentDirectory.cpp\
   Presentation/PresentationHandler.cpp\
   Presentation/Images/fuppes_png.cpp\

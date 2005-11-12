@@ -39,6 +39,7 @@
 #include "UPnPDevice.h"
 #include "ContentDirectory/AudioItem.h"
 #include "ContentDirectory/ImageItem.h"
+#include "ContentDirectory/VideoItem.h"
 #include "ContentDirectory/ContentDirectory.h"
 
 using namespace std;
@@ -280,6 +281,11 @@ bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMe
 {
   bool fRet = true;
 
+  /* set HTTP Type */ 
+  cout << "in: " << pMessageIn->GetVersion() << endl;
+  pMessageOut->SetVersion(pMessageIn->GetVersion()); 
+  cout << "out: " << pMessageOut->GetVersion() << endl;
+  
   /* Handle message */
   HTTP_MESSAGE_TYPE nMsgType = pMessageIn->GetMessageType();
   switch(nMsgType)
@@ -306,7 +312,7 @@ bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMe
 }
 
 bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
-{
+{  
   /* Get request */
   std::string strRequest = pMessageIn->GetRequest();
 
@@ -401,6 +407,36 @@ bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessa
       return false;
     }
   }  
+  
+  /* videoItem */
+  else if((strRequest.length() > 24) && (strRequest.substr(0, 24).compare("/MediaServer/VideoItems/") == 0))
+  {
+    string sItemObjId = pMessageIn->GetRequest().substr(24, pMessageIn->GetRequest().length());
+    CVideoItem* pItem = (CVideoItem*)m_pContentDirectory->GetItemFromObjectID(sItemObjId);
+
+    if(pItem && FileExists(pItem->GetFileName()))
+    {
+      pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, pItem->GetMimeType()); 
+      pMessageOut->LoadContentFromFile(pItem->GetFileName());
+      
+      stringstream sLog;
+      sLog << "sending video file \"" << pItem->GetName() << "\""; 
+      CSharedLog::Shared()->Log(LOGNAME, sLog.str()); 
+      return true; 
+    }
+    else
+    {
+      if(!pItem)
+        CSharedLog::Shared()->Error(LOGNAME, "HandleHTTPGet() :: pItem is NULL");
+      else if(!FileExists(pItem->GetFileName()))
+      {
+        stringstream sLog;
+        sLog << "requested file: \"" << pItem->GetFileName() << "\" not found";
+        CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
+      }      
+      return false;
+    }
+  }   
   
   return false;
 }

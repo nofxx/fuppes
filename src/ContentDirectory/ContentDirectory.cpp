@@ -30,6 +30,7 @@
 #include "UPnPItem.h"
 #include "AudioItem.h"
 #include "ImageItem.h"
+#include "VideoItem.h"
 #include "../UPnPActions/UPnPBrowse.h"
 #include "../SharedConfig.h"
 #include "../SharedLog.h"
@@ -415,7 +416,7 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, unsigned int* p_
   
             /* log */
             sTmp.str("");
-            sTmp << "added AudioItem: \"" << sTmpFileName << "\"";
+            sTmp << "added audioItem: \"" << sTmpFileName << "\"";
             CSharedLog::Shared()->ExtendedLog(LOGNAME, sTmp.str());            
           }
           else
@@ -455,9 +456,46 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, unsigned int* p_
 
           /* log */
           sTmp.str("");
-          sTmp << "added ImageItem: \"" << sTmpFileName << "\"";
+          sTmp << "added imageItem: \"" << sTmpFileName << "\"";
           CSharedLog::Shared()->ExtendedLog(LOGNAME, sTmp.str());
-        }        
+        }    
+
+        /* VideoItem */
+        if(IsFile(sTmp.str()) && ((sExt.compare("mpeg") == 0) || (sExt.compare("mpg") == 0) || (sExt.compare("avi") == 0)))
+        {
+          CVideoItem* pTmpItem = new CVideoItem(m_sHTTPServerURL);
+          
+          if ((sExt.compare("mpeg") == 0) || (sExt.compare("mpg") == 0))
+            pTmpItem->m_nVideoType = VIDEO_TYPE_MPEG;
+          else if (sExt.compare("avi") == 0)
+            pTmpItem->m_nVideoType = VIDEO_TYPE_AVI;
+          
+          char szObjId[10];
+          sprintf(szObjId, "%010X", *p_pnCount);
+            
+          pTmpItem->SetObjectID(szObjId);
+          pTmpItem->SetParent(pParentFolder);     
+          pTmpItem->SetFileName(sTmp.str());        
+       
+          /* set object name */
+          stringstream sName;
+          sName << TruncateFileExt(sTmpFileName);
+          pTmpItem->SetName(sName.str());
+          
+          /* Add audio item to list and parent folder */
+          m_ObjectList[szObjId] = pTmpItem;
+          pParentFolder->AddUPnPObject(pTmpItem);
+          
+          /* increment counter */
+          int nTmp = *p_pnCount;
+          nTmp++;
+          *p_pnCount = nTmp;
+
+          /* log */
+          sTmp.str("");
+          sTmp << "added videoItem: \"" << sTmpFileName << "\"";
+          CSharedLog::Shared()->ExtendedLog(LOGNAME, sTmp.str());
+        }    
         
         /* StorageFolder */
         else if(IsDirectory(sTmp.str()))

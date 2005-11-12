@@ -25,6 +25,8 @@
 #ifndef _UPNPITEM_H
 #define _UPNPITEM_H
 
+#include <fstream>
+
 /*===============================================================================
  INCLUDES
 ===============================================================================*/
@@ -66,11 +68,13 @@ public:
   {
   }
 
+  virtual std::string GetMimeType() = 0;
+  virtual unsigned int GetSize() = 0;
 /* <\PUBLIC> */
 
-  
   protected:
-    virtual std::string GetMimeType() = 0;
+    unsigned int m_nSize;
+  
   //  std::string m_sMimeType;
   
 };

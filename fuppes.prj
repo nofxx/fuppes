@@ -139,7 +139,9 @@ module.source.files=\
 	Transcoding/MpcWrapper.h\
 	Transcoding/WrapperBase.h\
 	ContentDirectory/ImageItem.h\
-	ContentDirectory/ImageItem.cpp
+	ContentDirectory/ImageItem.cpp\
+	ContentDirectory/VideoItem.cpp\
+	ContentDirectory/VideoItem.h
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

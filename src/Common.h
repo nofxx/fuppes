@@ -66,8 +66,18 @@
  CONSTATNS
 ===============================================================================*/
 
+/*
+ * mime types
+ */
+
 const std::string MIME_TYPE_TEXT_HTML = "text/html";
+
+/* image types */
 const std::string MIME_TYPE_IMAGE_PNG = "image/png";
+
+/* video types */
+const std::string MIME_TYPE_VIDEO_X_MSVIDEO = "video/x-msvideo";
+const std::string MIME_TYPE_VIDEO_MPEG      = "video/mpeg";
 
 /* TODO */
 

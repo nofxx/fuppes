@@ -30,7 +30,9 @@
 ===============================================================================*/
 
 #include "MessageBase.h"
+#include "ContentDirectory/UPnPItem.h"
 #include <string>
+#include <iostream>
 
 using namespace std;
 
@@ -122,7 +124,6 @@ public:
  INIT
 ===============================================================================*/
 
-  void         SetMessage(HTTP_MESSAGE_TYPE nMsgType, HTTP_VERSION nVersion);
   void         SetMessage(HTTP_MESSAGE_TYPE nMsgType, std::string p_sContentType);
   virtual bool SetMessage(std::string p_sMessage);
 
@@ -131,8 +132,9 @@ public:
 ===============================================================================*/
 
   std::string			  GetRequest()          { return m_sRequest;          }  
-  std::string       GetContentType()      { return m_sHTTPContentType;   }
-  HTTP_MESSAGE_TYPE GetMessageType()      { return m_HTTPMessageType;   }
+  std::string       GetContentType()      { return m_sHTTPContentType;  }
+  HTTP_MESSAGE_TYPE GetMessageType()      { return m_nHTTPMessageType;  }
+  HTTP_VERSION      GetVersion()          { return m_nHTTPVersion;      }
   std::string       GetContent()          { return m_sContent;          }
   unsigned int      GetBinContentLength() { return m_nBinContentLength; }
   char*             GetBinContent()       { return m_pszBinContent;     }
@@ -148,10 +150,12 @@ public:
  SET MESSAGE DATA
 ===============================================================================*/
 
-  void             SetMessageType(HTTP_MESSAGE_TYPE p_HTTPMessageType) { m_HTTPMessageType = p_HTTPMessageType; }
-  void             SetContentType(std::string p_sContentType) { m_sHTTPContentType = p_sContentType; }
-	void						 SetContent(std::string p_sContent)                  { m_sContent        = p_sContent;        }
+  void             SetMessageType(HTTP_MESSAGE_TYPE p_nHTTPMessageType) { m_nHTTPMessageType = p_nHTTPMessageType; }
+  void             SetVersion(HTTP_VERSION p_nHTTPVersion)              { m_nHTTPVersion     = p_nHTTPVersion; cout << p_nHTTPVersion << endl;    }
+  void             SetContentType(std::string p_sContentType)           { m_sHTTPContentType = p_sContentType;     }
+	void						 SetContent(std::string p_sContent)                   { m_sContent         = p_sContent;         }
   void             SetBinContent(char* p_szBinContent, unsigned int p_nBinContenLength);
+  void             SetUPnPItem(CUPnPItem* pUPnPItem);
   
 /*===============================================================================
  OTHER
@@ -159,8 +163,7 @@ public:
 
   bool             BuildFromString(std::string p_sMessage);
   bool             LoadContentFromFile(std::string);	
-  bool             TranscodeContentFromFile(std::string p_sFileName);	
-  
+  bool             TranscodeContentFromFile(std::string p_sFileName);	  
 
 /* <\PUBLIC> */
 
@@ -178,15 +181,16 @@ private:
  MEMBERS
 ===============================================================================*/
   
-  HTTP_VERSION       m_HTTPVersion;
-  HTTP_MESSAGE_TYPE  m_HTTPMessageType;
+  HTTP_VERSION       m_nHTTPVersion;
+  HTTP_MESSAGE_TYPE  m_nHTTPMessageType;
   std::string        m_sHTTPContentType;
   std::string	       m_sRequest;
   int                m_nContentLength;  
   bool               m_bIsChunked;
+  CUPnPItem*         m_pUPnPItem;
   
   unsigned int       m_nBinContentPosition;
-  fuppesThread m_TranscodeThread;  
+  fuppesThread       m_TranscodeThread;  
 
 /*===============================================================================
  HELPER

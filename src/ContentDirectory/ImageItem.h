@@ -60,6 +60,7 @@ class CImageItem: public CUPnPItem
     void GetDescription(xmlTextWriterPtr pWriter);
       
     std::string  GetMimeType();
+    unsigned int GetSize();
 /* <\PUBLIC> */  
   
   //private:      

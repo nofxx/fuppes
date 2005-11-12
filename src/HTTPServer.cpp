@@ -317,7 +317,10 @@ fuppesThreadCallback SessionLoop(void *arg)
       nRecvCnt++;
       continue;
     }
-                  
+                
+    cout << sHeader << endl;
+
+    
     /* read content length */
     RegEx rxContentLength("CONTENT-LENGTH: *(\\d+)", PCRE_CASELESS);
     if(rxContentLength.Search(sHeader.c_str()))
@@ -370,6 +373,8 @@ fuppesThreadCallback SessionLoop(void *arg)
       CSharedLog::Shared()->Error(LOGNAME, "parsing HTTP message");      
     if(bResult)
     {
+      cout << ResponseMsg.GetHeaderAsString() << endl;
+      
       if(!ResponseMsg.IsChunked())
       { 
         /* send complete binary stream */
@@ -388,7 +393,7 @@ fuppesThreadCallback SessionLoop(void *arg)
         } 
         /* send text message */
         else 
-        { 
+        {
           CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending plain text");          
           send(pSession->GetConnection(), ResponseMsg.GetMessageAsString().c_str(), (int)strlen(ResponseMsg.GetMessageAsString().c_str()), 0); 
           CSharedLog::Shared()->DebugLog(LOGNAME, ResponseMsg.GetMessageAsString());
