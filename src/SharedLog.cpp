@@ -191,6 +191,19 @@ void CSharedLog::Warning(std::string p_sSender, std::string p_sMessage)
   #endif
 }
 
+void CSharedLog::Critical(std::string p_sSender, std::string p_sMessage)
+{
+  #ifndef DISABLELOG  
+  if(m_bShowLog)
+  {
+    fuppesThreadLockMutex(&m_Mutex);    
+    std::cout << "[CRITICAL :: " << p_sSender << "] " << p_sMessage << std::endl;  
+    fflush(stdout);  
+    fuppesThreadUnlockMutex(&m_Mutex);
+  }
+  #endif
+}
+
 void CSharedLog::Error(std::string p_sSender, std::string p_sMessage)
 {
   #ifndef DISABLELOG  

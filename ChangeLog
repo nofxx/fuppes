@@ -1,3 +1,12 @@
+Version 0.3.1 (2005-11-??)
+  * fixed bug #1352301 (missing linker flag)
+  * fixed first level dirctory listing
+  * fixed device-description bug
+  * fixed segfault on slow machines. a package of 0 bytes was send when
+    transcoding did not returned a result within a second.
+  * mp3 files aren't loaded completely into memory any longer
+  * begun image and video support
+
 Version 0.3 (2005-11-01)
   * implemented on the fly transcoding from ogg-vorbis and mpc (musepack) to mp3
   * daemon mode (start with -d) (will not shutdown correctly on kill signal)
@@ -38,5 +47,5 @@ Version 0.1.1 (2005-07-10)
   * started webinterface
   * some bugfixes and code-cleanup
 
-Version O.1 (2005-06-25)
+Version 0.1 (2005-06-25)
   * first release.

@@ -94,6 +94,7 @@ protected:
 
   std::string m_sHTTPServerURL;
 
+  UPNP_DEVICE_TYPE m_nUPnPDeviceType;
 /* <\PROTECTED> */
 
 /* <PRIVATE> */
@@ -104,7 +105,7 @@ private:
  MEMBERS
 ===============================================================================*/
 
-  UPNP_DEVICE_TYPE m_nUPnPDeviceType;
+  
 
 /* <\PRIVATE> */
 

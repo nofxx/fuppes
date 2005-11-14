@@ -273,9 +273,9 @@ std::string CUPnPDevice::GetDeviceDescription()
       		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
 					sTmp.str("");
 					xmlTextWriterEndElement(writer);
-				
+        
 					/* serviceId */
-					sTmp << "urn:upnp-org:serviceId:urn:schemas-upnp-org:service:" << pTmp->GetUPnPDeviceTypeAsString();
+					sTmp << "urn:upnp-org:serviceId:" << pTmp->GetUPnPDeviceTypeAsString();
 					xmlTextWriterStartElement(writer, BAD_CAST "serviceId");
       		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
 					sTmp.str("");

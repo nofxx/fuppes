@@ -231,30 +231,35 @@ std::string CHTTPMessage::GetMessageAsString()
 unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned int p_nSize, unsigned int p_nOffset)
 {
   fuppesThreadLockMutex(&TranscodeMutex);  
+      
+  unsigned int nRest = m_nBinContentLength - m_nBinContentPosition;
+  unsigned int nDelayCount = 0;  
+  while(m_bIsTranscoding && (nRest < p_nSize) && !m_bBreakTranscoding)
+  { 
+    CSharedLog::Shared()->Critical(LOGNAME, "we are sending faster then we can transcode. delaying send-process!");    
+    fuppesThreadUnlockMutex(&TranscodeMutex);
+    fuppesSleep(100);
+    fuppesThreadLockMutex(&TranscodeMutex);    
+    nDelayCount++;
+    
+    /* if bufer is still empty after n tries
+       the machine seems to be too slow. so
+       we give up */
+    if (nDelayCount == 20)
+    {
+      fuppesThreadLockMutex(&TranscodeMutex);    
+      m_bBreakTranscoding = true;
+      fuppesThreadUnlockMutex(&TranscodeMutex);
+      return 0;
+    }
+  }
   
-  //cout << "pos: " << m_nBinContentPosition << endl << "ofs: " << p_nOffset << endl << "size: " << m_nBinContentLength << endl;
-  
-  unsigned int nRest = m_nBinContentLength - m_nBinContentPosition;  
   if(nRest > p_nSize)
   {
     memcpy(p_sContentChunk, &m_pszBinContent[m_nBinContentPosition], p_nSize);    
     m_nBinContentPosition += p_nSize;
     fuppesThreadUnlockMutex(&TranscodeMutex);
     return p_nSize;
-  }
-  else if((nRest < p_nSize) && m_bIsTranscoding)
-  {
-    fuppesThreadUnlockMutex(&TranscodeMutex);
-    cout << "[critical] we are sending faster then we can transcode" << endl;
-    cout << "           delaying send-process for a second" << endl;
-    fflush(stdout);
-    fuppesSleep(1000);
-    fuppesThreadLockMutex(&TranscodeMutex);
-    memcpy(p_sContentChunk, &m_pszBinContent[m_nBinContentPosition], nRest);
-    m_nBinContentPosition += nRest;
-    fuppesThreadUnlockMutex(&TranscodeMutex);
-    return nRest;    
-    fuppesThreadUnlockMutex(&TranscodeMutex);
   }
   else if((nRest < p_nSize) && !m_bIsTranscoding)
   {
