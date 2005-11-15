@@ -32,7 +32,6 @@
 
 #include <iostream>
 #include <sstream>
-#include <fstream>
 
 #ifndef DISABLE_TRANSCODING
 #include "Transcoding/LameWrapper.h"
@@ -83,6 +82,7 @@ CHTTPMessage::CHTTPMessage()
   m_bIsChunked          = false;
   m_TranscodeThread     = (fuppesThread)NULL;
   m_pUPnPItem           = NULL;
+  m_bIsBinary           = false;
 }
 
 CHTTPMessage::~CHTTPMessage()
@@ -92,7 +92,10 @@ CHTTPMessage::~CHTTPMessage()
     delete[] m_pszBinContent;
     
   if(m_TranscodeThread)
-    fuppesThreadClose(m_TranscodeThread);    
+    fuppesThreadClose(m_TranscodeThread);
+
+  if(m_fsFile.is_open())
+    m_fsFile.close();
 }
 
 /*===============================================================================
@@ -170,22 +173,18 @@ std::string CHTTPMessage::GetHeaderAsString()
 	}
 	
   /* Content length */
-  if(!m_pUPnPItem)
+  if(!m_bIsBinary)
   {
-    if(!m_bIsChunked)
-    {
-      if(m_nBinContentLength > 0)
-        sResult << "CONTENT-LENGTH: " << m_nBinContentLength << "\r\n";
-      else
-        sResult << "CONTENT-LENGTH: " << (int)strlen(m_sContent.c_str()) << "\r\n";
-    }
-    else
-      sResult << "CONTENT-LENGTH: 0\r\n";
+    sResult << "CONTENT-LENGTH: " << (int)strlen(m_sContent.c_str()) << "\r\n";
   }
   else
   {
-    sResult << "CONTENT-LENGTH: " << m_pUPnPItem->GetSize() << "\r\n";
-  }
+    if(!m_bIsTranscoding && (m_nBinContentLength > 0))
+      sResult << "CONTENT-LENGTH: " << m_nBinContentLength << "\r\n";
+    else
+      sResult << "CONTENT-LENGTH: 0\r\n";
+  }      
+
 	
   /* Content type */
 	/*switch(m_HTTPContentType)
@@ -230,46 +229,70 @@ std::string CHTTPMessage::GetMessageAsString()
 
 unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned int p_nSize, unsigned int p_nOffset)
 {
-  fuppesThreadLockMutex(&TranscodeMutex);  
-      
-  unsigned int nRest = m_nBinContentLength - m_nBinContentPosition;
-  unsigned int nDelayCount = 0;  
-  while(m_bIsTranscoding && (nRest < p_nSize) && !m_bBreakTranscoding)
-  { 
-    CSharedLog::Shared()->Critical(LOGNAME, "we are sending faster then we can transcode. delaying send-process!");    
-    fuppesThreadUnlockMutex(&TranscodeMutex);
-    fuppesSleep(100);
-    fuppesThreadLockMutex(&TranscodeMutex);    
-    nDelayCount++;
-    
-    /* if bufer is still empty after n tries
-       the machine seems to be too slow. so
-       we give up */
-    if (nDelayCount == 20)
+  /* read from file */
+  if(m_fsFile.is_open())
+  {
+    //cout << "read from file" << endl;
+    unsigned int nRest = m_nBinContentLength - m_nBinContentPosition;    
+    if(nRest >= p_nSize)
     {
-      fuppesThreadLockMutex(&TranscodeMutex);    
-      m_bBreakTranscoding = true;
-      fuppesThreadUnlockMutex(&TranscodeMutex);
-      return 0;
+      m_fsFile.read(p_sContentChunk, p_nSize);      
+      m_nBinContentPosition += p_nSize;
+      return p_nSize;
     }
-  }
+    else
+    {
+      m_fsFile.read(p_sContentChunk, nRest);
+      m_nBinContentPosition += nRest;
+      return nRest;
+    }
+  }  
   
-  if(nRest > p_nSize)
-  {
-    memcpy(p_sContentChunk, &m_pszBinContent[m_nBinContentPosition], p_nSize);    
-    m_nBinContentPosition += p_nSize;
+  /* read transcoded data from memory */
+  else
+  {    
+    fuppesThreadLockMutex(&TranscodeMutex);      
+    
+    unsigned int nRest = m_nBinContentLength - m_nBinContentPosition;
+    unsigned int nDelayCount = 0;  
+    while(m_bIsTranscoding && (nRest < p_nSize) && !m_bBreakTranscoding)
+    { 
+      CSharedLog::Shared()->Critical(LOGNAME, "we are sending faster then we can transcode. delaying send-process!");    
+      fuppesThreadUnlockMutex(&TranscodeMutex);
+      fuppesSleep(100);
+      fuppesThreadLockMutex(&TranscodeMutex);    
+      nDelayCount++;
+      
+      /* if bufer is still empty after n tries
+         the machine seems to be too slow. so
+         we give up */
+      if (nDelayCount == 20)
+      {
+        fuppesThreadLockMutex(&TranscodeMutex);    
+        m_bBreakTranscoding = true;
+        fuppesThreadUnlockMutex(&TranscodeMutex);
+        return 0;
+      }
+    }
+    
+    if(nRest > p_nSize)
+    {
+      memcpy(p_sContentChunk, &m_pszBinContent[m_nBinContentPosition], p_nSize);    
+      m_nBinContentPosition += p_nSize;
+      fuppesThreadUnlockMutex(&TranscodeMutex);
+      return p_nSize;
+    }
+    else if((nRest < p_nSize) && !m_bIsTranscoding)
+    {
+      memcpy(p_sContentChunk, &m_pszBinContent[m_nBinContentPosition], nRest);
+      m_nBinContentPosition += nRest;
+      fuppesThreadUnlockMutex(&TranscodeMutex);
+      return nRest;
+    }
+     
     fuppesThreadUnlockMutex(&TranscodeMutex);
-    return p_nSize;
+  
   }
-  else if((nRest < p_nSize) && !m_bIsTranscoding)
-  {
-    memcpy(p_sContentChunk, &m_pszBinContent[m_nBinContentPosition], nRest);
-    m_nBinContentPosition += nRest;
-    fuppesThreadUnlockMutex(&TranscodeMutex);
-    return nRest;
-  }
-   
-  fuppesThreadUnlockMutex(&TranscodeMutex);
   return 0;
 }
 
@@ -345,19 +368,17 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
 
 bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
 {
-  fstream fFile;    
-  fFile.open(p_sFileName.c_str(), ios::binary|ios::in);
-  if(fFile.fail() != 1)
+  m_bIsChunked = true;
+  m_bIsBinary  = true;
+  
+  //fstream fFile;    
+  m_fsFile.open(p_sFileName.c_str(), ios::binary|ios::in);
+  if(m_fsFile.fail() != 1)
   { 
-    fFile.seekg(0, ios::end); 
-    m_nBinContentLength = streamoff(fFile.tellg()); 
-    fFile.seekg(0, ios::beg);
-
-    m_pszBinContent = new char[m_nBinContentLength + 1];     
-    fFile.read(m_pszBinContent, m_nBinContentLength); 
-    m_pszBinContent[m_nBinContentLength] = '\0';    
-
-    fFile.close();
+    m_fsFile.seekg(0, ios::end); 
+    m_nBinContentLength = streamoff(m_fsFile.tellg()); 
+    m_fsFile.seekg(0, ios::beg);
+    //fFile.close();
   } 
 	
   return true;
@@ -366,7 +387,8 @@ bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
 
 bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName)
 { 
-  m_bIsChunked   = true;
+  m_bIsChunked = true;
+  m_bIsBinary  = true;
   //m_nHTTPVersion = HTTP_VERSION_1_1;  
   
   m_bBreakTranscoding = false;

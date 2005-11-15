@@ -162,7 +162,8 @@ bool CHTTPServer::CallOnReceive(CHTTPMessage* pMessageIn, CHTTPMessage* pMessage
     /* Parse message */
     return m_pReceiveHandler->OnHTTPServerReceiveMsg(pMessageIn, pMessageOut);
   }
-  else return false;  
+  else 
+    return false;  
 }
 
 /**
@@ -250,7 +251,7 @@ fuppesThreadCallback SessionLoop(void *arg)
   unsigned int nContentLength = 0;
   CHTTPMessage ReceivedMessage;        
   bool bDoReceive = true;
-      
+  
   /* receive message */
   int nTmpRecv = 0;
   while(bDoReceive)
@@ -318,7 +319,7 @@ fuppesThreadCallback SessionLoop(void *arg)
       continue;
     }
                 
-    cout << sHeader << endl;
+    //cout << sHeader << endl;
 
     
     /* read content length */
@@ -346,9 +347,7 @@ fuppesThreadCallback SessionLoop(void *arg)
     if(nTmpRecv == 0)      
       nRecvCnt++;    
   }
-  /* end receive */  
-
-
+  /* end receive */
 
   /* build received message */
   bool bResult = false;  
@@ -373,8 +372,7 @@ fuppesThreadCallback SessionLoop(void *arg)
       CSharedLog::Shared()->Error(LOGNAME, "parsing HTTP message");      
     if(bResult)
     {
-      cout << ResponseMsg.GetHeaderAsString() << endl;
-      
+      //cout << ResponseMsg.GetHeaderAsString() << endl;
       if(!ResponseMsg.IsChunked())
       { 
         /* send complete binary stream */
@@ -412,7 +410,7 @@ fuppesThreadCallback SessionLoop(void *arg)
         send(pSession->GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);             
         
         int nErr = 0;
-        int nCnt = 0;         
+        int nCnt = 0;
         while((nErr != -1) && ((nRet = ResponseMsg.GetBinContentChunk(szChunk, 8192 + 1, nOffset)) > 0)) 
         {             
            //cout << "ret: " << nRet << endl;             
@@ -451,6 +449,7 @@ fuppesThreadCallback SessionLoop(void *arg)
             #endif
             {
               cout << "error: " << nErr << endl;
+              cout << "connection reset by peer" << endl;
               fflush(stdout); 
 
               ResponseMsg.m_bBreakTranscoding = true; 
@@ -481,7 +480,6 @@ fuppesThreadCallback SessionLoop(void *arg)
             
     }
   }
-
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "done sending response");
   
   

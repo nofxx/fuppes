@@ -281,10 +281,8 @@ bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMe
 {
   bool fRet = true;
 
-  /* set HTTP Type */ 
-  cout << "in: " << pMessageIn->GetVersion() << endl;
-  pMessageOut->SetVersion(pMessageIn->GetVersion()); 
-  cout << "out: " << pMessageOut->GetVersion() << endl;
+  /* set HTTP Type */
+  pMessageOut->SetVersion(pMessageIn->GetVersion());
   
   /* Handle message */
   HTTP_MESSAGE_TYPE nMsgType = pMessageIn->GetMessageType();

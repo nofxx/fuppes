@@ -33,6 +33,7 @@
 #include "ContentDirectory/UPnPItem.h"
 #include <string>
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -151,7 +152,7 @@ public:
 ===============================================================================*/
 
   void             SetMessageType(HTTP_MESSAGE_TYPE p_nHTTPMessageType) { m_nHTTPMessageType = p_nHTTPMessageType; }
-  void             SetVersion(HTTP_VERSION p_nHTTPVersion)              { m_nHTTPVersion     = p_nHTTPVersion; cout << p_nHTTPVersion << endl;    }
+  void             SetVersion(HTTP_VERSION p_nHTTPVersion)              { m_nHTTPVersion     = p_nHTTPVersion;     }
   void             SetContentType(std::string p_sContentType)           { m_sHTTPContentType = p_sContentType;     }
 	void						 SetContent(std::string p_sContent)                   { m_sContent         = p_sContent;         }
   void             SetBinContent(char* p_szBinContent, unsigned int p_nBinContenLength);
@@ -172,6 +173,7 @@ public:
   unsigned int  m_nBinContentLength; 
   bool          m_bBreakTranscoding;
   bool          m_bIsTranscoding;
+  bool          m_bIsBinary;
 
 /* <PRIVATE> */
 
@@ -188,9 +190,10 @@ private:
   int                m_nContentLength;  
   bool               m_bIsChunked;
   CUPnPItem*         m_pUPnPItem;
-  
+  std::fstream       m_fsFile;
+
   unsigned int       m_nBinContentPosition;
-  fuppesThread       m_TranscodeThread;  
+  fuppesThread       m_TranscodeThread;
 
 /*===============================================================================
  HELPER
