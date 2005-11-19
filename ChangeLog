@@ -1,6 +1,6 @@
-Version 0.3.1 (2005-11-??)
+Version 0.3.1 (2005-11-19)
   * fixed bug #1352301
-  * fixed first level dirctory listing
+  * fixed first level directory listing
   * fixed device-description bug
   * fixed segfault on slow machines. a package of 0 bytes was send when
     transcoding did not returned a result within a second.
