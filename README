@@ -46,10 +46,22 @@ using:
   taken from: http://www.adp-gmbh.ch/cpp/common/base64.html
   modified to handle line breaks
 
+win32 binary package comes with:
+
+  mpcdec.dll - libmpcdec-1.2.2
+  Copyright (c), The Musepack Development Team
+  http://www.musepack.net
+  see COPYING-MUSEPACK for details
+
+  vorbisfile.dll - libvorbis-1.1.1 and libogg-1.1.2
+  Copyright (c), The Xiph.Org Foundation
+  http://www.xiph.org/
+  see COPYING-VORBIS and COPYING-OGG for details
+
 
 The "Free UPnP Entertainment Service" is distributed under the terms of the
 GPL (GNU General Public License) version 2.
-For more License-Information read the file COPYING shipped with this package.
+For detailed License-Information read the file COPYING shipped with this package.
 
 UPnP is a trademark of the UPnP Implementers Corporation.
 Other names and brands may be trademarks or registered trademarks of others.

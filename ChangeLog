@@ -6,7 +6,6 @@ Version 0.3.1 (2005-11-??)
     transcoding did not returned a result within a second.
   * mp3 files aren't loaded completely into memory any longer
   * begun image and video support (unstable)
-  * win32: recompiled vorbisfile.dll and mpcdec.dll with copyright info
 
 Version 0.3 (2005-11-01)
   * implemented on the fly transcoding from ogg-vorbis and mpc (musepack) to mp3

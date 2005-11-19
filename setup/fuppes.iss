@@ -1,6 +1,6 @@
 [Setup]
 AppName=Free UPnP Entertainment Service
-AppVerName=Free UPnP Entertainment Service 0.3
+AppVerName=Free UPnP Entertainment Service 0.3.1
 AppPublisher=Ulrich Völkel
 AppPublisherURL=http://sourceforge.net/projects/fuppes
 AppSupportURL=http://sourceforge.net/projects/fuppes
@@ -9,7 +9,7 @@ DefaultDirName={pf}\Free UPnP Entertainment Service\
 DefaultGroupName=Free UPnP Entertainment Service
 LicenseFile=..\setup\license-eng.rtf
 OutputDir=..\setup
-OutputBaseFilename=fuppes-0.3-win32-setup
+OutputBaseFilename=fuppes-0.3.1-win32-setup
 SolidCompression=true
 ShowTasksTreeLines=true
 SourceDir=..\win32
@@ -38,6 +38,9 @@ Source: ..\README; DestDir: {app}; Flags: ignoreversion isreadme; DestName: READ
 Source: ..\fuppes.cfg.win32; DestDir: {userappdata}\Free UPnP Entertainment Service\; DestName: fuppes.cfg; Flags: confirmoverwrite
 Source: ..\win32\vorbisfile.dll; DestDir: {app}
 Source: ..\win32\mpcdec.dll; DestDir: {app}
+Source: ..\COPYING-MUSEPACK; DestDir: {app}; Flags: ignoreversion
+Source: ..\COPYING-OGG; DestDir: {app}; Flags: ignoreversion
+Source: ..\COPYING-VORBIS; DestDir: {app}; Flags: ignoreversion
 
 [Icons]
 Name: {group}\Free UPnP Entertainment Service; Filename: {app}\fuppes.exe

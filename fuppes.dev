@@ -1,7 +1,7 @@
 [Project]
 FileName=fuppes.dev
 Name=fuppes
-UnitCount=67
+UnitCount=71
 Type=1
 Ver=1
 ObjFiles=
@@ -52,7 +52,7 @@ BuildCmd=
 [VersionInfo]
 Major=0
 Minor=3
-Release=0
+Release=1
 Build=2
 LanguageID=1033
 CharsetID=1252
@@ -60,11 +60,11 @@ CompanyName=
 FileVersion=
 FileDescription=
 InternalName=fuppes
-LegalCopyright=
+LegalCopyright=Ulrich Völkel
 LegalTrademarks=
 OriginalFilename=fuppes.exe
 ProductName=Free UPnP Entertainment Service
-ProductVersion=0.3
+ProductVersion=0.3.1
 AutoIncBuildNr=1
 
 [Unit10]
@@ -709,6 +709,46 @@ BuildCmd=
 
 [Unit67]
 FileName=src\Transcoding\WrapperBase.h
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit68]
+FileName=src\ContentDirectory\VideoItem.cpp
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit69]
+FileName=src\ContentDirectory\ImageItem.cpp
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit70]
+FileName=src\ContentDirectory\ImageItem.h
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit71]
+FileName=src\ContentDirectory\VideoItem.h
 CompileCpp=1
 Folder=fuppes
 Compile=1
