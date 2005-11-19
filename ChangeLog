@@ -1,5 +1,5 @@
 Version 0.3.1 (2005-11-??)
-  * fixed bug #1352301 (missing linker flag)
+  * fixed bug #1352301
   * fixed first level dirctory listing
   * fixed device-description bug
   * fixed segfault on slow machines. a package of 0 bytes was send when
