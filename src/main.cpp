@@ -35,9 +35,27 @@
 
 #ifndef WIN32
 #include <fcntl.h>
+#include <signal.h>
 #endif
 
 using namespace std;
+
+bool g_bExitApp;
+
+void SignalHandler(int p_nSignal)
+{
+  cout << "SignalHandler: " << p_nSignal << endl;
+  g_bExitApp = true;
+  switch(p_nSignal)
+  {
+    case SIGINT:
+      cout << "SIGINT" << endl;
+      break;
+    case SIGTERM:
+      cout << "SIGTERM" << endl;
+      break;    
+  }
+}
 
 /*===============================================================================
  MAIN
@@ -50,6 +68,7 @@ using namespace std;
 int main(int argc, char* argv[])
 {
   bool bDaemonMode = false;
+  g_bExitApp = false;
   
   if(argc > 1)
   {
@@ -112,6 +131,11 @@ int main(int argc, char* argv[])
   }
   #endif
   
+  #ifndef WIN32  
+  signal(SIGINT, SignalHandler);  /* ctrl-c */  
+  signal(SIGTERM, SignalHandler); /* start-stop-daemon -v --stop -nfuppes */ 
+  #endif  
+  
   cout << "FUPPES - Free UPnP(tm) Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;
   cout << "http://fuppes.sourceforge.net" << endl;
   if(!CSharedConfig::Shared()->SetupConfig())
@@ -145,10 +169,11 @@ int main(int argc, char* argv[])
   if(!bDaemonMode)
   {
     string input = "";
-    while(input != "q")
+    while((input != "q") && !g_bExitApp)
     {		
       getline(cin, input);
-  
+      //fuppesSleep(2000);
+      
       if (input == "m")
         pFuppes->GetSSDPCtrl()->send_msearch();
       else if (input == "a")
@@ -168,7 +193,7 @@ int main(int argc, char* argv[])
   }
   else
   {
-    while(true)
+    while(!g_bExitApp)
       fuppesSleep(2000);
   }
   
