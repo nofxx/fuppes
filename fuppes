@@ -1,0 +1,37 @@
+#! /bin/bash
+### BEGIN INIT INFO
+# Provides:             Starting fuppes UPnP as daemon
+# Default-Start:        3 5
+# Default-Stop:
+# Description:          fuppes is a tool to share files to a upnp network
+### END INIT INFO
+
+NAME=fuppes
+DAEMON=/home/ulrich/Projects/fuppes/trunk/src/fuppes
+PIDFILE=/var/run/$NAME.pid
+#export PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/lib
+
+if [ -z "$1" ]; then
+  echo "usage: $0 {start|stop|restart}"
+  exit
+fi
+
+if [ "$1" = "stop" ]; then
+echo "Stopping $NAME ..."
+        #pid=`ps aux | grep -e $NAME | grep -v grep | sed -e 's/[^ ]* *\([0-9]*\).*/\1/g'`
+        #kill -9 $pid
+        start-stop-daemon -v --stop -n$NAME
+fi
+
+if [ "$1" = "start" ]; then
+echo "Starting $NAME ..."
+        #$DAEMON &
+        $DAEMON 
+fi
+
+if [ "$1" = "restart" ]; then
+echo "Restarting $NAME ..."
+        $0 stop
+        sleep 1
+        $0 start
+fi
