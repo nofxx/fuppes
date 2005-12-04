@@ -253,11 +253,22 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
   {    
     fuppesThreadLockMutex(&TranscodeMutex);      
     
-    unsigned int nRest = m_nBinContentLength - m_nBinContentPosition;
+    unsigned int nRest       = m_nBinContentLength - m_nBinContentPosition;
     unsigned int nDelayCount = 0;  
     while(m_bIsTranscoding && (nRest < p_nSize) && !m_bBreakTranscoding)
     { 
-      CSharedLog::Shared()->Critical(LOGNAME, "we are sending faster then we can transcode. delaying send-process!");    
+      nRest = m_nBinContentLength - m_nBinContentPosition;
+
+      stringstream sLog;
+      sLog << "we are sending faster then we can transcode!" << endl;
+      sLog << "  Try     : " << (nDelayCount + 1) << endl;
+      sLog << "  Lenght  : " << m_nBinContentLength << endl;
+      sLog << "  Position: " << m_nBinContentPosition << endl;
+      sLog << "  Size    : " << p_nSize << endl;
+      sLog << "  Rest    : " << nRest << endl;
+      sLog << "delaying send-process!";
+
+      CSharedLog::Shared()->Critical(LOGNAME, sLog.str());    
       fuppesThreadUnlockMutex(&TranscodeMutex);
       fuppesSleep(100);
       fuppesThreadLockMutex(&TranscodeMutex);    
@@ -266,7 +277,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
       /* if bufer is still empty after n tries
          the machine seems to be too slow. so
          we give up */
-      if (nDelayCount == 20)
+      if (nDelayCount == 100) /* 100 * 100ms = 10sec */
       {
         fuppesThreadLockMutex(&TranscodeMutex);    
         m_bBreakTranscoding = true;
