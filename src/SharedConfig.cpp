@@ -233,7 +233,7 @@ string CSharedConfig::GetAppFullname()
 
 string CSharedConfig::GetAppVersion()
 {
-	return "0.3.1";
+	return "0.3.2";
 }
 
 string CSharedConfig::GetHostname()
@@ -259,6 +259,17 @@ std::string CSharedConfig::GetSharedDir(unsigned int p_nIndex)
 unsigned int CSharedConfig::SharedDirCount()
 {
   return (unsigned int)m_vSharedDirectories.size();
+}
+
+std::string CSharedConfig::GetConfigDir()
+{
+  stringstream sResult;
+  #ifdef WIN32
+  sResult << getenv("APPDATA") << "\\Free UPnP Entertainment Service\\";
+  #else
+  sResult << getenv("HOME") << "/.fuppes/";
+  #endif
+  return sResult.str();
 }
 
 bool CSharedConfig::IsSupportedFileExtension(std::string p_sFileExtension)

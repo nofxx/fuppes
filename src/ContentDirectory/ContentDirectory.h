@@ -31,13 +31,13 @@
 
 #include "../UPnPService.h"
 #include "../HTTPMessage.h"
-#include <map>
-#include <string>
-
 #include "UPnPObject.h"
 #include "StorageFolder.h"
+#include "ContentDatabase.h"
 #include "../UPnPActions/UPnPBrowse.h"
 
+#include <map>
+#include <string>
 /*===============================================================================
  CLASS CContentDirectory
 ===============================================================================*/
@@ -94,37 +94,38 @@ public:
 
 /* <PRIVATE> */
 
-private:
+  private:
 
-/*===============================================================================
- MEMBERS
-===============================================================================*/
+  /*============================================================================
+   MEMBERS
+  ============================================================================*/
 
-  std::map<std::string, CUPnPObject*>           m_ObjectList;
-  std::map<std::string, CUPnPObject*>::iterator m_ListIterator;
-  CStorageFolder*                               m_pBaseFolder;
+    std::map<std::string, CUPnPObject*>           m_ObjectList;
+    std::map<std::string, CUPnPObject*>::iterator m_ListIterator;
+    CStorageFolder*                               m_pBaseFolder;
+    CContentDatabase*                             m_pDatabase;
 
-/*===============================================================================
- HELPER
-===============================================================================*/
-  
-  /** handles a UPnP browse action
-  *  @param  pBrowse  the browse action to handle
-  *  @return string with the message content to send for the browse action
-  */
-  std::string HandleUPnPBrowse(CUPnPBrowse* pBrowse);
-
+  /*============================================================================
+   HELPER
+  ============================================================================*/
     
-  /** Adds files and folders to the object list
-  */
-  void BuildObjectList();
-
-  /** scans a specific directory
-  *  @param  p_sDirectory  path to the directory to scan
-  *  @param  p_pnCount  count of found objects
-  *  @param  pParentFolder  the parent folder
-  */
-  void ScanDirectory(std::string p_sDirectory, unsigned int* p_pnCount, CStorageFolder* pParentFolder);
+    /** handles a UPnP browse action
+    *  @param  pBrowse  the browse action to handle
+    *  @return string with the message content to send for the browse action
+    */
+    std::string HandleUPnPBrowse(CUPnPBrowse* pBrowse);
+  
+      
+    /** Adds files and folders to the object list
+    */
+    void BuildObjectList();
+  
+    /** scans a specific directory
+    *  @param  p_sDirectory  path to the directory to scan
+    *  @param  p_pnCount  count of found objects
+    *  @param  pParentFolder  the parent folder
+    */
+    void ScanDirectory(std::string p_sDirectory, unsigned int* p_pnCount, CStorageFolder* pParentFolder);
   
 
 /* <\PRIVATE> */

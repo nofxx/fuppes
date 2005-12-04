@@ -18,7 +18,10 @@ dependencies:
 
   libxml2 library (MIT license):
   http://xmlsoft.org/
-    
+
+  SQLite (public domain)
+  http://sqlite.org/
+
   to use transcoding capabilities you need
   
     The non-mp3 ;) encoder:

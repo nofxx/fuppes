@@ -298,13 +298,13 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle)
   return bResult;
   #else    
   bool bResult = true;
-  int nErrNo = pthread_join(p_ThreadHandle, NULL);
+  int  nErrNo  = pthread_join(p_ThreadHandle, NULL);
   if (nErrNo != 0)
   {
     bResult = false;
     switch(nErrNo)
     {
-      case EINVAL:
+      /*case EINVAL:
         cout << "pthread_join() :: " << nErrNo << " EINVAL = handle does not refer to a joinable thread" << endl;      
         break;
       case ESRCH:
@@ -312,7 +312,7 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle)
         break;
       case EDEADLK:
         cout << "pthread_join() :: " << nErrNo << " EDEADLK = deadlock detected" << endl;      
-        break;        
+        break;*/
     }
     fflush(stdout);
   }

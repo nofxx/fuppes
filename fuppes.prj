@@ -141,7 +141,9 @@ module.source.files=\
 	ContentDirectory/ImageItem.h\
 	ContentDirectory/ImageItem.cpp\
 	ContentDirectory/VideoItem.cpp\
-	ContentDirectory/VideoItem.h
+	ContentDirectory/VideoItem.h\
+	ContentDirectory/ContentDatabase.cpp\
+	ContentDirectory/ContentDatabase.h
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

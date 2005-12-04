@@ -73,12 +73,16 @@ CUPnPService(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, p_sHTTPServerURL)
   m_ObjectList["0"] = m_pBaseFolder;
 
   /* Init object list */
-  BuildObjectList();
+  //BuildObjectList();
+  
+  m_pDatabase = new CContentDatabase();
 }
 
 /* destructor */
 CContentDirectory::~CContentDirectory()
 {
+  delete m_pDatabase;
+  
   /* T.S.TODO: Delete all objects that were created with 'new'.
                'm_Objectlist' has the pointers to these objects */
   
@@ -242,7 +246,7 @@ void CContentDirectory::BuildObjectList()
 {
   unsigned int nCount = 1;
 
-  CSharedLog::Shared()->Log(LOGNAME, "building directory list");
+  CSharedLog::Shared()->Log(LOGNAME, "building content list");
   
   for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
   {
@@ -294,7 +298,7 @@ void CContentDirectory::BuildObjectList()
     }
   }
   
-  CSharedLog::Shared()->Log(LOGNAME, "done building directory list");
+  CSharedLog::Shared()->Log(LOGNAME, "done building content list");
 }
 
 /* ScanDirectory */

@@ -194,7 +194,7 @@ int main(int argc, char* argv[])
   else
   {
     while(!g_bExitApp)
-      fuppesSleep(2000);
+      fuppesSleep(1000);
   }
   
   /* Destroy objects */

@@ -96,6 +96,8 @@ protected:
 	std::string GetIPv4Address();
 	unsigned int GetHTTPPort() { return m_nHTTPPort; }
   
+  std::string GetConfigDir();
+  
   std::string GetSharedDir(unsigned int p_nDirIdx);
   unsigned int SharedDirCount();
   

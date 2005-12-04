@@ -31,6 +31,7 @@ h_sources = \
   ContentDirectory/AudioItem.h\
   ContentDirectory/ImageItem.h\
   ContentDirectory/VideoItem.h\
+  ContentDirectory/ContentDatabase.h\
   ContentDirectory/ContentDirectory.h\
   Presentation/PresentationHandler.h\
   Presentation/Stylesheet.h\
@@ -66,6 +67,7 @@ cpp_sources = \
   ContentDirectory/AudioItem.cpp\
   ContentDirectory/ImageItem.cpp\
   ContentDirectory/VideoItem.cpp\
+  ContentDirectory/ContentDatabase.cpp\
 	ContentDirectory/ContentDirectory.cpp\
   Presentation/PresentationHandler.cpp\
   Presentation/Images/fuppes_png.cpp\
@@ -84,4 +86,5 @@ fuppes_LDFLAGS = \
   $(FUPPES_LIBS)\
   ${PTHREAD_LIBS}\
   ${LIBXML_LIBS}\
-	${PCRE_LIBS}
+	${PCRE_LIBS}\
+  ${SQLITE3_LIBS}
