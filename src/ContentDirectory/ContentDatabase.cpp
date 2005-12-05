@@ -27,6 +27,7 @@
 #include <sstream>
 #include <string>
 #include <stdio.h>
+#include <iostream>
  
 using namespace std;
  
@@ -50,8 +51,8 @@ CContentDatabase::CContentDatabase()
    
   if(rc)
   {
-   fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(m_pDbHandle));
-   sqlite3_close(m_pDbHandle);
+    fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(m_pDbHandle));
+    sqlite3_close(m_pDbHandle);
   }
    
   /*rc = sqlite3_exec(db, argv[2], callback, 0, &zErrMsg);
@@ -65,4 +66,28 @@ CContentDatabase::CContentDatabase()
 CContentDatabase::~CContentDatabase()
 {
   sqlite3_close(m_pDbHandle);
+}
+
+long long int CContentDatabase::Insert(std::string p_sStatement)
+{
+  int nTrans = sqlite3_exec(m_pDbHandle, "BEGIN TRANSACTION;", NULL, NULL, NULL);
+  if(nTrans != SQLITE_OK)
+    cout << "error start transaction" << endl;
+  
+  char* szErr = 0;
+  int nResult = sqlite3_exec(m_pDbHandle, p_sStatement.c_str(), NULL, NULL, &szErr);  
+  if(nResult != SQLITE_OK)
+  {
+    cout << szErr << endl;
+    nResult = -1;
+  }
+  else  
+  {
+    nResult = sqlite3_last_insert_rowid(m_pDbHandle);
+  }
+  nTrans = sqlite3_exec(m_pDbHandle, "COMMIT;", NULL, NULL, NULL);
+  if(nTrans != SQLITE_OK)
+    cout << "error start transaction" << endl;
+  
+  return nResult;
 }

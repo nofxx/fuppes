@@ -286,6 +286,10 @@ bool CSharedConfig::IsSupportedFileExtension(std::string p_sFileExtension)
     return true;
   else if((ToLower(p_sFileExtension).compare("flac") == 0) && m_bTranscodingEnabled && m_bFlacAvailable)
     return true;
+  else if((ToLower(p_sFileExtension).compare("jpeg") == 0) || (ToLower(p_sFileExtension).compare("jpg") == 0))
+    return true;
+  else if((ToLower(p_sFileExtension).compare("mpeg") == 0) || (ToLower(p_sFileExtension).compare("mpg") == 0))
+    return true;
   else
     return false;
 }

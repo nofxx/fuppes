@@ -36,6 +36,7 @@
 #include "../SharedLog.h"
 #include "../Common.h"
 #include "../RegEx.h"
+#include "FileDetails.h"
  
 #include <iostream>
 #include <sstream>
@@ -76,6 +77,38 @@ CUPnPService(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, p_sHTTPServerURL)
   //BuildObjectList();
   
   m_pDatabase = new CContentDatabase();
+  //cout << "Insert: " << m_pDatabase->Insert("insert into objects (TYPE, PATH, MD5) values (7, '/mnt/test', '1235dasd648536');"); 
+  
+  for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
+  {
+    if(DirectoryExists(CSharedConfig::Shared()->GetSharedDir(i)))
+    {  
+      if(CSharedConfig::Shared()->GetDisplaySettings().bShowDirNamesInFirstLevel)
+      {      
+        stringstream sSql;
+        sSql << "insert into objects (TYPE, PARENT_ID, PATH) values ";
+        sSql << "(" << CONTAINER_STORAGE_FOLDER << ", ";
+        sSql << 0 << ", ";
+        sSql << "'" << CSharedConfig::Shared()->GetSharedDir(i) << "');";
+        
+        long long int nRowId = m_pDatabase->Insert(sSql.str());
+        DbScanDir(CSharedConfig::Shared()->GetSharedDir(i), nRowId);
+      }
+      else
+      {
+        DbScanDir(CSharedConfig::Shared()->GetSharedDir(i), 0);        
+      }
+      
+    }
+    else
+    {
+      stringstream sLog;
+      sLog << "shared directory: \"" << CSharedConfig::Shared()->GetSharedDir(i) << "\" not found";
+      CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
+    }
+  }  
+  
+  
 }
 
 /* destructor */
@@ -539,6 +572,121 @@ void CContentDirectory::ScanDirectory(std::string p_sDirectory, unsigned int* p_
     closedir(pDir);
   } /* if opendir */
   #endif  
+}
+
+void CContentDirectory::DbScanDir(std::string p_sDirectory, long long int p_nParentId)
+{
+  #ifdef WIN32  
+  /* Add slash, if neccessary */
+  char szTemp[MAX_PATH];
+  if(p_sDirectory.substr(p_sDirectory.length()-1).compare(upnpPathDelim) != 0)
+  {
+    strcpy(szTemp, p_sDirectory.c_str());
+    strcat(szTemp, upnpPathDelim);
+  }
+  
+  /* Add search criteria */
+  strcat(szTemp, "*");
+  
+  /* Find first file */
+  WIN32_FIND_DATA data;
+  HANDLE hFile = FindFirstFile(szTemp, &data);
+  if(NULL == hFile)
+    return;
+
+  /* Loop trough all subdirectories and files */
+  while(TRUE == FindNextFile(hFile, &data))
+  {
+    if(((string(".").compare(data.cFileName) != 0) && 
+      (string("..").compare(data.cFileName) != 0)))
+    {        
+      
+      /* Save current filename */
+      strcpy(szTemp, p_sDirectory.c_str());
+      strcat(szTemp, upnpPathDelim);
+      strcat(szTemp, data.cFileName);
+      
+      stringstream sTmp;
+      sTmp << szTemp;
+      
+      string sTmpFileName = data.cFileName;
+  #else
+      
+  DIR*    pDir;
+  dirent* pDirEnt;
+  stringstream sTmp;
+   
+  /* append upnpPathDelim if necessary */  
+  if(p_sDirectory.substr(p_sDirectory.length()-1).compare(upnpPathDelim) != 0)
+  {
+    sTmp << p_sDirectory << upnpPathDelim;
+    p_sDirectory = sTmp.str();
+    sTmp.str("");
+  }
+  
+  if((pDir = opendir(p_sDirectory.c_str())) != NULL)
+  {
+    sTmp << "read directory: " << p_sDirectory;    
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, sTmp.str());
+    sTmp.str("");
+    
+    while((pDirEnt = readdir(pDir)))
+    {
+      if(((string(".").compare(pDirEnt->d_name) != 0) && 
+         (string("..").compare(pDirEnt->d_name) != 0)))
+      {        
+        sTmp << p_sDirectory << pDirEnt->d_name;        
+        string sTmpFileName = pDirEnt->d_name;        
+  #endif  
+        string sExt = ExtractFileExt(sTmp.str());
+        
+        /* directory */
+        if(IsDirectory(sTmp.str()))
+        {          
+          stringstream sSql;
+          sSql << "insert into objects (TYPE, PARENT_ID, PATH) values ";
+          sSql << "(" << CONTAINER_STORAGE_FOLDER << ", ";
+          sSql << p_nParentId << ", ";
+          sSql << "'" << sTmp.str() << "');";
+          
+          long long int nRowId = m_pDatabase->Insert(sSql.str());
+          DbScanDir(sTmp.str(), nRowId);          
+        }
+        else if(IsFile(sTmp.str()) && CSharedConfig::Shared()->IsSupportedFileExtension(sExt))
+        {
+          cout << "Parent: " << p_nParentId << endl;
+          cout << "FileName: " << sTmpFileName << endl;
+          cout << "Path: " << sTmp.str() << endl;
+
+          OBJECT_TYPE nObjectType = CFileDetails::Shared()->GetObjectType(sTmp.str());
+          switch(nObjectType)
+          {
+            case ITEM_AUDIO_ITEM_MUSIC_TRACK:
+              cout << "MusicTrack" << endl;
+              SMusicTrack TrackInfo = CFileDetails::Shared()->GetMusicTrackDetails(sTmp.str());
+              break;
+          }
+          
+          stringstream sSql;
+          sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME, MD5) values ";
+          sSql << "(" << nObjectType << ", ";
+          sSql << p_nParentId << ", ";
+          sSql << "'" << sTmp.str() << "', ";
+          sSql << "'" << sTmpFileName << "', ";
+          sSql << "'" << "todo" << "');";
+          
+          long long int nRowId = m_pDatabase->Insert(sSql.str());
+          DbScanDir(sTmp.str(), nRowId);    
+          
+        }   
+        
+        sTmp.str("");
+      }
+    }  /* while */  
+  #ifndef WIN32
+    closedir(pDir);
+  } /* if opendir */
+  #endif         
 }
         
 /* <\PRIVATE> */

@@ -54,13 +54,13 @@ public:
 ===============================================================================*/
 
   /** constructor
-  *  @param  p_sHTTPServerURL  URL of the HTTP server
-  */
+   *  @param  p_sHTTPServerURL  URL of the HTTP server
+   */
   CContentDirectory(std::string p_sHTTPServerURL);
 
   /** destructor
-  *  @todo  Delete all objects that were created with 'new'. 'm_Objectlist' has the pointers to these objects
-  */
+   *  @todo  Delete all objects that were created with 'new'. 'm_Objectlist' has the pointers to these objects
+   */
   ~CContentDirectory();
 
 /*===============================================================================
@@ -68,10 +68,10 @@ public:
 ===============================================================================*/
 
   /** handles a UPnP action and creates the corresponding message
-  *  @param  pUPnPAction  UPnP action to handle
-  *  @param  pMessageOut  the message, that was created for the action
-  *  @return returns true on success otherwise false
-  */
+   *  @param  pUPnPAction  UPnP action to handle
+   *  @param  pMessageOut  the message, that was created for the action
+   *  @return returns true on success otherwise false
+   */
   bool HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut);
 
 /*===============================================================================
@@ -79,15 +79,15 @@ public:
 ===============================================================================*/
 
   /** returns the filename of a specific object id
-  *  @param  p_sObjectID  object id to identify object
-  *  @return  the filename, "" if the object was not found
-  */
+   *  @param  p_sObjectID  object id to identify object
+   *  @return  the filename, "" if the object was not found
+   */
   std::string GetFileNameFromObjectID(std::string p_sObjectID);
 
   /** returns a UPnP object for a specific object id
-  *  @param  p_sObjectID  object id to identify object
-  *  @return  the UPnP object or NULL
-  */
+   *  @param  p_sObjectID  object id to identify object
+   *  @return  the UPnP object or NULL
+   */
   CUPnPObject* GetItemFromObjectID(std::string p_sObjectID);
 
 /* <\PUBLIC> */
@@ -110,23 +110,25 @@ public:
   ============================================================================*/
     
     /** handles a UPnP browse action
-    *  @param  pBrowse  the browse action to handle
-    *  @return string with the message content to send for the browse action
-    */
+     *  @param  pBrowse  the browse action to handle
+     *  @return string with the message content to send for the browse action
+     */
     std::string HandleUPnPBrowse(CUPnPBrowse* pBrowse);
   
       
     /** Adds files and folders to the object list
-    */
+     */
     void BuildObjectList();
   
     /** scans a specific directory
-    *  @param  p_sDirectory  path to the directory to scan
-    *  @param  p_pnCount  count of found objects
-    *  @param  pParentFolder  the parent folder
-    */
+     *  @param  p_sDirectory  path to the directory to scan
+     *  @param  p_pnCount  count of found objects
+     *  @param  pParentFolder  the parent folder
+     */
     void ScanDirectory(std::string p_sDirectory, unsigned int* p_pnCount, CStorageFolder* pParentFolder);
   
+    void DbScanDir(std::string p_sDirectory, long long int p_nParentId);
+   
 
 /* <\PRIVATE> */
 

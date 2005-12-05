@@ -38,8 +38,7 @@ AC_DEFUN(PKG_CHECK_MODULES, [
      echo "*** The pkg-config script could not be found. Make sure it is"
      echo "*** in your path, or set the PKG_CONFIG environment variable"
      echo "*** to the full path to pkg-config."
-     echo "*** Or see http://www.freedesktop.org/software/pkgconfig to get 
-pkg-config."
+     echo "*** Or see http://www.freedesktop.org/software/pkgconfig to get pkg-config."
   else
      PKG_CONFIG_MIN_VERSION=0.9.0
      if $PKG_CONFIG --atleast-pkgconfig-version $PKG_CONFIG_MIN_VERSION; then
@@ -65,8 +64,7 @@ pkg-config."
         AC_SUBST($1_CFLAGS)
         AC_SUBST($1_LIBS)
      else
-        echo "*** Your version of pkg-config is too old. You need version 
-$PKG_CONFIG_MIN_VERSION or newer."
+        echo "*** Your version of pkg-config is too old. You need version $PKG_CONFIG_MIN_VERSION or newer."
         echo "*** See http://www.freedesktop.org/software/pkgconfig";
      fi
   fi
@@ -91,6 +89,25 @@ PKG_CHECK_MODULES(SQLITE3, sqlite3 >= 3.2)
 PTHREAD_LIBS=""
 AC_CHECK_LIB(pthread, pthread_create, PTHREAD_LIBS="-lpthread")
 
+
+if test -z "$TAGLIB_CONFIG"; then
+  AC_PATH_PROG(TAGLIB_CONFIG, taglib-config, no)
+fi
+
+if test "$TAGLIB_CONFIG" = "no" ; then
+   AC_MSG_ERROR([*** The taglib-config script could not be found. Make sure it is in your path.]);
+else
+  echo "taglib-config found";
+  
+  AC_MSG_CHECKING(TAGLIB_CFLAGS)
+  TAGLIB_CFLAGS=`$TAGLIB_CONFIG --cflags`
+  AC_MSG_RESULT($TAGLIB_CFLAGS)
+  AC_SUBST(TAGLIB_CFLAGS)
+  AC_MSG_CHECKING(TAGLIB_LIBS)  
+  TAGLIB_LIBS=`$TAGLIB_CONFIG --libs`
+  AC_MSG_RESULT($TAGLIB_LIBS)
+  AC_SUBST(TAGLIB_LIBS)
+fi
 
 LAME_LIBS=""
 MUSEPACK_LIBS=""

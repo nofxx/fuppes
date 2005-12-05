@@ -25,9 +25,11 @@
 #define _CONTENTDATABASE_H
 
 #include <sqlite3.h>
+#include <string>
 
 typedef enum tagOBJECT_TYPE
 {
+  OBJECT_TYPE_UNKNOWN = 0,
   
   ITEM_IMAGE_ITEM = 1,
     ITEM_IMAGE_ITEM_PHOTO = 100,
@@ -38,8 +40,8 @@ typedef enum tagOBJECT_TYPE
     ITEM_AUDIO_ITEM_AUDIO_BOOK      = 202,
   
   ITEM_VIDEO_ITEM = 3,
-    ITEM_VIDEO_ITEM_MOVIE = 300,
-    ITEM_VIDEO_ITEM_VIDEO_BROADCAST = 301,
+    ITEM_VIDEO_ITEM_MOVIE            = 300,
+    ITEM_VIDEO_ITEM_VIDEO_BROADCAST  = 301,
     ITEM_VIDEO_ITEM_MUSIC_VIDEO_CLIP = 302,  
   
   CONTAINER_PERSON = 4,
@@ -67,6 +69,8 @@ class CContentDatabase
   public:
     CContentDatabase();
     ~CContentDatabase();
+  
+    long long int Insert(std::string p_sStatement);
   
   private:
     sqlite3 *m_pDbHandle;    

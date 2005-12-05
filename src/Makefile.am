@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id: $
 
-INCLUDES = ${LIBXML_CFLAGS} ${PCRE_CFLAGS} ${VORBISFILE_CFLAGS}
+INCLUDES = ${LIBXML_CFLAGS} ${PCRE_CFLAGS} ${VORBISFILE_CFLAGS} ${TAGLIB_CFLAGS}
 
 bin_PROGRAMS = fuppes
 
@@ -31,6 +31,7 @@ h_sources = \
   ContentDirectory/AudioItem.h\
   ContentDirectory/ImageItem.h\
   ContentDirectory/VideoItem.h\
+  ContentDirectory/FileDetails.h\
   ContentDirectory/ContentDatabase.h\
   ContentDirectory/ContentDirectory.h\
   Presentation/PresentationHandler.h\
@@ -67,6 +68,7 @@ cpp_sources = \
   ContentDirectory/AudioItem.cpp\
   ContentDirectory/ImageItem.cpp\
   ContentDirectory/VideoItem.cpp\
+  ContentDirectory/FileDetails.cpp\
   ContentDirectory/ContentDatabase.cpp\
 	ContentDirectory/ContentDirectory.cpp\
   Presentation/PresentationHandler.cpp\
@@ -87,4 +89,5 @@ fuppes_LDFLAGS = \
   ${PTHREAD_LIBS}\
   ${LIBXML_LIBS}\
 	${PCRE_LIBS}\
-  ${SQLITE3_LIBS}
+  ${SQLITE3_LIBS}\
+  ${TAGLIB_LIBS}

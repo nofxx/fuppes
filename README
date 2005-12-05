@@ -22,6 +22,9 @@ dependencies:
   SQLite (public domain)
   http://sqlite.org/
 
+  TagLib (LGPL 2.1)
+  http://developer.kde.org/~wheeler/taglib.html
+
   to use transcoding capabilities you need
   
     The non-mp3 ;) encoder:
