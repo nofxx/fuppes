@@ -26,12 +26,13 @@ h_sources = \
   UPnPActions/UPnPBrowse.h\
 	MediaServer.h\
   ContentDirectory/UPnPObject.h\
-  ContentDirectory/StorageFolder.h\
+  ContentDirectory/UPnPContainer.h\
   ContentDirectory/UPnPItem.h\
   ContentDirectory/AudioItem.h\
   ContentDirectory/ImageItem.h\
   ContentDirectory/VideoItem.h\
   ContentDirectory/FileDetails.h\
+  ContentDirectory/UPnPObjectFactory.h\
   ContentDirectory/ContentDatabase.h\
   ContentDirectory/ContentDirectory.h\
   Presentation/PresentationHandler.h\
@@ -63,12 +64,14 @@ cpp_sources = \
 	UPnPService.cpp\
   UPnPAction.cpp\
   UPnPActionFactory.cpp\
+  UPnPActions/UPnPBrowse.cpp\
 	MediaServer.cpp\
-  ContentDirectory/StorageFolder.cpp\
+  ContentDirectory/UPnPContainer.cpp\
   ContentDirectory/AudioItem.cpp\
   ContentDirectory/ImageItem.cpp\
   ContentDirectory/VideoItem.cpp\
   ContentDirectory/FileDetails.cpp\
+  ContentDirectory/UPnPObjectFactory.cpp\
   ContentDirectory/ContentDatabase.cpp\
 	ContentDirectory/ContentDirectory.cpp\
   Presentation/PresentationHandler.cpp\

@@ -26,6 +26,8 @@
 
 #include <sqlite3.h>
 #include <string>
+#include <map>
+#include <list>
 
 typedef enum tagOBJECT_TYPE
 {
@@ -49,7 +51,7 @@ typedef enum tagOBJECT_TYPE
   
   CONTAINER_PLAYLIST_CONTAINER = 5,
   
-  CONATINER_ALBUM = 6,
+  CONTAINER_ALBUM = 6,
   
     CONTAINER_ALBUM_MUSIC_ALBUM = 600,
     CONTAINER_ALBUM_PHOTO_ALBUM = 601,
@@ -63,6 +65,15 @@ typedef enum tagOBJECT_TYPE
   CONTAINER_STORAGE_FOLDER = 10  
 }OBJECT_TYPE;
 
+class CSelectResult
+{
+  public:
+    std::string  GetValue(std::string p_sFieldName);
+  
+  //private:
+    std::map<std::string, std::string> m_FieldValues;
+    std::map<std::string, std::string>::iterator m_FieldValuesIterator;  
+};
 
 class CContentDatabase
 {
@@ -70,10 +81,26 @@ class CContentDatabase
     CContentDatabase();
     ~CContentDatabase();
   
-    long long int Insert(std::string p_sStatement);
+    bool Init();
   
-  private:
-    sqlite3 *m_pDbHandle;    
+    long long int Insert(std::string p_sStatement);
+    bool Select(std::string p_sStatement);
+  
+    bool Eof();
+    CSelectResult* GetResult();
+    void Next();
+  
+    std::list<CSelectResult*> m_ResultList;
+    std::list<CSelectResult*>::iterator m_ResultListIterator;
+    unsigned int  m_nRowsReturned;  
+  
+    void ClearResult();
+  
+  private:    
+    sqlite3       *m_pDbHandle;  
+    std::string   m_sDbFileName;    
+    bool Open();
+    void Close();
 };
 
 #endif /* _CONTENTDATABASE_H */

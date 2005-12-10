@@ -65,7 +65,7 @@ void CAudioItem::GetDescription(xmlTextWriterPtr pWriter)
     /* id */
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "id", BAD_CAST GetObjectID().c_str());
     /* parentID */
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "parentID", BAD_CAST GetParent()->GetObjectID().c_str());
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "parentID", BAD_CAST m_sParentID.c_str()); //GetParent()->GetObjectID().c_str());
     /* restricted */
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "restricted", BAD_CAST "0");    
   

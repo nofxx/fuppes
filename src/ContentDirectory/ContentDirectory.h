@@ -32,7 +32,7 @@
 #include "../UPnPService.h"
 #include "../HTTPMessage.h"
 #include "UPnPObject.h"
-#include "StorageFolder.h"
+#include "UPnPContainer.h"
 #include "ContentDatabase.h"
 #include "../UPnPActions/UPnPBrowse.h"
 
@@ -102,7 +102,7 @@ public:
 
     std::map<std::string, CUPnPObject*>           m_ObjectList;
     std::map<std::string, CUPnPObject*>::iterator m_ListIterator;
-    CStorageFolder*                               m_pBaseFolder;
+    CUPnPContainer*                               m_pBaseFolder;
     CContentDatabase*                             m_pDatabase;
 
   /*============================================================================
@@ -115,6 +115,10 @@ public:
      */
     std::string HandleUPnPBrowse(CUPnPBrowse* pBrowse);
   
+    std::string DbHandleUPnPBrowse(CUPnPBrowse* pBrowse);
+  
+    void BuildContainerDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sParentId);
+    void BuildItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sParentId);      
       
     /** Adds files and folders to the object list
      */
@@ -125,7 +129,7 @@ public:
      *  @param  p_pnCount  count of found objects
      *  @param  pParentFolder  the parent folder
      */
-    void ScanDirectory(std::string p_sDirectory, unsigned int* p_pnCount, CStorageFolder* pParentFolder);
+    void ScanDirectory(std::string p_sDirectory, unsigned int* p_pnCount, CUPnPContainer* pParentFolder);
   
     void DbScanDir(std::string p_sDirectory, long long int p_nParentId);
    

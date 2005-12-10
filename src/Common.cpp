@@ -133,6 +133,26 @@ std::string ToLower(std::string p_sInput)
   return p_sInput;
 }
 
+bool ExtractFolderFromPath(std::string p_sPath, std::string* p_sFolder)
+{
+  #ifdef WIN32
+  RegEx rxDirName("\\\\([^\\\\|\\.]*)$", PCRE_CASELESS);
+  #else
+  RegEx rxDirName("/([^/|\\.]*)$", PCRE_CASELESS);
+  #endif
+  
+  const char* pszDir = p_sPath.c_str();
+  if(rxDirName.Search(pszDir))
+  {
+    *p_sFolder = rxDirName.Match(1);
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
 bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPort)
 {
   RegEx rxSplit("[http://]*([0-9|\\.]+):*([0-9]*)");
@@ -224,6 +244,47 @@ std::string Base64Decode(const std::string p_sInputString)
   return sResult;  
 }
 /* end BASE64 decoding */
+
+
+int HexToInt(std::string sHex)
+{  
+  /* remove leading "0" */   
+  if(sHex.find_first_not_of("0", 0) <= sHex.length())
+    sHex = sHex.substr(sHex.find_first_not_of("0", 0), sHex.length());
+    
+  
+  /* taken from: http://bdn.borland.com/article/0,1410,17203,00.html */  
+  int n = 0;         // position in string
+  int m = 0;         // position in digit[] to shift
+  int count;         // loop index
+  int intValue = 0;  // integer value of hex string
+  int digit[5];      // hold values to convert
+  while (n < 4) {
+     if (sHex[n]=='\0')
+        break;
+     if (sHex[n] > 0x29 && sHex[n] < 0x40 ) //if 0 to 9
+        digit[n] = sHex[n] & 0x0f;            //convert to int
+     else if (sHex[n] >='a' && sHex[n] <= 'f') //if a to f
+        digit[n] = (sHex[n] & 0x0f) + 9;      //convert to int
+     else if (sHex[n] >='A' && sHex[n] <= 'F') //if A to F
+        digit[n] = (sHex[n] & 0x0f) + 9;      //convert to int
+     else break;
+    n++;
+  }
+  count = n;
+  m = n - 1;
+  n = 0;
+  while(n < count) {
+     // digit[n] is value of hex digit at position n
+     // (m << 2) is the number of positions to shift
+     // OR the bits into return value
+     intValue = intValue | (digit[n] << (m << 2));
+     m--;   // adjust the position to set
+     n++;   // next digit to process
+  }
+  
+  return intValue;
+}
 
 
 /*===============================================================================

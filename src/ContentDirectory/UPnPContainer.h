@@ -1,5 +1,5 @@
 /***************************************************************************
- *            StorageFolder.h
+ *            UPnPContainer.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -22,8 +22,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _STORAGEFOLDER_H
-#define _STORAGEFOLDER_H
+#ifndef _UPNPCONTAINER_H
+#define _UPNPCONTAINER_H
 
 /*===============================================================================
  INCLUDES
@@ -41,13 +41,6 @@
  DEFINITIONS
 ===============================================================================*/
 
-typedef enum tagCONTAINER_TYPE
-{
-  CONTAINER_TYPE_OBJECT,
-  CONTAINER_TYPE_MUSIC,
-  CONTAINER_TYPE_MAX
-}CONTAINER_TYPE;
-
 typedef enum tagSORT_CRITERIA
 {
   SORT_CRITERIA_NONE,
@@ -58,7 +51,7 @@ typedef enum tagSORT_CRITERIA
  CLASS CStorageFolder
 ===============================================================================*/
 
-class CStorageFolder: public CUPnPObject
+class CUPnPContainer: public CUPnPObject
 {
 
 /* <PUBLIC> */
@@ -72,11 +65,11 @@ public:
   /** constructor
   *  @param  p_sHTTPServerURL  URL of the HTTP server
   */
-  CStorageFolder(std::string p_sHTTPServerURL);
+  CUPnPContainer(std::string p_sHTTPServerURL);
   
   /** destructor
   */
-  ~CStorageFolder();
+  ~CUPnPContainer();
 
 /*===============================================================================
  ADD
@@ -135,4 +128,4 @@ public:
 
 };
 
-#endif /* _STORAGEFOLDER_H */
+#endif /* _UPNPCONTAINER_H */

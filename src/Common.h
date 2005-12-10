@@ -91,6 +91,7 @@ bool DirectoryExists(std::string p_sDirName);
 bool IsDirectory(std::string p_sDirName);
 std::string ExtractFileExt(std::string p_sFileName);
 std::string TruncateFileExt(std::string p_sFileName);
+bool ExtractFolderFromPath(std::string p_sPath, std::string* p_sFolder);
 
 /*===============================================================================
  String Functions
@@ -99,6 +100,8 @@ std::string TruncateFileExt(std::string p_sFileName);
 std::string ToLower(std::string p_sInput);
 bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPort);
 std::string Base64Decode(const std::string p_sInputString);
+
+int HexToInt(std::string sHex);
 
 
 /*===============================================================================

@@ -104,10 +104,8 @@ module.source.files=\
 	ContentDirectory/ContentDirectory.cpp\
 	ContentDirectory/ContentDirectory.h\
 	ContentDirectory/AudioItem.h\
-	ContentDirectory/StorageFolder.h\
 	ContentDirectory/UPnPItem.h\
 	ContentDirectory/UPnPObject.h\
-	ContentDirectory/StorageFolder.cpp\
 	Common.cpp\
 	Common.h\
 	Presentation/PresentationHandler.cpp\
@@ -145,7 +143,12 @@ module.source.files=\
 	ContentDirectory/ContentDatabase.cpp\
 	ContentDirectory/ContentDatabase.h\
 	ContentDirectory/FileDetails.cpp\
-	ContentDirectory/FileDetails.h
+	ContentDirectory/FileDetails.h\
+	ContentDirectory/UPnPContainer.cpp\
+	ContentDirectory/UPnPContainer.h\
+	UPnPActions/UPnPBrowse.cpp\
+	ContentDirectory/UPnPObjectFactory.cpp\
+	ContentDirectory/UPnPObjectFactory.h
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

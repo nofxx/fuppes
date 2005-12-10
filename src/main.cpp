@@ -44,17 +44,17 @@ bool g_bExitApp;
 
 void SignalHandler(int p_nSignal)
 {
-  cout << "SignalHandler: " << p_nSignal << endl;
+  //cout << "SignalHandler: " << p_nSignal << endl;
   g_bExitApp = true;
-  switch(p_nSignal)
+  /*switch(p_nSignal)
   {
     case SIGINT:
-      cout << "SIGINT" << endl;
+      //cout << "SIGINT" << endl;
       break;
     case SIGTERM:
       cout << "SIGTERM" << endl;
       break;    
-  }
+  }*/
 }
 
 /*===============================================================================
@@ -66,7 +66,7 @@ void SignalHandler(int p_nSignal)
  *  @todo   create a CFuppes instance for each network interface
  */
 int main(int argc, char* argv[])
-{
+{  
   bool bDaemonMode = false;
   g_bExitApp = false;
   
@@ -162,17 +162,28 @@ int main(int argc, char* argv[])
   cout << "l = toggle logging" << endl;
   cout << "i = info" << endl; 
   cout << endl;
-  cout << "press \"q\" to  quit" << endl;
+  #ifdef WIN32
+  cout << "press \"q\" to  quit" << endl;  
+  #else
+  cout << "press \"ctrl-c\" to  quit" << endl;
+  #endif
   cout << endl;
   
   /* Handle input */
   if(!bDaemonMode)
   {
     string input = "";
-    while((input != "q") && !g_bExitApp)
+    #ifdef WIN32
+    while(input != "q")
+    #else
+    while(!g_bExitApp)
+    #endif
     {		
+      #ifdef WIN32
       getline(cin, input);
-      //fuppesSleep(2000);
+      #else      
+      fuppesSleep(500);
+      #endif
       
       if (input == "m")
         pFuppes->GetSSDPCtrl()->send_msearch();

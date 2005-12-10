@@ -1,5 +1,5 @@
 /***************************************************************************
- *            StorageFolder.cpp
+ *            UPnPContainer.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -27,7 +27,7 @@
 ===============================================================================*/
 
 #include "../Common.h"
-#include "StorageFolder.h"
+#include "UPnPContainer.h"
 #include "../SharedConfig.h"
 
 #include <sstream> 
@@ -46,13 +46,13 @@ using namespace std;
 ===============================================================================*/
 
 /* constructor */
-CStorageFolder::CStorageFolder(std::string p_sHTTPServerURL):
+CUPnPContainer::CUPnPContainer(std::string p_sHTTPServerURL):
   CUPnPObject(UPNP_OBJECT_TYPE_STORAGE_FOLDER, p_sHTTPServerURL)
 {
 }
 
 /* destructor */
-CStorageFolder::~CStorageFolder()
+CUPnPContainer::~CUPnPContainer()
 {
 }
 
@@ -61,7 +61,7 @@ CStorageFolder::~CStorageFolder()
 ===============================================================================*/
 
 /* AddUPnPObject */
-void CStorageFolder::AddUPnPObject(CUPnPObject* pUPnPObject)
+void CUPnPContainer::AddUPnPObject(CUPnPObject* pUPnPObject)
 {
   VOID_CHK_RET_POINTER(pUPnPObject);
 
@@ -74,7 +74,7 @@ void CStorageFolder::AddUPnPObject(CUPnPObject* pUPnPObject)
 ===============================================================================*/
 
 /* GetContentAsString */
-std::string CStorageFolder::GetContentAsString(CUPnPBrowse* pBrowseAction, 
+std::string CUPnPContainer::GetContentAsString(CUPnPBrowse* pBrowseAction, 
                                                unsigned int* p_nNumberReturned, 
                                                unsigned int* p_nTotalMatches)
 {
@@ -139,7 +139,7 @@ std::string CStorageFolder::GetContentAsString(CUPnPBrowse* pBrowseAction,
 }
 
 /* GetChildCountAsString */
-string CStorageFolder::GetChildCountAsString()
+string CUPnPContainer::GetChildCountAsString()
 {
   /* Get list count */
   stringstream sTmp;
@@ -150,7 +150,7 @@ string CStorageFolder::GetChildCountAsString()
 }
 
 /* GetDescription */ 
-void CStorageFolder::GetDescription(xmlTextWriterPtr pWriter)
+void CUPnPContainer::GetDescription(xmlTextWriterPtr pWriter)
 {
   VOID_CHK_RET_POINTER(pWriter);
 
@@ -162,7 +162,7 @@ void CStorageFolder::GetDescription(xmlTextWriterPtr pWriter)
     /* searchable  */
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "searchable", BAD_CAST "0"); 
     /* parentID  */
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "parentID", BAD_CAST GetParent()->GetObjectID().c_str()); 
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "parentID", BAD_CAST m_sParentID.c_str()); //GetParent()->GetObjectID().c_str()); 
     /* restricted */
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "restricted", BAD_CAST "0");     
     /* childCount */
@@ -195,7 +195,7 @@ void CStorageFolder::GetDescription(xmlTextWriterPtr pWriter)
  HELPER
 ===============================================================================*/
 
-void CStorageFolder::SortContent(std::vector<CUPnPObject*>* pObjList, SORT_CRITERIA p_nSortCriteria)
+void CUPnPContainer::SortContent(std::vector<CUPnPObject*>* pObjList, SORT_CRITERIA p_nSortCriteria)
 {
   /* ACHTUNG: Billiger Bubblesort :) */
   

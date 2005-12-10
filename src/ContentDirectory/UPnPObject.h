@@ -97,6 +97,8 @@ public:
    */
   void SetParent(CUPnPObject* p_ParentObject) { m_pParentObject = p_ParentObject; }
   
+  void SetParentID(std::string p_sParentID) { m_sParentID = p_sParentID; }
+  
   /** sets the object name
    *  @param  p_sName  object name to set
    */  
@@ -124,7 +126,8 @@ public:
   /** returns the parent object
    *  @return  pointer to the parent object
    */  
-  CUPnPObject* GetParent()                    { return m_pParentObject;           }
+  //CUPnPObject* GetParent()                    { return m_pParentObject;           }
+  std::string GetParentID()                    { return m_sParentID;           }
   
   /** returns the object name
    *  @return  object name as string
@@ -168,6 +171,7 @@ protected:
 
   UPNP_OBJECT_TYPE m_nUPnPObjectType;
   CUPnPObject*     m_pParentObject;
+  std::string      m_sParentID;
   std::string      m_sObjectID;
   std::string      m_sName;
   std::string      m_sFileName;

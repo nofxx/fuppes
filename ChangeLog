@@ -1,6 +1,9 @@
 Version 0.3.2 (2005-12-??)
   * fixed transcoding-delay bug
   * added sqlite3 support
+  * new dependency: taglib
+  * implemented signal handling (unix)
+    shutdown on SIGINT (ctrl-c) or SIGTERM (e.g. start-stop-daemon --stop -nfuppes)
 
 Version 0.3.1 (2005-11-19)
   * fixed bug #1352301
