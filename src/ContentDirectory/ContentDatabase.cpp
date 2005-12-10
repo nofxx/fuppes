@@ -42,9 +42,9 @@ const string LOGNAME = "ContentDatabase";
  
 static int SelectCallback(void *pDatabase, int argc, char **argv, char **azColName)
 {
-  /*for(int i = 0; i<argc; i++){
+  for(int i = 0; i<argc; i++){
     printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-  } */ 
+  }
     
   /* build new result set */  
   ((CContentDatabase*)pDatabase)->m_nRowsReturned++;
@@ -109,9 +109,10 @@ bool CContentDatabase::Init()
       "  MD5 TEXT DEFAULT NULL,"
       "  MIME_TYPE TEXT DEFAULT NULL,"
       "  DETAILS TEXT DEFAULT NULL"
-      ");";
-
+      ");";        
     Insert(sTableObjects);
+    Insert("CREATE INDEX IDX_FILE_NAME ON OBJECTS (FILE_NAME);");
+    Insert("CREATE INDEX IDX_PARENT_ID ON OBJECTS (PARENT_ID);");
   }
   else
   {

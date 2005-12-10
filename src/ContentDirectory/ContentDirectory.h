@@ -117,7 +117,7 @@ public:
   
     std::string DbHandleUPnPBrowse(CUPnPBrowse* pBrowse);
   
-    void BuildContainerDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sParentId);
+    void BuildContainerDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sParentId, std::string p_sChildCount);
     void BuildItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sParentId);      
       
     /** Adds files and folders to the object list

@@ -78,10 +78,10 @@ CUPnPService(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, p_sHTTPServerURL)
   //BuildObjectList();
   
   m_pDatabase = new CContentDatabase();
-  m_pDatabase->Init();
+  //m_pDatabase->Init();
   //cout << "Insert: " << m_pDatabase->Insert("insert into objects (TYPE, PATH, MD5) values (7, '/mnt/test', '1235dasd648536');"); 
   
-  for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
+  /*for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
   {
     if(DirectoryExists(CSharedConfig::Shared()->GetSharedDir(i)))
     {  
@@ -113,7 +113,7 @@ CUPnPService(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, p_sHTTPServerURL)
       sLog << "shared directory: \"" << CSharedConfig::Shared()->GetSharedDir(i) << "\" not found";
       CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     }
-  }  
+  }  */
   
   
 }
@@ -675,13 +675,13 @@ void CContentDirectory::DbScanDir(std::string p_sDirectory, long long int p_nPar
           cout << "Path: " << sTmp.str() << endl;
 
           OBJECT_TYPE nObjectType = CFileDetails::Shared()->GetObjectType(sTmp.str());
-          switch(nObjectType)
+          /*switch(nObjectType)
           {
             case ITEM_AUDIO_ITEM_MUSIC_TRACK:
               cout << "MusicTrack" << endl;
               SMusicTrack TrackInfo = CFileDetails::Shared()->GetMusicTrackDetails(sTmp.str());
               break;
-          }
+          }*/
           
           stringstream sSql;
           sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME, MD5, DETAILS) values ";
@@ -749,10 +749,10 @@ std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
         sSql.str("");
         
         /* get description */
-        sSql << "select ID, TYPE, PATH, FILE_NAME, DETAILS from OBJECTS where PARENT_ID = ";
-        sSql << pUPnPBrowse->GetObjectIDAsInt() << " order by FILE_NAME ";
-        sSql << "limit " << pUPnPBrowse->m_nStartingIndex << ", " << pUPnPBrowse->m_nRequestedCount;
-        
+        sSql << "select o.ID, o.TYPE, o.PATH, o.FILE_NAME, o.DETAILS, (select count(*) ";
+        sSql << "from OBJECTS p where p.PARENT_ID = o.ID) as COUNT from OBJECTS o where o.PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " ";
+        sSql << "order by o.FILE_NAME limit " << pUPnPBrowse->m_nStartingIndex << ", " << pUPnPBrowse->m_nRequestedCount;        
+
         m_pDatabase->Select(sSql.str());
         while(!m_pDatabase->Eof())
         {
@@ -760,7 +760,7 @@ std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
           if(pRow->GetValue("TYPE").compare("10") == 0)
           {
             cout << "CONTAINER_STORAGE_FOLDER" << endl;
-            BuildContainerDescription(writer, pRow, pUPnPBrowse->m_sObjectID);
+            BuildContainerDescription(writer, pRow, pUPnPBrowse->m_sObjectID, pRow->GetValue("COUNT"));
           }
           else if(pRow->GetValue("TYPE").compare("200") == 0)
           {
@@ -814,7 +814,7 @@ std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
 	return output.str();
 }
 
-void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sParentId)
+void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sParentId, std::string p_sChildCount)
 {
   /* container  */
   xmlTextWriterStartElement(pWriter, BAD_CAST "container"); 
@@ -833,7 +833,7 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter, CSel
     /* restricted */
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "restricted", BAD_CAST "0");     
     /* childCount */
-    CContentDatabase* pTmpDB = new CContentDatabase();
+    /*CContentDatabase* pTmpDB = new CContentDatabase();
     string sChildCount = "0";
     std::stringstream sTmp;
     sTmp << "select count(*) as VALUE from OBJECTS where PARENT_ID = " << pSQLResult->GetValue("ID") << ";";
@@ -845,8 +845,8 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter, CSel
         sChildCount = pTmpDB->GetResult()->GetValue("VALUE");
       }
     }
-    delete pTmpDB;  
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "childCount", BAD_CAST sChildCount.c_str());   
+    delete pTmpDB;*/
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "childCount", BAD_CAST p_sChildCount.c_str());   
      
     /* title */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");     
