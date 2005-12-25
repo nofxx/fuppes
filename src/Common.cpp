@@ -24,6 +24,7 @@
 
 #include "Common.h"
 #include "RegEx.h"
+#include "md5.h"
 
 #include <cstdio>
 #ifdef WIN32
@@ -96,6 +97,55 @@ bool DirectoryExists(std::string p_sDirName)
 bool IsDirectory(std::string p_sDirName)
 {
   return DirectoryExists(p_sDirName);
+}
+
+std::string MD5Sum(std::string p_sFileName)
+{
+  std::fstream fsFile;   
+  int nFileSize = 0;
+  int nRest = 0;
+  int nRead = 0;
+  char szBuffer[200];
+  
+  md5_state_t state;
+	md5_byte_t  digest[16];
+	char hex_output[16 * 2 + 1];  
+  int  di;
+  
+  fsFile.open(p_sFileName.c_str(), ios::binary|ios::in);
+  if(fsFile.fail() != 1)
+  { 
+    fsFile.seekg(0, ios::end); 
+    nFileSize = streamoff(fsFile.tellg()); 
+    fsFile.seekg(0, ios::beg);
+    
+    nRest = nFileSize;
+    
+    md5_init(&state);
+    while(nRest > 0)
+    {    
+      if(nRest < 200)
+        nRead = nRest;
+      else
+        nRead = 200;     
+      
+      fsFile.read(szBuffer, nRead);
+      md5_append(&state, (const md5_byte_t *)szBuffer, nRead);
+      
+      nRest -= nRead;
+    }
+    
+    md5_finish(&state, digest);
+  }	
+  
+  cout << "md5" << endl;
+  
+	for (di = 0; di < 16; ++di)
+	    sprintf(hex_output + di * 2, "%02x", digest[di]);
+  
+  cout << hex_output << endl;
+  
+  return hex_output;
 }
 
 /*===============================================================================
@@ -286,6 +336,22 @@ int HexToInt(std::string sHex)
   return intValue;
 }
 
+std::string SQLEscape(std::string p_sValue)
+{
+  int nPos     = 0;
+  int nLastPos = 0;
+  do
+  {
+    nLastPos = nPos;
+    nPos = p_sValue.find('\'', nPos);  
+    if((nPos > -1) && (nPos != nLastPos))
+    {
+      p_sValue = p_sValue.replace(nPos, 1, "\'\'");
+    }
+  } while((nPos > -1) && (nPos != nLastPos));
+  
+  return p_sValue;
+}
 
 /*===============================================================================
  Common Functions

@@ -86,9 +86,10 @@ CContentDatabase::~CContentDatabase()
   sqlite3_close(m_pDbHandle);
 }
 
-bool CContentDatabase::Init()
+bool CContentDatabase::Init(bool* p_bIsNewDB)
 {
   bool bIsNewDb = !FileExists(m_sDbFileName);
+  *p_bIsNewDB = bIsNewDb;
   int nRes = sqlite3_open(m_sDbFileName.c_str(), &m_pDbHandle);   
   if(nRes)
   {
@@ -116,7 +117,7 @@ bool CContentDatabase::Init()
   }
   else
   {
-    Insert("delete from OBJECTS;");
+    //Insert("delete from OBJECTS;");
   }  
   
   sqlite3_close(m_pDbHandle);

@@ -72,8 +72,14 @@
 
 const std::string MIME_TYPE_TEXT_HTML = "text/html";
 
+/* audio types */
+const std::string MIME_TYPE_AUDIO_MPEG  = "audio/mpeg";
+const std::string MIME_TYPE_APPLICATION_OCTETSTREAM = "application/octet-stream";
+
 /* image types */
-const std::string MIME_TYPE_IMAGE_PNG = "image/png";
+const std::string MIME_TYPE_IMAGE_PNG  = "image/png";
+const std::string MIME_TYPE_IMAGE_BMP  = "image/bmp";
+const std::string MIME_TYPE_IMAGE_JPEG = "image/jpeg";
 
 /* video types */
 const std::string MIME_TYPE_VIDEO_X_MSVIDEO = "video/x-msvideo";
@@ -93,6 +99,8 @@ std::string ExtractFileExt(std::string p_sFileName);
 std::string TruncateFileExt(std::string p_sFileName);
 bool ExtractFolderFromPath(std::string p_sPath, std::string* p_sFolder);
 
+std::string MD5Sum(std::string p_sFileName);
+
 /*===============================================================================
  String Functions
 ===============================================================================*/
@@ -102,6 +110,7 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
 std::string Base64Decode(const std::string p_sInputString);
 
 int HexToInt(std::string sHex);
+std::string SQLEscape(std::string p_sValue);
 
 
 /*===============================================================================

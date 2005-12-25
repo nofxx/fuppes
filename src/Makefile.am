@@ -7,6 +7,7 @@ bin_PROGRAMS = fuppes
 
 h_sources = \
   Common.h\
+  md5.h\
   UUID.h\
   Timer.h\
   UDPSocket.h\
@@ -48,6 +49,7 @@ h_sources = \
 
 cpp_sources = \
   Common.cpp\
+  md5.c\
   UUID.cpp\
   Timer.cpp\
   UDPSocket.cpp\

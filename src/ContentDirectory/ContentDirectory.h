@@ -118,8 +118,11 @@ public:
     std::string DbHandleUPnPBrowse(CUPnPBrowse* pBrowse);
   
     void BuildContainerDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sParentId, std::string p_sChildCount);
-    void BuildItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sParentId);      
-      
+    void BuildItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, OBJECT_TYPE p_nObjectType, std::string p_sParentId);      
+    void BuildAudioItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sObjectID);      
+    void BuildImageItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sObjectID);      
+    void BuildVideoItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sObjectID);
+    
     /** Adds files and folders to the object list
      */
     void BuildObjectList();

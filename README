@@ -52,6 +52,10 @@ using:
   taken from: http://www.adp-gmbh.ch/cpp/common/base64.html
   modified to handle line breaks
 
+  RFC1321-based (RSA-free) MD5 library (as-is) 
+  http://sourceforge.net/projects/libmd5-rfc/
+  
+
 win32 binary package comes with:
 
   mpcdec.dll - libmpcdec-1.2.2

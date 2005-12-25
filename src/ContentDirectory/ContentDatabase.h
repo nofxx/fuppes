@@ -81,7 +81,7 @@ class CContentDatabase
     CContentDatabase();
     ~CContentDatabase();
   
-    bool Init();
+    bool Init(bool* p_bIsNewDB);
   
     long long int Insert(std::string p_sStatement);
     bool Select(std::string p_sStatement);

@@ -103,6 +103,7 @@ protected:
   
   bool IsSupportedFileExtension(std::string p_sFileExtension);
   bool IsTranscodingEnabled() { return m_bTranscodingEnabled; }  
+  bool IsTranscodingExtension(std::string p_sFileExt);
   FILE_KIND GetFileKindByExtension(std::string p_sFileExtension);
   DisplaySettings GetDisplaySettings() { return m_DisplaySettings; }
   
@@ -132,6 +133,10 @@ private:
   bool m_bVorbisAvailable;
   bool m_bMusePackAvailable;
   bool m_bFlacAvailable;  
+  
+  bool m_bTranscodeVorbis;
+  bool m_bTranscodeMusePack;
+  bool m_bTranscodeFlac;  
 
   DisplaySettings m_DisplaySettings;
 

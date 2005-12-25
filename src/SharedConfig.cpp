@@ -116,6 +116,10 @@ CSharedConfig::CSharedConfig()
   m_bMusePackAvailable = false;
   m_bFlacAvailable     = false;
   
+  m_bTranscodeVorbis   = true;
+  m_bTranscodeMusePack = true;
+  m_bTranscodeFlac     = true;
+  
   /* display settings */
   m_DisplaySettings.bShowTranscodingTypeInItemNames = true;
   
@@ -280,11 +284,11 @@ bool CSharedConfig::IsSupportedFileExtension(std::string p_sFileExtension)
   
   if((ToLower(p_sFileExtension).compare("mp3") == 0))
     return true;
-  else if((ToLower(p_sFileExtension).compare("ogg") == 0) && m_bTranscodingEnabled && m_bVorbisAvailable)
+  else if((ToLower(p_sFileExtension).compare("ogg") == 0) && ((m_bTranscodingEnabled && m_bVorbisAvailable) || !m_bTranscodeVorbis))
     return true;
-  else if((ToLower(p_sFileExtension).compare("mpc") == 0) && m_bTranscodingEnabled && m_bMusePackAvailable)
+  else if((ToLower(p_sFileExtension).compare("mpc") == 0) && ((m_bTranscodingEnabled && m_bMusePackAvailable) || !m_bTranscodeMusePack))
     return true;
-  else if((ToLower(p_sFileExtension).compare("flac") == 0) && m_bTranscodingEnabled && m_bFlacAvailable)
+  else if((ToLower(p_sFileExtension).compare("flac") == 0) && ((m_bTranscodingEnabled && m_bFlacAvailable) || !m_bTranscodeFlac))
     return true;
   else if((ToLower(p_sFileExtension).compare("jpeg") == 0) || (ToLower(p_sFileExtension).compare("jpg") == 0))
     return true;
@@ -307,6 +311,20 @@ FILE_KIND CSharedConfig::GetFileKindByExtension(std::string p_sFileExtension)
     nResult = FILE_KIND_AUDIO;  
   
   return nResult;
+}
+
+bool CSharedConfig::IsTranscodingExtension(std::string p_sFileExt)
+{  
+  if((ToLower(p_sFileExt).compare("mp3") == 0))
+    return false;
+  else if((ToLower(p_sFileExt).compare("ogg") == 0) && m_bTranscodingEnabled && m_bVorbisAvailable && m_bTranscodeVorbis)
+    return true;
+  else if((ToLower(p_sFileExt).compare("mpc") == 0) && m_bTranscodingEnabled && m_bMusePackAvailable && m_bTranscodeMusePack)
+    return true;
+  else if((ToLower(p_sFileExt).compare("flac") == 0) && m_bTranscodingEnabled && m_bFlacAvailable && m_bTranscodeFlac)
+    return true;  
+  else
+    return false;  
 }
 
 /* <\PUBLIC> */

@@ -24,9 +24,11 @@
 #include "FileDetails.h"
 
 #include "../Common.h"
+#include "../SharedConfig.h"
+/* taglib
 #include <fileref.h>
 #include <tstring.h>
-#include <tag.h>
+#include <tag.h>*/
 #include <sstream>
 
 using namespace std;
@@ -61,7 +63,39 @@ OBJECT_TYPE CFileDetails::GetObjectType(std::string p_sFileName)
     return OBJECT_TYPE_UNKNOWN;  
 }
 
-SMusicTrack CFileDetails::GetMusicTrackDetails(std::string p_sFileName)
+std::string CFileDetails::GetMimeType(std::string p_sFileName)
+{
+  string sExt = ToLower(ExtractFileExt(p_sFileName));
+
+  /* audio types */
+  if (sExt.compare("mp3") == 0)
+    return MIME_TYPE_AUDIO_MPEG;  
+  else if((sExt.compare("ogg") == 0) || (sExt.compare("mpc") == 0) || (sExt.compare("flac") == 0))
+  {
+    if(CSharedConfig::Shared()->IsTranscodingExtension(sExt))
+      return MIME_TYPE_AUDIO_MPEG;
+    else
+      return MIME_TYPE_APPLICATION_OCTETSTREAM;
+  }
+  
+  /* image types */
+  else if((sExt.compare("jpeg") == 0) || (sExt.compare("jpg") == 0))
+    return MIME_TYPE_IMAGE_JPEG;
+  else if(sExt.compare("bmp") == 0)
+    return MIME_TYPE_IMAGE_BMP;
+  else if(sExt.compare("png") == 0)
+    return MIME_TYPE_IMAGE_PNG;      
+  
+  /* video types */
+  else if((sExt.compare("mpeg") == 0) || (sExt.compare("mpg") == 0))
+    return MIME_TYPE_VIDEO_MPEG;
+  else if(sExt.compare("avi") == 0)
+    return MIME_TYPE_VIDEO_X_MSVIDEO;
+  
+  return "unknown";  
+}
+
+/*SMusicTrack CFileDetails::GetMusicTrackDetails(std::string p_sFileName)
 {
   cout << "GetMusicTrackDetails" << endl;
   
@@ -100,4 +134,4 @@ SMusicTrack CFileDetails::GetMusicTrackDetails(std::string p_sFileName)
   Result.nOriginalTrackNumber = nTmp;
   
   return Result;
-}
+}*/

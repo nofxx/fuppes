@@ -148,7 +148,9 @@ module.source.files=\
 	ContentDirectory/UPnPContainer.h\
 	UPnPActions/UPnPBrowse.cpp\
 	ContentDirectory/UPnPObjectFactory.cpp\
-	ContentDirectory/UPnPObjectFactory.h
+	ContentDirectory/UPnPObjectFactory.h\
+	md5.c\
+	md5.h
 
 module.pixmap.name=pixmaps
 module.pixmap.type=
