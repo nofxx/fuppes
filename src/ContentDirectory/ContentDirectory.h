@@ -112,9 +112,7 @@ public:
     /** handles a UPnP browse action
      *  @param  pBrowse  the browse action to handle
      *  @return string with the message content to send for the browse action
-     */
-    std::string HandleUPnPBrowse(CUPnPBrowse* pBrowse);
-  
+     */  
     std::string DbHandleUPnPBrowse(CUPnPBrowse* pBrowse);
   
     void BuildContainerDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sParentId, std::string p_sChildCount);
@@ -123,17 +121,11 @@ public:
     void BuildImageItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sObjectID);      
     void BuildVideoItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sObjectID);
     
-    /** Adds files and folders to the object list
-     */
-    void BuildObjectList();
-  
     /** scans a specific directory
      *  @param  p_sDirectory  path to the directory to scan
      *  @param  p_pnCount  count of found objects
      *  @param  pParentFolder  the parent folder
-     */
-    void ScanDirectory(std::string p_sDirectory, unsigned int* p_pnCount, CUPnPContainer* pParentFolder);
-  
+    */
     void DbScanDir(std::string p_sDirectory, long long int p_nParentId);
    
 
