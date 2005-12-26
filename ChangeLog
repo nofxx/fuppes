@@ -1,4 +1,4 @@
-Version 0.3.2 (2005-12-??)
+Version 0.3.2 (2005-12-26)
   * fixed transcoding-delay bug
   * added sqlite3 support
     contentlist is stored in a database so it does not need to be rebuild
