@@ -58,6 +58,9 @@ using:
 
 win32 binary package comes with:
 
+  sqlite3.dll - sqlite-3.2.8
+  Copyright (c), http://sqlite.org/
+
   mpcdec.dll - libmpcdec-1.2.2
   Copyright (c), The Musepack Development Team
   http://www.musepack.net
@@ -67,6 +70,9 @@ win32 binary package comes with:
   Copyright (c), The Xiph.Org Foundation
   http://www.xiph.org/
   see COPYING-VORBIS and COPYING-OGG for details
+
+All dlls are compiled by myself (Ulrich Völkel). The DevC++ Project files
+can be found under http://ulrich-voelkel.de/svn/fuppes.
 
 
 The "Free UPnP Entertainment Service" is distributed under the terms of the
