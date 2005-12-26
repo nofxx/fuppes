@@ -71,8 +71,8 @@ win32 binary package comes with:
   http://www.xiph.org/
   see COPYING-VORBIS and COPYING-OGG for details
 
-All dlls are compiled by myself (Ulrich Völkel). The DevC++ Project files
-can be found under http://ulrich-voelkel.de/svn/fuppes.
+mpcdec.dll, sqlite3.dll and vorbisfile.dll are compiled by myself.
+The DevC++ Project files can be found under http://ulrich-voelkel.de/svn/fuppes.
 
 
 The "Free UPnP Entertainment Service" is distributed under the terms of the
