@@ -42,9 +42,9 @@ const string LOGNAME = "ContentDatabase";
  
 static int SelectCallback(void *pDatabase, int argc, char **argv, char **azColName)
 {
-  for(int i = 0; i<argc; i++){
+  /*for(int i = 0; i<argc; i++){
     printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-  }
+  }*/
     
   /* build new result set */  
   ((CContentDatabase*)pDatabase)->m_nRowsReturned++;
@@ -177,7 +177,7 @@ long long int CContentDatabase::Insert(std::string p_sStatement)
   }
   nTrans = sqlite3_exec(m_pDbHandle, "COMMIT;", NULL, NULL, NULL);
   if(nTrans != SQLITE_OK)
-    cout << "error start transaction" << endl;
+    cout << "error commit transaction" << endl;
   
   Close();
   return nResult;

@@ -83,6 +83,8 @@ CUPnPService(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, p_sHTTPServerURL)
   
   if(bIsNewDB)
   {  
+    CSharedLog::Shared()->Log(LOGNAME, "creating content database. this may take a while.");
+    
     for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
     {
       if(DirectoryExists(CSharedConfig::Shared()->GetSharedDir(i)))
@@ -90,8 +92,7 @@ CUPnPService(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, p_sHTTPServerURL)
         if(CSharedConfig::Shared()->GetDisplaySettings().bShowDirNamesInFirstLevel)
         {      
           string sFileName;
-          if(ExtractFolderFromPath(CSharedConfig::Shared()->GetSharedDir(i), &sFileName))
-            cout << sFileName << endl;
+          ExtractFolderFromPath(CSharedConfig::Shared()->GetSharedDir(i), &sFileName);          
           
           stringstream sSql;
           sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME) values ";
@@ -116,6 +117,8 @@ CUPnPService(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, p_sHTTPServerURL)
         CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
       }
     } // for
+    
+    CSharedLog::Shared()->Log(LOGNAME, "content database created");    
   } // if(bIsNewDB)
 }
 
@@ -155,49 +158,13 @@ bool CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
  GET
 ===============================================================================*/
 
-/* GetFileNameFromObjectID */
-std::string CContentDirectory::GetFileNameFromObjectID(std::string p_sObjectID)
-{ 
-  /* Find object id in list */
-  m_ListIterator = m_ObjectList.find(p_sObjectID.c_str());
-
-  if(m_ListIterator != m_ObjectList.end())
-  {
-    /* return filename */
-    return ((CUPnPObject*)m_ObjectList[p_sObjectID.c_str()])->GetFileName();
-  }
-  else
-  {
-    /* object not found, return empty string */
-    ASSERT(0);
-    return "";
-  }
-}
-
 /* GetItemFromObjectID */
 CUPnPObject* CContentDirectory::GetItemFromObjectID(std::string p_sObjectID)
 {
   CUPnPObjectFactory* pFact = new CUPnPObjectFactory(m_sHTTPServerURL);    
   CUPnPObject* pResult = pFact->CreateObjectFromId(p_sObjectID);  
   delete pFact;
-  return pResult;
-  
-  /* Find object id in list */
-  m_ListIterator = m_ObjectList.find(p_sObjectID.c_str());
-
-  if(m_ListIterator != m_ObjectList.end())
-  {
-    /* return object */
-    return ((CUPnPObject*)m_ObjectList[p_sObjectID.c_str()]);
-  }
-  else
-  {
-    /* object not found, return NULL */
-    ASSERT(0);
-    return NULL;
-  }
-  
-  
+  return pResult;  
 }
 
 /* <\PUBLIC> */
@@ -281,10 +248,12 @@ void CContentDirectory::DbScanDir(std::string p_sDirectory, long long int p_nPar
           sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME) values ";
           sSql << "(" << CONTAINER_STORAGE_FOLDER << ", ";
           sSql << p_nParentId << ", ";
-          sSql << "'" << sTmp.str() << "', ";
-          sSql << "'" << sTmpFileName << "');";
+          sSql << "'" << SQLEscape(sTmp.str()) << "', ";
+          sSql << "'" << SQLEscape(sTmpFileName) << "');";
           
           long long int nRowId = m_pDatabase->Insert(sSql.str());
+          if(nRowId == -1)
+            cout << "ERROR: " << sSql.str() << endl;
           DbScanDir(sTmp.str(), nRowId);          
         }
         else if(IsFile(sTmp.str()) && CSharedConfig::Shared()->IsSupportedFileExtension(sExt))
@@ -317,8 +286,10 @@ void CContentDirectory::DbScanDir(std::string p_sDirectory, long long int p_nPar
           
           //cout << sSql.str() << endl;
           
-          long long int nRowId = m_pDatabase->Insert(sSql.str());
-          DbScanDir(sTmp.str(), nRowId);          
+          long long int nRowId = m_pDatabase->Insert(sSql.str());          
+          if(nRowId == -1)
+            cout << "ERROR: " << sSql.str() << endl;
+          //DbScanDir(sTmp.str(), nRowId);          
         }   
         
         sTmp.str("");
@@ -334,7 +305,7 @@ void CContentDirectory::DbScanDir(std::string p_sDirectory, long long int p_nPar
 /* HandleUPnPBrowse */
 std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
 {  
-  cout << "BROWSE ID: " << pUPnPBrowse->m_sObjectID << " (" << pUPnPBrowse->GetObjectIDAsInt() << ")" << endl << endl;
+  //cout << "BROWSE ID: " << pUPnPBrowse->m_sObjectID << " (" << pUPnPBrowse->GetObjectIDAsInt() << ")" << endl << endl;
   
   xmlTextWriterPtr writer;
 	xmlBufferPtr buf;
@@ -384,22 +355,22 @@ std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
           CSelectResult* pRow = m_pDatabase->GetResult();          
           if(pRow->GetValue("TYPE").compare("10") == 0)
           {
-            cout << "CONTAINER_STORAGE_FOLDER" << endl;
+            //cout << "CONTAINER_STORAGE_FOLDER" << endl;
             BuildContainerDescription(writer, pRow, pUPnPBrowse->m_sObjectID, pRow->GetValue("COUNT"));
           }
           else if(pRow->GetValue("TYPE").compare("100") == 0)
           {
-            cout << "ITEM_IMAGE_ITEM_PHOTO" << endl;
+            //cout << "ITEM_IMAGE_ITEM_PHOTO" << endl;
             BuildItemDescription(writer, pRow, ITEM_IMAGE_ITEM_PHOTO, pUPnPBrowse->m_sObjectID);
           }
           else if(pRow->GetValue("TYPE").compare("200") == 0)
           {
-            cout << "ITEM_AUDIO_ITEM_MUSIC_TRACK" << endl;
+            //cout << "ITEM_AUDIO_ITEM_MUSIC_TRACK" << endl;
             BuildItemDescription(writer, pRow, ITEM_AUDIO_ITEM_MUSIC_TRACK, pUPnPBrowse->m_sObjectID);
           }
           else if(pRow->GetValue("TYPE").compare("300") == 0)
           {
-            cout << "ITEM_VIDEO_ITEM_MOVIE" << endl;
+            //cout << "ITEM_VIDEO_ITEM_MOVIE" << endl;
             BuildItemDescription(writer, pRow, ITEM_VIDEO_ITEM_MOVIE, pUPnPBrowse->m_sObjectID);
           }         
           
@@ -460,8 +431,9 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter, CSel
     /* id */  
     char szObjId[11];         
     unsigned int nObjId = atoi(pSQLResult->GetValue("ID").c_str());
-    cout << "CONTAINER ID: " << nObjId << endl;
-    sprintf(szObjId, "%010X", nObjId); 
+    sprintf(szObjId, "%010X", nObjId);   
+    //cout << "CONTAINER ID: " << nObjId << endl;
+    
   
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "id", BAD_CAST szObjId); 
     /* searchable  */
@@ -501,8 +473,8 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter, CSelectRe
     /* id */  
     char szObjId[11];         
     unsigned int nObjId = atoi(pSQLResult->GetValue("ID").c_str());
-    cout << "ITEM ID: " << nObjId << endl;
-    sprintf(szObjId, "%010X", nObjId); 
+    sprintf(szObjId, "%010X", nObjId);   
+    //cout << "ITEM ID: " << nObjId << endl;    
   
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "id", BAD_CAST szObjId); 
     /* parentID  */

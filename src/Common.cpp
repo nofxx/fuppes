@@ -338,16 +338,17 @@ int HexToInt(std::string sHex)
 
 std::string SQLEscape(std::string p_sValue)
 {
-  int nPos     = 0;
+  int nPos     = -2;
   int nLastPos = 0;
   do
   {
-    nLastPos = nPos;
-    nPos = p_sValue.find('\'', nPos);  
+    if(nPos != -2)
+      nLastPos = nPos;
+    
+    nPos = p_sValue.find('\'', nPos + 2);  
     if((nPos > -1) && (nPos != nLastPos))
-    {
       p_sValue = p_sValue.replace(nPos, 1, "\'\'");
-    }
+    
   } while((nPos > -1) && (nPos != nLastPos));
   
   return p_sValue;

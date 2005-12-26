@@ -78,12 +78,6 @@ public:
  GET
 ===============================================================================*/
 
-  /** returns the filename of a specific object id
-   *  @param  p_sObjectID  object id to identify object
-   *  @return  the filename, "" if the object was not found
-   */
-  std::string GetFileNameFromObjectID(std::string p_sObjectID);
-
   /** returns a UPnP object for a specific object id
    *  @param  p_sObjectID  object id to identify object
    *  @return  the UPnP object or NULL
