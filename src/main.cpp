@@ -36,11 +36,37 @@
 #ifndef WIN32
 #include <fcntl.h>
 #include <signal.h>
+#include <termios.h>
 #endif
 
 using namespace std;
 
 bool g_bExitApp;
+
+#ifndef WIN32
+/* non-blocking getchar() */
+int fuppesGetch()
+{
+  int ch = -1;  
+  struct termios newTerm;
+  struct termios oldTerm;  
+  tcgetattr(STDIN_FILENO, &oldTerm);
+  
+  newTerm = oldTerm;  
+  newTerm.c_lflag    &= ~(ICANON|ECHO);  
+  newTerm.c_cc[VMIN]  = 0; /* don't block for input */
+  newTerm.c_cc[VTIME] = 0; /* timer is ignored */
+  
+  if (0 == (ch = tcsetattr(STDIN_FILENO, TCSANOW, &newTerm)))
+  {
+    /* get a single character from stdin */
+    ch = getchar();    
+    /* restore old settings */
+    ch += tcsetattr(STDIN_FILENO, TCSANOW, &oldTerm);
+  }
+  return ch;
+}
+#endif
 
 void SignalHandler(int p_nSignal)
 {
@@ -161,6 +187,7 @@ int main(int argc, char* argv[])
   cout << "b = send notify-byebye" << endl;
   cout << "l = toggle logging" << endl;
   cout << "i = info" << endl; 
+  cout << "r = rebuild database" << endl; 
   cout << endl;
   #ifdef WIN32
   cout << "press \"q\" to  quit" << endl;  
@@ -176,13 +203,21 @@ int main(int argc, char* argv[])
     #ifdef WIN32
     while(input != "q")
     #else
-    while(!g_bExitApp)
+    while(!g_bExitApp && (input != "q"))
     #endif
     {		
+      input = "";
       #ifdef WIN32
       getline(cin, input);
-      #else      
-      fuppesSleep(500);
+      #else
+      int nRes = -1;
+      do {
+        nRes = fuppesGetch();        
+        if ((nRes > -1) && (nRes != 10))
+          input = nRes;        
+        fuppesSleep(100);
+      }
+      while ((nRes != 10) && !g_bExitApp);      
       #endif
       
       if (input == "m")
@@ -200,6 +235,9 @@ int main(int argc, char* argv[])
         cout << "address     : " << CSharedConfig::Shared()->GetIPv4Address() << endl;    
         cout << "webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;          
       }
+      else if (input == "r")
+        pFuppes->GetContentDirectory()->BuildDB();
+        
     }
   }
   else

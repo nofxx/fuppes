@@ -62,8 +62,7 @@ std::string GenerateUUID()
 
 #else
   
-  /* todo: create real UUIDs */
-  
+  /* todo: create real UUIDs */  
   srand(time(0));
 
   int nRandom;
@@ -74,8 +73,7 @@ std::string GenerateUUID()
     sRandom << nRandom;
   } while (sRandom.str().length() < 8);
 
-
-  sResult << sRandom.str().substr(0, 8) << "-aabb-0000-ccdd-1234eeff0000";
+  sResult << sRandom.str().substr(0, 8) << "-aabb-dead-beef-1234eeff0000";
 
 #endif
 

@@ -84,6 +84,9 @@ public:
    */
   CUPnPObject* GetItemFromObjectID(std::string p_sObjectID);
 
+
+    
+  void BuildDB();
 /* <\PUBLIC> */
 
 /* <PRIVATE> */
@@ -114,7 +117,7 @@ public:
     void BuildAudioItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sObjectID);      
     void BuildImageItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sObjectID);      
     void BuildVideoItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sObjectID);
-    
+
     /** scans a specific directory
      *  @param  p_sDirectory  path to the directory to scan
      *  @param  p_pnCount  count of found objects

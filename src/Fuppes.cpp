@@ -196,14 +196,6 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
  GET
 ===============================================================================*/
 
-/** Returns a pointer to the CSSDPCtrl member 
- *  @return CSSDPCtrl*
- */
-CSSDPCtrl* CFuppes::GetSSDPCtrl()
-{
-  return m_pSSDPCtrl;
-}
-
 /** Returns URL of the HTTP member
  * @return std::string
  */

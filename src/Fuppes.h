@@ -35,6 +35,7 @@
 #include "SSDPCtrl.h"
 #include "HTTPServer.h"
 #include "UPnPDevice.h"
+#include "ContentDirectory/ContentDirectory.h"
 
 /*===============================================================================
  FORWARD DECLARATIONS
@@ -43,7 +44,7 @@
 class CFuppes;
 class CHTTPMessage;
 class CMediaServer;
-class CContentDirectory;
+//class CContentDirectory;
 class CUPnPDevice;
 
 /*===============================================================================
@@ -94,7 +95,8 @@ public:
  GET
 ===============================================================================*/
 
-  CSSDPCtrl*                GetSSDPCtrl();
+  CSSDPCtrl*                GetSSDPCtrl() { return m_pSSDPCtrl; }
+  CContentDirectory*        GetContentDirectory() { return m_pContentDirectory; }
   std::string               GetHTTPServerURL();
   std::string               GetIPAddress();
   std::vector<CUPnPDevice*> GetRemoteDevices();

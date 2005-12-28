@@ -339,7 +339,7 @@ int HexToInt(std::string sHex)
 std::string SQLEscape(std::string p_sValue)
 {
   int nPos     = -2;
-  int nLastPos = 0;
+  int nLastPos = -1;
   do
   {
     if(nPos != -2)

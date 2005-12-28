@@ -82,44 +82,7 @@ CUPnPService(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, p_sHTTPServerURL)
   m_pDatabase->Init(&bIsNewDB); 
   
   if(bIsNewDB)
-  {  
-    CSharedLog::Shared()->Log(LOGNAME, "creating content database. this may take a while.");
-    
-    for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
-    {
-      if(DirectoryExists(CSharedConfig::Shared()->GetSharedDir(i)))
-      {  
-        if(CSharedConfig::Shared()->GetDisplaySettings().bShowDirNamesInFirstLevel)
-        {      
-          string sFileName;
-          ExtractFolderFromPath(CSharedConfig::Shared()->GetSharedDir(i), &sFileName);          
-          
-          stringstream sSql;
-          sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME) values ";
-          sSql << "(" << CONTAINER_STORAGE_FOLDER << ", ";
-          sSql << 0 << ", ";
-          sSql << "'" << CSharedConfig::Shared()->GetSharedDir(i) << "', ";
-          sSql << "'" << sFileName << "');";
-          
-          long long int nRowId = m_pDatabase->Insert(sSql.str());
-          DbScanDir(CSharedConfig::Shared()->GetSharedDir(i), nRowId);
-        }
-        else
-        {
-          DbScanDir(CSharedConfig::Shared()->GetSharedDir(i), 0);        
-        }
-        
-      }
-      else
-      {
-        stringstream sLog;
-        sLog << "shared directory: \"" << CSharedConfig::Shared()->GetSharedDir(i) << "\" not found";
-        CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
-      }
-    } // for
-    
-    CSharedLog::Shared()->Log(LOGNAME, "content database created");    
-  } // if(bIsNewDB)
+    BuildDB();
 }
 
 /* destructor */
@@ -131,6 +94,47 @@ CContentDirectory::~CContentDirectory()
                'm_Objectlist' has the pointers to these objects */
   
   SAFE_DELETE(m_pBaseFolder);
+}
+
+void CContentDirectory::BuildDB()
+{
+  CSharedLog::Shared()->Log(LOGNAME, "creating content database. this may take a while.");
+  m_pDatabase->Insert("delete from objects");
+  
+  for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
+  {
+    if(DirectoryExists(CSharedConfig::Shared()->GetSharedDir(i)))
+    {  
+      if(CSharedConfig::Shared()->GetDisplaySettings().bShowDirNamesInFirstLevel)
+      {      
+        string sFileName;
+        ExtractFolderFromPath(CSharedConfig::Shared()->GetSharedDir(i), &sFileName);          
+        
+        stringstream sSql;
+        sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME) values ";
+        sSql << "(" << CONTAINER_STORAGE_FOLDER << ", ";
+        sSql << 0 << ", ";
+        sSql << "'" << CSharedConfig::Shared()->GetSharedDir(i) << "', ";
+        sSql << "'" << sFileName << "');";
+        
+        long long int nRowId = m_pDatabase->Insert(sSql.str());
+        DbScanDir(CSharedConfig::Shared()->GetSharedDir(i), nRowId);
+      }
+      else
+      {
+        DbScanDir(CSharedConfig::Shared()->GetSharedDir(i), 0);        
+      }
+      
+    }
+    else
+    {
+      stringstream sLog;
+      sLog << "shared directory: \"" << CSharedConfig::Shared()->GetSharedDir(i) << "\" not found";
+      CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
+    }
+  } // for
+  
+  CSharedLog::Shared()->Log(LOGNAME, "content database created");   
 }
 
 /*===============================================================================
