@@ -5,14 +5,14 @@ UnitCount=80
 Type=1
 Ver=1
 ObjFiles=
-Includes=E:\MinGW\libmpcdec-1.2.2\include;E:\MinGW\sqlite-source-3_2_8
+Includes=C:\Programme\msys\1.0\mingw\libmpcdec-1.2.2\include;C:\Programme\msys\1.0\mingw\sqlite-source-3_2_8
 Libs=
 PrivateResource=fuppes_private.rc
 ResourceIncludes=
 MakeIncludes=
 Compiler=
 CppCompiler=_@@_
-Linker=../../../../../Dev-Cpp/lib/libxml2.a_@@_../../../../../Dev-Cpp/lib/libpcre.dll.a_@@_../../../../../Dev-Cpp/lib/libwsock32.a_@@_../../../../../Dev-Cpp/lib/iconv.lib_@@_../../../../Dev-Cpp/lib/libole32.a_@@_../../../MinGW/sqlite-source-3_2_8/libsqlite3.a_@@_
+Linker=../../../Programme/Dev-Cpp/lib/libxml2.a_@@_../../../Programme/Dev-Cpp/lib/libpcre.dll.a_@@_../../../Programme/Dev-Cpp/lib/libwsock32.a_@@_../../../Programme/Dev-Cpp/lib/iconv.lib_@@_../../../Programme/Dev-Cpp/lib/libole32.a_@@_../../../Programme/msys/1.0/mingw/sqlite-source-3_2_8/libsqlite3.a_@@_
 IsCpp=1
 Icon=fuppes.ico
 ExeOutput=win32
@@ -52,8 +52,8 @@ BuildCmd=
 [VersionInfo]
 Major=0
 Minor=3
-Release=2
-Build=4
+Release=3
+Build=9
 LanguageID=1033
 CharsetID=1252
 CompanyName=
@@ -64,7 +64,7 @@ LegalCopyright=Ulrich Völkel
 LegalTrademarks=
 OriginalFilename=fuppes.exe
 ProductName=Free UPnP Entertainment Service
-ProductVersion=0.3.2
+ProductVersion=3
 AutoIncBuildNr=1
 
 [Unit10]
