@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -72,7 +72,7 @@ void SignalHandler(int p_nSignal)
 {
   //cout << "SignalHandler: " << p_nSignal << endl;
   g_bExitApp = true;
-  switch(p_nSignal)
+  /*switch(p_nSignal)
   {
     case SIGINT:
       cout << "SIGINT" << endl;
@@ -80,7 +80,7 @@ void SignalHandler(int p_nSignal)
     case SIGTERM:
       cout << "SIGTERM" << endl;
       break;    
-  }
+  }*/
 }
 
 /*===============================================================================

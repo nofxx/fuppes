@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -325,9 +325,7 @@ bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessa
   /* ConnectionManager description */
   else if(strRequest.compare("/UPnPServices/ConnectionManager/description.xml") == 0)
   {
-    cout << "SEND:  /UPnPServices/ConnectionManager/description.xml " << endl;
-    pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml");
-    cout << m_pConnectionManager->GetServiceDescription() << " END DESCRIPTION" << endl;
+    pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml");    
     pMessageOut->SetContent(m_pConnectionManager->GetServiceDescription());
     return true;
   }

@@ -261,8 +261,9 @@ fuppesThreadCallback SessionLoop(void *arg)
                    
     /* receive */     
     nTmpRecv = recv(pSession->GetConnection(), szBuffer, 4096, 0);
-    /*cout << "new: " << nTmpRecv << " have: " << nBytesReceived << endl;
-    fflush(stdout);*/
+    cout << "new: " << nTmpRecv << " have: " << nBytesReceived << endl;
+    fflush(stdout);
+    
     if(nTmpRecv == -1)
     {
       CSharedLog::Shared()->Error(LOGNAME, "lost connection");
@@ -312,9 +313,10 @@ fuppesThreadCallback SessionLoop(void *arg)
       sContent = sMsg.substr(nPos, sMsg.length() - nPos);
     }
     else
-    {
+    {      
       CSharedLog::Shared()->Warning(LOGNAME, "did not received the full header.");
-      fuppesSleep(100);
+      cout << sMsg << endl;
+      fuppesSleep(400);
       nRecvCnt++;
       continue;
     }
@@ -360,7 +362,7 @@ fuppesThreadCallback SessionLoop(void *arg)
 
     /* Create message */    
     bResult = ReceivedMessage.SetMessage(szMsg);
-    cout << szMsg << endl << endl;
+    //cout << szMsg << endl << endl;
   }
 
   /* build response message and send it */
@@ -453,6 +455,7 @@ fuppesThreadCallback SessionLoop(void *arg)
             {
               cout << "error: " << nErr << endl;
               cout << "connection reset by peer" << endl;
+              cout << "offset: " << nOffset << endl;
               fflush(stdout); 
 
               ResponseMsg.m_bBreakTranscoding = true; 
