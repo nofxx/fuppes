@@ -1,7 +1,7 @@
 [Project]
 FileName=fuppes.dev
 Name=fuppes
-UnitCount=80
+UnitCount=82
 Type=1
 Ver=1
 ObjFiles=
@@ -53,7 +53,7 @@ BuildCmd=
 Major=0
 Minor=3
 Release=3
-Build=9
+Build=1
 LanguageID=1033
 CharsetID=1252
 CompanyName=
@@ -64,7 +64,7 @@ LegalCopyright=Ulrich Völkel
 LegalTrademarks=
 OriginalFilename=fuppes.exe
 ProductName=Free UPnP Entertainment Service
-ProductVersion=3
+ProductVersion=0.3.3
 AutoIncBuildNr=1
 
 [Unit10]
@@ -839,6 +839,26 @@ BuildCmd=
 
 [Unit80]
 FileName=src\UPnPActions\UPnPBrowse.cpp
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit81]
+FileName=src\ConnectionManager\ConnectionManager.h
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit82]
+FileName=src\ConnectionManager\ConnectionManager.cpp
 CompileCpp=1
 Folder=fuppes
 Compile=1

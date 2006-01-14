@@ -185,9 +185,9 @@ bool CSharedConfig::SetupConfig()
       cout << "compiled without vorbis support" << endl;
       #else
       if(m_bVorbisAvailable)
-        cout << "yes" << endl;
+        cout << "enabled" << endl;
       else
-        cout << "no" << endl;
+        cout << "disabled" << endl;
       #endif      
     
       /* musepack */
@@ -196,9 +196,9 @@ bool CSharedConfig::SetupConfig()
       cout << "compiled without MusePack support" << endl;
       #else
       if(m_bMusePackAvailable)
-        cout << "yes" << endl;
+        cout << "enabled" << endl;
       else
-        cout << "no" << endl;
+        cout << "disabled" << endl;
       #endif
       
       /* flac */
