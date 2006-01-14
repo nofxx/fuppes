@@ -59,10 +59,11 @@ std::string	CUPnPBase::GetUPnPDeviceTypeAsString()
 	/* Set string for the corrseponding device type */
   switch(m_nUPnPDeviceType)
 	{
-		case UPNP_DEVICE_TYPE_ROOT_DEVICE:       sResult = "RootDevice";       break;
-		case UPNP_DEVICE_TYPE_MEDIA_SERVER:			 sResult = "MediaServer";      break;
-    case UPNP_DEVICE_TYPE_CONTENT_DIRECTORY: sResult = "ContentDirectory"; break;
-    default:                                 ASSERT(0);                    break;
+		case UPNP_DEVICE_TYPE_ROOT_DEVICE:        sResult = "RootDevice";        break;
+		case UPNP_DEVICE_TYPE_MEDIA_SERVER:			  sResult = "MediaServer";       break;
+    case UPNP_DEVICE_TYPE_CONTENT_DIRECTORY:  sResult = "ContentDirectory";  break;
+    case UPNP_DEVICE_TYPE_CONNECTION_MANAGER: sResult = "ConnectionManager"; break;
+    default:                                  ASSERT(0);                     break;
 	}
 	
 	return sResult;

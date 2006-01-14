@@ -36,6 +36,7 @@ h_sources = \
   ContentDirectory/UPnPObjectFactory.h\
   ContentDirectory/ContentDatabase.h\
   ContentDirectory/ContentDirectory.h\
+  ConnectionManager/ConnectionManager.h\
   Presentation/PresentationHandler.h\
   Presentation/Stylesheet.h\
   Transcoding/WrapperBase.h\
@@ -76,6 +77,7 @@ cpp_sources = \
   ContentDirectory/UPnPObjectFactory.cpp\
   ContentDirectory/ContentDatabase.cpp\
 	ContentDirectory/ContentDirectory.cpp\
+  ConnectionManager/ConnectionManager.cpp\
   Presentation/PresentationHandler.cpp\
   Presentation/Images/fuppes_png.cpp\
   Presentation/Images/fuppes_small_png.cpp\

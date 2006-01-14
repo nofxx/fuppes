@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -127,6 +127,8 @@ bool CHTTPMessage::SetMessage(std::string p_sMessage)
 
 void CHTTPMessage::SetBinContent(char* p_szBinContent, unsigned int p_nBinContenLength)
 { 
+  m_bIsBinary = true;
+
   m_nBinContentLength = p_nBinContenLength;      
   m_pszBinContent     = new char[m_nBinContentLength + 1];    
   memcpy(m_pszBinContent, p_szBinContent, m_nBinContentLength);
@@ -202,7 +204,7 @@ std::string CHTTPMessage::GetHeaderAsString()
   sResult << "CONNECTION: close\r\n";
   sResult << "ACCEPT-RANGES: bytes\r\n";
   
-  sResult << "contentFeatures.dlna.org: \r\n";
+  //sResult << "contentFeatures.dlna.org: \r\n";
   
 	sResult << "EXT: \r\n";
 	

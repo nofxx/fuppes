@@ -36,6 +36,7 @@
 #include "HTTPServer.h"
 #include "UPnPDevice.h"
 #include "ContentDirectory/ContentDirectory.h"
+#include "ConnectionManager/ConnectionManager.h"
 
 /*===============================================================================
  FORWARD DECLARATIONS
@@ -116,6 +117,7 @@ private:
   CHTTPServer*          m_pHTTPServer;
   CMediaServer*         m_pMediaServer;
   CContentDirectory*    m_pContentDirectory;    
+  CConnectionManager*   m_pConnectionManager;
   std::string           m_sIPAddress;
   std::string           m_sUUID;
   IFuppes*              m_pPresentationRequestHandler;

@@ -1,8 +1,12 @@
 Version 0.3.3 (2006-01-??)
   * added "rebuild database" option
   * fixed console input bug (unix)
+  * fixed directory listing description
+  * added ConnectionManager and ContentDirectory description.
+    fuppes now shows up on cidero MediaController
   * fixed SQL escape bug.
     leading ' in file names were not escaped correctly
+  * fixed wrong content length for the webinterface images
 
 Version 0.3.2 (2005-12-26)
   * fixed transcoding-delay bug

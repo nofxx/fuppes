@@ -40,7 +40,6 @@
 #include "ContentDirectory/AudioItem.h"
 #include "ContentDirectory/ImageItem.h"
 #include "ContentDirectory/VideoItem.h"
-#include "ContentDirectory/ContentDirectory.h"
 
 using namespace std;
 
@@ -92,11 +91,13 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID, IFuppes* pPresen
   m_pMediaServer = new CMediaServer(m_pHTTPServer->GetURL(), this);	  
   
   /* Create ContentDirectory */
-  m_pContentDirectory = new CContentDirectory(m_pHTTPServer->GetURL());  
-  
+  m_pContentDirectory = new CContentDirectory(m_pHTTPServer->GetURL());    
   /* Add ContentDirectory to MediaServers service-list */
 	m_pMediaServer->AddUPnPService(m_pContentDirectory);
 
+  m_pConnectionManager = new CConnectionManager(m_pHTTPServer->GetURL()); 
+  m_pMediaServer->AddUPnPService(m_pConnectionManager);
+  
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");
   
   /* if everything is up and running,
@@ -318,6 +319,16 @@ bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessa
   {
     pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml");
     pMessageOut->SetContent(m_pContentDirectory->GetServiceDescription());
+    return true;
+  }
+
+  /* ConnectionManager description */
+  else if(strRequest.compare("/UPnPServices/ConnectionManager/description.xml") == 0)
+  {
+    cout << "SEND:  /UPnPServices/ConnectionManager/description.xml " << endl;
+    pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml");
+    cout << m_pConnectionManager->GetServiceDescription() << " END DESCRIPTION" << endl;
+    pMessageOut->SetContent(m_pConnectionManager->GetServiceDescription());
     return true;
   }
   

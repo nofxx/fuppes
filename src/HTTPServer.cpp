@@ -360,6 +360,7 @@ fuppesThreadCallback SessionLoop(void *arg)
 
     /* Create message */    
     bResult = ReceivedMessage.SetMessage(szMsg);
+    cout << szMsg << endl << endl;
   }
 
   /* build response message and send it */
@@ -372,6 +373,8 @@ fuppesThreadCallback SessionLoop(void *arg)
       CSharedLog::Shared()->Error(LOGNAME, "parsing HTTP message");      
     if(bResult)
     {
+      cout << ResponseMsg.GetMessageAsString() << endl << endl;
+      
       //cout << ResponseMsg.GetHeaderAsString() << endl;
       if(!ResponseMsg.IsChunked())
       { 

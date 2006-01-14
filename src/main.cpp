@@ -72,15 +72,15 @@ void SignalHandler(int p_nSignal)
 {
   //cout << "SignalHandler: " << p_nSignal << endl;
   g_bExitApp = true;
-  /*switch(p_nSignal)
+  switch(p_nSignal)
   {
     case SIGINT:
-      //cout << "SIGINT" << endl;
+      cout << "SIGINT" << endl;
       break;
     case SIGTERM:
       cout << "SIGTERM" << endl;
       break;    
-  }*/
+  }
 }
 
 /*===============================================================================

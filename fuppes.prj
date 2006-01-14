@@ -150,7 +150,9 @@ module.source.files=\
 	ContentDirectory/UPnPObjectFactory.cpp\
 	ContentDirectory/UPnPObjectFactory.h\
 	md5.c\
-	md5.h
+	md5.h\
+	ConnectionManager/ConnectionManager.cpp\
+	ConnectionManager/ConnectionManager.h
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

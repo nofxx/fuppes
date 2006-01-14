@@ -69,7 +69,7 @@ public:
   /** returns the service description as string
   *  @return  the service description
   */
-  std::string GetServiceDescription();	
+  virtual std::string GetServiceDescription();
 
 /* <\PUBLIC> */
 
