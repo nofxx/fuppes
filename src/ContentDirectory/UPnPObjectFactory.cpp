@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -24,6 +24,8 @@
 #include "UPnPObjectFactory.h"
 
 #include "AudioItem.h"
+#include "ImageItem.h"
+#include "VideoItem.h"
 #include "ContentDatabase.h"
 #include "../Common.h"
 #include "../SharedConfig.h"
@@ -39,28 +41,41 @@ CUPnPObjectFactory::CUPnPObjectFactory(std::string p_sHTTPServerURL)
 
 CUPnPObject* CUPnPObjectFactory::CreateObjectFromId(std::string p_sObjectID)
 {
-  CUPnPObject* pResult = NULL;
-  
-  CContentDatabase* pDB = new CContentDatabase();
-   
-  unsigned int nObjID = HexToInt(p_sObjectID);
+  CUPnPObject* pResult  = NULL;  
+  CContentDatabase* pDB = new CContentDatabase();   
+  unsigned int nObjID   = HexToInt(p_sObjectID);
+  bool bIsAudio = false;
   
   stringstream sSQL;
   sSQL << "select PARENT_ID, TYPE, PATH, FILE_NAME, MD5, MIME_TYPE, DETAILS from OBJECTS where ID = " << nObjID;
   pDB->Select(sSQL.str());
   if(!pDB->Eof())
   {
-    pResult = new CAudioItem(m_sHTTPServerURL);
     
-    pResult->SetObjectID(p_sObjectID);
+    if(pDB->GetResult()->GetValue("TYPE").compare("100") == 0)
+    {
+      pResult = new CImageItem(m_sHTTPServerURL, pDB->GetResult()->GetValue("MIME_TYPE"));      
+    }
+    else if(pDB->GetResult()->GetValue("TYPE").compare("200") == 0)
+    {
+      pResult  = new CAudioItem(m_sHTTPServerURL, pDB->GetResult()->GetValue("MIME_TYPE"));
+      bIsAudio = true;
+    }
+    else if(pDB->GetResult()->GetValue("TYPE").compare("300") == 0)
+    {
+      pResult = new CVideoItem(m_sHTTPServerURL, pDB->GetResult()->GetValue("MIME_TYPE"));
+    }
+    
+    pResult->SetObjectID(p_sObjectID);    
     //pTmpItem->SetParent(pParentFolder);     
     pResult->SetFileName(pDB->GetResult()->GetValue("PATH"));
-        
-    if(((CAudioItem*)pResult)->SetupTranscoding())
-    {
-      /* set object name */
-      stringstream sName;
-      sName << TruncateFileExt(pDB->GetResult()->GetValue("FILE_NAME"));
+
+    /* set object name */
+    stringstream sName;
+    sName << TruncateFileExt(pDB->GetResult()->GetValue("FILE_NAME"));
+    
+    if(bIsAudio && (((CAudioItem*)pResult)->SetupTranscoding()))
+    {      
       if(((CAudioItem*)pResult)->GetDoTranscode() && CSharedConfig::Shared()->GetDisplaySettings().bShowTranscodingTypeInItemNames)
       {
         switch(((CAudioItem*)pResult)->GetDecoderType())
@@ -78,9 +93,10 @@ CUPnPObject* CUPnPObjectFactory::CreateObjectFromId(std::string p_sObjectID)
           case AUDIO_DECODER_NONE:
             break;                
         }                     
-      } 
-      pResult->SetName(sName.str());
-    }  
+      }      
+    }
+    
+    pResult->SetName(sName.str());    
   }
   
   delete pDB;

@@ -261,9 +261,8 @@ fuppesThreadCallback SessionLoop(void *arg)
                    
     /* receive */     
     nTmpRecv = recv(pSession->GetConnection(), szBuffer, 4096, 0);
-    cout << "new: " << nTmpRecv << " have: " << nBytesReceived << endl;
-    fflush(stdout);
-    
+    /*cout << "new: " << nTmpRecv << " have: " << nBytesReceived << endl;
+    fflush(stdout);*/    
     if(nTmpRecv == -1)
     {
       CSharedLog::Shared()->Error(LOGNAME, "lost connection");
@@ -316,7 +315,7 @@ fuppesThreadCallback SessionLoop(void *arg)
     {      
       CSharedLog::Shared()->Warning(LOGNAME, "did not received the full header.");
       cout << sMsg << endl;
-      fuppesSleep(400);
+      fuppesSleep(10);
       nRecvCnt++;
       continue;
     }
@@ -375,7 +374,7 @@ fuppesThreadCallback SessionLoop(void *arg)
       CSharedLog::Shared()->Error(LOGNAME, "parsing HTTP message");      
     if(bResult)
     {
-      cout << ResponseMsg.GetMessageAsString() << endl << endl;
+      //cout << ResponseMsg.GetMessageAsString() << endl << endl;
       
       //cout << ResponseMsg.GetHeaderAsString() << endl;
       if(!ResponseMsg.IsChunked())
@@ -479,7 +478,7 @@ fuppesThreadCallback SessionLoop(void *arg)
             #else
             send(pSession->GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), MSG_NOSIGNAL);             
             #endif
-            cout << "end of stream" << endl;        
+            //cout << "end of stream" << endl;        
           } 
             
       } /* else */

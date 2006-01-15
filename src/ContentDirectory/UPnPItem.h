@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -52,10 +52,11 @@ public:
   *  @param  p_nUPnPObjectType  type of the UPnP object
   *  @param  p_sHTTPServerURL  URL of the HTTP server
   */
-  CUPnPItem(UPNP_OBJECT_TYPE p_nUPnPObjectType, std::string p_sHTTPServerURL):
+  CUPnPItem(UPNP_OBJECT_TYPE p_nUPnPObjectType, std::string p_sHTTPServerURL, std::string p_sMimeType):
       CUPnPObject(p_nUPnPObjectType, p_sHTTPServerURL)
-      {
-      }
+  {
+    m_sMimeType = p_sMimeType;
+  }
       
 /*===============================================================================
  GET
@@ -68,14 +69,13 @@ public:
   {
   }
 
-  virtual std::string GetMimeType() = 0;
+  virtual std::string GetMimeType() = 0;  
   virtual unsigned int GetSize() = 0;
 /* <\PUBLIC> */
 
   protected:
-    unsigned int m_nSize;
-  
-  //  std::string m_sMimeType;
+    unsigned int m_nSize;  
+    std::string  m_sMimeType;
   
 };
 

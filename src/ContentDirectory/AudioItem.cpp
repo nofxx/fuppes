@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -41,8 +41,8 @@
 ===============================================================================*/
 
 /* constructor */
-CAudioItem::CAudioItem(std::string p_sHTTPServerURL):
-  CUPnPItem(UPNP_OBJECT_TYPE_AUDIO_ITEM, p_sHTTPServerURL)
+CAudioItem::CAudioItem(std::string p_sHTTPServerURL, std::string p_sMimeType):
+  CUPnPItem(UPNP_OBJECT_TYPE_AUDIO_ITEM, p_sHTTPServerURL, p_sMimeType)
 {
   m_bDoTranscode = false;   
   m_nAudioFormat = AUDIO_FORMAT_UNKNOWN;
@@ -155,7 +155,8 @@ bool CAudioItem::SetupTranscoding()
 
 std::string CAudioItem::GetMimeType()
 {
-  return "audio/mpeg";
+  //return "audio/mpeg";
+  return m_sMimeType;
 }
 
 unsigned int CAudioItem::GetSize()

@@ -357,7 +357,7 @@ bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessa
         pMessageOut->TranscodeContentFromFile(pItem->GetFileName());     
       stringstream sLog;
       sLog << "sending audio file \"" << pItem->GetName() << "\""; 
-      CSharedLog::Shared()->Log(LOGNAME, sLog.str()); 
+      CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str()); 
       return true; 
     }
     else
@@ -386,11 +386,11 @@ bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessa
     if(pItem && FileExists(pItem->GetFileName()))
     {
       pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, pItem->GetMimeType()); 
-      pMessageOut->LoadContentFromFile(pItem->GetFileName());
+      pMessageOut->LoadContentFromFile(pItem->GetFileName());     
       
       stringstream sLog;
       sLog << "sending image file \"" << pItem->GetName() << "\""; 
-      CSharedLog::Shared()->Log(LOGNAME, sLog.str()); 
+      CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str()); 
       return true; 
     }
     else
@@ -420,7 +420,7 @@ bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessa
       
       stringstream sLog;
       sLog << "sending video file \"" << pItem->GetName() << "\""; 
-      CSharedLog::Shared()->Log(LOGNAME, sLog.str()); 
+      CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str()); 
       return true; 
     }
     else

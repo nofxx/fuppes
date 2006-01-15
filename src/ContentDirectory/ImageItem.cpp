@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -25,11 +25,12 @@
 #include "ImageItem.h"
 #include <sstream>
 #include <string>
+#include <iostream>
 
 using namespace std;
 
-CImageItem::CImageItem(std::string p_sHTTPServerURL):
-  CUPnPItem(UPNP_OBJECT_TYPE_IMAGE_ITEM, p_sHTTPServerURL)
+CImageItem::CImageItem(std::string p_sHTTPServerURL, std::string p_sMimeType):
+  CUPnPItem(UPNP_OBJECT_TYPE_IMAGE_ITEM, p_sHTTPServerURL, p_sMimeType)
 {
   m_nImageType = IMAGE_TYPE_UNKNOWN;
 }
@@ -108,7 +109,9 @@ No */
 
 std::string CImageItem::GetMimeType()
 {
-  string sResult = "";
+  return m_sMimeType;
+  
+  /*string sResult = "";
   
   switch(m_nImageType)
   {
@@ -125,7 +128,7 @@ std::string CImageItem::GetMimeType()
       break;
   }  
   
-  return sResult;
+  return sResult */
 }
 
 unsigned int CImageItem::GetSize()

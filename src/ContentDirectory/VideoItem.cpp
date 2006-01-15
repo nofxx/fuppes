@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -28,8 +28,8 @@
 
 using namespace std;
 
-CVideoItem::CVideoItem(std::string p_sHTTPServerURL):
-  CUPnPItem(UPNP_OBJECT_TYPE_IMAGE_ITEM, p_sHTTPServerURL)
+CVideoItem::CVideoItem(std::string p_sHTTPServerURL, std::string p_sMimeType):
+  CUPnPItem(UPNP_OBJECT_TYPE_IMAGE_ITEM, p_sHTTPServerURL, p_sMimeType)
 {
   m_nVideoType = VIDEO_TYPE_UNKNOWN;
   m_nSize      = 0;
@@ -79,7 +79,8 @@ void CVideoItem::GetDescription(xmlTextWriterPtr pWriter)
 
 std::string CVideoItem::GetMimeType()
 {
-  string sResult = "";
+  return m_sMimeType;
+  /*string sResult = "";
   
   switch(m_nVideoType)
   {
@@ -93,7 +94,7 @@ std::string CVideoItem::GetMimeType()
       break;
   }  
   
-  return sResult;
+  return sResult;*/
 }
 
 /* TODO: nach UPnPItem verlagern */

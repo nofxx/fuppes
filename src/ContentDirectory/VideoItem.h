@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -47,7 +47,7 @@ class CVideoItem: public CUPnPItem
     /** constructor
      *  @param  p_sHTTPServerURL  URL of the HTTP server
      */
-    CVideoItem(std::string p_sHTTPServerURL);
+    CVideoItem(std::string p_sHTTPServerURL, std::string p_sMimeType);
 
 /*===============================================================================
  GET
