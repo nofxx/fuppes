@@ -66,14 +66,15 @@ class CSSDPMessage: public CMessageBase
 	
 /* <PUBLIC> */
 
-public:
+  public:
 
 /*===============================================================================
  CONSTRUCTOR / DESTRUCTOR
 ===============================================================================*/
 
-		CSSDPMessage();
-	  virtual ~CSSDPMessage();
+    CSSDPMessage();    
+	virtual ~CSSDPMessage();
+	void Assign(CSSDPMessage* pSSDPMessage);
 
 /*===============================================================================
  MESSAGES
@@ -91,6 +92,7 @@ public:
     SSDP_MESSAGE_TYPE GetMessageType() { return m_nMessageType; }     
     int GetMX() { return m_nMX; }
     M_SEARCH_ST GetMSearchST() { return m_nMSearchST; }
+    std::string GetSTAsString() { return m_sST; }
     
 /* <\PUBLIC> */
 

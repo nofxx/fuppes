@@ -116,7 +116,7 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
   */
   
   /* let's find out the message type */  
-  RegEx rxMSearch("M-SEARCH", PCRE_CASELESS);
+  RegEx rxMSearch("M-SEARCH +\\* +HTTP/1\\.[1|0]", PCRE_CASELESS);
   if(rxMSearch.Search(m_sMessage.c_str()))
   {
     m_nMessageType = SSDP_MESSAGE_TYPE_M_SEARCH;
@@ -194,39 +194,56 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
       else
         m_nMX = -1;
       
+      cout << "got m-search" << endl;
+      
       /* ST */
       m_nMSearchST = M_SEARCH_ST_UNSUPPORTED;
-      RegEx rxST("ST: +(.*)\r\n", PCRE_CASELESS);
+      //RegEx rxST("^ST: +(.*)\r\n", PCRE_CASELESS);
+      RegEx rxST("\r\nST: +(.*)\r\n", PCRE_CASELESS);
       if(rxST.Search(m_sMessage.c_str()))
       {
-        std::string sST = ToLower(rxST.Match(1));        
+        m_sST = ToLower(rxST.Match(1));        
         
-        cout << "-" << sST << "-" << endl;
-        cout << sST.compare("ssdp:all") << endl;
-        if(sST.compare("ssdp:all") == 0)
+        cout << "mST = -" << m_sST << "-" << endl;
+        cout << "mST = -" << m_sST.substr(0, 5) << "-" << endl;        
+        
+        if(m_sST.compare("ssdp:all") == 0)
         {
           cout << "M_SEARCH_ST_ALL" << endl;
           m_nMSearchST = M_SEARCH_ST_ALL;
         }
-        else if(sST.compare("upnp:rootdevice") == 0)
+        else if(m_sST.compare("upnp:rootdevice") == 0)
           m_nMSearchST = M_SEARCH_ST_ROOT;
-        else if(sST.substr(0, 5).compare("uuid:") == 0)
+        else if(m_sST.substr(0, 5).compare("uuid:") == 0)
+        {
+          cout << "SEARCH UUID" << endl;
           m_nMSearchST = M_SEARCH_ST_UUID;
+        }
         
-        else if(sST.compare("urn:schemas-upnp-org:device:mediaserver:1") == 0)
+        else if(m_sST.compare("urn:schemas-upnp-org:device:mediaserver:1") == 0)
           m_nMSearchST = M_SEARCH_ST_DEVICE_MEDIA_SERVER;        
-        else if(sST.compare("urn:schemas-upnp-org:service:connectionmanager:1") == 0)
+        else if(m_sST.compare("urn:schemas-upnp-org:service:connectionmanager:1") == 0)
           m_nMSearchST = M_SEARCH_ST_SERVICE_CONNECTION_MANAGER;
-        else if(sST.compare("urn:schemas-upnp-org:service:contentdirectory:1") == 0)
+        else if(m_sST.compare("urn:schemas-upnp-org:service:contentdirectory:1") == 0)
           m_nMSearchST = M_SEARCH_ST_SERVICE_CONTENT_DIRECTORY;        
         else
           m_nMSearchST = M_SEARCH_ST_UNSUPPORTED;        
-      }      
+      }
+      else
+        cout << "error reading ST" << endl;
     }
     
   } /* if(m_nMessageType != SSDP_MESSAGE_TYPE_UNKNOWN) */
 
   return true;
+}
+
+void CSSDPMessage::Assign(CSSDPMessage* pSSDPMessage)
+{
+  cout << "ASSIGN: " << m_sMessage << endl;
+  pSSDPMessage->SetMessage(m_sMessage);
+  pSSDPMessage->SetLocalEndPoint(this->GetLocalEndPoint());
+  pSSDPMessage->SetRemoteEndPoint(this->GetRemoteEndPoint());  
 }
 
 /*===============================================================================

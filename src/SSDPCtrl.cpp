@@ -97,6 +97,8 @@ CUDPSocket* CSSDPCtrl::get_socket()
 
 void CSSDPCtrl::CleanupSessions()
 {
+  fuppesThreadLockMutex(&m_SessionTimedOutMutex);      
+     
   for(m_HandleMSearchThreadListIterator = m_HandleMSearchThreadList.begin();
       m_HandleMSearchThreadListIterator != m_HandleMSearchThreadList.end();
       m_HandleMSearchThreadListIterator++)
@@ -109,13 +111,13 @@ void CSSDPCtrl::CleanupSessions()
     CHandleMSearchSession* pMSession = *m_HandleMSearchThreadListIterator;
     if(pMSession->m_bIsTerminated)
     {
+      fuppesSleep(100);
       cout << "session terminated" << endl;
       m_HandleMSearchThreadListIterator = m_HandleMSearchThreadList.erase(m_HandleMSearchThreadListIterator);
       delete pMSession;
     }
   }
-  
-  fuppesThreadLockMutex(&m_SessionTimedOutMutex); 
+
      
   if(m_SessionList.size() == 0)
   {
@@ -285,6 +287,8 @@ void CSSDPCtrl::OnSessionTimeOut(CMSearchSession* pSender)
 
 void CSSDPCtrl::HandleMSearch(CSSDPMessage* pSSDPMessage)
 {
+  fuppesThreadLockMutex(&m_SessionTimedOutMutex);      
+     
   CSharedLog::Shared()->DebugLog(LOGNAME, pSSDPMessage->GetMessage());
   stringstream sLog;
   sLog << "received m-search from: \"" << inet_ntoa(pSSDPMessage->GetRemoteEndPoint().sin_addr) << ":" << ntohs(pSSDPMessage->GetRemoteEndPoint().sin_port) << "\"";      
@@ -292,7 +296,7 @@ void CSSDPCtrl::HandleMSearch(CSSDPMessage* pSSDPMessage)
   
   cout << pSSDPMessage->GetMSearchST() << " - " << M_SEARCH_ST_UNSUPPORTED << endl;
   
-  if(pSSDPMessage->GetMSearchST() != M_SEARCH_ST_UNSUPPORTED)
+  if((pSSDPMessage->GetMSearchST() != M_SEARCH_ST_UNSUPPORTED) && (pSSDPMessage->GetMX() != -1))
   {
     cout << "starting handle thread" << endl;
     
@@ -300,6 +304,9 @@ void CSSDPCtrl::HandleMSearch(CSSDPMessage* pSSDPMessage)
     m_HandleMSearchThreadList.push_back(pHandleMSearch);
     pHandleMSearch->Start();
   }
+ 
+  fuppesThreadUnlockMutex(&m_SessionTimedOutMutex);   
+  
   CleanupSessions();
 }
 /* <\PRIVATE> */
