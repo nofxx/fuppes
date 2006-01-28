@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -161,6 +161,13 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
   
   return true;
 }	
+
+void CUDPSocket::SetTTL(int p_nTTL)
+{
+  int ret = setsockopt(m_Socket, IPPROTO_IP, IP_TTL, (char *)&p_nTTL, sizeof(p_nTTL)); 	
+  if (ret == -1)
+    CSharedLog::Shared()->Error(LOGNAME, "setsockopt: TTL"); 
+}
 
 /* TeardownSocket */
 void CUDPSocket::TeardownSocket()

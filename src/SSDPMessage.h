@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -45,6 +45,18 @@ typedef enum tagSSDP_MESSAGE_TYPE
   SSDP_MESSAGE_TYPE_NOTIFY_BYEBYE
 }SSDP_MESSAGE_TYPE;
 
+typedef enum tagM_SEARCH_ST
+{
+  M_SEARCH_ST_ALL,
+  M_SEARCH_ST_ROOT,
+  M_SEARCH_ST_UUID,
+  M_SEARCH_ST_DEVICE_MEDIA_SERVER,  
+  M_SEARCH_ST_SERVICE_CONTENT_DIRECTORY,
+  M_SEARCH_ST_SERVICE_CONNECTION_MANAGER,
+  M_SEARCH_ST_SERVICE_AV_TRANSPORT,  
+  M_SEARCH_ST_UNSUPPORTED  
+}M_SEARCH_ST;
+
 /*===============================================================================
  CLASS CSSDPMessage
 ===============================================================================*/
@@ -77,6 +89,8 @@ public:
     std::string GetUUID()     { return m_sUUID;     }    
     //~ std::string GetDeviceID();
     SSDP_MESSAGE_TYPE GetMessageType() { return m_nMessageType; }     
+    int GetMX() { return m_nMX; }
+    M_SEARCH_ST GetMSearchST() { return m_nMSearchST; }
     
 /* <\PUBLIC> */
 
@@ -95,6 +109,8 @@ private:
   std::string m_sUSN;
   std::string m_sUUID;
   SSDP_MESSAGE_TYPE m_nMessageType;
+  int m_nMX;
+  M_SEARCH_ST m_nMSearchST;
 
 /* <\PRIVATE> */
 

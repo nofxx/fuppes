@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -134,12 +134,16 @@ public:
     fuppesThread       msearch_thread;
     sockaddr_in        m_LastMulticastEp;  
     std::string        m_sIPAddress;    
+    std::string        m_sHTTPServerURL;
     ISSDPCtrl*         m_pReceiveHandler;
     fuppesThreadMutex  m_SessionReceiveMutex;
     fuppesThreadMutex  m_SessionTimedOutMutex;
   
     std::list<CMSearchSession*> m_SessionList;    
     std::list<CMSearchSession*>::iterator m_SessionListIterator;
+    
+    std::list<CHandleMSearchSession*> m_HandleMSearchThreadList;
+    std::list<CHandleMSearchSession*>::iterator m_HandleMSearchThreadListIterator;
 
 /* <\PRIVATE> */
 

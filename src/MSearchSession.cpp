@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -30,8 +30,10 @@
 
 #include "MSearchSession.h"
 #include "NotifyMsgFactory.h"
+#include "SharedLog.h"
 
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -57,6 +59,7 @@ CMSearchSession::CMSearchSession(std::string p_sIPAddress, IMSearchSession* pRec
   
   m_Timer.SetInterval(30);
   m_UdpSocket.SetupSocket(false, m_sIPAddress);	
+  m_UdpSocket.SetTTL(4);
 }
 
 CMSearchSession::~CMSearchSession()
@@ -140,3 +143,75 @@ sockaddr_in CMSearchSession:: GetLocalEndPoint()
 }
 
 /* <\PUBLIC> */
+
+fuppesThreadCallback HandleMSearchThread(void *arg);
+
+CHandleMSearchSession::CHandleMSearchSession(CSSDPMessage* pSSDPMessage, std::string p_sIPAddress, std::string p_sHTTPServerURL)
+{
+  m_bIsTerminated     = false;
+  m_sIPAddress        = p_sIPAddress;
+  m_sHTTPServerURL    = p_sHTTPServerURL;
+  m_pSSDPMessage      = pSSDPMessage;
+  m_pNotifyMsgFactory = new CNotifyMsgFactory(m_sHTTPServerURL);
+}
+   
+CHandleMSearchSession::~CHandleMSearchSession()
+{
+  delete m_pNotifyMsgFactory;
+}
+
+void CHandleMSearchSession::Start()
+{
+  m_bIsTerminated = false;
+  fuppesThreadStartArg(m_Thread, HandleMSearchThread, *this);
+}
+
+fuppesThreadCallback HandleMSearchThread(void *arg)
+{
+  cout << "HandleMSearchThread" << endl;
+  fflush(stdout);
+  
+  CHandleMSearchSession* pSession = (CHandleMSearchSession*) arg;
+    
+  cout << "sess: " << pSession->m_bIsTerminated << endl;
+  fflush(stdout);
+  
+  
+  if(pSession->GetSSDPMessage()->GetMSearchST() != M_SEARCH_ST_UNSUPPORTED)
+  {    
+    CSharedLog::Shared()->ExtendedLog("CHandleMSearchSession", "unicasting response");
+     
+    cout << "HandleMSearch - MX = " << pSession->GetSSDPMessage()->GetMX() << endl;
+    
+    CUDPSocket Sock;
+    Sock.SetupSocket(false, pSession->m_sIPAddress);
+  
+    /* calculate mx delay */
+    int nSleepMS = pSession->GetSSDPMessage()->GetMX() * 1000;
+    if(pSession->GetSSDPMessage()->GetMSearchST() == M_SEARCH_ST_ALL)
+      nSleepMS /= 6;
+    
+    if(pSession->GetSSDPMessage()->GetMSearchST() == M_SEARCH_ST_ALL)
+    {
+      fuppesSleep(nSleepMS);
+      Sock.SendUnicast(pSession->m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_ROOT_DEVICE), pSession->GetSSDPMessage()->GetRemoteEndPoint());
+      fuppesSleep(nSleepMS);
+      Sock.SendUnicast(pSession->m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_CONNECTION_MANAGER), pSession->GetSSDPMessage()->GetRemoteEndPoint());
+      fuppesSleep(nSleepMS);
+      Sock.SendUnicast(pSession->m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_CONTENT_DIRECTORY), pSession->GetSSDPMessage()->GetRemoteEndPoint());
+      fuppesSleep(nSleepMS);
+      Sock.SendUnicast(pSession->m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_MEDIA_SERVER), pSession->GetSSDPMessage()->GetRemoteEndPoint());
+      fuppesSleep(nSleepMS);
+      Sock.SendUnicast(pSession->m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_USN), pSession->GetSSDPMessage()->GetRemoteEndPoint());
+    }
+    else
+    {
+      fuppesSleep(nSleepMS);
+    }
+      
+    Sock.TeardownSocket();
+    CSharedLog::Shared()->ExtendedLog("CHandleMSearchSession", "done");
+  }  
+  
+  pSession->m_bIsTerminated = true;
+}

@@ -416,7 +416,7 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName)
   fuppesThreadStartArg(m_TranscodeThread, TranscodeLoop, *session); 
   m_bIsTranscoding = true;
   
-  fuppesSleep(1000); /* let the encoder work for a second */
+  //fuppesSleep(1000); /* let the encoder work for a second */
   
   return true;
 }

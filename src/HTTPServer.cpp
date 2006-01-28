@@ -220,7 +220,8 @@ fuppesThreadCallback AcceptLoop(void *arg)
       stringstream sMsg;
       sMsg << "new connection from " << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port);
 			CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
-			     
+      cout << sMsg.str() << endl;
+      
       /* start session thread */
       CHTTPSessionInfo* pSession = new CHTTPSessionInfo(pHTTPServer, nConnection);      
       fuppesThread SessionThread = (fuppesThread)NULL;      
@@ -232,7 +233,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
     
     /* cleanup closed sessions and sleep am moment */
     pHTTPServer->CleanupSessions();     
-    fuppesSleep(50);
+    fuppesSleep(1);
 	}  
 	  
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "exiting accept loop");
@@ -261,11 +262,12 @@ fuppesThreadCallback SessionLoop(void *arg)
                    
     /* receive */     
     nTmpRecv = recv(pSession->GetConnection(), szBuffer, 4096, 0);
-    /*cout << "new: " << nTmpRecv << " have: " << nBytesReceived << endl;
-    fflush(stdout);*/    
-    if(nTmpRecv == -1)
+    cout << "new: " << nTmpRecv << " have: " << nBytesReceived << endl;
+    //fflush(stdout);
+    if(nTmpRecv <= 0)
     {
       CSharedLog::Shared()->Error(LOGNAME, "lost connection");
+      cout << "bytes received: " << nBytesReceived << endl;
       bDoReceive = false;
       break;
     }                  
@@ -315,6 +317,7 @@ fuppesThreadCallback SessionLoop(void *arg)
     {      
       CSharedLog::Shared()->Warning(LOGNAME, "did not received the full header.");
       cout << sMsg << endl;
+      cout << "pos: " << nPos << " end: " << string::npos << endl;
       fuppesSleep(10);
       nRecvCnt++;
       continue;
@@ -343,6 +346,7 @@ fuppesThreadCallback SessionLoop(void *arg)
     {
       /* full content */
       bDoReceive = false;
+      cout << "full request" << endl;
     }
                   
     if(nTmpRecv == 0)      
@@ -404,18 +408,22 @@ fuppesThreadCallback SessionLoop(void *arg)
       /* send chunked message */
       else 
       {         
-        char szChunk[8192]; 
+        char szChunk[16384]; 
         unsigned int nOffset = 0; 
         unsigned int nRet = 0; 
 
         CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending chunked binary");
         
         /* send header */
-        send(pSession->GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);             
-        
         int nErr = 0;
+        nErr = send(pSession->GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);             
+       
+        if(nErr == -1)
+          cout << "[ERROR] send header" << endl;
+        
         int nCnt = 0;
-        while((nErr != -1) && ((nRet = ResponseMsg.GetBinContentChunk(szChunk, 8192 + 1, nOffset)) > 0)) 
+        int nSend = 0;        
+        while((nErr != -1) && ((nRet = ResponseMsg.GetBinContentChunk(szChunk, 16384 + 1, nOffset)) > 0)) 
         {             
            //cout << "ret: " << nRet << endl;             
             //szChunk[6] = '\0';             
@@ -455,18 +463,32 @@ fuppesThreadCallback SessionLoop(void *arg)
               cout << "error: " << nErr << endl;
               cout << "connection reset by peer" << endl;
               cout << "offset: " << nOffset << endl;
-              fflush(stdout); 
+              cout << "send: " << nSend << endl;
+              cout << "length: " << ResponseMsg.GetBinContentLength() << endl;
+              //fflush(stdout); 
 
-              ResponseMsg.m_bBreakTranscoding = true; 
-              fuppesSleep(1000); /* wait for the transcoding thread to end */
+              /*for(int nRetr = 0; nRetr < 10; nRetr++)
+              {
+                nErr = send(pSession->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);
+                cout << nErr << endl;
+              }*/
+              
+              if (ResponseMsg.m_bIsTranscoding)
+              {
+                ResponseMsg.m_bBreakTranscoding = true; 
+                fuppesSleep(500); /* wait for the transcoding thread to end */
+              }
               break; 
             }
             
+            nSend += nRet;            
             nCnt++;
+            
+            cout << "send no.: " << nCnt << endl;
           } /* while */           
     
             
-          if(nErr != -1) 
+          if((nErr != -1) || nSend > 0) 
           { 
             stringstream sEnd; 
             /*sEnd << "0\r\n";         
@@ -479,6 +501,7 @@ fuppesThreadCallback SessionLoop(void *arg)
             send(pSession->GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), MSG_NOSIGNAL);             
             #endif
             //cout << "end of stream" << endl;        
+            cout << "send: " << nSend << endl;
           } 
             
       } /* else */
@@ -490,6 +513,7 @@ fuppesThreadCallback SessionLoop(void *arg)
   
   /* close connection */
   upnpSocketClose(pSession->GetConnection());    
+  cout << "connection closed" << endl;
   
   /* exit thread */
   pSession->m_bIsTerminated = true;

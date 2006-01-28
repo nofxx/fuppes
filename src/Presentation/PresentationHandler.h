@@ -120,6 +120,8 @@ private:
   std::string GetIndexHTML();
 
   std::string GetAboutHTML();
+  
+  std::string GetOptionsHTML();
 
 /*===============================================================================
  HELPER

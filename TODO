@@ -1,0 +1,42 @@
+0.2
+* UPnP
+** discovery
+** description
+* ContentDirectory
+** Browse (partly done)
+* mp3 streaming
+* HTTP 1.0
+
+0.4
+* ogg/vorbis to mp3 transcoding (0.3)
+* mpc/musepack to mp3 transcoding (0.3)
+* flac to mp3 transcoding
+* image support
+** jpeg (0.3.1)
+** png
+** bmp
+** ...
+* video support (todo)
+** avi (0.3.1)
+** mpeg (0.3.1)
+** ...
+* HTTP 1.1
+* sqlite as content database
+* read tag information from mp3, mpc, ogg and flac files (taglib)
+
+0.6
+* ConnectionManager
+* AV-Transport
+* UPnP
+** eventing
+** controlling
+** make UDP-Messages UPnP compliant (MX value, evaluate search types)
+
+0.8
+* (video transcoding)
+* image transformation (resizing, converting)
+
+1.0
+* documentation
+* fully UPnP compliant
+* stable on GNU/Linux, MS Windows, MacOS X, FreeBSD, openNAS

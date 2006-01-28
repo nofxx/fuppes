@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -30,6 +30,9 @@
 #include "RegEx.h"
 #include "SharedLog.h"
 #include <sstream>
+#include <iostream>
+
+using namespace std;
 
 /*===============================================================================
  CONSTANTS
@@ -179,9 +182,47 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
           m_sUUID = rxUUID.Match(1);
           //CSharedLog::Shared()->Log(LOGNAME, m_sUUID);
         }    
-      }
+      }   
       
     } /* if(m_nMessageType != SSDP_MESSAGE_TYPE_M_SEARCH)  */
+    else 
+    {
+      /* MX */
+      RegEx rxMX("MX: +([0-9]*)", PCRE_CASELESS);
+      if(rxMX.Search(m_sMessage.c_str()))      
+        m_nMX = atoi(rxMX.Match(1));
+      else
+        m_nMX = -1;
+      
+      /* ST */
+      m_nMSearchST = M_SEARCH_ST_UNSUPPORTED;
+      RegEx rxST("ST: +(.*)\r\n", PCRE_CASELESS);
+      if(rxST.Search(m_sMessage.c_str()))
+      {
+        std::string sST = ToLower(rxST.Match(1));        
+        
+        cout << "-" << sST << "-" << endl;
+        cout << sST.compare("ssdp:all") << endl;
+        if(sST.compare("ssdp:all") == 0)
+        {
+          cout << "M_SEARCH_ST_ALL" << endl;
+          m_nMSearchST = M_SEARCH_ST_ALL;
+        }
+        else if(sST.compare("upnp:rootdevice") == 0)
+          m_nMSearchST = M_SEARCH_ST_ROOT;
+        else if(sST.substr(0, 5).compare("uuid:") == 0)
+          m_nMSearchST = M_SEARCH_ST_UUID;
+        
+        else if(sST.compare("urn:schemas-upnp-org:device:mediaserver:1") == 0)
+          m_nMSearchST = M_SEARCH_ST_DEVICE_MEDIA_SERVER;        
+        else if(sST.compare("urn:schemas-upnp-org:service:connectionmanager:1") == 0)
+          m_nMSearchST = M_SEARCH_ST_SERVICE_CONNECTION_MANAGER;
+        else if(sST.compare("urn:schemas-upnp-org:service:contentdirectory:1") == 0)
+          m_nMSearchST = M_SEARCH_ST_SERVICE_CONTENT_DIRECTORY;        
+        else
+          m_nMSearchST = M_SEARCH_ST_UNSUPPORTED;        
+      }      
+    }
     
   } /* if(m_nMessageType != SSDP_MESSAGE_TYPE_UNKNOWN) */
 

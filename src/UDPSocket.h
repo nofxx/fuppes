@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -100,6 +100,11 @@ public:
    *  @return returns true on success otherwise false
    */
   bool SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress = "");
+
+  /** set TTL
+   *  @param p_nTTL Time to live
+   */
+  void SetTTL(int p_nTTL);
 
   /** finalizes and closes the socket
    */

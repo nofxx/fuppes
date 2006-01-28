@@ -99,7 +99,13 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "send about.html");
     nPresentationPage = PRESENTATION_PAGE_ABOUT;
     sContent = this->GetAboutHTML();
-  }
+  }  
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html") == 0)
+  {
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send options.html");
+    nPresentationPage = PRESENTATION_PAGE_OPTIONS;
+    sContent = this->GetOptionsHTML();
+  }    
   
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/fuppes.png") == 0)
   {
@@ -197,7 +203,7 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
   sResult << "<br />";
   sResult << "<a href=\"/presentation/about.html\">About</a>" << endl;
   sResult << "<br />";
-  sResult << "Options" << endl;
+  sResult << "<a href=\"/presentation/options.html\">Options</a>" << endl;
   sResult << "<br />";
   sResult << "Status" << endl;
   sResult << "<br />";
@@ -268,12 +274,17 @@ std::string CPresentationHandler::GetAboutHTML()
   sResult << "<h2>About</h2>" << endl;
   sResult << "<a href=\"http://sourceforge.net/projects/fuppes/\">http://sourceforge.net/projects/fuppes/</a><br />" << endl;
   
-    /* T.S.TODO: Add version for WIN32 */
-#ifdef WIN32
-  sResult << __DATE__ << " " << __TIME__ "<br /><i>build with:</i> " << "";  
-#else
   sResult << __DATE__ << " " << __TIME__ "<br /><i>build with:</i> " << __VERSION__;  
-#endif
+
+  return sResult.str();
+}
+
+std::string CPresentationHandler::GetOptionsHTML()
+{
+  std::stringstream sResult;
+  
+  sResult << "<h2>Options</h2>" << endl;
+  /*sResult << "<a href=\"http://sourceforge.net/projects/fuppes/\">http://sourceforge.net/projects/fuppes/</a><br />" << endl; */
 
   return sResult.str();
 }

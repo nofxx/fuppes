@@ -123,4 +123,31 @@ public:
  CLASS CMSearchSession
 ===============================================================================*/
 
+class CHandleMSearchSession;
+
+class IHandleMSearchSession
+{
+  public:
+    virtual void OnSessionEnd(CHandleMSearchSession* pSender) = 0;
+};
+  
+class CHandleMSearchSession
+{
+  public:
+    CHandleMSearchSession(CSSDPMessage* pSSDPMessage, std::string p_sIPAddress, std::string p_sHTTPServerURL);
+    ~CHandleMSearchSession();
+    void Start();
+  
+    bool m_bIsTerminated;
+    std::string m_sIPAddress;
+    std::string m_sHTTPServerURL;
+    CNotifyMsgFactory* m_pNotifyMsgFactory;
+    
+    CSSDPMessage* GetSSDPMessage() { return m_pSSDPMessage; }
+  
+  private:
+    fuppesThread m_Thread;
+    CSSDPMessage* m_pSSDPMessage;
+};
+
 #endif /* _MSEARCHSESSION_H */

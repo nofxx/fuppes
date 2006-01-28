@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -51,7 +51,8 @@ const std::string LOGNAME = "SSDPDCtrl";
 
 CSSDPCtrl::CSSDPCtrl(std::string p_sIPAddress, std::string p_sHTTPServerURL)
 {
-  m_pNotifyMsgFactory = new CNotifyMsgFactory(p_sHTTPServerURL);
+  m_sHTTPServerURL = p_sHTTPServerURL;
+  m_pNotifyMsgFactory = new CNotifyMsgFactory(m_sHTTPServerURL);
 
   m_sIPAddress   = p_sIPAddress;
 	msearch_thread = (fuppesThread)NULL;
@@ -96,6 +97,24 @@ CUDPSocket* CSSDPCtrl::get_socket()
 
 void CSSDPCtrl::CleanupSessions()
 {
+  for(m_HandleMSearchThreadListIterator = m_HandleMSearchThreadList.begin();
+      m_HandleMSearchThreadListIterator != m_HandleMSearchThreadList.end();
+      m_HandleMSearchThreadListIterator++)
+  {
+    if(m_HandleMSearchThreadList.size() == 0)
+      break;
+    
+    cout << "clean session" << endl;
+    
+    CHandleMSearchSession* pMSession = *m_HandleMSearchThreadListIterator;
+    if(pMSession->m_bIsTerminated)
+    {
+      cout << "session terminated" << endl;
+      m_HandleMSearchThreadListIterator = m_HandleMSearchThreadList.erase(m_HandleMSearchThreadListIterator);
+      delete pMSession;
+    }
+  }
+  
   fuppesThreadLockMutex(&m_SessionTimedOutMutex); 
      
   if(m_SessionList.size() == 0)
@@ -266,26 +285,21 @@ void CSSDPCtrl::OnSessionTimeOut(CMSearchSession* pSender)
 
 void CSSDPCtrl::HandleMSearch(CSSDPMessage* pSSDPMessage)
 {
+  CSharedLog::Shared()->DebugLog(LOGNAME, pSSDPMessage->GetMessage());
   stringstream sLog;
   sLog << "received m-search from: \"" << inet_ntoa(pSSDPMessage->GetRemoteEndPoint().sin_addr) << ":" << ntohs(pSSDPMessage->GetRemoteEndPoint().sin_port) << "\"";      
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());
-  CSharedLog::Shared()->DebugLog(LOGNAME, pSSDPMessage->GetMessage());
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "unicasting response");
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());      
   
-  CUDPSocket Sock;
-  Sock.SetupSocket(false, m_sIPAddress);
-
-  Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_ROOT_DEVICE), pSSDPMessage->GetRemoteEndPoint());
-  Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_CONNECTION_MANAGER), pSSDPMessage->GetRemoteEndPoint());
-  Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_CONTENT_DIRECTORY), pSSDPMessage->GetRemoteEndPoint());
-  Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_MEDIA_SERVER), pSSDPMessage->GetRemoteEndPoint());
-  Sock.SendUnicast(m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_USN), pSSDPMessage->GetRemoteEndPoint());
-
-  Sock.TeardownSocket();
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");
+  cout << pSSDPMessage->GetMSearchST() << " - " << M_SEARCH_ST_UNSUPPORTED << endl;
   
+  if(pSSDPMessage->GetMSearchST() != M_SEARCH_ST_UNSUPPORTED)
+  {
+    cout << "starting handle thread" << endl;
+    
+    CHandleMSearchSession* pHandleMSearch = new CHandleMSearchSession(pSSDPMessage, m_sIPAddress, m_sHTTPServerURL);
+    m_HandleMSearchThreadList.push_back(pHandleMSearch);
+    pHandleMSearch->Start();
+  }
   CleanupSessions();
 }
-
-
 /* <\PRIVATE> */
