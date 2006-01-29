@@ -33,6 +33,16 @@
 using namespace std;
 
 
+CContentDatabase* CContentDatabase::m_Instance = 0;
+
+CContentDatabase* CContentDatabase::Shared()
+{
+	if (m_Instance == 0)
+		m_Instance = new CContentDatabase();
+	return m_Instance;
+}
+
+
 std::string CSelectResult::GetValue(std::string p_sFieldName)
 {
   return m_FieldValues[p_sFieldName];
@@ -72,16 +82,12 @@ CContentDatabase::CContentDatabase()
   
   m_nRowsReturned = 0;
   
-  /*rc = sqlite3_exec(db, argv[2], callback, 0, &zErrMsg);
-  if( rc!=SQLITE_OK )
-  {
-    fprintf(stderr, "SQL error: %s\n", zErrMsg);
-  }
-  sqlite3_close(db);*/
+  fuppesThreadInitMutex(&m_Mutex);
 }
  
 CContentDatabase::~CContentDatabase()
 {
+  fuppesThreadDestroyMutex(&m_Mutex);
   ClearResult();
   sqlite3_close(m_pDbHandle);
 }
@@ -158,6 +164,7 @@ void CContentDatabase::Close()
 
 long long int CContentDatabase::Insert(std::string p_sStatement)
 {
+  fuppesThreadLockMutex(&m_Mutex);  
   Open();
   
   int nTrans = sqlite3_exec(m_pDbHandle, "BEGIN TRANSACTION;", NULL, NULL, NULL);
@@ -179,26 +186,30 @@ long long int CContentDatabase::Insert(std::string p_sStatement)
   if(nTrans != SQLITE_OK)
     cout << "error commit transaction" << endl;
   
-  Close();
-  return nResult;
+  Close();  
+  fuppesThreadUnlockMutex(&m_Mutex);  
+  return nResult;  
 }
 
 bool CContentDatabase::Select(std::string p_sStatement)
 {  
+  fuppesThreadLockMutex(&m_Mutex);
   Open();  
   ClearResult();    
+  bool bResult = true;
   
   char* szErr = 0;
   int nResult =  sqlite3_exec(m_pDbHandle, p_sStatement.c_str(), SelectCallback, this, &szErr);
   if(nResult != SQLITE_OK)
   {
     fprintf(stderr, "SQL error: %s\n", szErr);
-    sqlite3_close(m_pDbHandle);
-    return false;
+    sqlite3_close(m_pDbHandle);    
+    bResult = false;
   }
   
-  Close();
-  return true;
+  Close();  
+  fuppesThreadUnlockMutex(&m_Mutex);  
+  return bResult;
 }
 
 bool CContentDatabase::Eof()

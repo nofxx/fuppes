@@ -220,7 +220,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
       stringstream sMsg;
       sMsg << "new connection from " << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port);
 			CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
-      cout << sMsg.str() << endl;
+      //cout << sMsg.str() << endl;
       
       /* start session thread */
       CHTTPSessionInfo* pSession = new CHTTPSessionInfo(pHTTPServer, nConnection);      
@@ -262,7 +262,7 @@ fuppesThreadCallback SessionLoop(void *arg)
                    
     /* receive */     
     nTmpRecv = recv(pSession->GetConnection(), szBuffer, 4096, 0);
-    cout << "new: " << nTmpRecv << " have: " << nBytesReceived << endl;
+    //cout << "new: " << nTmpRecv << " have: " << nBytesReceived << endl;
     //fflush(stdout);
     if(nTmpRecv <= 0)
     {
@@ -315,15 +315,16 @@ fuppesThreadCallback SessionLoop(void *arg)
     }
     else
     {      
-      CSharedLog::Shared()->Warning(LOGNAME, "did not received the full header.");
+      /*CSharedLog::Shared()->Warning(LOGNAME, "did not received the full header.");
       cout << sMsg << endl;
-      cout << "pos: " << nPos << " end: " << string::npos << endl;
-      fuppesSleep(10);
+      cout << "pos: " << nPos << " end: " << string::npos << endl;*/
+      //fuppesSleep(10);
       nRecvCnt++;
       continue;
     }
                 
-    //cout << sHeader << endl;
+    cout << sHeader << endl << endl;
+    fflush(stdout);
 
     
     /* read content length */
@@ -337,16 +338,17 @@ fuppesThreadCallback SessionLoop(void *arg)
     /* check if we received the full content */
     if(sContent.length() < nContentLength)
     {
-      stringstream sLog;
+      /*stringstream sLog;
       sLog << "received less data then given in CONTENT-LENGTH. should: " << nContentLength << " have: " << sContent.length();
-      CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
+      CSharedLog::Shared()->Warning(LOGNAME, sLog.str());*/
       continue;
     }
     else
     {
       /* full content */
       bDoReceive = false;
-      cout << "full request" << endl;
+      /*cout << "full request" << endl;
+      cout << sMsg << endl;*/
     }
                   
     if(nTmpRecv == 0)      
@@ -380,7 +382,8 @@ fuppesThreadCallback SessionLoop(void *arg)
     {
       //cout << ResponseMsg.GetMessageAsString() << endl << endl;
       
-      //cout << ResponseMsg.GetHeaderAsString() << endl;
+      /*cout << ResponseMsg.GetHeaderAsString() << endl;
+      fflush(stdout);*/
       if(!ResponseMsg.IsChunked())
       { 
         /* send complete binary stream */
@@ -408,23 +411,54 @@ fuppesThreadCallback SessionLoop(void *arg)
       /* send chunked message */
       else 
       {         
-        char szChunk[16384]; 
-        unsigned int nOffset = 0; 
+        
+        unsigned int nOffset = ReceivedMessage.GetRangeStart(); 
+        char szChunk[65536];
+        unsigned int nRequestSize = 65536;
+        int nErr = 0;
+        if(ReceivedMessage.GetRangeEnd() > 0)
+        {          
+          nRequestSize = ReceivedMessage.GetRangeEnd() - ReceivedMessage.GetRangeStart();
+          ResponseMsg.SetMessageType(HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT);          
+        }
+        cout << "LENG: " << ResponseMsg.GetBinContentLength() << endl;
+        if(ReceivedMessage.GetRangeStart() >= ResponseMsg.GetBinContentLength())
+          nErr = -1;
+        
+        ResponseMsg.SetRangeStart(ReceivedMessage.GetRangeStart());
+        ResponseMsg.SetRangeEnd(ReceivedMessage.GetRangeEnd());
+      
+        
+        cout << ResponseMsg.GetHeaderAsString() << endl;
+        fflush(stdout);
+        
         unsigned int nRet = 0; 
 
         CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending chunked binary");
         
-        /* send header */
-        int nErr = 0;
-        nErr = send(pSession->GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);             
+        /* send header */        
+        if(nErr != -1)
+          nErr = send(pSession->GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);             
        
+        //cout << ResponseMsg.GetHeaderAsString() << endl;
+        
         if(nErr == -1)
           cout << "[ERROR] send header" << endl;
         
         int nCnt = 0;
-        int nSend = 0;        
-        while((nErr != -1) && ((nRet = ResponseMsg.GetBinContentChunk(szChunk, 16384 + 1, nOffset)) > 0)) 
+        int nSend = 0;
+        /*cout << "get content" << endl;
+        fflush(stdout);*/
+        while((nErr != -1) && ((nRet = ResponseMsg.GetBinContentChunk(szChunk, nRequestSize +1, nOffset)) > 0)) 
         {             
+          /*cout << "got content" << endl;
+          fflush(stdout);        
+
+          cout << "read binary" << endl;
+          cout << "start: " << nOffset << endl;
+          cout << "requested: " << nRequestSize << endl;
+          cout << "end: " << nRet << endl;*/
+          
            //cout << "ret: " << nRet << endl;             
             //szChunk[6] = '\0';             
            /* char szLength[10];  
@@ -448,23 +482,34 @@ fuppesThreadCallback SessionLoop(void *arg)
             {
               nErr    = send(pSession->GetConnection(), szChunk, nRet, 0);
               nWSAErr = WSAGetLastError();
-              fuppesSleep(10);  
+              //fuppesSleep(10);  
             }            
             #else
             nErr = send(pSession->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);
             #endif
-            
-            #ifdef WIN32
-            if(nErr < 0) //if(nWSAErr == 10053)
-            #else
-            if(nErr < 0)
-            #endif
+                   
+
+            nSend += nRet;            
+            nCnt++;
+            nOffset += nRet;            
+           
+            if((nErr < 0) || (ReceivedMessage.GetHTTPConnection() == HTTP_CONNECTION_CLOSE))
             {
-              cout << "error: " << nErr << endl;
-              cout << "connection reset by peer" << endl;
+              /*if(nErr < 0)
+              {
+                cout << "error: " << nErr << endl;
+                cout << "connection reset by peer" << endl;
+              }
+              else
+              {
+                cout << "connection closed  (send done)" << endl;
+              }
               cout << "offset: " << nOffset << endl;
               cout << "send: " << nSend << endl;
-              cout << "length: " << ResponseMsg.GetBinContentLength() << endl;
+              cout << "length: " << ResponseMsg.GetBinContentLength() << endl;*/
+
+              nErr = -1;
+              
               //fflush(stdout); 
 
               /*for(int nRetr = 0; nRetr < 10; nRetr++)
@@ -479,12 +524,16 @@ fuppesThreadCallback SessionLoop(void *arg)
                 fuppesSleep(500); /* wait for the transcoding thread to end */
               }
               break; 
-            }
+            }                         
             
-            nSend += nRet;            
-            nCnt++;
+       
+ 
+            /*cout << "offset: " << nOffset << endl;
+            cout << "send: " << nSend << endl;
+            cout << "length: " << ResponseMsg.GetBinContentLength() << endl;            */
             
-            cout << "send no.: " << nCnt << endl;
+            
+            //cout << "send no.: " << nCnt << endl;
           } /* while */           
     
             
@@ -501,7 +550,7 @@ fuppesThreadCallback SessionLoop(void *arg)
             send(pSession->GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), MSG_NOSIGNAL);             
             #endif
             //cout << "end of stream" << endl;        
-            cout << "send: " << nSend << endl;
+            //cout << "send: " << nSend << endl;
           } 
             
       } /* else */
@@ -513,7 +562,7 @@ fuppesThreadCallback SessionLoop(void *arg)
   
   /* close connection */
   upnpSocketClose(pSession->GetConnection());    
-  cout << "connection closed" << endl;
+  //cout << "connection closed" << endl;
   
   /* exit thread */
   pSession->m_bIsTerminated = true;

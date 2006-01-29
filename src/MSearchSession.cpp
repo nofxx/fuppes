@@ -193,12 +193,14 @@ fuppesThreadCallback HandleMSearchThread(void *arg)
     int nRand = rand(); // % pSession->GetSSDPMessage()->GetMX();
     cout << nRand << endl;
     if(pSession->GetSSDPMessage()->GetMX() > 0)
-      nRand %= pSession->GetSSDPMessage()->GetMX();
+      nRand %= pSession->GetSSDPMessage()->GetMX() + 1;
     else
       nRand = 0;
     cout << nRand << endl;    
-    fflush(stdout);
+    fflush(stdout);    
     int nSleepMS = nRand * 1000;
+    if(nRand == pSession->GetSSDPMessage()->GetMX())
+      nSleepMS -= 500;      
     cout << "SLEEP MS: " << nSleepMS << endl;
     //nSleepMS *= 1000;
     if((pSession->GetSSDPMessage()->GetMSearchST() == M_SEARCH_ST_ALL) && nSleepMS > 0)

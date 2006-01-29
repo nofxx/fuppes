@@ -152,7 +152,9 @@ module.source.files=\
 	md5.c\
 	md5.h\
 	ConnectionManager/ConnectionManager.cpp\
-	ConnectionManager/ConnectionManager.h
+	ConnectionManager/ConnectionManager.h\
+	ContentDirectory/ContentDirectoryDescription.cpp\
+	ConnectionManager/ConnectionManagerDescription.cpp
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

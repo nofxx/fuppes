@@ -83,10 +83,15 @@ CHTTPMessage::CHTTPMessage()
   m_TranscodeThread     = (fuppesThread)NULL;
   m_pUPnPItem           = NULL;
   m_bIsBinary           = false;
+  m_nRangeStart         = 0;
+  m_nRangeEnd           = 0;
+  m_nHTTPConnection     = HTTP_CONNECTION_UNKNOWN;
 }
 
 CHTTPMessage::~CHTTPMessage()
 {
+  //cout << "CHTTPMessage::~CHTTPMessage()" << endl;
+  
   /* Cleanup */
   if(m_pszBinContent)
     delete[] m_pszBinContent;
@@ -170,6 +175,7 @@ std::string CHTTPMessage::GetHeaderAsString()
     case HTTP_MESSAGE_TYPE_HEAD:	        /* todo */			                            break;
 		case HTTP_MESSAGE_TYPE_POST:          /* todo */		                              break;
 		case HTTP_MESSAGE_TYPE_200_OK:        sResult << sVersion << " " << "200 OK\r\n"; break;
+    case HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT: sResult << sVersion << " " << "206 Partial Content\r\n"; break;    
 	  case HTTP_MESSAGE_TYPE_404_NOT_FOUND:	/* todo */			                            break;
     default:                              ASSERT(0);                                  break;
 	}
@@ -182,7 +188,17 @@ std::string CHTTPMessage::GetHeaderAsString()
   else
   {
     if(!m_bIsTranscoding && (m_nBinContentLength > 0))
-      sResult << "CONTENT-LENGTH: " << m_nBinContentLength << "\r\n";
+    {
+      if((m_nRangeStart > 0) || (m_nRangeEnd > 0))
+      {
+        if(m_nRangeEnd < m_nBinContentLength)
+          sResult << "CONTENT-LENGTH: " << m_nRangeEnd - m_nRangeStart << "\r\n";
+        else
+          sResult << "CONTENT-LENGTH: " << m_nBinContentLength - m_nRangeStart << "\r\n";
+      }
+      else
+        sResult << "CONTENT-LENGTH: " << m_nBinContentLength << "\r\n";
+    }
     else
       sResult << "CONTENT-LENGTH: 0\r\n";
   }      
@@ -200,13 +216,29 @@ std::string CHTTPMessage::GetHeaderAsString()
 
 	sResult << "CONTENT-TYPE: " << m_sHTTPContentType << "\r\n";	
 	sResult << "SERVER: Linux/2.6.x, UPnP/1.0, fuppes/0.3 \r\n";
-	sResult << "DATE: Sat, 12 Nov 2005 18:36:58 GMT\r\n";
-  sResult << "CONNECTION: close\r\n";
-  sResult << "ACCEPT-RANGES: bytes\r\n";
+	sResult << "DATE: Sun, 29 Jan 2006 19:51:58 GMT\r\n";
+  sResult << "CONNECTION: close\r\n";  
+  
+  if((m_nRangeStart > 0) || (m_nRangeEnd > 0))
+  {   
+    //sResult << "ETag: \"84a04256ea0bf1:3cae20\"\r\n";
+    
+    sResult << "CONTENT-RANGE: bytes ";
+    //sResult << "Content-Range: bytes ";    
+    if(m_nRangeEnd > m_nBinContentLength)
+      sResult << m_nRangeStart << "-" << m_nBinContentLength -1;
+    else
+      sResult << m_nRangeStart << "-" << m_nRangeEnd -1;
+    sResult << "/" << m_nBinContentLength << "\r\n";
+  }
+  else
+  {
+    sResult << "ACCEPT-RANGES: bytes\r\n";
+  }
   
   //sResult << "contentFeatures.dlna.org: \r\n";
   
-	sResult << "EXT: \r\n";
+	//sResult << "EXT: \r\n";
 	
   /* Transfer-Encoding */
   if(m_nHTTPVersion == HTTP_VERSION_1_1)
@@ -234,16 +266,33 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
   /* read from file */
   if(m_fsFile.is_open())
   {
-    //cout << "read from file" << endl;
-    unsigned int nRest = m_nBinContentLength - m_nBinContentPosition;    
+    /*cout << "size: " << p_nSize << " offset: " << p_nOffset << " filesize: " << m_nBinContentLength << endl;
+    fflush(stdout);*/
+    
+    if(p_nOffset > 0)
+      m_fsFile.seekg(p_nOffset, ios::beg);
+    
+    unsigned int nRest = 0;
+    if((p_nOffset + p_nSize) > m_nBinContentLength)    
+      nRest = m_nBinContentLength - p_nOffset;
+    else
+      nRest = m_nBinContentLength - p_nSize; 
+    /*cout << "rest: " << nRest << endl;
+    fflush(stdout);*/
     if(nRest >= p_nSize)
     {
+      /*cout << "read " << p_nSize << " bytes from file" << endl;
+      fflush(stdout);*/
+      
       m_fsFile.read(p_sContentChunk, p_nSize);      
       m_nBinContentPosition += p_nSize;
       return p_nSize;
     }
     else
     {
+      /*cout << "read " << nRest << " bytes from file" << endl;
+      fflush(stdout);      */
+      
       m_fsFile.read(p_sContentChunk, nRest);
       m_nBinContentPosition += nRest;
       return nRest;
@@ -372,6 +421,28 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
 
     bResult = ParsePOSTMessage(p_sMessage);
   }
+  
+  /* Range */
+  RegEx rxRANGE("RANGE: +BYTES=(\\d+)-(\\d+)", PCRE_CASELESS);
+  if(rxRANGE.Search(p_sMessage.c_str()))
+  {
+    m_nRangeStart = atoi(rxRANGE.Match(1));
+    m_nRangeEnd   = atoi(rxRANGE.Match(2));
+    
+    /*cout << "RANGE-START: " << m_nRangeStart << endl;
+    cout << "RANGE-END: " << m_nRangeEnd << endl;*/
+  }
+  
+  /* CONNETION */
+  RegEx rxCONNECTION("CONNECTION: +(close|keep-alive)", PCRE_CASELESS);
+  if(rxCONNECTION.Search(p_sMessage.c_str()))
+  {
+    //cout << "!!!CONNECTION: " << rxCONNECTION.Match(1) << endl;
+    std::string sConnection = ToLower(rxCONNECTION.Match(1));
+    if(sConnection.compare("close") == 0)
+      m_nHTTPConnection = HTTP_CONNECTION_CLOSE;
+  }
+
   
   /*cout << "END BUILD FROM STR" << endl;
   fflush(stdout);  */

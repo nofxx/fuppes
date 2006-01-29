@@ -1,6 +1,7 @@
 Version 0.3.4 (2006-0?-??)
   * fixed some minor HTTP-server bugs
-  * M-Search handling UPnP compliant
+  * discovery mechanism (Advertising, Searching, etc...) UPnP compliant
+  * database access thread safe
 
 Version 0.3.3 (2006-01-15)
   * added "rebuild database" option

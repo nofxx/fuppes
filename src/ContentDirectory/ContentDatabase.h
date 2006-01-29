@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -28,6 +28,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include "../Common.h"
 
 typedef enum tagOBJECT_TYPE
 {
@@ -78,6 +79,8 @@ class CSelectResult
 class CContentDatabase
 {
   public:
+    static CContentDatabase* Shared();  
+  
     CContentDatabase();
     ~CContentDatabase();
   
@@ -97,8 +100,10 @@ class CContentDatabase
     void ClearResult();
   
   private:    
-    sqlite3       *m_pDbHandle;  
-    std::string   m_sDbFileName;    
+    static CContentDatabase* m_Instance;
+    fuppesThreadMutex        m_Mutex;
+    sqlite3*                 m_pDbHandle;  
+    std::string              m_sDbFileName;    
     bool Open();
     void Close();
 };

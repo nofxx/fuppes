@@ -62,12 +62,18 @@ typedef enum tagHTTP_MESSAGE_TYPE
   HTTP_MESSAGE_TYPE_HEAD          =  2,
 	HTTP_MESSAGE_TYPE_POST          =  3,
 	HTTP_MESSAGE_TYPE_200_OK        =  4,
-	HTTP_MESSAGE_TYPE_404_NOT_FOUND =  5,
+  HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT = 5,
+	HTTP_MESSAGE_TYPE_404_NOT_FOUND =  6,
   /* GENA message types */
-  HTTP_MESSAGE_TYPE_SUBSCRIBE        = 6,
-  HTTP_MESSAGE_TYPE_SUBSCRIBE_200_OK = 7	
+  HTTP_MESSAGE_TYPE_SUBSCRIBE        = 7,
+  HTTP_MESSAGE_TYPE_SUBSCRIBE_200_OK = 8	
 }HTTP_MESSAGE_TYPE;
 
+typedef enum tagHTTP_CONNECTION
+{
+  HTTP_CONNECTION_UNKNOWN,
+  HTTP_CONNECTION_CLOSE
+}HTTP_CONNECTION;
 
   /*
   SUBSCRIBE publisher path HTTP/1.1
@@ -147,6 +153,12 @@ public:
 
   unsigned int      GetBinContentChunk(char* p_sContentChunk, unsigned int p_nSize, unsigned int p_nOffset = 200);
 
+  unsigned int      GetRangeStart() { return m_nRangeStart; }
+  unsigned int      GetRangeEnd() { return m_nRangeEnd; }
+  void              SetRangeStart(unsigned int p_nRangeStart) { m_nRangeStart = p_nRangeStart; }
+  void              SetRangeEnd(unsigned int p_nRangeEnd) { m_nRangeEnd = p_nRangeEnd; }
+  HTTP_CONNECTION   GetHTTPConnection() { return m_nHTTPConnection; }
+  
 /*===============================================================================
  SET MESSAGE DATA
 ===============================================================================*/
@@ -191,6 +203,9 @@ private:
   bool               m_bIsChunked;
   CUPnPItem*         m_pUPnPItem;
   std::fstream       m_fsFile;
+  unsigned int       m_nRangeStart;
+  unsigned int       m_nRangeEnd;
+  HTTP_CONNECTION    m_nHTTPConnection;
 
   unsigned int       m_nBinContentPosition;
   fuppesThread       m_TranscodeThread;

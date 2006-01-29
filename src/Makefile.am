@@ -77,7 +77,9 @@ cpp_sources = \
   ContentDirectory/UPnPObjectFactory.cpp\
   ContentDirectory/ContentDatabase.cpp\
 	ContentDirectory/ContentDirectory.cpp\
+  ContentDirectory/ContentDirectoryDescription.cpp\
   ConnectionManager/ConnectionManager.cpp\
+  ConnectionManager/ConnectionManagerDescription.cpp\
   Presentation/PresentationHandler.cpp\
   Presentation/Images/fuppes_png.cpp\
   Presentation/Images/fuppes_small_png.cpp\
