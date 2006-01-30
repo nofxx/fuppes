@@ -192,7 +192,7 @@ std::string CHTTPMessage::GetHeaderAsString()
       if((m_nRangeStart > 0) || (m_nRangeEnd > 0))
       {
         if(m_nRangeEnd < m_nBinContentLength)
-          sResult << "CONTENT-LENGTH: " << m_nRangeEnd - m_nRangeStart << "\r\n";
+          sResult << "CONTENT-LENGTH: " << m_nRangeEnd - m_nRangeStart + 1<< "\r\n";
         else
           sResult << "CONTENT-LENGTH: " << m_nBinContentLength - m_nRangeStart << "\r\n";
       }
@@ -214,10 +214,10 @@ std::string CHTTPMessage::GetHeaderAsString()
     default:                           ASSERT(0);                   break;	
 	}*/
 
-	sResult << "CONTENT-TYPE: " << m_sHTTPContentType << "\r\n";	
-	sResult << "SERVER: Linux/2.6.x, UPnP/1.0, fuppes/0.3 \r\n";
+	sResult << "CONTENT-TYPE: " << m_sHTTPContentType << "\r\n";		
 	sResult << "DATE: Sun, 29 Jan 2006 19:51:58 GMT\r\n";
   sResult << "CONNECTION: close\r\n";  
+  sResult << "ACCEPT-RANGES: bytes\r\n";
   
   if((m_nRangeStart > 0) || (m_nRangeEnd > 0))
   {   
@@ -226,14 +226,10 @@ std::string CHTTPMessage::GetHeaderAsString()
     sResult << "CONTENT-RANGE: bytes ";
     //sResult << "Content-Range: bytes ";    
     if(m_nRangeEnd > m_nBinContentLength)
-      sResult << m_nRangeStart << "-" << m_nBinContentLength -1;
+      sResult << m_nRangeStart << "-" << m_nBinContentLength - 1;
     else
-      sResult << m_nRangeStart << "-" << m_nRangeEnd -1;
+      sResult << m_nRangeStart << "-" << m_nRangeEnd;
     sResult << "/" << m_nBinContentLength << "\r\n";
-  }
-  else
-  {
-    sResult << "ACCEPT-RANGES: bytes\r\n";
   }
   
   //sResult << "contentFeatures.dlna.org: \r\n";
@@ -248,6 +244,8 @@ std::string CHTTPMessage::GetHeaderAsString()
       sResult << "TRANSFER-ENCODING: chunked\r\n";
     }*/
   }	
+  
+  sResult << "SERVER: Linux/2.6.x, UPnP/1.0, Free UPnP Entertainmet Service/0.3.4\r\n";
 	
 	sResult << "\r\n";
 	return sResult.str();
@@ -277,26 +275,22 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
       nRest = m_nBinContentLength - p_nOffset;
     else
       nRest = m_nBinContentLength - p_nSize; 
-    /*cout << "rest: " << nRest << endl;
-    fflush(stdout);*/
-    if(nRest >= p_nSize)
-    {
-      /*cout << "read " << p_nSize << " bytes from file" << endl;
-      fflush(stdout);*/
-      
-      m_fsFile.read(p_sContentChunk, p_nSize);      
-      m_nBinContentPosition += p_nSize;
-      return p_nSize;
-    }
+    
+    unsigned int nRead = 0;
+    if((m_nBinContentLength - p_nOffset) < p_nSize)
+      nRead = m_nBinContentLength - p_nOffset;
     else
-    {
-      /*cout << "read " << nRest << " bytes from file" << endl;
-      fflush(stdout);      */
-      
-      m_fsFile.read(p_sContentChunk, nRest);
-      m_nBinContentPosition += nRest;
-      return nRest;
-    }
+      nRead = p_nSize;
+    
+    /*cout << "rest: " << nRest <<  " read: " << nRead << endl;
+    fflush(stdout);    
+    
+    cout << "read " << p_nSize << " bytes from file" << endl;
+    fflush(stdout);*/
+    
+    m_fsFile.read(p_sContentChunk, nRead);      
+    m_nBinContentPosition += p_nSize;
+    return nRead;
   }  
   
   /* read transcoded data from memory */

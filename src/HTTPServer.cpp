@@ -323,8 +323,8 @@ fuppesThreadCallback SessionLoop(void *arg)
       continue;
     }
                 
-    cout << sHeader << endl << endl;
-    fflush(stdout);
+    /*cout << sHeader << endl << endl;
+    fflush(stdout);*/
 
     
     /* read content length */
@@ -418,19 +418,17 @@ fuppesThreadCallback SessionLoop(void *arg)
         int nErr = 0;
         if(ReceivedMessage.GetRangeEnd() > 0)
         {          
-          nRequestSize = ReceivedMessage.GetRangeEnd() - ReceivedMessage.GetRangeStart();
+          nRequestSize = ReceivedMessage.GetRangeEnd() - ReceivedMessage.GetRangeStart() + 1;
           ResponseMsg.SetMessageType(HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT);          
         }
-        cout << "LENG: " << ResponseMsg.GetBinContentLength() << endl;
-        if(ReceivedMessage.GetRangeStart() >= ResponseMsg.GetBinContentLength())
-          nErr = -1;
+        //cout << "LENG: " << ResponseMsg.GetBinContentLength() << endl;
         
         ResponseMsg.SetRangeStart(ReceivedMessage.GetRangeStart());
         ResponseMsg.SetRangeEnd(ReceivedMessage.GetRangeEnd());
       
         
-        cout << ResponseMsg.GetHeaderAsString() << endl;
-        fflush(stdout);
+        /*cout << ResponseMsg.GetHeaderAsString() << endl;
+        fflush(stdout);*/
         
         unsigned int nRet = 0; 
 
@@ -449,15 +447,15 @@ fuppesThreadCallback SessionLoop(void *arg)
         int nSend = 0;
         /*cout << "get content" << endl;
         fflush(stdout);*/
-        while((nErr != -1) && ((nRet = ResponseMsg.GetBinContentChunk(szChunk, nRequestSize +1, nOffset)) > 0)) 
+        while((nErr != -1) && ((nRet = ResponseMsg.GetBinContentChunk(szChunk, nRequestSize, nOffset)) > 0)) 
         {             
-          /*cout << "got content" << endl;
-          fflush(stdout);        
+          //cout << "got content" << endl;          
 
-          cout << "read binary" << endl;
+          /*cout << "read binary" << endl;
           cout << "start: " << nOffset << endl;
           cout << "requested: " << nRequestSize << endl;
-          cout << "end: " << nRet << endl;*/
+          cout << "end: " << nRet << endl;
+          fflush(stdout);        */
           
            //cout << "ret: " << nRet << endl;             
             //szChunk[6] = '\0';             
@@ -544,11 +542,11 @@ fuppesThreadCallback SessionLoop(void *arg)
 -           sEnd << "\r\n\r\n";           
 -           send(pSession.GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), 0);*/ 
             sEnd << "\r\n"; 
-            #ifdef WIN32
+            /*#ifdef WIN32
             send(pSession->GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), 0); 
             #else
             send(pSession->GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), MSG_NOSIGNAL);             
-            #endif
+            #endif*/
             //cout << "end of stream" << endl;        
             //cout << "send: " << nSend << endl;
           } 
