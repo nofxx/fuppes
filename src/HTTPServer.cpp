@@ -402,7 +402,7 @@ fuppesThreadCallback SessionLoop(void *arg)
         } 
         /* send text message */
         else 
-        {
+        { 
           CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending plain text");          
           send(pSession->GetConnection(), ResponseMsg.GetMessageAsString().c_str(), (int)strlen(ResponseMsg.GetMessageAsString().c_str()), 0); 
           CSharedLog::Shared()->DebugLog(LOGNAME, ResponseMsg.GetMessageAsString());
@@ -427,7 +427,7 @@ fuppesThreadCallback SessionLoop(void *arg)
         ResponseMsg.SetRangeEnd(ReceivedMessage.GetRangeEnd());
       
         
-        /*cout << ResponseMsg.GetHeaderAsString() << endl;
+     /*   cout << ResponseMsg.GetHeaderAsString() << endl;
         fflush(stdout);*/
         
         unsigned int nRet = 0; 
@@ -457,104 +457,59 @@ fuppesThreadCallback SessionLoop(void *arg)
           cout << "end: " << nRet << endl;
           fflush(stdout);        */
           
-           //cout << "ret: " << nRet << endl;             
-            //szChunk[6] = '\0';             
-           /* char szLength[10];  
--            sprintf(szLength, "%X", nRet);              
--            int nLen = strlen(szLength) + strlen("\r\n\r\n"); 
--            cout << "nLen: " << nLen << endl;             
--            stringstream sChunk; 
--            sChunk << szLength << "\r\n"; 
--            sChunk << szChunk << "\r\n";                        
--            cout << sChunk.str(); // << endl; */             
-            //cout << strlen(sChunk.str().c_str()) << endl;             
-            //send(pSession.GetConnection(), sChunk.str().c_str(), nRet + nLen, 0); 
-            /*cout << "chunk" << endl; 
--            fflush(stdout);*/ 
+          #ifdef WIN32
+          nErr = send(pSession->GetConnection(), szChunk, nRet, 0);    
+          int nWSAErr = WSAGetLastError();    
+          while(nErr < 0 && nWSAErr == 10035)
+          {
+            nErr    = send(pSession->GetConnection(), szChunk, nRet, 0);
+            nWSAErr = WSAGetLastError();
+          }            
+          #else
+          nErr = send(pSession->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);
+          #endif
+                 
 
-
-            #ifdef WIN32
-            nErr = send(pSession->GetConnection(), szChunk, nRet, 0);    
-            int nWSAErr = WSAGetLastError();    
-            while(nErr < 0 && nWSAErr == 10035)
+          nSend += nRet;            
+          nCnt++;
+          nOffset += nRet;            
+         
+          if((nErr < 0) || ((ResponseMsg.GetMessageType() == HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT) && (ReceivedMessage.GetHTTPConnection() == HTTP_CONNECTION_CLOSE)))
+          {
+            /*if(nErr < 0)
             {
-              nErr    = send(pSession->GetConnection(), szChunk, nRet, 0);
-              nWSAErr = WSAGetLastError();
-              //fuppesSleep(10);  
-            }            
-            #else
-            nErr = send(pSession->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);
-            #endif
-                   
-
-            nSend += nRet;            
-            nCnt++;
-            nOffset += nRet;            
-           
-            if((nErr < 0) || (ReceivedMessage.GetHTTPConnection() == HTTP_CONNECTION_CLOSE))
+              cout << "error: " << nErr << endl;
+              cout << "connection reset by peer" << endl;
+            }
+            else
             {
-              /*if(nErr < 0)
-              {
-                cout << "error: " << nErr << endl;
-                cout << "connection reset by peer" << endl;
-              }
-              else
-              {
-                cout << "connection closed  (send done)" << endl;
-              }
-              cout << "offset: " << nOffset << endl;
-              cout << "send: " << nSend << endl;
-              cout << "length: " << ResponseMsg.GetBinContentLength() << endl;*/
-
-              nErr = -1;
-              
-              //fflush(stdout); 
-
-              /*for(int nRetr = 0; nRetr < 10; nRetr++)
-              {
-                nErr = send(pSession->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);
-                cout << nErr << endl;
-              }*/
-              
-              if (ResponseMsg.m_bIsTranscoding)
-              {
-                ResponseMsg.m_bBreakTranscoding = true; 
-                fuppesSleep(500); /* wait for the transcoding thread to end */
-              }
-              break; 
-            }                         
+              cout << "connection closed  (send done)" << endl;
+            }*/
+            /*cout << "offset: " << nOffset << endl;
+            cout << "send: " << nSend << endl;
+            cout << "length: " << ResponseMsg.GetBinContentLength() << endl;*/
             
-       
+            //fflush(stdout); 
+            
+            if (ResponseMsg.m_bIsTranscoding)
+            {
+              ResponseMsg.m_bBreakTranscoding = true; 
+              fuppesSleep(500); /* wait for the transcoding thread to end */
+            }
+            break; 
+          }                         
  
             /*cout << "offset: " << nOffset << endl;
             cout << "send: " << nSend << endl;
             cout << "length: " << ResponseMsg.GetBinContentLength() << endl;            */
-            
-            
             //cout << "send no.: " << nCnt << endl;
-          } /* while */           
-    
             
-          if((nErr != -1) || nSend > 0) 
-          { 
-            stringstream sEnd; 
-            /*sEnd << "0\r\n";         
--           sEnd << "\r\n\r\n";           
--           send(pSession.GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), 0);*/ 
-            sEnd << "\r\n"; 
-            /*#ifdef WIN32
-            send(pSession->GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), 0); 
-            #else
-            send(pSession->GetConnection(), sEnd.str().c_str(), strlen(sEnd.str().c_str()), MSG_NOSIGNAL);             
-            #endif*/
-            //cout << "end of stream" << endl;        
-            //cout << "send: " << nSend << endl;
-          } 
+          } /* while */
             
       } /* else */
             
     }
-  }
+  }  
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "done sending response");
   
   

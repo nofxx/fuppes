@@ -106,13 +106,10 @@ void CSSDPCtrl::CleanupSessions()
     if(m_HandleMSearchThreadList.size() == 0)
       break;
     
-    cout << "clean session" << endl;
-    
     CHandleMSearchSession* pMSession = *m_HandleMSearchThreadListIterator;
     if(pMSession->m_bIsTerminated)
     {
-      fuppesSleep(100);
-      cout << "session terminated" << endl;
+      fuppesSleep(100);    
       m_HandleMSearchThreadListIterator = m_HandleMSearchThreadList.erase(m_HandleMSearchThreadListIterator);
       delete pMSession;
     }
@@ -294,12 +291,10 @@ void CSSDPCtrl::HandleMSearch(CSSDPMessage* pSSDPMessage)
   sLog << "received m-search from: \"" << inet_ntoa(pSSDPMessage->GetRemoteEndPoint().sin_addr) << ":" << ntohs(pSSDPMessage->GetRemoteEndPoint().sin_port) << "\"";      
   CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());      
   
-  cout << pSSDPMessage->GetMSearchST() << " - " << M_SEARCH_ST_UNSUPPORTED << endl;
+  //cout << pSSDPMessage->GetMSearchST() << " - " << M_SEARCH_ST_UNSUPPORTED << endl;
   
   if((pSSDPMessage->GetMSearchST() != M_SEARCH_ST_UNSUPPORTED) && (pSSDPMessage->GetMX() != -1))
   {
-    cout << "starting handle thread" << endl;
-    
     CHandleMSearchSession* pHandleMSearch = new CHandleMSearchSession(pSSDPMessage, m_sIPAddress, m_sHTTPServerURL);
     m_HandleMSearchThreadList.push_back(pHandleMSearch);
     pHandleMSearch->Start();

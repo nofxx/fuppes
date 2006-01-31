@@ -194,7 +194,7 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
       else
         m_nMX = -1;
       
-      cout << "got m-search" << endl;
+      //cout << "got m-search" << endl;
       
       /* ST */
       m_nMSearchST = M_SEARCH_ST_UNSUPPORTED;
@@ -204,19 +204,19 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
       {
         m_sST = ToLower(rxST.Match(1));        
         
-        cout << "mST = -" << m_sST << "-" << endl;
-        cout << "mST = -" << m_sST.substr(0, 5) << "-" << endl;        
+        /*cout << "mST = -" << m_sST << "-" << endl;
+        cout << "mST = -" << m_sST.substr(0, 5) << "-" << endl;*/
         
         if(m_sST.compare("ssdp:all") == 0)
         {
-          cout << "M_SEARCH_ST_ALL" << endl;
+          //cout << "M_SEARCH_ST_ALL" << endl;
           m_nMSearchST = M_SEARCH_ST_ALL;
         }
         else if(m_sST.compare("upnp:rootdevice") == 0)
           m_nMSearchST = M_SEARCH_ST_ROOT;
         else if(m_sST.substr(0, 5).compare("uuid:") == 0)
         {
-          cout << "SEARCH UUID" << endl;
+          //cout << "SEARCH UUID" << endl;
           m_nMSearchST = M_SEARCH_ST_UUID;
         }
         
@@ -229,8 +229,8 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
         else
           m_nMSearchST = M_SEARCH_ST_UNSUPPORTED;        
       }
-      else
-        cout << "error reading ST" << endl;
+      /*else
+        cout << "error reading ST" << endl;*/
     }
     
   } /* if(m_nMessageType != SSDP_MESSAGE_TYPE_UNKNOWN) */
@@ -240,7 +240,7 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
 
 void CSSDPMessage::Assign(CSSDPMessage* pSSDPMessage)
 {
-  cout << "ASSIGN: " << m_sMessage << endl;
+  //cout << "ASSIGN: " << m_sMessage << endl;
   pSSDPMessage->SetMessage(m_sMessage);
   pSSDPMessage->SetLocalEndPoint(this->GetLocalEndPoint());
   pSSDPMessage->SetRemoteEndPoint(this->GetRemoteEndPoint());  

@@ -1,7 +1,14 @@
-Version 0.3.4 (2006-0?-??)
-  * fixed some minor HTTP-server bugs
-  * discovery mechanism (Advertising, Searching, etc...) UPnP compliant
-  * database access thread safe
+Version 0.3.4 (2006-02-??)
+  * HTTP-Server
+  ** fixed some minor bugs
+  ** implemented byte-range request handling
+  ** Header Field "Date" now shows the real current GMT
+  
+  * SSDP-Controller
+  ** discovery mechanism (Advertising, Searching, etc...) UPnP compliant
+  
+  * ContentDirectory:
+  ** database access thread safe
 
 Version 0.3.3 (2006-01-15)
   * added "rebuild database" option

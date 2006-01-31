@@ -527,7 +527,7 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter, CSelectRe
     
     /* title */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");    
-    xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("FILE_NAME").c_str());
+    xmlTextWriterWriteString(pWriter, BAD_CAST BAD_CAST pSQLResult->GetValue("FILE_NAME").c_str());
     xmlTextWriterEndElement(pWriter);
     
     switch(p_nObjectType)

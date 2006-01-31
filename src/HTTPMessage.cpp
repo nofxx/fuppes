@@ -29,9 +29,11 @@
 #include "HTTPMessage.h"
 #include "Common.h"
 #include "SharedLog.h"
+#include "SharedConfig.h"
 
 #include <iostream>
 #include <sstream>
+#include <time.h>
 
 #ifndef DISABLE_TRANSCODING
 #include "Transcoding/LameWrapper.h"
@@ -214,10 +216,11 @@ std::string CHTTPMessage::GetHeaderAsString()
     default:                           ASSERT(0);                   break;	
 	}*/
 
-	sResult << "CONTENT-TYPE: " << m_sHTTPContentType << "\r\n";		
-	sResult << "DATE: Sun, 29 Jan 2006 19:51:58 GMT\r\n";
+  sResult << "CONTENT-TYPE: " << m_sHTTPContentType << "\r\n";			  
   sResult << "CONNECTION: close\r\n";  
-  sResult << "ACCEPT-RANGES: bytes\r\n";
+  
+  if(m_nHTTPVersion == HTTP_VERSION_1_1)
+    sResult << "ACCEPT-RANGES: bytes\r\n";
   
   if((m_nRangeStart > 0) || (m_nRangeEnd > 0))
   {   
@@ -245,7 +248,13 @@ std::string CHTTPMessage::GetHeaderAsString()
     }*/
   }	
   
-  sResult << "SERVER: Linux/2.6.x, UPnP/1.0, Free UPnP Entertainmet Service/0.3.4\r\n";
+  char   szTime[30];
+  time_t tTime = time(NULL);
+  strftime(szTime, 30,"%a, %d %b %Y %H:%M:%S GMT" , gmtime(&tTime));   
+	sResult << "DATE: " << szTime << "\r\n";    
+  sResult << "SERVER: Linux/2.6.x, UPnP/1.0, ";
+  sResult << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << "\r\n";
+  
 	
 	sResult << "\r\n";
 	return sResult.str();
@@ -269,12 +278,14 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     
     if(p_nOffset > 0)
       m_fsFile.seekg(p_nOffset, ios::beg);
+    else
+      p_nOffset = m_nBinContentPosition;
     
-    unsigned int nRest = 0;
+    /*unsigned int nRest = 0;
     if((p_nOffset + p_nSize) > m_nBinContentLength)    
       nRest = m_nBinContentLength - p_nOffset;
     else
-      nRest = m_nBinContentLength - p_nSize; 
+      nRest = m_nBinContentLength - p_nSize; */
     
     unsigned int nRead = 0;
     if((m_nBinContentLength - p_nOffset) < p_nSize)
@@ -282,14 +293,11 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     else
       nRead = p_nSize;
     
-    /*cout << "rest: " << nRest <<  " read: " << nRead << endl;
-    fflush(stdout);    
-    
-    cout << "read " << p_nSize << " bytes from file" << endl;
+    /*cout << "read " << nRead << " bytes from file. offset: " << p_nOffset << endl;
     fflush(stdout);*/
     
     m_fsFile.read(p_sContentChunk, nRead);      
-    m_nBinContentPosition += p_nSize;
+    m_nBinContentPosition += nRead;
     return nRead;
   }  
   
@@ -659,11 +667,11 @@ fuppesThreadCallback TranscodeLoop(void *arg)
     CSharedLog::Shared()->Log(LOGNAME, sLog.str());  
   }
   /* break transcoding */
-  else
+  /*else
   {
     cout << "break transcoding" << endl;
     fflush(stdout);
-  }    
+  } */   
   /* end transcode */
   
   

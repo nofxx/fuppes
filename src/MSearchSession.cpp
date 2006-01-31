@@ -172,8 +172,8 @@ void CHandleMSearchSession::Start()
 
 fuppesThreadCallback HandleMSearchThread(void *arg)
 {
-  cout << "HandleMSearchThread" << endl;
-  fflush(stdout);
+  /*cout << "HandleMSearchThread" << endl;
+  fflush(stdout);*/
   
   CHandleMSearchSession* pSession = (CHandleMSearchSession*) arg;
  
@@ -181,8 +181,8 @@ fuppesThreadCallback HandleMSearchThread(void *arg)
   {    
     CSharedLog::Shared()->ExtendedLog("CHandleMSearchSession", "unicasting response");
      
-    cout << "HandleMSearch - MX = " << pSession->GetSSDPMessage()->GetMX() << endl;
-    fflush(stdout);
+    /*cout << "HandleMSearch - MX = " << pSession->GetSSDPMessage()->GetMX() << endl;
+    fflush(stdout);*/
     CUDPSocket Sock;
     Sock.SetupSocket(false, pSession->m_sIPAddress);
   
@@ -191,17 +191,17 @@ fuppesThreadCallback HandleMSearchThread(void *arg)
     srand (time(NULL));    
     
     int nRand = rand(); // % pSession->GetSSDPMessage()->GetMX();
-    cout << nRand << endl;
+    //cout << nRand << endl;
     if(pSession->GetSSDPMessage()->GetMX() > 0)
       nRand %= pSession->GetSSDPMessage()->GetMX() + 1;
     else
       nRand = 0;
-    cout << nRand << endl;    
-    fflush(stdout);    
+    /*cout << nRand << endl;    
+    fflush(stdout);    */
     int nSleepMS = nRand * 1000;
     if(nRand == pSession->GetSSDPMessage()->GetMX())
       nSleepMS -= 500;      
-    cout << "SLEEP MS: " << nSleepMS << endl;
+    //cout << "SLEEP MS: " << nSleepMS << endl;
     //nSleepMS *= 1000;
     if((pSession->GetSSDPMessage()->GetMSearchST() == M_SEARCH_ST_ALL) && nSleepMS > 0)
       nSleepMS /= 6;
@@ -221,12 +221,12 @@ fuppesThreadCallback HandleMSearchThread(void *arg)
     }
     else
     {
-      cout << "handling special search: " << pSession->GetSSDPMessage()->GetMSearchST() << endl;      
+      //cout << "handling special search: " << pSession->GetSSDPMessage()->GetMSearchST() << endl;      
       fuppesSleep(nSleepMS);
       switch(pSession->GetSSDPMessage()->GetMSearchST())      
       {
         case M_SEARCH_ST_ROOT:          
-          cout << "send root" << endl;          
+          //cout << "send root" << endl;          
           Sock.SendUnicast(pSession->m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_ROOT_DEVICE), pSession->GetSSDPMessage()->GetRemoteEndPoint());          
           break;
         case M_SEARCH_ST_DEVICE_MEDIA_SERVER:
@@ -239,16 +239,16 @@ fuppesThreadCallback HandleMSearchThread(void *arg)
           Sock.SendUnicast(pSession->m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_CONNECTION_MANAGER), pSession->GetSSDPMessage()->GetRemoteEndPoint());             
           break;          
         case M_SEARCH_ST_UUID:
-          cout << "search uuid: " << pSession->GetSSDPMessage()->GetSTAsString() << endl;
-          fflush(stdout);          
+          /*cout << "search uuid: " << pSession->GetSSDPMessage()->GetSTAsString() << endl;
+          fflush(stdout);          */
           std::string sUUID = pSession->GetSSDPMessage()->GetSTAsString().substr(5);
-          cout << "SEARCH FOR: " << sUUID << endl;
+          /*cout << "SEARCH FOR: " << sUUID << endl;
           fflush(stdout);
           cout << "My: " << CSharedConfig::Shared()->GetUUID() << endl;
-          fflush(stdout);
+          fflush(stdout);*/
           if(sUUID.compare(ToLower(CSharedConfig::Shared()->GetUUID())) == 0)
           {
-            cout << "my uuid is searched" << endl;           
+            //cout << "my uuid is searched" << endl;           
             Sock.SendUnicast(pSession->m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_USN), pSession->GetSSDPMessage()->GetRemoteEndPoint());            
           }
           break;
@@ -259,8 +259,8 @@ fuppesThreadCallback HandleMSearchThread(void *arg)
     CSharedLog::Shared()->ExtendedLog("CHandleMSearchSession", "done");
   }  
   
-  cout << "HandleMSearchThread DONE" << endl;
-  fflush(stdout);  
+  /*cout << "HandleMSearchThread DONE" << endl;
+  fflush(stdout);  */
   
   pSession->m_bIsTerminated = true;
   fuppesThreadExit();
