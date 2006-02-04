@@ -130,6 +130,16 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
   return true;
 }
 
+void CContentDatabase::Lock()
+{
+  fuppesThreadLockMutex(&m_Mutex);
+}
+
+void CContentDatabase::Unlock()
+{
+  fuppesThreadUnlockMutex(&m_Mutex);
+}
+
 void CContentDatabase::ClearResult()
 {
   /* clear old results */
@@ -164,7 +174,6 @@ void CContentDatabase::Close()
 
 long long int CContentDatabase::Insert(std::string p_sStatement)
 {
-  fuppesThreadLockMutex(&m_Mutex);  
   Open();
   
   int nTrans = sqlite3_exec(m_pDbHandle, "BEGIN TRANSACTION;", NULL, NULL, NULL);
@@ -186,14 +195,12 @@ long long int CContentDatabase::Insert(std::string p_sStatement)
   if(nTrans != SQLITE_OK)
     cout << "error commit transaction" << endl;
   
-  Close();  
-  fuppesThreadUnlockMutex(&m_Mutex);  
+  Close();
   return nResult;  
 }
 
 bool CContentDatabase::Select(std::string p_sStatement)
 {  
-  fuppesThreadLockMutex(&m_Mutex);
   Open();  
   ClearResult();    
   bool bResult = true;
@@ -207,8 +214,7 @@ bool CContentDatabase::Select(std::string p_sStatement)
     bResult = false;
   }
   
-  Close();  
-  fuppesThreadUnlockMutex(&m_Mutex);  
+  Close();
   return bResult;
 }
 

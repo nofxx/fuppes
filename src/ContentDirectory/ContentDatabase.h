@@ -98,6 +98,8 @@ class CContentDatabase
     unsigned int  m_nRowsReturned;  
   
     void ClearResult();
+    void Lock();
+    void Unlock();
   
   private:    
     static CContentDatabase* m_Instance;

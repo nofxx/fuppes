@@ -162,7 +162,7 @@ int main(int argc, char* argv[])
   signal(SIGTERM, SignalHandler); /* start-stop-daemon -v --stop -nfuppes */ 
   #endif  
   
-  cout << "FUPPES - Free UPnP(tm) Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;
+  cout << "FUPPES - Free UPnP Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;
   cout << "http://fuppes.sourceforge.net" << endl;
   if(!CSharedConfig::Shared()->SetupConfig())
     return 0;  

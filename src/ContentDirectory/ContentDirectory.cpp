@@ -71,16 +71,9 @@ const string LOGNAME = "ContentDir";
 CContentDirectory::CContentDirectory(std::string p_sHTTPServerURL):
 CUPnPService(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, p_sHTTPServerURL)
 {
-  /* Init members */
-  m_pBaseFolder = new CUPnPContainer(m_sHTTPServerURL);
-  m_ObjectList["0"] = m_pBaseFolder;
-
-  /* Init object list */
-  //BuildObjectList();
-  
-  m_pDatabase = new CContentDatabase();
-  bool bIsNewDB = false;  
-  m_pDatabase->Init(&bIsNewDB); 
+  /* Init database */   
+  bool bIsNewDB = false; 
+  CContentDatabase::Shared()->Init(&bIsNewDB);
   
   if(bIsNewDB)
     BuildDB();
@@ -89,12 +82,6 @@ CUPnPService(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, p_sHTTPServerURL)
 /* destructor */
 CContentDirectory::~CContentDirectory()
 {
-  delete m_pDatabase;
-  
-  /* T.S.TODO: Delete all objects that were created with 'new'.
-               'm_Objectlist' has the pointers to these objects */
-  
-  SAFE_DELETE(m_pBaseFolder);
 }
 
 std::string CContentDirectory::GetServiceDescription()
@@ -105,7 +92,7 @@ std::string CContentDirectory::GetServiceDescription()
 void CContentDirectory::BuildDB()
 {
   CSharedLog::Shared()->Log(LOGNAME, "creating content database. this may take a while.");
-  m_pDatabase->Insert("delete from objects");
+  CContentDatabase::Shared()->Insert("delete from objects");
   
   for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
   {
@@ -123,7 +110,9 @@ void CContentDirectory::BuildDB()
         sSql << "'" << CSharedConfig::Shared()->GetSharedDir(i) << "', ";
         sSql << "'" << sFileName << "');";
         
-        long long int nRowId = m_pDatabase->Insert(sSql.str());
+        CContentDatabase::Shared()->Lock();
+        long long int nRowId = CContentDatabase::Shared()->Insert(sSql.str());
+        CContentDatabase::Shared()->Unlock();
         DbScanDir(CSharedConfig::Shared()->GetSharedDir(i), nRowId);
       }
       else
@@ -260,8 +249,10 @@ void CContentDirectory::DbScanDir(std::string p_sDirectory, long long int p_nPar
           sSql << p_nParentId << ", ";
           sSql << "'" << SQLEscape(sTmp.str()) << "', ";
           sSql << "'" << SQLEscape(sTmpFileName) << "');";
-          
-          long long int nRowId = m_pDatabase->Insert(sSql.str());
+        
+          CContentDatabase::Shared()->Lock();
+          long long int nRowId = CContentDatabase::Shared()->Insert(sSql.str());
+          CContentDatabase::Shared()->Unlock();
           if(nRowId == -1)
             cout << "ERROR: " << sSql.str() << endl;
           DbScanDir(sTmp.str(), nRowId);          
@@ -296,7 +287,9 @@ void CContentDirectory::DbScanDir(std::string p_sDirectory, long long int p_nPar
           
           //cout << sSql.str() << endl;
           
-          long long int nRowId = m_pDatabase->Insert(sSql.str());          
+          CContentDatabase::Shared()->Lock();
+          long long int nRowId = CContentDatabase::Shared()->Insert(sSql.str());          
+          CContentDatabase::Shared()->Unlock();
           if(nRowId == -1)
             cout << "ERROR: " << sSql.str() << endl;
           //DbScanDir(sTmp.str(), nRowId);          
@@ -347,8 +340,10 @@ std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
         std::stringstream sSql;
         sSql << "select count(*) as COUNT from OBJECTS where PARENT_ID = ";
         sSql << pUPnPBrowse->GetObjectIDAsInt() << " order by FILE_NAME ";        
-        m_pDatabase->Select(sSql.str());        
-        nTotalMatches = atoi(m_pDatabase->GetResult()->GetValue("COUNT").c_str());
+        CContentDatabase::Shared()->Lock();
+        CContentDatabase::Shared()->Select(sSql.str());        
+        nTotalMatches = atoi(CContentDatabase::Shared()->GetResult()->GetValue("COUNT").c_str());
+        CContentDatabase::Shared()->Unlock();
         sSql.str("");
         
         /* get description */
@@ -370,10 +365,11 @@ std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
 
         xmlTextWriterStartElementNS(resWriter, NULL, BAD_CAST "DIDL-Lite", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite");
 
-        m_pDatabase->Select(sSql.str());
-        while(!m_pDatabase->Eof())
+        CContentDatabase::Shared()->Lock();
+        CContentDatabase::Shared()->Select(sSql.str());
+        while(!CContentDatabase::Shared()->Eof())
         {
-          CSelectResult* pRow = m_pDatabase->GetResult();          
+          CSelectResult* pRow = CContentDatabase::Shared()->GetResult();          
           if(pRow->GetValue("TYPE").compare("10") == 0)
           {
             //cout << "CONTAINER_STORAGE_FOLDER" << endl;
@@ -395,9 +391,10 @@ std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
             BuildItemDescription(resWriter, pRow, ITEM_VIDEO_ITEM_MOVIE, pUPnPBrowse->m_sObjectID);
           }         
           
-          m_pDatabase->Next();                    
+          CContentDatabase::Shared()->Next();                    
           nNumberReturned++;
         }        
+        CContentDatabase::Shared()->Unlock();
         
         /* finalize result xml */
         xmlTextWriterEndElement(resWriter);

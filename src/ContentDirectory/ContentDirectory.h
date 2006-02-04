@@ -100,10 +100,9 @@ public:
    MEMBERS
   ============================================================================*/
 
-    std::map<std::string, CUPnPObject*>           m_ObjectList;
+    /*std::map<std::string, CUPnPObject*>           m_ObjectList;
     std::map<std::string, CUPnPObject*>::iterator m_ListIterator;
-    CUPnPContainer*                               m_pBaseFolder;
-    CContentDatabase*                             m_pDatabase;
+    CUPnPContainer*                               m_pBaseFolder;    */
 
   /*============================================================================
    HELPER
