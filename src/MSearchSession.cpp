@@ -156,10 +156,13 @@ CHandleMSearchSession::CHandleMSearchSession(CSSDPMessage* pSSDPMessage, std::st
   m_pSSDPMessage      = new CSSDPMessage();
   pSSDPMessage->Assign(m_pSSDPMessage);
   m_pNotifyMsgFactory = new CNotifyMsgFactory(m_sHTTPServerURL);
+  m_Thread            = NULL;
 }
    
 CHandleMSearchSession::~CHandleMSearchSession()
 {
+  if(m_Thread != NULL)
+    fuppesThreadClose(m_Thread);
   delete m_pSSDPMessage;
   delete m_pNotifyMsgFactory;
 }
