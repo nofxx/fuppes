@@ -237,7 +237,7 @@ string CSharedConfig::GetAppFullname()
 
 string CSharedConfig::GetAppVersion()
 {
-	return "0.3.4a";
+	return "0.3.4";
 }
 
 string CSharedConfig::GetHostname()
@@ -294,6 +294,10 @@ bool CSharedConfig::IsSupportedFileExtension(std::string p_sFileExtension)
     return true;
   else if((ToLower(p_sFileExtension).compare("mpeg") == 0) || (ToLower(p_sFileExtension).compare("mpg") == 0))
     return true;
+  else if((ToLower(p_sFileExtension).compare("avi") == 0))
+    return true;
+  /*else if((ToLower(p_sFileExtension).compare("rm") == 0))
+    return true;*/
   else
     return false;
 }

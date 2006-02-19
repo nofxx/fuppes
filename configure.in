@@ -22,8 +22,6 @@ AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_MAKE_SET
 
-#CXXFLAGS="-Wall -g -O"
-
 dnl Checks for programs.
 
 

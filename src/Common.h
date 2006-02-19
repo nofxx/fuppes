@@ -73,8 +73,9 @@
 const std::string MIME_TYPE_TEXT_HTML = "text/html";
 
 /* audio types */
-const std::string MIME_TYPE_AUDIO_MPEG  = "audio/mpeg";
+const std::string MIME_TYPE_AUDIO_MPEG              = "audio/mpeg";
 const std::string MIME_TYPE_APPLICATION_OCTETSTREAM = "application/octet-stream";
+//const std::string MIME_TYPE_AUDIO_X_PN_REALAUDIO    = "audio/x-pn-realaudio";
 
 /* image types */
 const std::string MIME_TYPE_IMAGE_PNG  = "image/png";

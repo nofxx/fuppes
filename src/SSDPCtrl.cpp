@@ -101,53 +101,43 @@ void CSSDPCtrl::CleanupSessions()
  
   fuppesThreadLockMutex(&m_SessionTimedOutMutex); 
      
-  cout << "MSearch CLEAN: " << m_HandleMSearchThreadList.size() << endl;
-  fflush(stdout);       
-    
-  cout << "REST: " << m_SessionList.size() << endl;
-  fflush(stdout);      
-     
   if(m_HandleMSearchThreadList.size() > 0)
-  {     
+  {    
     for(m_HandleMSearchThreadListIterator = m_HandleMSearchThreadList.begin();
-        m_HandleMSearchThreadListIterator != m_HandleMSearchThreadList.end();
-        m_HandleMSearchThreadListIterator++)
-    { 
-      cout << "MSearch BEGIN: " << m_HandleMSearchThreadList.size() << endl;
-      fflush(stdout);        
-      
+        m_HandleMSearchThreadListIterator != m_HandleMSearchThreadList.end(); )
+    {     
       if(m_HandleMSearchThreadList.size() == 0)
         break;
       
       CHandleMSearchSession* pMSession = *m_HandleMSearchThreadListIterator;
       if(pMSession->m_bIsTerminated)
       {
-        //fuppesSleep(100);    
-        m_HandleMSearchThreadListIterator = m_HandleMSearchThreadList.erase(m_HandleMSearchThreadListIterator);
-        delete pMSession;
+        std::list<CHandleMSearchSession*>::iterator tmpIt = m_HandleMSearchThreadListIterator;
+        ++tmpIt;        
+        m_HandleMSearchThreadList.erase(m_HandleMSearchThreadListIterator);
+        m_HandleMSearchThreadListIterator = tmpIt;
+        delete pMSession;        
       }
       else
       {
-        cout << "session not terminated" << endl;
-        fflush(stdout);  
-      }
-      
-      cout << "MSearch END: " << m_HandleMSearchThreadList.size() << endl;
-      fflush(stdout);       
+        ++m_HandleMSearchThreadListIterator;
+      }  
     }
   }
      
   if(m_SessionList.size() == 0)
   {  
     for(m_SessionListIterator = m_SessionList.begin();
-        m_SessionListIterator != m_SessionList.end();
-        m_SessionListIterator++)
+        m_SessionListIterator != m_SessionList.end(); )
     {
       if(m_SessionList.size() == 0)
         break;
-                              
+                  
+      std::list<CMSearchSession*>::iterator tmpIt = m_SessionListIterator;
+      ++tmpIt;      
       CMSearchSession* pSession = *m_SessionListIterator;   
-      m_SessionListIterator     = m_SessionList.erase(m_SessionListIterator);
+      m_SessionList.erase(m_SessionListIterator);
+      m_SessionListIterator = tmpIt;
       delete pSession;
     }  
   }

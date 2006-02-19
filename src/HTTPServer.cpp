@@ -34,7 +34,7 @@
 
 #include <iostream>
 #include <sstream>
-
+#include <errno.h>
 
 using namespace std;
 
@@ -264,9 +264,12 @@ fuppesThreadCallback SessionLoop(void *arg)
     nTmpRecv = recv(pSession->GetConnection(), szBuffer, 4096, 0);
     //cout << "new: " << nTmpRecv << " have: " << nBytesReceived << endl;
     //fflush(stdout);
-    if(nTmpRecv <= 0)
+    if(nTmpRecv < 0)
     {
-      CSharedLog::Shared()->Error(LOGNAME, "lost connection");
+      stringstream sLog;
+      sLog << "error no. " << errno << " " << strerror(errno) << endl;
+      CSharedLog::Shared()->Error(LOGNAME, sLog.str());     
+      
       cout << "bytes received: " << nBytesReceived << endl;
       bDoReceive = false;
       break;
@@ -377,7 +380,7 @@ fuppesThreadCallback SessionLoop(void *arg)
     CHTTPMessage ResponseMsg;  	  	
     bResult = pSession->GetHTTPServer()->CallOnReceive(&ReceivedMessage, &ResponseMsg);  	
     if(!bResult)
-      CSharedLog::Shared()->Error(LOGNAME, "parsing HTTP message");      
+      CSharedLog::Shared()->Error(LOGNAME, "handling HTTP message");      
     if(bResult)
     {
       //cout << ResponseMsg.GetMessageAsString() << endl << endl;
@@ -433,6 +436,7 @@ fuppesThreadCallback SessionLoop(void *arg)
         unsigned int nRet = 0; 
 
         CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending chunked binary");
+        CSharedLog::Shared()->DebugLog(LOGNAME, ResponseMsg.GetHeaderAsString());
         
         /* send header */        
         if(nErr != -1)
@@ -476,12 +480,13 @@ fuppesThreadCallback SessionLoop(void *arg)
          
           if((nErr < 0) || ((ResponseMsg.GetMessageType() == HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT) && (ReceivedMessage.GetHTTPConnection() == HTTP_CONNECTION_CLOSE)))
           {
-            /*if(nErr < 0)
+            if(nErr < 0)
             {
-              cout << "error: " << nErr << endl;
-              cout << "connection reset by peer" << endl;
+              stringstream sLog;
+              sLog << "error no. " << errno << " " << strerror(errno) << endl;
+              CSharedLog::Shared()->Error(LOGNAME, sLog.str());              
             }
-            else
+            /*else
             {
               cout << "connection closed  (send done)" << endl;
             }*/

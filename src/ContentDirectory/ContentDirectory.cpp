@@ -272,7 +272,9 @@ void CContentDirectory::DbScanDir(std::string p_sDirectory, long long int p_nPar
               cout << "MusicTrack" << endl;
               SMusicTrack TrackInfo = CFileDetails::Shared()->GetMusicTrackDetails(sTmp.str());
               break;
-          }*/         
+          }*/      
+          if(nObjectType == OBJECT_TYPE_UNKNOWN)
+            break;          
           
           stringstream sSql;
           sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME, MD5, MIME_TYPE, DETAILS) values ";

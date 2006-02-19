@@ -172,6 +172,26 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
   else
     sResult << GetStylesheet("images/");
   sResult << "</style>";  
+  
+  
+  /*sResult << "<script type=\"text/javascript\">"
+    "function Klappen(Id) {"
+    "var KlappText = document.getElementById('Remote'+Id);"
+    "var KlappBild = document.getElementById('Pic'+Id);"
+    "var jetec_Minus=\"minus.gif\", jetec_Plus=\"plus.gif\";"
+    "if (KlappText.style.display == 'none')"
+    "{"
+    "KlappText.style.display = '';"
+    "KlappBild.src = jetec_Minus;"
+    "}"
+    "else"
+    "{"
+    "KlappText.style.display = 'none';"
+    "KlappBild.src = jetec_Plus;"
+    "}"
+    "}"
+    "</script>"; */
+  
   sResult << "</head>";
   /* header end */
   
@@ -300,19 +320,27 @@ std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes)
 
   for(unsigned int i = 0; i < pFuppes->GetRemoteDevices().size(); i++)
   {
-    sResult << 
-      "<table border=\"1\" style=\"font-size: 10pt;\">" <<
-        "<tbody>";               
-               
     CUPnPDevice* pDevice = pFuppes->GetRemoteDevices()[i];
-    sResult << "<tr><th colspan=\"2\">"    << pDevice->GetFriendlyName() << "</th></tr>" << endl;
+    
+    sResult << 
+      "<table border=\"1\" style=\"font-size: 10pt;\" cellspacing=\"0\" width=\"400\">" <<
+        "<thead>";
+    /*sResult << "<tr><th colspan=\"2\"><a href=\"javascript:Klappen(" << i << ")\"><img src=\"plus.gif\" id=\"Pic" << i << "\" border=\"0\">x</a> ";
+    sResult<< pDevice->GetFriendlyName() << "</th></tr>" << endl;*/
+    sResult << "<tr><th colspan=\"2\">" << pDevice->GetFriendlyName() << "</th></tr>" << endl;
+    sResult << "</thead>" << endl;
+    
+    //sResult << "<tbody id=\"Remote" << i << "\" style=\"display: none;\">" << endl;
+    sResult << "<tbody>" << endl;
+    
+    
     sResult << "<tr><td>UUID</td><td>"     << pDevice->GetUUID() << "</td></tr>" << endl;
     sResult << "<tr><td>Time Out</td><td>" << pDevice->GetTimer()->GetCount() / 60 << "min. " << pDevice->GetTimer()->GetCount() % 60 << "sec.</td></tr>" << endl;
     //sResult << "<tr><td>Status</td><td>"   << "<i>todo</i>" << "</td></tr>" << endl;
     
     sResult << 
         "<tbody>" <<
-      "</table><br />";    
+      "</table><br />"  << endl;    
   }
   
   return sResult.str();

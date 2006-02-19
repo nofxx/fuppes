@@ -28,7 +28,7 @@ dependencies:
   to use transcoding capabilities you need
   
     The non-mp3 ;) encoder:
-      LAME (LGPL):
+      LAME (LGPL)
       http://lame.sourceforge.net/
     
   and depeding on which formats you want to transcode one or more
@@ -72,7 +72,7 @@ win32 binary package comes with:
   see COPYING-VORBIS and COPYING-OGG for details
 
 mpcdec.dll, sqlite3.dll and vorbisfile.dll are compiled by myself.
-The DevC++ Project files can be found under http://ulrich-voelkel.de/svn/fuppes.
+The DevC++ project files can be found under http://ulrich-voelkel.de/svn/fuppes.
 
 
 The "Free UPnP Entertainment Service" is distributed under the terms of the
