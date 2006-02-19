@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -34,7 +34,9 @@
 
 #include <iostream>
 #include <sstream>
+#ifndef WIN32
 #include <errno.h>
+#endif
 
 using namespace std;
 
@@ -175,7 +177,7 @@ void CHTTPServer::CleanupSessions()
     return;
  
   /* iterate session list */  
-  for(m_ThreadListIterator = m_ThreadList.begin(); m_ThreadListIterator != m_ThreadList.end(); m_ThreadListIterator++)
+  for(m_ThreadListIterator = m_ThreadList.begin(); m_ThreadListIterator != m_ThreadList.end();)
   {
     if(m_ThreadList.empty())
       break;
@@ -186,10 +188,16 @@ void CHTTPServer::CleanupSessions()
     {
       if(fuppesThreadClose(pInfo->GetThreadHandle()))
       {
-        m_ThreadListIterator = m_ThreadList.erase(m_ThreadListIterator);
-        delete pInfo;
-        //m_ThreadListIterator--;
+        std::list<CHTTPSessionInfo*>::iterator tmpIt = m_ThreadListIterator;      
+        ++tmpIt;        
+        m_ThreadList.erase(m_ThreadListIterator);
+        m_ThreadListIterator = tmpIt;
+        delete pInfo;        
       }      
+    }
+    else
+    {
+       m_ThreadListIterator++;
     }
   }    
 }
