@@ -185,11 +185,11 @@ void CHTTPServer::CleanupSessions()
     /* and close terminated threads */
     CHTTPSessionInfo* pInfo = *m_ThreadListIterator;   
     if(pInfo && pInfo->m_bIsTerminated)
-    {
-      if(fuppesThreadClose(pInfo->GetThreadHandle()))
-      {
+    {        
+      if(fuppesThreadClose(pInfo->GetThreadHandle()))     
+      {       
         std::list<CHTTPSessionInfo*>::iterator tmpIt = m_ThreadListIterator;      
-        ++tmpIt;        
+        ++tmpIt;                 
         m_ThreadList.erase(m_ThreadListIterator);
         m_ThreadListIterator = tmpIt;
         delete pInfo;        
@@ -241,7 +241,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
     
     /* cleanup closed sessions and sleep am moment */
     pHTTPServer->CleanupSessions();     
-    fuppesSleep(1);
+    fuppesSleep(50);
 	}  
 	  
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "exiting accept loop");
@@ -275,16 +275,26 @@ fuppesThreadCallback SessionLoop(void *arg)
     if(nTmpRecv < 0)
     {
       stringstream sLog;
-      sLog << "error no. " << errno << " " << strerror(errno) << endl;
-      CSharedLog::Shared()->Error(LOGNAME, sLog.str());     
-      
+      #ifdef WIN32      
+      sLog << "error no. " << WSAGetLastError() << " " << strerror(WSAGetLastError()) << endl;
+      CSharedLog::Shared()->Error(LOGNAME, sLog.str());           
       cout << "bytes received: " << nBytesReceived << endl;
+      if(WSAGetLastError() != WSAEWOULDBLOCK)
+      {
+        bDoReceive = false;
+        break;      
+      }      
+      #else
+      sLog << "error no. " << errno << " " << strerror(errno) << endl;
+      cout << "bytes received: " << nBytesReceived << endl;
+      CSharedLog::Shared()->Error(LOGNAME, sLog.str());     
       bDoReceive = false;
-      break;
+      break;      
+      #endif
     }                  
     
     /* append received buffer */
-    if(nBytesReceived > 0)
+    if((nBytesReceived > 0) && (nTmpRecv > 0))
     {
       char* szTmp = new char[nBytesReceived + 1];
       memcpy(szTmp, szMsg, nBytesReceived);
@@ -298,12 +308,21 @@ fuppesThreadCallback SessionLoop(void *arg)
       
       delete[] szTmp;
     }
-    else
+    else if ((nBytesReceived == 0) && (nTmpRecv > 0))
     {
       szMsg = new char[nTmpRecv + 1];
       memcpy(szMsg, szBuffer, nTmpRecv);
       szMsg[nTmpRecv] = '\0';
-    }      
+    }
+    else if(nTmpRecv == 0)
+    {
+      cout << "connection gracefully closed" << endl;
+      fflush(stdout);
+      /* close connection */
+      upnpSocketClose(pSession->GetConnection()); 
+      bDoReceive = false;
+      break;
+    }
     
     /* clear receive buffer */
     memset(szBuffer, '\0', 4096);
@@ -491,7 +510,11 @@ fuppesThreadCallback SessionLoop(void *arg)
             if(nErr < 0)
             {
               stringstream sLog;
+              #ifdef WIN32
+              sLog << "error no. " << WSAGetLastError() << " " << strerror(WSAGetLastError()) << endl;
+              #else              
               sLog << "error no. " << errno << " " << strerror(errno) << endl;
+              #endif
               CSharedLog::Shared()->Error(LOGNAME, sLog.str());              
             }
             /*else

@@ -39,14 +39,15 @@
 ===============================================================================*/
 
 /* constructor */
-/*CUPnPAction::CUPnPAction(std::string p_sContent)
+CUPnPAction::CUPnPAction(UPNP_ACTION_TYPE p_nType, std::string p_sMessage)
 {
-}*/
+  m_nActionType = p_nType;
+  m_sMessage    = p_sMessage;
+}
 
 /* destructor */
-/*CUPnPAction::CUPnPAction(UPNP_ACTION_TYPE nType)
+CUPnPAction::~CUPnPAction()//(UPNP_ACTION_TYPE nType)
 {
-  m_nActionType = nType;
-}*/
+}
 
 /* <\PUBLIC> */

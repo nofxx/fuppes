@@ -142,13 +142,44 @@ bool CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
   BOOL_CHK_RET_POINTER(pUPnPAction);
   BOOL_CHK_RET_POINTER(pMessageOut);
   
-  /* Handle UPnP browse */
-  //string sContent = HandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);  
-  string sContent = DbHandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);  
+  string sContent = "";
+  
+  switch(pUPnPAction->GetActionType())
+  {
+    /* Handle UPnP browse */
+    case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_BROWSE:
+      sContent = DbHandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);
+      break;
+  }
+  
+  if(!sContent.empty())
+  {
+    /* Set a message for the incoming action */
+    pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml; charset=\"utf-8\"");
+    pMessageOut->SetContent(sContent);
+  }
+  else
+  {
+    pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_500_INTERNAL_SERVER_ERROR, "text/xml; charset=\"utf-8\"");            
 
-  /* Set a message for the incoming action */
-  pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml; charset=\"utf-8\""); // HTTP_CONTENT_TYPE_TEXT_XML
-  pMessageOut->SetContent(sContent);
+    sContent =   
+    "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
+    "  <s:Body>"
+    "    <s:Fault>"
+    "      <faultcode>s:Client</faultcode>"
+    "      <faultstring>UPnPError</faultstring>"
+    "      <detail>"
+    "        <UPnPError xmlns=\"urn:schemas-upnp-org:control-1-0\">"
+    "          <errorCode>401</errorCode>"
+    "          <errorDescription>Invalid Action</errorDescription>"
+    "        </UPnPError>"
+    "      </detail>"
+    "    </s:Fault>"
+    "  </s:Body>"
+    "</s:Envelope>";
+    
+    pMessageOut->SetContent(sContent);    
+  }
 
   return true;
 }

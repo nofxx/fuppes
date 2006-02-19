@@ -38,8 +38,80 @@
 
 typedef enum tagUPNP_ACTION_TYPE
 {
-  UPNP_ACTION_TYPE_BROWSE,
-  UPNP_ACTION_TYPE_MAX
+  UPNP_ACTION_TYPE_UNKNOWN,
+        
+  UPNP_ACTION_TYPE_CONTENT_DIRECTORY_BROWSE,
+  
+  /* POST /UPnPServices/ContentDirectory/control/ HTTP/1.1
+  HOST: 192.168.0.3:1117
+  SOAPACTION: "urn:schemas-upnp-org:service:ContentDirectory:1#GetSearchCapabilities"
+  CONTENT-TYPE: text/xml ; charset="utf-8"
+  Content-Length: 299
+  
+  <?xml version="1.0" encoding="utf-8"?>
+  <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s=
+  "http://schemas.xmlsoap.org/soap/envelope/">
+     <s:Body>
+        <u:GetSearchCapabilities xmlns:u="urn:schemas-upnp-org:service:ContentDire
+  ctory:1" />
+     </s:Body>
+  </s:Envelope> */
+  
+  UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SEARCH_CAPABILITIES,
+  
+  /*
+  POST /UPnPServices/ContentDirectory/control/ HTTP/1.1
+  HOST: 192.168.0.3:1117
+  SOAPACTION: "urn:schemas-upnp-org:service:ContentDirectory:1#GetSortCapabilities
+  "
+  CONTENT-TYPE: text/xml ; charset="utf-8"
+  Content-Length: 297
+  
+  <?xml version="1.0" encoding="utf-8"?>
+  <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s=
+  "http://schemas.xmlsoap.org/soap/envelope/">
+     <s:Body>
+        <u:GetSortCapabilities xmlns:u="urn:schemas-upnp-org:service:ContentDirect
+  ory:1" />
+     </s:Body>
+  </s:Envelope> */
+  
+  UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SORT_CAPABILITIES,
+  /*
+  POST /UPnPServices/ContentDirectory/control/ HTTP/1.1
+  HOST: 192.168.0.3:1117
+  SOAPACTION: "urn:schemas-upnp-org:service:ContentDirectory:1#GetSystemUpdateID"
+  CONTENT-TYPE: text/xml ; charset="utf-8"
+  Content-Length: 295
+  
+  <?xml version="1.0" encoding="utf-8"?>
+  <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s=
+  "http://schemas.xmlsoap.org/soap/envelope/">
+     <s:Body>
+        <u:GetSystemUpdateID xmlns:u="urn:schemas-upnp-org:service:ContentDirector
+  y:1" />
+     </s:Body>
+  </s:Envelope> */
+  
+  UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SYSTEM_UPDATE_ID,
+  
+  /*
+  POST /UPnPServices/ConnectionManager/control/ HTTP/1.1
+  HOST: 192.168.0.3:1117
+  SOAPACTION: "urn:schemas-upnp-org:service:ConnectionManager:1#GetProtocolInfo"
+  CONTENT-TYPE: text/xml ; charset="utf-8"
+  Content-Length: 294
+  
+  <?xml version="1.0" encoding="utf-8"?>
+  <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s=
+  "http://schemas.xmlsoap.org/soap/envelope/">
+     <s:Body>
+        <u:GetProtocolInfo xmlns:u="urn:schemas-upnp-org:service:ConnectionManager
+  :1" />
+     </s:Body>
+  </s:Envelope> */
+  UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_PROTOCOL_INFO  
+  
 }UPNP_ACTION_TYPE;
 
 /*===============================================================================
@@ -59,18 +131,22 @@ public:
 
   /** constructor
   */
-  /*CUPnPAction(UPNP_ACTION_TYPE nType);*/
+  CUPnPAction(UPNP_ACTION_TYPE p_nType, std::string p_sMessage);
 
   /** destructor
   */
-  /*CUPnPAction(std::string);*/
+  virtual ~CUPnPAction();
+  
+  UPNP_ACTION_TYPE GetActionType() { return m_nActionType; }
 
 /*===============================================================================
  MEMBERS
 ===============================================================================*/
 
-  UPNP_DEVICE_TYPE m_nTargetDevice;
-  UPNP_ACTION_TYPE m_nActionType;
+//  protected:
+    UPNP_DEVICE_TYPE m_nTargetDevice;
+    UPNP_ACTION_TYPE m_nActionType;
+    std::string      m_sMessage;
 
 /* <\PUBLIC> */
 

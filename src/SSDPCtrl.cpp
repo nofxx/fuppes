@@ -302,7 +302,7 @@ void CSSDPCtrl::HandleMSearch(CSSDPMessage* pSSDPMessage)
   
   //cout << pSSDPMessage->GetMSearchST() << " - " << M_SEARCH_ST_UNSUPPORTED << endl;
   
-  if((pSSDPMessage->GetMSearchST() != M_SEARCH_ST_UNSUPPORTED) && (pSSDPMessage->GetMX() != -1))
+  if(pSSDPMessage->GetMSearchST() != M_SEARCH_ST_UNSUPPORTED)
   {
     CHandleMSearchSession* pHandleMSearch = new CHandleMSearchSession(pSSDPMessage, m_sIPAddress, m_sHTTPServerURL);
     m_HandleMSearchThreadList.push_back(pHandleMSearch);

@@ -9,6 +9,7 @@ Version 0.3.4 (2006-02-??)
   
   * ContentDirectory:
   ** database access thread safe
+  ** avi-file handling
 
 Version 0.3.3 (2006-01-15)
   * added "rebuild database" option

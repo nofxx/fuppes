@@ -110,6 +110,7 @@ private:
   std::string m_sNTS;
   std::string m_sUSN;
   std::string m_sUUID;
+  std::string m_sMAN;  
   SSDP_MESSAGE_TYPE m_nMessageType;
   int m_nMX;
   M_SEARCH_ST m_nMSearchST;

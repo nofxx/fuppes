@@ -443,16 +443,19 @@ bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessa
 bool CFuppes::HandleHTTPPost(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
 {
   /* Get UPnP action */
-  CUPnPBrowse UPnPBrowse;
-  bool fRet = pMessageIn->GetAction(&UPnPBrowse);  
-  if(false == fRet)
+  CUPnPAction* pAction;
+  pAction = pMessageIn->GetAction();  
+  if(!pAction)
     return false;
   
   /* Handle UPnP action */
-  if(UPnPBrowse.m_nTargetDevice == UPNP_DEVICE_TYPE_CONTENT_DIRECTORY)
-    fRet = m_pContentDirectory->HandleUPnPAction((CUPnPAction*)&UPnPBrowse, pMessageOut);
+  bool bRet = false;
+  if(pAction->m_nTargetDevice == UPNP_DEVICE_TYPE_CONTENT_DIRECTORY)
+  {
+    bRet = m_pContentDirectory->HandleUPnPAction(pAction, pMessageOut);
+  }
   
-  return fRet;
+  return bRet;
 }
 
 void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)

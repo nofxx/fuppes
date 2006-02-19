@@ -299,9 +299,7 @@ fuppesThreadCallback ReceiveLoop(void *arg)
 	
 	sockaddr_in remote_ep;	
 	socklen_t   size = sizeof(remote_ep);	
-		/* T.S. TODO: Error on exit here */
-  
-	//while(!udp_sock->m_bBreakReceive && ((bytes_received = recvfrom(udp_sock->GetSocketFd(), buffer, sizeof(buffer), 0, (struct sockaddr*)&remote_ep, &size)) > 0))
+
   while(!udp_sock->m_bBreakReceive)
 	{
     bytes_received = recvfrom(udp_sock->GetSocketFd(), buffer, sizeof(buffer), 0, (struct sockaddr*)&remote_ep, &size);
@@ -310,8 +308,6 @@ fuppesThreadCallback ReceiveLoop(void *arg)
       fuppesSleep(100);
       continue;
     }
-    /*cout << "SOCKET LOOP - BYTES RECEIVED: " << bytes_received << endl;
-    fflush(stdout);*/
     
 		buffer[bytes_received] = '\0';		
 		msg << buffer;
@@ -325,11 +321,14 @@ fuppesThreadCallback ReceiveLoop(void *arg)
 			 (remote_ep.sin_port != udp_sock->GetLocalEndPoint().sin_port))		
 		{
 			CSSDPMessage pSSDPMessage; // = new CSSDPMessage();
-      pSSDPMessage.SetMessage(msg.str());
-			pSSDPMessage.SetRemoteEndPoint(remote_ep);
-			pSSDPMessage.SetLocalEndPoint(udp_sock->GetLocalEndPoint());
-			udp_sock->CallOnReceive(&pSSDPMessage);
-      //delete pSSDPMessage;
+      if(pSSDPMessage.SetMessage(msg.str()))
+      {
+  			pSSDPMessage.SetRemoteEndPoint(remote_ep);
+	  		pSSDPMessage.SetLocalEndPoint(udp_sock->GetLocalEndPoint());
+		  	udp_sock->CallOnReceive(&pSSDPMessage);
+      }
+      else
+        CSharedLog::Shared()->Error(LOGNAME, "parsing UDP-message");
 		}
 		
 		msg.str("");

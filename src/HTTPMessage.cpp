@@ -88,6 +88,7 @@ CHTTPMessage::CHTTPMessage()
   m_nRangeStart         = 0;
   m_nRangeEnd           = 0;
   m_nHTTPConnection     = HTTP_CONNECTION_UNKNOWN;
+  m_pUPnPAction         = NULL;
 }
 
 CHTTPMessage::~CHTTPMessage()
@@ -95,6 +96,9 @@ CHTTPMessage::~CHTTPMessage()
   //cout << "CHTTPMessage::~CHTTPMessage()" << endl;
   
   /* Cleanup */
+  if(m_pUPnPAction)
+    delete m_pUPnPAction;
+  
   if(m_pszBinContent)
     delete[] m_pszBinContent;
     
@@ -146,13 +150,17 @@ void CHTTPMessage::SetBinContent(char* p_szBinContent, unsigned int p_nBinConten
  GET MESSAGE DATA
 ===============================================================================*/
 
-bool CHTTPMessage::GetAction(CUPnPBrowse* pBrowse)
+CUPnPAction* CHTTPMessage::GetAction()
 {
-  BOOL_CHK_RET_POINTER(pBrowse);
+  //BOOL_CHK_RET_POINTER(pAction);
 
-  /* Build UPnPAction */
-  CUPnPActionFactory ActionFactory;
-  return ActionFactory.BuildActionFromString(m_sContent, pBrowse);
+  if(!m_pUPnPAction)
+  {
+    /* Build UPnPAction */  
+    CUPnPActionFactory ActionFactory;
+    m_pUPnPAction = ActionFactory.BuildActionFromString(m_sContent);
+  }
+  return m_pUPnPAction;
 }
 
 std::string CHTTPMessage::GetHeaderAsString()
@@ -176,10 +184,19 @@ std::string CHTTPMessage::GetHeaderAsString()
 		case HTTP_MESSAGE_TYPE_GET:	          /* todo */			                            break;
     case HTTP_MESSAGE_TYPE_HEAD:	        /* todo */			                            break;
 		case HTTP_MESSAGE_TYPE_POST:          /* todo */		                              break;
-		case HTTP_MESSAGE_TYPE_200_OK:        sResult << sVersion << " " << "200 OK\r\n"; break;
-    case HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT: sResult << sVersion << " " << "206 Partial Content\r\n"; break;    
-	  case HTTP_MESSAGE_TYPE_404_NOT_FOUND:	/* todo */			                            break;
-    default:                              ASSERT(0);                                  break;
+		case HTTP_MESSAGE_TYPE_200_OK:        
+      sResult << sVersion << " " << "200 OK\r\n";
+      break;
+    case HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT:
+      sResult << sVersion << " " << "206 Partial Content\r\n";
+      break;    
+	  case HTTP_MESSAGE_TYPE_404_NOT_FOUND:	/* todo */
+	  case HTTP_MESSAGE_TYPE_500_INTERNAL_SERVER_ERROR:
+      sResult << sVersion << " " << "500 Internal Server Error\r\n";
+      break;
+    default:
+      ASSERT(0);                                  
+      break;
 	}
 	
   /* Content length */

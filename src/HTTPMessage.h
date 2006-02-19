@@ -31,6 +31,7 @@
 
 #include "MessageBase.h"
 #include "ContentDirectory/UPnPItem.h"
+#include "UPnPAction.h"
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -64,9 +65,11 @@ typedef enum tagHTTP_MESSAGE_TYPE
 	HTTP_MESSAGE_TYPE_200_OK        =  4,
   HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT = 5,
 	HTTP_MESSAGE_TYPE_404_NOT_FOUND =  6,
+	HTTP_MESSAGE_TYPE_500_INTERNAL_SERVER_ERROR = 7,
+	
   /* GENA message types */
-  HTTP_MESSAGE_TYPE_SUBSCRIBE        = 7,
-  HTTP_MESSAGE_TYPE_SUBSCRIBE_200_OK = 8	
+  HTTP_MESSAGE_TYPE_SUBSCRIBE        = 8,
+  HTTP_MESSAGE_TYPE_SUBSCRIBE_200_OK = 9	
 }HTTP_MESSAGE_TYPE;
 
 typedef enum tagHTTP_CONNECTION
@@ -147,7 +150,7 @@ public:
   char*             GetBinContent()       { return m_pszBinContent;     }
 	bool              IsChunked()           { return m_bIsChunked;        }
 
-  bool              GetAction(CUPnPBrowse* pBrowse);
+  CUPnPAction*      GetAction();
   std::string 		  GetHeaderAsString();		  
 	std::string			  GetMessageAsString();
 
@@ -202,6 +205,7 @@ private:
   int                m_nContentLength;  
   bool               m_bIsChunked;
   CUPnPItem*         m_pUPnPItem;
+  CUPnPAction*       m_pUPnPAction;
   std::fstream       m_fsFile;
   unsigned int       m_nRangeStart;
   unsigned int       m_nRangeEnd;

@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -30,12 +30,7 @@
 ===============================================================================*/
 
 #include <string>
-
-/*===============================================================================
- FORWARD DECLARATIONS
-===============================================================================*/
-
-class CUPnPBrowse;
+#include "UPnPAction.h"
 
 /*===============================================================================
  CLASS CUPnPActionFactory
@@ -58,10 +53,7 @@ public:
   *  @return returns true on success otherwise false
   *  @todo   Parse whole description
   */
-  bool BuildActionFromString(
-    std::string  p_sContent,
-    CUPnPBrowse* pBrowse
-    );
+  CUPnPAction* BuildActionFromString(std::string p_sContent);
 
 /* <\PUBLIC> */
 

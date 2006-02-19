@@ -116,6 +116,7 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
   */
   
   /* let's find out the message type */  
+  m_nMessageType = SSDP_MESSAGE_TYPE_UNKNOWN;
   RegEx rxMSearch("M-SEARCH +\\* +HTTP/1\\.[1|0]", PCRE_CASELESS);
   if(rxMSearch.Search(m_sMessage.c_str()))
   {
@@ -136,13 +137,16 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
         else if(ToLower(rxNTS.Match(1)).compare("byebye") == 0)        
           m_nMessageType = SSDP_MESSAGE_TYPE_NOTIFY_BYEBYE;        
       }
-    }
+    }  
+    /* otherwise check if we have a m-serach response */
     else
     {
-      /* msearch response */
+      /* m-search response */
       RegEx rxHTTP("HTTP */* *1.\\d +(\\d+) +(\\w+)", PCRE_CASELESS);
       if(rxHTTP.Search(m_sMessage.c_str()))              
-        m_nMessageType = SSDP_MESSAGE_TYPE_M_SEARCH_RESPONSE;      
+        m_nMessageType = SSDP_MESSAGE_TYPE_M_SEARCH_RESPONSE;
+      else      
+        return false;
     }    
   }
   /* end find out message type */
@@ -156,70 +160,47 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
       /* Location */
       RegEx rxLocation("LOCATION: +(http://.+)", PCRE_CASELESS);
       if(rxLocation.Search(m_sMessage.c_str()))
-      {
         m_sLocation = rxLocation.Match(1);
-        //CSharedLog::Shared()->Log(LOGNAME, m_sLocation);    
-      }
       
       /* Server */
       RegEx rxServer("SERVER: +(.*)", PCRE_CASELESS);
-      if(rxServer.Search(m_sMessage.c_str()))
-      {
-        m_sServer = rxServer.Match(1);
-        //CSharedLog::Shared()->Log(LOGNAME, m_sServer);
-      }
+      if(rxServer.Search(m_sMessage.c_str()))      
+        m_sServer = rxServer.Match(1);      
       
       /* USN */
       RegEx rxUSN("USN: +(.*)", PCRE_CASELESS);
       if(rxUSN.Search(m_sMessage.c_str()))
       {
         m_sUSN = rxUSN.Match(1);
-        //CSharedLog::Shared()->Log(LOGNAME, m_sUSN);
         
         RegEx rxUUID("uuid:([A-Z|0-9|-]+)", PCRE_CASELESS);
-        if(rxUUID.Search(m_sUSN.c_str()))
-        {
-          m_sUUID = rxUUID.Match(1);
-          //CSharedLog::Shared()->Log(LOGNAME, m_sUUID);
-        }    
-      }   
+        if(rxUUID.Search(m_sUSN.c_str()))        
+          m_sUUID = rxUUID.Match(1);        
+      }
       
     } /* if(m_nMessageType != SSDP_MESSAGE_TYPE_M_SEARCH)  */
-    else 
+    else if(m_nMessageType == SSDP_MESSAGE_TYPE_M_SEARCH)
     {
-      /* MX */
+      /* MX (required) */
       RegEx rxMX("MX: +([0-9]*)", PCRE_CASELESS);
       if(rxMX.Search(m_sMessage.c_str()))      
         m_nMX = atoi(rxMX.Match(1));
       else
-        m_nMX = -1;
+        return false;
       
-      //cout << "got m-search" << endl;
-      
-      /* ST */
+      /* ST (required) */
       m_nMSearchST = M_SEARCH_ST_UNSUPPORTED;
-      //RegEx rxST("^ST: +(.*)\r\n", PCRE_CASELESS);
       RegEx rxST("\r\nST: +(.*)\r\n", PCRE_CASELESS);
       if(rxST.Search(m_sMessage.c_str()))
       {
         m_sST = ToLower(rxST.Match(1));        
-        
-        /*cout << "mST = -" << m_sST << "-" << endl;
-        cout << "mST = -" << m_sST.substr(0, 5) << "-" << endl;*/
-        
+
         if(m_sST.compare("ssdp:all") == 0)
-        {
-          //cout << "M_SEARCH_ST_ALL" << endl;
-          m_nMSearchST = M_SEARCH_ST_ALL;
-        }
+          m_nMSearchST = M_SEARCH_ST_ALL;        
         else if(m_sST.compare("upnp:rootdevice") == 0)
           m_nMSearchST = M_SEARCH_ST_ROOT;
         else if(m_sST.substr(0, 5).compare("uuid:") == 0)
-        {
-          //cout << "SEARCH UUID" << endl;
-          m_nMSearchST = M_SEARCH_ST_UUID;
-        }
-        
+          m_nMSearchST = M_SEARCH_ST_UUID;        
         else if(m_sST.compare("urn:schemas-upnp-org:device:mediaserver:1") == 0)
           m_nMSearchST = M_SEARCH_ST_DEVICE_MEDIA_SERVER;        
         else if(m_sST.compare("urn:schemas-upnp-org:service:connectionmanager:1") == 0)
@@ -229,9 +210,15 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
         else
           m_nMSearchST = M_SEARCH_ST_UNSUPPORTED;        
       }
-      /*else
-        cout << "error reading ST" << endl;*/
-    }
+
+      /* MAN (required) */
+      RegEx rxMAN("MAN: +(.*)", PCRE_CASELESS);
+      if(rxMAN.Search(m_sMessage.c_str()))      
+        m_sMAN = rxMAN.Match(1);
+      else
+        return false;
+
+    } /* if(m_nMessageType == SSDP_MESSAGE_TYPE_M_SEARCH) */
     
   } /* if(m_nMessageType != SSDP_MESSAGE_TYPE_UNKNOWN) */
 
