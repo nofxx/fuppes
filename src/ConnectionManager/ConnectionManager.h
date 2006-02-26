@@ -33,6 +33,8 @@ class CConnectionManager: public CUPnPService
     CConnectionManager(std::string p_sHTTPServerURL);
   
     std::string GetServiceDescription();
+    
+    bool HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut);
 };
 
 #endif /* _CONNECTIONMANAGER_H */

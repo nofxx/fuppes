@@ -28,7 +28,6 @@
 
 #include "Common.h"
 #include "UPnPActionFactory.h"
-#include "UPnPActions/UPnPBrowse.h"
 #include "RegEx.h"
 
 #include <iostream>
@@ -62,28 +61,72 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent)
   pRootNode = xmlDocGetRootElement(pDoc);   
   
   pTmpNode = pRootNode->children->next;
-  string sName = (char*)pTmpNode->name;
-  cout << sName << endl;
+  //string sName = (char*)pTmpNode->name;
+  //cout << sName << endl;
 
   pTmpNode = pTmpNode->children->next;
-  sName = (char*)pTmpNode->name;
+  string sName = (char*)pTmpNode->name;
   cout << sName << endl;
+  
+  
+  CUPnPAction* pAction = NULL;
+   
+  
   
   if(sName.compare("Browse") == 0)
   {
+    pAction = new CUPnPBrowse(p_sContent);
+    ParseBrowseAction((CUPnPBrowse*)pAction);
   }
   else if(sName.compare("GetSearchCapabilities") == 0)
   {
+    pAction = new CUPnPAction(UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SEARCH_CAPABILITIES, p_sContent);
   }
   else if(sName.compare("GetSortCapabilities") == 0)
   {
+    pAction = new CUPnPAction(UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SORT_CAPABILITIES, p_sContent);
   }
   else if(sName.compare("GetSystemUpdateID") == 0)
   {
+    pAction = new CUPnPAction(UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SYSTEM_UPDATE_ID, p_sContent);
   }  
+  else if(sName.compare("GetProtocolInfo") == 0)
+  {
+    pAction = new CUPnPAction(UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_PROTOCOL_INFO, p_sContent);
+  }
   
+  /* Target */
+  if(pAction)
+  {
+    string sNs = (char*)pTmpNode->nsDef->href;
+    cout << sNs << endl;
+      
+    if(sNs.compare("urn:schemas-upnp-org:service:ContentDirectory:1") == 0)
+    {    
+      pAction->m_nTargetDevice = UPNP_DEVICE_TYPE_CONTENT_DIRECTORY;                                                                      
+    }
+    else if(sNs.compare("urn:schemas-upnp-org:service:ConnectionManager:1") == 0)
+    {
+      pAction->m_nTargetDevice = UPNP_DEVICE_TYPE_CONNECTION_MANAGER;
+    }  
+  }
 
-  /* T.S.TODO: We have to parse the whole description here */
+
+  /*cout << "[UPnPActionFactory] Browse Action:" << endl;
+  cout << "\tObjectID: " << ((CUPnPBrowse*)pResult)->m_sObjectID << endl;
+  cout << "\tStartingIndex: " << ((CUPnPBrowse*)pResult)->m_nStartingIndex << endl;
+  cout << "\tRequestedCount: " << ((CUPnPBrowse*)pResult)->m_nRequestedCount << endl;*/  
+  
+  xmlFreeDoc(pDoc);
+  xmlCleanupParser();  
+  
+  return pAction;
+}
+
+/* <\PUBLIC> */
+
+bool CUPnPActionFactory::ParseBrowseAction(CUPnPBrowse* pAction)
+{
 /*<?xml version="1.0" encoding="utf-8"?>
   <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
   <s:Body>
@@ -97,44 +140,39 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent)
   </u:Browse>
   </s:Body>
   </s:Envelope>*/
-  CUPnPBrowse* pAction = new CUPnPBrowse(p_sContent);
   
   /* Object ID */
   RegEx rxObjId("<ObjectID>(.+)</ObjectID>");
-  if (rxObjId.Search(p_sContent.c_str()))  
+  if (rxObjId.Search(pAction->m_sMessage.c_str()))
     pAction->m_sObjectID = rxObjId.Match(1);
   
   /* Browse flag */
-  pAction->m_nBrowseFlag = UPNP_BROWSE_FLAG_DIRECT_CHILDREN;
+  pAction->m_nBrowseFlag = UPNP_BROWSE_FLAG_UNKNOWN;    
+  RegEx rxBrowseFlag("<BrowseFlag>(.+)</BrowseFlag>");
+  if(rxBrowseFlag.Search(pAction->m_sMessage.c_str()))
+  {
+    string sMatch = rxBrowseFlag.Match(1);
+    if(sMatch.compare("BrowseMetadata") == 0)
+      pAction->m_nBrowseFlag = UPNP_BROWSE_FLAG_METADATA;
+    else if(sMatch.compare("BrowseDirectChildren") == 0)
+      pAction->m_nBrowseFlag = UPNP_BROWSE_FLAG_DIRECT_CHILDREN;
+  }  
   
   /* Filter */
   pAction->m_sFilter    = "*";
 
   /* Starting index */
   RegEx rxStartIdx("<StartingIndex>(.+)</StartingIndex>");
-  if(rxStartIdx.Search(p_sContent.c_str()))  
+  if(rxStartIdx.Search(pAction->m_sMessage.c_str()))  
     pAction->m_nStartingIndex = atoi(rxStartIdx.Match(1));
 
   /* Requested count */
   RegEx rxReqCnt("<RequestedCount>(.+)</RequestedCount>");
-  if(rxReqCnt.Search(p_sContent.c_str()))  
+  if(rxReqCnt.Search(pAction->m_sMessage.c_str()))  
     pAction->m_nRequestedCount = atoi(rxReqCnt.Match(1));  
   
   /* Sort */
   pAction->m_sSortCriteria = "";
 
-  /* Target */
-  pAction->m_nTargetDevice = UPNP_DEVICE_TYPE_CONTENT_DIRECTORY;
-  
-  /*cout << "[UPnPActionFactory] Browse Action:" << endl;
-  cout << "\tObjectID: " << ((CUPnPBrowse*)pResult)->m_sObjectID << endl;
-  cout << "\tStartingIndex: " << ((CUPnPBrowse*)pResult)->m_nStartingIndex << endl;
-  cout << "\tRequestedCount: " << ((CUPnPBrowse*)pResult)->m_nRequestedCount << endl;*/  
-  
-  xmlFreeDoc(pDoc);
-  xmlCleanupParser();  
-  
-  return pAction;
+  return true;     
 }
-
-/* <\PUBLIC> */

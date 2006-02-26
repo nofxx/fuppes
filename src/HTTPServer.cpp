@@ -432,7 +432,7 @@ fuppesThreadCallback SessionLoop(void *arg)
         } 
         /* send text message */
         else 
-        { 
+        {           
           CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending plain text");          
           send(pSession->GetConnection(), ResponseMsg.GetMessageAsString().c_str(), (int)strlen(ResponseMsg.GetMessageAsString().c_str()), 0); 
           CSharedLog::Shared()->DebugLog(LOGNAME, ResponseMsg.GetMessageAsString());

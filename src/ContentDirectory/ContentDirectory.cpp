@@ -148,7 +148,21 @@ bool CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
   {
     /* Handle UPnP browse */
     case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_BROWSE:
-      sContent = DbHandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);
+      cout << pUPnPAction->m_sMessage<< endl;       
+      sContent = DbHandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);      
+      cout << sContent << endl; 
+      break;
+      
+    case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SEARCH_CAPABILITIES:
+      sContent = HandleUPnPGetSearchCapabilities(pUPnPAction);
+      break;
+      
+    case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SORT_CAPABILITIES:
+      sContent = HandleUPnPGetSortCapabilities(pUPnPAction);
+      break;
+      
+    case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SYSTEM_UPDATE_ID:
+      sContent = HandleUPnPGetSystemUpdateID(pUPnPAction);
       break;
   }
   
@@ -162,7 +176,8 @@ bool CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
   {
     pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_500_INTERNAL_SERVER_ERROR, "text/xml; charset=\"utf-8\"");            
 
-    sContent =   
+    sContent = 
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>"  
     "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
     "  <s:Body>"
     "    <s:Fault>"
@@ -179,8 +194,8 @@ bool CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
     "</s:Envelope>";
     
     pMessageOut->SetContent(sContent);    
+    //cout << pMessageOut->GetContent() << endl;
   }
-
   return true;
 }
 
@@ -366,102 +381,66 @@ std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
         BAD_CAST "BrowseResponse", 
         BAD_CAST "urn:schemas-upnp-org:service:ContentDirectory:1");
           
-        unsigned int nNumberReturned = 0;
-        unsigned int nTotalMatches   = 0;
-         
-        /* get total matches */         
-        std::stringstream sSql;
-        sSql << "select count(*) as COUNT from OBJECTS where PARENT_ID = ";
-        sSql << pUPnPBrowse->GetObjectIDAsInt() << " order by FILE_NAME ";        
-        CContentDatabase::Shared()->Lock();
-        CContentDatabase::Shared()->Select(sSql.str());        
-        nTotalMatches = atoi(CContentDatabase::Shared()->GetResult()->GetValue("COUNT").c_str());
-        CContentDatabase::Shared()->Unlock();
-        sSql.str("");
-        
-        /* get description */
-        sSql << "select o.ID, o.TYPE, o.PATH, o.FILE_NAME, o.MIME_TYPE, o.DETAILS, (select count(*) ";
-        sSql << "from OBJECTS p where p.PARENT_ID = o.ID) as COUNT from OBJECTS o where o.PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " ";
-        sSql << "order by o.FILE_NAME ";
-        if(pUPnPBrowse->m_nRequestedCount > 0)
-          sSql << " limit " << pUPnPBrowse->m_nStartingIndex << ", " << pUPnPBrowse->m_nRequestedCount;        
-        
-        /* result */
-        xmlTextWriterStartElement(writer, BAD_CAST "Result");
-
-        /* build result xml */
-        xmlTextWriterPtr resWriter;
-        xmlBufferPtr resBuf;
-        resBuf    = xmlBufferCreate();   
-        resWriter = xmlNewTextWriterMemory(resBuf, 0);    
-        xmlTextWriterStartDocument(resWriter, NULL, "UTF-8", NULL);
-
-        xmlTextWriterStartElementNS(resWriter, NULL, BAD_CAST "DIDL-Lite", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite");
-
-        CContentDatabase::Shared()->Lock();
-        CContentDatabase::Shared()->Select(sSql.str());
-        while(!CContentDatabase::Shared()->Eof())
-        {
-          CSelectResult* pRow = CContentDatabase::Shared()->GetResult();          
-          if(pRow->GetValue("TYPE").compare("10") == 0)
-          {
-            //cout << "CONTAINER_STORAGE_FOLDER" << endl;
-            BuildContainerDescription(resWriter, pRow, pUPnPBrowse->m_sObjectID, pRow->GetValue("COUNT"));
-          }
-          else if(pRow->GetValue("TYPE").compare("100") == 0)
-          {
-            //cout << "ITEM_IMAGE_ITEM_PHOTO" << endl;
-            BuildItemDescription(resWriter, pRow, ITEM_IMAGE_ITEM_PHOTO, pUPnPBrowse->m_sObjectID);
-          }
-          else if(pRow->GetValue("TYPE").compare("200") == 0)
-          {
-            //cout << "ITEM_AUDIO_ITEM_MUSIC_TRACK" << endl;
-            BuildItemDescription(resWriter, pRow, ITEM_AUDIO_ITEM_MUSIC_TRACK, pUPnPBrowse->m_sObjectID);
-          }
-          else if(pRow->GetValue("TYPE").compare("300") == 0)
-          {
-            //cout << "ITEM_VIDEO_ITEM_MOVIE" << endl;
-            BuildItemDescription(resWriter, pRow, ITEM_VIDEO_ITEM_MOVIE, pUPnPBrowse->m_sObjectID);
-          }         
+      /* result */
+      xmlTextWriterStartElement(writer, BAD_CAST "Result");
           
-          CContentDatabase::Shared()->Next();                    
-          nNumberReturned++;
-        }        
-        CContentDatabase::Shared()->Unlock();
+      /* build result xml */
+      xmlTextWriterPtr resWriter;
+      xmlBufferPtr resBuf;
+      resBuf    = xmlBufferCreate();   
+      resWriter = xmlNewTextWriterMemory(resBuf, 0);    
+      xmlTextWriterStartDocument(resWriter, NULL, "UTF-8", NULL);
+  
+      xmlTextWriterStartElementNS(resWriter, NULL, BAD_CAST "DIDL-Lite", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite");
+          
+          
+      unsigned int nNumberReturned = 0;
+      unsigned int nTotalMatches   = 0;
+         
+      /* switch browse flag */
+      switch(pUPnPBrowse->m_nBrowseFlag)
+      {
+        case UPNP_BROWSE_FLAG_METADATA:
+          BrowseMetadata(resWriter, &nTotalMatches, &nNumberReturned, pUPnPBrowse);
+          break;
+        case UPNP_BROWSE_FLAG_DIRECT_CHILDREN:
+          BrowseDirectChildren(resWriter, &nTotalMatches, &nNumberReturned, pUPnPBrowse);
+          break;        
+      }   
         
-        /* finalize result xml */
-        xmlTextWriterEndElement(resWriter);
-        xmlTextWriterEndDocument(resWriter);
-        xmlFreeTextWriter(resWriter);
-	
-        std::stringstream sResOutput;
-        sResOutput << (const char*)resBuf->content;
-	
-        xmlBufferFree(resBuf);        
-        string sTmpRes = sResOutput.str().substr(strlen("<?xml version=\"1.0\" encoding=\"UTF-8\"?> "));
-        xmlTextWriterWriteString(writer, BAD_CAST sTmpRes.c_str());
+      /* finalize result xml */
+      xmlTextWriterEndElement(resWriter);
+      xmlTextWriterEndDocument(resWriter);
+      xmlFreeTextWriter(resWriter);
+
+      std::stringstream sResOutput;
+      sResOutput << (const char*)resBuf->content;
+
+      xmlBufferFree(resBuf);        
+      string sTmpRes = sResOutput.str().substr(strlen("<?xml version=\"1.0\" encoding=\"UTF-8\"?> "));
+      xmlTextWriterWriteString(writer, BAD_CAST sTmpRes.c_str());
+      
+      /* end result */
+      xmlTextWriterEndElement(writer);
         
-        /* end result */
-        xmlTextWriterEndElement(writer);
-        
-        /* number returned */
-        xmlTextWriterStartElement(writer, BAD_CAST "NumberReturned");
-        sTmp << nNumberReturned;
-        xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
-        sTmp.str("");
-        xmlTextWriterEndElement(writer);
-        
-        /* total matches */
-        xmlTextWriterStartElement(writer, BAD_CAST "TotalMatches");
-        sTmp << nTotalMatches;
-        xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
-        sTmp.str("");
-        xmlTextWriterEndElement(writer);
-        
-        /* update id */
-        xmlTextWriterStartElement(writer, BAD_CAST "UpdateID");
-        xmlTextWriterWriteString(writer, BAD_CAST "0");
-        xmlTextWriterEndElement(writer);
+      /* number returned */
+      xmlTextWriterStartElement(writer, BAD_CAST "NumberReturned");
+      sTmp << nNumberReturned;
+      xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
+      sTmp.str("");
+      xmlTextWriterEndElement(writer);
+      
+      /* total matches */
+      xmlTextWriterStartElement(writer, BAD_CAST "TotalMatches");
+      sTmp << nTotalMatches;
+      xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
+      sTmp.str("");
+      xmlTextWriterEndElement(writer);
+      
+      /* update id */
+      xmlTextWriterStartElement(writer, BAD_CAST "UpdateID");
+      xmlTextWriterWriteString(writer, BAD_CAST "0");
+      xmlTextWriterEndElement(writer);
   
       /* end browse response */
       xmlTextWriterEndElement(writer);
@@ -475,8 +454,7 @@ std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
 	xmlFreeTextWriter(writer);
 	
 	std::stringstream output;
-	output << (const char*)buf->content;
-	
+	output << (const char*)buf->content;	
   CSharedLog::Shared()->DebugLog(LOGNAME, output.str());
   
 	xmlBufferFree(buf);
@@ -484,6 +462,150 @@ std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
   //cout << output.str() << endl;
   
 	return output.str();  
+}
+
+void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter, 
+                        unsigned int* p_pnTotalMatches,
+                        unsigned int* p_pnNumberReturned,
+                        CUPnPBrowse*  pUPnPBrowse)
+{
+  *p_pnTotalMatches   = 1;
+  *p_pnNumberReturned = 1;
+  
+  string sParentId;
+  stringstream sSql;
+  string sTitle;
+  
+  if(pUPnPBrowse->GetObjectIDAsInt() == 0)
+  {
+    sParentId = "-1";
+    sTitle    = "root";
+  }
+  else
+  {
+    sSql << "select PARENT_ID, FILE_NAME from OBJECTS where ID = " << pUPnPBrowse->GetObjectIDAsInt();
+    CContentDatabase::Shared()->Lock();
+    
+    CContentDatabase::Shared()->Select(sSql.str());                
+    sTitle    = CContentDatabase::Shared()->GetResult()->GetValue("FILE_NAME").c_str();
+    
+    char szParentId[11];
+    unsigned int nParentId = atoi(CContentDatabase::Shared()->GetResult()->GetValue("PARENT_ID").c_str());
+    if(nParentId > 0)
+    {
+      sprintf(szParentId, "%010X", nParentId);
+      sParentId = szParentId;  
+    }
+    else
+    {
+      sParentId = "0";
+    }
+      
+    
+    CContentDatabase::Shared()->Unlock();
+    sSql.str("");      
+  }
+  
+  /* get child count */  
+  sSql << "select count(*) as COUNT from OBJECTS where PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt();
+  CContentDatabase::Shared()->Lock();
+  CContentDatabase::Shared()->Select(sSql.str());        
+  string sChildCount = CContentDatabase::Shared()->GetResult()->GetValue("COUNT").c_str();
+  CContentDatabase::Shared()->Unlock();
+  sSql.str("");  
+  
+  
+  /* build container  */
+  xmlTextWriterStartElement(pWriter, BAD_CAST "container"); 
+     
+    /* id */  
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "id", BAD_CAST pUPnPBrowse->m_sObjectID.c_str()); 
+    /* searchable  */
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "searchable", BAD_CAST "0"); 
+    /* parentID  */
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "parentID", BAD_CAST sParentId.c_str()); 
+    /* restricted */
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "restricted", BAD_CAST "0");     
+    /* childCount */
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "childCount", BAD_CAST sChildCount.c_str());   
+     
+    /* title */
+    xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");     
+    xmlTextWriterWriteString(pWriter, BAD_CAST sTitle.c_str()); 
+    xmlTextWriterEndElement(pWriter);
+   
+    /* class */
+    xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");     
+    xmlTextWriterWriteString(pWriter, BAD_CAST "object.container");  //"object.container.musicContainer"
+    xmlTextWriterEndElement(pWriter); 
+     
+    /* writeStatus */
+    /*xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "writeStatus", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");     
+    xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN"); 
+    xmlTextWriterEndElement(pWriter);*/
+   
+  /* end container */
+  xmlTextWriterEndElement(pWriter);  
+}
+
+
+void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter, 
+                          unsigned int* p_pnTotalMatches,
+                          unsigned int* p_pnNumberReturned,
+                          CUPnPBrowse*  pUPnPBrowse)
+{   
+  /* get total matches */         
+  std::stringstream sSql;
+  sSql << "select count(*) as COUNT from OBJECTS where PARENT_ID = ";
+  sSql << pUPnPBrowse->GetObjectIDAsInt(); // << " order by FILE_NAME ";        
+  CContentDatabase::Shared()->Lock();
+  CContentDatabase::Shared()->Select(sSql.str());        
+  *p_pnTotalMatches = atoi(CContentDatabase::Shared()->GetResult()->GetValue("COUNT").c_str());
+  CContentDatabase::Shared()->Unlock();
+  sSql.str("");
+  
+  /* get description */
+  sSql << "select o.ID, o.TYPE, o.PATH, o.FILE_NAME, o.MIME_TYPE, o.DETAILS, (select count(*) ";
+  sSql << "from OBJECTS p where p.PARENT_ID = o.ID) as COUNT from OBJECTS o where o.PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " ";
+  sSql << "order by o.FILE_NAME ";
+  if(pUPnPBrowse->m_nRequestedCount > 0)
+    sSql << " limit " << pUPnPBrowse->m_nStartingIndex << ", " << pUPnPBrowse->m_nRequestedCount;        
+    
+  unsigned int tmpInt = *p_pnNumberReturned;
+    
+  CContentDatabase::Shared()->Lock();
+  CContentDatabase::Shared()->Select(sSql.str());
+  while(!CContentDatabase::Shared()->Eof())
+  {
+    CSelectResult* pRow = CContentDatabase::Shared()->GetResult();          
+    if(pRow->GetValue("TYPE").compare("10") == 0)
+    {
+      //cout << "CONTAINER_STORAGE_FOLDER" << endl;
+      BuildContainerDescription(pWriter, pRow, pUPnPBrowse->m_sObjectID, pRow->GetValue("COUNT"));
+    }
+    else if(pRow->GetValue("TYPE").compare("100") == 0)
+    {
+      //cout << "ITEM_IMAGE_ITEM_PHOTO" << endl;
+      BuildItemDescription(pWriter, pRow, ITEM_IMAGE_ITEM_PHOTO, pUPnPBrowse->m_sObjectID);
+    }
+    else if(pRow->GetValue("TYPE").compare("200") == 0)
+    {
+      //cout << "ITEM_AUDIO_ITEM_MUSIC_TRACK" << endl;
+      BuildItemDescription(pWriter, pRow, ITEM_AUDIO_ITEM_MUSIC_TRACK, pUPnPBrowse->m_sObjectID);
+    }
+    else if(pRow->GetValue("TYPE").compare("300") == 0)
+    {
+      //cout << "ITEM_VIDEO_ITEM_MOVIE" << endl;
+      BuildItemDescription(pWriter, pRow, ITEM_VIDEO_ITEM_MOVIE, pUPnPBrowse->m_sObjectID);
+    }         
+    
+    CContentDatabase::Shared()->Next();                    
+
+    tmpInt++;
+    cout << tmpInt << endl;
+  }        
+  CContentDatabase::Shared()->Unlock();                          
+  *p_pnNumberReturned = tmpInt;
 }
 
 void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sParentId, std::string p_sChildCount)
@@ -519,9 +641,9 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter, CSel
     xmlTextWriterEndElement(pWriter); 
      
     /* writeStatus */
-    xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "writeStatus", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");     
+    /*xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "writeStatus", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");     
     xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN"); 
-    xmlTextWriterEndElement(pWriter);            
+    xmlTextWriterEndElement(pWriter);*/
    
   /* end container */
   xmlTextWriterEndElement(pWriter); 
@@ -677,6 +799,49 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter, CSel
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
   xmlTextWriterEndElement(pWriter);  
+}
+
+std::string CContentDirectory::HandleUPnPGetSearchCapabilities(CUPnPAction* pAction)
+{
+  return 
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+    "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
+    "  <s:Body>"
+    "    <u:GetSearchCapabilitiesResponse xmlns:u=\"urn:schemas-upnp-org:service:ContentDirectory:1\">"
+    "      <SearchCaps></SearchCaps>"
+    "    </u:GetSearchCapabilitiesResponse>"
+    "  </s:Body>"
+    "</s:Envelope>";
+
+  //<SearchCaps>dc:title,dc:creator,upnp:artist,upnp:genre,upnp:album,dc:date,upnp:originalTrackNumber,upnp:class,@id,@refID,upnp:albumArtURI</SearchCaps>    
+} 
+
+std::string CContentDirectory::HandleUPnPGetSortCapabilities(CUPnPAction* pAction)
+{
+  return 
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+    "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
+    "  <s:Body>"
+    "    <u:GetSortCapabilitiesResponse xmlns:u=\"urn:schemas-upnp-org:service:ContentDirectory:1\">"
+    "      <SortCaps></SortCaps>"
+    "    </u:GetSortCapabilitiesResponse>"
+    "  </s:Body>"
+    "</s:Envelope>";
+
+  // <SortCaps>dc:title,dc:creator,upnp:artist,upnp:genre,upnp:album,dc:date,upnp:originalTrackNumber,Philips:shuffle</SortCaps>
+}
+
+std::string CContentDirectory::HandleUPnPGetSystemUpdateID(CUPnPAction* pAction)
+{
+  return 
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+    "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
+    "  <s:Body>"
+    "    <u:GetSystemUpdateIDResponse xmlns:u=\"urn:schemas-upnp-org:service:ContentDirectory:1\">"
+    "      <Id>1</Id>"
+    "    </u:GetSystemUpdateIDResponse>"
+    "  </s:Body>"
+    "</s:Envelope>";            
 }
 
 /* <\PRIVATE> */

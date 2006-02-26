@@ -37,8 +37,9 @@
 
 typedef enum tagUPNP_BROWSE_FLAG
 {
+  UPNP_BROWSE_FLAG_UNKNOWN,        
   UPNP_BROWSE_FLAG_DIRECT_CHILDREN,
-  UPNP_BROWSE_FLAG_MAX
+  UPNP_BROWSE_FLAG_METADATA
 }UPNP_BROWSE_FLAG;
 
 /*===============================================================================

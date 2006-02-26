@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -30,6 +30,7 @@
 ===============================================================================*/
 
 #include "UPnPBase.h"
+#include "HTTPMessage.h"
 
 /*===============================================================================
  CLASS CUPnPService
@@ -47,13 +48,13 @@ protected:
 ===============================================================================*/
   
   /** constructor
-  *  @param  nType  the device type
-  *  @param  p_sHTTPServerURL  URL of the HTTP server
-  */
+   *  @param  nType  the device type
+   *  @param  p_sHTTPServerURL  URL of the HTTP server
+   */
   CUPnPService(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL);
 		
   /** destructor
-  */
+   */
   virtual ~CUPnPService();
 	
 /* <\PROTECTED> */
@@ -67,9 +68,11 @@ public:
 ===============================================================================*/
 
   /** returns the service description as string
-  *  @return  the service description
-  */
-  virtual std::string GetServiceDescription();
+   *  @return  the service description
+   */
+  virtual std::string GetServiceDescription() = 0;
+
+  virtual bool HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut) = 0;
 
 /* <\PUBLIC> */
 

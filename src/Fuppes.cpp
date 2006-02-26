@@ -450,11 +450,19 @@ bool CFuppes::HandleHTTPPost(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut
   
   /* Handle UPnP action */
   bool bRet = false;
-  if(pAction->m_nTargetDevice == UPNP_DEVICE_TYPE_CONTENT_DIRECTORY)
+  switch(pAction->m_nTargetDevice)
   {
-    bRet = m_pContentDirectory->HandleUPnPAction(pAction, pMessageOut);
+    case UPNP_DEVICE_TYPE_CONTENT_DIRECTORY:
+      bRet = m_pContentDirectory->HandleUPnPAction(pAction, pMessageOut);
+      break;
+    case UPNP_DEVICE_TYPE_CONNECTION_MANAGER:
+      bRet = m_pConnectionManager->HandleUPnPAction(pAction, pMessageOut);
+      break;
+    default:
+      bRet = false;
+      break;
   }
-  
+    
   return bRet;
 }
 

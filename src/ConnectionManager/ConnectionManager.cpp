@@ -36,3 +36,8 @@ std::string CConnectionManager::GetServiceDescription()
 {  
   return sConnectionManagerDescription;
 }
+
+bool CConnectionManager::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut)
+{
+  return true;
+}

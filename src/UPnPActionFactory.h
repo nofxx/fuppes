@@ -31,6 +31,7 @@
 
 #include <string>
 #include "UPnPAction.h"
+#include "UPnPActions/UPnPBrowse.h"
 
 /*===============================================================================
  CLASS CUPnPActionFactory
@@ -41,21 +42,24 @@ class CUPnPActionFactory
 
 /* <PUBLIC> */
 
-public:
+  public:
 
 /*===============================================================================
  UPNP ACTIONS
 ===============================================================================*/
 
-  /** builds an UPnP action from a string
-  *  @param  p_sContent  the string to build th message from
-  *  @param  pBrowse  the built UPnP action
-  *  @return returns true on success otherwise false
-  *  @todo   Parse whole description
-  */
-  CUPnPAction* BuildActionFromString(std::string p_sContent);
+   /** builds an UPnP action from a string
+    *  @param  p_sContent  the string to build th message from
+    *  @return returns the action object on success otherwise NULL
+    *  @todo   Parse whole description
+    */
+    CUPnPAction* BuildActionFromString(std::string p_sContent);
 
 /* <\PUBLIC> */
+
+  private:
+          
+    bool ParseBrowseAction(CUPnPBrowse* pAction);
 
 };
 

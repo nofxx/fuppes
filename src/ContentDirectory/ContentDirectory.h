@@ -107,12 +107,30 @@ public:
   /*============================================================================
    HELPER
   ============================================================================*/
+    /** scans a specific directory
+     *  @param  p_sDirectory  path to the directory to scan
+     *  @param  p_pnCount  count of found objects
+     *  @param  pParentFolder  the parent folder
+    */
+    void DbScanDir(std::string p_sDirectory, long long int p_nParentId);
+       
+    
     
     /** handles a UPnP browse action
      *  @param  pBrowse  the browse action to handle
      *  @return string with the message content to send for the browse action
      */  
     std::string DbHandleUPnPBrowse(CUPnPBrowse* pBrowse);
+
+    void BrowseMetadata(xmlTextWriterPtr pWriter, 
+                        unsigned int* p_pnTotalMatches,
+                        unsigned int* p_pnNumberReturned,
+                        CUPnPBrowse*  pUPnPBrowse);
+                        
+    void BrowseDirectChildren(xmlTextWriterPtr pWriter, 
+                              unsigned int* p_pnTotalMatches,
+                              unsigned int* p_pnNumberReturned,
+                              CUPnPBrowse*  pUPnPBrowse);
   
     void BuildContainerDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sParentId, std::string p_sChildCount);
     void BuildItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, OBJECT_TYPE p_nObjectType, std::string p_sParentId);      
@@ -120,13 +138,12 @@ public:
     void BuildImageItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sObjectID);      
     void BuildVideoItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sObjectID);
 
-    /** scans a specific directory
-     *  @param  p_sDirectory  path to the directory to scan
-     *  @param  p_pnCount  count of found objects
-     *  @param  pParentFolder  the parent folder
-    */
-    void DbScanDir(std::string p_sDirectory, long long int p_nParentId);
-   
+
+    std::string HandleUPnPGetSearchCapabilities(CUPnPAction* pAction);
+
+    std::string HandleUPnPGetSortCapabilities(CUPnPAction* pAction);
+    
+    std::string HandleUPnPGetSystemUpdateID(CUPnPAction* pAction);    
 
 /* <\PRIVATE> */
 
