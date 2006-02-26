@@ -131,6 +131,8 @@ public:
                               unsigned int* p_pnTotalMatches,
                               unsigned int* p_pnNumberReturned,
                               CUPnPBrowse*  pUPnPBrowse);
+
+    void BuildDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sParentId, std::string p_sChildCount);
   
     void BuildContainerDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sParentId, std::string p_sChildCount);
     void BuildItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, OBJECT_TYPE p_nObjectType, std::string p_sParentId);      
