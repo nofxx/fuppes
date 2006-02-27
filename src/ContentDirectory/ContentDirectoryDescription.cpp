@@ -384,7 +384,7 @@ static const std::string  sContentDirectoryDescription =
 "</argument>"
 "</argumentList>"
 "</action>"
-"<!-- Declarations for other actions added by UPnP vendor (if any) go here -->"
+//"<!-- Declarations for other actions added by UPnP vendor (if any) go here -->"
 "</actionList>"
 ""
 "	<serviceStateTable>"
@@ -500,6 +500,6 @@ static const std::string  sContentDirectoryDescription =
 "<name>ContainerUpdateIDs</name>"
 "<dataType>string</dataType>"
 "</stateVariable>"
-"<!-- Declarations for other state variables added by UPnP vendor (if any) go here -->"
+//"<!-- Declarations for other state variables added by UPnP vendor (if any) go here -->"
 "</serviceStateTable>"
 "</scpd>";

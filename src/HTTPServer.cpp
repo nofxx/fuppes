@@ -267,6 +267,7 @@ fuppesThreadCallback SessionLoop(void *arg)
   unsigned int nContentLength = 0;
   CHTTPMessage ReceivedMessage;        
   bool bDoReceive = true;
+  bool bRecvErr = false;
   
   /* receive message */
   int nTmpRecv = 0;
@@ -281,6 +282,7 @@ fuppesThreadCallback SessionLoop(void *arg)
     //fflush(stdout);
     if(nTmpRecv < 0)
     {
+      bRecvErr = true;
       stringstream sLog;
       #ifdef WIN32      
       sLog << "error no. " << WSAGetLastError() << " " << strerror(WSAGetLastError()) << endl;
@@ -290,7 +292,11 @@ fuppesThreadCallback SessionLoop(void *arg)
       {
         bDoReceive = false;
         break;      
-      }      
+      }
+      else
+      {
+        continue;
+      }   
       #else
       sLog << "error no. " << errno << " " << strerror(errno) << endl;
       cout << "bytes received: " << nBytesReceived << endl;
@@ -390,12 +396,13 @@ fuppesThreadCallback SessionLoop(void *arg)
                   
     if(nTmpRecv == 0)      
       nRecvCnt++;    
-  }
+  } // while 
   /* end receive */
+
 
   /* build received message */
   bool bResult = false;  
-  if(nBytesReceived > 0)			
+  if((nBytesReceived > 0) && !bRecvErr)
   {
     /* logging */
     stringstream sMsg;
@@ -419,7 +426,9 @@ fuppesThreadCallback SessionLoop(void *arg)
     {
       //cout << ResponseMsg.GetMessageAsString() << endl << endl;
       
-      /*cout << ResponseMsg.GetHeaderAsString() << endl;
+      /*cout << "RESPONSE TO: " << szMsg << endl;
+      fflush(stdout);      
+      cout << "RESPONSE: " << ResponseMsg.GetHeaderAsString() << endl;
       fflush(stdout);*/
       if(!ResponseMsg.IsChunked())
       { 

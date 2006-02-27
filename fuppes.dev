@@ -1,7 +1,7 @@
 [Project]
 FileName=fuppes.dev
 Name=fuppes
-UnitCount=82
+UnitCount=84
 Type=1
 Ver=1
 ObjFiles=
@@ -54,7 +54,7 @@ BuildCmd=
 Major=0
 Minor=3
 Release=3
-Build=208
+Build=242
 LanguageID=1033
 CharsetID=1252
 CompanyName=
@@ -860,6 +860,26 @@ BuildCmd=
 
 [Unit41]
 FileName=src\UPnPService.h
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit83]
+FileName=src\ContentDirectory\ContentDirectoryDescription.cpp
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit84]
+FileName=src\ConnectionManager\ConnectionManagerDescription.cpp
 CompileCpp=1
 Folder=fuppes
 Compile=1

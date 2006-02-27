@@ -132,13 +132,34 @@ public:
                               unsigned int* p_pnNumberReturned,
                               CUPnPBrowse*  pUPnPBrowse);
 
-    void BuildDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sParentId, std::string p_sChildCount);
+    void BuildDescription(xmlTextWriterPtr pWriter,
+                          CSelectResult* pSQLResult,
+                          CUPnPBrowse*  pUPnPBrowse,
+                          std::string p_sParentId,
+                          std::string p_sChildCount);
   
-    void BuildContainerDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sParentId, std::string p_sChildCount);
-    void BuildItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, OBJECT_TYPE p_nObjectType, std::string p_sParentId);      
-    void BuildAudioItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sObjectID);      
-    void BuildImageItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sObjectID);      
-    void BuildVideoItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, std::string p_sObjectID);
+    void BuildContainerDescription(xmlTextWriterPtr pWriter,
+                                   CSelectResult* pSQLResult,
+                                   CUPnPBrowse*  pUPnPBrowse,
+                                   std::string p_sParentId,
+                                   std::string p_sChildCount);
+    void BuildItemDescription(xmlTextWriterPtr pWriter,
+                              CSelectResult* pSQLResult,
+                              CUPnPBrowse*  pUPnPBrowse,
+                              OBJECT_TYPE p_nObjectType,
+                              std::string p_sParentId);      
+    void BuildAudioItemDescription(xmlTextWriterPtr pWriter,
+                                   CSelectResult* pSQLResult,
+                                   CUPnPBrowse*  pUPnPBrowse,
+                                   std::string p_sObjectID);      
+    void BuildImageItemDescription(xmlTextWriterPtr pWriter,
+                                   CSelectResult* pSQLResult,
+                                   CUPnPBrowse*  pUPnPBrowse,
+                                   std::string p_sObjectID);
+    void BuildVideoItemDescription(xmlTextWriterPtr pWriter,
+                                   CSelectResult* pSQLResult,
+                                   CUPnPBrowse*  pUPnPBrowse,
+                                   std::string p_sObjectID); 
 
 
     std::string HandleUPnPGetSearchCapabilities(CUPnPAction* pAction);

@@ -123,16 +123,10 @@ void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, std::string p_sContent
 }
 
 bool CHTTPMessage::SetMessage(std::string p_sMessage)
-{
-  /*cout << "SET MESSAGE" << endl;
-  fflush(stdout);*/
-     
+{   
   CMessageBase::SetMessage(p_sMessage);  
   CSharedLog::Shared()->DebugLog(LOGNAME, p_sMessage);  
 
-  /*cout << "IN SET MESSAGE" << endl;
-  fflush(stdout);*/
-  
   return BuildFromString(p_sMessage);
 }
 
@@ -195,6 +189,8 @@ std::string CHTTPMessage::GetHeaderAsString()
       sResult << sVersion << " " << "500 Internal Server Error\r\n";
       break;
     default:
+      cout << "MSG: *" << m_sMessage << "*" << endl;
+      fflush(stdout);
       ASSERT(0);                                  
       break;
 	}
@@ -404,8 +400,8 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
     else if(sVersion.compare("1") == 0)		
       m_nHTTPVersion = HTTP_VERSION_1_1;
 
-    m_sRequest = rxGET.Match(1);			
-    bResult = true;
+    m_sRequest = rxGET.Match(1);
+    bResult = true;		
   }
 
   /* Message HEAD */
@@ -420,9 +416,10 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
     else if(sVersion.compare("1") == 0)		
       m_nHTTPVersion = HTTP_VERSION_1_1;
 
-    m_sRequest = rxHEAD.Match(1);			
-    bResult = true;
+    m_sRequest = rxHEAD.Match(1);			   
+    bResult = true;  
   }
+   
   
   /* Message POST */
   RegEx rxPOST("POST +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);

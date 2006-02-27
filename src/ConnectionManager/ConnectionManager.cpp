@@ -39,5 +39,26 @@ std::string CConnectionManager::GetServiceDescription()
 
 bool CConnectionManager::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut)
 {
+  pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_500_INTERNAL_SERVER_ERROR, "text/xml; charset=\"utf-8\"");            
+
+  std::string sContent = 
+  "<?xml version=\"1.0\" encoding=\"utf-8\"?>"  
+  "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
+  "  <s:Body>"
+  "    <s:Fault>"
+  "      <faultcode>s:Client</faultcode>"
+  "      <faultstring>UPnPError</faultstring>"
+  "      <detail>"
+  "        <UPnPError xmlns=\"urn:schemas-upnp-org:control-1-0\">"
+  "          <errorCode>401</errorCode>"
+  "          <errorDescription>Invalid Action</errorDescription>"
+  "        </UPnPError>"
+  "      </detail>"
+  "    </s:Fault>"
+  "  </s:Body>"
+  "</s:Envelope>";
+  
+  pMessageOut->SetContent(sContent);      
+     
   return true;
 }

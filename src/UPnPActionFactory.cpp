@@ -66,7 +66,7 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent)
 
   pTmpNode = pTmpNode->children->next;
   string sName = (char*)pTmpNode->name;
-  cout << sName << endl;
+  //cout << sName << endl;
   
   
   CUPnPAction* pAction = NULL;
@@ -99,7 +99,7 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent)
   if(pAction)
   {
     string sNs = (char*)pTmpNode->nsDef->href;
-    cout << sNs << endl;
+    //cout << sNs << endl;
       
     if(sNs.compare("urn:schemas-upnp-org:service:ContentDirectory:1") == 0)
     {    
@@ -159,7 +159,11 @@ bool CUPnPActionFactory::ParseBrowseAction(CUPnPBrowse* pAction)
   }  
   
   /* Filter */
-  pAction->m_sFilter    = "*";
+  RegEx rxFilter("<Filter>(.+)</Filter>");
+  if(rxFilter.Search(pAction->m_sMessage.c_str()))  
+    pAction->m_sFilter = rxFilter.Match(1);  
+  else
+    pAction->m_sFilter = "*";
 
   /* Starting index */
   RegEx rxStartIdx("<StartingIndex>(.+)</StartingIndex>");

@@ -358,24 +358,30 @@ bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessa
       stringstream sLog;
       sLog << "sending audio file \"" << pItem->GetName() << "\""; 
       CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str()); 
+      
+      delete pItem;
       return true; 
     }
     else
     {
       if(!pItem)
+      {
         CSharedLog::Shared()->Error(LOGNAME, "HandleHTTPGet() :: pItem is NULL");
+        return false;
+      }
       else if(!FileExists(pItem->GetFileName()))
       {
         stringstream sLog;
         sLog << "requested file: \"" << pItem->GetFileName() << "\" not found";
         CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
-      }      
-      
-      return false;
+        pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_404_NOT_FOUND, "text/html");
+        
+        delete pItem;
+        return true;
+      }
     }
-
-    delete pItem;
-  }
+  } /* end AudioItem */
+  
   
   /* ImageItem */
   else if((strRequest.length() > 24) && (strRequest.substr(0, 24).compare("/MediaServer/ImageItems/") == 0))
@@ -391,21 +397,29 @@ bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessa
       stringstream sLog;
       sLog << "sending image file \"" << pItem->GetName() << "\""; 
       CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str()); 
+      
+      delete pItem;
       return true; 
     }
     else
     {
       if(!pItem)
+      {
         CSharedLog::Shared()->Error(LOGNAME, "HandleHTTPGet() :: pItem is NULL");
+        return false;
+      }
       else if(!FileExists(pItem->GetFileName()))
       {
         stringstream sLog;
         sLog << "requested file: \"" << pItem->GetFileName() << "\" not found";
         CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
-      }      
-      return false;
+        pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_404_NOT_FOUND, "text/html");
+        
+        delete pItem;
+        return true;
+      }
     }
-  }  
+  } /* end ImageItem */
   
   /* videoItem */
   else if((strRequest.length() > 24) && (strRequest.substr(0, 24).compare("/MediaServer/VideoItems/") == 0))
@@ -421,21 +435,29 @@ bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessa
       stringstream sLog;
       sLog << "sending video file \"" << pItem->GetName() << "\""; 
       CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str()); 
+      
+      delete pItem;
       return true; 
     }
     else
     {
       if(!pItem)
+      {
         CSharedLog::Shared()->Error(LOGNAME, "HandleHTTPGet() :: pItem is NULL");
+        return false;
+      }
       else if(!FileExists(pItem->GetFileName()))
       {
         stringstream sLog;
         sLog << "requested file: \"" << pItem->GetFileName() << "\" not found";
         CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
-      }      
-      return false;
+        pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_404_NOT_FOUND, "text/html");
+        
+        delete pItem;
+        return true;
+      }
     }
-  }   
+  } /* end video item */   
   
   return false;
 }
