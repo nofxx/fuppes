@@ -393,7 +393,6 @@ std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
   
       xmlTextWriterStartElementNS(resWriter, NULL, BAD_CAST "DIDL-Lite", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite");
           
-          
       unsigned int nNumberReturned = 0;
       unsigned int nTotalMatches   = 0;
          
@@ -408,6 +407,7 @@ std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
           break;        
       }   
   
+      cout << "start idx: " << pUPnPBrowse->m_nStartingIndex << endl;
       cout << "request: " << pUPnPBrowse->m_nRequestedCount << endl;
       cout << "return: " << nNumberReturned << endl;
 
@@ -545,7 +545,6 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
     CContentDatabase::Shared()->Unlock();
     sSql.str("");      
     
-    cout << "begin build description" << endl;
     BuildDescription(pWriter, pRow, sParentId, sChildCount);
   }
 
@@ -564,17 +563,14 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   CContentDatabase::Shared()->Lock();
   CContentDatabase::Shared()->Select(sSql.str());        
   *p_pnTotalMatches  = atoi(CContentDatabase::Shared()->GetResult()->GetValue("COUNT").c_str());
-  string sChildCount = CContentDatabase::Shared()->GetResult()->GetValue("COUNT");
+  //string sChildCount = CContentDatabase::Shared()->GetResult()->GetValue("COUNT");
   CContentDatabase::Shared()->Unlock();
   sSql.str("");
   
   /* get description */
-  /*sSql << "select o.ID, o.TYPE, o.PATH, o.FILE_NAME, o.MIME_TYPE, o.DETAILS, (select count(*) ";
+  sSql << "select o.ID, o.TYPE, o.PATH, o.FILE_NAME, o.MIME_TYPE, o.DETAILS, (select count(*) ";
   sSql << "from OBJECTS p where p.PARENT_ID = o.ID) as COUNT from OBJECTS o where o.PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " ";
-  sSql << "order by o.FILE_NAME ";*/
-  sSql << "select o.ID, o.TYPE, o.PATH, o.FILE_NAME, o.MIME_TYPE, o.DETAILS ";
-  sSql << "from OBJECTS o where o.PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " ";
-  sSql << "order by o.FILE_NAME ";  
+  sSql << "order by o.FILE_NAME ";
   if(pUPnPBrowse->m_nRequestedCount > 0)
     sSql << " limit " << pUPnPBrowse->m_nStartingIndex << ", " << pUPnPBrowse->m_nRequestedCount;        
     
@@ -586,7 +582,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   {
     CSelectResult* pRow = CContentDatabase::Shared()->GetResult();          
     
-    BuildDescription(pWriter, pRow, pUPnPBrowse->m_sObjectID, sChildCount); // pRow->GetValue("COUNT")
+    BuildDescription(pWriter, pRow, pUPnPBrowse->m_sObjectID, pRow->GetValue("COUNT"));
     
     CContentDatabase::Shared()->Next();                    
 

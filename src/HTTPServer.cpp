@@ -192,7 +192,7 @@ void CHTTPServer::CleanupSessions()
         ++tmpIt;                 
         m_ThreadList.erase(m_ThreadListIterator);
         m_ThreadListIterator = tmpIt;
-        delete pInfo;        
+        delete pInfo;
       }      
     }
     else
@@ -219,6 +219,8 @@ fuppesThreadCallback AcceptLoop(void *arg)
 	struct sockaddr_in remote_ep;
 	socklen_t size = sizeof(remote_ep);
 	  
+  unsigned int nLoopCount = 0;
+  
 	while(!pHTTPServer->m_bBreakAccept)
 	{
     /* accept new connections */
@@ -240,8 +242,13 @@ fuppesThreadCallback AcceptLoop(void *arg)
 		} 
     
     /* cleanup closed sessions and sleep am moment */
-    pHTTPServer->CleanupSessions();     
-    fuppesSleep(50);
+    nLoopCount++;
+    if(nLoopCount = 1000)
+    {
+      pHTTPServer->CleanupSessions();
+      nLoopCount = 0;
+    }
+    fuppesSleep(10);
 	}  
 	  
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "exiting accept loop");
