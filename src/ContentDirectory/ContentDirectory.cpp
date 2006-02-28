@@ -149,7 +149,7 @@ bool CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
     /* Handle UPnP browse */
     case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_BROWSE:
       //cout << pUPnPAction->m_sMessage<< endl;       
-      sContent = DbHandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);      
+      sContent = DbHandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);
       //cout << sContent << endl; 
       break;
       

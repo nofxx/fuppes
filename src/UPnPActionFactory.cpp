@@ -58,20 +58,25 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent)
    
   xmlNode* pRootNode = NULL;  
   xmlNode* pTmpNode  = NULL;   
-  pRootNode = xmlDocGetRootElement(pDoc);   
-  
-  pTmpNode = pRootNode->children->next;
-  //string sName = (char*)pTmpNode->name;
-  //cout << sName << endl;
+  pRootNode = xmlDocGetRootElement(pDoc);
+    
+  pTmpNode = NULL;
+  /* get first first-level child element */
+  for(pTmpNode = pRootNode->children; pTmpNode; pTmpNode = pTmpNode->next)
+  {
+    if(pTmpNode->type == XML_ELEMENT_NODE)
+      break;
+  }
 
-  pTmpNode = pTmpNode->children->next;
-  string sName = (char*)pTmpNode->name;
-  //cout << sName << endl;
-  
-  
-  CUPnPAction* pAction = NULL;
-   
-  
+  /* get first second-level element */
+  for(pTmpNode = pTmpNode->children; pTmpNode; pTmpNode = pTmpNode->next)
+  {
+    if(pTmpNode->type == XML_ELEMENT_NODE)
+      break;
+  }
+
+  string sName = (char*)pTmpNode->name;  
+  CUPnPAction* pAction = NULL;  
   
   if(sName.compare("Browse") == 0)
   {

@@ -149,10 +149,10 @@ CUPnPAction* CHTTPMessage::GetAction()
   //BOOL_CHK_RET_POINTER(pAction);
 
   if(!m_pUPnPAction)
-  {
+  {                
     /* Build UPnPAction */  
     CUPnPActionFactory ActionFactory;
-    m_pUPnPAction = ActionFactory.BuildActionFromString(m_sContent);
+    m_pUPnPAction = ActionFactory.BuildActionFromString(m_sContent);  
   }
   return m_pUPnPAction;
 }
@@ -386,6 +386,7 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
   bool bResult = false;
 
   /*cout << "BUILD FROM STR" << endl;
+  cout << p_sMessage << endl;
   fflush(stdout);*/
 
   /* Message GET */
@@ -458,10 +459,9 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
     if(sConnection.compare("close") == 0)
       m_nHTTPConnection = HTTP_CONNECTION_CLOSE;
   }
-
   
   /*cout << "END BUILD FROM STR" << endl;
-  fflush(stdout);  */
+  fflush(stdout);*/
   
   return bResult;
 }

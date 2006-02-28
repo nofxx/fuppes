@@ -269,6 +269,8 @@ fuppesThreadCallback SessionLoop(void *arg)
   bool bDoReceive = true;
   bool bRecvErr = false;
   
+  unsigned int nLoopCnt = 0;
+  
   /* receive message */
   int nTmpRecv = 0;
   while(bDoReceive)
@@ -282,7 +284,6 @@ fuppesThreadCallback SessionLoop(void *arg)
     //fflush(stdout);
     if(nTmpRecv < 0)
     {
-      bRecvErr = true;
       stringstream sLog;
       #ifdef WIN32      
       sLog << "error no. " << WSAGetLastError() << " " << strerror(WSAGetLastError()) << endl;
@@ -291,10 +292,14 @@ fuppesThreadCallback SessionLoop(void *arg)
       if(WSAGetLastError() != WSAEWOULDBLOCK)
       {
         bDoReceive = false;
+        bRecvErr = true;
         break;      
       }
       else
       {
+        cout << nLoopCnt << endl;
+        nLoopCnt++;        
+        fuppesSleep(10);
         continue;
       }   
       #else
@@ -302,6 +307,7 @@ fuppesThreadCallback SessionLoop(void *arg)
       cout << "bytes received: " << nBytesReceived << endl;
       CSharedLog::Shared()->Error(LOGNAME, sLog.str());     
       bDoReceive = false;
+      bRecvErr = true;
       break;      
       #endif
     }                  
@@ -416,19 +422,20 @@ fuppesThreadCallback SessionLoop(void *arg)
 
   /* build response message and send it */
   if(bResult)
-  {
+  {          
     /* build response */
     CHTTPMessage ResponseMsg;  	  	
     bResult = pSession->GetHTTPServer()->CallOnReceive(&ReceivedMessage, &ResponseMsg);  	
     if(!bResult)
-      CSharedLog::Shared()->Error(LOGNAME, "handling HTTP message");      
+      CSharedLog::Shared()->Error(LOGNAME, "handling HTTP message");
+      
     if(bResult)
     {
       //cout << ResponseMsg.GetMessageAsString() << endl << endl;
       
       /*cout << "RESPONSE TO: " << szMsg << endl;
-      fflush(stdout);      
-      cout << "RESPONSE: " << ResponseMsg.GetHeaderAsString() << endl;
+      fflush(stdout);      */
+      /*cout << "RESPONSE: " << ResponseMsg.GetHeaderAsString() << endl;
       fflush(stdout);*/
       if(!ResponseMsg.IsChunked())
       { 
@@ -509,6 +516,7 @@ fuppesThreadCallback SessionLoop(void *arg)
           int nWSAErr = WSAGetLastError();    
           while(nErr < 0 && nWSAErr == 10035)
           {
+            fuppesSleep(10);
             nErr    = send(pSession->GetConnection(), szChunk, nRet, 0);
             nWSAErr = WSAGetLastError();
           }            
@@ -527,11 +535,13 @@ fuppesThreadCallback SessionLoop(void *arg)
             {
               stringstream sLog;
               #ifdef WIN32
-              sLog << "error no. " << WSAGetLastError() << " " << strerror(WSAGetLastError()) << endl;
+              sLog << "send error :: error no. " << WSAGetLastError() << " " << strerror(WSAGetLastError()) << endl;              
+              CSharedLog::Shared()->Error(LOGNAME, sLog.str());     
               #else              
-              sLog << "error no. " << errno << " " << strerror(errno) << endl;
+              sLog << "send error :: error no. " << errno << " " << strerror(errno) << endl;
+              CSharedLog::Shared()->Error(LOGNAME, sLog.str());
               #endif
-              CSharedLog::Shared()->Error(LOGNAME, sLog.str());              
+
             }
             /*else
             {
@@ -553,7 +563,7 @@ fuppesThreadCallback SessionLoop(void *arg)
  
             /*cout << "offset: " << nOffset << endl;
             cout << "send: " << nSend << endl;
-            cout << "length: " << ResponseMsg.GetBinContentLength() << endl;            */
+            cout << "length: " << ResponseMsg.GetBinContentLength() << endl; */
             //cout << "send no.: " << nCnt << endl;
             
           } /* while */

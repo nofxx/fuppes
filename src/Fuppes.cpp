@@ -293,7 +293,7 @@ bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMe
       break;
     case HTTP_MESSAGE_TYPE_404_NOT_FOUND:
       break;
-    default:
+    default:    
         fRet = false;
       break;
   }
@@ -463,7 +463,7 @@ bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessa
 }
 
 bool CFuppes::HandleHTTPPost(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
-{
+{     
   /* Get UPnP action */
   CUPnPAction* pAction;
   pAction = pMessageIn->GetAction();  
@@ -484,7 +484,6 @@ bool CFuppes::HandleHTTPPost(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut
       bRet = false;
       break;
   }
-    
   return bRet;
 }
 
