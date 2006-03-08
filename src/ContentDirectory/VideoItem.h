@@ -26,12 +26,12 @@
 
 #include "UPnPItem.h"
 
-typedef enum tagVIDEO_TYPE
+/*typedef enum tagVIDEO_TYPE
 {
   VIDEO_TYPE_UNKNOWN  =  0,
   VIDEO_TYPE_AVI      =  1,
 	VIDEO_TYPE_MPEG     =  2
-}VIDEO_TYPE;
+}VIDEO_TYPE;*/
 
 class CVideoItem: public CUPnPItem
 {
@@ -63,7 +63,7 @@ class CVideoItem: public CUPnPItem
 /* <\PUBLIC> */  
   
   //private:      
-    VIDEO_TYPE   m_nVideoType;
+    //VIDEO_TYPE   m_nVideoType;
 };
 
 #endif /* _VIDEOITEM_H */

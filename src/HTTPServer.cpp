@@ -429,6 +429,8 @@ fuppesThreadCallback SessionLoop(void *arg)
     if(!bResult)
       CSharedLog::Shared()->Error(LOGNAME, "handling HTTP message");
       
+    unsigned int nRet = 0; 
+    
     if(bResult)
     {
       //cout << ResponseMsg.GetMessageAsString() << endl << endl;
@@ -456,8 +458,24 @@ fuppesThreadCallback SessionLoop(void *arg)
         /* send text message */
         else 
         {           
-          CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending plain text");          
+          CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending plain text");   
+          #ifdef WIN32          
           send(pSession->GetConnection(), ResponseMsg.GetMessageAsString().c_str(), (int)strlen(ResponseMsg.GetMessageAsString().c_str()), 0); 
+          if(nRet == -1)
+          {
+            stringstream sLog;            
+            sLog << "send error :: error no. " << WSAGetLastError() << " " << strerror(WSAGetLastError()) << endl;              
+            CSharedLog::Shared()->Error(LOGNAME, sLog.str());
+          }
+          #else
+          nRet = send(pSession->GetConnection(), ResponseMsg.GetMessageAsString().c_str(), (int)strlen(ResponseMsg.GetMessageAsString().c_str()), MSG_NOSIGNAL); 
+          if(nRet == -1)
+          {
+            stringstream sLog;       
+            sLog << "send error :: error no. " << errno << " " << strerror(errno) << endl;
+            CSharedLog::Shared()->Error(LOGNAME, sLog.str());
+          }          
+          #endif
           CSharedLog::Shared()->DebugLog(LOGNAME, ResponseMsg.GetMessageAsString());
         } 
       }
@@ -483,14 +501,20 @@ fuppesThreadCallback SessionLoop(void *arg)
      /*   cout << ResponseMsg.GetHeaderAsString() << endl;
         fflush(stdout);*/
         
-        unsigned int nRet = 0; 
+        
 
         CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending chunked binary");
         CSharedLog::Shared()->DebugLog(LOGNAME, ResponseMsg.GetHeaderAsString());
         
         /* send header */        
         if(nErr != -1)
+        {
+          #ifdef WIN32
           nErr = send(pSession->GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), 0);             
+          #else
+          nErr = send(pSession->GetConnection(), ResponseMsg.GetHeaderAsString().c_str(), (int)strlen(ResponseMsg.GetHeaderAsString().c_str()), MSG_NOSIGNAL);
+          #endif
+        }
        
         //cout << ResponseMsg.GetHeaderAsString() << endl;
         

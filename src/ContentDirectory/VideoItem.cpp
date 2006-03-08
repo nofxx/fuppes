@@ -31,7 +31,7 @@ using namespace std;
 CVideoItem::CVideoItem(std::string p_sHTTPServerURL, std::string p_sMimeType):
   CUPnPItem(UPNP_OBJECT_TYPE_IMAGE_ITEM, p_sHTTPServerURL, p_sMimeType)
 {
-  m_nVideoType = VIDEO_TYPE_UNKNOWN;
+  //m_nVideoType = VIDEO_TYPE_UNKNOWN;
   m_nSize      = 0;
 }
 

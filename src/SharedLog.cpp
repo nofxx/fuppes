@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -93,25 +93,25 @@ void CSharedLog::SetLogLevel(int p_nLogLevel, bool p_bPrintLogLevel)
   {
     case 0:
       if(p_bPrintLogLevel)
-        std::cout << "logging disabled" << std::endl;
+        std::cout << "log-level: 0 (disabled)" << std::endl;
       break;    
     case 1:
       m_bShowLog = true;
       if(p_bPrintLogLevel)
-        std::cout << "normal logging" << std::endl;
+        std::cout << "log-level: 1 (normal)" << std::endl;
       break;
     case 2:
       m_bShowLog         = true;
       m_bShowExtendedLog = true;
       if(p_bPrintLogLevel)
-        std::cout << "extended logging" << std::endl;
+        std::cout << "log-level: 2 (extended)" << std::endl;
       break;
     case 3:
       m_bShowLog         = true;
       m_bShowExtendedLog = true;
       m_bShowDebugLog    = true;
       if(p_bPrintLogLevel)
-        std::cout << "debug logging" << std::endl;
+        std::cout << "log-level: 3 (debug)" << std::endl;
       break;
     default:
       break;

@@ -148,76 +148,13 @@ bool CSharedConfig::SetupConfig()
   
   cout << "hostname: " << GetHostname() << endl; 
   cout << "address : " << GetIPv4Address() << endl; 
-  cout << endl;  
+  cout << endl;
   
   /* Transcoding */
   #ifndef DISABLE_TRANSCODING  
   CheckForTranscodingLibs();
-  if(!m_bLameAvailable)
-  {
-    cout << endl;
-    cout << "LAME not found. transcoding disabled!" << endl;
-    #ifdef WIN32
-    //cout << "Go to http://sourceforge.net/projects/fuppes/," << endl;
-    cout << "Get a copy of the lame_enc.dll and" << endl;
-    cout << "put it in the application directory." << endl;
-    #endif
-    cout << endl;
-    m_bTranscodingEnabled = false;
-  }
-  else
-  {
-    /* no decoder available */
-    if(!m_bVorbisAvailable && !m_bMusePackAvailable && !m_bFlacAvailable)
-    {
-      m_bTranscodingEnabled = false;
-      cout << endl;
-      cout << "no decoding library found. Transcoding disabled" << endl;
-      cout << endl;
-    }
-    else
-    {
-      cout << "  transcoding" << endl;
-      
-      /* vorbis */
-      cout << "   vorbis  : ";
-      #ifdef DISABLE_VORBIS
-      cout << "compiled without vorbis support" << endl;
-      #else
-      if(m_bVorbisAvailable)
-        cout << "enabled" << endl;
-      else
-        cout << "disabled" << endl;
-      #endif      
-    
-      /* musepack */
-      cout << "   musepack: ";
-      #ifdef DISABLE_MUSEPACK
-      cout << "compiled without MusePack support" << endl;
-      #else
-      if(m_bMusePackAvailable)
-        cout << "enabled" << endl;
-      else
-        cout << "disabled" << endl;
-      #endif
-      
-      /* flac */
-      cout << "   flac    : ";
-      #ifdef DISABLE_FLAC
-      cout << "compiled without FLAC support" << endl;
-      #else
-      cout << "coming soon" << endl;
-      /*if(m_bMusePackAvailable)
-        cout << "yes" << endl;
-      else
-        cout << "no" << endl;*/
-      #endif
-      
-      cout << endl;      
-    }
-  }  
-  #endif  
-  
+  PrintTranscodingSettings();
+  #endif
   return bResult;
 }
 
@@ -237,7 +174,7 @@ string CSharedConfig::GetAppFullname()
 
 string CSharedConfig::GetAppVersion()
 {
-	return "0.3.4";
+	return "0.5";
 }
 
 string CSharedConfig::GetHostname()
@@ -602,6 +539,77 @@ void CSharedConfig::CheckForTranscodingLibs()
   }  
    
   #endif  
+}
+
+void CSharedConfig::PrintTranscodingSettings()
+{
+  #ifdef DISABLE_TRANSCODING 
+  cout << "compiled without transcoding support" << endl;
+  #else
+  if(!m_bLameAvailable)
+  {
+    cout << endl;
+    cout << "LAME not found. transcoding disabled!" << endl;
+    #ifdef WIN32
+    cout << "Get a copy of the lame_enc.dll and" << endl;
+    cout << "put it in the application directory." << endl;
+    #endif
+    cout << endl;
+    m_bTranscodingEnabled = false;
+  }
+  else
+  {
+    /* no decoder available */
+    if(!m_bVorbisAvailable && !m_bMusePackAvailable && !m_bFlacAvailable)
+    {
+      m_bTranscodingEnabled = false;
+      cout << endl;
+      cout << "no decoding library found. transcoding disabled" << endl;
+      cout << endl;
+    }
+    else
+    {
+      cout << "transcoding" << endl;
+      
+      /* vorbis */
+      cout << " vorbis  : ";
+      #ifdef DISABLE_VORBIS
+      cout << "compiled without vorbis support" << endl;
+      #else
+      if(m_bVorbisAvailable)
+        cout << "enabled" << endl;
+      else
+        cout << "disabled" << endl;
+      #endif      
+    
+      /* musepack */
+      cout << " musepack: ";
+      #ifdef DISABLE_MUSEPACK
+      cout << "compiled without MusePack support" << endl;
+      #else
+      if(m_bMusePackAvailable)
+        cout << "enabled" << endl;
+      else
+        cout << "disabled" << endl;
+      #endif
+      
+      /* flac */
+      cout << " flac    : ";
+      #ifdef DISABLE_FLAC
+      cout << "compiled without FLAC support" << endl;
+      #else
+      cout << "coming soon" << endl;
+      /*if(m_bFlacAvailable)
+        cout << "enabled" << endl;
+      else
+        cout << "disabled" << endl;*/
+      #endif
+      
+      cout << endl;      
+    }
+  }
+  #endif  
+    
 }
 
 /* <\PRIVATE> */

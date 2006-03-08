@@ -83,6 +83,29 @@ void SignalHandler(int p_nSignal)
   }*/
 }
 
+void PrintHelp()
+{  
+  cout << endl;  
+  cout << "l = change log-level" << endl;
+  cout << "    (disabled, normal, extended, debug) default is \"normal\"" << endl;
+  cout << "i = print system info" << endl; 
+  cout << "r = rebuild database" << endl;
+  cout << "h = print this help" << endl;  
+  cout << endl;
+  cout << "m = send m-search" << endl;
+  cout << "a = send notify-alive" << endl;
+  cout << "b = send notify-byebye" << endl;
+  cout << endl;
+  
+  #ifdef WIN32
+  cout << "q = quit" << endl;  
+  #else
+  cout << "ctrl-c or q = quit" << endl;
+  #endif
+
+  cout << endl;  
+}
+
 /*===============================================================================
  MAIN
 ===============================================================================*/
@@ -182,17 +205,15 @@ int main(int argc, char* argv[])
   cout << "Webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
   //cout << "Webinterface: http://" << pFuppes2->GetHTTPServerURL() << "/index.html" << endl;
   cout << endl;
-  cout << "m = send m-search" << endl;
-  cout << "a = send notify-alive" << endl;
-  cout << "b = send notify-byebye" << endl;
-  cout << "l = toggle logging" << endl;
-  cout << "i = info" << endl; 
-  cout << "r = rebuild database" << endl; 
+  cout << "l = change log-level" << endl;
+  cout << "i = print system info" << endl; 
+  cout << "r = rebuild database" << endl;
+  cout << "h = print help" << endl;
   cout << endl;
   #ifdef WIN32
-  cout << "press \"q\" to  quit" << endl;  
+  cout << "press \"q\" to quit" << endl;  
   #else
-  cout << "press \"ctrl-c\" to  quit" << endl;
+  cout << "press \"ctrl-c\" or \"q\" to quit" << endl;
   #endif
   cout << endl;
   
@@ -228,12 +249,16 @@ int main(int argc, char* argv[])
         pFuppes->GetSSDPCtrl()->send_byebye();
       else if (input == "l")
         CSharedLog::Shared()->ToggleLog();    
+      else if (input == "h")
+        PrintHelp();
       else if (input == "i")
       {
         cout << "version     : " << CSharedConfig::Shared()->GetAppVersion() << endl;
         cout << "hostname    : " << CSharedConfig::Shared()->GetHostname() << endl;
         cout << "address     : " << CSharedConfig::Shared()->GetIPv4Address() << endl;    
-        cout << "webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;          
+        cout << "webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
+        cout << endl;
+        CSharedConfig::Shared()->PrintTranscodingSettings();
       }
       else if (input == "r")
         pFuppes->GetContentDirectory()->BuildDB();

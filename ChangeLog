@@ -1,15 +1,32 @@
-Version 0.3.4 (2006-02-??)
+Version 0.5 (2006-03-??)
   * HTTP-Server
   ** fixed some minor bugs
   ** implemented byte-range request handling
   ** Header Field "Date" now shows the real current GMT
-  
+  ** (win32) handling of socket error WSAEWOULDBLOCK
+
   * SSDP-Controller
-  ** discovery mechanism (Advertising, Searching, etc...) UPnP compliant
-  
+  ** implemented correct handling of the MX-value
+  ** improved SSDP-message parsing
+  ** referring to the "Intel DeviceValidator" the discovery mechanism
+     (Advertising, Searching, etc...) is now UPnP 1.0 compliant
+
   * ContentDirectory:
   ** database access thread safe
   ** avi-file handling
+  ** fixed and improved handling of UPnP-Action Browse
+  *** BrowseFlag Metadata support
+  *** Filter support
+  ** UPnPGetSearchCapabilities()
+  ** UPnPGetSortCapabilities()
+  ** UPnPGetSystemUpdateID()
+  ** referring to the "Intel DeviceValidator" the ContentDirectory 
+     now implements the minimal required functionality for the UPnP 1.0
+     standard. Fuppes passes the ContentDirectory test scenario.
+
+  * removed comments from ContentDirectoryDescription.xml. with the comments
+    Nero ShowTime crashed.
+  * fixed a minor memory leak in the SSDP and HTTP session handling
 
 Version 0.3.3 (2006-01-15)
   * added "rebuild database" option
