@@ -232,7 +232,7 @@ void CSharedLog::Critical(std::string p_sSender, std::string p_sMessage)
 void CSharedLog::Error(std::string p_sSender, std::string p_sMessage)
 {
   #ifndef DISABLELOG  
-  if (m_bShowLog)
+  if (m_bShowExtendedLog)
   {
     fuppesThreadLockMutex(&m_Mutex);    
     std::cout << "[ERROR :: " << p_sSender << "] " << p_sMessage << std::endl;  

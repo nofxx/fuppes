@@ -243,7 +243,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
     
     /* cleanup closed sessions and sleep am moment */
     nLoopCount++;
-    if(nLoopCount = 1000)
+    if(nLoopCount = 10)
     {
       pHTTPServer->CleanupSessions();
       nLoopCount = 0;
@@ -288,7 +288,7 @@ fuppesThreadCallback SessionLoop(void *arg)
       #ifdef WIN32      
       sLog << "error no. " << WSAGetLastError() << " " << strerror(WSAGetLastError()) << endl;
       CSharedLog::Shared()->Error(LOGNAME, sLog.str());           
-      cout << "bytes received: " << nBytesReceived << endl;
+      //cout << "bytes received: " << nBytesReceived << endl;
       if(WSAGetLastError() != WSAEWOULDBLOCK)
       {
         bDoReceive = false;
@@ -297,14 +297,14 @@ fuppesThreadCallback SessionLoop(void *arg)
       }
       else
       {
-        cout << nLoopCnt << endl;
+        //cout << nLoopCnt << endl;
         nLoopCnt++;        
         fuppesSleep(10);
         continue;
       }   
       #else
       sLog << "error no. " << errno << " " << strerror(errno) << endl;
-      cout << "bytes received: " << nBytesReceived << endl;
+      //cout << "bytes received: " << nBytesReceived << endl;
       CSharedLog::Shared()->Error(LOGNAME, sLog.str());     
       bDoReceive = false;
       bRecvErr = true;
@@ -335,8 +335,9 @@ fuppesThreadCallback SessionLoop(void *arg)
     }
     else if(nTmpRecv == 0)
     {
-      cout << "connection gracefully closed" << endl;
-      fflush(stdout);
+      /*cout << "connection gracefully closed" << endl;
+      fflush(stdout);*/
+      
       /* close connection */
       upnpSocketClose(pSession->GetConnection()); 
       bDoReceive = false;

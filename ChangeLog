@@ -1,4 +1,4 @@
-Version 0.5 (2006-03-??)
+Version 0.5 (2006-03-11)
   * HTTP-Server
   ** fixed some minor bugs
   ** implemented byte-range request handling
@@ -27,6 +27,7 @@ Version 0.5 (2006-03-??)
   * removed comments from ContentDirectoryDescription.xml. with the comments
     Nero ShowTime crashed.
   * fixed a minor memory leak in the SSDP and HTTP session handling
+  * (win32) update SQLite to 3.3.4
 
 Version 0.3.3 (2006-01-15)
   * added "rebuild database" option

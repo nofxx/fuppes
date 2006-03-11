@@ -248,9 +248,9 @@ std::string CHTTPMessage::GetHeaderAsString()
     sResult << "/" << m_nBinContentLength << "\r\n";
   }
   
-  //sResult << "contentFeatures.dlna.org: \r\n";
+  sResult << "contentFeatures.dlna.org: \r\n";
   
-	//sResult << "EXT: \r\n";
+	sResult << "EXT: \r\n";
 	
   /* Transfer-Encoding */
   if(m_nHTTPVersion == HTTP_VERSION_1_1)

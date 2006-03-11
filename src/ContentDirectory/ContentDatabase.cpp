@@ -32,26 +32,6 @@
  
 using namespace std;
 
-
-CContentDatabase* CContentDatabase::m_Instance = 0;
-
-CContentDatabase* CContentDatabase::Shared()
-{
-	if (m_Instance == 0)
-		m_Instance = new CContentDatabase();
-	return m_Instance;
-}
-
-std::string CContentDatabase::GetLibVersion()
-{
-  return sqlite3_libversion();
-}
-
-std::string CSelectResult::GetValue(std::string p_sFieldName)
-{
-  return m_FieldValues[p_sFieldName];
-}
-
 const string LOGNAME = "ContentDatabase";
  
 static int SelectCallback(void *pDatabase, int argc, char **argv, char **azColName)
@@ -73,11 +53,20 @@ static int SelectCallback(void *pDatabase, int argc, char **argv, char **azColNa
     
   /* select first entry */
   ((CContentDatabase*)pDatabase)->m_ResultListIterator = ((CContentDatabase*)pDatabase)->m_ResultList.begin();
-  
 
   return 0;
 }
- 
+
+
+CContentDatabase* CContentDatabase::m_Instance = 0;
+
+CContentDatabase* CContentDatabase::Shared()
+{
+	if (m_Instance == 0)
+		m_Instance = new CContentDatabase();
+	return m_Instance;
+}
+
 CContentDatabase::CContentDatabase()
 { 
   stringstream sDbFile;
@@ -94,6 +83,16 @@ CContentDatabase::~CContentDatabase()
   fuppesThreadDestroyMutex(&m_Mutex);
   ClearResult();
   sqlite3_close(m_pDbHandle);
+}
+
+std::string CContentDatabase::GetLibVersion()
+{
+  return sqlite3_libversion();
+}
+
+std::string CSelectResult::GetValue(std::string p_sFieldName)
+{
+  return m_FieldValues[p_sFieldName];
 }
 
 bool CContentDatabase::Init(bool* p_bIsNewDB)
@@ -146,17 +145,20 @@ void CContentDatabase::Unlock()
 
 void CContentDatabase::ClearResult()
 {
-  /* clear old results */
-  m_ResultListIterator = m_ResultList.begin();
-  while(m_ResultListIterator != m_ResultList.end())
-  {    
-    if(m_ResultList.size() == 0)
+  /* clear old results */ 
+  for(m_ResultListIterator = m_ResultList.begin(); m_ResultListIterator != m_ResultList.end();)
+  {
+    if(m_ResultList.empty())
       break;
     
     CSelectResult* pResult = *m_ResultListIterator;
-    m_ResultListIterator = m_ResultList.erase(m_ResultListIterator);    
+    std::list<CSelectResult*>::iterator tmpIt = m_ResultListIterator;          
+    ++tmpIt;
+    m_ResultList.erase(m_ResultListIterator);
+    m_ResultListIterator = tmpIt;
     delete pResult;
-  }  
+  } 
+  
   m_nRowsReturned = 0;
 }
 

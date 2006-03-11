@@ -2,7 +2,7 @@ DevC++ Projet files
 
 copy mpcdec.dev to libmpcdec-1.2.2\win32
 
-copy sqlite3.dev to sqlite-source-3_2_8
+copy sqlite3.dev to sqlite-source-3_3_4
 
 copy ogg.dev to libogg-1.1.2\win32
 

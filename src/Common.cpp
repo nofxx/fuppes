@@ -412,11 +412,11 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle)
       bResult = true;
       break;
     case WAIT_TIMEOUT:
-      cout << "WAIT_TIMEOUT :: " << nErrNo << endl;
+      cout << "fuppesThreadClose() :: WAIT_TIMEOUT (" << nErrNo << ")" << endl;      
       fflush(stdout);
       break;
     case WAIT_FAILED:
-      cout << "WAIT_FAILED :: " << nErrNo << endl;
+      cout << "fuppesThreadClose() :: WAIT_FAILED (" << nErrNo << ")" << endl;
       fflush(stdout);
       break;
     default:

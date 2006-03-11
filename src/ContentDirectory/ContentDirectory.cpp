@@ -540,13 +540,15 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
     {
       sParentId = "0";
     }   
-    
-    CContentDatabase::Shared()->Unlock();
+   
+
     sSql.str("");      
     
     BuildDescription(pWriter, pRow, pUPnPBrowse, sParentId, sChildCount);
-  }
 
+    CContentDatabase::Shared()->ClearResult();
+    CContentDatabase::Shared()->Unlock();
+  }
 }
 
 
@@ -563,6 +565,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   CContentDatabase::Shared()->Select(sSql.str());        
   *p_pnTotalMatches  = atoi(CContentDatabase::Shared()->GetResult()->GetValue("COUNT").c_str());
   //string sChildCount = CContentDatabase::Shared()->GetResult()->GetValue("COUNT");
+  CContentDatabase::Shared()->ClearResult();
   CContentDatabase::Shared()->Unlock();
   sSql.str("");
   
@@ -595,6 +598,8 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
     tmpInt++;
     //cout << tmpInt << endl;
   }        
+  
+  CContentDatabase::Shared()->ClearResult();
   CContentDatabase::Shared()->Unlock();                          
   *p_pnNumberReturned = tmpInt;
 }
