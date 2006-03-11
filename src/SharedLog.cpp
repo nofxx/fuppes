@@ -119,6 +119,31 @@ void CSharedLog::SetLogLevel(int p_nLogLevel, bool p_bPrintLogLevel)
 
 }
 
+std::string CSharedLog::GetLogLevel()
+{
+  std::string sResult;
+  
+  switch(m_nLogLevel)
+  {
+    case 0:      
+      sResult = "0 (disabled)";
+      break;    
+    case 1:
+      sResult = "1 (normal)";
+      break;
+    case 2:
+      sResult = "2 (extended)";
+      break;
+    case 3:
+      sResult = "3 (debug)";
+      break;
+    default:
+      break;
+  }  
+  
+  return sResult;
+}
+
 void CSharedLog::ToggleLog()
 {
   if(m_nLogLevel < 3)
@@ -194,7 +219,7 @@ void CSharedLog::Warning(std::string p_sSender, std::string p_sMessage)
 void CSharedLog::Critical(std::string p_sSender, std::string p_sMessage)
 {
   #ifndef DISABLELOG  
-  if(m_bShowLog)
+  if(m_bShowExtendedLog)
   {
     fuppesThreadLockMutex(&m_Mutex);    
     std::cout << "[CRITICAL :: " << p_sSender << "] " << p_sMessage << std::endl;  

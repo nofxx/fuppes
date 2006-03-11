@@ -32,6 +32,7 @@
 #include "SharedLog.h"
 #include "Fuppes.h"
 #include "Presentation/PresentationHandler.h"
+#include "ContentDirectory/ContentDatabase.h"
 
 #ifndef WIN32
 #include <fcntl.h>
@@ -205,9 +206,9 @@ int main(int argc, char* argv[])
   cout << "Webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
   //cout << "Webinterface: http://" << pFuppes2->GetHTTPServerURL() << "/index.html" << endl;
   cout << endl;
-  cout << "l = change log-level" << endl;
-  cout << "i = print system info" << endl; 
+  cout << "l = change log-level" << endl;  
   cout << "r = rebuild database" << endl;
+  cout << "i = print system info" << endl;
   cout << "h = print help" << endl;
   cout << endl;
   #ifdef WIN32
@@ -253,10 +254,13 @@ int main(int argc, char* argv[])
         PrintHelp();
       else if (input == "i")
       {
-        cout << "version     : " << CSharedConfig::Shared()->GetAppVersion() << endl;
-        cout << "hostname    : " << CSharedConfig::Shared()->GetHostname() << endl;
-        cout << "address     : " << CSharedConfig::Shared()->GetIPv4Address() << endl;    
-        cout << "webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
+        cout << "general information:" << endl;
+        cout << "  version     : " << CSharedConfig::Shared()->GetAppVersion() << endl;
+        cout << "  hostname    : " << CSharedConfig::Shared()->GetHostname() << endl;
+        cout << "  address     : " << CSharedConfig::Shared()->GetIPv4Address() << endl;
+        cout << "  sqlite      : " << CContentDatabase::Shared()->GetLibVersion() << endl;
+        cout << "  log-level   : " << CSharedLog::Shared()->GetLogLevel() << endl;
+        cout << "  webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;        
         cout << endl;
         CSharedConfig::Shared()->PrintTranscodingSettings();
       }

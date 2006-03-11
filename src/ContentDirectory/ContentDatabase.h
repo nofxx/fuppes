@@ -84,6 +84,8 @@ class CContentDatabase
     CContentDatabase();
     ~CContentDatabase();
   
+    std::string GetLibVersion();
+
     bool Init(bool* p_bIsNewDB);
   
     long long int Insert(std::string p_sStatement);

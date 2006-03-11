@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -138,7 +138,7 @@ bool CVorbisDecoder::OpenFile(std::string p_sFileName)
 
   m_pVorbisInfo = m_OvInfo(&m_VorbisFile, -1);
      
-  char **ptr = m_OvComment(&m_VorbisFile,-1)->user_comments;
+  /*char **ptr = m_OvComment(&m_VorbisFile,-1)->user_comments;
   while(*ptr)
   {
     fprintf(stderr,"%s\n",*ptr);
@@ -146,7 +146,7 @@ bool CVorbisDecoder::OpenFile(std::string p_sFileName)
   }
   fprintf(stderr,"\nBitstream is %d channel, %ldHz\n", m_pVorbisInfo->channels, m_pVorbisInfo->rate);
   //fprintf(stderr,"\nDecoded length: %ld samples\n", (long)ov_pcm_total(&m_VorbisFile, -1));
-  fprintf(stderr,"Encoded by: %s\n\n", m_OvComment(&m_VorbisFile,-1)->vendor);
+  fprintf(stderr,"Encoded by: %s\n\n", m_OvComment(&m_VorbisFile,-1)->vendor);*/
   
   return true;
 }

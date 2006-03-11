@@ -153,7 +153,7 @@ bool CSharedConfig::SetupConfig()
   /* Transcoding */
   #ifndef DISABLE_TRANSCODING  
   CheckForTranscodingLibs();
-  PrintTranscodingSettings();
+  //PrintTranscodingSettings();
   #endif
   return bResult;
 }
@@ -569,10 +569,10 @@ void CSharedConfig::PrintTranscodingSettings()
     }
     else
     {
-      cout << "transcoding" << endl;
+      cout << "transcoding settings:" << endl;
       
       /* vorbis */
-      cout << " vorbis  : ";
+      cout << "  vorbis  : ";
       #ifdef DISABLE_VORBIS
       cout << "compiled without vorbis support" << endl;
       #else
@@ -583,7 +583,7 @@ void CSharedConfig::PrintTranscodingSettings()
       #endif      
     
       /* musepack */
-      cout << " musepack: ";
+      cout << "  musepack: ";
       #ifdef DISABLE_MUSEPACK
       cout << "compiled without MusePack support" << endl;
       #else
@@ -594,7 +594,7 @@ void CSharedConfig::PrintTranscodingSettings()
       #endif
       
       /* flac */
-      cout << " flac    : ";
+      cout << "  flac    : ";
       #ifdef DISABLE_FLAC
       cout << "compiled without FLAC support" << endl;
       #else

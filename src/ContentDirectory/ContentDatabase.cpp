@@ -42,6 +42,10 @@ CContentDatabase* CContentDatabase::Shared()
 	return m_Instance;
 }
 
+std::string CContentDatabase::GetLibVersion()
+{
+  return sqlite3_libversion();
+}
 
 std::string CSelectResult::GetValue(std::string p_sFieldName)
 {

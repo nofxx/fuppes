@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -79,7 +79,8 @@ public:
   /** set the level of log verbosity
    *  @param  p_nLogLevel  0 = no log, 1 = std log, 2 = extended log, 3 = debug log
    */
-  void  SetLogLevel(int p_nLogLevel, bool p_bPrintLogLevel = true);
+  void  SetLogLevel(int p_nLogLevel, bool p_bPrintLogLevel = true);  
+  std::string GetLogLevel();
   
   void  ToggleLog();
   
