@@ -47,6 +47,10 @@
   #include "Transcoding/MpcWrapper.h"
   #endif
 
+  #ifndef DISABLE_FLAC
+  #include "Transcoding/FlacWrapper.h"
+  #endif
+
 #endif
 
 #include "RegEx.h"
@@ -265,7 +269,8 @@ std::string CHTTPMessage::GetHeaderAsString()
   time_t tTime = time(NULL);
   strftime(szTime, 30,"%a, %d %b %Y %H:%M:%S GMT" , gmtime(&tTime));   
 	sResult << "DATE: " << szTime << "\r\n";    
-  sResult << "SERVER: Linux/2.6.x, UPnP/1.0, ";
+  sResult << "SERVER: " << CSharedConfig::Shared()->GetOSName() << "/" << CSharedConfig::Shared()->GetOSVersion() << ", ";
+  sResult << "UPnP/1.0, ";
   sResult << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << "\r\n";
   
 	
@@ -538,6 +543,12 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   {
     #ifndef DISABLE_MUSEPACK
     pDecoder = new CMpcDecoder();
+    #endif
+  }
+  else if(ToLower(sExt).compare("flac") == 0)
+  {
+    #ifndef DISABLE_FLAC
+    pDecoder = new CFLACDecoder();
     #endif
   }
 

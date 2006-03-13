@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -74,6 +74,7 @@ const std::string MIME_TYPE_TEXT_HTML = "text/html";
 
 /* audio types */
 const std::string MIME_TYPE_AUDIO_MPEG              = "audio/mpeg";
+const std::string MIME_TYPE_AUDIO_X_FLAC            = "audio/x-flac";
 const std::string MIME_TYPE_APPLICATION_OCTETSTREAM = "application/octet-stream";
 //const std::string MIME_TYPE_AUDIO_X_PN_REALAUDIO    = "audio/x-pn-realaudio";
 

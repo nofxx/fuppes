@@ -31,6 +31,7 @@
 #include "../SharedConfig.h"
 #include "../SharedLog.h"
 #include "../Common.h"
+#include "../ContentDirectory/ContentDatabase.h"
 
 #include "Images/fuppes_png.cpp"
 #include "Images/fuppes_small_png.cpp"
@@ -242,7 +243,7 @@ std::string CPresentationHandler::GetPageFooter(PRESENTATION_PAGE p_nPresentatio
 {
   std::stringstream sResult;
   
-  sResult << "<p style=\"padding-top: 20pt; text-align: center;\"><small>copyright &copy; 2005 Ulrich V&ouml;lkel<!--<br />distributed under the GPL--></small></p>";
+  sResult << "<p style=\"padding-top: 20pt; text-align: center;\"><small>copyright &copy; 2005, 2006 Ulrich V&ouml;lkel<!--<br />distributed under the GPL--></small></p>";
 
   sResult << "</div>" << endl;
   
@@ -294,8 +295,15 @@ std::string CPresentationHandler::GetAboutHTML()
   sResult << "<h2>About</h2>" << endl;
   sResult << "<a href=\"http://sourceforge.net/projects/fuppes/\">http://sourceforge.net/projects/fuppes/</a><br />" << endl;
   
-  sResult << __DATE__ << " " << __TIME__ "<br /><i>build with:</i> " << __VERSION__;  
-
+  sResult << "Version: " << CSharedConfig::Shared()->GetAppVersion() << "<br />" << endl;
+  sResult << "Hostname: " << CSharedConfig::Shared()->GetHostname() << "<br />" << endl;
+  sResult << "OS: " << CSharedConfig::Shared()->GetOSName() << " " << CSharedConfig::Shared()->GetOSVersion() << "<br />" << endl;
+  sResult << "SQLite: " << CContentDatabase::Shared()->GetLibVersion() << "<br />" << endl;
+  
+  sResult << "<br />" << endl;
+  sResult << "build at: " << __DATE__ << "" << __TIME__ "<br />" << endl;
+  sResult << "build with: " << __VERSION__ << "<br />" << endl;
+  
   return sResult.str();
 }
 

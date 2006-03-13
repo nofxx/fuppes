@@ -257,6 +257,7 @@ int main(int argc, char* argv[])
         cout << "general information:" << endl;
         cout << "  version     : " << CSharedConfig::Shared()->GetAppVersion() << endl;
         cout << "  hostname    : " << CSharedConfig::Shared()->GetHostname() << endl;
+        cout << "  OS          : " << CSharedConfig::Shared()->GetOSName() << " " << CSharedConfig::Shared()->GetOSVersion() << endl;
         cout << "  address     : " << CSharedConfig::Shared()->GetIPv4Address() << endl;
         cout << "  sqlite      : " << CContentDatabase::Shared()->GetLibVersion() << endl;
         cout << "  log-level   : " << CSharedLog::Shared()->GetLogLevel() << endl;

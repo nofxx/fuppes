@@ -94,6 +94,9 @@ protected:
 	
 	std::string GetHostname();
 	std::string GetUUID();
+  
+  std::string GetOSName();
+  std::string GetOSVersion();
 	
 	std::string GetIPv4Address();
 	unsigned int GetHTTPPort() { return m_nHTTPPort; }
@@ -128,6 +131,9 @@ private:
   std::string m_sHostname;
 	std::string m_sIP;
   std::string m_sUUID;
+  std::string m_sOSName;
+  std::string m_sOSVersion;
+
   std::vector<std::string> m_vSharedDirectories;
   unsigned int m_nHTTPPort;
   bool m_bTranscodingEnabled;
@@ -153,6 +159,7 @@ private:
   bool FileExists(std::string p_sFileName);
   bool WriteDefaultConfig(std::string p_sFileName);
   void CheckForTranscodingLibs();
+  bool GetOSInfo();
   
 
 /* <\PRIVATE> */

@@ -43,6 +43,7 @@ h_sources = \
   Transcoding/LameWrapper.h\
   Transcoding/VorbisWrapper.h\
   Transcoding/MpcWrapper.h\
+  Transcoding/FlacWrapper.h\
 	SharedConfig.h\
   SharedLog.h\
 	Fuppes.h\
@@ -86,6 +87,7 @@ cpp_sources = \
   Transcoding/LameWrapper.cpp\
   Transcoding/VorbisWrapper.cpp\
   Transcoding/MpcWrapper.cpp\
+  Transcoding/FlacWrapper.cpp\
 	SharedConfig.cpp\
   SharedLog.cpp\
 	Fuppes.cpp\

@@ -49,6 +49,7 @@
 #include <fstream>
 #include <sstream>
 #include <sys/stat.h>
+#include <sys/utsname.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/xmlwriter.h>
@@ -69,6 +70,10 @@
 
 #ifndef DISABLE_MUSEPACK
 #include "Transcoding/MpcWrapper.h"
+#endif
+
+#ifndef DISABLE_FLAC
+#include "Transcoding/FlacWrapper.h"
 #endif
 
 #endif
@@ -149,7 +154,11 @@ bool CSharedConfig::SetupConfig()
   cout << "hostname: " << GetHostname() << endl; 
   cout << "address : " << GetIPv4Address() << endl; 
   cout << endl;
-  
+
+  /* OS information */
+  GetOSInfo();
+
+
   /* Transcoding */
   #ifndef DISABLE_TRANSCODING  
   CheckForTranscodingLibs();
@@ -174,7 +183,7 @@ string CSharedConfig::GetAppFullname()
 
 string CSharedConfig::GetAppVersion()
 {
-	return "0.5";
+	return "0.5.1a";
 }
 
 string CSharedConfig::GetHostname()
@@ -536,6 +545,13 @@ void CSharedConfig::CheckForTranscodingLibs()
     m_bMusePackAvailable = pMuse->LoadLib();
     delete pMuse;
     #endif
+    
+    /* FLAC */
+    #ifndef DISABLE_FLAC
+    CFLACDecoder* pFlac = new CFLACDecoder();
+    m_bFlacAvailable = pFlac->LoadLib();
+    delete pFlac;
+    #endif
   }  
    
   #endif  
@@ -598,11 +614,10 @@ void CSharedConfig::PrintTranscodingSettings()
       #ifdef DISABLE_FLAC
       cout << "compiled without FLAC support" << endl;
       #else
-      cout << "coming soon" << endl;
-      /*if(m_bFlacAvailable)
+      if(m_bFlacAvailable)
         cout << "enabled" << endl;
       else
-        cout << "disabled" << endl;*/
+        cout << "disabled" << endl;
       #endif
       
       cout << endl;      
@@ -610,6 +625,37 @@ void CSharedConfig::PrintTranscodingSettings()
   }
   #endif  
     
+}
+
+std::string CSharedConfig::GetOSName()
+{
+  return m_sOSName;
+}
+
+std::string CSharedConfig::GetOSVersion()
+{
+  return m_sOSVersion;
+}
+
+bool CSharedConfig::GetOSInfo()
+{
+  bool bResult = true;
+  
+  #ifdef WIN32
+  m_sOSName    = "Windows";
+  m_sOSVersion = "3.11";
+  #else  
+  struct utsname sUtsName;
+  uname(&sUtsName);  
+  m_sOSName    = sUtsName.sysname;
+  m_sOSVersion = sUtsName.release;
+  /*cout << sUtsName.sysname << endl;
+  cout << sUtsName.release << endl;
+  cout << sUtsName.version << endl;
+  cout << sUtsName.machine << endl;*/
+  #endif   
+  
+  return bResult;
 }
 
 /* <\PRIVATE> */

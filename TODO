@@ -1,0 +1,20 @@
+* audio transcoding:
+  * AAC (http://www.audiocoding.com/)
+  * FLAC
+
+* playlist handling
+  * m3u
+  * pls
+  
+* eventing
+
+* AVTransport
+
+* ContentDirectory
+  * Browse
+    * Filter
+    * Sort
+    
+* ConnectionManager
+
+* AVTransport

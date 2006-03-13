@@ -82,7 +82,12 @@ std::string CFileDetails::GetMimeType(std::string p_sFileName)
     if(CSharedConfig::Shared()->IsTranscodingExtension(sExt))
       return MIME_TYPE_AUDIO_MPEG;
     else
-      return MIME_TYPE_APPLICATION_OCTETSTREAM;
+    {
+      if((sExt.compare("ogg") == 0) || (sExt.compare("mpc") == 0))
+        return MIME_TYPE_APPLICATION_OCTETSTREAM;
+      else if(sExt.compare("flac") == 0)
+        return MIME_TYPE_AUDIO_X_FLAC;
+    }
   }
   
   /* image types */
