@@ -184,8 +184,12 @@ void CHTTPServer::CleanupSessions()
     
     /* and close terminated threads */
     CHTTPSessionInfo* pInfo = *m_ThreadListIterator;   
+    #ifdef WIN32
+    if(pInfo)
+    #else
     if(pInfo && pInfo->m_bIsTerminated)
-    {        
+    #endif
+    {
       if(fuppesThreadClose(pInfo->GetThreadHandle()))     
       {       
         std::list<CHTTPSessionInfo*>::iterator tmpIt = m_ThreadListIterator;      
@@ -193,7 +197,11 @@ void CHTTPServer::CleanupSessions()
         m_ThreadList.erase(m_ThreadListIterator);
         m_ThreadListIterator = tmpIt;
         delete pInfo;
-      }      
+      }
+      else
+      {
+        m_ThreadListIterator++;        
+      }     
     }
     else
     {

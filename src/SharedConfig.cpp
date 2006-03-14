@@ -49,7 +49,10 @@
 #include <fstream>
 #include <sstream>
 #include <sys/stat.h>
+#ifdef WIN32
+#else
 #include <sys/utsname.h>
+#endif
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/xmlwriter.h>

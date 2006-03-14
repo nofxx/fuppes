@@ -399,12 +399,12 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle)
 {     
   #ifdef WIN32  
   bool bResult = false;
-  DWORD nErrNo = WaitForSingleObject(p_ThreadHandle, INFINITE);
+  DWORD nErrNo = WaitForSingleObject(p_ThreadHandle, 50);
   switch(nErrNo)
   {
     case WAIT_ABANDONED:
-      /*cout << "WAIT_ABANDONED :: " << nErrNo << endl;
-      fflush(stdout);*/
+      cout << "WAIT_ABANDONED :: " << nErrNo << endl;
+      fflush(stdout);
       break;
     case WAIT_OBJECT_0:
       //cout << "WAIT_OBJECT_0 :: " << nErrNo << endl;
@@ -412,8 +412,8 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle)
       bResult = true;
       break;
     case WAIT_TIMEOUT:
-      cout << "fuppesThreadClose() :: WAIT_TIMEOUT (" << nErrNo << ")" << endl;      
-      fflush(stdout);
+      /*cout << "fuppesThreadClose() :: WAIT_TIMEOUT (" << nErrNo << ")" << endl;      
+      fflush(stdout);*/
       break;
     case WAIT_FAILED:
       cout << "fuppesThreadClose() :: WAIT_FAILED (" << nErrNo << ")" << endl;
@@ -421,6 +421,7 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle)
       break;
     default:
       cout << "fuppesThreadClose - DEFAULT :: " << nErrNo << endl;      
+      fflush(stdout);      
       break;            
   }
   return bResult;
