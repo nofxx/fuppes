@@ -53,8 +53,6 @@ const string LOGNAME = "HTTPServer";
 fuppesThreadCallback AcceptLoop(void *arg);
 fuppesThreadCallback SessionLoop(void *arg);
 
-fuppesThreadMutex ReceiveMutex;
-
 /*===============================================================================
  CLASS CHTTPServer
 ===============================================================================*/
@@ -68,7 +66,7 @@ fuppesThreadMutex ReceiveMutex;
 CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 {
 	accept_thread = (fuppesThread)NULL;
-	fuppesThreadInitMutex(&ReceiveMutex);
+	fuppesThreadInitMutex(&m_ReceiveMutex);  	
   	
   /* create socket */
 	m_Socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -92,13 +90,13 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
   
   /* get local end point to retreive port number on random ports */
 	socklen_t size = sizeof(local_ep);
-	getsockname(m_Socket, (struct sockaddr*)&local_ep, &size);	
+	getsockname(m_Socket, (struct sockaddr*)&local_ep, &size);
 }
 
 CHTTPServer::~CHTTPServer()
 {
   Stop();
-	fuppesThreadDestroyMutex(&ReceiveMutex);
+	fuppesThreadDestroyMutex(&m_ReceiveMutex);
 }
 
 /*===============================================================================
@@ -157,15 +155,18 @@ bool CHTTPServer::SetReceiveHandler(IHTTPServer* pHandler)
 
 bool CHTTPServer::CallOnReceive(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
 {
+  fuppesThreadLockMutex(&m_ReceiveMutex);
   BOOL_CHK_RET_POINTER(pMessageOut);
 
+  bool bResult = false;
   if(m_pReceiveHandler != NULL)
   {
     /* Parse message */
-    return m_pReceiveHandler->OnHTTPServerReceiveMsg(pMessageIn, pMessageOut);
+    bResult = m_pReceiveHandler->OnHTTPServerReceiveMsg(pMessageIn, pMessageOut);
   }
-  else 
-    return false;  
+    
+  fuppesThreadUnlockMutex(&m_ReceiveMutex);    
+  return bResult;
 }
 
 /**
@@ -184,11 +185,7 @@ void CHTTPServer::CleanupSessions()
     
     /* and close terminated threads */
     CHTTPSessionInfo* pInfo = *m_ThreadListIterator;   
-    #ifdef WIN32
-    if(pInfo)
-    #else
     if(pInfo && pInfo->m_bIsTerminated)
-    #endif
     {
       if(fuppesThreadClose(pInfo->GetThreadHandle()))     
       {       
@@ -251,7 +248,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
     
     /* cleanup closed sessions and sleep am moment */
     nLoopCount++;
-    if(nLoopCount = 10)
+    if(nLoopCount = 50)
     {
       pHTTPServer->CleanupSessions();
       nLoopCount = 0;

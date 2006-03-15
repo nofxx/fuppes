@@ -403,8 +403,8 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle)
   switch(nErrNo)
   {
     case WAIT_ABANDONED:
-      cout << "WAIT_ABANDONED :: " << nErrNo << endl;
-      fflush(stdout);
+      /*cout << "WAIT_ABANDONED :: " << nErrNo << endl;
+      fflush(stdout);*/
       break;
     case WAIT_OBJECT_0:
       //cout << "WAIT_OBJECT_0 :: " << nErrNo << endl;
@@ -416,8 +416,8 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle)
       fflush(stdout);*/
       break;
     case WAIT_FAILED:
-      cout << "fuppesThreadClose() :: WAIT_FAILED (" << nErrNo << ")" << endl;
-      fflush(stdout);
+      /*cout << "fuppesThreadClose() :: WAIT_FAILED (" << nErrNo << ")" << endl;
+      fflush(stdout);*/
       break;
     default:
       cout << "fuppesThreadClose - DEFAULT :: " << nErrNo << endl;      

@@ -178,8 +178,9 @@ private:
   sockaddr_in local_ep;
   bool				do_break;
 
-  fuppesSocket  m_Socket;					      
-  fuppesThread  accept_thread;
+  fuppesSocket      m_Socket;					      
+  fuppesThread      accept_thread;
+  fuppesThreadMutex m_ReceiveMutex;
 
 public:
   std::list<CHTTPSessionInfo*> m_ThreadList;

@@ -1,3 +1,6 @@
+Version 0.5.1 (2006-03-??)
+  * fixed bug #1449045
+
 Version 0.5 (2006-03-11)
   * HTTP-Server
   ** fixed some minor bugs
