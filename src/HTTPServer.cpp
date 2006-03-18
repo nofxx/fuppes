@@ -65,6 +65,7 @@ fuppesThreadCallback SessionLoop(void *arg);
 
 CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 {
+  m_bIsRunning = false;
 	accept_thread = (fuppesThread)NULL;
 	fuppesThreadInitMutex(&m_ReceiveMutex);  	
   	
@@ -114,17 +115,26 @@ void CHTTPServer::Start()
 
   /* start accept thread */
   fuppesThreadStart(accept_thread, AcceptLoop);
+  
+  m_bIsRunning = true;
 }
 
 void CHTTPServer::Stop()
 {   
+  if(!m_bIsRunning)
+    return;
+
   /* stop accept thread */
-  m_bBreakAccept = true;  
-  fuppesThreadClose(accept_thread);
-  accept_thread = (fuppesThread)NULL;
+  m_bBreakAccept = true;
+  if(accept_thread)
+  {
+    fuppesThreadClose(accept_thread);
+    accept_thread = (fuppesThread)NULL;
+  }
     
   /* close socket */
   upnpSocketClose(m_Socket);
+  m_bIsRunning = false;
 }
 
 upnpSocket CHTTPServer::GetSocket()

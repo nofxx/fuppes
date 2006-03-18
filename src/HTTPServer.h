@@ -177,6 +177,7 @@ private:
 
   sockaddr_in local_ep;
   bool				do_break;
+  bool        m_bIsRunning;
 
   fuppesSocket      m_Socket;					      
   fuppesThread      accept_thread;

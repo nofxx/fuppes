@@ -115,6 +115,9 @@ have_vorbis=no
 have_mpc=no
 have_flac=no
 
+# disable FLAC for 0.5.1
+CXXFLAGS="-DDISABLE_FLAC $CXXFLAGS"
+
 AC_ARG_ENABLE(transcoding,
             [  --disable-transcoding  Disable on the fly transcoding support],
             [ if test "x$enable_transcoding" = "xno" ; then
@@ -159,13 +162,13 @@ if test "x$transcoding" = "xyes"; then
     fi
     
     # FLAC_LIBS
-    AC_CHECK_HEADERS(FLAC/file_decoder.h, have_flac=yes, have_flac=no)
-    if test "x$have_flac" = "xyes"; then      
-      FLAC_LIBS="-lFLAC"
-      have_decoder=yes
-    else
-      CXXFLAGS="-DDISABLE_FLAC $CXXFLAGS"
-    fi
+    #AC_CHECK_HEADERS(FLAC/file_decoder.h, have_flac=yes, have_flac=no)
+    #if test "x$have_flac" = "xyes"; then      
+    #  FLAC_LIBS="-lFLAC"
+    #  have_decoder=yes
+    #else
+    #  CXXFLAGS="-DDISABLE_FLAC $CXXFLAGS"
+    #fi
 
   fi # have lame
 

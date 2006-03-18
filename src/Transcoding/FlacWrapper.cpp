@@ -84,11 +84,52 @@ bool CFLACDecoder::LoadLib()
   m_FLACFileDecoderNew = (FLACFileDecoderNew_t)FuppesGetProcAddress(m_LibHandle, "FLAC__file_decoder_new");  
   if(!m_FLACFileDecoderNew)
   {
-    std::stringstream sLog;
-    sLog << "cannot load symbol 'FLAC__file_decoder_new'";
-    CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
+    CSharedLog::Shared()->Warning(LOGNAME, "cannot load symbol 'FLAC__file_decoder_new'");
     return false;
   }    
+  
+  m_FLACFileDecoderDelete = (FLACFileDecoderDelete_t)FuppesGetProcAddress(m_LibHandle, "FLAC__file_decoder_delete");
+  if(!m_FLACFileDecoderDelete)
+  {
+    CSharedLog::Shared()->Warning(LOGNAME, "cannot load symbol 'FLAC__file_decoder_delete'");
+    return false;  
+  }
+
+  m_FLACFileDecoderSetFilename = (FLACFileDecoderSetFilename_t)FuppesGetProcAddress(m_LibHandle, "FLAC__file_decoder_set_filename");
+  if(!m_FLACFileDecoderSetFilename)
+  {
+    CSharedLog::Shared()->Warning(LOGNAME, "cannot load symbol 'FLAC__file_decoder_set_filename'");
+    return false;    
+  }
+  
+  m_FLACFileDecoderSetWriteCallback = (FLACFileDecoderSetWriteCallback_t)FuppesGetProcAddress(m_LibHandle, "FLAC__file_decoder_set_write_callback");
+  if(!m_FLACFileDecoderSetWriteCallback)
+  {
+    CSharedLog::Shared()->Warning(LOGNAME, "cannot load symbol 'FLAC__file_decoder_set_write_callback'");
+    return false;      
+  }
+
+  m_FLACFileDecoderSetMetadataCallback = (FLACFileDecoderSetMetadataCallback_t)FuppesGetProcAddress(m_LibHandle, "FLAC__file_decoder_set_metadata_callback");
+  if(!m_FLACFileDecoderSetMetadataCallback)
+  {
+    CSharedLog::Shared()->Warning(LOGNAME, "cannot load symbol 'FLAC__file_decoder_set_metadata_callback'");
+    return false;
+  }
+
+  /* FLAC__bool FLAC__file_decoder_set_error_callback(FLAC__FileDecoder *decoder, FLAC__FileDecoderErrorCallback value) */
+  typedef FLAC__bool (*FLACFileDecoderSetErrorCallback_t)(FLAC__FileDecoder*, FLAC__FileDecoderErrorCallback);
+  
+  /* FLAC__bool FLAC__file_decoder_set_client_data(FLAC__FileDecoder *decoder, void *value) */
+  typedef FLAC__bool (*FLACFileDecoderSetClientData_t)(FLAC__FileDecoder*, void*);
+  
+  /* FLAC__FileDecoderState FLAC__file_decoder_init(FLAC__FileDecoder *decoder) */
+  typedef FLAC__FileDecoderState (*FLACFileDecoderInit_t)(FLAC__FileDecoder*);
+   
+  /* FLAC__bool	FLAC__file_decoder_process_single(FLAC__FileDecoder *decoder) */
+  typedef FLAC__bool (*FLACFileDecoderProcessSingle_t)(FLAC__FileDecoder*);
+  
+  /* FLAC__bool	FLAC__file_decoder_finish(FLAC__FileDecoder *decoder) */
+  typedef FLAC__bool (*FLACFileDecoderFinish_t)(FLAC__FileDecoder*);  
   
   
   return true;

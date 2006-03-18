@@ -18,3 +18,7 @@
 * ConnectionManager
 
 * AVTransport
+
+* database:
+  * always insert original mime-types an set transcoding types if needed
+  * speedup inserts
