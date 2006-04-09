@@ -8,8 +8,6 @@
   
 * eventing
 
-* AVTransport
-
 * ContentDirectory
   * Browse
     * Filter
@@ -22,3 +20,14 @@
 * database:
   * always insert original mime-types an set transcoding types if needed
   * speedup inserts
+
+* error handling on initialization
+  * creating database
+  * binding HTTP server
+  * etc...
+
+* webinterface
+  * set allowed ips
+  * username/password
+  
+* set ips allowed to access content

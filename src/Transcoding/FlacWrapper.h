@@ -57,6 +57,9 @@ extern "C"
   /* FLAC__FileDecoderState FLAC__file_decoder_init(FLAC__FileDecoder *decoder) */
   typedef FLAC__FileDecoderState (*FLACFileDecoderInit_t)(FLAC__FileDecoder*);
    
+  /* FLAC__bool FLAC__file_decoder_process_until_end_of_metadata(FLAC__FileDecoder *decoder) */
+  typedef FLAC__bool (*FLACFileDecoderProcessUntilEndOfMetadata_t)(FLAC__FileDecoder*);
+   
   /* FLAC__bool	FLAC__file_decoder_process_single(FLAC__FileDecoder *decoder) */
   typedef FLAC__bool (*FLACFileDecoderProcessSingle_t)(FLAC__FileDecoder*);
   
@@ -64,6 +67,23 @@ extern "C"
   typedef FLAC__bool (*FLACFileDecoderFinish_t)(FLAC__FileDecoder*);  
 }
 #endif
+
+typedef struct flac_data_s {
+  FLAC__FileDecoder *decoder;
+  
+  FLAC__uint64  total_samples;
+  unsigned int  channels;
+  unsigned int  bits_per_sample;
+  
+  char *buffer;
+  int buffer_size;  
+  int sample_rate;
+  long position;
+  long duration;
+} flac_data_t;
+
+
+
 
 class CFLACDecoder: public CDecoderBase
 {
@@ -76,18 +96,26 @@ class CFLACDecoder: public CDecoderBase
     void CloseFile();
     long DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize);
 
+    char* m_pPcmOut;
+    long  m_nBytesReturned;
+  
+    flac_data_t* m_pFLACData;
+  
   private:
     fuppesLibHandle  m_LibHandle;  
   
-    FLAC__FileDecoder*                m_pFLACFileDecoder;  
-    FLACFileDecoderNew_t              m_FLACFileDecoderNew;
-    FLACFileDecoderDelete_t           m_FLACFileDecoderDelete;
-    FLACFileDecoderSetFilename_t      m_FLACFileDecoderSetFilename;
-    FLACFileDecoderSetWriteCallback_t m_FLACFileDecoderSetWriteCallback;
-    FLACFileDecoderSetErrorCallback_t m_FLACFileDecoderSetErrorCallback;
-    FLACFileDecoderSetClientData_t    m_FLACFileDecoderSetClientData;
-    FLACFileDecoderProcessSingle_t    m_FLACFileDecoderProcessSingle;
-    FLACFileDecoderFinish_t           m_FLACFileDecoderFinish;
+    FLAC__FileDecoder*                    m_pFLACFileDecoder;  
+    FLACFileDecoderNew_t                  m_FLACFileDecoderNew;
+    FLACFileDecoderDelete_t               m_FLACFileDecoderDelete;
+    FLACFileDecoderSetFilename_t          m_FLACFileDecoderSetFilename;
+    FLACFileDecoderSetWriteCallback_t     m_FLACFileDecoderSetWriteCallback;
+    FLACFileDecoderSetMetadataCallback_t  m_FLACFileDecoderSetMetadataCallback;
+    FLACFileDecoderSetErrorCallback_t     m_FLACFileDecoderSetErrorCallback;
+    FLACFileDecoderSetClientData_t        m_FLACFileDecoderSetClientData;
+    FLACFileDecoderInit_t                 m_FLACFileDecoderInit;
+    FLACFileDecoderProcessUntilEndOfMetadata_t m_FLACFileDecoderProcessUntilEndOfMetadata;
+    FLACFileDecoderProcessSingle_t        m_FLACFileDecoderProcessSingle;
+    FLACFileDecoderFinish_t               m_FLACFileDecoderFinish;
 };
 
 #endif /* _FLACWRAPPER_H */

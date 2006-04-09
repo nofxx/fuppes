@@ -120,9 +120,13 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
       "  MIME_TYPE TEXT DEFAULT NULL,"
       "  DETAILS TEXT DEFAULT NULL"
       ");";        
-    Insert(sTableObjects);
-    Insert("CREATE INDEX IDX_FILE_NAME ON OBJECTS (FILE_NAME);");
-    Insert("CREATE INDEX IDX_PARENT_ID ON OBJECTS (PARENT_ID);");
+    
+    if(Insert(sTableObjects) < 0)
+      return false;
+    if(Insert("CREATE INDEX IDX_FILE_NAME ON OBJECTS (FILE_NAME);") < 0)
+      return false;
+    if(Insert("CREATE INDEX IDX_PARENT_ID ON OBJECTS (PARENT_ID);") < 0)
+      return false;
   }
   else
   {

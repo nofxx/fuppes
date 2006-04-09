@@ -75,8 +75,8 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
     CSharedLog::Shared()->Error(LOGNAME, "creating socket");	
   
   /* set socket non blocking */
-  if(!fuppesSocketSetNonBlocking(m_Socket))
-    CSharedLog::Shared()->Error(LOGNAME, "fuppesSocketSetNonBlocking");
+  /*if(!fuppesSocketSetNonBlocking(m_Socket))
+    CSharedLog::Shared()->Error(LOGNAME, "fuppesSocketSetNonBlocking");*/
   
   /* set loacl end point */
 	local_ep.sin_family      = AF_INET;
@@ -128,10 +128,14 @@ void CHTTPServer::Stop()
   m_bBreakAccept = true;
   if(accept_thread)
   {
+    int nExitCode;
+    fuppesThreadCancel(accept_thread, nExitCode);
     fuppesThreadClose(accept_thread);
     accept_thread = (fuppesThread)NULL;
   }
     
+  CleanupSessions();
+  
   /* close socket */
   upnpSocketClose(m_Socket);
   m_bIsRunning = false;
@@ -263,7 +267,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
       pHTTPServer->CleanupSessions();
       nLoopCount = 0;
     }
-    fuppesSleep(10);
+    //fuppesSleep(10);
 	}  
 	  
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "exiting accept loop");

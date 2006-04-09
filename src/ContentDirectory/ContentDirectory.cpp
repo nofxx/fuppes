@@ -73,7 +73,17 @@ CUPnPService(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, p_sHTTPServerURL)
 {
   /* Init database */   
   bool bIsNewDB = false; 
-  CContentDatabase::Shared()->Init(&bIsNewDB);
+  if(!CContentDatabase::Shared()->Init(&bIsNewDB))
+  {
+    if(bIsNewDB)
+    {
+      cout << "[ERROR] unable to create database file '" << CSharedConfig::Shared()->GetConfigDir() << "fuppes.db" << "'." << endl;
+      cout << "make shure you have write permissions on that directory" << endl;
+      fflush(stdout);
+    }
+    
+    return;
+  } 
   
   if(bIsNewDB)
     BuildDB();

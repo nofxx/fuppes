@@ -548,7 +548,11 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   else if(ToLower(sExt).compare("flac") == 0)
   {
     #ifndef DISABLE_FLAC
+    cout << "create FLAC decoder" << endl;
+    fflush(stdout);
     pDecoder = new CFLACDecoder();
+   cout << "FLAC decoder created" << endl;
+    fflush(stdout);    
     #endif
   }
 
@@ -579,8 +583,8 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   }
   else
   {
-    pcmout = new short int[4096];    
-    nBufferLength = 4096;
+    pcmout = new short int[32768];  // 4096
+    nBufferLength = 32768;
   }  
   #else
   short int* pcmout = new short int[4096];
