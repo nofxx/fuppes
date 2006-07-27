@@ -186,7 +186,7 @@ string CSharedConfig::GetAppFullname()
 
 string CSharedConfig::GetAppVersion()
 {
-	return "0.5.2";
+	return "0.6a";
 }
 
 string CSharedConfig::GetHostname()
@@ -278,6 +278,20 @@ bool CSharedConfig::IsTranscodingExtension(std::string p_sFileExt)
     return true;  
   else
     return false;  
+}
+
+bool CSharedConfig::IsAllowedIP(std::string p_sIPAddress)
+{
+  bool bResult = (m_vAllowedIPs.size() == 0);
+  for(unsigned int i = 0; i < m_vAllowedIPs.size(); i++)
+  { 
+    if(m_vAllowedIPs[i].compare(p_sIPAddress) == 0)
+    {
+      bResult = true;
+      break;
+    }
+  }  
+  return bResult;
 }
 
 /* <\PUBLIC> */
@@ -375,14 +389,20 @@ bool CSharedConfig::ReadConfigFile()
             }           
           }
           
-          /* http_port */
-          else if(sNet.compare("http_port") == 0)
+          /* allowed_ips */
+          else if(sNet.compare("allowed_ips") == 0)
           {
-            if(pNetNode->children)
+            if (pNetNode->children)
             {
-              string sPort = (char*)pNetNode->children->content;
-              if(sPort.compare("0") != 0)
-                m_nHTTPPort = atoi(sPort.c_str());
+              xmlNode* pIPNode = NULL;
+              for(pIPNode = pNetNode->children->next; pIPNode; pIPNode = pIPNode->next)
+              {
+                if(pIPNode->type == XML_ELEMENT_NODE)
+                {
+                  m_vAllowedIPs.push_back((char*)pIPNode->children->content);
+                  cout << (char*)pIPNode->children->content << endl;
+                }
+              }                
             }
           }
 
@@ -508,6 +528,13 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
       
       xmlTextWriterWriteComment(pWriter, BAD_CAST "empty or 0 = random port");
       xmlTextWriterStartElement(pWriter, BAD_CAST "http_port");
+      xmlTextWriterEndElement(pWriter); 
+  
+      xmlTextWriterWriteComment(pWriter, BAD_CAST "list of ip addresses allowed to access fuppes. if empty all ips are allowed");
+      xmlTextWriterStartElement(pWriter, BAD_CAST "allowed_ips");
+        xmlTextWriterStartElement(pWriter, BAD_CAST "ip");
+        xmlTextWriterWriteString(pWriter, BAD_CAST "192.168.0.1");
+        xmlTextWriterEndElement(pWriter); 
       xmlTextWriterEndElement(pWriter); 
   
     /* end network_settings */

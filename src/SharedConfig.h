@@ -109,6 +109,7 @@ protected:
   bool IsSupportedFileExtension(std::string p_sFileExtension);
   bool IsTranscodingEnabled() { return m_bTranscodingEnabled; }  
   bool IsTranscodingExtension(std::string p_sFileExt);
+  bool IsAllowedIP(std::string p_sIPAddress);
   FILE_KIND GetFileKindByExtension(std::string p_sFileExtension);
   DisplaySettings GetDisplaySettings() { return m_DisplaySettings; }
   
@@ -135,6 +136,7 @@ private:
   std::string m_sOSVersion;
 
   std::vector<std::string> m_vSharedDirectories;
+  std::vector<std::string> m_vAllowedIPs;
   unsigned int m_nHTTPPort;
   bool m_bTranscodingEnabled;
   bool m_bLameAvailable;

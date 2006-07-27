@@ -31,3 +31,7 @@
   * username/password
   
 * set ips allowed to access content
+
+
+* use inotify to refresh content db automatically
+* maybe use gstreamer as optional transcoding backend

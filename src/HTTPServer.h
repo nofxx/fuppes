@@ -86,11 +86,12 @@ public:
  CONSTRUCTOR / DESTRUCTOR
 ===============================================================================*/
 
-  CHTTPSessionInfo(CHTTPServer* pHTTPServer, upnpSocket p_Connection)
+  CHTTPSessionInfo(CHTTPServer* pHTTPServer, upnpSocket p_Connection, struct sockaddr_in p_RemoteEndPoint)
   {
-    m_pHTTPServer   = pHTTPServer;
-    m_Connection    = p_Connection;    
-    m_bIsTerminated = false;
+    m_pHTTPServer    = pHTTPServer;
+    m_Connection     = p_Connection;    
+    m_bIsTerminated  = false;
+    m_RemoteEndPoint = p_RemoteEndPoint;
   }
 
 /*===============================================================================
@@ -101,7 +102,7 @@ public:
     CHTTPServer* GetHTTPServer() { return m_pHTTPServer; }
     fuppesThread GetThreadHandle() { return m_ThreadHandle; }
     void         SetThreadHandle(fuppesThread p_ThreadHandle) { m_ThreadHandle = p_ThreadHandle; }
-    
+    struct sockaddr_in GetRemoteEndPoint() { return m_RemoteEndPoint; }
   
 /* <\PUBLIC> */
 
@@ -120,6 +121,7 @@ private:
   CHTTPServer* m_pHTTPServer;
   fuppesSocket m_Connection;
   fuppesThread m_ThreadHandle;
+  struct sockaddr_in m_RemoteEndPoint;
 
 /* <\PRIVATE> */
 

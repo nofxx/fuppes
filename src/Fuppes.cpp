@@ -275,7 +275,7 @@ bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMe
 
   /* set HTTP Type */
   pMessageOut->SetVersion(pMessageIn->GetVersion());
-  
+    
   /* Handle message */
   HTTP_MESSAGE_TYPE nMsgType = pMessageIn->GetMessageType();
   switch(nMsgType)

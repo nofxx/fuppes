@@ -158,7 +158,7 @@ bool CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
   {
     /* Handle UPnP browse */
     case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_BROWSE:
-      //cout << pUPnPAction->m_sMessage<< endl;       
+      //cout << pUPnPAction->m_sMessage<< endl;
       sContent = DbHandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);
       //cout << sContent << endl; 
       break;
@@ -410,9 +410,11 @@ std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
       switch(pUPnPBrowse->m_nBrowseFlag)
       {
         case UPNP_BROWSE_FLAG_METADATA:
+          CSharedLog::Shared()->DebugLog(LOGNAME, "CContentDirectory::DbHandleUPnPBrowse - BrowseMetadata");  
           BrowseMetadata(resWriter, &nTotalMatches, &nNumberReturned, pUPnPBrowse);
           break;
         case UPNP_BROWSE_FLAG_DIRECT_CHILDREN:
+          CSharedLog::Shared()->DebugLog(LOGNAME, "CContentDirectory::DbHandleUPnPBrowse - BrowseDirectChildren");
           BrowseDirectChildren(resWriter, &nTotalMatches, &nNumberReturned, pUPnPBrowse);
           break;        
       }   

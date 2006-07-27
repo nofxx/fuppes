@@ -288,5 +288,6 @@ int main(int argc, char* argv[])
   WSACleanup();
   #endif
 
+  cout << "[FUPPES] exit" << endl;
   return 0;
 }
