@@ -850,7 +850,7 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   /* class */
   xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
   xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.videoItem.movie");
-  xmlTextWriterEndElement(pWriter);    
+  xmlTextWriterEndElement(pWriter);      
   
   /* res */
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
@@ -859,6 +859,17 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   sTmp << "http-get:*:" << pSQLResult->GetValue("MIME_TYPE") << ":*";
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
   sTmp.str("");
+  
+  /* Test */
+  /*xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST "350513556");  
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST "44:52:36");    
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST "0"); 
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST "0");   
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitsPerSample", BAD_CAST "0");   
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "nrAudioChannels", BAD_CAST "0");   
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "BuildDateTime", BAD_CAST "2006/03/05 10:25:17");   
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "LastWriteDateTime", BAD_CAST "2006/03/05 10:25:17");           */
+  /* Testende */
   
   sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/VideoItems/" << p_sObjectID;
   //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());

@@ -202,6 +202,7 @@ std::string CHTTPMessage::GetHeaderAsString()
   /* Content length */
   if(!m_bIsBinary)
   {
+    cout << "1" << endl;
     sResult << "CONTENT-LENGTH: " << (int)strlen(m_sContent.c_str()) << "\r\n";
   }
   else
@@ -211,15 +212,30 @@ std::string CHTTPMessage::GetHeaderAsString()
       if((m_nRangeStart > 0) || (m_nRangeEnd > 0))
       {
         if(m_nRangeEnd < m_nBinContentLength)
+        {
+                           cout << "2" << endl;
           sResult << "CONTENT-LENGTH: " << m_nRangeEnd - m_nRangeStart + 1<< "\r\n";
+          }
         else
+        {
+            cout << "3" << endl;            
           sResult << "CONTENT-LENGTH: " << m_nBinContentLength - m_nRangeStart << "\r\n";
+          }
       }
       else
+      {
+              cout << "4" << endl;
         sResult << "CONTENT-LENGTH: " << m_nBinContentLength << "\r\n";
+        m_nRangeEnd = m_nBinContentLength;
+      }
     }
     else
+    {
+            cout << "5" << endl;
       sResult << "CONTENT-LENGTH: 0\r\n";
+      //sResult << "Content-Range: 0-" << m_nBinContentLength << "/" << m_nBinContentLength << "\r\n";
+      m_nRangeEnd = m_nBinContentLength;
+      }
   }      
 
 	
@@ -234,7 +250,7 @@ std::string CHTTPMessage::GetHeaderAsString()
 	}*/
 
   sResult << "CONTENT-TYPE: " << m_sHTTPContentType << "\r\n";			  
-  sResult << "CONNECTION: close\r\n";  
+  //sResult << "CONNECTION: close\r\n";  
   
   if(m_nHTTPVersion == HTTP_VERSION_1_1)
     sResult << "ACCEPT-RANGES: bytes\r\n";
@@ -252,9 +268,8 @@ std::string CHTTPMessage::GetHeaderAsString()
     sResult << "/" << m_nBinContentLength << "\r\n";
   }
   
-  sResult << "contentFeatures.dlna.org: \r\n";
-  
-	sResult << "EXT: \r\n";
+  //sResult << "contentFeatures.dlna.org: \r\n";  
+	//sResult << "EXT: \r\n";
 	
   /* Transfer-Encoding */
   if(m_nHTTPVersion == HTTP_VERSION_1_1)
@@ -474,7 +489,9 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
 bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
 {
   m_bIsChunked = true;
-  m_bIsBinary  = true;
+  m_bIsBinary  = true; 
+  m_bIsTranscoding = false; 
+  bool bResult = false;
   
   //fstream fFile;    
   m_fsFile.open(p_sFileName.c_str(), ios::binary|ios::in);
@@ -483,10 +500,17 @@ bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
     m_fsFile.seekg(0, ios::end); 
     m_nBinContentLength = streamoff(m_fsFile.tellg()); 
     m_fsFile.seekg(0, ios::beg);
-    //fFile.close();
+    bResult = true;
+    
+    cout << "file " << p_sFileName.c_str() << " opened" << endl << "  Length: " << m_nBinContentLength << endl; 
   } 
+  else
+  {
+    cout << "error opening " << p_sFileName.c_str() << endl;      
+    bResult = false;
+  }
 	
-  return true;
+  return bResult;
 }
 
 

@@ -526,7 +526,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     {           
       CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending plain text");   
       #ifdef WIN32          
-      send(pSession->GetConnection(), p_Response->GetMessageAsString().c_str(), (int)strlen(p_Response->GetMessageAsString().c_str()), 0); 
+      send(p_Session->GetConnection(), p_Response->GetMessageAsString().c_str(), (int)strlen(p_Response->GetMessageAsString().c_str()), 0); 
       if(nRet == -1)
       {
         stringstream sLog;            
@@ -563,7 +563,10 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     //cout << "LENG: " << p_Response->GetBinContentLength() << endl;
     
     p_Response->SetRangeStart(p_Request->GetRangeStart());
-    p_Response->SetRangeEnd(p_Request->GetRangeEnd());
+    if(p_Request->GetRangeEnd() > 0)
+      p_Response->SetRangeEnd(p_Request->GetRangeEnd());
+    else
+      p_Response->SetRangeEnd(p_Response->GetBinContentLength());    
   
     
   /*   cout << p_Response->GetHeaderAsString() << endl;

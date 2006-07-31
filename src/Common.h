@@ -84,7 +84,7 @@ const std::string MIME_TYPE_IMAGE_BMP  = "image/bmp";
 const std::string MIME_TYPE_IMAGE_JPEG = "image/jpeg";
 
 /* video types */
-const std::string MIME_TYPE_VIDEO_X_MSVIDEO = "video/x-msvideo";
+const std::string MIME_TYPE_VIDEO_X_MSVIDEO = "video/x-ms-avi"; //video/x-ms-avi // video/x-msvideo
 const std::string MIME_TYPE_VIDEO_MPEG      = "video/mpeg";
 
 /* TODO */
