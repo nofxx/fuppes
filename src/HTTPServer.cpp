@@ -550,23 +550,30 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   /* send chunked message */
   else 
   {         
+    cout << "CHUNKED: Start: " << p_Request->GetRangeStart() << " end: " << p_Request->GetRangeEnd() << endl;
     
     unsigned int nOffset = p_Request->GetRangeStart(); 
-    char szChunk[65536];
-    unsigned int nRequestSize = 65536;
+    /*char szChunk[65536];
+    unsigned int nRequestSize = 65536;*/
+    char szChunk[40960];
+    unsigned int nRequestSize = 40960;
     int nErr = 0;
     if(p_Request->GetRangeEnd() > 0)
     {          
       nRequestSize = p_Request->GetRangeEnd() - p_Request->GetRangeStart() + 1;
       p_Response->SetMessageType(HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT);          
     }
-    //cout << "LENG: " << p_Response->GetBinContentLength() << endl;
+    else if((p_Request->GetRangeStart() == 0) && (p_Request->GetRangeEnd() == 0))    
+    {
+      //nRequestSize = 
+    } 
+      //cout << "LENG: " << p_Response->GetBinContentLength() << endl;
     
     p_Response->SetRangeStart(p_Request->GetRangeStart());
     if(p_Request->GetRangeEnd() > 0)
       p_Response->SetRangeEnd(p_Request->GetRangeEnd());
-    else
-      p_Response->SetRangeEnd(p_Response->GetBinContentLength());    
+    /*else
+      p_Response->SetRangeEnd(p_Response->GetBinContentLength());    */
   
     
   /*   cout << p_Response->GetHeaderAsString() << endl;
@@ -576,6 +583,9 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending chunked binary");
     CSharedLog::Shared()->DebugLog(LOGNAME, p_Response->GetHeaderAsString());
+    cout << "Requested size: " << nRequestSize << " offset: " << nOffset << endl;
+    
+    cout << p_Response->GetHeaderAsString() << endl;
     
     /* send header */        
     if(nErr != -1)
@@ -598,13 +608,14 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     fflush(stdout);*/
     while((nErr != -1) && ((nRet = p_Response->GetBinContentChunk(szChunk, nRequestSize, nOffset)) > 0)) 
     {             
-      //cout << "got content" << endl;          
+      /*cout << "got content" << endl;          
   
-      /*cout << "read binary" << endl;
+      cout << "read binary" << endl;
       cout << "start: " << nOffset << endl;
       cout << "requested: " << nRequestSize << endl;
       cout << "end: " << nRet << endl;
-      fflush(stdout);        */
+      fflush(stdout);     */
+      
       
       #ifdef WIN32
       nErr = send(p_Session->GetConnection(), szChunk, nRet, 0);    
@@ -619,7 +630,9 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       nErr = send(p_Session->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);
       #endif
              
+      cout << "count: " <<  nCnt << " send errno: " << nErr << endl;
   
+      //fuppesSleep(100);
       nSend += nRet;            
       nCnt++;
       nOffset += nRet;            
@@ -633,6 +646,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
           sLog << "send error :: error no. " << WSAGetLastError() << " " << strerror(WSAGetLastError()) << endl;              
           CSharedLog::Shared()->Error(LOGNAME, sLog.str());     
           #else              
+          cout << "send error :: error no. " << errno << " " << strerror(errno) << endl;
           sLog << "send error :: error no. " << errno << " " << strerror(errno) << endl;
           CSharedLog::Shared()->Error(LOGNAME, sLog.str());
           #endif
@@ -663,6 +677,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
         
       } /* while */
         
+      cout << " exiting " << endl;
   } /* else */
   
 }

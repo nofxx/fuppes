@@ -200,6 +200,7 @@ std::string CHTTPMessage::GetHeaderAsString()
 	}
 	
   /* Content length */
+  cout << "range start: " << m_nRangeStart << " range end: " << m_nRangeEnd << endl;
   if(!m_bIsBinary)
   {
     cout << "1" << endl;
@@ -226,16 +227,16 @@ std::string CHTTPMessage::GetHeaderAsString()
       {
               cout << "4" << endl;
         sResult << "CONTENT-LENGTH: " << m_nBinContentLength << "\r\n";
-        m_nRangeEnd = m_nBinContentLength;
+        //m_nRangeEnd = m_nBinContentLength;
       }
     }
-    else
+   /* else
     {
             cout << "5" << endl;
       sResult << "CONTENT-LENGTH: 0\r\n";
       //sResult << "Content-Range: 0-" << m_nBinContentLength << "/" << m_nBinContentLength << "\r\n";
       m_nRangeEnd = m_nBinContentLength;
-      }
+      } */
   }      
 
 	
@@ -283,10 +284,10 @@ std::string CHTTPMessage::GetHeaderAsString()
   char   szTime[30];
   time_t tTime = time(NULL);
   strftime(szTime, 30,"%a, %d %b %Y %H:%M:%S GMT" , gmtime(&tTime));   
-	sResult << "DATE: " << szTime << "\r\n";    
-  sResult << "SERVER: " << CSharedConfig::Shared()->GetOSName() << "/" << CSharedConfig::Shared()->GetOSVersion() << ", ";
+	//sResult << "DATE: " << szTime << "\r\n";    
+  /*sResult << "SERVER: " << CSharedConfig::Shared()->GetOSName() << "/" << CSharedConfig::Shared()->GetOSVersion() << ", ";
   sResult << "UPnP/1.0, ";
-  sResult << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << "\r\n";
+  sResult << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << "\r\n";*/
   
 	
 	sResult << "\r\n";
@@ -306,8 +307,8 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
   /* read from file */
   if(m_fsFile.is_open())
   {
-    /*cout << "size: " << p_nSize << " offset: " << p_nOffset << " filesize: " << m_nBinContentLength << endl;
-    fflush(stdout);*/
+    cout << "size: " << p_nSize << " offset: " << p_nOffset << " filesize: " << m_nBinContentLength << endl;
+    fflush(stdout);
     
     if(p_nOffset > 0)
       m_fsFile.seekg(p_nOffset, ios::beg);
@@ -326,8 +327,8 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     else
       nRead = p_nSize;
     
-    /*cout << "read " << nRead << " bytes from file. offset: " << p_nOffset << endl;
-    fflush(stdout);*/
+    cout << "read " << nRead << " bytes from file. offset: " << p_nOffset << endl;
+    fflush(stdout);
     
     m_fsFile.read(p_sContentChunk, nRead);      
     m_nBinContentPosition += nRead;
