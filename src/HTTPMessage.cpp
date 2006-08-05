@@ -199,12 +199,25 @@ std::string CHTTPMessage::GetHeaderAsString()
       break;
 	}
 	
+	
+	/* Server */
+	/*sResult << "Server: " << CSharedConfig::Shared()->GetOSName() << "/" << CSharedConfig::Shared()->GetOSVersion() << ", ";
+  sResult << "UPnP/1.0, ";
+  sResult << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << "\r\n"; */
+	sResult << "Server: CyberTAN / CyberMediaServer\r\n";
+	
+	/* Accept-Range */
+	//if(m_nHTTPVersion == HTTP_VERSION_1_1)
+    sResult << "Accept-Range: bytes\r\n";
+	 
+	
+	
   /* Content length */
   cout << "range start: " << m_nRangeStart << " range end: " << m_nRangeEnd << endl;
   if(!m_bIsBinary)
   {
     cout << "1" << endl;
-    sResult << "CONTENT-LENGTH: " << (int)strlen(m_sContent.c_str()) << "\r\n";
+    sResult << "Content-Length: " << (int)strlen(m_sContent.c_str()) << "\r\n";
   }
   else
   {
@@ -215,20 +228,20 @@ std::string CHTTPMessage::GetHeaderAsString()
         if(m_nRangeEnd < m_nBinContentLength)
         {
                            cout << "2" << endl;
-          sResult << "CONTENT-LENGTH: " << m_nRangeEnd - m_nRangeStart + 1<< "\r\n";
+          sResult << "Content-Length: " << m_nRangeEnd - m_nRangeStart + 1<< "\r\n";
           }
         else
         {
             cout << "3" << endl;            
-          sResult << "CONTENT-LENGTH: " << m_nBinContentLength - m_nRangeStart << "\r\n";
+          sResult << "Content-Length: " << m_nBinContentLength - m_nRangeStart << "\r\n";
           }
       }
       else
       {
               cout << "4" << endl;
-        sResult << "CONTENT-LENGTH: " << m_nBinContentLength << "\r\n";
-        //m_nRangeEnd = m_nBinContentLength;
-      }
+        sResult << "Content-Length: " << m_nBinContentLength << "\r\n";
+        m_nRangeEnd = m_nBinContentLength;
+      } 
     }
    /* else
     {
@@ -239,28 +252,17 @@ std::string CHTTPMessage::GetHeaderAsString()
       } */
   }      
 
-	
-  /* Content type */
-	/*switch(m_HTTPContentType)
-	{
-		case HTTP_CONTENT_TYPE_TEXT_HTML:  sContentType = "text/html";  break;
-		case HTTP_CONTENT_TYPE_TEXT_XML:   sContentType = "text/xml; charset=\"utf-8\"";   break;
-		case HTTP_CONTENT_TYPE_AUDIO_MPEG: sContentType = "audio/mpeg"; break;
-    case HTTP_CONTENT_TYPE_IMAGE_PNG : sContentType = "image/png";  break;      
-    default:                           ASSERT(0);                   break;	
-	}*/
-
-  sResult << "CONTENT-TYPE: " << m_sHTTPContentType << "\r\n";			  
+		  
   //sResult << "CONNECTION: close\r\n";  
   
-  if(m_nHTTPVersion == HTTP_VERSION_1_1)
-    sResult << "ACCEPT-RANGES: bytes\r\n";
+
   
   if((m_nRangeStart > 0) || (m_nRangeEnd > 0))
   {   
     //sResult << "ETag: \"84a04256ea0bf1:3cae20\"\r\n";
     
-    sResult << "CONTENT-RANGE: bytes ";
+    //sResult << "CONTENT-RANGE: bytes ";
+    sResult << "Content-Range: ";
     //sResult << "Content-Range: bytes ";    
     if(m_nRangeEnd > m_nBinContentLength)
       sResult << m_nRangeStart << "-" << m_nBinContentLength - 1;
@@ -285,9 +287,19 @@ std::string CHTTPMessage::GetHeaderAsString()
   time_t tTime = time(NULL);
   strftime(szTime, 30,"%a, %d %b %Y %H:%M:%S GMT" , gmtime(&tTime));   
 	//sResult << "DATE: " << szTime << "\r\n";    
-  /*sResult << "SERVER: " << CSharedConfig::Shared()->GetOSName() << "/" << CSharedConfig::Shared()->GetOSVersion() << ", ";
-  sResult << "UPnP/1.0, ";
-  sResult << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << "\r\n";*/
+  
+  
+  /* Content type */
+	/*switch(m_HTTPContentType)
+	{
+		case HTTP_CONTENT_TYPE_TEXT_HTML:  sContentType = "text/html";  break;
+		case HTTP_CONTENT_TYPE_TEXT_XML:   sContentType = "text/xml; charset=\"utf-8\"";   break;
+		case HTTP_CONTENT_TYPE_AUDIO_MPEG: sContentType = "audio/mpeg"; break;
+    case HTTP_CONTENT_TYPE_IMAGE_PNG : sContentType = "image/png";  break;      
+    default:                           ASSERT(0);                   break;	
+	}*/
+
+  sResult << "Content-Type: " << m_sHTTPContentType << "\r\n";  
   
 	
 	sResult << "\r\n";
@@ -307,11 +319,11 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
   /* read from file */
   if(m_fsFile.is_open())
   {
-    cout << "size: " << p_nSize << " offset: " << p_nOffset << " filesize: " << m_nBinContentLength << endl;
+    cout << "size: " << p_nSize << " offset: " << p_nOffset << " filesize: " << m_nBinContentLength << " position: " << m_nBinContentPosition << endl;
     fflush(stdout);
     
-    if(p_nOffset > 0)
-      m_fsFile.seekg(p_nOffset, ios::beg);
+    if((p_nOffset > 0) && (p_nOffset != m_nBinContentPosition))
+      m_fsFile.seekg(p_nOffsett, ios::beg);
     else
       p_nOffset = m_nBinContentPosition;
     

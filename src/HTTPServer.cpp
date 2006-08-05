@@ -488,7 +488,7 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
 
     /* Create message */    
     bResult = p_Request->SetMessage(szMsg);
-    //cout << szMsg << endl << endl;
+    cout << szMsg << endl << endl;
   }
   
   return bResult;
@@ -563,11 +563,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       nRequestSize = p_Request->GetRangeEnd() - p_Request->GetRangeStart() + 1;
       p_Response->SetMessageType(HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT);          
     }
-    else if((p_Request->GetRangeStart() == 0) && (p_Request->GetRangeEnd() == 0))    
-    {
-      //nRequestSize = 
-    } 
-      //cout << "LENG: " << p_Response->GetBinContentLength() << endl;
+    //cout << "LENG: " << p_Response->GetBinContentLength() << endl;
     
     p_Response->SetRangeStart(p_Request->GetRangeStart());
     if(p_Request->GetRangeEnd() > 0)
@@ -602,10 +598,14 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     if(nErr == -1)
       cout << "[ERROR] send header" << endl;
     
+    if(p_Request->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD)
+      nErr = -1;
+    
     int nCnt = 0;
     int nSend = 0;
     /*cout << "get content" << endl;
     fflush(stdout);*/
+    
     while((nErr != -1) && ((nRet = p_Response->GetBinContentChunk(szChunk, nRequestSize, nOffset)) > 0)) 
     {             
       /*cout << "got content" << endl;          
@@ -616,6 +616,15 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       cout << "end: " << nRet << endl;
       fflush(stdout);     */
       
+/*      szChunk[40960] = 'n';
+      szChunk[40961] = 'e';      
+      szChunk[40961] = 'w';
+      szChunk[40962] = 'p';
+      szChunk[40963] = 'a';
+      szChunk[40964] = 'c';
+      szChunk[40965] = 'k';      */
+      
+      //memcpy(&szChunk[40960], "newpack", 6);
       
       #ifdef WIN32
       nErr = send(p_Session->GetConnection(), szChunk, nRet, 0);    
@@ -636,6 +645,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       nSend += nRet;            
       nCnt++;
       nOffset += nRet;            
+     
+     //nErr = -1;
      
       if((nErr < 0) || ((p_Response->GetMessageType() == HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT) && (p_Request->GetHTTPConnection() == HTTP_CONNECTION_CLOSE)))
       {
