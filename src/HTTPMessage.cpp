@@ -183,12 +183,17 @@ std::string CHTTPMessage::GetHeaderAsString()
     case HTTP_MESSAGE_TYPE_HEAD:	        /* todo */			                            break;
 		case HTTP_MESSAGE_TYPE_POST:          /* todo */		                              break;
 		case HTTP_MESSAGE_TYPE_200_OK:        
-      sResult << sVersion << " " << "200 OK\r\n";
+      sResult << sVersion << " 200 OK\r\n";
       break;
     case HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT:
-      sResult << sVersion << " " << "206 Partial Content\r\n";
+      sResult << sVersion << " 206 Partial Content\r\n";
       break;    
-	  case HTTP_MESSAGE_TYPE_404_NOT_FOUND:	/* todo */
+    case HTTP_MESSAGE_TYPE_403_FORBIDDEN:
+      sResult << sVersion << " 403 Forbidden\r\n";
+      break;
+	  case HTTP_MESSAGE_TYPE_404_NOT_FOUND:
+      sResult << sVersion << " 404 Not Found\r\n";
+      break;
 	  case HTTP_MESSAGE_TYPE_500_INTERNAL_SERVER_ERROR:
       sResult << sVersion << " " << "500 Internal Server Error\r\n";
       break;

@@ -1,8 +1,17 @@
-Version 0.5.2 (2006-09-??)
+Version 0.5.2 (2006-09-10)
   * HTTP-server cleanup
-  * fixed AVI-playback bug for Telegent TG100
+  * fixed AVI-playback bug for Telegent TG100  
   * added bmp, png and gif support
-  * (win32) updated SQLite to 3.3.7  
+  * (win32) updated SQLite to 3.3.7
+
+  * LameWrapper
+  ** fixed seg fault on missing libmp3lame.so concerning fuppes
+     compiled with lame support
+  ** searches for libmp3lame.so and libmp3lame.so.0
+
+  * new configuration options
+  ** set allowed ip addresses (optional)
+  ** set maximum file name length (optional)
 
 Version 0.5.1 (2006-03-18)
   * fixed bug #1449045

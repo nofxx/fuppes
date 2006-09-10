@@ -101,6 +101,7 @@ bool IsDirectory(std::string p_sDirName);
 std::string ExtractFileExt(std::string p_sFileName);
 std::string TruncateFileExt(std::string p_sFileName);
 bool ExtractFolderFromPath(std::string p_sPath, std::string* p_sFolder);
+std::string TrimFileName(std::string p_sFileName, unsigned int p_nMaxLength);
 
 std::string MD5Sum(std::string p_sFileName);
 

@@ -123,12 +123,15 @@ CFLACDecoder::~CFLACDecoder()
   
   if(m_pFLACFileDecoder)
     CloseFile();
+  
+  if(m_LibHandle)
+    FuppesCloseLibrary(m_LibHandle);
 }
 
 bool CFLACDecoder::LoadLib()
 {
-  cout << "load lib" << endl;
-  fflush(stdout);
+  /*cout << "load lib" << endl;
+  fflush(stdout);*/
   
   #ifdef WIN32  
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening mpcdec.dll");
@@ -222,8 +225,8 @@ bool CFLACDecoder::LoadLib()
     return false;
   }  
   
-  cout << "end load lib" << endl;
-  fflush(stdout);
+  /*cout << "end load lib" << endl;
+  fflush(stdout);*/
   
   return true;
 }

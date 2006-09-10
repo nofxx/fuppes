@@ -316,6 +316,9 @@ void CContentDirectory::DbScanDir(std::string p_sDirectory, long long int p_nPar
         else if(IsFile(sTmp.str()) && CSharedConfig::Shared()->IsSupportedFileExtension(sExt))
         {
           OBJECT_TYPE nObjectType = CFileDetails::Shared()->GetObjectType(sTmp.str());
+          /* trim file name */
+          sTmpFileName = TrimFileName(sTmpFileName, CSharedConfig::Shared()->GetMaxFileNameLength());
+          
           /*cout << "Parent: " << p_nParentId << endl;
           cout << "FileName: " << sTmpFileName << endl;
           cout << "Path: " << sTmp.str() << endl; 
@@ -584,7 +587,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   /* get description */
   sSql << "select o.ID, o.TYPE, o.PATH, o.FILE_NAME, o.MIME_TYPE, o.DETAILS, (select count(*) ";
   sSql << "from OBJECTS p where p.PARENT_ID = o.ID) as COUNT from OBJECTS o where o.PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " ";
-  sSql << "order by o.FILE_NAME ";
+  sSql << "order by o.TYPE, o.FILE_NAME ";
   if((pUPnPBrowse->m_nRequestedCount > 0) || (pUPnPBrowse->m_nStartingIndex > 0))
   {
     sSql << " limit " << pUPnPBrowse->m_nStartingIndex << ", ";

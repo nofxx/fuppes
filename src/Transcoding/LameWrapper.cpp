@@ -38,7 +38,8 @@ CLameWrapper::CLameWrapper()
 
 CLameWrapper::~CLameWrapper()
 {
-  FuppesCloseLibrary(m_LibHandle);
+  if(m_LibHandle)
+    FuppesCloseLibrary(m_LibHandle);
 }
 
 bool CLameWrapper::LoadLib()
@@ -48,7 +49,9 @@ bool CLameWrapper::LoadLib()
   m_LibHandle = FuppesLoadLibrary("lame_enc.dll");
   #else
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libmp3lame.so");
-  m_LibHandle = FuppesLoadLibrary("libmp3lame.so");   
+  m_LibHandle = FuppesLoadLibrary("libmp3lame.so.0");
+  if(!m_LibHandle)
+    m_LibHandle = FuppesLoadLibrary("libmp3lame.so");
   #endif
   if(!m_LibHandle)
   {

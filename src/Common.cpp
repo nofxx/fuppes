@@ -203,6 +203,18 @@ bool ExtractFolderFromPath(std::string p_sPath, std::string* p_sFolder)
   }
 }
 
+std::string TrimFileName(std::string p_sFileName, unsigned int p_nMaxLength)
+{ 
+  if((p_nMaxLength == 0) || (p_sFileName.length() <= p_nMaxLength))
+    return p_sFileName;
+  
+  std::string sExt  = ExtractFileExt(p_sFileName);
+  std::string sFile = TruncateFileExt(p_sFileName);
+  sFile = sFile.substr(0, p_nMaxLength - sExt.length() - 1);
+  sFile = sFile + "." + sExt;
+  return sFile;
+}
+
 bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPort)
 {
   RegEx rxSplit("[http://]*([0-9|\\.]+):*([0-9]*)");

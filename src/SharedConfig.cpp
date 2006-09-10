@@ -113,6 +113,8 @@ CSharedConfig::CSharedConfig()
   m_sUUID     = GenerateUUID();  
   m_nHTTPPort = 0;
   
+  m_nMaxFileNameLength = 0;
+  
   /* transcoding */
   #ifdef DISABLE_TRANSCODING
   m_bTranscodingEnabled = false;
@@ -144,9 +146,13 @@ CSharedConfig::CSharedConfig()
 
 bool CSharedConfig::SetupConfig()
 {
-  bool bResult = true;  
+  bool bResult = true;
+  
+  /* read config file */
   bResult = ReadConfigFile();
-
+  if(!bResult)
+    return false;
+  
   /* Network settings */
   if(bResult && !ResolveHostAndIP())
   {
@@ -363,6 +369,8 @@ bool CSharedConfig::ReadConfigFile()
     pRootNode = xmlDocGetRootElement(pDoc);
     
     
+    //m_sConfigVersion
+    
     for(pTmpNode = pRootNode->children->next; pTmpNode; pTmpNode = pTmpNode->next)
     { 
       string sName = (char*)pTmpNode->name;
@@ -411,7 +419,7 @@ bool CSharedConfig::ReadConfigFile()
                 if(pIPNode->type == XML_ELEMENT_NODE)
                 {
                   m_vAllowedIPs.push_back((char*)pIPNode->children->content);
-                  cout << (char*)pIPNode->children->content << endl;
+                  //cout << (char*)pIPNode->children->content << endl;
                 }
               }                
             }
@@ -421,6 +429,29 @@ bool CSharedConfig::ReadConfigFile()
         }
       }
       /* end network_settings */
+      
+      
+      /* content_directory */
+      else if(sName.compare("content_directory") == 0)
+      {
+        xmlNode* pContentDirNode = NULL;
+        for(pContentDirNode = pTmpNode->children->next; pContentDirNode; pContentDirNode = pContentDirNode->next)
+        {
+          string sContentDir = (char*)pContentDirNode->name;
+          
+          /* max_file_name_length */
+          if(sContentDir.compare("max_file_name_length") == 0)
+          {
+            if(pContentDirNode->children)
+            {
+              string sMaxFileNameLength = (char*)pContentDirNode->children->content;
+              if(sMaxFileNameLength.compare("0") != 0)
+                m_nMaxFileNameLength = atoi(sMaxFileNameLength.c_str());
+            }           
+          }
+        }        
+      }
+      /* end content_directory */      
       
     }   
     xmlFreeDoc(pDoc);
@@ -508,7 +539,8 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
 	xmlTextWriterStartElement(pWriter, BAD_CAST "fuppes_config");  
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "version", BAD_CAST "0.1"); 
 	
-    /* shared_directories */
+    /* shared_directories */    
+    xmlTextWriterWriteComment(pWriter, BAD_CAST "\r\n");
     xmlTextWriterStartElement(pWriter, BAD_CAST "shared_directories");
         
       xmlTextWriterStartElement(pWriter, BAD_CAST "dir");
@@ -530,7 +562,9 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
     /* end shared_directories */
     xmlTextWriterEndElement(pWriter);
     
+    
     /* network_settings */
+    xmlTextWriterWriteComment(pWriter, BAD_CAST "\r\n");
     xmlTextWriterStartElement(pWriter, BAD_CAST "network_settings");
         
       xmlTextWriterWriteComment(pWriter, BAD_CAST "empty or 0 = automatic detection");
@@ -543,13 +577,36 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
   
       xmlTextWriterWriteComment(pWriter, BAD_CAST "list of ip addresses allowed to access fuppes. if empty all ips are allowed");
       xmlTextWriterStartElement(pWriter, BAD_CAST "allowed_ips");
-        xmlTextWriterStartElement(pWriter, BAD_CAST "ip");
+        /*xmlTextWriterStartElement(pWriter, BAD_CAST "ip");
         xmlTextWriterWriteString(pWriter, BAD_CAST "192.168.0.1");
-        xmlTextWriterEndElement(pWriter); 
+        xmlTextWriterEndElement(pWriter);*/
+        xmlTextWriterWriteComment(pWriter, BAD_CAST "<ip>192.168.0.1</ip>");
       xmlTextWriterEndElement(pWriter); 
   
     /* end network_settings */
-    xmlTextWriterEndElement(pWriter);	     
+    xmlTextWriterEndElement(pWriter);
+
+
+    /* content directory */
+    xmlTextWriterWriteComment(pWriter, BAD_CAST "\r\n");
+    xmlTextWriterStartElement(pWriter, BAD_CAST "content_directory");
+    
+      /* max_file_name_length */
+      std::stringstream sComment;
+         sComment << "specify the maximum length for file names." << endl;
+         sComment << "      e.g. the Telegent TG 100 can handle file names up" << endl;
+         sComment << "      to 101 characters. everything above leads to an error." << endl;
+         sComment << "      if you leave the field empty or insert 0 the maximum" << endl;
+         sComment << "      length is unlimited.";
+      xmlTextWriterWriteComment(pWriter, BAD_CAST sComment.str().c_str());
+      xmlTextWriterStartElement(pWriter, BAD_CAST "max_file_name_length");
+      xmlTextWriterWriteString(pWriter, BAD_CAST "0");
+      xmlTextWriterEndElement(pWriter);
+    
+    
+    /* end content directory */
+    xmlTextWriterEndElement(pWriter);
+    
   
 	/* end fuppes_config */
 	xmlTextWriterEndElement(pWriter);	
@@ -569,6 +626,8 @@ void CSharedConfig::CheckForTranscodingLibs()
   /* LAME */
   CLameWrapper* pLame = new CLameWrapper();
   m_bLameAvailable = pLame->LoadLib();
+  if(m_bLameAvailable)
+    m_sLameVersion = pLame->GetVersion();
   delete pLame;  
   
   if(m_bLameAvailable)
@@ -627,6 +686,9 @@ void CSharedConfig::PrintTranscodingSettings()
     else
     {
       cout << "transcoding settings:" << endl;
+      
+      /* lame */
+      cout << "  lame    : (version: " << m_sLameVersion << ")" << endl;
       
       /* vorbis */
       cout << "  vorbis  : ";

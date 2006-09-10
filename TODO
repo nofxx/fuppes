@@ -2,6 +2,12 @@
   * AAC (http://www.audiocoding.com/)
   * FLAC
 
+* file types
+  * wmv
+  * asf
+  * wma
+  * vob
+
 * playlist handling
   * m3u
   * pls

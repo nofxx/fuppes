@@ -50,7 +50,8 @@ CVorbisDecoder::CVorbisDecoder()
 
 CVorbisDecoder::~CVorbisDecoder()
 {
-  FuppesCloseLibrary(m_LibHandle);
+  if(m_LibHandle)
+    FuppesCloseLibrary(m_LibHandle);
 }
   
 bool CVorbisDecoder::LoadLib()

@@ -124,6 +124,8 @@ CMpcDecoder::CMpcDecoder()
 /* destructor */
 CMpcDecoder::~CMpcDecoder()
 {
+  if(m_LibHandle)
+    FuppesCloseLibrary(m_LibHandle);
 }
 
 bool CMpcDecoder::LoadLib()

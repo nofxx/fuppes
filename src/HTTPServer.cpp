@@ -296,14 +296,23 @@ fuppesThreadCallback SessionLoop(void *arg)
     else
       cout << "denied" << endl;*/
     
-    /* build response */    
-    bResult = pSession->GetHTTPServer()->CallOnReceive(pRequest, pResponse);  	
-    if(!bResult)
-    {
-      CSharedLog::Shared()->Error(LOGNAME, "handling HTTP message");    
-      break;
+    if(CSharedConfig::Shared()->IsAllowedIP(sIP))
+    {    
+      /* build response */    
+      bResult = pSession->GetHTTPServer()->CallOnReceive(pRequest, pResponse);  	
+      if(!bResult)
+      {
+        CSharedLog::Shared()->Error(LOGNAME, "handling HTTP message");    
+        break;
+      }
     }
-
+    else
+    {
+      pResponse->SetVersion(HTTP_VERSION_1_0);
+      pResponse->SetMessageType(HTTP_MESSAGE_TYPE_403_FORBIDDEN);
+      pResponse->SetMessage("403 Forbidden");
+    }
+    
     bResult = SendResponse(pSession, pResponse, pRequest);
     if(!bResult)
     {

@@ -113,6 +113,8 @@ protected:
   FILE_KIND GetFileKindByExtension(std::string p_sFileExtension);
   DisplaySettings GetDisplaySettings() { return m_DisplaySettings; }
   
+  unsigned int GetMaxFileNameLength() { return m_nMaxFileNameLength; }
+  
 /* <\PUBLIC> */
 	
 /* <PRIVATE> */
@@ -129,11 +131,20 @@ private:
  MEMBERS
 ===============================================================================*/
 
+  std::string m_sConfigVersion;
+
   std::string m_sHostname;
 	std::string m_sIP;
   std::string m_sUUID;
   std::string m_sOSName;
   std::string m_sOSVersion;
+
+  std::string m_sLameVersion;
+  std::string m_sVorbisVersion;
+  std::string m_sMpcVersion;
+  std::string m_sFlacVersion;
+
+  unsigned int m_nMaxFileNameLength;
 
   std::vector<std::string> m_vSharedDirectories;
   std::vector<std::string> m_vAllowedIPs;
