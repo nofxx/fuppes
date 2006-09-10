@@ -163,7 +163,7 @@ std::string ExtractFileExt(std::string p_sFileName)
       sResult = rxExt.Match(1);  
     } while(rxExt.SearchAgain());
     
-  }  
+  }
   return sResult;
 }
 

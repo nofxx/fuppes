@@ -186,7 +186,7 @@ string CSharedConfig::GetAppFullname()
 
 string CSharedConfig::GetAppVersion()
 {
-	return "0.6a";
+	return "0.5.2";
 }
 
 string CSharedConfig::GetHostname()
@@ -231,6 +231,7 @@ bool CSharedConfig::IsSupportedFileExtension(std::string p_sFileExtension)
     - bei Bedarf '.' abschneiden
     - extensions + transcoding [ja|nein] aus der config lesen  */
   
+  /* Audio */
   if((ToLower(p_sFileExtension).compare("mp3") == 0))
     return true;
   else if((ToLower(p_sFileExtension).compare("ogg") == 0) && ((m_bTranscodingEnabled && m_bVorbisAvailable) || !m_bTranscodeVorbis))
@@ -239,8 +240,18 @@ bool CSharedConfig::IsSupportedFileExtension(std::string p_sFileExtension)
     return true;
   else if((ToLower(p_sFileExtension).compare("flac") == 0) && ((m_bTranscodingEnabled && m_bFlacAvailable) || !m_bTranscodeFlac))
     return true;
+    
+  /* Images */
   else if((ToLower(p_sFileExtension).compare("jpeg") == 0) || (ToLower(p_sFileExtension).compare("jpg") == 0))
     return true;
+  else if(ToLower(p_sFileExtension).compare("png") == 0)
+    return true;
+  else if(ToLower(p_sFileExtension).compare("bmp") == 0)
+    return true;
+  else if(ToLower(p_sFileExtension).compare("gif") == 0)
+    return true;
+    
+  /* Video */   
   else if((ToLower(p_sFileExtension).compare("mpeg") == 0) || (ToLower(p_sFileExtension).compare("mpg") == 0))
     return true;
   else if((ToLower(p_sFileExtension).compare("avi") == 0))

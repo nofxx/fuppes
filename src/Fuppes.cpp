@@ -426,6 +426,7 @@ bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessa
   else if((strRequest.length() > 24) && (strRequest.substr(0, 24).compare("/MediaServer/VideoItems/") == 0))
   {
     string sItemObjId = pMessageIn->GetRequest().substr(24, pMessageIn->GetRequest().length());
+    sItemObjId = sItemObjId.substr(0, sItemObjId.length() - ExtractFileExt(sItemObjId).length() - 1);
     CVideoItem* pItem = (CVideoItem*)m_pContentDirectory->GetItemFromObjectID(sItemObjId);
 
     if(pItem && FileExists(pItem->GetFileName()))

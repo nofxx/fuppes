@@ -201,22 +201,23 @@ std::string CHTTPMessage::GetHeaderAsString()
 	
 	
 	/* Server */
-	/*sResult << "Server: " << CSharedConfig::Shared()->GetOSName() << "/" << CSharedConfig::Shared()->GetOSVersion() << ", ";
+	sResult << "Server: " << CSharedConfig::Shared()->GetOSName() << "/" << CSharedConfig::Shared()->GetOSVersion() << ", ";
   sResult << "UPnP/1.0, ";
-  sResult << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << "\r\n"; */
-	sResult << "Server: CyberTAN / CyberMediaServer\r\n";
+  sResult << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << "\r\n";
+	//sResult << "Server: CyberTAN / CyberMediaServer\r\n";
+	//sResult << "Server:Windows NT/5.0, UPnP/1.0, TwonkyVision UPnP SDK/1.0\r\n";
 	
 	/* Accept-Range */
 	//if(m_nHTTPVersion == HTTP_VERSION_1_1)
-    sResult << "Accept-Range: bytes\r\n";
+  sResult << "Accept-Ranges: bytes\r\n";
 	 
 	
 	
   /* Content length */
-  cout << "range start: " << m_nRangeStart << " range end: " << m_nRangeEnd << endl;
+  //cout << "range start: " << m_nRangeStart << " range end: " << m_nRangeEnd << endl;
   if(!m_bIsBinary)
   {
-    cout << "1" << endl;
+    //cout << "1" << endl;
     sResult << "Content-Length: " << (int)strlen(m_sContent.c_str()) << "\r\n";
   }
   else
@@ -227,18 +228,20 @@ std::string CHTTPMessage::GetHeaderAsString()
       {
         if(m_nRangeEnd < m_nBinContentLength)
         {
-                           cout << "2" << endl;
+          //cout << "2" << endl;
           sResult << "Content-Length: " << m_nRangeEnd - m_nRangeStart + 1<< "\r\n";
-          }
+          sResult << "Content-Range: " << m_nRangeStart << "-" << m_nRangeEnd << "\r\n";
+        }
         else
         {
-            cout << "3" << endl;            
+          //cout << "3" << endl;            
           sResult << "Content-Length: " << m_nBinContentLength - m_nRangeStart << "\r\n";
-          }
+          sResult << "Content-Range: " << m_nRangeStart << "-" << m_nRangeEnd << "\r\n";
+        }
       }
       else
       {
-              cout << "4" << endl;
+        //cout << "4" << endl;
         sResult << "Content-Length: " << m_nBinContentLength << "\r\n";
         m_nRangeEnd = m_nBinContentLength;
       } 
@@ -253,11 +256,12 @@ std::string CHTTPMessage::GetHeaderAsString()
   }      
 
 		  
-  //sResult << "CONNECTION: close\r\n";  
-  
+
+  sResult << "Connection: close\r\n";
+  //cout << "contentlength: " << m_nBinContentLength << endl;
 
   
-  if((m_nRangeStart > 0) || (m_nRangeEnd > 0))
+  /*if((m_nRangeStart > 0) || (m_nRangeEnd > 0))
   {   
     //sResult << "ETag: \"84a04256ea0bf1:3cae20\"\r\n";
     
@@ -269,7 +273,7 @@ std::string CHTTPMessage::GetHeaderAsString()
     else
       sResult << m_nRangeStart << "-" << m_nRangeEnd;
     sResult << "/" << m_nBinContentLength << "\r\n";
-  }
+  }*/
   
   //sResult << "contentFeatures.dlna.org: \r\n";  
 	//sResult << "EXT: \r\n";
@@ -286,7 +290,7 @@ std::string CHTTPMessage::GetHeaderAsString()
   char   szTime[30];
   time_t tTime = time(NULL);
   strftime(szTime, 30,"%a, %d %b %Y %H:%M:%S GMT" , gmtime(&tTime));   
-	//sResult << "DATE: " << szTime << "\r\n";    
+	sResult << "DATE: " << szTime << "\r\n";    
   
   
   /* Content type */
@@ -300,6 +304,9 @@ std::string CHTTPMessage::GetHeaderAsString()
 	}*/
 
   sResult << "Content-Type: " << m_sHTTPContentType << "\r\n";  
+  
+  sResult << "contentFeatures.dlna.org: \r\n";
+  sResult << "EXT:\r\n";
   
 	
 	sResult << "\r\n";
@@ -319,11 +326,11 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
   /* read from file */
   if(m_fsFile.is_open())
   {
-    cout << "size: " << p_nSize << " offset: " << p_nOffset << " filesize: " << m_nBinContentLength << " position: " << m_nBinContentPosition << endl;
-    fflush(stdout);
+    /*cout << "size: " << p_nSize << " offset: " << p_nOffset << " filesize: " << m_nBinContentLength << " position: " << m_nBinContentPosition << endl;
+    fflush(stdout);*/
     
     if((p_nOffset > 0) && (p_nOffset != m_nBinContentPosition))
-      m_fsFile.seekg(p_nOffsett, ios::beg);
+      m_fsFile.seekg(p_nOffset, ios::beg);
     else
       p_nOffset = m_nBinContentPosition;
     
@@ -339,8 +346,8 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     else
       nRead = p_nSize;
     
-    cout << "read " << nRead << " bytes from file. offset: " << p_nOffset << endl;
-    fflush(stdout);
+    /*cout << "read " << nRead << " bytes from file. offset: " << p_nOffset << endl;
+    fflush(stdout);*/
     
     m_fsFile.read(p_sContentChunk, nRead);      
     m_nBinContentPosition += nRead;
@@ -418,8 +425,8 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
   
   bool bResult = false;
 
-  /*cout << "BUILD FROM STR" << endl;
-  cout << p_sMessage << endl;
+  //cout << "CHTTPMessage::BUILD FROM STR" << endl;
+  /*cout << p_sMessage << endl;
   fflush(stdout);*/
 
   /* Message GET */
@@ -473,12 +480,34 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
   }
   
   /* Range */
-  RegEx rxRANGE("RANGE: +BYTES=(\\d+)-(\\d+)", PCRE_CASELESS);
+  RegEx rxRANGE("RANGE: +BYTES=(\\d*)(-\\d*)", PCRE_CASELESS);
   if(rxRANGE.Search(p_sMessage.c_str()))
   {
-    m_nRangeStart = atoi(rxRANGE.Match(1));
-    m_nRangeEnd   = atoi(rxRANGE.Match(2));
+    string sMatch1 = rxRANGE.Match(1);    
+    string sMatch2;
+    if(rxRANGE.SubStrings() > 2)
+     sMatch2 = rxRANGE.Match(2);
+     
+    //cout << "MATCH 1: " << sMatch1 << " SUBSTR:" << sMatch1.substr(0,1) << endl;
+    if(sMatch1.substr(0,1) != "-")
+      m_nRangeStart = atoi(rxRANGE.Match(1));      
+    else
+      m_nRangeStart = 0;
     
+    m_nRangeEnd = 0;
+    
+    string sSub;
+    if(sMatch1.substr(0, 1) == "-")
+    {
+      sSub = sMatch1.substr(1, sMatch1.length());
+      m_nRangeEnd   = atoi(sSub.c_str());
+    }
+    else if(rxRANGE.SubStrings() > 2)
+    {
+      sSub = sMatch2.substr(1, sMatch2.length());
+      m_nRangeEnd   = atoi(sSub.c_str());
+    }
+        
     /*cout << "RANGE-START: " << m_nRangeStart << endl;
     cout << "RANGE-END: " << m_nRangeEnd << endl;*/
   }
@@ -515,11 +544,11 @@ bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
     m_fsFile.seekg(0, ios::beg);
     bResult = true;
     
-    cout << "file " << p_sFileName.c_str() << " opened" << endl << "  Length: " << m_nBinContentLength << endl; 
+    //cout << "file " << p_sFileName.c_str() << " opened" << endl << "  Length: " << m_nBinContentLength << endl; 
   } 
   else
   {
-    cout << "error opening " << p_sFileName.c_str() << endl;      
+    //cout << "error opening " << p_sFileName.c_str() << endl;      
     bResult = false;
   }
 	

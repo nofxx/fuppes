@@ -1,7 +1,7 @@
 [Project]
 FileName=sqlite3.dev
 Name=sqlite3
-UnitCount=54
+UnitCount=56
 Type=3
 Ver=1
 ObjFiles=
@@ -550,7 +550,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit55]
-FileName=alter.c
+FileName=vtab.c
 CompileCpp=0
 Folder=sqlite3
 Compile=1
@@ -562,8 +562,8 @@ BuildCmd=
 [VersionInfo]
 Major=3
 Minor=3
-Release=4
-Build=2
+Release=7
+Build=7
 LanguageID=1033
 CharsetID=1252
 CompanyName=
@@ -574,7 +574,7 @@ LegalCopyright=http://sqlite.org
 LegalTrademarks=
 OriginalFilename=
 ProductName=SQLite
-ProductVersion=3.3.4
+ProductVersion=3.3.7
 AutoIncBuildNr=1
 
 [Unit24]
@@ -589,6 +589,16 @@ BuildCmd=
 
 [Unit25]
 FileName=pager.c
+CompileCpp=0
+Folder=sqlite3
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit56]
+FileName=loadext.c
 CompileCpp=0
 Folder=sqlite3
 Compile=1

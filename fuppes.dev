@@ -27,7 +27,7 @@ CustomMakefile=
 IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=0
-CompilerSettings=00000000011000000000c0
+CompilerSettings=00000000000000000001c0
 OverrideOutput=0
 
 [Unit6]
@@ -53,19 +53,19 @@ BuildCmd=
 [VersionInfo]
 Major=0
 Minor=5
-Release=1
-Build=56
+Release=2
+Build=22
 LanguageID=1033
 CharsetID=1252
 CompanyName=
 FileVersion=
-FileDescription=
+FileDescription=A Free Universal Plug and Play Media Server
 InternalName=fuppes
 LegalCopyright=Ulrich Völkel
 LegalTrademarks=
 OriginalFilename=fuppes.exe
 ProductName=Free UPnP Entertainment Service
-ProductVersion=0.5.1
+ProductVersion=0.5.2
 AutoIncBuildNr=1
 
 [Unit10]

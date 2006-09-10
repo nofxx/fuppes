@@ -54,7 +54,9 @@ OBJECT_TYPE CFileDetails::GetObjectType(std::string p_sFileName)
      (sExt.compare("mpc") == 0) || (sExt.compare("flac") == 0))
     return ITEM_AUDIO_ITEM_MUSIC_TRACK;
 
-  else if((sExt.compare("jpeg") == 0) || (sExt.compare("jpg") == 0))
+  else if((sExt.compare("jpeg") == 0) || (sExt.compare("jpg") == 0) ||
+          (sExt.compare("bmp") == 0) || (sExt.compare("png") == 0) ||
+          (sExt.compare("gif") == 0))
     return ITEM_IMAGE_ITEM_PHOTO;
   
   else if((sExt.compare("mpeg") == 0) || (sExt.compare("mpg") == 0))
@@ -96,7 +98,9 @@ std::string CFileDetails::GetMimeType(std::string p_sFileName)
   else if(sExt.compare("bmp") == 0)
     return MIME_TYPE_IMAGE_BMP;
   else if(sExt.compare("png") == 0)
-    return MIME_TYPE_IMAGE_PNG;      
+    return MIME_TYPE_IMAGE_PNG; 
+  else if(sExt.compare("gif") == 0)
+    return MIME_TYPE_IMAGE_GIF;
   
   /* video types */
   else if((sExt.compare("mpeg") == 0) || (sExt.compare("mpg") == 0))

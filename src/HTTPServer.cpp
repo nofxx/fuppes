@@ -289,11 +289,12 @@ fuppesThreadCallback SessionLoop(void *arg)
       break;
     
     std::string sIP = inet_ntoa(pSession->GetRemoteEndPoint().sin_addr);
+    /* TODO: pruefen ob die Anfrage von einer eraubten IP kommt    
     cout << sIP << endl;
     if (CSharedConfig::Shared()->IsAllowedIP(sIP))
       cout << "allowed" << endl;
     else
-      cout << "denied" << endl;
+      cout << "denied" << endl;*/
     
     /* build response */    
     bResult = pSession->GetHTTPServer()->CallOnReceive(pRequest, pResponse);  	
@@ -488,7 +489,7 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
 
     /* Create message */    
     bResult = p_Request->SetMessage(szMsg);
-    cout << szMsg << endl << endl;
+    //cout << szMsg << endl << endl;
   }
   
   return bResult;
@@ -550,17 +551,24 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   /* send chunked message */
   else 
   {         
-    cout << "CHUNKED: Start: " << p_Request->GetRangeStart() << " end: " << p_Request->GetRangeEnd() << endl;
+    //cout << "CHUNKED: Start: " << p_Request->GetRangeStart() << " end: " << p_Request->GetRangeEnd() << endl;
     
-    unsigned int nOffset = p_Request->GetRangeStart(); 
-    /*char szChunk[65536];
-    unsigned int nRequestSize = 65536;*/
-    char szChunk[40960];
-    unsigned int nRequestSize = 40960;
+    unsigned int nOffset = 0;
+    char szChunk[64000];
+    unsigned int nRequestSize = 64000; // - 1;
+    //char* szChunk;
+    /*szChunk = new char[32770];
+    unsigned int nRequestSize = 32770;// - 1; */
+/*    char szChunk[1024];
+    unsigned int nRequestSize = 1024;// - 1; */    
     int nErr = 0;
-    if(p_Request->GetRangeEnd() > 0)
+    
+    
+    if(p_Request->GetRangeStart() > 0)
     {          
-      nRequestSize = p_Request->GetRangeEnd() - p_Request->GetRangeStart() + 1;
+      //nRequestSize = p_Request->GetRangeEnd() - p_Request->GetRangeStart() + 1;
+      
+      nOffset = p_Request->GetRangeStart();
       p_Response->SetMessageType(HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT);          
     }
     //cout << "LENG: " << p_Response->GetBinContentLength() << endl;
@@ -568,8 +576,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     p_Response->SetRangeStart(p_Request->GetRangeStart());
     if(p_Request->GetRangeEnd() > 0)
       p_Response->SetRangeEnd(p_Request->GetRangeEnd());
-    /*else
-      p_Response->SetRangeEnd(p_Response->GetBinContentLength());    */
+    else
+      p_Response->SetRangeEnd(p_Response->GetBinContentLength());
   
     
   /*   cout << p_Response->GetHeaderAsString() << endl;
@@ -579,9 +587,9 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending chunked binary");
     CSharedLog::Shared()->DebugLog(LOGNAME, p_Response->GetHeaderAsString());
-    cout << "Requested size: " << nRequestSize << " offset: " << nOffset << endl;
+    //cout << "Requested size: " << nRequestSize << " offset: " << nOffset << endl;
     
-    cout << p_Response->GetHeaderAsString() << endl;
+    //cout << p_Response->GetHeaderAsString() << endl;
     
     /* send header */        
     if(nErr != -1)
@@ -603,48 +611,38 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     
     int nCnt = 0;
     int nSend = 0;
-    /*cout << "get content" << endl;
-    fflush(stdout);*/
     
     while((nErr != -1) && ((nRet = p_Response->GetBinContentChunk(szChunk, nRequestSize, nOffset)) > 0)) 
-    {             
-      /*cout << "got content" << endl;          
-  
+    {           
+      /*
       cout << "read binary" << endl;
       cout << "start: " << nOffset << endl;
       cout << "requested: " << nRequestSize << endl;
       cout << "end: " << nRet << endl;
       fflush(stdout);     */
       
-/*      szChunk[40960] = 'n';
-      szChunk[40961] = 'e';      
-      szChunk[40961] = 'w';
-      szChunk[40962] = 'p';
-      szChunk[40963] = 'a';
-      szChunk[40964] = 'c';
-      szChunk[40965] = 'k';      */
-      
-      //memcpy(&szChunk[40960], "newpack", 6);
-      
       #ifdef WIN32
       nErr = send(p_Session->GetConnection(), szChunk, nRet, 0);    
+      //char buffer = '\n';
+      //send(p_Session->GetConnection(), &buffer, 1, 0);        
       int nWSAErr = WSAGetLastError();    
       while(nErr < 0 && nWSAErr == 10035)
       {
         fuppesSleep(10);
         nErr    = send(p_Session->GetConnection(), szChunk, nRet, 0);
+        //send(p_Session->GetConnection(), &buffer, 1, 0);        
         nWSAErr = WSAGetLastError();
       }            
       #else
       nErr = send(p_Session->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);
       #endif
              
-      cout << "count: " <<  nCnt << " send errno: " << nErr << endl;
+      //cout << "count: " <<  nCnt << " send errno: " << nErr << endl;
   
       //fuppesSleep(100);
-      nSend += nRet;            
+      nSend += nRet; // + 1;            
       nCnt++;
-      nOffset += nRet;            
+      nOffset += nRet; // - 1;            
      
      //nErr = -1;
      
@@ -657,7 +655,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
           sLog << "send error :: error no. " << WSAGetLastError() << " " << strerror(WSAGetLastError()) << endl;              
           CSharedLog::Shared()->Error(LOGNAME, sLog.str());     
           #else              
-          cout << "send error :: error no. " << errno << " " << strerror(errno) << endl;
+          //cout << "send error :: error no. " << errno << " " << strerror(errno) << endl;
           sLog << "send error :: error no. " << errno << " " << strerror(errno) << endl;
           CSharedLog::Shared()->Error(LOGNAME, sLog.str());
           #endif
@@ -688,7 +686,10 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
         
       } /* while */
         
-      cout << " exiting " << endl;
+      //delete [] szChunk;
+      //fsOut.close();
+        
+      //cout << " exiting " << endl;
   } /* else */
   
 }

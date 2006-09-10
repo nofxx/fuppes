@@ -38,6 +38,9 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <termios.h>
+#include <shellapi.h>
+#include <windows.h>
+#include <afxtempl.h>
 #endif
 
 using namespace std;
@@ -107,6 +110,24 @@ void PrintHelp()
   cout << endl;  
 }
 
+#ifdef WIN32
+bool CreateTrayIcon()
+{
+  NOTIFYICONDATA  m_tnd;  
+  m_tnd.cbSize = sizeof(NOTIFYICONDATA);
+  /*m_tnd.hWnd   = void; //pParent->GetSafeHwnd()? pParent->GetSafeHwnd() : m_hWnd;
+  m_tnd.uID    = uID;
+  m_tnd.hIcon  = void; //icon;
+  m_tnd.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
+  m_tnd.uCallbackMessage = WM_ICON_NOTIFY; //uCallbackMessage;
+  _tcscpy(m_tnd.szTip, szToolTip); */
+  m_tnd.uFlags = NIF_MESSAGE; // | NIF_ICON | NIF_TIP;  
+  m_tnd.uCallbackMessage = WM_USER + 10;  
+  
+  return Shell_NotifyIcon(NIM_ADD, &m_tnd);
+}
+#endif
+
 /*===============================================================================
  MAIN
 ===============================================================================*/
@@ -147,13 +168,15 @@ int main(int argc, char* argv[])
     
     /* Fork off the parent process */
     pid = fork();
-    if (pid < 0) {
-            exit(EXIT_FAILURE);
+    if (pid < 0) 
+    {
+      exit(EXIT_FAILURE);
     }
     /* If we got a good PID, then
        we can exit the parent process. */
-    if (pid > 0) {
-            exit(EXIT_SUCCESS);
+    if (pid > 0) 
+    {
+      exit(EXIT_SUCCESS);
     }
   
     /* Change the file mode mask */
@@ -163,15 +186,17 @@ int main(int argc, char* argv[])
             
     /* Create a new SID for the child process */
     sid = setsid();
-    if (sid < 0) {
-            /* Log the failure */
-            exit(EXIT_FAILURE);
+    if (sid < 0) 
+    {
+      /* Log the failure */
+      exit(EXIT_FAILURE);
     }
     
     /* Change the current working directory */
-    if ((chdir("/")) < 0) {
-            /* Log the failure */
-            exit(EXIT_FAILURE);
+    if ((chdir("/")) < 0) 
+    {
+      /* Log the failure */
+      exit(EXIT_FAILURE);
     }
     
     /* Close out the standard file descriptors */
@@ -184,7 +209,11 @@ int main(int argc, char* argv[])
   #ifndef WIN32  
   signal(SIGINT, SignalHandler);  /* ctrl-c */  
   signal(SIGTERM, SignalHandler); /* start-stop-daemon -v --stop -nfuppes */ 
-  #endif  
+  #endif
+  
+  /*#ifdef WIN32
+  CreateTrayIcon();
+  #endif*/
   
   cout << "FUPPES - Free UPnP Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;
   cout << "http://fuppes.sourceforge.net" << endl;
@@ -194,8 +223,7 @@ int main(int argc, char* argv[])
   /* Create presentation handler */
   CPresentationHandler* pPresentationHandler = new CPresentationHandler();
   
-  /* Create main server object (CFuppes) */
-  
+  /* Create main server object (CFuppes) */  
 	CFuppes* pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUUID(), pPresentationHandler);	
   pPresentationHandler->AddFuppesInstance(pFuppes);
   
