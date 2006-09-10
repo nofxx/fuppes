@@ -43,7 +43,6 @@
 #ifdef WIN32
 #include <shellapi.h>
 #include <windows.h>
-#include <afxtempl.h>
 #endif
 
 using namespace std;

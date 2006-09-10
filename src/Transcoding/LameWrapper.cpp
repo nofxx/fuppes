@@ -143,7 +143,10 @@ void CLameWrapper::PrintConfig()
 
 std::string CLameWrapper::GetVersion()
 {
-  return m_LameGetVersion();
+  if (m_LameGetVersion)
+    return m_LameGetVersion();
+  else
+    return "unknown";
 }
 
 void CLameWrapper::SetBitrate(LAME_BITRATE p_nBitrate)

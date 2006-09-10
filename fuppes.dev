@@ -27,7 +27,7 @@ CustomMakefile=
 IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=0
-CompilerSettings=00000000000000000001c0
+CompilerSettings=00000000000000000000c0
 OverrideOutput=0
 
 [Unit6]
@@ -54,7 +54,7 @@ BuildCmd=
 Major=0
 Minor=5
 Release=2
-Build=22
+Build=20
 LanguageID=1033
 CharsetID=1252
 CompanyName=
