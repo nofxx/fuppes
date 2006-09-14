@@ -41,3 +41,8 @@
 
 * use inotify to refresh content db automatically
 * maybe use gstreamer as optional transcoding backend
+
+* check if fuppes is running as root and warn
+* create own fuppes user
+* configuration option: user and group to run as
+* init script

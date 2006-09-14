@@ -1,3 +1,7 @@
+Version 0.5.3 (2006-??-??)
+  * added wmv support
+  * enhanced webinterface
+
 Version 0.5.2 (2006-09-10)
   * HTTP-server cleanup
   * fixed AVI-playback bug for Telegent TG100  

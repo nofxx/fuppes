@@ -44,7 +44,8 @@ typedef enum tagPRESENTATION_PAGE
   PRESENTATION_PAGE_INDEX,
   PRESENTATION_PAGE_ABOUT,
   PRESENTATION_PAGE_HELP,
-  PRESENTATION_PAGE_OPTIONS
+  PRESENTATION_PAGE_OPTIONS,
+  PRESENTATION_PAGE_STATUS
 }PRESENTATION_PAGE;
 
 
@@ -111,17 +112,19 @@ private:
    */
   std::string GetXHTMLHeader();  
 
-  std::string GetPageHeader(PRESENTATION_PAGE p_nPresentationPage);
+  std::string GetPageHeader(PRESENTATION_PAGE p_nPresentationPage, std::string p_sImgPath, std::string p_sPageName);
   std::string GetPageFooter(PRESENTATION_PAGE p_nPresentationPage);
 
   /** returns the main HTML page
    *  @return the content of the index.html
    */
-  std::string GetIndexHTML();
+  std::string GetIndexHTML(std::string p_sImgPath, std::string* p_psImgPath);
 
-  std::string GetAboutHTML();
+  std::string GetAboutHTML(std::string* p_psImgPath);
   
-  std::string GetOptionsHTML();
+  std::string GetOptionsHTML(std::string* p_psImgPath);
+  
+  std::string GetStatusHTML(std::string* p_psImgPath);
 
 /*===============================================================================
  HELPER
@@ -131,7 +134,7 @@ private:
    *  @param pFuppes a pointer to a FUPPES instance
    *  @return the device list as string
    */
-  std::string BuildFuppesDeviceList(CFuppes* pFuppes);
+  std::string BuildFuppesDeviceList(CFuppes* pFuppes, std::string p_sImgPath);
     
 /*===============================================================================
  MEMBERS

@@ -645,7 +645,12 @@ void CContentDirectory::BuildDescription(xmlTextWriterPtr pWriter,
   {
     //cout << "ITEM_VIDEO_ITEM_MOVIE" << endl;
     BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, ITEM_VIDEO_ITEM_MOVIE, p_sParentId);
-  }              
+  }
+  else if(pSQLResult->GetValue("TYPE").compare("301") == 0)
+  {
+    //cout << "ITEM_VIDEO_ITEM_VIDEO_BROADCAST" << endl;
+    BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, ITEM_VIDEO_ITEM_VIDEO_BROADCAST, p_sParentId);
+  }   
 }
 
 
@@ -742,6 +747,9 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter, CSelectRe
         break;
       case ITEM_VIDEO_ITEM_MOVIE:
         BuildVideoItemDescription(pWriter, pSQLResult, pUPnPBrowse, szObjId);
+        break;
+      case ITEM_VIDEO_ITEM_VIDEO_BROADCAST:
+        BuildVideoItemVideoBroadcastDescription(pWriter, pSQLResult, pUPnPBrowse, szObjId);
         break;
     }           
   
@@ -875,6 +883,42 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   /* Testende */
   
   sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/VideoItems/" << p_sObjectID << "." << ExtractFileExt(pSQLResult->GetValue("FILE_NAME"));  
+  //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
+  xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
+  xmlTextWriterEndElement(pWriter);  
+}
+
+void CContentDirectory::BuildVideoItemVideoBroadcastDescription(xmlTextWriterPtr pWriter,
+                                                  CSelectResult* pSQLResult,
+                                                  CUPnPBrowse*  pUPnPBrowse,
+                                                  std::string p_sObjectID)
+{   
+  /* class */
+  xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
+  xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.videoItem.videoBroadcast");
+  xmlTextWriterEndElement(pWriter);      
+  
+  /* res */
+  xmlTextWriterStartElement(pWriter, BAD_CAST "res");
+  
+  std::stringstream sTmp;
+  /*sTmp << "http-get:*:" << pSQLResult->GetValue("MIME_TYPE") << ":*";
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
+  sTmp.str("");*/
+  
+  /* Test */
+  /*xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST "350513556");  
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST "44:52:36");    
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST "0"); 
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST "0");   
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitsPerSample", BAD_CAST "0");   
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "nrAudioChannels", BAD_CAST "0");   
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "BuildDateTime", BAD_CAST "2006/03/05 10:25:17");   
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "LastWriteDateTime", BAD_CAST "2006/03/05 10:25:17");           */
+  /* Testende */
+  
+  sTmp << pSQLResult->GetValue("PATH");
+  //"http://" << m_sHTTPServerURL << "/MediaServer/VideoItems/" << p_sObjectID << "." << ExtractFileExt(pSQLResult->GetValue("FILE_NAME"));  
   //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
   xmlTextWriterEndElement(pWriter);  

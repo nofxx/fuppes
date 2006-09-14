@@ -160,6 +160,10 @@ public:
                                    CSelectResult* pSQLResult,
                                    CUPnPBrowse*  pUPnPBrowse,
                                    std::string p_sObjectID); 
+    void BuildVideoItemVideoBroadcastDescription(xmlTextWriterPtr pWriter,
+                                   CSelectResult* pSQLResult,
+                                   CUPnPBrowse*  pUPnPBrowse,
+                                   std::string p_sObjectID);                                    
 
 
     std::string HandleUPnPGetSearchCapabilities(CUPnPAction* pAction);

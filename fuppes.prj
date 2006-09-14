@@ -28,7 +28,7 @@ anjuta.compatibility.level=1
 project.name=fuppes
 project.type=GENERIC
 project.target.type=EXECUTABLE
-project.version=0.5.2
+project.version=0.5.3
 project.author=Ulrich Völkel
 project.source.target=fuppes
 project.has.gettext=0
@@ -154,7 +154,9 @@ module.source.files=\
 	ConnectionManager/ConnectionManager.cpp\
 	ConnectionManager/ConnectionManager.h\
 	ContentDirectory/ContentDirectoryDescription.cpp\
-	ConnectionManager/ConnectionManagerDescription.cpp
+	ConnectionManager/ConnectionManagerDescription.cpp\
+	Presentation/Images/header_gradient_png.cpp\
+	Presentation/Images/header_gradient_small_png.cpp
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

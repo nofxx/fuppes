@@ -1,0 +1,7 @@
+#include <string>
+
+static const std::string  header_gradient_png = 
+"iVBORw0KGgoAAAANSUhEUgAAAAsAAABBCAYAAAAHb14sAAAABHNCSVQICAgIfAhkiAAAABl0RVh0"
+"U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAABvSURBVEiJ1ZbBDcAwDAJJxVbdIIt0/wnc"
+"FeCBhPNG6BwHlPPebyAezshaPLIy6wzozjQoPGf3NkIYNLTgxAaEMSEN5BYMy9l8G6l1l2CYgdWN"
+"o0tp6Y11LVoT2JUtWoKxMLAtGB0tmgvsyt9XyPkH1ypMfzn6gXQAAAAASUVORK5CYII=";

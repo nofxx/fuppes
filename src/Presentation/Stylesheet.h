@@ -35,9 +35,9 @@ std::string GetStylesheet(std::string p_sRelativeImagePath)
     "font-family: Verdana, Arial, Helvetica;" << endl <<
     "font-size:   10pt;" << endl <<
     "background-color: #DACECE;" << endl <<
-    "background-image: url(\"" << p_sRelativeImagePath << "fuppes.png\");" << endl <<
-    "background-repeat: no-repeat;"
-    "background-position: center;" << endl << 
+    /*"background-image: url(\"" << p_sRelativeImagePath << "fuppes.png\");" << endl <<    
+    "background-repeat: no-repeat;" << endl <<    
+    "background-position: center;" << endl << */
     "}" << endl << endl;  
   
   
@@ -51,25 +51,40 @@ std::string GetStylesheet(std::string p_sRelativeImagePath)
     "border-style:  solid;" << endl <<
     "border-color:  black;" << endl <<
     "border-width:  1px 0;" << endl <<
-    "background:    #FF0000;" << endl <<
+    "background:    #5797BE;" << endl <<
     "vertical-align: middle;" << endl <<
-    "background-image: url(\"" << p_sRelativeImagePath << "fuppes-small.png\");" << endl <<
+    "color: #FFFFFF;" << endl << endl <<
+    
+    /*"background-image: url(\"" << p_sRelativeImagePath << "fuppes-small.png\");" << endl <<
     "background-repeat:no-repeat;" << endl <<
-    "background-position: 5px;" << endl <<
+    "background-position: 5px;" << endl <<*/
+    
+    "background-image: url(\"" << p_sRelativeImagePath << "header-gradient.png\");" << endl <<
+    "background-repeat: repeat-x;" << endl <<  
+    
     "}" << endl << endl;
   
-  
-  sStylesheet << "#content {"  << endl;
-  sStylesheet << "margin-left:   145px;" << endl;
-  sStylesheet << "margin-top:    0pt;" << endl;
-  sStylesheet << "margin-right:  5px;" << endl;
-  sStylesheet << "margin-bottom: 10px;" << endl;
-  sStylesheet << "padding-left:  10px;" << endl;
-  sStylesheet << "padding-right: 10px;" << endl;  
+  sStylesheet << "#mainframe {" << endl <<
+                 "margin-left:   145px;" << endl <<
+                 "margin-top:    0pt;" << endl <<
+                 "margin-right:  5px;" << endl <<
+                 "margin-bottom: 10px;" << endl;
+  sStylesheet << "padding-left:  0px;" << endl;
+  sStylesheet << "padding-right: 0px;" << endl;  
   sStylesheet << "border-style:  solid;" << endl;
   sStylesheet << "border-color:  black;" << endl;
   sStylesheet << "border-width:  1px;" << endl;
   sStylesheet << "background:    #FFFFFF;" << endl;
+  sStylesheet << "}" << endl;
+  
+  
+  sStylesheet << "#content {"  << endl <<
+                 "margin-left:   0px;" << endl <<
+                 "margin-top:    0px;" << endl <<
+                 "margin-right:  0px;" << endl <<
+                 "margin-bottom: 0px;" << endl;
+  sStylesheet << "padding-left:  10px;" << endl;
+  sStylesheet << "padding-right: 10px;" << endl;  
   sStylesheet << "}" << endl;
   
   sStylesheet << "#menu{"  << endl;
@@ -84,8 +99,8 @@ std::string GetStylesheet(std::string p_sRelativeImagePath)
   sStylesheet << "border-width: 1px;"  << endl;
   sStylesheet << "background:   #FFFFFF;"  << endl; 
   sStylesheet << "text-align:    left;"  << endl;
-  sStylesheet << "}"  << endl;
-  
+  sStylesheet << "}"  << endl << endl;
+    
   return sStylesheet.str();
 }
 
