@@ -82,6 +82,7 @@ class CFileDetails
   public:
     static CFileDetails* Shared();
     OBJECT_TYPE GetObjectType(std::string p_sFileName);
+    std::string GetObjectTypeAsString(unsigned int p_nObjectType);
     std::string GetMimeType(std::string p_sFileName);
   
     //SMusicTrack GetMusicTrackDetails(std::string p_sFileName);

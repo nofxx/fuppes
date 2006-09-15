@@ -238,6 +238,7 @@ int main(int argc, char* argv[])
   cout << endl;
   cout << "l = change log-level" << endl;  
   cout << "r = rebuild database" << endl;
+  cout << "c = refresh configuration" << endl;
   cout << "i = print system info" << endl;
   cout << "h = print help" << endl;
   cout << endl;
@@ -296,7 +297,12 @@ int main(int argc, char* argv[])
         CSharedConfig::Shared()->PrintTranscodingSettings();
       }
       else if (input == "r")
+      {
+        CSharedConfig::Shared()->Refresh();
         pFuppes->GetContentDirectory()->BuildDB();
+      }
+      else if (input == "c")
+        CSharedConfig::Shared()->Refresh();
         
     }
   }

@@ -157,6 +157,19 @@ UPNP_DEVICE_TYPE CUPnPDevice::GetDeviceType()
 	return m_nUPnPDeviceType;
 }
 
+std::string CUPnPDevice::GetDeviceTypeAsString()
+{
+  switch(m_nUPnPDeviceType)
+  {
+    case UPNP_DEVICE_TYPE_MEDIA_SERVER :
+      return "MediaServer";
+    case UPNP_DEVICE_TYPE_MEDIA_RENDERER :
+      return "MediaRenderer";
+    default:
+      return "Unknown";
+  }
+}
+
 /* GetDeviceDescription */
 std::string CUPnPDevice::GetDeviceDescription()
 {		

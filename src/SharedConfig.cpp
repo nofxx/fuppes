@@ -149,7 +149,7 @@ bool CSharedConfig::SetupConfig()
   bool bResult = true;
   
   /* read config file */
-  bResult = ReadConfigFile();
+  bResult = ReadConfigFile(true);
   if(!bResult)
     return false;
   
@@ -173,6 +173,20 @@ bool CSharedConfig::SetupConfig()
   CheckForTranscodingLibs();
   //PrintTranscodingSettings();
   #endif
+  return bResult;
+}
+
+bool CSharedConfig::Refresh()
+{
+  bool bResult = false;
+  
+  /* reset all variables and containers ... */
+  m_nMaxFileNameLength = 0;  
+  m_vSharedDirectories.clear();  
+  
+  /* ... and read the config file */
+  bResult = ReadConfigFile(false);
+  
   return bResult;
 }
 
@@ -321,7 +335,7 @@ bool CSharedConfig::IsAllowedIP(std::string p_sIPAddress)
  HELPER
 ===============================================================================*/
 
-bool CSharedConfig::ReadConfigFile()
+bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
 {
   xmlDocPtr pDoc    = NULL;  
   bool      bResult = false;
@@ -400,7 +414,7 @@ bool CSharedConfig::ReadConfigFile()
           string sNet = (char*)pNetNode->name;
           
           /* ip address */
-          if(sNet.compare("ip_address") == 0)
+          if((sNet.compare("ip_address") == 0) && p_bIsInit)
           {
             if(pNetNode->children)
             {

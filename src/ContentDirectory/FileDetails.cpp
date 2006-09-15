@@ -118,6 +118,57 @@ std::string CFileDetails::GetMimeType(std::string p_sFileName)
   return "unknown";  
 }
 
+std::string CFileDetails::GetObjectTypeAsString(unsigned int p_nObjectType)
+{
+  switch(p_nObjectType)
+  {
+    case OBJECT_TYPE_UNKNOWN :
+      return "unknown";
+    
+    case ITEM_IMAGE_ITEM :
+      return "imageItem";    
+    case ITEM_IMAGE_ITEM_PHOTO :
+      return "imageItem.photo";
+  
+    case ITEM_AUDIO_ITEM :
+      return "audioItem";
+    case ITEM_AUDIO_ITEM_MUSIC_TRACK :
+      return "audioItem.musicTrack";
+    /*ITEM_AUDIO_ITEM_AUDIO_BROADCAST = 201,
+    ITEM_AUDIO_ITEM_AUDIO_BOOK      = 202,*/
+  
+    case ITEM_VIDEO_ITEM :
+      return "videoItem";
+    case ITEM_VIDEO_ITEM_MOVIE :
+      return "videoItem.movie";
+    case ITEM_VIDEO_ITEM_VIDEO_BROADCAST :
+      return "videoItem.videoBroadcast";
+    //ITEM_VIDEO_ITEM_MUSIC_VIDEO_CLIP = 302,  
+  
+    /*CONTAINER_PERSON = 4,
+      CONTAINER_PERSON_MUSIC_ARTIST = 400,
+    
+    CONTAINER_PLAYLIST_CONTAINER = 5,
+    
+    CONTAINER_ALBUM = 6,
+    
+      CONTAINER_ALBUM_MUSIC_ALBUM = 600,
+      CONTAINER_ALBUM_PHOTO_ALBUM = 601,
+      
+    CONTAINER_GENRE = 7,
+      CONTAINER_GENRE_MUSIC_GENRE = 700,
+      CONTAINER_GENRE_MOVIE_GENRE = 701,
+      
+    CONTAINER_STORAGE_SYSTEM = 8,
+    CONTAINER_STORAGE_VOLUME = 9, */
+    case CONTAINER_STORAGE_FOLDER :
+      return "container";
+    
+    default :
+      return "CFileDetails::GetObjectTypeAsString() :: unhandled type (please send a bugreport)";
+  }
+}
+
 /*SMusicTrack CFileDetails::GetMusicTrackDetails(std::string p_sFileName)
 {
   cout << "GetMusicTrackDetails" << endl;

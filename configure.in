@@ -162,14 +162,13 @@ if test "x$transcoding" = "xyes"; then
     fi
     
     # FLAC_LIBS
-    #AC_CHECK_HEADERS(FLAC/file_decoder.h, have_flac=yes, have_flac=no)
-    #if test "x$have_flac" = "xyes"; then      
-    #  FLAC_LIBS="-lFLAC"
-    #  have_decoder=yes
-    #else
-    #  CXXFLAGS="-DDISABLE_FLAC $CXXFLAGS"
-    #fi
-    CXXFLAGS="-DDISABLE_FLAC $CXXFLAGS"
+    AC_CHECK_HEADERS(FLAC/file_decoder.h, have_flac=yes, have_flac=no)
+    if test "x$have_flac" = "xyes"; then      
+      FLAC_LIBS="-lFLAC"
+      have_decoder=yes
+    else
+      CXXFLAGS="-DDISABLE_FLAC $CXXFLAGS"
+    fi    
 
   fi # have lame
 

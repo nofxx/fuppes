@@ -130,6 +130,11 @@ public:
    *  @return  the device type (see UPNP_DEVICE_TYPE enumeration)
    */
   UPNP_DEVICE_TYPE GetDeviceType();	  
+  
+  /** returns the device type of this device as string
+   *  @return  the device type as string
+   */
+  std::string GetDeviceTypeAsString();	  
 	
   /** returns the whole device description
    *  @return  the device descripition as string

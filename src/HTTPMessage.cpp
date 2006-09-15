@@ -430,8 +430,8 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
   
   bool bResult = false;
 
-  //cout << "CHTTPMessage::BUILD FROM STR" << endl;
-  /*cout << p_sMessage << endl;
+  /*cout << "CHTTPMessage::BUILD FROM STR" << endl;
+  cout << p_sMessage << endl;
   fflush(stdout);*/
 
   /* Message GET */
@@ -618,12 +618,8 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   }
   else if(ToLower(sExt).compare("flac") == 0)
   {
-    #ifndef DISABLE_FLAC
-    cout << "create FLAC decoder" << endl;
-    fflush(stdout);
-    pDecoder = new CFLACDecoder();
-   cout << "FLAC decoder created" << endl;
-    fflush(stdout);    
+    #ifndef DISABLE_FLAC    
+    pDecoder = new CFLACDecoder();   
     #endif
   }
 
@@ -658,13 +654,13 @@ fuppesThreadCallback TranscodeLoop(void *arg)
     nBufferLength = 32768;
   }  
   #else
-  short int* pcmout = new short int[4096];
-  int nBufferLength = 4096;
+  short int* pcmout = new short int[32768];
+  int nBufferLength = 32768;
   #endif
   
   stringstream sLog;
   sLog << "start transcoding \"" << pSession->m_sFileName << "\"";
-  CSharedLog::Shared()->Log(LOGNAME, sLog.str());
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());
     
   while(((samplesRead = pDecoder->DecodeInterleaved((char*)pcmout, nBufferLength)) >= 0) && !pSession->m_pHTTPMessage->m_bBreakTranscoding)
   {
@@ -764,7 +760,7 @@ fuppesThreadCallback TranscodeLoop(void *arg)
     
     sLog.str("");
     sLog << "done transcoding \"" << pSession->m_sFileName << "\"";
-    CSharedLog::Shared()->Log(LOGNAME, sLog.str());  
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());  
   }
   /* break transcoding */
   /*else

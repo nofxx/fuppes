@@ -118,13 +118,15 @@ private:
   /** returns the main HTML page
    *  @return the content of the index.html
    */
-  std::string GetIndexHTML(std::string p_sImgPath, std::string* p_psImgPath);
+  std::string GetIndexHTML(std::string p_sImgPath);
 
-  std::string GetAboutHTML(std::string* p_psImgPath);
+  std::string GetAboutHTML(std::string p_sImgPath);
   
-  std::string GetOptionsHTML(std::string* p_psImgPath);
+  std::string GetOptionsHTML(std::string p_sImgPath);
   
-  std::string GetStatusHTML(std::string* p_psImgPath);
+  std::string GetStatusHTML(std::string p_sImgPath);
+
+  std::string GetConfigHTML(std::string p_sImgPath);
 
 /*===============================================================================
  HELPER

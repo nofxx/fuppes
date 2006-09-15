@@ -101,6 +101,18 @@ std::string GetStylesheet(std::string p_sRelativeImagePath)
   sStylesheet << "text-align:    left;"  << endl;
   sStylesheet << "}"  << endl << endl;
     
+  /* <h1> */
+  sStylesheet << "h1{" << endl <<
+                 "font-size: 150%;" << endl <<
+                 "border-bottom: 1px solid #aaaaaa;" << endl <<
+                 "}" << endl << endl;
+                 
+  /* <h2> */
+  sStylesheet << "h2{" << endl <<
+                 "font-size: 120%;" << endl <<
+                 "}" << endl << endl;                 
+  
+  
   return sStylesheet.str();
 }
 

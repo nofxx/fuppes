@@ -81,6 +81,7 @@ protected:
 ===============================================================================*/
 
   bool SetupConfig();
+  bool Refresh();
 
   void PrintTranscodingSettings();
   
@@ -165,7 +166,7 @@ private:
  HELPER
 ===============================================================================*/
 
-  bool ReadConfigFile();
+  bool ReadConfigFile(bool p_bIsInit);
   bool ResolveHostAndIP();
   bool ResolveIPByHostname();
   bool ResolveIPByInterface(std::string p_sInterfaceName);

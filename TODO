@@ -1,6 +1,6 @@
 * audio transcoding:
   * AAC (http://www.audiocoding.com/)
-  * FLAC
+  * mono support for all audio types
 
 * file types
   * wmv

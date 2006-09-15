@@ -63,6 +63,9 @@ extern "C"
   /* FLAC__bool	FLAC__file_decoder_process_single(FLAC__FileDecoder *decoder) */
   typedef FLAC__bool (*FLACFileDecoderProcessSingle_t)(FLAC__FileDecoder*);
   
+  /* FLAC__FileDecoderState 	FLAC__file_decoder_get_state (const FLAC__FileDecoder *decoder) */
+  typedef FLAC__FileDecoderState (*FLACFileDecoderGetState_t)(const FLAC__FileDecoder*);
+  
   /* FLAC__bool	FLAC__file_decoder_finish(FLAC__FileDecoder *decoder) */
   typedef FLAC__bool (*FLACFileDecoderFinish_t)(FLAC__FileDecoder*);  
 }
@@ -103,6 +106,7 @@ class CFLACDecoder: public CDecoderBase
   
   private:
     fuppesLibHandle  m_LibHandle;  
+    bool             m_bEOF;
   
     FLAC__FileDecoder*                    m_pFLACFileDecoder;  
     FLACFileDecoderNew_t                  m_FLACFileDecoderNew;
@@ -115,6 +119,7 @@ class CFLACDecoder: public CDecoderBase
     FLACFileDecoderInit_t                 m_FLACFileDecoderInit;
     FLACFileDecoderProcessUntilEndOfMetadata_t m_FLACFileDecoderProcessUntilEndOfMetadata;
     FLACFileDecoderProcessSingle_t        m_FLACFileDecoderProcessSingle;
+    FLACFileDecoderGetState_t             m_FLACFileDecoderGetState;
     FLACFileDecoderFinish_t               m_FLACFileDecoderFinish;
 };
 

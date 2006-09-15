@@ -32,6 +32,7 @@
 #include "../SharedLog.h"
 #include "../Common.h"
 #include "../ContentDirectory/ContentDatabase.h"
+#include "../ContentDirectory/FileDetails.h"
 
 #include "Images/fuppes_png.cpp"
 #include "Images/fuppes_small_png.cpp"
@@ -93,33 +94,45 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
  
   std::string sImgPath = "images/";
   std::string sPageName = "undefined";
-  
+    
   if((pMessage->GetRequest().compare("/") == 0) || (ToLower(pMessage->GetRequest()).compare("/index.html") == 0))
   {
     sImgPath = "presentation/images/";
     
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "send index.html");
     nPresentationPage = PRESENTATION_PAGE_INDEX;
-    sContent = this->GetIndexHTML(sImgPath, &sPageName);
+    sContent = this->GetIndexHTML(sImgPath);
+    sPageName = "Start";
   }
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/about.html") == 0)
   {
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "send about.html");
     nPresentationPage = PRESENTATION_PAGE_ABOUT;
-    sContent = this->GetAboutHTML(&sPageName);
+    sContent = this->GetAboutHTML(sImgPath);
+    sPageName = "About";
   }  
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html") == 0)
   {
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "send options.html");
     nPresentationPage = PRESENTATION_PAGE_OPTIONS;
-    sContent = this->GetOptionsHTML(&sPageName);
+    sContent = this->GetOptionsHTML(sImgPath);
+    sPageName = "Options";
   }    
-else if(ToLower(pMessage->GetRequest()).compare("/presentation/status.html") == 0)
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/status.html") == 0)
   {
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "send status.html");
     nPresentationPage = PRESENTATION_PAGE_STATUS;
-    sContent = this->GetStatusHTML(&sPageName);
+    sContent = this->GetStatusHTML(sImgPath);
+    sPageName = "Status";
   }      
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/config.html") == 0)
+  {
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send config.html");
+    nPresentationPage = PRESENTATION_PAGE_STATUS;
+    sContent = this->GetConfigHTML(sImgPath);
+    sPageName = "Configuration";
+  }        
+  
   
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/fuppes.png") == 0)
   {
@@ -203,7 +216,7 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
   sResult << "</style>";  
   
   
-  /*sResult << "<script type=\"text/javascript\">"
+  sResult << "<script type=\"text/javascript\">"
     "function Klappen(Id) {"
     "var KlappText = document.getElementById('Remote'+Id);"
     "var KlappBild = document.getElementById('Pic'+Id);"
@@ -219,7 +232,7 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
     "KlappBild.src = jetec_Plus;"
     "}"
     "}"
-    "</script>"; */
+    "</script>"; 
   
   sResult << "</head>";
   /* header end */
@@ -261,6 +274,8 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
   sResult << "<a href=\"/presentation/options.html\">Options</a>" << endl;
   sResult << "<br />";
   sResult << "<a href=\"/presentation/status.html\">Status</a>" << endl;    
+  sResult << "<br />";
+  sResult << "<a href=\"/presentation/config.html\">Configuration</a>" << endl;    
   sResult << "<br />";
   sResult << "Debug" << endl;
   
@@ -306,84 +321,164 @@ std::string CPresentationHandler::GetXHTMLHeader()
 }
 
 /* GetIndexHTML */
-std::string CPresentationHandler::GetIndexHTML(std::string p_sImgPath, std::string* p_psImgPath)
+std::string CPresentationHandler::GetIndexHTML(std::string p_sImgPath)
 {
   std::stringstream sResult;
   
-  //sResult << "<h2>Start</h2>" << endl;
-  *p_psImgPath = "Start";
-  
-  for (unsigned int i = 0; i < m_vFuppesInstances.size(); i++)
-  {
-    //sResult << "FUPPES Instance No. " << i + 1 << "<br />";    
-    //sResult << "IP-Address: " << ((CFuppes*)m_vFuppesInstances[i])->GetIPAddress() << "<br />";
-    //sResult << "HTTP-Server URL: " << ((CFuppes*)m_vFuppesInstances[i])->GetHTTPServerURL() << "<br />";
-    sResult << "UUID: " << ((CFuppes*)m_vFuppesInstances[i])->GetUUID() << "<br />";    
-    //sResult << "<br />";
-    sResult << "<br />";
-    
-    sResult << "<h3>Remote Devices</h3>";
-    sResult << BuildFuppesDeviceList((CFuppes*)m_vFuppesInstances[i], p_sImgPath);
-  }
+  sResult << "<h1>remote devices</h1>";
+  sResult << BuildFuppesDeviceList((CFuppes*)m_vFuppesInstances[0], p_sImgPath);
   
   return sResult.str();
+  
+  //sResult << "<h2>Start</h2>" << endl;
+  //*p_psImgPath = "Start";
+  
+  //for (unsigned int i = 0; i < m_vFuppesInstances.size(); i++)
+ // {
+    //sResult << "FUPPES Instance No. " << i + 1 << "<br />";    
+    //sResult << "IP-Address: " << ((CFuppes*)m_vFuppesInstances[i])->GetIPAddress() << "<br />";
+    //sResult << "HTTP-Server URL: " << ((CFuppes*)m_vFuppesInstances[i])->GetHTTPServerURL() << "<br />";    
+    //sResult << "<br />";
+    //sResult << "<br />";    
+    
+  //}
 }
 
-std::string CPresentationHandler::GetAboutHTML(std::string* p_psImgPath)
+std::string CPresentationHandler::GetAboutHTML(std::string p_sImgPath)
 {
   std::stringstream sResult;
   
   //sResult << "<h2>About</h2>" << endl;
-  *p_psImgPath = "About";
-  sResult << "<a href=\"http://sourceforge.net/projects/fuppes/\">http://sourceforge.net/projects/fuppes/</a><br />" << endl;
+  //*p_psImgPath = "About";
+  sResult << "<h1>system information</h1>" << endl;  
   
+  sResult << "<p>" << endl;
   sResult << "Version: " << CSharedConfig::Shared()->GetAppVersion() << "<br />" << endl;
   sResult << "Hostname: " << CSharedConfig::Shared()->GetHostname() << "<br />" << endl;
   sResult << "OS: " << CSharedConfig::Shared()->GetOSName() << " " << CSharedConfig::Shared()->GetOSVersion() << "<br />" << endl;
-  sResult << "SQLite: " << CContentDatabase::Shared()->GetLibVersion() << "<br />" << endl;
+  sResult << "SQLite: " << CContentDatabase::Shared()->GetLibVersion() << endl;
+  sResult << "</p>" << endl;
   
-  sResult << "<br />" << endl;
+  sResult << "<p>" << endl;
   sResult << "build at: " << __DATE__ << "" << __TIME__ "<br />" << endl;
-  sResult << "build with: " << __VERSION__ << "<br />" << endl;
+  sResult << "build with: " << __VERSION__ << endl;
+  sResult << "</p>" << endl;
+  
+  sResult << "<p>" << endl;
+  sResult << "<a href=\"http://sourceforge.net/projects/fuppes/\">http://sourceforge.net/projects/fuppes/</a><br />" << endl;
+  sResult << "</p>" << endl;
   
   return sResult.str();
 }
 
-std::string CPresentationHandler::GetOptionsHTML(std::string* p_psImgPath)
+std::string CPresentationHandler::GetOptionsHTML(std::string p_sImgPath)
 {
   std::stringstream sResult;
   
   //sResult << "<h2>Options</h2>" << endl;
-  *p_psImgPath = "Options";
+  //*p_psImgPath = "Options";
   /*sResult << "<a href=\"http://sourceforge.net/projects/fuppes/\">http://sourceforge.net/projects/fuppes/</a><br />" << endl; */
 
   //((CFuppes*)m_vFuppesInstances[0])->GetContentDirectory()->BuildDB();
-  
+  sResult << "<h1>database options</h1>" << endl;
+  sResult << "Todo: Rebuild db" << endl;
   
   return sResult.str();
 }
 
-std::string CPresentationHandler::GetStatusHTML(std::string* p_psImgPath)
+std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
 {
   std::stringstream sResult;  
   
   //sResult << "<h2>Status</h2>" << endl;
-  *p_psImgPath = "Status";
+  //*p_psImgPath = "Status";
   
   //sResult
   CContentDatabase::Shared()->Lock();
   std::stringstream sSQL;
   sSQL << "select TYPE, count(*) as VALUE from OBJECTS group by TYPE;";
   CContentDatabase::Shared()->Select(sSQL.str());
+  int nType = 0;  
+  
+  // Database status
+  sResult << "<h1>database status</h1>" << endl;  
+  sResult << 
+    "<table rules=\"all\" style=\"font-size: 10pt; border-style: solid; border-width: 1px; border-color: #000000;\" cellspacing=\"0\" width=\"400\">" << endl <<
+      "<thead>" << endl <<
+        "<tr>" << endl <<        
+          "<th style=\"background-image: url(" << p_sImgPath << "header-gradient-small.png); color: #FFFFFF;\">" <<           
+          "Type" << "</th>" << 
+          "<th style=\"background-image: url(" << p_sImgPath << "header-gradient-small.png); color: #FFFFFF;\">" <<           
+          "Count" << 
+          "</th>" << endl <<
+        "</tr>" << endl <<
+      "</thead>" << endl << 
+      "<tbody>" << endl;  
+  
   while (!CContentDatabase::Shared()->Eof())
   {
-    sResult << "Type: " << CContentDatabase::Shared()->GetResult()->GetValue("TYPE") << endl;
-    sResult << "Count: " << CContentDatabase::Shared()->GetResult()->GetValue("VALUE") << "<br />" << endl;
+    sResult << "<tr>" << endl;
+    
+    nType = atoi(CContentDatabase::Shared()->GetResult()->GetValue("TYPE").c_str());
+    sResult << "<td>" << CFileDetails::Shared()->GetObjectTypeAsString(nType) << "</td>" << endl;
+    sResult << "<td>" << CContentDatabase::Shared()->GetResult()->GetValue("VALUE") << "</td>" << endl;
     CContentDatabase::Shared()->Next();
+    
+    sResult << "</tr>" << endl;
   }
   
+  sResult <<
+      "</tbody>" << endl <<   
+    "</table>" << endl;
   
   CContentDatabase::Shared()->Unlock();
+  // end Database status
+  
+  // system status
+  sResult << "<h1>system status</h1>" << endl;  
+  
+  sResult << "<p>" << endl;
+  sResult << "UUID: " << ((CFuppes*)m_vFuppesInstances[0])->GetUUID() << "<br />";    
+  sResult << "</p>" << endl;
+  
+  // end system status
+  
+  return sResult.str();  
+}
+
+
+std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath)
+{
+  std::stringstream sResult;  
+  
+  sResult << "<h1>ContentDirectory settings</h1>" << endl;
+  // shared dirs
+  sResult << "<h2>shared directories</h2>" << endl;
+  sResult << "<p>" << endl;
+  for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
+  {
+    sResult << CSharedConfig::Shared()->GetSharedDir(i) << "<br />" << endl;
+  }
+  sResult << "</p>" << endl;
+  
+  sResult << "<p>" << endl;
+  sResult << "<form method=\"POST\" action=\"/presentation/config.html\">" << endl <<
+               "<input name=\"new_dir\" />" << endl <<
+               "<input type=\"submit\" />" << endl <<  
+             "</form>";
+  sResult << "</p>" << endl;
+  
+  // max filename length
+  sResult << "<h2>max file name length</h2>" << endl;
+  sResult << "<p>The \"max file name length\" option sets the maximum length for file names in the directory listings.<br />" <<
+             "some devices can't handle an unlimited length.<br />" << endl <<
+             "(e.g. the Telegent TG 100 crashes on receiving file names larger then 101 characters.)<br />" << endl <<
+             "0 or empty means unlimited length. a value greater 0 sets the maximum number of characters to be sent.</p>" << endl;
+  sResult << "<p><strong>Max file name length: " << CSharedConfig::Shared()->GetMaxFileNameLength() << "</strong></p>" << endl;  
+  
+  
+  sResult << "<h1>Network settings</h1>" << endl;  
+  sResult << "<h2>Allowed IP-addresses</h2>" << endl;
   
   return sResult.str();  
 }
@@ -408,13 +503,16 @@ std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes, std::s
     sResult<< pDevice->GetFriendlyName() << "</th></tr>" << endl;*/
     sResult << "<tr>" << endl <<
                "<th colspan=\"2\" style=\"background-image: url(" << p_sImgPath << "header-gradient-small.png); " <<
-               "color: #FFFFFF;\">" << pDevice->GetFriendlyName() << "</th></tr>" << endl;
+               "color: #FFFFFF;\">" <<
+               //"<a href=\"javascript:Klappen(" << i << ")\"><!--<img src=\"plus.gif\" id=\"Pic" << i << "\" border=\"0\">-->x</a> " <<
+               pDevice->GetFriendlyName() << "</th></tr>" << endl;
     sResult << "</thead>" << endl;
     
     //sResult << "<tbody id=\"Remote" << i << "\" style=\"display: none;\">" << endl;
     sResult << "<tbody>" << endl;
     
     
+    sResult << "<tr><td>Type</td><td>" << pDevice->GetDeviceTypeAsString() << "</td></tr>" << endl;
     sResult << "<tr><td>UUID</td><td>" << pDevice->GetUUID() << "</td></tr>" << endl;
     sResult << "<tr><td>Time Out</td><td style=\"border-style: solid; border-width: 1px;\">" << pDevice->GetTimer()->GetCount() / 60 << "min. " << pDevice->GetTimer()->GetCount() % 60 << "sec.</td></tr>" << endl;
     //sResult << "<tr><td>Status</td><td>"   << "<i>todo</i>" << "</td></tr>" << endl;
