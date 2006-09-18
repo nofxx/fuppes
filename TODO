@@ -7,6 +7,7 @@
   * asf
   * wma
   * vob
+  * vdr
 
 * playlist handling
   * m3u
@@ -35,8 +36,7 @@
 * webinterface
   * set allowed ips
   * username/password
-  
-* set ips allowed to access content
+  * add/remove shared dirs 
 
 
 * use inotify to refresh content db automatically
@@ -46,3 +46,11 @@
 * create own fuppes user
 * configuration option: user and group to run as
 * init script
+
+* run without comand line
+** (win32) systemtray icon
+** (gnome) notification area
+** (os x) menu tray icon
+
+* presentation
+** handle application/x-www-form-urlencoded althoug text/plain is requested

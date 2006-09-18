@@ -281,19 +281,27 @@ bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMe
   HTTP_MESSAGE_TYPE nMsgType = pMessageIn->GetMessageType();
   switch(nMsgType)
   {
+    /* HTTP */
     case HTTP_MESSAGE_TYPE_GET:
-      fRet = HandleHTTPGetOrHead(pMessageIn, pMessageOut);
+      fRet = HandleHTTPRequest(pMessageIn, pMessageOut);
       break;
     case HTTP_MESSAGE_TYPE_HEAD:
-      fRet = HandleHTTPGetOrHead(pMessageIn, pMessageOut);
+      fRet = HandleHTTPRequest(pMessageIn, pMessageOut);
       break;
     case HTTP_MESSAGE_TYPE_POST:
-      fRet = HandleHTTPPost(pMessageIn, pMessageOut);
+      fRet = HandleHTTPRequest(pMessageIn, pMessageOut);
       break;
+    
+    /* SOAP */
+    case HTTP_MESSAGE_TYPE_POST_SOAP_ACTION:
+      fRet = HandleHTTPPostSOAPAction(pMessageIn, pMessageOut);
+      break;
+    
     case HTTP_MESSAGE_TYPE_200_OK:
       break;
     case HTTP_MESSAGE_TYPE_404_NOT_FOUND:
       break;
+    
     default:    
         fRet = false;
       break;
@@ -302,7 +310,7 @@ bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMe
   return fRet;
 }
 
-bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
+bool CFuppes::HandleHTTPRequest(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
 {  
   /* Get request */
   std::string strRequest = pMessageIn->GetRequest();
@@ -464,7 +472,7 @@ bool CFuppes::HandleHTTPGetOrHead(CHTTPMessage* pMessageIn, CHTTPMessage* pMessa
   return false;
 }
 
-bool CFuppes::HandleHTTPPost(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
+bool CFuppes::HandleHTTPPostSOAPAction(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
 {     
   /* Get UPnP action */
   CUPnPAction* pAction;

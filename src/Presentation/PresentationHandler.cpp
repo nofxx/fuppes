@@ -95,6 +95,8 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
   std::string sImgPath = "images/";
   std::string sPageName = "undefined";
     
+  //cout << pMessage->GetRequest() << " "; // << endl;
+  
   if((pMessage->GetRequest().compare("/") == 0) || (ToLower(pMessage->GetRequest()).compare("/index.html") == 0))
   {
     sImgPath = "presentation/images/";
@@ -129,8 +131,11 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
   {
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "send config.html");
     nPresentationPage = PRESENTATION_PAGE_STATUS;
-    sContent = this->GetConfigHTML(sImgPath);
+    sContent = this->GetConfigHTML(sImgPath, pMessage);
     sPageName = "Configuration";
+    
+    /*cout << pMessage->GetMessage() << endl;
+    cout << "TYPE: " << pMessage->GetMessageType() << endl;*/
   }        
   
   
@@ -148,6 +153,8 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
     string sImg = Base64Decode(fuppes_small_png);    
     pResult->SetBinContent((char*)sImg.c_str(), sImg.length());  
+    
+    //cout << sImg.length() << endl;
   } 
   
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/header-gradient.png") == 0)
@@ -156,6 +163,8 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
     string sImg = Base64Decode(header_gradient_png);    
     pResult->SetBinContent((char*)sImg.c_str(), sImg.length());  
+    
+    //cout << sImg.length() << endl;
   }
   
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/header-gradient-small.png") == 0)
@@ -164,6 +173,8 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
     string sImg = Base64Decode(header_gradient_small_png);    
     pResult->SetBinContent((char*)sImg.c_str(), sImg.length());
+    
+    //cout << sImg.length() << endl;
   }
   
   
@@ -447,26 +458,77 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
 }
 
 
-std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath)
+std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMessage* pRequest)
 {
   std::stringstream sResult;  
   
+  cout << pRequest->GetMessage() << endl;
+  
+  /* handle config changes */
+  if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_POST)
+  {
+    /* remove shared dir(s) */
+    /*unsigned int nOffset = 0;
+    stringstream sVar;
+    for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
+    {
+      sVar << "shared_dir_" << i;      
+      if(pRequest->PostVarExists(sVar.str()))
+      {
+        cout << pRequest->GetPostVar(sVar.str()) << endl;        
+      }     
+      sVar.str("");
+    }*/   
+    
+    
+    /* add shared dir */
+    if(pRequest->PostVarExists("new_dir") && (pRequest->GetPostVar("new_dir").length() > 0))
+    {
+      /* todo: check MIME-TYPE and convert if 
+         mime type is application/x-www-form-urlencoded although
+         the form requests text/plain */      
+      //cout << "var: " <<  pRequest->GetPostVar("new_dir") << "." << endl;      
+      CSharedConfig::Shared()->AddSharedDirectory(pRequest->GetPostVar("new_dir"));
+    }
+    
+  }
+  
+  
+  /* show config page */
   sResult << "<h1>ContentDirectory settings</h1>" << endl;
   // shared dirs
   sResult << "<h2>shared directories</h2>" << endl;
-  sResult << "<p>" << endl;
+  sResult << "<form method=\"POST\" action=\"/presentation/config.html\" accept-charset=\"UTF-8\" enctype=\"text/plain\">" << endl;
+  
+  // directory list
+  sResult << "<p>" << endl <<  
+             "<table>" << endl <<
+               "<thead>" << endl <<
+                 "<tr>" <<
+                   "<th>Del</th>" <<
+                   "<th>Directory</th>" <<
+                 "</tr>" <<
+               "</thead>" << endl <<
+               "<tbody>" << endl;
   for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
   {
-    sResult << CSharedConfig::Shared()->GetSharedDir(i) << "<br />" << endl;
+    sResult << "<tr>" << endl;    
+    sResult << "<td><input type=\"checkbox\" name=\"shared_dir_" << i << "\" value=\"remove\"></td>" << endl;   
+    sResult << "<td>" << CSharedConfig::Shared()->GetSharedDir(i) << "</td>" << endl;
+    sResult << "</tr>" << endl;
   }
-  sResult << "</p>" << endl;
   
-  sResult << "<p>" << endl;
-  sResult << "<form method=\"POST\" action=\"/presentation/config.html\">" << endl <<
+  sResult <<   "</tbody>" << endl <<
+             "</table>" << endl <<  
+             "</p>" << endl;
+  
+  // "add new form" controls
+  sResult << "<p>" <<  
                "<input name=\"new_dir\" />" << endl <<
-               "<input type=\"submit\" />" << endl <<  
-             "</form>";
-  sResult << "</p>" << endl;
+               "<input type=\"submit\" />" << endl <<             
+             "</p>" << endl;
+  
+  sResult << "</form>";
   
   // max filename length
   sResult << "<h2>max file name length</h2>" << endl;
@@ -497,7 +559,7 @@ std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes, std::s
     CUPnPDevice* pDevice = pFuppes->GetRemoteDevices()[i];
     
     sResult << 
-      "<table rules=\"all\" style=\"font-size: 10pt; border-style: solid; border-width: 1px; border-color: #000000;\" cellspacing=\"0\" width=\"400\">" <<
+      "<table rules=\"all\" cellspacing=\"0\" width=\"400\">" <<
         "<thead>";
     /*sResult << "<tr><th colspan=\"2\"><a href=\"javascript:Klappen(" << i << ")\"><img src=\"plus.gif\" id=\"Pic" << i << "\" border=\"0\">x</a> ";
     sResult<< pDevice->GetFriendlyName() << "</th></tr>" << endl;*/

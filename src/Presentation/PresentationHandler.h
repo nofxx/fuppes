@@ -126,7 +126,7 @@ private:
   
   std::string GetStatusHTML(std::string p_sImgPath);
 
-  std::string GetConfigHTML(std::string p_sImgPath);
+  std::string GetConfigHTML(std::string p_sImgPath, CHTTPMessage* pRequest);
 
 /*===============================================================================
  HELPER

@@ -110,7 +110,22 @@ std::string GetStylesheet(std::string p_sRelativeImagePath)
   /* <h2> */
   sStylesheet << "h2{" << endl <<
                  "font-size: 120%;" << endl <<
-                 "}" << endl << endl;                 
+                 "}" << endl << endl;     
+
+
+  sStylesheet << "table {" << endl <<
+                 "font-size: 10pt; " << endl <<
+                 "border-style: solid;" << endl << 
+                 "border-width: 1px;" << endl <<
+                 "border-color: #000000;" << endl <<
+                 "}" << endl << endl;
+                 
+
+  sStylesheet << "th {" << endl <<
+                 "background-image: url(\"" << p_sRelativeImagePath << "header-gradient-small.png\");" << endl <<
+                 "background-repeat: repeat-x;" << endl << 
+                 "color: #FFFFFF;" << endl <<
+                 "}" << endl << endl;     
   
   
   return sStylesheet.str();

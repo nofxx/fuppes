@@ -288,14 +288,10 @@ fuppesThreadCallback SessionLoop(void *arg)
     if(!bResult)
       break;
     
-    std::string sIP = inet_ntoa(pSession->GetRemoteEndPoint().sin_addr);
-    /* TODO: pruefen ob die Anfrage von einer eraubten IP kommt    
-    cout << sIP << endl;
-    if (CSharedConfig::Shared()->IsAllowedIP(sIP))
-      cout << "allowed" << endl;
-    else
-      cout << "denied" << endl;*/
+    //cout << pRequest->GetHeader() << endl;
     
+    /* check if requesting IP is allowed to */
+    std::string sIP = inet_ntoa(pSession->GetRemoteEndPoint().sin_addr);    
     if(CSharedConfig::Shared()->IsAllowedIP(sIP))
     {    
       /* build response */    
@@ -527,7 +523,9 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       #ifdef WIN32
       send(p_Session->GetConnection(), p_Response->GetBinContent(), p_Response->GetBinContentLength(), 0);          
       #else
+      //int nSnd = 
       send(p_Session->GetConnection(), p_Response->GetBinContent(), p_Response->GetBinContentLength(), MSG_NOSIGNAL);
+      //cout << nSnd << endl;
       #endif
       CSharedLog::Shared()->ExtendedLog(LOGNAME, "content send");
     } 

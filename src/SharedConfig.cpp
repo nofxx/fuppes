@@ -53,9 +53,6 @@
 #else
 #include <sys/utsname.h>
 #endif
-#include <libxml/parser.h>
-#include <libxml/tree.h>
-#include <libxml/xmlwriter.h>
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN     64
@@ -115,6 +112,8 @@ CSharedConfig::CSharedConfig()
   
   m_nMaxFileNameLength = 0;
   
+  m_pDoc = NULL;
+  
   /* transcoding */
   #ifdef DISABLE_TRANSCODING
   m_bTranscodingEnabled = false;
@@ -136,6 +135,11 @@ CSharedConfig::CSharedConfig()
   m_DisplaySettings.bShowDirNamesInFirstLevel = true;
 }
 
+CSharedConfig::~CSharedConfig()
+{
+  xmlFreeDoc(m_pDoc);
+}
+
 /* <\PROTECTED> */
 
 /* <PUBLIC> */
@@ -146,7 +150,7 @@ CSharedConfig::CSharedConfig()
 
 bool CSharedConfig::SetupConfig()
 {
-  bool bResult = true;
+  bool bResult = true;  
   
   /* read config file */
   bResult = ReadConfigFile(true);
@@ -160,9 +164,9 @@ bool CSharedConfig::SetupConfig()
     return false;
   }
   
-  cout << "hostname: " << GetHostname() << endl; 
+  /*cout << "hostname: " << GetHostname() << endl; 
   cout << "address : " << GetIPv4Address() << endl; 
-  cout << endl;
+  cout << endl;*/
 
   /* OS information */
   GetOSInfo();
@@ -183,6 +187,11 @@ bool CSharedConfig::Refresh()
   /* reset all variables and containers ... */
   m_nMaxFileNameLength = 0;  
   m_vSharedDirectories.clear();  
+  
+  m_pSharedDirNode = NULL;
+  
+  /*xmlFreeDoc(m_pDoc);
+  m_pDoc = NULL;*/
   
   /* ... and read the config file */
   bResult = ReadConfigFile(false);
@@ -327,6 +336,25 @@ bool CSharedConfig::IsAllowedIP(std::string p_sIPAddress)
   return bResult;
 }
 
+
+bool CSharedConfig::AddSharedDirectory(std::string p_sDirectory)
+{  
+  unsigned char* szBuf = new unsigned char[4096];  
+  int nSize = 4096;
+  int nLength = p_sDirectory.length();
+  isolat1ToUTF8(szBuf, &nSize, (const unsigned char*)p_sDirectory.c_str(), &nLength);
+  szBuf[nSize] = '\0';  
+  
+  if(m_pSharedDirNode)
+    xmlNewTextChild(m_pSharedDirNode, NULL, BAD_CAST "dir", BAD_CAST szBuf);
+  
+  delete[] szBuf;
+  
+  xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);  
+  
+  return this->Refresh();
+}
+
 /* <\PUBLIC> */
 	
 /* <PRIVATE> */
@@ -337,53 +365,73 @@ bool CSharedConfig::IsAllowedIP(std::string p_sIPAddress)
 
 bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
 {
-  xmlDocPtr pDoc    = NULL;  
-  bool      bResult = false;
-  stringstream sFileName;
-  stringstream sDir;
+  //xmlDocPtr pDoc    = NULL;  
+  bool      bResult = true;
   
-  #ifdef WIN32
-  sDir << getenv("APPDATA") << "\\Free UPnP Entertainment Service\\";
-  sFileName << sDir.str() << "fuppes.cfg";
-  if(!DirectoryExists(sDir.str())) 
-    CreateDirectory(sDir.str().c_str(), NULL);
-  #else
-  sDir << getenv("HOME") << "/.fuppes/";
-  sFileName << sDir.str() << "fuppes.cfg";
-  if(!DirectoryExists(sDir.str())) 
-    mkdir(sDir.str().c_str(), S_IRWXU | S_IRWXG);
-  #endif
-
-  if(FileExists(sFileName.str()))
-  {
-    pDoc = xmlReadFile(sFileName.str().c_str(), NULL, 0);
-    if(pDoc != NULL)  
-      bResult = true;
-  }
-  else if(FileExists("fuppes.cfg"))
-  {
-    pDoc = xmlReadFile("fuppes.cfg", NULL, 0);
-    if(pDoc != NULL)  
-      bResult = true;
-  }  
-  else
-  { 
-    cout << endl << "[ERROR] no config file found" << endl;
-    WriteDefaultConfig(sFileName.str());
-    cout << "wrote default config to \"" << sFileName.str() << "\"" << endl;
-    cout << "please edit the config-file and restart FUPPES" << endl;
-    bResult = false;
-    #ifdef WIN32
-    fuppesSleep(4000);
-    #endif
-  }
+  if(!m_pDoc)
+  {    
+    if(m_sConfigFileName.length() == 0)
+    {
+      stringstream sFileName;
+      stringstream sDir;
+    
+      #ifdef WIN32
+      sDir << getenv("APPDATA") << "\\Free UPnP Entertainment Service\\";
+      sFileName << sDir.str() << "fuppes.cfg";
+      if(!DirectoryExists(sDir.str())) 
+        CreateDirectory(sDir.str().c_str(), NULL);
+      #else
+      sDir << getenv("HOME") << "/.fuppes/";
+      sFileName << sDir.str() << "fuppes.cfg";
+      if(!DirectoryExists(sDir.str())) 
+        mkdir(sDir.str().c_str(), S_IRWXU | S_IRWXG);
+      #endif
+    
+      m_sConfigFileName = sFileName.str();   
+    }    
+    
+    if(FileExists(m_sConfigFileName))
+    { 
+      m_pDoc = xmlReadFile(m_sConfigFileName.c_str(), NULL, XML_PARSE_NOBLANKS);
+      if(m_pDoc != NULL)  
+        bResult = true;
+    }
+    /* config does not exist 
+       write default config, reload it and show
+       "configure via webinterface"-hint */
+    else
+    { 
+      //cout << endl << "[ERROR] no config file found" << endl;      
+      /*cout << "wrote default config to \"" << sFileName.str() << "\"" << endl;
+      cout << "please edit the config-file and restart FUPPES" << endl;*/
+      
+      this->WriteDefaultConfig(m_sConfigFileName);      
+      bResult = this->ReadConfigFile(true);      
+      if(bResult)
+      {
+        cout << "[INFORMATION]" << endl <<
+                "  wrote configuration file to \"" << m_sConfigFileName << "\"." << endl <<
+                "  You can now configure fuppes via the webinterface." << endl << 
+                "  Thanks for using fuppes!" << endl << endl;        
+        fflush(stdout);
+      }
+      else      
+      {
+        cout << "[ERROR] can not create config file \"" << m_sConfigFileName << "\"." << endl;
+        fflush(stdout);
+      }
+        
+      return bResult;
+    }
+  
+  } /* if(!m_pDoc) */
+  
   
   if(bResult)
   {
     xmlNode* pRootNode = NULL;  
     xmlNode* pTmpNode  = NULL;   
-    pRootNode = xmlDocGetRootElement(pDoc);
-    
+    pRootNode = xmlDocGetRootElement(m_pDoc);    
     
     //m_sConfigVersion
     
@@ -394,54 +442,63 @@ bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
       /* shared_directories */
       if(sName.compare("shared_directories") == 0)
       {
-        xmlNode* pDirNode = pTmpNode->children;
-        for(pDirNode = pDirNode->next; pDirNode; pDirNode = pDirNode->next)
+        m_pSharedDirNode = pTmpNode;        
+        xmlNode* pTmp = pTmpNode->children;
+        
+        while(pTmp)
         {
-          if(pDirNode->type == XML_ELEMENT_NODE)
-          {
-            string sDirName = (char*)pDirNode->children->content;          
-            m_vSharedDirectories.push_back(sDirName);
-          }        
-        }
+          m_vSharedDirectories.push_back((char*)pTmp->children->content);
+          pTmp = pTmp->next;
+        }       
+
       }
+      /* shared_dir */
+      
       
       /* network_settings */
       else if(sName.compare("network_settings") == 0)
       {
-        xmlNode* pNetNode = NULL;
-        for(pNetNode = pTmpNode->children->next; pNetNode; pNetNode = pNetNode->next)
+        xmlNode* pNetNode = pTmpNode->children;
+        
+        while(pNetNode)
         {
-          string sNet = (char*)pNetNode->name;
+          string sNet = (char*)pNetNode->name;      
           
-          /* ip address */
-          if((sNet.compare("ip_address") == 0) && p_bIsInit)
-          {
+          if(sNet.compare("ip_address") == 0)
+          {            
             if(pNetNode->children)
             {
               string sIP = (char*)pNetNode->children->content;
               if(sIP.compare("0") != 0)
                 m_sIP = sIP;
-            }           
-          }
-          
-          /* allowed_ips */
-          else if(sNet.compare("allowed_ips") == 0)
-          {
-            if (pNetNode->children)
-            {
-              xmlNode* pIPNode = NULL;
-              for(pIPNode = pNetNode->children->next; pIPNode; pIPNode = pIPNode->next)
-              {
-                if(pIPNode->type == XML_ELEMENT_NODE)
-                {
-                  m_vAllowedIPs.push_back((char*)pIPNode->children->content);
-                  //cout << (char*)pIPNode->children->content << endl;
-                }
-              }                
             }
           }
-
+          else if(sNet.compare("http_port") == 0)
+          {
+            if(pNetNode->children)
+            {
+              string sPort = (char*)pNetNode->children->content;
+              if(sPort.compare("0") != 0)
+                m_nHTTPPort = atoi(sPort.c_str());              
+            }
+          }
+          else if(sNet.compare("allowed_ips") == 0)
+          {
+            if(pNetNode->children)
+            {
+              xmlNode* pIPNode = pNetNode->children;
+              while(pIPNode)
+              {
+                if(pIPNode->children)
+                  m_vAllowedIPs.push_back((char*)pIPNode->children->content);                
+                
+                pIPNode = pIPNode->next;
+              }
+            }
+          }
           
+          
+          pNetNode = pNetNode->next;
         }
       }
       /* end network_settings */
@@ -470,7 +527,7 @@ bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
       /* end content_directory */      
       
     }   
-    xmlFreeDoc(pDoc);
+    
   }  
   xmlCleanupParser();  
   return bResult;
@@ -513,33 +570,20 @@ bool CSharedConfig::ResolveIPByHostname()
 
 bool CSharedConfig::ResolveIPByInterface(std::string p_sInterfaceName)
 {
-#ifdef WIN32
+  #ifdef WIN32
   return true;
-#else
-    struct ifreq ifa;
-    struct sockaddr_in *saddr;
-    int       fd;
-    
-    strcpy (ifa.ifr_name, p_sInterfaceName.c_str());
-    if(((fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) || ioctl(fd, SIOCGIFADDR, &ifa))
-        return false;
-    saddr = (struct sockaddr_in*)&ifa.ifr_addr;
-    m_sIP = inet_ntoa(saddr->sin_addr);
-    return true;
-#endif
-}
-
-bool CSharedConfig::FileExists(std::string p_sFileName)
-{
-  ifstream fsTmp;
-  bool     bResult = false;
+  #else
+  struct ifreq ifa;
+  struct sockaddr_in *saddr;
+  int       fd;
   
-  /* Try to open the file to check it exists */
-  fsTmp.open(p_sFileName.c_str(),ios::in);  
-  bResult = fsTmp.is_open();
-  fsTmp.close();
-  
-  return bResult;
+  strcpy (ifa.ifr_name, p_sInterfaceName.c_str());
+  if(((fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) || ioctl(fd, SIOCGIFADDR, &ifa))
+      return false;
+  saddr = (struct sockaddr_in*)&ifa.ifr_addr;
+  m_sIP = inet_ntoa(saddr->sin_addr);
+  return true;
+  #endif
 }
 
 bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
@@ -553,13 +597,13 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
 
 	/* fuppes_config */
 	xmlTextWriterStartElement(pWriter, BAD_CAST "fuppes_config");  
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "version", BAD_CAST "0.1"); 
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "version", BAD_CAST "0.3"); 
 	
     /* shared_directories */    
     xmlTextWriterWriteComment(pWriter, BAD_CAST "\r\n");
     xmlTextWriterStartElement(pWriter, BAD_CAST "shared_directories");
         
-      xmlTextWriterStartElement(pWriter, BAD_CAST "dir");
+      /*xmlTextWriterStartElement(pWriter, BAD_CAST "dir");
       #ifdef WIN32
       xmlTextWriterWriteString(pWriter, BAD_CAST "C:\\Musik\\mp3s\\Marillion");      
       #else
@@ -573,7 +617,7 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
       #else
       xmlTextWriterWriteString(pWriter, BAD_CAST "/mnt/musik/mp3s/Porcupine Tree");
       #endif
-      xmlTextWriterEndElement(pWriter); 
+      xmlTextWriterEndElement(pWriter); */
   
     /* end shared_directories */
     xmlTextWriterEndElement(pWriter);

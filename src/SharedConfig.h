@@ -32,6 +32,10 @@
 #include <string>
 #include <vector>
 
+#include <libxml/parser.h>
+#include <libxml/tree.h>
+#include <libxml/xmlwriter.h>
+
 using namespace std;
 
 typedef enum tagFILE_KIND
@@ -62,13 +66,14 @@ protected:
  CONSTRUCTOR / DESTRUCTOR
 ===============================================================================*/
 
-		CSharedConfig();
+		CSharedConfig();    
 
 /* <\PROTECTED> */
 
 /* <PUBLIC> */
 
 	public:
+    ~CSharedConfig();
 
 /*===============================================================================
  INSTANCE
@@ -116,6 +121,7 @@ protected:
   
   unsigned int GetMaxFileNameLength() { return m_nMaxFileNameLength; }
   
+  bool AddSharedDirectory(std::string p_sDirectory);
 /* <\PUBLIC> */
 	
 /* <PRIVATE> */
@@ -131,8 +137,13 @@ private:
 /*===============================================================================
  MEMBERS
 ===============================================================================*/
+  
+  /* xml config nodes */
+  xmlDocPtr   m_pDoc;
+  xmlNode*    m_pSharedDirNode;
 
   std::string m_sConfigVersion;
+  std::string m_sConfigFileName;
 
   std::string m_sHostname;
 	std::string m_sIP;
@@ -169,8 +180,7 @@ private:
   bool ReadConfigFile(bool p_bIsInit);
   bool ResolveHostAndIP();
   bool ResolveIPByHostname();
-  bool ResolveIPByInterface(std::string p_sInterfaceName);
-  bool FileExists(std::string p_sFileName);
+  bool ResolveIPByInterface(std::string p_sInterfaceName);  
   bool WriteDefaultConfig(std::string p_sFileName);
   void CheckForTranscodingLibs();
   bool GetOSInfo();

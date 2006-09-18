@@ -58,19 +58,23 @@ typedef enum tagHTTP_VERSION
 typedef enum tagHTTP_MESSAGE_TYPE
 {
   HTTP_MESSAGE_TYPE_UNKNOWN       =  0,
+  
   /* HTTP 1.0 and 1.1 message types */  
   HTTP_MESSAGE_TYPE_GET           =  1,
   HTTP_MESSAGE_TYPE_HEAD          =  2,
-	HTTP_MESSAGE_TYPE_POST          =  3,
+	HTTP_MESSAGE_TYPE_POST          =  3,  
 	HTTP_MESSAGE_TYPE_200_OK        =  4,
   HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT = 5,
   HTTP_MESSAGE_TYPE_403_FORBIDDEN = 6,
-	HTTP_MESSAGE_TYPE_404_NOT_FOUND =  7,
+	HTTP_MESSAGE_TYPE_404_NOT_FOUND = 7,
 	HTTP_MESSAGE_TYPE_500_INTERNAL_SERVER_ERROR = 8,
+  
+  /* SOAP */
+  HTTP_MESSAGE_TYPE_POST_SOAP_ACTION = 9,
 	
   /* GENA message types */
-  HTTP_MESSAGE_TYPE_SUBSCRIBE        = 9,
-  HTTP_MESSAGE_TYPE_SUBSCRIBE_200_OK = 10	
+  HTTP_MESSAGE_TYPE_SUBSCRIBE        = 10,
+  HTTP_MESSAGE_TYPE_SUBSCRIBE_200_OK = 11	
 }HTTP_MESSAGE_TYPE;
 
 typedef enum tagHTTP_CONNECTION
@@ -162,6 +166,9 @@ public:
   void              SetRangeStart(unsigned int p_nRangeStart) { m_nRangeStart = p_nRangeStart; }
   void              SetRangeEnd(unsigned int p_nRangeEnd) { m_nRangeEnd = p_nRangeEnd; }
   HTTP_CONNECTION   GetHTTPConnection() { return m_nHTTPConnection; }
+  
+  bool              PostVarExists(std::string p_sPostVarName);
+  std::string       GetPostVar(std::string p_sPostVarName);
   
 /*===============================================================================
  SET MESSAGE DATA

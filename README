@@ -41,6 +41,10 @@ dependencies:
     For Musepack/MPC support:
       libmpcdec (BSD license):
       http://musepack.net/
+      
+    For FLAC support:
+      libFLAC (Xiph License/Xiph's variant of the BSD License)
+      http://flac.sourceforge.net/
   
 
 using:
@@ -58,7 +62,7 @@ using:
 
 win32 binary package comes with:
 
-  sqlite3.dll - sqlite-3.2.8
+  sqlite3.dll - sqlite-3.3.7
   Copyright (c), http://sqlite.org/
 
   mpcdec.dll - libmpcdec-1.2.2

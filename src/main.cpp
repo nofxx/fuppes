@@ -96,6 +96,7 @@ void PrintHelp()
   cout << "    (disabled, normal, extended, debug) default is \"normal\"" << endl;
   cout << "i = print system info" << endl; 
   cout << "r = rebuild database" << endl;
+  cout << "c = refresh configuration" << endl;
   cout << "h = print this help" << endl;  
   cout << endl;
   cout << "m = send m-search" << endl;
@@ -218,7 +219,7 @@ int main(int argc, char* argv[])
   #endif*/
   
   cout << "FUPPES - Free UPnP Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;
-  cout << "http://fuppes.sourceforge.net" << endl;
+  cout << "http://fuppes.sourceforge.net" << endl << endl;
   if(!CSharedConfig::Shared()->SetupConfig())
     return 0;  
 	
@@ -235,10 +236,8 @@ int main(int argc, char* argv[])
   	
   cout << "Webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
   //cout << "Webinterface: http://" << pFuppes2->GetHTTPServerURL() << "/index.html" << endl;
-  cout << endl;
-  cout << "l = change log-level" << endl;  
-  cout << "r = rebuild database" << endl;
-  cout << "c = refresh configuration" << endl;
+  cout << endl;  
+  cout << "r = rebuild database" << endl;  
   cout << "i = print system info" << endl;
   cout << "h = print help" << endl;
   cout << endl;

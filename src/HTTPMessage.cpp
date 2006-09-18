@@ -418,6 +418,46 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
   return 0;
 }
 
+
+bool CHTTPMessage::PostVarExists(std::string p_sPostVarName)
+{
+  if (m_nHTTPMessageType != HTTP_MESSAGE_TYPE_POST)
+   return false;
+  
+  stringstream sExpr;
+  sExpr << p_sPostVarName << "=";
+  
+  RegEx rxPost(sExpr.str().c_str(), PCRE_CASELESS);
+  if (rxPost.Search(m_sContent.c_str()))  
+    return true;
+  else
+    return false;    
+}
+
+std::string CHTTPMessage::GetPostVar(std::string p_sPostVarName)
+{
+  if (m_nHTTPMessageType != HTTP_MESSAGE_TYPE_POST)
+   return "";
+  
+  stringstream sExpr;
+  sExpr << p_sPostVarName << "=(.*)";
+  
+  string sResult = "";
+  RegEx rxPost(sExpr.str().c_str(), PCRE_CASELESS);
+  if (rxPost.Search(m_sContent.c_str()))
+  { 
+    if(rxPost.SubStrings() == 2)
+      sResult = rxPost.Match(1);
+    
+    /* remove trailing carriage return */
+    if((sResult.length() > 0) && (sResult[sResult.length() - 1] == '\r'))
+      sResult = sResult.substr(0, sResult.length() - 1);    
+  }
+  
+  return sResult;
+}
+
+
 /*===============================================================================
  OTHER
 ===============================================================================*/
@@ -471,7 +511,7 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
   RegEx rxPOST("POST +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
   if(rxPOST.Search(p_sMessage.c_str()))
   {
-    m_nHTTPMessageType = HTTP_MESSAGE_TYPE_POST;
+    //m_nHTTPMessageType = HTTP_MESSAGE_TYPE_POST;
 
     string sVersion = rxPOST.Match(2);
     if(sVersion.compare("0") == 0)		
@@ -802,7 +842,12 @@ bool CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
 	{
     string sSOAP = rxSOAP.Match(1);
     //cout << "[HTTPMessage] SOAPACTION " << sSOAP << endl;
+    m_nHTTPMessageType = HTTP_MESSAGE_TYPE_POST_SOAP_ACTION;
 	}
+  else
+  {
+    m_nHTTPMessageType = HTTP_MESSAGE_TYPE_POST;
+  }
       
   /* Content length */
   RegEx rxContentLength("CONTENT-LENGTH: *(\\d+)", PCRE_CASELESS);
