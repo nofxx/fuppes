@@ -32,8 +32,8 @@
 #include <map>
 #include <vector>
 #include <list>
-#include "SSDPCtrl.h"
-#include "HTTPServer.h"
+#include "SSDP/SSDPCtrl.h"
+#include "HTTP/HTTPServer.h"
 #include "UPnPDevice.h"
 #include "ContentDirectory/ContentDirectory.h"
 #include "ConnectionManager/ConnectionManager.h"

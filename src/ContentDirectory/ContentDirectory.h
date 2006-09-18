@@ -30,7 +30,7 @@
 ===============================================================================*/
 
 #include "../UPnPService.h"
-#include "../HTTPMessage.h"
+#include "../HTTP/HTTPMessage.h"
 #include "UPnPObject.h"
 #include "UPnPContainer.h"
 #include "ContentDatabase.h"

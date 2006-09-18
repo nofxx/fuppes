@@ -1,9 +1,9 @@
 /***************************************************************************
- *            UPnPService.h
+ *            NotifyMsgFactory.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -22,60 +22,78 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _UPNPSERVICE_H
-#define _UPNPSERVICE_H
+#ifndef _NOTIFYMSGFACTORY_H
+#define _NOTIFYMSGFACTORY_H
 
 /*===============================================================================
  INCLUDES
 ===============================================================================*/
 
-#include "UPnPBase.h"
-#include "HTTP/HTTPMessage.h"
+#include <string>
 
 /*===============================================================================
- CLASS CUPnPService
+ DEFINITIONS
 ===============================================================================*/
 
-class CUPnPService: public CUPnPBase
+typedef enum tagMESSAGE_TYPE
+{
+	MESSAGE_TYPE_INVALID              = -1,
+  MESSAGE_TYPE_UNKNOWN              =  0,
+  MESSAGE_TYPE_USN                  =  1,
+  MESSAGE_TYPE_ROOT_DEVICE          =  2,
+  MESSAGE_TYPE_CONNECTION_MANAGER   =  3,
+  MESSAGE_TYPE_CONTENT_DIRECTORY    =  4,
+  MESSAGE_TYPE_MEDIA_SERVER         =  5,
+  MESSAGE_TYPE_MAX
+}MESSAGE_TYPE;
+
+/*===============================================================================
+ CLASS CNotifyMsgFactory
+===============================================================================*/
+
+class CNotifyMsgFactory
 {
 
-/* <PROTECTED> */
+/* <PUBLIC> */
 
-protected:
+public:		
 
 /*===============================================================================
  CONSTRUCTOR / DESTRUCTOR
 ===============================================================================*/
-  
-  /** constructor
-   *  @param  nType  the device type
-   *  @param  p_sHTTPServerURL  URL of the HTTP server
-   */
-  CUPnPService(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL);
-		
-  /** destructor
-   */
-  virtual ~CUPnPService();
-	
-/* <\PROTECTED> */
 
-/* <PUBLIC> */
-
-public:
+    CNotifyMsgFactory(std::string p_sHTTPServerURL); 
 
 /*===============================================================================
- GET
+ NOTIFICATIONS
 ===============================================================================*/
 
-  /** returns the service description as string
-   *  @return  the service description
-   */
-  virtual std::string GetServiceDescription() = 0;
-
-  virtual bool HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut) = 0;
+		std::string msearch();	
+	  std::string notify_alive(MESSAGE_TYPE);	
+	  std::string notify_bye_bye(MESSAGE_TYPE);
+    std::string GetMSearchResponse(MESSAGE_TYPE);		
 
 /* <\PUBLIC> */
 
+/* <PRIVATE> */
+
+private:
+
+/*===============================================================================
+ MEMBERS
+===============================================================================*/
+    
+    static CNotifyMsgFactory* instance;
+	  std::string               m_sHTTPServerURL;
+
+/*===============================================================================
+ HELPER
+===============================================================================*/
+
+    static std::string type_to_string(MESSAGE_TYPE);
+
+/* <\PRIVATE> */
+
 };
 
-#endif /* _UPNPSERVICE_H */
+#endif /* _NOTIFYMSGFACTORY_H */

@@ -1,9 +1,9 @@
 /***************************************************************************
- *            PresentationHandler.h
+ *            SSDPCtrl.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -22,38 +22,52 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _PRESENTATIONHANDLER_H
-#define _PRESENTATIONHANDLER_H
+#ifndef _SSDPCTRL_H
+#define _SSDPCTRL_H
 
 /*===============================================================================
  INCLUDES
 ===============================================================================*/
 
-#include "../Fuppes.h"
-#include "../UPnPDevice.h"
-#include "../HTTP/HTTPMessage.h"
+#include "Common.h"
+
+#ifndef WIN32
+#include <pthread.h>
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#endif
 
 #include <string>
-#include <vector>
+#include <list>
 
-
-typedef enum tagPRESENTATION_PAGE
-{
-  PRESENTATION_PAGE_UNKNOWN,
-  PRESENTATION_BINARY_IMAGE,
-  PRESENTATION_PAGE_INDEX,
-  PRESENTATION_PAGE_ABOUT,
-  PRESENTATION_PAGE_HELP,
-  PRESENTATION_PAGE_OPTIONS,
-  PRESENTATION_PAGE_STATUS
-}PRESENTATION_PAGE;
-
+#include "UDPSocket.h"
+#include "SSDPMessage.h"
+#include "MSearchSession.h"
+#include "NotifyMsgFactory.h"
 
 /*===============================================================================
- CLASS CPresentationHandler
+ CLASS ISSDPCtrl
 ===============================================================================*/
 
-class CPresentationHandler: public IFuppes
+class ISSDPCtrl
+{
+
+/* <PUBLIC> */
+
+public:
+	  
+  virtual void OnSSDPCtrlReceiveMsg(CSSDPMessage*) = 0;
+
+/* <\PUBLIC> */
+
+};
+
+/*===============================================================================
+ CLASS CSSDPCtrl
+===============================================================================*/
+
+class CSSDPCtrl: public IUDPSocket, IMSearchSession
 {
 
 /* <PUBLIC> */
@@ -64,90 +78,75 @@ public:
  CONSTRUCTOR / DESTRUCTOR
 ===============================================================================*/
 
-  /** constructor
-   */  
-  CPresentationHandler();
-
-  /** destructor
-   */
-  virtual ~CPresentationHandler();
+		CSSDPCtrl(std::string p_sIPAddress, std::string p_sHTTPServerURL);
+		virtual ~CSSDPCtrl();
 
 /*===============================================================================
- INSTANCE
+ INIT
 ===============================================================================*/
-  
-  /** adds a instance of FUPPES
-   *  @param pFuppes  the instance to add
-   */
-  void AddFuppesInstance(CFuppes* pFuppes);
-  
-/* <\PUBLIC> */
 
-  /** handles HTTP messages add returns a corresponding message
-   *  @param pSender  sender of the incoming message
-   *  @param pMessage  the incoming message
-   *  @param pResult  the outgoing message
-   */
-  void OnReceivePresentationRequest(CFuppes* pSender, CHTTPMessage* pMessage, CHTTPMessage* pResult);
-  
-
-/* <PRIVATE> */
-
-private:
-
-/*===============================================================================
- REQUESTS
-===============================================================================*/
-  
-
-  /** handles HTTP requests
-   *  @param p_sRequest  the message to handle
-   */
-  std::string HandleRequest(std::string p_sRequest);  
+		void Start();
+    void Stop();
 
 /*===============================================================================
  GET
 ===============================================================================*/
 
-  /** returns the HTML header
-   *  @return the HTML header as string
-   */
-  std::string GetXHTMLHeader();  
-
-  std::string GetPageHeader(PRESENTATION_PAGE p_nPresentationPage, std::string p_sImgPath, std::string p_sPageName);
-  std::string GetPageFooter(PRESENTATION_PAGE p_nPresentationPage);
-
-  /** returns the main HTML page
-   *  @return the content of the index.html
-   */
-  std::string GetIndexHTML(std::string p_sImgPath);
-
-  std::string GetAboutHTML(std::string p_sImgPath);
-  
-  std::string GetOptionsHTML(std::string p_sImgPath);
-  
-  std::string GetStatusHTML(std::string p_sImgPath);
-
-  std::string GetConfigHTML(std::string p_sImgPath, CHTTPMessage* pRequest);
+		CUDPSocket* get_socket();
 
 /*===============================================================================
- HELPER
+ SEND
 ===============================================================================*/
+
+		void send_msearch();
+	  void send_alive();
+	  void send_byebye();
+
+/*===============================================================================
+ MESSAGE HANDLING
+===============================================================================*/
+
+	  void SetReceiveHandler(ISSDPCtrl* pHandler);
+	  void OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMessage);
+   	void OnSessionReceive(CMSearchSession* pSender, CSSDPMessage* pMessage);
+	
+    void OnSessionTimeOut(CMSearchSession* pSender);
   
-  /** builds a stringlist for all devices connected to a FUPPES instance
-   *  @param pFuppes a pointer to a FUPPES instance
-   *  @return the device list as string
-   */
-  std::string BuildFuppesDeviceList(CFuppes* pFuppes, std::string p_sImgPath);
+/* <\PUBLIC> */
+
+/* <PRIVATE> */
+
+	private:
     
+/*===============================================================================
+ MESSAGE HANDLING
+===============================================================================*/
+    void HandleMSearch(CSSDPMessage* pSSDPMessage);  
+  
+    void CleanupSessions();
+  
 /*===============================================================================
  MEMBERS
 ===============================================================================*/
+
+    CUDPSocket         m_Listener;	
+    CNotifyMsgFactory* m_pNotifyMsgFactory;
+    fuppesThread       msearch_thread;
+    sockaddr_in        m_LastMulticastEp;  
+    std::string        m_sIPAddress;    
+    std::string        m_sHTTPServerURL;
+    ISSDPCtrl*         m_pReceiveHandler;
+    fuppesThreadMutex  m_SessionReceiveMutex;
+    fuppesThreadMutex  m_SessionTimedOutMutex;
   
-  std::vector<CFuppes*> m_vFuppesInstances;
+    std::list<CMSearchSession*> m_SessionList;    
+    std::list<CMSearchSession*>::iterator m_SessionListIterator;
     
+    std::list<CHandleMSearchSession*> m_HandleMSearchThreadList;
+    std::list<CHandleMSearchSession*>::iterator m_HandleMSearchThreadListIterator;
+
 /* <\PRIVATE> */
 
 };
 
-#endif /* _PRESENTATIONHANDLER_H */
+#endif /* _SSDPCTRL_H */

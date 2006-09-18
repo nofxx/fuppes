@@ -72,26 +72,14 @@ module.source.name=src
 module.source.type=
 module.source.files=\
 	main.cpp\
-	UDPSocket.cpp\
-	SSDPCtrl.cpp\
-	HTTPServer.cpp\
 	MediaServer.cpp\
-	NotifyMsgFactory.cpp\
 	SharedConfig.cpp\
 	UPnPDevice.cpp\
-	HTTPMessage.cpp\
 	Fuppes.cpp\
 	UPnPService.cpp\
-	SSDPMessage.cpp\
 	Fuppes.h\
-	HTTPMessage.h\
-	HTTPServer.h\
 	MediaServer.h\
-	NotifyMsgFactory.h\
-	SSDPCtrl.h\
-	SSDPMessage.h\
 	SharedConfig.h\
-	UDPSocket.h\
 	UPnPDevice.h\
 	UPnPService.h\
 	MessageBase.cpp\
@@ -115,8 +103,6 @@ module.source.files=\
 	UPnPBase.h\
 	SharedLog.cpp\
 	SharedLog.h\
-	HTTPClient.cpp\
-	HTTPClient.h\
 	RegEx.h\
 	Presentation/Stylesheet.h\
 	UUID.cpp\
@@ -124,8 +110,6 @@ module.source.files=\
 	Timer.cpp\
 	Timer.h\
 	Presentation/Images/fuppes_png.cpp\
-	MSearchSession.cpp\
-	MSearchSession.h\
 	Presentation/Images/fuppes_small_png.cpp\
 	Transcoding/LameWrapper.cpp\
 	Transcoding/LameWrapper.h\
@@ -156,7 +140,25 @@ module.source.files=\
 	ContentDirectory/ContentDirectoryDescription.cpp\
 	ConnectionManager/ConnectionManagerDescription.cpp\
 	Presentation/Images/header_gradient_png.cpp\
-	Presentation/Images/header_gradient_small_png.cpp
+	Presentation/Images/header_gradient_small_png.cpp\
+	SSDP/MSearchSession.cpp\
+	SSDP/MSearchSession.h\
+	SSDP/NotifyMsgFactory.cpp\
+	SSDP/NotifyMsgFactory.h\
+	SSDP/SSDPCtrl.cpp\
+	SSDP/SSDPCtrl.h\
+	SSDP/SSDPMessage.cpp\
+	SSDP/SSDPMessage.h\
+	SSDP/UDPSocket.cpp\
+	SSDP/UDPSocket.h\
+	HTTP/HTTPClient.cpp\
+	HTTP/HTTPClient.h\
+	HTTP/HTTPMessage.cpp\
+	HTTP/HTTPMessage.h\
+	HTTP/HTTPServer.cpp\
+	HTTP/HTTPServer.h\
+	HTTP/HTTPRequestHandler.cpp\
+	HTTP/HTTPRequestHandler.h
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

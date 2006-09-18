@@ -27,8 +27,8 @@
 ===============================================================================*/
 
 #include "UPnPDevice.h"
-#include "HTTPMessage.h"
-#include "HTTPClient.h"
+#include "HTTP/HTTPMessage.h"
+#include "HTTP/HTTPClient.h"
 #include "Common.h"
 #include "SharedLog.h"
 #include "RegEx.h"

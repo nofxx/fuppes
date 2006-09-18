@@ -10,15 +10,16 @@ h_sources = \
   md5.h\
   UUID.h\
   Timer.h\
-  UDPSocket.h\
   MessageBase.h\
-  SSDPCtrl.h\
-	SSDPMessage.h\
-  MSearchSession.h\
-  NotifyMsgFactory.h\
-	HTTPMessage.h\
-	HTTPServer.h\
-  HTTPClient.h\
+  SSDP/UDPSocket.h\
+  SSDP/SSDPCtrl.h\
+	SSDP/SSDPMessage.h\
+  SSDP/MSearchSession.h\
+  SSDP/NotifyMsgFactory.h\
+	HTTP/HTTPMessage.h\
+	HTTP/HTTPServer.h\
+  HTTP/HTTPClient.h\
+  HTTP/HTTPRequestHandler.h\
   UPnPBase.h\
 	UPnPDevice.h\
 	UPnPService.h\
@@ -54,15 +55,16 @@ cpp_sources = \
   md5.c\
   UUID.cpp\
   Timer.cpp\
-  UDPSocket.cpp\
   MessageBase.cpp\
-	SSDPCtrl.cpp\
-	SSDPMessage.cpp\
-  MSearchSession.cpp\
-	NotifyMsgFactory.cpp\
-	HTTPMessage.cpp\
-	HTTPServer.cpp\
-  HTTPClient.cpp\
+  SSDP/UDPSocket.cpp\
+	SSDP/SSDPCtrl.cpp\
+	SSDP/SSDPMessage.cpp\
+  SSDP/MSearchSession.cpp\
+	SSDP/NotifyMsgFactory.cpp\
+	HTTP/HTTPMessage.cpp\
+	HTTP/HTTPServer.cpp\
+  HTTP/HTTPClient.cpp\
+  HTTP/HTTPRequestHandler.cpp\
   UPnPBase.cpp\
 	UPnPDevice.cpp\
 	UPnPService.cpp\

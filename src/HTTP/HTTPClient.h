@@ -1,9 +1,9 @@
 /***************************************************************************
- *            UPnPService.h
- * 
+ *            HTTPClient.h
+ *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -22,60 +22,66 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef _UPNPSERVICE_H
-#define _UPNPSERVICE_H
+#ifndef _HTTPCLIENT_H
+#define _HTTPCLIENT_H
 
 /*===============================================================================
  INCLUDES
 ===============================================================================*/
 
-#include "UPnPBase.h"
-#include "HTTP/HTTPMessage.h"
+#include "HTTPMessage.h"
 
 /*===============================================================================
- CLASS CUPnPService
+ CLASS CHTTPClient
 ===============================================================================*/
 
-class CUPnPService: public CUPnPBase
+class CHTTPClient
 {
-
-/* <PROTECTED> */
-
-protected:
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-  
-  /** constructor
-   *  @param  nType  the device type
-   *  @param  p_sHTTPServerURL  URL of the HTTP server
-   */
-  CUPnPService(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL);
-		
-  /** destructor
-   */
-  virtual ~CUPnPService();
-	
-/* <\PROTECTED> */
 
 /* <PUBLIC> */
 
-public:
+public:   
 
 /*===============================================================================
- GET
+ MESSAGES
 ===============================================================================*/
 
-  /** returns the service description as string
-   *  @return  the service description
-   */
-  virtual std::string GetServiceDescription() = 0;
+  bool Send(
+    CHTTPMessage* pMessage,
+    std::string   p_sTargetIPAddress,
+    unsigned int  p_nTargetPort = 80
+    );
+  
+  bool Get(
+    std::string   p_sGetURL,
+    CHTTPMessage* pResult
+    );
 
-  virtual bool HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut) = 0;
+  bool Get(
+    std::string   p_sGet,
+    CHTTPMessage* pResult,
+    std::string   p_sTargetIPAddress,
+    unsigned int  p_nTargetPort = 80
+    );
 
 /* <\PUBLIC> */
 
+/* <PRIVATE> */
+
+private:
+
+/*===============================================================================
+ HELPER
+===============================================================================*/
+
+  std::string BuildGetHeader(
+    std::string  p_sGet,
+    std::string  p_sTargetIPAddress,
+    unsigned int p_nTargetPort
+    );
+
+/* <\PRIVATE> */
+
 };
 
-#endif /* _UPNPSERVICE_H */
+#endif /* _HTTPCLIENT_H */

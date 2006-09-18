@@ -95,7 +95,7 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
   std::string sImgPath = "images/";
   std::string sPageName = "undefined";
     
-  //cout << pMessage->GetRequest() << " "; // << endl;
+  cout << pMessage->GetRequest() << " "; // << endl;
   
   if((pMessage->GetRequest().compare("/") == 0) || (ToLower(pMessage->GetRequest()).compare("/index.html") == 0))
   {
@@ -252,7 +252,7 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
   
   /* title */
   sResult << "<div id=\"title\">" << endl;
-  sResult << "<img src=\"" << p_sImgPath << "fuppes-small.png\" style=\"float: left; margin-top: 7px; margin-left: 5px;\"" << endl;
+  sResult << "<img src=\"" << p_sImgPath << "fuppes-small.png\" style=\"float: left; margin-top: 7px; margin-left: 5px;\" />" << endl;
   
   sResult << "<p style=\"font-size: large; margin-top: 12px; margin-left: 65px; margin-bottom: 0px; padding: 0px;\">" << endl <<
     "FUPPES - Free UPnP Entertainment Service<br />" << endl <<
@@ -337,7 +337,7 @@ std::string CPresentationHandler::GetIndexHTML(std::string p_sImgPath)
   std::stringstream sResult;
   
   sResult << "<h1>remote devices</h1>";
-  sResult << BuildFuppesDeviceList((CFuppes*)m_vFuppesInstances[0], p_sImgPath);
+  //sResult << BuildFuppesDeviceList((CFuppes*)m_vFuppesInstances[0], p_sImgPath);
   
   return sResult.str();
   
@@ -448,9 +448,9 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
   // system status
   sResult << "<h1>system status</h1>" << endl;  
   
-  sResult << "<p>" << endl;
+  /*sResult << "<p>" << endl;
   sResult << "UUID: " << ((CFuppes*)m_vFuppesInstances[0])->GetUUID() << "<br />";    
-  sResult << "</p>" << endl;
+  sResult << "</p>" << endl;*/
   
   // end system status
   

@@ -6,6 +6,12 @@ Version 0.5.3 (2006-??-??)
   ** Status page shows the number of shared objects
   ** config page shows configuration options
   
+  * HTTP-Server
+  ** reduced thread mutex locking.
+     HTTP-request are handled much faster
+  ** fixed a huge memory leak.
+     HTTP-Response objects where not freed :(
+  
   * config file will be re read before
     rebuilding the database. there is no need
     to restart fuppes after adding or removing

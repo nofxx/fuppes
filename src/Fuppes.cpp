@@ -34,7 +34,7 @@
 
 #include "Common.h"
 #include "SharedLog.h"
-#include "HTTPMessage.h"
+#include "HTTP/HTTPMessage.h"
 #include "MediaServer.h"
 #include "UPnPDevice.h"
 #include "ContentDirectory/AudioItem.h"
