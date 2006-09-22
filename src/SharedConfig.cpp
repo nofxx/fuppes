@@ -113,6 +113,8 @@ CSharedConfig::CSharedConfig()
   m_nMaxFileNameLength = 0;
   
   m_pDoc = NULL;
+  m_pSharedDirNode  = NULL;
+  m_pContentDirNode = NULL;
   
   /* transcoding */
   #ifdef DISABLE_TRANSCODING
@@ -188,7 +190,8 @@ bool CSharedConfig::Refresh()
   m_nMaxFileNameLength = 0;  
   m_vSharedDirectories.clear();  
   
-  m_pSharedDirNode = NULL;
+  m_pSharedDirNode  = NULL;
+  m_pContentDirNode = NULL;
   
   /*xmlFreeDoc(m_pDoc);
   m_pDoc = NULL;*/
@@ -205,7 +208,7 @@ bool CSharedConfig::Refresh()
 
 string CSharedConfig::GetAppName()
 {
-  return "FUPPES";
+  return "FPPES";
 }
 
 string CSharedConfig::GetAppFullname()
@@ -350,9 +353,44 @@ bool CSharedConfig::AddSharedDirectory(std::string p_sDirectory)
   
   delete[] szBuf;
   
-  xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);  
+  xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);    
+  return this->Refresh();
+}
+
+bool CSharedConfig::RemoveSharedDirectory(unsigned int p_nIndex)
+{
+  
   
   return this->Refresh();
+}
+
+void CSharedConfig::SetMaxFileNameLength(unsigned int p_nMaxFileNameLenght)
+{
+  if(!m_pContentDirNode)
+    return;
+  
+  xmlNode* pTmp = m_pContentDirNode->children;
+  string sTmp;
+  while(pTmp)
+  {
+    sTmp = (char*)pTmp->name;
+    if(sTmp.compare("max_file_name_length") == 0)
+    {      
+      stringstream sMaxLen;
+      sMaxLen << p_nMaxFileNameLenght;
+      if(!pTmp->children)
+        xmlNodeAddContent(pTmp, BAD_CAST sMaxLen.str().c_str());
+      else
+        xmlNodeSetContent(pTmp->children, BAD_CAST sMaxLen.str().c_str());
+      cout << pTmp->children->content << endl;
+      //pTmp->children->content = BAD_CAST sMaxLen.str().c_str();
+      break;
+    }    
+    pTmp = pTmp->next;
+  }
+  
+  xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);    
+  this->Refresh();
 }
 
 /* <\PUBLIC> */
@@ -443,7 +481,7 @@ bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
       if(sName.compare("shared_directories") == 0)
       {
         m_pSharedDirNode = pTmpNode;        
-        xmlNode* pTmp = pTmpNode->children;
+        xmlNode* pTmp = m_pSharedDirNode->children;
         
         while(pTmp)
         {
@@ -507,22 +545,27 @@ bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
       /* content_directory */
       else if(sName.compare("content_directory") == 0)
       {
-        xmlNode* pContentDirNode = NULL;
-        for(pContentDirNode = pTmpNode->children->next; pContentDirNode; pContentDirNode = pContentDirNode->next)
+        m_pContentDirNode = pTmpNode;
+        xmlNode* pTmp = m_pContentDirNode->children;
+        
+        string sContentDir;
+        while(pTmp)
         {
-          string sContentDir = (char*)pContentDirNode->name;
+          sContentDir = (char*)pTmp->name;        
           
-          /* max_file_name_length */
+          // max_file_name_length
           if(sContentDir.compare("max_file_name_length") == 0)
           {
-            if(pContentDirNode->children)
+            if(pTmp->children)
             {
-              string sMaxFileNameLength = (char*)pContentDirNode->children->content;
+              string sMaxFileNameLength = (char*)pTmp->children->content;              
               if(sMaxFileNameLength.compare("0") != 0)
                 m_nMaxFileNameLength = atoi(sMaxFileNameLength.c_str());
-            }           
+            }
           }
-        }        
+          
+          pTmp = pTmp->next;
+        }    
       }
       /* end content_directory */      
       
@@ -597,7 +640,7 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
 
 	/* fuppes_config */
 	xmlTextWriterStartElement(pWriter, BAD_CAST "fuppes_config");  
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "version", BAD_CAST "0.3"); 
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "version", BAD_CAST "0.5"); 
 	
     /* shared_directories */    
     xmlTextWriterWriteComment(pWriter, BAD_CAST "\r\n");

@@ -118,6 +118,8 @@ std::string GetStylesheet(std::string p_sRelativeImagePath)
                  "border-style: solid;" << endl << 
                  "border-width: 1px;" << endl <<
                  "border-color: #000000;" << endl <<
+                 "border-spacing: 0px;" << endl <<
+                 "border-collapse: collapse;" << endl <<
                  "}" << endl << endl;
                  
 
@@ -127,6 +129,10 @@ std::string GetStylesheet(std::string p_sRelativeImagePath)
                  "color: #FFFFFF;" << endl <<
                  "}" << endl << endl;     
   
+  sStylesheet << "td {" << endl <<                 
+                 "border-style: solid;" << endl <<
+                 "border-width: 1px;" << endl <<
+                 "}" << endl << endl;  
   
   return sStylesheet.str();
 }

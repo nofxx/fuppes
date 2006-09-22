@@ -315,9 +315,8 @@ void CContentDirectory::DbScanDir(std::string p_sDirectory, long long int p_nPar
         }
         else if(IsFile(sTmp.str()) && CSharedConfig::Shared()->IsSupportedFileExtension(sExt))
         {
-          OBJECT_TYPE nObjectType = CFileDetails::Shared()->GetObjectType(sTmp.str());
-          /* trim file name */
-          sTmpFileName = TrimFileName(sTmpFileName, CSharedConfig::Shared()->GetMaxFileNameLength());
+          OBJECT_TYPE nObjectType = CFileDetails::Shared()->GetObjectType(sTmp.str());         
+          
           
           /*cout << "Parent: " << p_nParentId << endl;
           cout << "FileName: " << sTmpFileName << endl;
@@ -734,7 +733,22 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter, CSelectRe
     
     /* title */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");    
-    xmlTextWriterWriteString(pWriter, BAD_CAST BAD_CAST pSQLResult->GetValue("FILE_NAME").c_str());
+    
+    /* trim filename */
+    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), CSharedConfig::Shared()->GetMaxFileNameLength());    
+    
+    /* to utf 8
+    unsigned char* szBuf = new unsigned char[4096];
+    int nSize   = 4096;
+    int nLength = pSQLResult->GetValue("FILE_NAME").length();
+    cout << pSQLResult->GetValue("FILE_NAME") << endl;
+    isolat1ToUTF8(szBuf, &nSize, (const unsigned char*)pSQLResult->GetValue("FILE_NAME").c_str(), &nLength);
+    szBuf[nSize] = '\0';      
+    cout << szBuf << endl;
+    xmlTextWriterWriteString(pWriter, BAD_CAST szBuf); */  
+    
+    
+    xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
     xmlTextWriterEndElement(pWriter);
     
     switch(p_nObjectType)

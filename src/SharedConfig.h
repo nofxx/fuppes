@@ -120,8 +120,10 @@ protected:
   DisplaySettings GetDisplaySettings() { return m_DisplaySettings; }
   
   unsigned int GetMaxFileNameLength() { return m_nMaxFileNameLength; }
+  void SetMaxFileNameLength(unsigned int p_nMaxFileNameLenght);
   
   bool AddSharedDirectory(std::string p_sDirectory);
+  bool RemoveSharedDirectory(unsigned int p_nIndex);
 /* <\PUBLIC> */
 	
 /* <PRIVATE> */
@@ -141,6 +143,7 @@ private:
   /* xml config nodes */
   xmlDocPtr   m_pDoc;
   xmlNode*    m_pSharedDirNode;
+  xmlNode*    m_pContentDirNode;
 
   std::string m_sConfigVersion;
   std::string m_sConfigFileName;

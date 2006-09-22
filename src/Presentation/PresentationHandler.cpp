@@ -222,12 +222,11 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
   sResult << " (" << CSharedConfig::Shared()->GetHostname() << ")" << endl;
   sResult << "</title>" << endl;
   
-  sResult << "<style type=\"text/css\">";
-  sResult << GetStylesheet(p_sImgPath);
-  sResult << "</style>";  
+  /* stylesheet */
+  sResult << "<style type=\"text/css\">" << endl << GetStylesheet(p_sImgPath) << endl << "</style>";
   
   
-  sResult << "<script type=\"text/javascript\">"
+  /*sResult << "<script type=\"text/javascript\">"
     "function Klappen(Id) {"
     "var KlappText = document.getElementById('Remote'+Id);"
     "var KlappBild = document.getElementById('Pic'+Id);"
@@ -243,7 +242,7 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
     "KlappBild.src = jetec_Plus;"
     "}"
     "}"
-    "</script>"; 
+    "</script>"; */
   
   sResult << "</head>";
   /* header end */
@@ -468,17 +467,18 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
   if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_POST)
   {
     /* remove shared dir(s) */
-    /*unsigned int nOffset = 0;
+    unsigned int nOffset = 0;
     stringstream sVar;
-    for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
+    for(unsigned int i = CSharedConfig::Shared()->SharedDirCount() - 1; i = 0; i--)
     {
-      sVar << "shared_dir_" << i;      
+      sVar << "shared_dir_" << i;
       if(pRequest->PostVarExists(sVar.str()))
       {
         cout << pRequest->GetPostVar(sVar.str()) << endl;        
+        CSharedConfig::Shared()->RemoveSharedDirectory(i);
       }     
       sVar.str("");
-    }*/   
+    }   
     
     
     /* add shared dir */
@@ -489,6 +489,15 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
          the form requests text/plain */      
       //cout << "var: " <<  pRequest->GetPostVar("new_dir") << "." << endl;      
       CSharedConfig::Shared()->AddSharedDirectory(pRequest->GetPostVar("new_dir"));
+    }
+    
+    /* max_file_name_length */
+    if(pRequest->PostVarExists("max_file_name_length") && (pRequest->GetPostVar("max_file_name_length").length() > 0))
+    {
+      cout << pRequest->GetPostVar("max_file_name_length") << endl;
+      int nMaxFileNameLength = atoi(pRequest->GetPostVar("max_file_name_length").c_str());
+      cout << nMaxFileNameLength << endl;
+      CSharedConfig::Shared()->SetMaxFileNameLength(nMaxFileNameLength);
     }
     
   }
@@ -526,9 +535,7 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
   sResult << "<p>" <<  
                "<input name=\"new_dir\" />" << endl <<
                "<input type=\"submit\" />" << endl <<             
-             "</p>" << endl;
-  
-  sResult << "</form>";
+             "</p>" << endl;  
   
   // max filename length
   sResult << "<h2>max file name length</h2>" << endl;
@@ -536,11 +543,32 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
              "some devices can't handle an unlimited length.<br />" << endl <<
              "(e.g. the Telegent TG 100 crashes on receiving file names larger then 101 characters.)<br />" << endl <<
              "0 or empty means unlimited length. a value greater 0 sets the maximum number of characters to be sent.</p>" << endl;
-  sResult << "<p><strong>Max file name length: " << CSharedConfig::Shared()->GetMaxFileNameLength() << "</strong></p>" << endl;  
+  //sResult << "<p><strong>Max file name length: " << CSharedConfig::Shared()->GetMaxFileNameLength() << "</strong></p>" << endl;  
+  
+    sResult << "<p>" <<  
+               "<input name=\"max_file_name_length\" value=\"" << CSharedConfig::Shared()->GetMaxFileNameLength() << "\" />" << endl <<
+               "<input type=\"submit\" />" << endl <<             
+             "</p>" << endl;  
   
   
-  sResult << "<h1>Network settings</h1>" << endl;  
+  sResult << "<h1>Network settings</h1>" << endl;
+  
+  sResult << "<h2>IP address</h2>" << endl;  
+  sResult << "<p>" <<  
+               "<input name=\"ip_address\" value=\"" << CSharedConfig::Shared()->GetIPv4Address() << "\" />" << endl <<
+               "<input type=\"submit\" />" << endl <<             
+             "</p>" << endl;  
+  
+  
+  sResult << "<h2>HTTP port</h2>" << endl;
+  sResult << "<p>" <<  
+               "<input name=\"http_port\" value=\"" << CSharedConfig::Shared()->GetHTTPPort() << "\" />" << endl <<
+               "<input type=\"submit\" />" << endl <<             
+             "</p>" << endl;  
+  
   sResult << "<h2>Allowed IP-addresses</h2>" << endl;
+  
+  sResult << "</form>";
   
   return sResult.str();  
 }

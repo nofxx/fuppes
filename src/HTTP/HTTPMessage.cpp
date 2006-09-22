@@ -199,7 +199,7 @@ std::string CHTTPMessage::GetHeaderAsString()
       sResult << sVersion << " " << "500 Internal Server Error\r\n";
       break;
     default:
-      cout << "MSG: *" << m_sMessage << "*" << endl;
+      cout << "ERROR :: CHTTPMessage::GetHeaderAsString() - unhandled message type" << endl;
       fflush(stdout);
       ASSERT(0);                                  
       break;
@@ -210,9 +210,8 @@ std::string CHTTPMessage::GetHeaderAsString()
 	sResult << "Server: " << CSharedConfig::Shared()->GetOSName() << "/" << CSharedConfig::Shared()->GetOSVersion() << ", ";
   sResult << "UPnP/1.0, ";
   sResult << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << "\r\n";
-	//sResult << "Server: CyberTAN / CyberMediaServer\r\n";
-	//sResult << "Server:Windows NT/5.0, UPnP/1.0, TwonkyVision UPnP SDK/1.0\r\n";
 	
+  
 	/* Accept-Range */
 	//if(m_nHTTPVersion == HTTP_VERSION_1_1)
   sResult << "Accept-Ranges: bytes\r\n";
@@ -299,6 +298,7 @@ std::string CHTTPMessage::GetHeaderAsString()
     }*/
   }	
   
+  /* Date */
   char   szTime[30];
   time_t tTime = time(NULL);
   strftime(szTime, 30,"%a, %d %b %Y %H:%M:%S GMT" , gmtime(&tTime));   
