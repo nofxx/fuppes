@@ -208,7 +208,7 @@ bool CSharedConfig::Refresh()
 
 string CSharedConfig::GetAppName()
 {
-  return "FPPES";
+  return "FUPPES";
 }
 
 string CSharedConfig::GetAppFullname()
@@ -289,6 +289,10 @@ bool CSharedConfig::IsSupportedFileExtension(std::string p_sFileExtension)
   else if((ToLower(p_sFileExtension).compare("avi") == 0))
     return true;
   else if((ToLower(p_sFileExtension).compare("wmv") == 0))
+    return true;
+  else if((ToLower(p_sFileExtension).compare("vdr") == 0))
+    return true;  
+  else if((ToLower(p_sFileExtension).compare("vob") == 0))
     return true;  
   /*else if((ToLower(p_sFileExtension).compare("rm") == 0))
     return true;*/

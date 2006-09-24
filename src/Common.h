@@ -88,6 +88,9 @@ const std::string MIME_TYPE_IMAGE_GIF  = "image/gif";
 const std::string MIME_TYPE_VIDEO_X_MSVIDEO = "video/x-msvideo";
 const std::string MIME_TYPE_VIDEO_MPEG      = "video/mpeg";
 const std::string MIME_TYPE_VIDEO_X_MS_WMV  = "video/x-ms-wmv";
+
+const std::string MIME_TYPE_VIDEOS_X_MS_VOB = "video/x-ms-vob";
+
 /* TODO */
 
 /*===============================================================================

@@ -298,14 +298,43 @@ void CContentDirectory::DbScanDir(std::string p_sDirectory, long long int p_nPar
         
         /* directory */
         if(IsDirectory(sTmp.str()))
-        {          
+        {      
+
+          sTmpFileName = SQLEscape(sTmpFileName);
+          
+          // to UTF-8
+          unsigned char* szBuf = new unsigned char[4096];
+          int nSize   = 4096;
+          int nLength = sTmpFileName.length();
+    
+          memcpy(szBuf, sTmpFileName.c_str(), sTmpFileName.length());
+          szBuf[sTmpFileName.length()] = '\0';
+    
+          cout << szBuf << endl; //pSQLResult->GetValue("FILE_NAME") << endl;
+          cout << xmlCheckUTF8(szBuf) << endl;
+          if(xmlCheckUTF8(szBuf))
+            cout << "true" << endl;
+          else
+            cout << "false" << endl;
+    
+          if(!xmlCheckUTF8(szBuf))
+          {
+            isolat1ToUTF8(szBuf, &nSize, (const unsigned char*)sTmpFileName.c_str(), &nLength);
+            szBuf[nSize] = '\0';
+          }
+          cout << szBuf << endl;
+
+
+          
           stringstream sSql;
           sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME) values ";
           sSql << "(" << CONTAINER_STORAGE_FOLDER << ", ";
           sSql << p_nParentId << ", ";
           sSql << "'" << SQLEscape(sTmp.str()) << "', ";
-          sSql << "'" << SQLEscape(sTmpFileName) << "');";
+          sSql << "'" << szBuf << "');";
         
+          delete[] szBuf;
+          
           CContentDatabase::Shared()->Lock();
           long long int nRowId = CContentDatabase::Shared()->Insert(sSql.str());
           CContentDatabase::Shared()->Unlock();
@@ -334,18 +363,43 @@ void CContentDirectory::DbScanDir(std::string p_sDirectory, long long int p_nPar
           if(nObjectType == OBJECT_TYPE_UNKNOWN)
             break;          
           
+          
+          // vdr -> vob
+          if(ExtractFileExt(sTmpFileName) == "vdr")
+          {
+            sTmpFileName = TruncateFileExt(sTmpFileName) + ".vob";
+          }
+          
+          sTmpFileName = SQLEscape(sTmpFileName);
+          
+          // convert filename to UTF-8
+          unsigned char* szBuf = new unsigned char[4096];
+          int nSize   = 4096;
+          int nLength = sTmpFileName.length();
+    
+          memcpy(szBuf, sTmpFileName.c_str(), sTmpFileName.length());
+          szBuf[sTmpFileName.length()] = '\0';
+    
+          if(!xmlCheckUTF8(szBuf))
+          {
+            isolat1ToUTF8(szBuf, &nSize, (const unsigned char*)sTmpFileName.c_str(), &nLength);
+            szBuf[nSize] = '\0';
+          }
+
+         
           stringstream sSql;
           sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME, MD5, MIME_TYPE, DETAILS) values ";
           sSql << "(" << nObjectType << ", ";
           sSql << p_nParentId << ", ";
           sSql << "'" << SQLEscape(sTmp.str()) << "', ";
-          sSql << "'" << SQLEscape(sTmpFileName) << "', ";
+          sSql << "'" << szBuf << "', ";
           //sSql << "'" << MD5Sum(sTmp.str()) << "', ";
           sSql << "'" << "todo" << "', ";
           sSql << "'" << CFileDetails::Shared()->GetMimeType(sTmp.str()) << "', ";
           sSql << "'" << "details - todo" << "');";
           
           //cout << sSql.str() << endl;
+          delete[] szBuf;
           
           CContentDatabase::Shared()->Lock();
           long long int nRowId = CContentDatabase::Shared()->Insert(sSql.str());          
@@ -737,17 +791,28 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter, CSelectRe
     /* trim filename */
     string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), CSharedConfig::Shared()->GetMaxFileNameLength());    
     
-    /* to utf 8
-    unsigned char* szBuf = new unsigned char[4096];
+    // to utf 8
+    /*unsigned char* szBuf = new unsigned char[4096];
     int nSize   = 4096;
     int nLength = pSQLResult->GetValue("FILE_NAME").length();
-    cout << pSQLResult->GetValue("FILE_NAME") << endl;
-    isolat1ToUTF8(szBuf, &nSize, (const unsigned char*)pSQLResult->GetValue("FILE_NAME").c_str(), &nLength);
-    szBuf[nSize] = '\0';      
+    
+    memcpy(szBuf, pSQLResult->GetValue("FILE_NAME").c_str(), pSQLResult->GetValue("FILE_NAME").length());
+    szBuf[pSQLResult->GetValue("FILE_NAME").length()] = '\0';
+    
+    cout << szBuf << endl; //pSQLResult->GetValue("FILE_NAME") << endl;
+    cout << xmlCheckUTF8(szBuf) << endl;
+    if(xmlCheckUTF8(szBuf))
+      cout << "true" << endl;
+    else
+      cout << "false" << endl;
+    
+    if(!xmlCheckUTF8(szBuf))
+    {
+      isolat1ToUTF8(szBuf, &nSize, (const unsigned char*)pSQLResult->GetValue("FILE_NAME").c_str(), &nLength);
+      szBuf[nSize] = '\0';
+    }
     cout << szBuf << endl;
-    xmlTextWriterWriteString(pWriter, BAD_CAST szBuf); */  
-    
-    
+    xmlTextWriterWriteString(pWriter, BAD_CAST szBuf);*/    
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
     xmlTextWriterEndElement(pWriter);
     

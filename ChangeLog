@@ -1,6 +1,8 @@
 Version 0.5.3 (2006-??-??)
+  * added vdr support for Telegent TG 100
   * added wmv support
   * added FLAC transcoding
+  * fixed UTF-8 conversion of file and directory names
   
   * webinterface
   ** Status page shows the number of shared objects

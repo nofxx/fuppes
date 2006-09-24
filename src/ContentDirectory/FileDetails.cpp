@@ -66,7 +66,12 @@ OBJECT_TYPE CFileDetails::GetObjectType(std::string p_sFileName)
     return ITEM_VIDEO_ITEM_MOVIE;
   
   else if((sExt.compare("wmv") == 0))
-    return ITEM_VIDEO_ITEM_MOVIE;  
+    return ITEM_VIDEO_ITEM_MOVIE;
+
+  else if((sExt.compare("vdr") == 0))
+    return ITEM_VIDEO_ITEM_MOVIE;    
+  else if((sExt.compare("vob") == 0))
+    return ITEM_VIDEO_ITEM_MOVIE; 
   
   /*else if((sExt.compare("rm") == 0))
     return ITEM_VIDEO_ITEM_MOVIE;*/
@@ -114,6 +119,10 @@ std::string CFileDetails::GetMimeType(std::string p_sFileName)
     return MIME_TYPE_VIDEO_X_MS_WMV;  
   /*else if(sExt.compare("rm") == 0)
     return MIME_TYPE_AUDIO_X_PN_REALAUDIO;*/
+  else if(sExt.compare("vdr") == 0)
+    return MIME_TYPE_VIDEOS_X_MS_VOB;
+  else if(sExt.compare("vob") == 0)
+    return MIME_TYPE_VIDEOS_X_MS_VOB;  
   
   return "unknown";  
 }
