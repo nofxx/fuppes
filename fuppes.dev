@@ -53,8 +53,8 @@ BuildCmd=
 [VersionInfo]
 Major=0
 Minor=5
-Release=2
-Build=38
+Release=3
+Build=0
 LanguageID=1033
 CharsetID=1252
 CompanyName=
@@ -65,7 +65,7 @@ LegalCopyright=Ulrich Völkel
 LegalTrademarks=
 OriginalFilename=fuppes.exe
 ProductName=Free UPnP Entertainment Service
-ProductVersion=0.5.2
+ProductVersion=0.5.3
 AutoIncBuildNr=1
 
 [Unit10]

@@ -31,17 +31,17 @@ Source: ..\win32\fuppes.exe; DestDir: {app}; Flags: ignoreversion
 Source: ..\win32\iconv.dll; DestDir: {app}
 Source: ..\win32\pcre.dll; DestDir: {app}
 Source: ..\AUTHORS; DestDir: {app}; Flags: ignoreversion
-Source: ..\ChangeLog; DestDir: {app}; Flags: ignoreversion
-Source: ..\COPYING; DestDir: {app}; Flags: ignoreversion
-Source: ..\NEWS; DestDir: {app}; Flags: ignoreversion
+Source: ..\ChangeLog; DestDir: {app}; Flags: ignoreversion; DestName: ChangeLog.txt
+Source: ..\COPYING; DestDir: {app}; Flags: ignoreversion; DestName: COPYING.txt
+Source: ..\NEWS; DestDir: {app}; Flags: ignoreversion; DestName: NEWS.txt
 Source: ..\README; DestDir: {app}; Flags: ignoreversion isreadme; DestName: README.txt
 Source: ..\win32\vorbisfile.dll; DestDir: {app}
 Source: ..\win32\mpcdec.dll; DestDir: {app}
 Source: ..\win32\libFLAC.dll; DestDir: {app}
-Source: ..\COPYING-MUSEPACK; DestDir: {app}; Flags: ignoreversion
-Source: ..\COPYING-OGG; DestDir: {app}; Flags: ignoreversion
-Source: ..\COPYING-VORBIS; DestDir: {app}; Flags: ignoreversion
-Source: ..\COPYING-FLAC; DestDir: {app}; Flags: ignoreversion
+Source: ..\COPYING-MUSEPACK; DestDir: {app}; Flags: ignoreversion; DestName: COPYING-MUSEPACK.txt
+Source: ..\COPYING-OGG; DestDir: {app}; Flags: ignoreversion; DestName: COPYING-OGG.txt
+Source: ..\COPYING-VORBIS; DestDir: {app}; Flags: ignoreversion; DestName: COPYING-VORBIS.txt
+Source: ..\COPYING-FLAC; DestDir: {app}; Flags: ignoreversion; DestName: COPYING-FLAC.txt
 Source: ..\win32\sqlite3.dll; DestDir: {app}
 
 [Icons]
