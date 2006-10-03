@@ -70,13 +70,6 @@ CPresentationHandler::~CPresentationHandler()
  INSTANCE
 ===============================================================================*/
 
-/* AddFuppesInstance */
-void CPresentationHandler::AddFuppesInstance(CFuppes* pFuppes)
-{
-  /* Add the instance to the list */
-  m_vFuppesInstances.push_back(pFuppes);
-}
-
 /* <\PUBLIC> */
 
 /* <PRIVATE> */
@@ -112,21 +105,34 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
     nPresentationPage = PRESENTATION_PAGE_ABOUT;
     sContent = this->GetAboutHTML(sImgPath);
     sPageName = "About";
-  }  
+  }
+  
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html") == 0)
   {
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "send options.html");
     nPresentationPage = PRESENTATION_PAGE_OPTIONS;
     sContent = this->GetOptionsHTML(sImgPath);
     sPageName = "Options";
-  }    
+  }
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html?rebuild=db") == 0)
+  {
+    CSharedConfig::Shared()->Refresh();
+    CSharedConfig::Shared()->GetFuppesInstance(0)->GetContentDirectory()->BuildDB();
+    
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send options.html");
+    nPresentationPage = PRESENTATION_PAGE_OPTIONS;
+    sContent = this->GetOptionsHTML(sImgPath);
+    sPageName = "Options";
+  }
+  
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/status.html") == 0)
   {
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "send status.html");
     nPresentationPage = PRESENTATION_PAGE_STATUS;
     sContent = this->GetStatusHTML(sImgPath);
     sPageName = "Status";
-  }      
+  }
+  
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/config.html") == 0)
   {
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "send config.html");
@@ -272,8 +278,8 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
   
   sResult << "<a href=\"/index.html\">Start</a>" << endl;
   sResult << "<br />";
-  sResult << "<a href=\"/presentation/about.html\">About</a>" << endl;
-  sResult << "<br />";
+  /*sResult << "<a href=\"/presentation/about.html\">About</a>" << endl;
+  sResult << "<br />";*/
   sResult << "<a href=\"/presentation/options.html\">Options</a>" << endl;
   sResult << "<br />";
   sResult << "<a href=\"/presentation/status.html\">Status</a>" << endl;    
@@ -328,31 +334,6 @@ std::string CPresentationHandler::GetIndexHTML(std::string p_sImgPath)
 {
   std::stringstream sResult;
   
-  sResult << "<h1>remote devices</h1>";
-  //sResult << BuildFuppesDeviceList((CFuppes*)m_vFuppesInstances[0], p_sImgPath);
-  
-  return sResult.str();
-  
-  //sResult << "<h2>Start</h2>" << endl;
-  //*p_psImgPath = "Start";
-  
-  //for (unsigned int i = 0; i < m_vFuppesInstances.size(); i++)
- // {
-    //sResult << "FUPPES Instance No. " << i + 1 << "<br />";    
-    //sResult << "IP-Address: " << ((CFuppes*)m_vFuppesInstances[i])->GetIPAddress() << "<br />";
-    //sResult << "HTTP-Server URL: " << ((CFuppes*)m_vFuppesInstances[i])->GetHTTPServerURL() << "<br />";    
-    //sResult << "<br />";
-    //sResult << "<br />";    
-    
-  //}
-}
-
-std::string CPresentationHandler::GetAboutHTML(std::string p_sImgPath)
-{
-  std::stringstream sResult;
-  
-  //sResult << "<h2>About</h2>" << endl;
-  //*p_psImgPath = "About";
   sResult << "<h1>system information</h1>" << endl;  
   
   sResult << "<p>" << endl;
@@ -371,6 +352,34 @@ std::string CPresentationHandler::GetAboutHTML(std::string p_sImgPath)
   sResult << "<a href=\"http://sourceforge.net/projects/fuppes/\">http://sourceforge.net/projects/fuppes/</a><br />" << endl;
   sResult << "</p>" << endl;
   
+  
+  sResult << "<h1>remote devices</h1>";
+  sResult << BuildFuppesDeviceList(CSharedConfig::Shared()->GetFuppesInstance(0), p_sImgPath);
+  
+  return sResult.str();
+  
+  //sResult << "<h2>Start</h2>" << endl;
+  //*p_psImgPath = "Start";
+  
+  /*for (unsigned int i = 0; i < m_vFuppesInstances.size(); i++)
+  {
+    sResult << "FUPPES Instance No. " << i + 1 << "<br />";    
+    sResult << "IP-Address: " << ((CFuppes*)m_vFuppesInstances[i])->GetIPAddress() << "<br />";
+    sResult << "HTTP-Server URL: " << ((CFuppes*)m_vFuppesInstances[i])->GetHTTPServerURL() << "<br />";    
+    sResult << "<br />";
+    sResult << "<br />";    
+    
+  }*/
+}
+
+std::string CPresentationHandler::GetAboutHTML(std::string p_sImgPath)
+{
+  std::stringstream sResult;
+  
+  //sResult << "<h2>About</h2>" << endl;
+  //*p_psImgPath = "About";
+
+  
   return sResult.str();
 }
 
@@ -384,7 +393,7 @@ std::string CPresentationHandler::GetOptionsHTML(std::string p_sImgPath)
 
   //((CFuppes*)m_vFuppesInstances[0])->GetContentDirectory()->BuildDB();
   sResult << "<h1>database options</h1>" << endl;
-  sResult << "Todo: Rebuild db" << endl;
+  sResult << "<a href=\"/presentation/options.html?rebuild=db\">rebuild database</a>" << endl;
   
   return sResult.str();
 }
@@ -440,9 +449,9 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
   // system status
   sResult << "<h1>system status</h1>" << endl;  
   
-  /*sResult << "<p>" << endl;
-  sResult << "UUID: " << ((CFuppes*)m_vFuppesInstances[0])->GetUUID() << "<br />";    
-  sResult << "</p>" << endl;*/
+  sResult << "<p>" << endl;
+  sResult << "UUID: " << CSharedConfig::Shared()->GetFuppesInstance(0)->GetUUID() << "<br />";    
+  sResult << "</p>" << endl;
   
   // end system status
   

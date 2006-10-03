@@ -55,6 +55,8 @@ struct DisplaySettings
  CLASS CSharedConfig
 ===============================================================================*/
 
+class CFuppes;
+
 class CSharedConfig
 {
 
@@ -136,7 +138,15 @@ protected:
   bool AddSharedDirectory(std::string p_sDirectory);
   bool RemoveSharedDirectory(unsigned int p_nIndex);
 /* <\PUBLIC> */
+  
+  /** adds a instance of FUPPES
+   *  @param pFuppes  the instance to add
+   */
+  void AddFuppesInstance(CFuppes* pFuppes);
 	
+  CFuppes* GetFuppesInstance(unsigned int p_nIndex);
+  unsigned int GetFuppesInstanceCount();
+  
 /* <PRIVATE> */
 
 private:
@@ -188,6 +198,8 @@ private:
 
   DisplaySettings m_DisplaySettings;
 
+
+  std::vector<CFuppes*> m_vFuppesInstances;
 /*===============================================================================
  HELPER
 ===============================================================================*/

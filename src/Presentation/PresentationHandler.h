@@ -75,11 +75,7 @@ public:
 /*===============================================================================
  INSTANCE
 ===============================================================================*/
-  
-  /** adds a instance of FUPPES
-   *  @param pFuppes  the instance to add
-   */
-  void AddFuppesInstance(CFuppes* pFuppes);
+
   
 /* <\PUBLIC> */
 
@@ -144,7 +140,7 @@ private:
  MEMBERS
 ===============================================================================*/
   
-  std::vector<CFuppes*> m_vFuppesInstances;
+  
     
 /* <\PRIVATE> */
 

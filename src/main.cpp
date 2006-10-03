@@ -228,7 +228,7 @@ int main(int argc, char* argv[])
   
   /* Create main server object (CFuppes) */  
 	CFuppes* pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUUID(), pPresentationHandler);	
-  pPresentationHandler->AddFuppesInstance(pFuppes);
+  CSharedConfig::Shared()->AddFuppesInstance(pFuppes);
   
   /* todo: create a fuppes instance for each network interface */
   //CFuppes* pFuppes2 = new CFuppes("127.0.0.1", pPresentationHandler);	

@@ -310,19 +310,19 @@ void CContentDirectory::DbScanDir(std::string p_sDirectory, long long int p_nPar
           memcpy(szBuf, sTmpFileName.c_str(), sTmpFileName.length());
           szBuf[sTmpFileName.length()] = '\0';
     
-          cout << szBuf << endl; //pSQLResult->GetValue("FILE_NAME") << endl;
+          /*cout << szBuf << endl; //pSQLResult->GetValue("FILE_NAME") << endl;
           cout << xmlCheckUTF8(szBuf) << endl;
           if(xmlCheckUTF8(szBuf))
             cout << "true" << endl;
           else
-            cout << "false" << endl;
+            cout << "false" << endl;*/
     
           if(!xmlCheckUTF8(szBuf))
           {
             isolat1ToUTF8(szBuf, &nSize, (const unsigned char*)sTmpFileName.c_str(), &nLength);
             szBuf[nSize] = '\0';
           }
-          cout << szBuf << endl;
+          //cout << szBuf << endl;
 
 
           
