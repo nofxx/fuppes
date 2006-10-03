@@ -27,8 +27,8 @@
 ===============================================================================*/
 
 #include "SSDPMessage.h"
-#include "RegEx.h"
-#include "SharedLog.h"
+#include "../RegEx.h"
+#include "../SharedLog.h"
 #include <sstream>
 #include <iostream>
 

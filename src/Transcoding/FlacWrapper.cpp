@@ -30,6 +30,7 @@ const std::string LOGNAME = "FLACDecoder";
 
 #include <sstream>
 #include <iostream>
+#include "../Common.h"
 
 using namespace std;
 
@@ -107,7 +108,7 @@ void FLACFileDecoderMetadataCallback(const FLAC__FileDecoder *decoder,
   ((CFLACDecoder*)client_data)->m_pFLACData->channels        = metadata->data.stream_info.channels;
   ((CFLACDecoder*)client_data)->m_pFLACData->bits_per_sample = metadata->data.stream_info.bits_per_sample;  
   
-  sleep(1);
+  fuppesSleep(1);
 }
 
 void FLACFileDecoderErrorCallback(const FLAC__FileDecoder *decoder,
@@ -149,8 +150,8 @@ bool CFLACDecoder::LoadLib()
   fflush(stdout);*/
   
   #ifdef WIN32  
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening mpcdec.dll");
-  m_LibHandle = FuppesLoadLibrary("mpcdec.dll");
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libFLAC.dll");
+  m_LibHandle = FuppesLoadLibrary("libFLAC.dll");
   #else
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libFLAC.so");
   m_LibHandle = FuppesLoadLibrary("libFLAC.so");   

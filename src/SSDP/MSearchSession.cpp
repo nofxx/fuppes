@@ -30,8 +30,8 @@
 
 #include "MSearchSession.h"
 #include "NotifyMsgFactory.h"
-#include "SharedLog.h"
-#include "SharedConfig.h"
+#include "../SharedLog.h"
+#include "../SharedConfig.h"
 
 #include <iostream>
 #include <sstream>

@@ -29,9 +29,9 @@
 #include "HTTPServer.h"
 #include "HTTPMessage.h"
 #include "HTTPRequestHandler.h"
-#include "SharedLog.h"
-#include "SharedConfig.h"
-#include "RegEx.h"
+#include "../SharedLog.h"
+#include "../SharedConfig.h"
+#include "../RegEx.h"
 
 #include <iostream>
 #include <sstream>

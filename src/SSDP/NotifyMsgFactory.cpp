@@ -27,7 +27,7 @@
 ===============================================================================*/
 
 #include "NotifyMsgFactory.h"
-#include "SharedConfig.h"
+#include "../SharedConfig.h"
 
 #include <iostream>
 #include <sstream>

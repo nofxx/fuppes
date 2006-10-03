@@ -27,7 +27,7 @@
 ===============================================================================*/ 
 
 #include "SSDPCtrl.h"
-#include "SharedLog.h"
+#include "../SharedLog.h"
 #include <iostream>
 #include <sstream>
  

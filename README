@@ -35,7 +35,7 @@ dependencies:
   of the following libraries
   
     For OGG/Voribs support:
-      Vorbis (libvorbis) (BSD like license)
+      Vorbis (libvorbis) (Xiph License/Xiph's variant of the BSD License)
       http://xiph.org/
   
     For Musepack/MPC support:
@@ -75,7 +75,12 @@ win32 binary package comes with:
   http://www.xiph.org/
   see COPYING-VORBIS and COPYING-OGG for details
 
-mpcdec.dll, sqlite3.dll and vorbisfile.dll are compiled by myself.
+  libFLAC.dll - libflac-1.1.2
+  Copyright (c), 2001,2002,2003,2004,2005  Josh Coalson
+  http://flac.sourceforge.net/
+  see COPYING-FLAC for details
+
+mpcdec.dll, vorbisfile.dll, libFLAC.dll and sqlite3.dll are compiled by myself.
 The DevC++ project files can be found under http://ulrich-voelkel.de/svn/fuppes.
 
 

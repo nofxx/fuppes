@@ -27,34 +27,34 @@
 ===============================================================================*/
 
 #include "HTTPMessage.h"
-#include "Common.h"
-#include "SharedLog.h"
-#include "SharedConfig.h"
+#include "../Common.h"
+#include "../SharedLog.h"
+#include "../SharedConfig.h"
 
 #include <iostream>
 #include <sstream>
 #include <time.h>
 
 #ifndef DISABLE_TRANSCODING
-#include "Transcoding/LameWrapper.h"
-#include "Transcoding/WrapperBase.h"
+#include "../Transcoding/LameWrapper.h"
+#include "../Transcoding/WrapperBase.h"
 
   #ifndef DISABLE_VORBIS
-  #include "Transcoding/VorbisWrapper.h"
+  #include "../Transcoding/VorbisWrapper.h"
   #endif
   
   #ifndef DISABLE_MUSEPACK
-  #include "Transcoding/MpcWrapper.h"
+  #include "../Transcoding/MpcWrapper.h"
   #endif
 
   #ifndef DISABLE_FLAC
-  #include "Transcoding/FlacWrapper.h"
+  #include "../Transcoding/FlacWrapper.h"
   #endif
 
 #endif
 
-#include "RegEx.h"
-#include "UPnPActionFactory.h"
+#include "../RegEx.h"
+#include "../UPnPActionFactory.h"
 
 /*===============================================================================
  CONSTANTS

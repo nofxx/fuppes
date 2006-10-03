@@ -1,6 +1,6 @@
 [Setup]
 AppName=Free UPnP Entertainment Service
-AppVerName=Free UPnP Entertainment Service 0.5.2
+AppVerName=Free UPnP Entertainment Service 0.5.3
 AppPublisher=Ulrich Völkel
 AppPublisherURL=http://sourceforge.net/projects/fuppes
 AppSupportURL=http://sourceforge.net/projects/fuppes
@@ -9,7 +9,7 @@ DefaultDirName={pf}\Free UPnP Entertainment Service\
 DefaultGroupName=Free UPnP Entertainment Service
 LicenseFile=..\setup\license-eng.rtf
 OutputDir=..\setup
-OutputBaseFilename=fuppes-0.5.2-win32-setup
+OutputBaseFilename=fuppes-0.5.3-win32-setup
 SolidCompression=true
 ShowTasksTreeLines=true
 SourceDir=..\win32
@@ -35,12 +35,13 @@ Source: ..\ChangeLog; DestDir: {app}; Flags: ignoreversion
 Source: ..\COPYING; DestDir: {app}; Flags: ignoreversion
 Source: ..\NEWS; DestDir: {app}; Flags: ignoreversion
 Source: ..\README; DestDir: {app}; Flags: ignoreversion isreadme; DestName: README.txt
-Source: ..\fuppes.cfg.win32; DestDir: {userappdata}\Free UPnP Entertainment Service\; DestName: fuppes.cfg; Flags: confirmoverwrite
 Source: ..\win32\vorbisfile.dll; DestDir: {app}
 Source: ..\win32\mpcdec.dll; DestDir: {app}
+Source: ..\win32\libFLAC.dll; DestDir: {app}
 Source: ..\COPYING-MUSEPACK; DestDir: {app}; Flags: ignoreversion
 Source: ..\COPYING-OGG; DestDir: {app}; Flags: ignoreversion
 Source: ..\COPYING-VORBIS; DestDir: {app}; Flags: ignoreversion
+Source: ..\COPYING-FLAC; DestDir: {app}; Flags: ignoreversion
 Source: ..\win32\sqlite3.dll; DestDir: {app}
 
 [Icons]

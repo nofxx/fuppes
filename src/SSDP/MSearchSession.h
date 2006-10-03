@@ -32,7 +32,7 @@
 #include <string>
 
 #include "UDPSocket.h"
-#include "Timer.h"
+#include "../Timer.h"
 #include "SSDPMessage.h"
 #include "NotifyMsgFactory.h"
 

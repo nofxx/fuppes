@@ -29,9 +29,9 @@
  INCLUDES
 ===============================================================================*/
 
-#include "MessageBase.h"
-#include "ContentDirectory/UPnPItem.h"
-#include "UPnPAction.h"
+#include "../MessageBase.h"
+#include "../ContentDirectory/UPnPItem.h"
+#include "../UPnPAction.h"
 #include <string>
 #include <iostream>
 #include <fstream>
