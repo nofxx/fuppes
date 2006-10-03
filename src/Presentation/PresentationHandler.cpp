@@ -34,7 +34,7 @@
 #include "../ContentDirectory/ContentDatabase.h"
 #include "../ContentDirectory/FileDetails.h"
 
-#include "Images/fuppes_png.cpp"
+//#include "Images/fuppes_png.cpp"
 #include "Images/fuppes_small_png.cpp"
 #include "Images/header_gradient_png.cpp"
 #include "Images/header_gradient_small_png.cpp"
@@ -95,7 +95,7 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
   std::string sImgPath = "images/";
   std::string sPageName = "undefined";
     
-  cout << pMessage->GetRequest() << " "; // << endl;
+  //cout << pMessage->GetRequest() << " "; // << endl;
   
   if((pMessage->GetRequest().compare("/") == 0) || (ToLower(pMessage->GetRequest()).compare("/index.html") == 0))
   {
@@ -139,13 +139,6 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
   }        
   
   
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/fuppes.png") == 0)
-  {
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send fuppes logo");
-    nPresentationPage = PRESENTATION_BINARY_IMAGE;
-    string sImg = Base64Decode(fuppes_png);    
-    pResult->SetBinContent((char*)sImg.c_str(), sImg.length());  
-  }    
   
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/fuppes-small.png") == 0)
   {
@@ -461,45 +454,61 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
 {
   std::stringstream sResult;  
   
-  cout << pRequest->GetMessage() << endl;
+  //cout << pRequest->GetMessage() << endl;
   
   /* handle config changes */
   if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_POST)
   {
-    /* remove shared dir(s) */
-    unsigned int nOffset = 0;
+    /* remove shared dir(s) */    
     stringstream sVar;
-    for(unsigned int i = CSharedConfig::Shared()->SharedDirCount() - 1; i = 0; i--)
+    for(int i = CSharedConfig::Shared()->SharedDirCount() - 1; i >= 0; i--)
     {
-      sVar << "shared_dir_" << i;
-      if(pRequest->PostVarExists(sVar.str()))
-      {
-        cout << pRequest->GetPostVar(sVar.str()) << endl;        
-        CSharedConfig::Shared()->RemoveSharedDirectory(i);
-      }     
+      sVar << "shared_dir_" << i;      
+      if(pRequest->PostVarExists(sVar.str()))      
+        CSharedConfig::Shared()->RemoveSharedDirectory(i);      
       sVar.str("");
-    }   
-    
+    }    
     
     /* add shared dir */
     if(pRequest->PostVarExists("new_dir") && (pRequest->GetPostVar("new_dir").length() > 0))
-    {
-      /* todo: check MIME-TYPE and convert if 
-         mime type is application/x-www-form-urlencoded although
-         the form requests text/plain */      
-      //cout << "var: " <<  pRequest->GetPostVar("new_dir") << "." << endl;      
+    {     
       CSharedConfig::Shared()->AddSharedDirectory(pRequest->GetPostVar("new_dir"));
     }
     
     /* max_file_name_length */
     if(pRequest->PostVarExists("max_file_name_length") && (pRequest->GetPostVar("max_file_name_length").length() > 0))
     {
-      cout << pRequest->GetPostVar("max_file_name_length") << endl;
-      int nMaxFileNameLength = atoi(pRequest->GetPostVar("max_file_name_length").c_str());
-      cout << nMaxFileNameLength << endl;
+      int nMaxFileNameLength = atoi(pRequest->GetPostVar("max_file_name_length").c_str());      
       CSharedConfig::Shared()->SetMaxFileNameLength(nMaxFileNameLength);
     }
     
+    /* ip address */
+    if(pRequest->PostVarExists("ip_address") && (pRequest->GetPostVar("ip_address").length() > 0))
+    {
+      CSharedConfig::Shared()->SetIPv4Address(pRequest->GetPostVar("ip_address"));
+    }
+    
+    /* http port */
+    if(pRequest->PostVarExists("http_port") && (pRequest->GetPostVar("http_port").length() > 0))
+    {
+      int nHTTPPort = atoi(pRequest->GetPostVar("http_port").c_str());      
+      CSharedConfig::Shared()->SetHTTPPort(nHTTPPort);
+    }
+    
+    /* add allowed ip */
+    if(pRequest->PostVarExists("new_allowed_ip") && (pRequest->GetPostVar("new_allowed_ip").length() > 0))
+    {     
+      CSharedConfig::Shared()->AddAllowedIP(pRequest->GetPostVar("new_allowed_ip"));
+    }
+    
+    /* remove allowed ip */
+    for(int i = CSharedConfig::Shared()->AllowedIPCount() - 1; i >= 0; i--)
+    {
+      sVar << "allowed_ip_" << i;      
+      if(pRequest->PostVarExists(sVar.str()))      
+        CSharedConfig::Shared()->RemoveAllowedIP(i);      
+      sVar.str("");
+    }        
   }
   
   
@@ -567,6 +576,33 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
              "</p>" << endl;  
   
   sResult << "<h2>Allowed IP-addresses</h2>" << endl;
+  
+  // allowed ip list
+  sResult << "<p>" << endl <<  
+             "<table>" << endl <<
+               "<thead>" << endl <<
+                 "<tr>" <<
+                   "<th>Del</th>" <<
+                   "<th>IP-Address</th>" <<
+                 "</tr>" <<
+               "</thead>" << endl <<
+               "<tbody>" << endl;
+  for(unsigned int i = 0; i < CSharedConfig::Shared()->AllowedIPCount(); i++)
+  {
+    sResult << "<tr>" << endl;    
+    sResult << "<td><input type=\"checkbox\" name=\"allowed_ip_" << i << "\" value=\"remove\"></td>" << endl;   
+    sResult << "<td>" << CSharedConfig::Shared()->GetAllowedIP(i) << "</td>" << endl;
+    sResult << "</tr>" << endl;
+  }
+  
+  sResult <<   "</tbody>" << endl <<
+             "</table>" << endl <<  
+             "</p>" << endl;  
+  
+  sResult << "<p>" <<  
+               "<input name=\"new_allowed_ip\" />" << endl <<
+               "<input type=\"submit\" />" << endl <<             
+             "</p>" << endl;    
   
   sResult << "</form>";
   

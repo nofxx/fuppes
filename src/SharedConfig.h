@@ -104,8 +104,11 @@ protected:
   std::string GetOSName();
   std::string GetOSVersion();
 	
-	std::string GetIPv4Address();
+	std::string GetIPv4Address() { return m_sIP; }
+  bool SetIPv4Address(std::string p_sIPAddress);
+  
 	unsigned int GetHTTPPort() { return m_nHTTPPort; }
+  bool SetHTTPPort(unsigned int p_nHTTPPort);
   
   std::string GetConfigDir();
   
@@ -115,7 +118,15 @@ protected:
   bool IsSupportedFileExtension(std::string p_sFileExtension);
   bool IsTranscodingEnabled() { return m_bTranscodingEnabled; }  
   bool IsTranscodingExtension(std::string p_sFileExt);
+  
+  unsigned int AllowedIPCount();
+  std::string GetAllowedIP(unsigned int p_nIdx);
   bool IsAllowedIP(std::string p_sIPAddress);
+  
+  bool AddAllowedIP(std::string p_sIPAddress);
+  bool RemoveAllowedIP(unsigned int p_nIndex);
+  
+  
   FILE_KIND GetFileKindByExtension(std::string p_sFileExtension);
   DisplaySettings GetDisplaySettings() { return m_DisplaySettings; }
   
@@ -144,6 +155,7 @@ private:
   xmlDocPtr   m_pDoc;
   xmlNode*    m_pSharedDirNode;
   xmlNode*    m_pContentDirNode;
+  xmlNode*    m_pNetSettingsNode;
 
   std::string m_sConfigVersion;
   std::string m_sConfigFileName;

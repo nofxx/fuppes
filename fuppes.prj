@@ -109,7 +109,6 @@ module.source.files=\
 	UUID.h\
 	Timer.cpp\
 	Timer.h\
-	Presentation/Images/fuppes_png.cpp\
 	Presentation/Images/fuppes_small_png.cpp\
 	Transcoding/LameWrapper.cpp\
 	Transcoding/LameWrapper.h\

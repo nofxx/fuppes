@@ -12,3 +12,5 @@ EXTRA_DIST = \
 	INSTALL\
 	NEWS\
 	TODO
+
+#MAKEFLAGS = -s

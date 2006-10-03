@@ -3,11 +3,16 @@
   * mono support for all audio types
 
 * file types
-  * wmv
+  * wmv (0.5.3)
   * asf
   * wma
-  * vob
-  * vdr
+  * vob (0.5.3)
+  * vdr (0.5.3)
+  
+* handle muliple audio tracks
+  create a virtual folder for a movie containing
+  multiple audio tracks and list the tracks as items
+  inside the folder
 
 * playlist handling
   * m3u
@@ -34,9 +39,12 @@
   * etc...
 
 * webinterface
-  * set allowed ips
+  * add/remove allowed ips (0.5.3)
   * username/password
-  * add/remove shared dirs 
+  * add/remove shared dirs (0.5.3)
+  * set http port (0.5.3)
+  * set ip address (0.5.3)  
+  * check input values
 
 
 * use inotify to refresh content db automatically

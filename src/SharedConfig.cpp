@@ -139,6 +139,7 @@ CSharedConfig::CSharedConfig()
 
 CSharedConfig::~CSharedConfig()
 {
+  xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);  
   xmlFreeDoc(m_pDoc);
 }
 
@@ -188,7 +189,8 @@ bool CSharedConfig::Refresh()
   
   /* reset all variables and containers ... */
   m_nMaxFileNameLength = 0;  
-  m_vSharedDirectories.clear();  
+  m_vSharedDirectories.clear();    
+  m_vAllowedIPs.clear();
   
   m_pSharedDirNode  = NULL;
   m_pContentDirNode = NULL;
@@ -218,7 +220,7 @@ string CSharedConfig::GetAppFullname()
 
 string CSharedConfig::GetAppVersion()
 {
-	return "0.5.3a";
+	return "0.5.3";
 }
 
 string CSharedConfig::GetHostname()
@@ -231,20 +233,177 @@ string CSharedConfig::GetUUID()
   return m_sUUID; 
 }
 
-string CSharedConfig::GetIPv4Address()
+bool CSharedConfig::SetIPv4Address(std::string p_sIPAddress)
 {
-  return m_sIP;
+  cout << "SetIPv4Address: " << p_sIPAddress << endl;
+  
+  
+  
+  return false;
+}
+	
+bool CSharedConfig::SetHTTPPort(unsigned int p_nHTTPPort)
+{
+  cout << "set http port: " << p_nHTTPPort << endl;  
+  
+  
+  
+  return false;
 }
 
+
+/** GetSharedDir
+ */
 std::string CSharedConfig::GetSharedDir(unsigned int p_nIndex)
 {
   return m_vSharedDirectories[p_nIndex];
 }
 
+/** SharedDirCount
+ */
 unsigned int CSharedConfig::SharedDirCount()
 {
   return (unsigned int)m_vSharedDirectories.size();
 }
+
+/** AddSharedDirectory
+ */
+bool CSharedConfig::AddSharedDirectory(std::string p_sDirectory)
+{  
+  unsigned char* szBuf = new unsigned char[4096];  
+  int nSize = 4096;
+  int nLength = p_sDirectory.length();
+  isolat1ToUTF8(szBuf, &nSize, (const unsigned char*)p_sDirectory.c_str(), &nLength);
+  szBuf[nSize] = '\0';  
+  
+  if(m_pSharedDirNode)
+    xmlNewTextChild(m_pSharedDirNode, NULL, BAD_CAST "dir", BAD_CAST szBuf);
+  
+  delete[] szBuf;
+  
+  xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);    
+  return this->Refresh();
+}
+
+/** RemoveSharedDirectory
+ */
+bool CSharedConfig::RemoveSharedDirectory(unsigned int p_nIndex)
+{
+  cout << "CSharedConfig::RemoveSharedDirectory " << p_nIndex << endl;
+  if(m_pSharedDirNode)
+  {
+    xmlNode* tmpNode = m_pSharedDirNode->children;
+    int i = 0;
+    while(tmpNode)
+    {
+      if(i == p_nIndex)
+      {
+        xmlUnlinkNode(tmpNode);
+        xmlFreeNode(tmpNode);
+        break;
+      }      
+      
+      i++;
+      tmpNode = tmpNode->next;
+    }    
+  }
+  
+  xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1); 
+  return this->Refresh();
+}
+
+
+bool CSharedConfig::IsAllowedIP(std::string p_sIPAddress)
+{
+  if(p_sIPAddress.compare(m_sIP) == 0)
+    return true;
+  
+  bool bResult = (m_vAllowedIPs.size() == 0);
+  for(unsigned int i = 0; i < m_vAllowedIPs.size(); i++)
+  { 
+    if(m_vAllowedIPs[i].compare(p_sIPAddress) == 0)
+    {
+      bResult = true;
+      break;
+    }
+  }  
+  return bResult;
+}
+
+unsigned int CSharedConfig::AllowedIPCount()
+{
+  return m_vAllowedIPs.size();
+}
+
+std::string CSharedConfig::GetAllowedIP(unsigned int p_nIdx)
+{
+  return m_vAllowedIPs[p_nIdx];
+}
+
+bool CSharedConfig::AddAllowedIP(std::string p_sIPAddress)
+{
+  // search the allowed ips node
+  xmlNode* pTmpNode = m_pNetSettingsNode->children;
+  string sName;
+  while(pTmpNode)
+  { 
+    sName = (char*)pTmpNode->name;
+    if(sName.compare("allowed_ips") == 0)   
+      break;    
+    
+    pTmpNode = pTmpNode->next;
+  }
+  
+  // allowed ips node not found -> create one
+  if(!pTmpNode)
+    pTmpNode = xmlNewChild(m_pNetSettingsNode, NULL, BAD_CAST "allowed_ips", NULL);    
+  
+  // add new alloed ip child
+  xmlNewTextChild(pTmpNode, NULL, BAD_CAST "allowed_ip", BAD_CAST p_sIPAddress.c_str());  
+    
+  return this->Refresh();
+}
+
+bool CSharedConfig::RemoveAllowedIP(unsigned int p_nIndex)
+{
+  cout << "remove allowed ip: " << p_nIndex << endl;
+  
+  // find allowed_ips node
+  xmlNode* pAllowedIPs = m_pNetSettingsNode->children;
+  string sName;
+  while(pAllowedIPs)
+  {
+    sName = (char*)pAllowedIPs->name;
+    if(sName.compare("allowed_ips") == 0)
+      break;
+    
+    pAllowedIPs = pAllowedIPs->next;
+  }
+  
+  // walk ip nodes
+  pAllowedIPs = pAllowedIPs->children;
+  int i = 0;
+  while(pAllowedIPs)
+  {
+    cout << pAllowedIPs->name << endl;
+    
+    if(i == p_nIndex)
+    {
+      xmlUnlinkNode(pAllowedIPs);
+      xmlFreeNode(pAllowedIPs);
+      break;
+    }
+    
+    pAllowedIPs = pAllowedIPs->next;
+    i++;
+  }  
+  
+  // save and refresh
+  xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1); 
+  return this->Refresh();  
+}
+
+
 
 std::string CSharedConfig::GetConfigDir()
 {
@@ -291,9 +450,9 @@ bool CSharedConfig::IsSupportedFileExtension(std::string p_sFileExtension)
   else if((ToLower(p_sFileExtension).compare("wmv") == 0))
     return true;
   else if((ToLower(p_sFileExtension).compare("vdr") == 0))
-    return true;  
+    return true;
   else if((ToLower(p_sFileExtension).compare("vob") == 0))
-    return true;  
+    return true;
   /*else if((ToLower(p_sFileExtension).compare("rm") == 0))
     return true;*/
   else
@@ -329,44 +488,7 @@ bool CSharedConfig::IsTranscodingExtension(std::string p_sFileExt)
     return false;  
 }
 
-bool CSharedConfig::IsAllowedIP(std::string p_sIPAddress)
-{
-  bool bResult = (m_vAllowedIPs.size() == 0);
-  for(unsigned int i = 0; i < m_vAllowedIPs.size(); i++)
-  { 
-    if(m_vAllowedIPs[i].compare(p_sIPAddress) == 0)
-    {
-      bResult = true;
-      break;
-    }
-  }  
-  return bResult;
-}
 
-
-bool CSharedConfig::AddSharedDirectory(std::string p_sDirectory)
-{  
-  unsigned char* szBuf = new unsigned char[4096];  
-  int nSize = 4096;
-  int nLength = p_sDirectory.length();
-  isolat1ToUTF8(szBuf, &nSize, (const unsigned char*)p_sDirectory.c_str(), &nLength);
-  szBuf[nSize] = '\0';  
-  
-  if(m_pSharedDirNode)
-    xmlNewTextChild(m_pSharedDirNode, NULL, BAD_CAST "dir", BAD_CAST szBuf);
-  
-  delete[] szBuf;
-  
-  xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);    
-  return this->Refresh();
-}
-
-bool CSharedConfig::RemoveSharedDirectory(unsigned int p_nIndex)
-{
-  
-  
-  return this->Refresh();
-}
 
 void CSharedConfig::SetMaxFileNameLength(unsigned int p_nMaxFileNameLenght)
 {
@@ -500,7 +622,8 @@ bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
       /* network_settings */
       else if(sName.compare("network_settings") == 0)
       {
-        xmlNode* pNetNode = pTmpNode->children;
+        m_pNetSettingsNode = pTmpNode;
+        xmlNode* pNetNode = m_pNetSettingsNode->children;
         
         while(pNetNode)
         {

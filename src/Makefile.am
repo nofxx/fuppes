@@ -84,7 +84,6 @@ cpp_sources = \
   ConnectionManager/ConnectionManager.cpp\
   ConnectionManager/ConnectionManagerDescription.cpp\
   Presentation/PresentationHandler.cpp\
-  Presentation/Images/fuppes_png.cpp\
   Presentation/Images/fuppes_small_png.cpp\
   Presentation/Images/header_gradient_png.cpp\
   Presentation/Images/header_gradient_small_png.cpp\

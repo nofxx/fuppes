@@ -3,6 +3,7 @@ dnl $Id: $
 
 AC_INIT(configure.in)
 
+
 #release versioning
 GENERIC_MAJOR_VERSION=0
 GENERIC_MINOR_VERSION=5
@@ -15,6 +16,8 @@ AC_SUBST(GENERIC_MICRO_VERSION)
 AC_SUBST(GENERIC_VERSION)
 
 VERSION=$GENERIC_VERSION
+
+#AC_INIT(fuppes, $GENERIC_VERSION, u-voelkel@users.sourceforge.net)
 AM_INIT_AUTOMAKE(fuppes, $GENERIC_VERSION, u-voelkel@users.sourceforge.net)
 AM_CONFIG_HEADER(config.h)
 
