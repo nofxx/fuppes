@@ -32,6 +32,7 @@
 #include "../MessageBase.h"
 #include "../ContentDirectory/UPnPItem.h"
 #include "../UPnPAction.h"
+#include "../Transcoding/TranscodingMgr.h"
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -57,24 +58,28 @@ typedef enum tagHTTP_VERSION
 
 typedef enum tagHTTP_MESSAGE_TYPE
 {
-  HTTP_MESSAGE_TYPE_UNKNOWN       =  0,
+  HTTP_MESSAGE_TYPE_UNKNOWN                   = 0,
   
   /* HTTP 1.0 and 1.1 message types */  
-  HTTP_MESSAGE_TYPE_GET           =  1,
-  HTTP_MESSAGE_TYPE_HEAD          =  2,
-	HTTP_MESSAGE_TYPE_POST          =  3,  
-	HTTP_MESSAGE_TYPE_200_OK        =  4,
-  HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT = 5,
-  HTTP_MESSAGE_TYPE_403_FORBIDDEN = 6,
-	HTTP_MESSAGE_TYPE_404_NOT_FOUND = 7,
-	HTTP_MESSAGE_TYPE_500_INTERNAL_SERVER_ERROR = 8,
+  HTTP_MESSAGE_TYPE_GET                       = 1,
+  HTTP_MESSAGE_TYPE_HEAD                      = 2,
+	HTTP_MESSAGE_TYPE_POST                      = 3,  
+	HTTP_MESSAGE_TYPE_200_OK                    = 4,
+  HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT       = 5,
+  
+  HTTP_MESSAGE_TYPE_400_BAD_REQUEST           = 6,  
+  HTTP_MESSAGE_TYPE_403_FORBIDDEN             = 7,
+	HTTP_MESSAGE_TYPE_404_NOT_FOUND             = 8,
+	HTTP_MESSAGE_TYPE_500_INTERNAL_SERVER_ERROR = 9,
   
   /* SOAP */
-  HTTP_MESSAGE_TYPE_POST_SOAP_ACTION = 9,
+  HTTP_MESSAGE_TYPE_POST_SOAP_ACTION = 10,
 	
   /* GENA message types */
-  HTTP_MESSAGE_TYPE_SUBSCRIBE        = 10,
-  HTTP_MESSAGE_TYPE_SUBSCRIBE_200_OK = 11	
+  HTTP_MESSAGE_TYPE_SUBSCRIBE        = 11,
+  HTTP_MESSAGE_TYPE_UNSUBSCRIBE      = 12,  
+  HTTP_MESSAGE_TYPE_NOTIFY           = 13
+  
 }HTTP_MESSAGE_TYPE;
 
 typedef enum tagHTTP_CONNECTION
@@ -109,13 +114,6 @@ TIMEOUT: Second-actual subscription duration
 }HTTP_CONTENT_TYPE;*/
 
 class CHTTPMessage;
-  
-class CTranscodeSessionInfo
-{
-  public:
-    CHTTPMessage* m_pHTTPMessage;
-    std::string   m_sFileName;
-};
 
 /*===============================================================================
  CLASS CHTTPMessage
@@ -189,13 +187,17 @@ public:
   bool             LoadContentFromFile(std::string);	
   bool             TranscodeContentFromFile(std::string p_sFileName);	  
 
+  void             BreakTranscoding();
+  bool             IsTranscoding();
+  
 /* <\PUBLIC> */
 
 public:
   char*         m_pszBinContent;
   unsigned int  m_nBinContentLength; 
-  bool          m_bBreakTranscoding;
-  bool          m_bIsTranscoding;
+  //bool          m_bBreakTranscoding;
+  CTranscodeSessionInfo* m_pTranscodingSessionInfo;
+  //bool          m_bIsTranscoding;
   bool          m_bIsBinary;
 
 /* <PRIVATE> */

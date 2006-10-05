@@ -41,6 +41,7 @@ h_sources = \
   Presentation/PresentationHandler.h\
   Presentation/Stylesheet.h\
   Transcoding/WrapperBase.h\
+  Transcoding/TranscodingMgr.h\
   Transcoding/LameWrapper.h\
   Transcoding/VorbisWrapper.h\
   Transcoding/MpcWrapper.h\
@@ -87,6 +88,7 @@ cpp_sources = \
   Presentation/Images/fuppes_small_png.cpp\
   Presentation/Images/header_gradient_png.cpp\
   Presentation/Images/header_gradient_small_png.cpp\
+  Transcoding/TranscodingMgr.cpp\
   Transcoding/LameWrapper.cpp\
   Transcoding/VorbisWrapper.cpp\
   Transcoding/MpcWrapper.cpp\
@@ -101,6 +103,7 @@ fuppes_SOURCES = ${h_sources} ${cpp_sources}
 fuppes_LDFLAGS = \
   $(FUPPES_LIBS)\
   ${PTHREAD_LIBS}\
+  ${UUID_LIBS}\
   ${LIBXML_LIBS}\
 	${PCRE_LIBS}\
   ${SQLITE3_LIBS}\

@@ -30,6 +30,7 @@
 #include <tstring.h>
 #include <tag.h>*/
 #include <sstream>
+#include <iostream>
 
 using namespace std;
 
@@ -89,10 +90,16 @@ std::string CFileDetails::GetMimeType(std::string p_sFileName)
     return MIME_TYPE_AUDIO_MPEG;  
   else if((sExt.compare("ogg") == 0) || (sExt.compare("mpc") == 0) || (sExt.compare("flac") == 0))
   {
+    cout << sExt << endl;
     if(CSharedConfig::Shared()->IsTranscodingExtension(sExt))
+    {
+      cout << MIME_TYPE_AUDIO_MPEG << endl;
       return MIME_TYPE_AUDIO_MPEG;
+    }
     else
     {
+      cout << "NOT: " << MIME_TYPE_AUDIO_MPEG << endl;
+      
       if((sExt.compare("ogg") == 0) || (sExt.compare("mpc") == 0))
         return MIME_TYPE_APPLICATION_OCTETSTREAM;
       else if(sExt.compare("flac") == 0)

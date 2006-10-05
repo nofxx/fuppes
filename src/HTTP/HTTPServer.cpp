@@ -625,14 +625,15 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     
     if(p_Request->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD)
       nErr = -1;
+   
     
     int nCnt = 0;
     int nSend = 0;
-    
+      
     while((nErr != -1) && ((nRet = p_Response->GetBinContentChunk(szChunk, nRequestSize, nOffset)) > 0)) 
     {           
-      /*
-      cout << "read binary" << endl;
+      
+      /*cout << "read binary" << endl;
       cout << "start: " << nOffset << endl;
       cout << "requested: " << nRequestSize << endl;
       cout << "end: " << nRet << endl;
@@ -688,9 +689,9 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
         
         //fflush(stdout); 
         
-        if (p_Response->m_bIsTranscoding)
-        {
-          p_Response->m_bBreakTranscoding = true; 
+        if (p_Response->IsTranscoding())
+        {          
+          p_Response->BreakTranscoding();
           fuppesSleep(500); /* wait for the transcoding thread to end */
         }
         break; 
@@ -702,7 +703,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
         //cout << "send no.: " << nCnt << endl;
         
       } /* while */
-        
+
+      
       //delete [] szChunk;
       //fsOut.close();
         

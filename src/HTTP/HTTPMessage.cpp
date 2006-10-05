@@ -35,6 +35,8 @@
 #include <sstream>
 #include <time.h>
 
+
+#include "../Transcoding/TranscodingMgr.h"
 #ifndef DISABLE_TRANSCODING
 #include "../Transcoding/LameWrapper.h"
 #include "../Transcoding/WrapperBase.h"
@@ -93,7 +95,7 @@ CHTTPMessage::CHTTPMessage()
   m_nRangeEnd           = 0;
   m_nHTTPConnection     = HTTP_CONNECTION_UNKNOWN;
   m_pUPnPAction         = NULL;
-  m_bIsTranscoding      = false;
+  m_pTranscodingSessionInfo = NULL;
 }
 
 CHTTPMessage::~CHTTPMessage()
@@ -105,13 +107,25 @@ CHTTPMessage::~CHTTPMessage()
     delete m_pUPnPAction;
   
   if(m_pszBinContent)
-    delete[] m_pszBinContent;
+    free(m_pszBinContent); //delete[] m_pszBinContent;
     
   if(m_TranscodeThread)
     fuppesThreadClose(m_TranscodeThread);
 
+  if(m_pTranscodingSessionInfo)
+  {
+    cout << "del session info" << endl;
+    fflush(stdout);
+    
+    m_pTranscodingSessionInfo->m_pszBinBuffer = NULL;
+    delete m_pTranscodingSessionInfo;
+  }  
+  
   if(m_fsFile.is_open())
     m_fsFile.close();
+  
+  cout << "del session info done" << endl;
+    fflush(stdout);
 }
 
 /*===============================================================================
@@ -140,7 +154,7 @@ void CHTTPMessage::SetBinContent(char* p_szBinContent, unsigned int p_nBinConten
   m_bIsBinary = true;
 
   m_nBinContentLength = p_nBinContenLength;      
-  m_pszBinContent     = new char[m_nBinContentLength + 1];    
+  m_pszBinContent     = (char*)malloc(sizeof(char) * (m_nBinContentLength + 1));//new char[m_nBinContentLength + 1];    
   memcpy(m_pszBinContent, p_szBinContent, m_nBinContentLength);
   m_pszBinContent[m_nBinContentLength] = '\0';   
 }
@@ -230,7 +244,7 @@ std::string CHTTPMessage::GetHeaderAsString()
     /*cout << "binary" << endl;
     fflush(stdout);*/
     
-    if(!m_bIsTranscoding && (m_nBinContentLength > 0))
+    if(!this->IsTranscoding() && (m_nBinContentLength > 0))
     {
       /*cout << "if(!m_bIsTranscoding && (m_nBinContentLength > 0))" << endl;
       fflush(stdout);*/
@@ -369,11 +383,15 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
   /* read transcoded data from memory */
   else
   {    
+    cout << "get transcode chunk" << endl;
+    cout << "length: " << m_nBinContentLength << endl;
+    fflush(stdout);
+    
     fuppesThreadLockMutex(&TranscodeMutex);      
     
     unsigned int nRest       = m_nBinContentLength - m_nBinContentPosition;
     unsigned int nDelayCount = 0;  
-    while(m_bIsTranscoding && (nRest < p_nSize) && !m_bBreakTranscoding)
+    while(this->IsTranscoding() && (nRest < p_nSize) && !m_pTranscodingSessionInfo->m_bBreakTranscoding)
     { 
       nRest = m_nBinContentLength - m_nBinContentPosition;
 
@@ -386,6 +404,8 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
       sLog << "  Rest    : " << nRest << endl;
       sLog << "delaying send-process!";
 
+      cout << sLog.str() << endl;
+      
       CSharedLog::Shared()->Critical(LOGNAME, sLog.str());    
       fuppesThreadUnlockMutex(&TranscodeMutex);
       fuppesSleep(100);
@@ -398,7 +418,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
       if (nDelayCount == 100) /* 100 * 100ms = 10sec */
       {
         fuppesThreadLockMutex(&TranscodeMutex);    
-        m_bBreakTranscoding = true;
+        m_pTranscodingSessionInfo->m_bBreakTranscoding = true;
         fuppesThreadUnlockMutex(&TranscodeMutex);
         return 0;
       }
@@ -406,16 +426,32 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     
     if(nRest > p_nSize)
     {
+      cout << "copy content 1" << endl;
+      cout << "addr: " << &m_pszBinContent << endl;
+      fflush(stdout);
+      
       memcpy(p_sContentChunk, &m_pszBinContent[m_nBinContentPosition], p_nSize);    
       m_nBinContentPosition += p_nSize;
       fuppesThreadUnlockMutex(&TranscodeMutex);
+      
+      cout << "copy content end 1" << endl;
+      fflush(stdout);
+      
+      
       return p_nSize;
     }
-    else if((nRest < p_nSize) && !m_bIsTranscoding)
+    else if((nRest < p_nSize) && !this->IsTranscoding())
     {
+      cout << "copy content 2" << endl;
+      fflush(stdout);
+      
       memcpy(p_sContentChunk, &m_pszBinContent[m_nBinContentPosition], nRest);
       m_nBinContentPosition += nRest;
       fuppesThreadUnlockMutex(&TranscodeMutex);
+      
+      cout << "copy content end 2" << endl;
+      fflush(stdout);
+      
       return nRest;
     }
      
@@ -583,8 +619,7 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
 bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
 {
   m_bIsChunked = true;
-  m_bIsBinary  = true; 
-  m_bIsTranscoding = false; 
+  m_bIsBinary  = true;  
   bool bResult = false;
   
   //fstream fFile;    
@@ -611,24 +646,43 @@ bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
 bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName)
 { 
   m_bIsChunked = true;
-  m_bIsBinary  = true;
-  //m_nHTTPVersion = HTTP_VERSION_1_1;  
-  
-  m_bBreakTranscoding = false;
-  
+  m_bIsBinary  = true;  
+    
   m_TranscodeThread = (fuppesThread)NULL;
   fuppesThreadInitMutex(&TranscodeMutex);
       
-  CTranscodeSessionInfo* session = new CTranscodeSessionInfo();
-  session->m_pHTTPMessage = this;
-  session->m_sFileName    = p_sFileName;
+  if(m_pTranscodingSessionInfo)
+  {
+    m_pTranscodingSessionInfo->m_pszBinBuffer = NULL;
+    delete m_pTranscodingSessionInfo;
+  }  
   
-  fuppesThreadStartArg(m_TranscodeThread, TranscodeLoop, *session); 
-  m_bIsTranscoding = true;
+  m_pTranscodingSessionInfo = new CTranscodeSessionInfo();
+  m_pTranscodingSessionInfo->m_bBreakTranscoding   = false;
+  m_pTranscodingSessionInfo->m_bIsTranscoding      = true;
+  m_pTranscodingSessionInfo->m_sFileName           = p_sFileName;  
+  m_pTranscodingSessionInfo->m_pnBinContentLength  = &m_nBinContentLength;
+  m_pTranscodingSessionInfo->m_pszBinBuffer        = &m_pszBinContent;
+  
+  fuppesThreadStartArg(m_TranscodeThread, TranscodeLoop, *m_pTranscodingSessionInfo);   
   
   //fuppesSleep(1000); /* let the encoder work for a second */
   
   return true;
+}
+
+bool CHTTPMessage::IsTranscoding()
+{
+  if(m_pTranscodingSessionInfo)
+    return m_pTranscodingSessionInfo->m_bIsTranscoding;
+  else
+    return false;
+}
+
+void CHTTPMessage::BreakTranscoding()
+{
+  if(m_pTranscodingSessionInfo)
+    m_pTranscodingSessionInfo->m_bBreakTranscoding = true;
 }
 
 fuppesThreadCallback TranscodeLoop(void *arg)
@@ -636,194 +690,214 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   #ifndef DISABLE_TRANSCODING
   CTranscodeSessionInfo* pSession = (CTranscodeSessionInfo*)arg;
 	  
-  /* init lame encoder */
-  CLameWrapper* pLameWrapper = new CLameWrapper();
-  if(!pLameWrapper->LoadLib())
-  {    
-    delete pLameWrapper;
-    delete pSession; 
-    pSession->m_pHTTPMessage->m_bIsTranscoding = false;     
-    fuppesThreadExit();
-  }
-  pLameWrapper->SetBitrate(LAME_BITRATE_320);
-  pLameWrapper->Init();	
-
-  string sExt = ExtractFileExt(pSession->m_sFileName);
-
-  CDecoderBase* pDecoder = NULL;
-  if(ToLower(sExt).compare("ogg") == 0)
-  {
-    #ifndef DISABLE_VORBIS
-    pDecoder = new CVorbisDecoder();
-    #endif
-  }
-  else if(ToLower(sExt).compare("mpc") == 0)
-  {
-    #ifndef DISABLE_MUSEPACK
-    pDecoder = new CMpcDecoder();
-    #endif
-  }
-  else if(ToLower(sExt).compare("flac") == 0)
-  {
-    #ifndef DISABLE_FLAC    
-    pDecoder = new CFLACDecoder();   
-    #endif
-  }
-
-  /* init decoder */  
-  if(!pDecoder || !pDecoder->LoadLib() || !pDecoder->OpenFile(pSession->m_sFileName))
-  {
-    delete pDecoder;
-    delete pLameWrapper;
-    delete pSession;
-    pSession->m_pHTTPMessage->m_bIsTranscoding = false;
-    fuppesThreadExit();
-  }
-   
-  /* begin transcode */
-  long  samplesRead  = 0;    
-  int   nLameRet     = 0;
-  int   nAppendCount = 0;
-  int   nAppendSize  = 0;
-	char* sAppendBuf   = NULL; 
-  #ifndef DISABLE_MUSEPACK
-  int nBufferLength = 0;  
-  short int* pcmout;
-  CMpcDecoder* pTmp = dynamic_cast<CMpcDecoder*>(pDecoder);  
-  if (pTmp)
-  {
-	  pcmout = new short int[MPC_DECODER_BUFFER_LENGTH * 4];
-    nBufferLength = MPC_DECODER_BUFFER_LENGTH * 4;
-  }
-  else
-  {
-    pcmout = new short int[32768];  // 4096
-    nBufferLength = 32768;
-  }  
-  #else
-  short int* pcmout = new short int[32768];
-  int nBufferLength = 32768;
-  #endif
-  
-  stringstream sLog;
-  sLog << "start transcoding \"" << pSession->m_sFileName << "\"";
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());
+  CTranscodingMgr* mgr = new CTranscodingMgr();
+  mgr->Init(pSession);
     
-  while(((samplesRead = pDecoder->DecodeInterleaved((char*)pcmout, nBufferLength)) >= 0) && !pSession->m_pHTTPMessage->m_bBreakTranscoding)
+  while(mgr->Transcode() > 0)
   {
-    /* encode */
-    nLameRet = pLameWrapper->EncodeInterleaved(pcmout, samplesRead);      
-  
-    /* append encoded mp3 frames to the append buffer */
-    char* tmpBuf = NULL;
-    if(sAppendBuf != NULL)
-    {
-      tmpBuf = new char[nAppendSize];
-      memcpy(tmpBuf, sAppendBuf, nAppendSize);
-      delete[] sAppendBuf;      
-    }
-    
-    sAppendBuf = new char[nAppendSize + nLameRet];
-    if(tmpBuf != NULL)
-    {
-      memcpy(sAppendBuf, tmpBuf, nAppendSize);
-      delete[] tmpBuf;
-    }
-    memcpy(&sAppendBuf[nAppendSize], pLameWrapper->GetMp3Buffer(), nLameRet);
-    nAppendSize += nLameRet;
-    nAppendCount++;
-    /* end append */
-    
-    
-    if(nAppendCount == 100)
-    {      
-      /* append encoded audio to bin content buffer */
-      fuppesThreadLockMutex(&TranscodeMutex);
-      
-      /* merge existing bin content and new buffer */
-      char* tmpBuf = new char[pSession->m_pHTTPMessage->m_nBinContentLength + nAppendSize];
-      memcpy(tmpBuf, pSession->m_pHTTPMessage->m_pszBinContent, pSession->m_pHTTPMessage->m_nBinContentLength);
-      memcpy(&tmpBuf[pSession->m_pHTTPMessage->m_nBinContentLength], sAppendBuf, nAppendSize);
-      
-      /* recreate bin content buffer */
-      delete[] pSession->m_pHTTPMessage->m_pszBinContent;
-      pSession->m_pHTTPMessage->m_pszBinContent = new char[pSession->m_pHTTPMessage->m_nBinContentLength + nAppendSize];
-      memcpy(pSession->m_pHTTPMessage->m_pszBinContent, tmpBuf, pSession->m_pHTTPMessage->m_nBinContentLength + nAppendSize);
-            
-      /* set the new content length */
-      pSession->m_pHTTPMessage->m_nBinContentLength += nAppendSize;
-      
-      delete[] tmpBuf;
-      
-      /* reset append buffer an variables */
-      nAppendCount = 0;
-      nAppendSize  = 0;
-      delete[] sAppendBuf;
-      sAppendBuf = NULL;
-      
-      fuppesThreadUnlockMutex(&TranscodeMutex);  
-      /* end append */      
-    }
-    
-  } /* while */  
-  
-  
-  /* delete buffers */
-  if(pcmout)
-    delete[] pcmout;
-	
-  if(sAppendBuf)
-    delete[] sAppendBuf;
-  
-  
-  /* flush and end transcoding */
-  if(!pSession->m_pHTTPMessage->m_bBreakTranscoding)
-  {
-    /*sLog.str("");
-    sLog << "done transcoding loop now flushing" << endl;
-    CSharedLog::Shared()->Log(LOGNAME, sLog.str()); */
-  
-    /* flush mp3 */
-    nLameRet = pLameWrapper->Flush();
-  
     /* append encoded audio to bin content buffer */
     fuppesThreadLockMutex(&TranscodeMutex);
-      
-    char* tmpBuf = new char[pSession->m_pHTTPMessage->m_nBinContentLength + nLameRet];
-    if(pSession->m_pHTTPMessage->m_nBinContentLength > 0)
-      memcpy(tmpBuf, pSession->m_pHTTPMessage->m_pszBinContent, pSession->m_pHTTPMessage->m_nBinContentLength);
-    memcpy(&tmpBuf[pSession->m_pHTTPMessage->m_nBinContentLength], pLameWrapper->GetMp3Buffer(), nLameRet);
     
-    delete[] pSession->m_pHTTPMessage->m_pszBinContent;
-    pSession->m_pHTTPMessage->m_pszBinContent = new char[pSession->m_pHTTPMessage->m_nBinContentLength + nLameRet];
-    memcpy(pSession->m_pHTTPMessage->m_pszBinContent, tmpBuf, pSession->m_pHTTPMessage->m_nBinContentLength + nLameRet);
-       
-    pSession->m_pHTTPMessage->m_nBinContentLength += nLameRet;
-    delete[] tmpBuf;
-    pSession->m_pHTTPMessage->m_bIsTranscoding = false;    
-  
-    fuppesThreadUnlockMutex(&TranscodeMutex);  
-    /* end append */      
+    unsigned int nLength = *pSession->m_pnBinContentLength;
+    nLength += mgr->Append(pSession->m_pszBinBuffer, nLength);    
     
-    sLog.str("");
-    sLog << "done transcoding \"" << pSession->m_sFileName << "\"";
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());  
+    *pSession->m_pnBinContentLength = nLength;
+    fuppesThreadUnlockMutex(&TranscodeMutex);
   }
-  /* break transcoding */
-  /*else
-  {
-    cout << "break transcoding" << endl;
-    fflush(stdout);
-  } */   
-  /* end transcode */
   
-  
-  /* cleanup and exit */
-  pDecoder->CloseFile();  
-  delete pDecoder;
-  delete pLameWrapper;
-  delete pSession;  
+  delete mgr;  
+  //delete pSession;  
   fuppesThreadExit();
+  
+  
+  //~ /* init lame encoder */
+  //~ CLameWrapper* pLameWrapper = new CLameWrapper();
+  //~ if(!pLameWrapper->LoadLib())
+  //~ {    
+    //~ delete pLameWrapper;
+    //~ delete pSession; 
+    //~ pSession->m_bIsTranscoding = false;     
+    //~ fuppesThreadExit();
+  //~ }
+  //~ pLameWrapper->SetBitrate(LAME_BITRATE_320);
+  //~ pLameWrapper->Init();	
+
+  //~ string sExt = ExtractFileExt(pSession->m_sFileName);
+
+  //~ CDecoderBase* pDecoder = NULL;
+  //~ if(ToLower(sExt).compare("ogg") == 0)
+  //~ {
+    //~ #ifndef DISABLE_VORBIS
+    //~ pDecoder = new CVorbisDecoder();
+    //~ #endif
+  //~ }
+  //~ else if(ToLower(sExt).compare("mpc") == 0)
+  //~ {
+    //~ #ifndef DISABLE_MUSEPACK
+    //~ pDecoder = new CMpcDecoder();
+    //~ #endif
+  //~ }
+  //~ else if(ToLower(sExt).compare("flac") == 0)
+  //~ {
+    //~ #ifndef DISABLE_FLAC    
+    //~ pDecoder = new CFLACDecoder();   
+    //~ #endif
+  //~ }
+
+  //~ /* init decoder */  
+  //~ if(!pDecoder || !pDecoder->LoadLib() || !pDecoder->OpenFile(pSession->m_sFileName))
+  //~ {
+    //~ delete pDecoder;
+    //~ delete pLameWrapper;
+    //~ delete pSession;
+    //~ pSession->m_bIsTranscoding = false;
+    //~ fuppesThreadExit();
+  //~ }
+   
+  //~ /* begin transcode */
+  //~ long  samplesRead  = 0;    
+  //~ int   nLameRet     = 0;
+  //~ int   nAppendCount = 0;
+  //~ int   nAppendSize  = 0;
+	//~ char* sAppendBuf   = NULL; 
+  //~ #ifndef DISABLE_MUSEPACK
+  //~ int nBufferLength = 0;  
+  //~ short int* pcmout;
+  //~ CMpcDecoder* pTmp = dynamic_cast<CMpcDecoder*>(pDecoder);  
+  //~ if (pTmp)
+  //~ {
+	  //~ pcmout = new short int[MPC_DECODER_BUFFER_LENGTH * 4];
+    //~ nBufferLength = MPC_DECODER_BUFFER_LENGTH * 4;
+  //~ }
+  //~ else
+  //~ {
+    //~ pcmout = new short int[32768];  // 4096
+    //~ nBufferLength = 32768;
+  //~ }  
+  //~ #else
+  //~ short int* pcmout = new short int[32768];
+  //~ int nBufferLength = 32768;
+  //~ #endif
+  
+  //~ stringstream sLog;
+  //~ sLog << "start transcoding \"" << pSession->m_sFileName << "\"";
+  //~ CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());
+    
+  //~ while(((samplesRead = pDecoder->DecodeInterleaved((char*)pcmout, nBufferLength)) >= 0) && !pSession->m_bBreakTranscoding)
+  //~ {
+    //~ /* encode */
+    //~ nLameRet = pLameWrapper->EncodeInterleaved(pcmout, samplesRead);      
+  
+    //~ /* append encoded mp3 frames to the append buffer */
+    //~ char* tmpBuf = NULL;
+    //~ if(sAppendBuf != NULL)
+    //~ {
+      //~ tmpBuf = new char[nAppendSize];
+      //~ memcpy(tmpBuf, sAppendBuf, nAppendSize);
+      //~ delete[] sAppendBuf;      
+    //~ }
+    
+    //~ sAppendBuf = new char[nAppendSize + nLameRet];
+    //~ if(tmpBuf != NULL)
+    //~ {
+      //~ memcpy(sAppendBuf, tmpBuf, nAppendSize);
+      //~ delete[] tmpBuf;
+    //~ }
+    //~ memcpy(&sAppendBuf[nAppendSize], pLameWrapper->GetMp3Buffer(), nLameRet);
+    //~ nAppendSize += nLameRet;
+    //~ nAppendCount++;
+    //~ /* end append */
+    
+    
+    //~ if(nAppendCount == 100)
+    //~ {      
+      //~ /* append encoded audio to bin content buffer */
+      //~ fuppesThreadLockMutex(&TranscodeMutex);
+      
+      //~ /* merge existing bin content and new buffer */
+      //~ char* tmpBuf = new char[pSession->m_pHTTPMessage->m_nBinContentLength + nAppendSize];
+      //~ memcpy(tmpBuf, pSession->m_pHTTPMessage->m_pszBinContent, pSession->m_pHTTPMessage->m_nBinContentLength);
+      //~ memcpy(&tmpBuf[pSession->m_pHTTPMessage->m_nBinContentLength], sAppendBuf, nAppendSize);
+      
+      //~ /* recreate bin content buffer */
+      //~ delete[] pSession->m_pHTTPMessage->m_pszBinContent;
+      //~ pSession->m_pHTTPMessage->m_pszBinContent = new char[pSession->m_pHTTPMessage->m_nBinContentLength + nAppendSize];
+      //~ memcpy(pSession->m_pHTTPMessage->m_pszBinContent, tmpBuf, pSession->m_pHTTPMessage->m_nBinContentLength + nAppendSize);
+            
+      //~ /* set the new content length */
+      //~ pSession->m_pHTTPMessage->m_nBinContentLength += nAppendSize;
+      
+      //~ delete[] tmpBuf;
+      
+      //~ /* reset append buffer an variables */
+      //~ nAppendCount = 0;
+      //~ nAppendSize  = 0;
+      //~ delete[] sAppendBuf;
+      //~ sAppendBuf = NULL;
+      
+      //~ fuppesThreadUnlockMutex(&TranscodeMutex);  
+      //~ /* end append */      
+    //~ }
+    
+  //~ } /* while */  
+  
+  
+  //~ /* delete buffers */
+  //~ if(pcmout)
+    //~ delete[] pcmout;
+	
+  //~ if(sAppendBuf)
+    //~ delete[] sAppendBuf;
+  
+  
+  //~ /* flush and end transcoding */
+  //~ if(!pSession->m_pHTTPMessage->m_bBreakTranscoding)
+  //~ {
+    //~ /*sLog.str("");
+    //~ sLog << "done transcoding loop now flushing" << endl;
+    //~ CSharedLog::Shared()->Log(LOGNAME, sLog.str()); */
+  
+    //~ /* flush mp3 */
+    //~ nLameRet = pLameWrapper->Flush();
+  
+    //~ /* append encoded audio to bin content buffer */
+    //~ fuppesThreadLockMutex(&TranscodeMutex);
+      
+    //~ char* tmpBuf = new char[pSession->m_pHTTPMessage->m_nBinContentLength + nLameRet];
+    //~ if(pSession->m_pHTTPMessage->m_nBinContentLength > 0)
+      //~ memcpy(tmpBuf, pSession->m_pHTTPMessage->m_pszBinContent, pSession->m_pHTTPMessage->m_nBinContentLength);
+    //~ memcpy(&tmpBuf[pSession->m_pHTTPMessage->m_nBinContentLength], pLameWrapper->GetMp3Buffer(), nLameRet);
+    
+    //~ delete[] pSession->m_pHTTPMessage->m_pszBinContent;
+    //~ pSession->m_pHTTPMessage->m_pszBinContent = new char[pSession->m_pHTTPMessage->m_nBinContentLength + nLameRet];
+    //~ memcpy(pSession->m_pHTTPMessage->m_pszBinContent, tmpBuf, pSession->m_pHTTPMessage->m_nBinContentLength + nLameRet);
+       
+    //~ pSession->m_pHTTPMessage->m_nBinContentLength += nLameRet;
+    //~ delete[] tmpBuf;
+    //~ pSession->m_pHTTPMessage->m_bIsTranscoding = false;    
+  
+    //~ fuppesThreadUnlockMutex(&TranscodeMutex);  
+    //~ /* end append */      
+    
+    //~ sLog.str("");
+    //~ sLog << "done transcoding \"" << pSession->m_sFileName << "\"";
+    //~ CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());  
+  //~ }
+  //~ /* break transcoding */
+  //~ /*else
+  //~ {
+    //~ cout << "break transcoding" << endl;
+    //~ fflush(stdout);
+  //~ } */   
+  //~ /* end transcode */
+  
+  
+  //~ /* cleanup and exit */
+  //~ pDecoder->CloseFile();  
+  //~ delete pDecoder;
+  //~ delete pLameWrapper;
+  //~ delete pSession;  
+  //~ fuppesThreadExit();
   
   #endif /* ifndef DISABLE_TRANSCODING */
 }
@@ -873,3 +947,11 @@ bool CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
 }
 
 /* <\PRIVATE> */
+
+/*
+SUBSCRIBE /UPnPServices/ConnectionManager/event/ HTTP/1.1
+HOST: 192.168.0.3:58444
+CALLBACK: <http://192.168.0.3:49152/>
+NT: upnp:event
+TIMEOUT: Second-1801
+*/

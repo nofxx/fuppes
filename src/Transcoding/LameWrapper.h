@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -78,7 +78,7 @@ typedef enum tagLAME_BITRATE
   4. call Init()
   5. encoding using EncodeInterleaved() oder Encode()
   6. flush calling Flush()
-  7. LameWrapper will clean p when it's deleted
+  7. LameWrapper will clean up when it's deleted
 */ 
 
 class CLameWrapper

@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -26,6 +26,8 @@
 
 #ifdef WIN32
 #include <objbase.h> /* for CoCreateGuid() */
+#else
+#include <uuid/uuid.h>
 #endif
 
 #ifndef WC_NO_BEST_FIT_CHARS
@@ -40,7 +42,7 @@ std::string GenerateUUID()
 {
   stringstream sResult;
 
-#ifdef WIN32
+  #ifdef WIN32
 
   /* Generate GUID */
   GUID guid;
@@ -60,10 +62,22 @@ std::string GenerateUUID()
   /* remove leading and trailing brackets */
   sResult << sTmp.substr(1, sTmp.length() - 2);
 
-#else
+  #else  
+  uuid_t uuid;
+  char*  szUUID = new char[64];
   
-  /* todo: create real UUIDs */  
-  srand(time(0));
+  uuid_generate(uuid);  
+  uuid_unparse(uuid, szUUID);
+  
+  sResult << szUUID; 
+  delete[] szUUID;
+  #endif
+  
+  return sResult.str();
+}
+
+
+/* srand(time(0));
 
   int nRandom;
   stringstream sRandom;
@@ -73,9 +87,4 @@ std::string GenerateUUID()
     sRandom << nRandom;
   } while (sRandom.str().length() < 8);
 
-  sResult << sRandom.str().substr(0, 8) << "-aabb-dead-beef-1234eeff0000";
-
-#endif
-
-  return sResult.str();
-}
+  sResult << sRandom.str().substr(0, 8) << "-aabb-dead-beef-1234eeff0000";*/

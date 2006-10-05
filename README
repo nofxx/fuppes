@@ -21,7 +21,10 @@ dependencies:
 
   SQLite (public domain)
   http://sqlite.org/
-
+  
+  UUID library (as-is) (e2fsporgs)
+  Copyright (C) 1996, 1997, 1998 Theodore Ts'o
+  
   TagLib (LGPL 2.1)
   http://developer.kde.org/~wheeler/taglib.html
 
