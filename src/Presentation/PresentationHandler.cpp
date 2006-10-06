@@ -443,6 +443,7 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
       "</tbody>" << endl <<   
     "</table>" << endl;
   
+  CContentDatabase::Shared()->ClearResult();
   CContentDatabase::Shared()->Unlock();
   // end Database status
   

@@ -163,6 +163,7 @@ void CContentDatabase::ClearResult()
     delete pResult;
   } 
   
+  m_ResultList.clear();
   m_nRowsReturned = 0;
 }
 

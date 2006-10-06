@@ -1,7 +1,7 @@
 [Project]
 FileName=fuppes.dev
 Name=fuppes
-UnitCount=87
+UnitCount=89
 Type=1
 Ver=1
 ObjFiles=
@@ -27,7 +27,7 @@ CustomMakefile=
 IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=0
-CompilerSettings=00000000000000000000c0
+CompilerSettings=00000000000001010000c0
 OverrideOutput=0
 
 [Unit6]
@@ -54,7 +54,7 @@ BuildCmd=
 Major=0
 Minor=5
 Release=3
-Build=1
+Build=25
 LanguageID=1033
 CharsetID=1252
 CompanyName=
@@ -919,7 +919,17 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit88]
-FileName=src\SSDP\MSearchSession.cpp
+FileName=src\Transcoding\TranscodingMgr.cpp
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit89]
+FileName=src\Transcoding\TranscodingMgr.h
 CompileCpp=1
 Folder=fuppes
 Compile=1

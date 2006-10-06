@@ -561,6 +561,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       }          
       #endif
       CSharedLog::Shared()->DebugLog(LOGNAME, p_Response->GetMessageAsString());
+      return true;
     } 
   }
   
@@ -709,6 +710,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       //fsOut.close();
         
       //cout << " exiting " << endl;
+    return true;
   } /* else */
   
 }

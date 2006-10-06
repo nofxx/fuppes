@@ -100,8 +100,6 @@ CHTTPMessage::CHTTPMessage()
 
 CHTTPMessage::~CHTTPMessage()
 {
-  //cout << "CHTTPMessage::~CHTTPMessage()" << endl;
-  
   /* Cleanup */
   if(m_pUPnPAction)
     delete m_pUPnPAction;
@@ -113,19 +111,13 @@ CHTTPMessage::~CHTTPMessage()
     fuppesThreadClose(m_TranscodeThread);
 
   if(m_pTranscodingSessionInfo)
-  {
-    cout << "del session info" << endl;
-    fflush(stdout);
-    
+  {    
     m_pTranscodingSessionInfo->m_pszBinBuffer = NULL;
     delete m_pTranscodingSessionInfo;
   }  
   
   if(m_fsFile.is_open())
     m_fsFile.close();
-  
-  cout << "del session info done" << endl;
-    fflush(stdout);
 }
 
 /*===============================================================================
@@ -197,7 +189,8 @@ std::string CHTTPMessage::GetHeaderAsString()
 		case HTTP_MESSAGE_TYPE_GET:	          /* todo */			                            break;
     case HTTP_MESSAGE_TYPE_HEAD:	        /* todo */			                            break;
 		case HTTP_MESSAGE_TYPE_POST:          /* todo */		                              break;
-		case HTTP_MESSAGE_TYPE_200_OK:        
+		case HTTP_MESSAGE_TYPE_200_OK:
+    case HTTP_MESSAGE_TYPE_GENA_OK:
       sResult << sVersion << " 200 OK\r\n";
       break;
     case HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT:
@@ -217,122 +210,73 @@ std::string CHTTPMessage::GetHeaderAsString()
       fflush(stdout);
       ASSERT(0);                                  
       break;
-	}
-	
-	
-	/* Server */
-	sResult << "Server: " << CSharedConfig::Shared()->GetOSName() << "/" << CSharedConfig::Shared()->GetOSVersion() << ", ";
-  sResult << "UPnP/1.0, ";
-  sResult << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << "\r\n";
-	
+	}		  
   
-	/* Accept-Range */
-	//if(m_nHTTPVersion == HTTP_VERSION_1_1)
-  sResult << "Accept-Ranges: bytes\r\n";
-	 
-	
-	
-  /* Content length */
-  //cout << "length: " << m_nBinContentLength << " range start: " << m_nRangeStart << " range end: " << m_nRangeEnd << endl;
-  if(!m_bIsBinary)
+  
+  if(m_nHTTPMessageType != HTTP_MESSAGE_TYPE_GENA_OK)
   {
-    //cout << "len: 1" << endl;
-    sResult << "Content-Length: " << (int)strlen(m_sContent.c_str()) << "\r\n";
-  }
-  else
-  {
-    /*cout << "binary" << endl;
-    fflush(stdout);*/
+    /* Content Type */
+    sResult << "Content-Type: " << m_sHTTPContentType << "\r\n";
     
-    if(!this->IsTranscoding() && (m_nBinContentLength > 0))
+    /* Content length */
+    if(!m_bIsBinary)
     {
-      /*cout << "if(!m_bIsTranscoding && (m_nBinContentLength > 0))" << endl;
-      fflush(stdout);*/
-      
-      if((m_nRangeStart > 0) || (m_nRangeEnd > 0))
-      {
-        if(m_nRangeEnd < m_nBinContentLength)
+      sResult << "Content-Length: " << (int)strlen(m_sContent.c_str()) << "\r\n";
+    }
+    else
+    {    
+      if(!this->IsTranscoding() && (m_nBinContentLength > 0))
+      {      
+        if((m_nRangeStart > 0) || (m_nRangeEnd > 0))
         {
-          //cout << "len: 2" << endl;
-          sResult << "Content-Length: " << m_nRangeEnd - m_nRangeStart + 1<< "\r\n";
-          sResult << "Content-Range: " << m_nRangeStart << "-" << m_nRangeEnd << "\r\n";
+          if(m_nRangeEnd < m_nBinContentLength)
+          {
+            sResult << "Content-Length: " << m_nRangeEnd - m_nRangeStart + 1<< "\r\n";
+            sResult << "Content-Range: " << m_nRangeStart << "-" << m_nRangeEnd << "\r\n";
+          }
+          else
+          {
+            sResult << "Content-Length: " << m_nBinContentLength - m_nRangeStart << "\r\n";
+            sResult << "Content-Range: " << m_nRangeStart << "-" << m_nRangeEnd << "\r\n";
+          }
         }
         else
         {
-          //cout << "len: 3" << endl;            
-          sResult << "Content-Length: " << m_nBinContentLength - m_nRangeStart << "\r\n";
-          sResult << "Content-Range: " << m_nRangeStart << "-" << m_nRangeEnd << "\r\n";
-        }
+          sResult << "Content-Length: " << m_nBinContentLength << "\r\n";
+        } 
       }
-      else
-      {
-        //cout << "len: 4" << endl;
-        sResult << "Content-Length: " << m_nBinContentLength << "\r\n";
-        //m_nRangeEnd = m_nBinContentLength;
-      } 
-    }
-   /* else
-    {
-            cout << "5" << endl;
-      sResult << "CONTENT-LENGTH: 0\r\n";
-      //sResult << "Content-Range: 0-" << m_nBinContentLength << "/" << m_nBinContentLength << "\r\n";
-      m_nRangeEnd = m_nBinContentLength;
-      } */
-  }      
-
-		  
-
-  sResult << "Connection: close\r\n";
-  //cout << "contentlength: " << m_nBinContentLength << endl;
-
-  
-  /*if((m_nRangeStart > 0) || (m_nRangeEnd > 0))
-  {   
-    //sResult << "ETag: \"84a04256ea0bf1:3cae20\"\r\n";
+    }  
+    /* end Content length */        
     
-    //sResult << "CONTENT-RANGE: bytes ";
-    sResult << "Content-Range: ";
-    //sResult << "Content-Range: bytes ";    
-    if(m_nRangeEnd > m_nBinContentLength)
-      sResult << m_nRangeStart << "-" << m_nBinContentLength - 1;
-    else
-      sResult << m_nRangeStart << "-" << m_nRangeEnd;
-    sResult << "/" << m_nBinContentLength << "\r\n";
-  }*/
-  
-  //sResult << "contentFeatures.dlna.org: \r\n";  
-	//sResult << "EXT: \r\n";
+    /* Accept-Range */
+    sResult << "Accept-Ranges: bytes\r\n";
+    
+    /* Connection */
+    sResult << "Connection: close\r\n";    
 	
-  /* Transfer-Encoding */
-  if(m_nHTTPVersion == HTTP_VERSION_1_1)
+    /* Date */
+    char   szTime[30];
+    time_t tTime = time(NULL);
+    strftime(szTime, 30,"%a, %d %b %Y %H:%M:%S GMT" , gmtime(&tTime));   
+  	sResult << "DATE: " << szTime << "\r\n";	
+	
+	  /* dlna */
+    sResult << "contentFeatures.dlna.org: \r\n";
+    sResult << "EXT:\r\n";    
+  }
+  
+  
+  /* GENA header information */
+  if(m_nHTTPMessageType == HTTP_MESSAGE_TYPE_GENA_OK)
   {
-    /*if(m_bIsChunked)
-    {
-      sResult << "TRANSFER-ENCODING: chunked\r\n";
-    }*/
-  }	
+    sResult << "SID: uuid:" << m_sGENASubscriptionID << "\r\n";
+    sResult << "Timeout: Second-" << 15 << "\r\n";
+  }
   
-  /* Date */
-  char   szTime[30];
-  time_t tTime = time(NULL);
-  strftime(szTime, 30,"%a, %d %b %Y %H:%M:%S GMT" , gmtime(&tTime));   
-	sResult << "DATE: " << szTime << "\r\n";    
-  
-  
-  /* Content type */
-	/*switch(m_HTTPContentType)
-	{
-		case HTTP_CONTENT_TYPE_TEXT_HTML:  sContentType = "text/html";  break;
-		case HTTP_CONTENT_TYPE_TEXT_XML:   sContentType = "text/xml; charset=\"utf-8\"";   break;
-		case HTTP_CONTENT_TYPE_AUDIO_MPEG: sContentType = "audio/mpeg"; break;
-    case HTTP_CONTENT_TYPE_IMAGE_PNG : sContentType = "image/png";  break;      
-    default:                           ASSERT(0);                   break;	
-	}*/
-
-  sResult << "Content-Type: " << m_sHTTPContentType << "\r\n";  
-  
-  sResult << "contentFeatures.dlna.org: \r\n";
-  sResult << "EXT:\r\n";
+ 	/* Server */
+  sResult << "Server: " << CSharedConfig::Shared()->GetOSName() << "/" << CSharedConfig::Shared()->GetOSVersion() << ", ";
+  sResult << "UPnP/1.0, ";
+  sResult << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << "\r\n";  
   
 	
 	sResult << "\r\n";
@@ -565,6 +509,23 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
     m_sRequest = rxPOST.Match(1);			
 
     bResult = ParsePOSTMessage(p_sMessage);
+  }
+  
+  /* Message SUBSCRIBE */
+  RegEx rxSUBSCRIBE("SUBSCRIBE +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
+  if(rxSUBSCRIBE.Search(p_sMessage.c_str()))
+  {
+    m_nHTTPMessageType = HTTP_MESSAGE_TYPE_SUBSCRIBE;     
+    
+    string sVersion = rxSUBSCRIBE.Match(2);
+    if(sVersion.compare("0") == 0)		
+      m_nHTTPVersion = HTTP_VERSION_1_0;		
+    else if(sVersion.compare("1") == 0)
+      m_nHTTPVersion = HTTP_VERSION_1_1;
+
+    m_sRequest = rxSUBSCRIBE.Match(1);
+                                 
+    bResult = ParseSUBSCRIBEMessage(p_sMessage);       
   }
   
   /* Range */
@@ -946,12 +907,48 @@ bool CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
   return true;
 }
 
-/* <\PRIVATE> */
-
+bool CHTTPMessage::ParseSUBSCRIBEMessage(std::string p_sMessage)
+{
 /*
 SUBSCRIBE /UPnPServices/ConnectionManager/event/ HTTP/1.1
 HOST: 192.168.0.3:58444
 CALLBACK: <http://192.168.0.3:49152/>
 NT: upnp:event
 TIMEOUT: Second-1801
-*/
+
+
+SUBSCRIBE /UPnPServices/ConnectionManager/event/ HTTP/1.1
+TIMEOUT: Second-15
+HOST: 192.168.0.3:1050
+CALLBACK: <http://192.168.0.3:42577>
+NT: upnp:event
+Content-Length: 0
+
+*/     
+
+  //cout << "PARSE SUBSCRIBE" << endl;
+
+  RegEx rxCallBack("CALLBACK: *(.+)", PCRE_CASELESS);
+  if(rxCallBack.Search(p_sMessage.c_str()))
+  {
+    m_sGENACallBack = rxCallBack.Match(1);
+  }
+
+  RegEx rxNT("NT: *(.+)", PCRE_CASELESS);
+  if(rxNT.Search(p_sMessage.c_str()))
+  {
+    m_sGENANT = rxNT.Match(1);
+  }
+
+  // Header information: Timeout (GENA - Request)
+  //std::string        m_sGENATimeout;  
+  // Header information: Subscription-ID (GENA - Request & Response)
+  //std::string        m_sGENASubscriptionID;    
+  
+  
+  return true;     
+}
+
+/* <\PRIVATE> */
+
+

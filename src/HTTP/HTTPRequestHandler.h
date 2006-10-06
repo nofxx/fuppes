@@ -39,6 +39,7 @@ class CHTTPRequestHandler
     //bool HandleHTTPResponse();
     bool HandleSOAPAction(CHTTPMessage* pRequest, CHTTPMessage* pResponse);    
 
+    bool HandleGENAMessage(CHTTPMessage* pRequest, CHTTPMessage* pResponse);
 };
 
 #endif /* _HTTPREQUESTHANDLER_H */

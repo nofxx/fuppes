@@ -77,8 +77,9 @@ typedef enum tagHTTP_MESSAGE_TYPE
 	
   /* GENA message types */
   HTTP_MESSAGE_TYPE_SUBSCRIBE        = 11,
-  HTTP_MESSAGE_TYPE_UNSUBSCRIBE      = 12,  
-  HTTP_MESSAGE_TYPE_NOTIFY           = 13
+  HTTP_MESSAGE_TYPE_UNSUBSCRIBE      = 12,
+  HTTP_MESSAGE_TYPE_GENA_OK          = 13,
+  HTTP_MESSAGE_TYPE_NOTIFY           = 14
   
 }HTTP_MESSAGE_TYPE;
 
@@ -179,6 +180,11 @@ public:
   void             SetBinContent(char* p_szBinContent, unsigned int p_nBinContenLength);
   void             SetUPnPItem(CUPnPItem* pUPnPItem);
   
+  
+  std::string  GetGENASubscriptionID() { return m_sGENASubscriptionID; }
+  void         SetGENASubscriptionID(std::string p_sSubscriptionID) { m_sGENASubscriptionID = p_sSubscriptionID; }
+  
+  
 /*===============================================================================
  OTHER
 ===============================================================================*/
@@ -195,10 +201,8 @@ public:
 public:
   char*         m_pszBinContent;
   unsigned int  m_nBinContentLength; 
-  //bool          m_bBreakTranscoding;
-  CTranscodeSessionInfo* m_pTranscodingSessionInfo;
-  //bool          m_bIsTranscoding;
   bool          m_bIsBinary;
+  CTranscodeSessionInfo* m_pTranscodingSessionInfo;  
 
 /* <PRIVATE> */
 
@@ -208,18 +212,35 @@ private:
  MEMBERS
 ===============================================================================*/
   
+  // Header information: [HTTP 1.0|HTTP 1.1]
   HTTP_VERSION       m_nHTTPVersion;
+  // Message type
   HTTP_MESSAGE_TYPE  m_nHTTPMessageType;
+  // Header information: Content type
   std::string        m_sHTTPContentType;
+  // Header information: HTTP request line
   std::string	       m_sRequest;
-  int                m_nContentLength;  
+  // Header information: content length
+  int                m_nContentLength;
+  // Header information: Connection [close|keep alive]
+  HTTP_CONNECTION    m_nHTTPConnection;
+   
+  // Header information: Call-Back (GENA - Request)
+  std::string        m_sGENACallBack;
+  // Header information: NT (notification type) (GENA - Request)
+  std::string        m_sGENANT;
+  // Header information: Timeout (GENA - Request)
+  std::string        m_sGENATimeout;  
+  // Header information: Subscription-ID (GENA - Request & Response)
+  std::string        m_sGENASubscriptionID;
+  
+   
   bool               m_bIsChunked;
   CUPnPItem*         m_pUPnPItem;
   CUPnPAction*       m_pUPnPAction;
   std::fstream       m_fsFile;
   unsigned int       m_nRangeStart;
   unsigned int       m_nRangeEnd;
-  HTTP_CONNECTION    m_nHTTPConnection;
 
   unsigned int       m_nBinContentPosition;
   fuppesThread       m_TranscodeThread;
@@ -228,7 +249,8 @@ private:
  HELPER
 ===============================================================================*/    
 
-  bool ParsePOSTMessage(std::string);
+  bool ParsePOSTMessage(std::string p_sMessage);
+  bool ParseSUBSCRIBEMessage(std::string p_sMessage);
 
 /* <\PRIVATE> */
 

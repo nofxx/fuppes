@@ -128,7 +128,7 @@ CFLACDecoder::CFLACDecoder()
   
   m_pFLACData->buffer = NULL;
   m_pFLACData->buffer_size = 0;
-  m_pFLACData->channels = -1;
+  m_pFLACData->channels = 0;
   m_pFLACData->sample_rate = -1;
   m_pFLACData->duration = -1;
 }
