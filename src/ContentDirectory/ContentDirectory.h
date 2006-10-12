@@ -90,23 +90,21 @@ public:
 
     
   void BuildDB();
+  bool GetIsRebuilding() { return m_bIsRebuilding; }
+  
 /* <\PUBLIC> */
 
 /* <PRIVATE> */
 
   private:
+    bool  m_bIsRebuilding;
 
-  /*============================================================================
-   MEMBERS
-  ============================================================================*/
 
     /*std::map<std::string, CUPnPObject*>           m_ObjectList;
     std::map<std::string, CUPnPObject*>::iterator m_ListIterator;
     CUPnPContainer*                               m_pBaseFolder;    */
 
-  /*============================================================================
-   HELPER
-  ============================================================================*/
+
     /** scans a specific directory
      *  @param  p_sDirectory  path to the directory to scan
      *  @param  p_pnCount  count of found objects

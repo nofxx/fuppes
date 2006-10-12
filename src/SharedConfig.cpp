@@ -237,7 +237,7 @@ string CSharedConfig::GetAppFullname()
 
 string CSharedConfig::GetAppVersion()
 {
-	return "0.5.4a";
+	return "0.7a";
 }
 
 string CSharedConfig::GetHostname()

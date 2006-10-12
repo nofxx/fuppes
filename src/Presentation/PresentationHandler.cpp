@@ -117,7 +117,8 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html?rebuild=db") == 0)
   {
     CSharedConfig::Shared()->Refresh();
-    CSharedConfig::Shared()->GetFuppesInstance(0)->GetContentDirectory()->BuildDB();
+    if(!CSharedConfig::Shared()->GetFuppesInstance(0)->GetContentDirectory()->GetIsRebuilding())
+      CSharedConfig::Shared()->GetFuppesInstance(0)->GetContentDirectory()->BuildDB();
     
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "send options.html");
     nPresentationPage = PRESENTATION_PAGE_OPTIONS;
@@ -393,7 +394,10 @@ std::string CPresentationHandler::GetOptionsHTML(std::string p_sImgPath)
 
   //((CFuppes*)m_vFuppesInstances[0])->GetContentDirectory()->BuildDB();
   sResult << "<h1>database options</h1>" << endl;
-  sResult << "<a href=\"/presentation/options.html?rebuild=db\">rebuild database</a>" << endl;
+  if(!CSharedConfig::Shared()->GetFuppesInstance(0)->GetContentDirectory()->GetIsRebuilding())  
+    sResult << "<a href=\"/presentation/options.html?rebuild=db\">rebuild database</a>" << endl;
+  else
+    sResult << "database rebuild in progress" << endl;
   
   return sResult.str();
 }
@@ -553,6 +557,7 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
   // "add new form" controls
   sResult << "<p>" <<  
                "<input name=\"new_dir\" />" << endl <<
+               "<br />" << endl <<
                "<input type=\"submit\" />" << endl <<             
              "</p>" << endl;  
   
@@ -566,22 +571,18 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
   
     sResult << "<p>" <<  
                "<input name=\"max_file_name_length\" value=\"" << CSharedConfig::Shared()->GetMaxFileNameLength() << "\" />" << endl <<
+               "<br />" << endl <<
                "<input type=\"submit\" />" << endl <<             
              "</p>" << endl;  
   
   
   sResult << "<h1>Network settings</h1>" << endl;
   
-  sResult << "<h2>IP address</h2>" << endl;  
+  sResult << "<h2>IP address/HTTP port</h2>" << endl;  
   sResult << "<p>" <<  
-               "<input name=\"ip_address\" value=\"" << CSharedConfig::Shared()->GetIPv4Address() << "\" />" << endl <<
-               "<input type=\"submit\" />" << endl <<             
-             "</p>" << endl;  
-  
-  
-  sResult << "<h2>HTTP port</h2>" << endl;
-  sResult << "<p>" <<  
+               "<input name=\"ip_address\" value=\"" << CSharedConfig::Shared()->GetIPv4Address() << "\" />" << endl <<  
                "<input name=\"http_port\" value=\"" << CSharedConfig::Shared()->GetHTTPPort() << "\" />" << endl <<
+               "<br />" << endl <<
                "<input type=\"submit\" />" << endl <<             
              "</p>" << endl;  
   
@@ -611,6 +612,7 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
   
   sResult << "<p>" <<  
                "<input name=\"new_allowed_ip\" />" << endl <<
+               "<br />" << endl <<
                "<input type=\"submit\" />" << endl <<             
              "</p>" << endl;    
   

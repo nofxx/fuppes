@@ -26,6 +26,7 @@
 #ifndef _TRANSCODINGMGR_H
 #define _TRANSCODINGMGR_H
  
+#include "TranscodingCache.h" 
 #include "LameWrapper.h"
 #include "WrapperBase.h"
 #include <string>
@@ -49,7 +50,7 @@ class CTranscodeSessionInfo
     bool        m_bIsTranscoding;  
     std::string m_sFileName;
     unsigned int* m_pnBinContentLength;
-    char**         m_pszBinBuffer;
+    char**        m_pszBinBuffer;
 };
 
 class CTranscodingMgr
@@ -64,19 +65,22 @@ class CTranscodingMgr
     /** Append
      *  @param p_szBinBuffer  the buffer the content should be added to
      *  @param p_nBinBufferSize the current size of the buffer
+     *  @param p_nOffset the append offset
      *  @return the number of byted appended to the buffer
      */
-    int Append(char** p_pszBinBuffer, unsigned int p_nBinBufferSize);
+    int Append(char** p_pszBinBuffer, unsigned int p_nBinBufferSize, unsigned int p_nOffset);
   
   private:
     CTranscodeSessionInfo* m_pSessionInfo;
     CLameWrapper* m_pLameWrapper;
     CDecoderBase* m_pDecoder;
   
+    CTranscodingCacheObject* m_pCacheObject;
+  
     // buffer that stores the transcoded stuff
-    char* m_sAppendBuffer; 
+    //char* m_sAppendBuffer; 
     // the append buffer's size
-    unsigned int m_nAppendBufferSize;
+    //unsigned int m_nAppendBufferSize;
     // append count
     unsigned int m_nAppendCount;
   

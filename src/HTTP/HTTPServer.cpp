@@ -298,7 +298,7 @@ fuppesThreadCallback SessionLoop(void *arg)
     if(CSharedConfig::Shared()->IsAllowedIP(sIP))
     {    
       /* build response */    
-      bResult = pHandler->HandleRequest(pRequest, pResponse);      
+      bResult = false; //pHandler->HandleRequest(pRequest, pResponse);      
       if(!bResult)
         bResult = pSession->GetHTTPServer()->CallOnReceive(pRequest, pResponse);  	
       if(!bResult)
@@ -598,8 +598,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       p_Response->SetRangeEnd(p_Response->GetBinContentLength());
   
     
-  /*   cout << p_Response->GetHeaderAsString() << endl;
-    fflush(stdout);*/
+     cout << p_Request->GetHeader() << endl;
+    fflush(stdout);
     
     
   
@@ -609,23 +609,28 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     
     //cout << p_Response->GetHeaderAsString() << endl;
     
-    /* send header */        
-    if(nErr != -1)
+    /* send header if it is a HEAD rsponse and return */        
+    if((nErr != -1) && (p_Request->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD))
     {
+      cout << "send head response" << endl;
       #ifdef WIN32
       nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), 0);             
       #else
       nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), MSG_NOSIGNAL);
       #endif
+    
+      if(nErr == -1)
+        cout << "[ERROR] send header" << endl;
+      
+      return true;
     }
    
+    cout << "send get response" << endl;
     //cout << p_Response->GetHeaderAsString() << endl;
     
-    if(nErr == -1)
-      cout << "[ERROR] send header" << endl;
     
-    if(p_Request->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD)
-      nErr = -1;
+    
+
    
     
     int nCnt = 0;
@@ -639,6 +644,21 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       cout << "requested: " << nRequestSize << endl;
       cout << "end: " << nRet << endl;
       fflush(stdout);     */
+      
+      /* send HTTP header when the first package is ready */
+      if(nCnt == 0)
+      {
+        cout << "send transcoding header" << endl;
+        #ifdef WIN32
+        nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), 0);             
+        #else
+        nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), MSG_NOSIGNAL);
+        #endif        
+        
+        if(nErr == -1)
+          cout << "[ERROR] send header" << endl;
+      }
+      
       
       #ifdef WIN32
       nErr = send(p_Session->GetConnection(), szChunk, nRet, 0);    

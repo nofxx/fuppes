@@ -312,9 +312,9 @@ int main(int argc, char* argv[])
   }
   
   /* Destroy objects */
-  SAFE_DELETE(pFuppes);
-  SAFE_DELETE(pPresentationHandler);
-
+  delete pFuppes;
+  delete pPresentationHandler;
+  
   delete CSharedConfig::Shared();
   delete CSharedLog::Shared();
   

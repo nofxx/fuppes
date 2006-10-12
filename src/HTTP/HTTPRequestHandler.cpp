@@ -73,6 +73,7 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
   {
     CPresentationHandler* pHandler = new CPresentationHandler();
     pHandler->OnReceivePresentationRequest(NULL, pRequest, pResponse);
+    delete pHandler;
     return true;
   }
   
@@ -91,7 +92,7 @@ bool CHTTPRequestHandler::HandleGENAMessage(CHTTPMessage* pRequest, CHTTPMessage
   pResponse->SetVersion(pRequest->GetVersion());
   pResponse->SetMessageType(HTTP_MESSAGE_TYPE_GENA_OK);
  
-  string sID = "uuid:" + GenerateUUID(); 
+  string sID = GenerateUUID(); 
   pResponse->SetGENASubscriptionID(sID);
   
   

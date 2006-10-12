@@ -72,7 +72,8 @@ CContentDirectory::CContentDirectory(std::string p_sHTTPServerURL):
 CUPnPService(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, p_sHTTPServerURL)
 {
   /* Init database */   
-  bool bIsNewDB = false; 
+  m_bIsRebuilding = false;
+  bool bIsNewDB = false;   
   if(!CContentDatabase::Shared()->Init(&bIsNewDB))
   {
     if(bIsNewDB)
@@ -101,6 +102,8 @@ std::string CContentDirectory::GetServiceDescription()
 
 void CContentDirectory::BuildDB()
 {
+  m_bIsRebuilding = true;
+  
   CSharedLog::Shared()->Log(LOGNAME, "creating content database. this may take a while.");
   CContentDatabase::Shared()->Insert("delete from objects");
   
@@ -140,6 +143,7 @@ void CContentDirectory::BuildDB()
   } // for
   
   CSharedLog::Shared()->Log(LOGNAME, "content database created");   
+  m_bIsRebuilding = false;
 }
 
 /*===============================================================================
@@ -549,6 +553,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   CContentDatabase::Shared()->Lock();
   CContentDatabase::Shared()->Select(sSql.str());        
   string sChildCount = CContentDatabase::Shared()->GetResult()->GetValue("COUNT").c_str();
+  CContentDatabase::Shared()->ClearResult();
   CContentDatabase::Shared()->Unlock();
   sSql.str("");  
 

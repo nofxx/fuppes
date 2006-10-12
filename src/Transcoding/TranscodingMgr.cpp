@@ -45,11 +45,12 @@ using namespace std;
 
 CTranscodingMgr::CTranscodingMgr()
 {  
+  m_pCacheObject = NULL;
   m_pLameWrapper = NULL;
   m_pDecoder     = NULL;
   
-  m_sAppendBuffer     = NULL;    
-  m_nAppendBufferSize = 0;
+  //m_sAppendBuffer     = NULL;    
+  //m_nAppendBufferSize = 0;
   m_nAppendCount      = 0;
   
   m_bIsTranscoding = false;
@@ -97,8 +98,7 @@ TRANSCODING_MGR_ERROR_CODES CTranscodingMgr::Init(CTranscodeSessionInfo* p_Sessi
   
   if(!m_pDecoder || !m_pDecoder->LoadLib() || !m_pDecoder->OpenFile(m_pSessionInfo->m_sFileName))
     return TRANSCODING_MGR_AUDIO_DECODER_MISSING;  
-  
-  
+     
   return TRANSCODING_MGR_OK;
 }
 
@@ -112,6 +112,31 @@ int CTranscodingMgr::Transcode()
   
   cout << "CTranscodingMgr::Transcode" << endl;
   fflush(stdout);
+  
+  
+  /* get cache object */
+  m_pCacheObject = CTranscodingCache::Shared()->GetCacheObject(m_pSessionInfo->m_sFileName);  
+  // if it is not transcoding any longer or the transcoding thread is another one than
+  // this we just return the size of the cache object ...
+  if((!m_pCacheObject->m_bIsTranscoding) || (m_pCacheObject->m_pTranscodingMgr != this))
+  {
+    cout << "TranscodingMgr:: got existing cache object" << endl;
+    if(m_pCacheObject->m_bIsTranscoding)
+    {
+      unsigned int nSize = m_pCacheObject->m_nBufferSize;
+      while((m_pCacheObject->m_nBufferSize == nSize) && (m_pCacheObject->m_bIsTranscoding))
+        fuppesSleep(50);     
+    }
+    
+     return m_pCacheObject->m_nBufferSize;
+  }
+  
+  // ... otherwise we set this object as the transcoding one and go on transcoding
+  cout << "TranscodingMgr:: create new cache object" << endl;
+  m_pCacheObject->m_pTranscodingMgr = this;
+  m_pCacheObject->m_bIsTranscoding  = true;
+  
+  
   
   #ifndef DISABLE_MUSEPACK
   int nBufferLength = 0;  
@@ -137,9 +162,9 @@ int CTranscodingMgr::Transcode()
   CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());*/
     
   m_nAppendCount = 0;
-  m_nAppendBufferSize = 0;
+  //m_nAppendBufferSize = 0;
   
-   cout << "CTranscodingMgr::Transcode :: start transcoding " << nBufferLength << endl;
+  cout << "CTranscodingMgr::Transcode :: start transcoding " << nBufferLength << endl;
   fflush(stdout);
   
   while(((samplesRead = m_pDecoder->DecodeInterleaved((char*)pcmout, nBufferLength)) >= 0) && !m_pSessionInfo->m_bBreakTranscoding)
@@ -155,31 +180,37 @@ int CTranscodingMgr::Transcode()
     fflush(stdout);*/
     
     /* append encoded mp3 frames to the append buffer */
+    m_pCacheObject->Lock();   
+
     char* tmpBuf = NULL;
-    if(m_sAppendBuffer != NULL)
+    if(m_pCacheObject->m_szBuffer != NULL)
     {
-      tmpBuf = new char[m_nAppendBufferSize];
-      memcpy(tmpBuf, m_sAppendBuffer, m_nAppendBufferSize);
-      delete[] m_sAppendBuffer;      
+      tmpBuf = new char[m_pCacheObject->m_nBufferSize];
+      memcpy(tmpBuf, m_pCacheObject->m_szBuffer, m_pCacheObject->m_nBufferSize);
+      delete[] m_pCacheObject->m_szBuffer;      
     }
     
-    m_sAppendBuffer = new char[m_nAppendBufferSize + nLameRet];
+    m_pCacheObject->m_szBuffer = new char[m_pCacheObject->m_nBufferSize + nLameRet];
     if(tmpBuf != NULL)
     {
-      memcpy(m_sAppendBuffer, tmpBuf, m_nAppendBufferSize);
+      memcpy(m_pCacheObject->m_szBuffer, tmpBuf, m_pCacheObject->m_nBufferSize);
       delete[] tmpBuf;
     }
-    memcpy(&m_sAppendBuffer[m_nAppendBufferSize], m_pLameWrapper->GetMp3Buffer(), nLameRet);
-    m_nAppendBufferSize += nLameRet;
+    memcpy(&m_pCacheObject->m_szBuffer[m_pCacheObject->m_nBufferSize], m_pLameWrapper->GetMp3Buffer(), nLameRet);
+    m_pCacheObject->m_nBufferSize += nLameRet;
     m_nAppendCount++;
+    
+    m_pCacheObject->Unlock();
     /* end append */
     
+    fuppesSleep(10);
     
-    if(m_nAppendCount == 100)
+    
+    if((m_nAppendCount % 100) == 0)
     { 
-     cout << "CTranscodingMgr::Transcode :: return transcoding " << m_nAppendBufferSize << endl;
-  fflush(stdout);
-      return m_nAppendBufferSize;         
+      cout << "CTranscodingMgr::Transcode :: return transcoding " << m_pCacheObject->m_nBufferSize << endl;
+      fflush(stdout);
+      return m_pCacheObject->m_nBufferSize;         
     }
     
   } /* while */  
@@ -208,93 +239,77 @@ int CTranscodingMgr::Transcode()
     nLameRet = m_pLameWrapper->Flush();
   
     /* append encoded mp3 frames to the append buffer */
+    m_pCacheObject->Lock();
+    
     char* tmpBuf = NULL;
-    if(m_sAppendBuffer != NULL)
+    if(m_pCacheObject->m_szBuffer != NULL)
     {
-      tmpBuf = new char[m_nAppendBufferSize];
-      memcpy(tmpBuf, m_sAppendBuffer, m_nAppendBufferSize);
-      delete[] m_sAppendBuffer;      
+      tmpBuf = new char[m_pCacheObject->m_nBufferSize];
+      memcpy(tmpBuf, m_pCacheObject->m_szBuffer, m_pCacheObject->m_nBufferSize);
+      delete[] m_pCacheObject->m_szBuffer;      
     }
     
-    m_sAppendBuffer = new char[m_nAppendBufferSize + nLameRet];
+    m_pCacheObject->m_szBuffer = new char[m_pCacheObject->m_nBufferSize + nLameRet];
     if(tmpBuf != NULL)
     {
-      memcpy(m_sAppendBuffer, tmpBuf, m_nAppendBufferSize);
+      memcpy(m_pCacheObject->m_szBuffer, tmpBuf, m_pCacheObject->m_nBufferSize);
       delete[] tmpBuf;
     }
-    memcpy(&m_sAppendBuffer[m_nAppendBufferSize], m_pLameWrapper->GetMp3Buffer(), nLameRet);
-    m_nAppendBufferSize = nLameRet;
+    memcpy(&m_pCacheObject->m_szBuffer[m_pCacheObject->m_nBufferSize], m_pLameWrapper->GetMp3Buffer(), nLameRet);
+    m_pCacheObject->m_nBufferSize += nLameRet;
+    
+    m_pCacheObject->Unlock();
     
     m_bIsTranscoding = false;    
-    return m_nAppendBufferSize;
-    
-    /* append encoded audio to bin content buffer */
- //   fuppesThreadLockMutex(&TranscodeMutex);
-      
-    /*char* tmpBuf = new char[m_pSessionInfo->m_pHTTPMessage->m_nBinContentLength + nLameRet];
-    if(m_pSessionInfo->m_pHTTPMessage->m_nBinContentLength > 0)
-      memcpy(tmpBuf, m_pSessionInfo->m_pHTTPMessage->m_pszBinContent, m_pSessionInfo->m_pHTTPMessage->m_nBinContentLength);
-    memcpy(&tmpBuf[m_pSessionInfo->m_pHTTPMessage->m_nBinContentLength], m_pLameWrapper->GetMp3Buffer(), nLameRet);
-    
-    delete[] m_pSessionInfo->m_pHTTPMessage->m_pszBinContent;
-    m_pSessionInfo->m_pHTTPMessage->m_pszBinContent = new char[m_pSessionInfo->m_pHTTPMessage->m_nBinContentLength + nLameRet];
-    memcpy(m_pSessionInfo->m_pHTTPMessage->m_pszBinContent, tmpBuf, m_pSessionInfo->m_pHTTPMessage->m_nBinContentLength + nLameRet);
-       
-    m_pSessionInfo->m_pHTTPMessage->m_nBinContentLength += nLameRet;
-    delete[] tmpBuf; */
-        
-  
-//    fuppesThreadUnlockMutex(&TranscodeMutex);  
-    /* end append */      
-    
-    /*sLog.str("");
-    sLog << "done transcoding \"" << pSession->m_sFileName << "\"";
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());  */
+    return m_pCacheObject->m_nBufferSize;
   }  
-  
   
   return 0;
 }
 
-int CTranscodingMgr::Append(char** p_pszBinBuffer, unsigned int p_nBinBufferSize)
+int CTranscodingMgr::Append(char** p_pszBinBuffer, unsigned int p_nBinBufferSize, unsigned int p_nOffset)
 {
   
- cout << "CTranscodingMgr::Append : " << m_nAppendBufferSize << " bytes" << endl;
+ //cout << "CTranscodingMgr::Append : " << m_nAppendBufferSize << " bytes" << endl;
   
   /* append encoded audio to bin content buffer */
 //      fuppesThreadLockMutex(&TranscodeMutex);
   
+  m_pCacheObject->Lock();
+  
   /* merge existing bin content and new buffer */
-  char* tmpBuf = new char[p_nBinBufferSize + m_nAppendBufferSize];
+  char* tmpBuf = new char[p_nBinBufferSize + m_pCacheObject->m_nBufferSize - p_nOffset];
   memcpy(tmpBuf, *p_pszBinBuffer, p_nBinBufferSize);
-  memcpy(&tmpBuf[p_nBinBufferSize], m_sAppendBuffer, m_nAppendBufferSize);
+  memcpy(&tmpBuf[p_nBinBufferSize], &m_pCacheObject->m_szBuffer[p_nOffset], m_pCacheObject->m_nBufferSize - p_nOffset);
   
   /* recreate bin content buffer */
   //delete[] p_szBinBuffer;
   
-  cout << "addr: " << &*p_pszBinBuffer << endl;
+  //cout << "addr: " << &*p_pszBinBuffer << endl;
   
   /*if(p_nBinBufferSize == 0)
     *p_pszBinBuffer = (char*)malloc(sizeof(char) * m_nAppendBufferSize);
   else*/
-  *p_pszBinBuffer = (char*)realloc(*p_pszBinBuffer, sizeof(char)*(p_nBinBufferSize + m_nAppendBufferSize));
+  *p_pszBinBuffer = (char*)realloc(*p_pszBinBuffer, sizeof(char)*(p_nBinBufferSize + m_pCacheObject->m_nBufferSize - p_nOffset));
   //p_szBinBuffer = new char[p_nBinBufferSize + m_nAppendBufferSize];
-  memcpy(*p_pszBinBuffer, tmpBuf, p_nBinBufferSize + m_nAppendBufferSize);
+  memcpy(*p_pszBinBuffer, tmpBuf, p_nBinBufferSize + m_pCacheObject->m_nBufferSize - p_nOffset);
   
-cout << "addr: " << &*p_pszBinBuffer << endl;
+//cout << "addr: " << &*p_pszBinBuffer << endl;
   
   /* set the new content length */
   //m_pSessionInfo->m_pHTTPMessage->m_nBinContentLength += m_nAppendBufferSize;
   
   delete[] tmpBuf;
   
-  int nResult = m_nAppendBufferSize;
+  int nResult = m_pCacheObject->m_nBufferSize - p_nOffset;
+  
+  m_pCacheObject->Unlock();
   
   /* reset append buffer and variables */
-  m_nAppendCount = 0;
-  m_nAppendBufferSize  = 0;
-  delete[] m_sAppendBuffer;
-  m_sAppendBuffer = NULL;
+  //m_nAppendCount = 0;
+  //m_nAppendBufferSize  = 0;
+  //delete[] m_sAppendBuffer;
+  //m_sAppendBuffer = NULL;
   
 //   fuppesThreadUnlockMutex(&TranscodeMutex);  
   /* end append */    
@@ -303,10 +318,11 @@ cout << "addr: " << &*p_pszBinBuffer << endl;
   if(!m_bIsTranscoding)
   {
     //m_pSessionInfo->m_pHTTPMessage->m_bIsTranscoding = false;    
+    m_pCacheObject->m_bIsTranscoding = false;
     m_pSessionInfo->m_bIsTranscoding = false;    
   }
    
-  cout << "CTranscodingMgr::Append :: return " << nResult << endl;
+  //cout << "CTranscodingMgr::Append :: return " << nResult << endl;
   return nResult;
 }
 

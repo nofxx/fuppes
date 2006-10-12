@@ -157,7 +157,13 @@ module.source.files=\
 	HTTP/HTTPServer.cpp\
 	HTTP/HTTPServer.h\
 	HTTP/HTTPRequestHandler.cpp\
-	HTTP/HTTPRequestHandler.h
+	HTTP/HTTPRequestHandler.h\
+	Transcoding/TranscodingMgr.cpp\
+	Transcoding/TranscodingMgr.h\
+	HTTP/HTTPParser.cpp\
+	HTTP/HTTPParser.h\
+	Transcoding/TranscodingCache.cpp\
+	Transcoding/TranscodingCache.h
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

@@ -16,6 +16,7 @@ h_sources = \
 	SSDP/SSDPMessage.h\
   SSDP/MSearchSession.h\
   SSDP/NotifyMsgFactory.h\
+  HTTP/HTTPParser.h\
 	HTTP/HTTPMessage.h\
 	HTTP/HTTPServer.h\
   HTTP/HTTPClient.h\
@@ -42,6 +43,7 @@ h_sources = \
   Presentation/Stylesheet.h\
   Transcoding/WrapperBase.h\
   Transcoding/TranscodingMgr.h\
+  Transcoding/TranscodingCache.h\
   Transcoding/LameWrapper.h\
   Transcoding/VorbisWrapper.h\
   Transcoding/MpcWrapper.h\
@@ -62,7 +64,8 @@ cpp_sources = \
 	SSDP/SSDPMessage.cpp\
   SSDP/MSearchSession.cpp\
 	SSDP/NotifyMsgFactory.cpp\
-	HTTP/HTTPMessage.cpp\
+	HTTP/HTTPParser.cpp\
+  HTTP/HTTPMessage.cpp\
 	HTTP/HTTPServer.cpp\
   HTTP/HTTPClient.cpp\
   HTTP/HTTPRequestHandler.cpp\
@@ -89,6 +92,7 @@ cpp_sources = \
   Presentation/Images/header_gradient_png.cpp\
   Presentation/Images/header_gradient_small_png.cpp\
   Transcoding/TranscodingMgr.cpp\
+  Transcoding/TranscodingCache.cpp\
   Transcoding/LameWrapper.cpp\
   Transcoding/VorbisWrapper.cpp\
   Transcoding/MpcWrapper.cpp\

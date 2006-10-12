@@ -183,6 +183,15 @@ std::string ToLower(std::string p_sInput)
   return p_sInput;
 }
 
+std::string ToUpper(std::string p_sInput)
+{
+  for(unsigned int i = 0; i < p_sInput.length(); i++)
+  {
+    p_sInput[i] = toupper(p_sInput[i]);
+  }  
+  return p_sInput;
+}
+
 bool ExtractFolderFromPath(std::string p_sPath, std::string* p_sFolder)
 {
   #ifdef WIN32

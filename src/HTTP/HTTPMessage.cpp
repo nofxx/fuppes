@@ -30,6 +30,7 @@
 #include "../Common.h"
 #include "../SharedLog.h"
 #include "../SharedConfig.h"
+#include "HTTPParser.h"
 
 #include <iostream>
 #include <sstream>
@@ -138,6 +139,10 @@ bool CHTTPMessage::SetMessage(std::string p_sMessage)
   CMessageBase::SetMessage(p_sMessage);  
   CSharedLog::Shared()->DebugLog(LOGNAME, p_sMessage);  
 
+  CHTTPParser* pParser = new CHTTPParser();
+  pParser->Parse(this);
+  delete pParser;
+  
   return BuildFromString(p_sMessage);
 }
 
@@ -270,7 +275,7 @@ std::string CHTTPMessage::GetHeaderAsString()
   if(m_nHTTPMessageType == HTTP_MESSAGE_TYPE_GENA_OK)
   {
     sResult << "SID: uuid:" << m_sGENASubscriptionID << "\r\n";
-    sResult << "Timeout: Second-" << 15 << "\r\n";
+    sResult << "Timeout: Second-" << 180 << "\r\n";
   }
   
  	/* Server */
@@ -653,14 +658,16 @@ fuppesThreadCallback TranscodeLoop(void *arg)
 	  
   CTranscodingMgr* mgr = new CTranscodingMgr();
   mgr->Init(pSession);
-    
-  while(mgr->Transcode() > 0)
+  
+  unsigned int nTranscodeLenght = 0;
+  unsigned int nOffset = 0;
+  while(((nTranscodeLenght = mgr->Transcode()) > 0) && (nOffset < nTranscodeLenght))
   {
     /* append encoded audio to bin content buffer */
     fuppesThreadLockMutex(&TranscodeMutex);
     
     unsigned int nLength = *pSession->m_pnBinContentLength;
-    nLength += mgr->Append(pSession->m_pszBinBuffer, nLength);    
+    nLength += mgr->Append(pSession->m_pszBinBuffer, nLength, nOffset);    
     
     *pSession->m_pnBinContentLength = nLength;
     fuppesThreadUnlockMutex(&TranscodeMutex);
@@ -950,5 +957,3 @@ Content-Length: 0
 }
 
 /* <\PRIVATE> */
-
-

@@ -4,12 +4,19 @@ Version 0.7
   
   * code cleanup
   ** moved transcoding functions from
-     http-message object to transcoding mgr
+     CHTTPMessage object to CTranscodingMgr
   ** moved http message parsing from 
-     http-message object to http parser
+     CHTTPMessage object to CHTTPParser
     
   * minimal functionality to pass the Intel UPnP 1.0 test
   * uses libuuid for real UUIDs under linux/unix
+  * fixed some minor memory leaks
+  
+  * fixed transcoding
+  ** transcoding thread was started on HTTP HEAD request
+  ** implemented transcoding cache
+     parallel request of the same file will
+     not start several transcoding threads
 
 Version 0.5.3 (2006-10-03)  
   * added initial vob support

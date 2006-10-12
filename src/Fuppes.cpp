@@ -362,8 +362,17 @@ bool CFuppes::HandleHTTPRequest(CHTTPMessage* pMessageIn, CHTTPMessage* pMessage
       pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, pItem->GetMimeType());  //HTTP_CONTENT_TYPE_AUDIO_MPEG
       if (!pItem->GetDoTranscode())
         pMessageOut->LoadContentFromFile(pItem->GetFileName());
-      else
+      /* transcode only on GET */
+      else if(pMessageIn->GetMessageType() == HTTP_MESSAGE_TYPE_GET)
+      {
         pMessageOut->TranscodeContentFromFile(pItem->GetFileName());     
+      }
+      else if(pMessageIn->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD)
+      {
+        cout << "head response" << endl;
+        pMessageOut->SetIsChunked(true);
+      }
+      
       stringstream sLog;
       sLog << "sending audio file \"" << pItem->GetName() << "\""; 
       CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str()); 

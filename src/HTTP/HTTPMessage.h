@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -152,7 +152,13 @@ public:
   std::string       GetContent()          { return m_sContent;          }
   unsigned int      GetBinContentLength() { return m_nBinContentLength; }
   char*             GetBinContent()       { return m_pszBinContent;     }
-	bool              IsChunked()           { return m_bIsChunked;        }
+	
+  bool              IsChunked()           { return m_bIsChunked;        }
+  void              SetIsChunked(bool p_bIsChunked) { m_bIsChunked = p_bIsChunked;
+                                                      if(m_bIsChunked)
+                                                        m_bIsBinary = m_bIsChunked;
+                                                    }  
+  
 
   CUPnPAction*      GetAction();
   std::string 		  GetHeaderAsString();		  
