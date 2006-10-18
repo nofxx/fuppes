@@ -65,6 +65,11 @@ using:
 
 win32 binary package comes with:
 
+  pcre3.dll
+  Copyright (c) 2006 University of Cambridge
+  http://pcre.org
+  http://gnuwin32.sourceforge.net/packages/pcre.htm
+
   sqlite3.dll - sqlite-3.3.7
   Copyright (c), http://sqlite.org/
 

@@ -1,18 +1,18 @@
 [Project]
 FileName=fuppes.dev
 Name=fuppes
-UnitCount=89
+UnitCount=93
 Type=1
 Ver=1
 ObjFiles=
-Includes=C:\Programme\msys\1.0\mingw\libmpcdec-1.2.2\include;C:\Programme\msys\1.0\mingw\sqlite-source-3_2_8;C:\src\flac-1.1.2\include
+Includes=C:\src\flac-1.1.2\include;C:\src\sqlite-source-3_3_7;C:\src\libmpcdec-1.2.2\include;C:\src\pcre-6.4-1\include;C:\src\include
 Libs=
 PrivateResource=fuppes_private.rc
 ResourceIncludes=
 MakeIncludes=
 Compiler=
 CppCompiler=
-Linker=../../../Programme/Dev-Cpp/lib/libxml2.a_@@_../../../Programme/Dev-Cpp/lib/libpcre.dll.a_@@_../../../Programme/Dev-Cpp/lib/libwsock32.a_@@_../../../Programme/Dev-Cpp/lib/iconv.lib_@@_../../../Programme/Dev-Cpp/lib/libole32.a_@@_../../../Programme/msys/1.0/mingw/sqlite-source-3_2_8/libsqlite3.a_@@_
+Linker=../../lib/libxml2.a_@@_../../pcre-6.4-1/lib/libpcre.dll.a_@@_../../lib/libwsock32.a_@@_../../lib/iconv.lib_@@_../../lib/libole32.a_@@_../../sqlite-source-3_3_7/libsqlite3.a_@@_
 IsCpp=1
 Icon=fuppes.ico
 ExeOutput=win32
@@ -27,7 +27,7 @@ CustomMakefile=
 IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=0
-CompilerSettings=00000000000001010000c0
+CompilerSettings=00000000000001000000c0
 OverrideOutput=0
 
 [Unit6]
@@ -52,9 +52,9 @@ BuildCmd=
 
 [VersionInfo]
 Major=0
-Minor=5
-Release=3
-Build=25
+Minor=7
+Release=0
+Build=2
 LanguageID=1033
 CharsetID=1252
 CompanyName=
@@ -65,7 +65,7 @@ LegalCopyright=Ulrich Völkel
 LegalTrademarks=
 OriginalFilename=fuppes.exe
 ProductName=Free UPnP Entertainment Service
-ProductVersion=0.5.3
+ProductVersion=0.7
 AutoIncBuildNr=1
 
 [Unit10]
@@ -930,6 +930,46 @@ BuildCmd=
 
 [Unit89]
 FileName=src\Transcoding\TranscodingMgr.h
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit90]
+FileName=src\Transcoding\TranscodingCache.cpp
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit91]
+FileName=src\Transcoding\TranscodingCache.h
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit92]
+FileName=src\HTTP\HTTPParser.h
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit93]
+FileName=src\HTTP\HTTPParser.cpp
 CompileCpp=1
 Folder=fuppes
 Compile=1

@@ -138,7 +138,7 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
           m_nMessageType = SSDP_MESSAGE_TYPE_NOTIFY_BYEBYE;        
       }
     }  
-    /* otherwise check if we have a m-serach response */
+    /* otherwise check if we have a m-search response */
     else
     {
       /* m-search response */
@@ -182,7 +182,7 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
     else if(m_nMessageType == SSDP_MESSAGE_TYPE_M_SEARCH)
     {
       /* MX (required) */
-      RegEx rxMX("MX: +([0-9]*)", PCRE_CASELESS);
+      RegEx rxMX("MX: *([0-9]*)", PCRE_CASELESS);
       if(rxMX.Search(m_sMessage.c_str()))      
         m_nMX = atoi(rxMX.Match(1));
       else
@@ -190,7 +190,7 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
       
       /* ST (required) */
       m_nMSearchST = M_SEARCH_ST_UNSUPPORTED;
-      RegEx rxST("\r\nST: +(.*)\r\n", PCRE_CASELESS);
+      RegEx rxST("\r\nST: *(.*)\r\n", PCRE_CASELESS);
       if(rxST.Search(m_sMessage.c_str()))
       {
         m_sST = ToLower(rxST.Match(1));        
@@ -212,7 +212,7 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
       }
 
       /* MAN (required) */
-      RegEx rxMAN("MAN: +(.*)", PCRE_CASELESS);
+      RegEx rxMAN("MAN: *(.*)", PCRE_CASELESS);
       if(rxMAN.Search(m_sMessage.c_str()))      
         m_sMAN = rxMAN.Match(1);
       else

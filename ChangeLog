@@ -18,6 +18,9 @@ Version 0.7
      parallel request of the same file will
      not start several transcoding threads
 
+  * fixed bug #1504778
+  * win32: updated pcre.dll 5.0 to pcre3.dll 6.4
+
 Version 0.5.3 (2006-10-03)  
   * added initial vob support
   * added wmv support
