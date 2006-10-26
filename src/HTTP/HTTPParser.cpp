@@ -52,8 +52,8 @@ bool CHTTPParser::Parse(CHTTPMessage* pMessage)
     
 
   sType = ToUpper(sType);
-  cout << "TYPE: " << sType << endl;
-  cout << "VERSION: " << nVersion << endl;
+  /*cout << "TYPE: " << sType << endl;
+  cout << "VERSION: " << nVersion << endl;*/
   
   /* GET|HEAD */
   if((sType.compare("GET") == 0) | (sType.compare("HEAD") == 0))

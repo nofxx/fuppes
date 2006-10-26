@@ -420,7 +420,7 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle)
 {     
   #ifdef WIN32  
   bool bResult = false;
-  DWORD nErrNo = WaitForSingleObject(p_ThreadHandle, 50);
+  DWORD nErrNo = WaitForSingleObject(p_ThreadHandle, 500);
   switch(nErrNo)
   {
     case WAIT_ABANDONED:

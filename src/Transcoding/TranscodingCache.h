@@ -26,6 +26,21 @@
 #define _TRANSCODINGCACHE_H
 
 #include "../Common.h"
+#include "LameWrapper.h"
+#include "WrapperBase.h"
+#include <map>
+
+
+class CTranscodeSessionInfo
+{
+  public:
+    //CHTTPMessage* m_pHTTPMessage;
+    bool        m_bBreakTranscoding;
+    bool        m_bIsTranscoding;  
+    std::string m_sFileName;
+    unsigned int* m_pnBinContentLength;
+    char**        m_pszBinBuffer;
+};
 
 class CTranscodingCacheObject
 {
@@ -33,8 +48,10 @@ class CTranscodingCacheObject
     CTranscodingCacheObject();
     ~CTranscodingCacheObject();
   
-    void Retain();
-    void Release();
+    bool Init(CTranscodeSessionInfo* pSessionInfo);
+  
+    //void Retain();
+    //void Release();
   
     bool IsReleased();
   
@@ -47,11 +64,29 @@ class CTranscodingCacheObject
     unsigned int m_nBufferSize;
   
     bool m_bIsTranscoding;
+    bool m_bBreakTranscoding;
     void* m_pTranscodingMgr;
   
-  private:
+    bool  m_bIsComplete;
+  
+    unsigned int Transcode();
+    int Append(char** p_pszBinBuffer, unsigned int p_nBinBufferSize);
+  
+  //private:
     unsigned int m_nRefCount;
     fuppesThreadMutex  m_Mutex;
+    
+    CLameWrapper* m_pLameWrapper;
+    CDecoderBase* m_pDecoder;    
+    
+    CTranscodeSessionInfo* m_pSessionInfo;
+    
+    int nBufferLength;  
+    short int* pcmout;
+    
+//  private:
+    std::string m_sFileName;
+    fuppesThread m_TranscodeThread;
 };
 
 class CTranscodingCache
@@ -74,6 +109,10 @@ class CTranscodingCache
   
   private:
     fuppesThreadMutex  m_Mutex;
+  
+    std::map<std::string, CTranscodingCacheObject*>           m_CachedObjects;
+    std::map<std::string, CTranscodingCacheObject*>::iterator m_CachedObjectsIterator;  
+  
   
 };
 

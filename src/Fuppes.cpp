@@ -369,7 +369,7 @@ bool CFuppes::HandleHTTPRequest(CHTTPMessage* pMessageIn, CHTTPMessage* pMessage
       }
       else if(pMessageIn->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD)
       {
-        cout << "head response" << endl;
+        //cout << "head response" << endl;
         pMessageOut->SetIsChunked(true);
       }
       

@@ -598,8 +598,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       p_Response->SetRangeEnd(p_Response->GetBinContentLength());
   
     
-     cout << p_Request->GetHeader() << endl;
-    fflush(stdout);
+    /* cout << p_Request->GetHeader() << endl;
+    fflush(stdout);*/
     
     
   
@@ -612,20 +612,20 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     /* send header if it is a HEAD rsponse and return */        
     if((nErr != -1) && (p_Request->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD))
     {
-      cout << "send head response" << endl;
+      //cout << "send head response" << endl;
       #ifdef WIN32
       nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), 0);             
       #else
       nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), MSG_NOSIGNAL);
       #endif
     
-      if(nErr == -1)
-        cout << "[ERROR] send header" << endl;
+      /*if(nErr == -1)
+        cout << "[ERROR] send header" << endl;*/
       
       return true;
     }
    
-    cout << "send get response" << endl;
+    //cout << "send get response" << endl;
     //cout << p_Response->GetHeaderAsString() << endl;
     
     
@@ -648,15 +648,15 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       /* send HTTP header when the first package is ready */
       if(nCnt == 0)
       {
-        cout << "send transcoding header" << endl;
+        //cout << "send transcoding header" << endl;
         #ifdef WIN32
         nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), 0);             
         #else
         nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), MSG_NOSIGNAL);
         #endif        
         
-        if(nErr == -1)
-          cout << "[ERROR] send header" << endl;
+        /*if(nErr == -1)
+          cout << "[ERROR] send header" << endl;*/
       }
       
       
@@ -710,11 +710,9 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
         
         //fflush(stdout); 
         
-        if (p_Response->IsTranscoding())
-        {          
+        if (p_Response->IsTranscoding())        
           p_Response->BreakTranscoding();
-          fuppesSleep(500); /* wait for the transcoding thread to end */
-        }
+        
         break; 
       }                         
   

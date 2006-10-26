@@ -41,38 +41,38 @@ CUPnPObjectFactory::CUPnPObjectFactory(std::string p_sHTTPServerURL)
 
 CUPnPObject* CUPnPObjectFactory::CreateObjectFromId(std::string p_sObjectID)
 {
-  CUPnPObject* pResult  = NULL;  
-  CContentDatabase* pDB = new CContentDatabase();   
+  CUPnPObject* pResult  = NULL;    
   unsigned int nObjID   = HexToInt(p_sObjectID);
   bool bIsAudio = false;
   
   stringstream sSQL;
   sSQL << "select PARENT_ID, TYPE, PATH, FILE_NAME, MD5, MIME_TYPE, DETAILS from OBJECTS where ID = " << nObjID;
-  pDB->Select(sSQL.str());
-  if(!pDB->Eof())
+  CContentDatabase::Shared()->Lock();
+  CContentDatabase::Shared()->Select(sSQL.str());
+  if(!CContentDatabase::Shared()->Eof())
   {
     
-    if(pDB->GetResult()->GetValue("TYPE").compare("100") == 0)
+    if(CContentDatabase::Shared()->GetResult()->GetValue("TYPE").compare("100") == 0)
     {
-      pResult = new CImageItem(m_sHTTPServerURL, pDB->GetResult()->GetValue("MIME_TYPE"));      
+      pResult = new CImageItem(m_sHTTPServerURL, CContentDatabase::Shared()->GetResult()->GetValue("MIME_TYPE"));      
     }
-    else if(pDB->GetResult()->GetValue("TYPE").compare("200") == 0)
+    else if(CContentDatabase::Shared()->GetResult()->GetValue("TYPE").compare("200") == 0)
     {
-      pResult  = new CAudioItem(m_sHTTPServerURL, pDB->GetResult()->GetValue("MIME_TYPE"));
+      pResult  = new CAudioItem(m_sHTTPServerURL, CContentDatabase::Shared()->GetResult()->GetValue("MIME_TYPE"));
       bIsAudio = true;
     }
-    else if(pDB->GetResult()->GetValue("TYPE").compare("300") == 0)
+    else if(CContentDatabase::Shared()->GetResult()->GetValue("TYPE").compare("300") == 0)
     {
-      pResult = new CVideoItem(m_sHTTPServerURL, pDB->GetResult()->GetValue("MIME_TYPE"));
+      pResult = new CVideoItem(m_sHTTPServerURL, CContentDatabase::Shared()->GetResult()->GetValue("MIME_TYPE"));
     }
     
     pResult->SetObjectID(p_sObjectID);    
     //pTmpItem->SetParent(pParentFolder);     
-    pResult->SetFileName(pDB->GetResult()->GetValue("PATH"));
+    pResult->SetFileName(CContentDatabase::Shared()->GetResult()->GetValue("PATH"));
 
     /* set object name */
     stringstream sName;
-    sName << TruncateFileExt(pDB->GetResult()->GetValue("FILE_NAME"));
+    sName << TruncateFileExt(CContentDatabase::Shared()->GetResult()->GetValue("FILE_NAME"));
     
     if(bIsAudio && (((CAudioItem*)pResult)->SetupTranscoding()))
     {      
@@ -99,6 +99,7 @@ CUPnPObject* CUPnPObjectFactory::CreateObjectFromId(std::string p_sObjectID)
     pResult->SetName(sName.str());    
   }
   
-  delete pDB;
+  CContentDatabase::Shared()->ClearResult();  
+  CContentDatabase::Shared()->Unlock();
   return pResult;
 }

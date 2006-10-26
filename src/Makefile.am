@@ -42,7 +42,6 @@ h_sources = \
   Presentation/PresentationHandler.h\
   Presentation/Stylesheet.h\
   Transcoding/WrapperBase.h\
-  Transcoding/TranscodingMgr.h\
   Transcoding/TranscodingCache.h\
   Transcoding/LameWrapper.h\
   Transcoding/VorbisWrapper.h\
@@ -91,7 +90,6 @@ cpp_sources = \
   Presentation/Images/fuppes_small_png.cpp\
   Presentation/Images/header_gradient_png.cpp\
   Presentation/Images/header_gradient_small_png.cpp\
-  Transcoding/TranscodingMgr.cpp\
   Transcoding/TranscodingCache.cpp\
   Transcoding/LameWrapper.cpp\
   Transcoding/VorbisWrapper.cpp\

@@ -32,7 +32,7 @@
 #include "../MessageBase.h"
 #include "../ContentDirectory/UPnPItem.h"
 #include "../UPnPAction.h"
-#include "../Transcoding/TranscodingMgr.h"
+#include "../Transcoding/TranscodingCache.h"
 #include <string>
 #include <iostream>
 #include <fstream>

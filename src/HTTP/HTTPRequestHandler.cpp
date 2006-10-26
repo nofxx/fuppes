@@ -48,8 +48,8 @@ bool CHTTPRequestHandler::HandleRequest(CHTTPMessage* pRequest, CHTTPMessage* pR
       return this->HandleHTTPRequest(pRequest, pResponse);
       
     /* GENA */
-    case HTTP_MESSAGE_TYPE_SUBSCRIBE:
-      return this->HandleGENAMessage(pRequest, pResponse);
+    /*case HTTP_MESSAGE_TYPE_SUBSCRIBE:
+      return this->HandleGENAMessage(pRequest, pResponse);*/
     
     default :
       return false;    
