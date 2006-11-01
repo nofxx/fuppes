@@ -101,18 +101,20 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
   {  
     /* select decoder */
     std::string sExt = ToLower(ExtractFileExt(m_sFileName));  
-    if(sExt.compare("ogg") == 0)  
-      #ifndef DISABLE_VORBIS
+    #ifndef DISABLE_VORBIS
+    if(sExt.compare("ogg") == 0)        
       m_pDecoder = new CVorbisDecoder();
-      #endif  
-    else if(sExt.compare("mpc") == 0)  
-      #ifndef DISABLE_MUSEPACK
+    #endif  
+    
+    #ifndef DISABLE_MUSEPACK
+    if(sExt.compare("mpc") == 0)      
       m_pDecoder = new CMpcDecoder();
-      #endif 
-    else if(sExt.compare("flac") == 0)
-      #ifndef DISABLE_FLAC    
+    #endif 
+    
+    #ifndef DISABLE_FLAC    
+    if(sExt.compare("flac") == 0)    
       m_pDecoder = new CFLACDecoder();   
-      #endif  
+    #endif  
     
     if(!m_pDecoder || !m_pDecoder->LoadLib() || !m_pDecoder->OpenFile(m_pSessionInfo->m_sFileName))
     {

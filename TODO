@@ -62,3 +62,6 @@
 
 * presentation
 ** handle application/x-www-form-urlencoded althoug text/plain is requested
+
+* spoken error messages
+  e.g. "error initializing LAME encoder"
