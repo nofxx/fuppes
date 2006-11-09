@@ -354,7 +354,7 @@ bool CFuppes::HandleHTTPRequest(CHTTPMessage* pMessageIn, CHTTPMessage* pMessage
   /* AudioItem */
   else if((strRequest.length() > 24) && (strRequest.substr(0, 24).compare("/MediaServer/AudioItems/") == 0))
   {
-    string sItemObjId = pMessageIn->GetRequest().substr(24, pMessageIn->GetRequest().length());
+    string sItemObjId = TruncateFileExt(pMessageIn->GetRequest().substr(24, pMessageIn->GetRequest().length()));
     CAudioItem* pItem = (CAudioItem*)m_pContentDirectory->GetItemFromObjectID(sItemObjId);
 
     if(pItem && FileExists(pItem->GetFileName()))

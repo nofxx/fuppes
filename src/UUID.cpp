@@ -27,7 +27,16 @@
 #ifdef WIN32
 #include <objbase.h> /* for CoCreateGuid() */
 #else
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#else
+#undef HAVE_UUID_UUID_H
+#endif
+
+#ifdef HAVE_UUID_UUID_H
 #include <uuid/uuid.h>
+#endif
 #endif
 
 #ifndef WC_NO_BEST_FIT_CHARS
@@ -63,6 +72,9 @@ std::string GenerateUUID()
   sResult << sTmp.substr(1, sTmp.length() - 2);
 
   #else  
+  
+  
+  #ifdef HAVE_UUID_UUID_H
   uuid_t uuid;
   char*  szUUID = new char[64];
   
@@ -71,6 +83,22 @@ std::string GenerateUUID()
   
   sResult << szUUID; 
   delete[] szUUID;
+  #else
+  
+  srand(time(0));
+
+  int nRandom;
+  stringstream sRandom;
+
+  do {
+    nRandom = (rand() % 10000) + 1;
+    sRandom << nRandom;
+  } while (sRandom.str().length() < 8);
+
+  sResult << sRandom.str().substr(0, 8) << "-aabb-dead-beef-1234eeff0000";  
+  
+  #endif // HAVE_UUID_UUID_H
+  
   #endif
   
   return sResult.str();

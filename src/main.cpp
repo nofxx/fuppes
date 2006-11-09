@@ -298,7 +298,7 @@ int main(int argc, char* argv[])
       else if (input == "r")
       {
         CSharedConfig::Shared()->Refresh();
-        pFuppes->GetContentDirectory()->BuildDB();
+        CContentDatabase::Shared()->BuildDB();
       }
       else if (input == "c")
         CSharedConfig::Shared()->Refresh();

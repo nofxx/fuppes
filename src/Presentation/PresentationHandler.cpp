@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -117,8 +117,8 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html?rebuild=db") == 0)
   {
     CSharedConfig::Shared()->Refresh();
-    if(!CSharedConfig::Shared()->GetFuppesInstance(0)->GetContentDirectory()->GetIsRebuilding())
-      CSharedConfig::Shared()->GetFuppesInstance(0)->GetContentDirectory()->BuildDB();
+    if(!CContentDatabase::Shared()->IsRebuilding())
+      CContentDatabase::Shared()->BuildDB();
     
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "send options.html");
     nPresentationPage = PRESENTATION_PAGE_OPTIONS;
@@ -394,7 +394,7 @@ std::string CPresentationHandler::GetOptionsHTML(std::string p_sImgPath)
 
   //((CFuppes*)m_vFuppesInstances[0])->GetContentDirectory()->BuildDB();
   sResult << "<h1>database options</h1>" << endl;
-  if(!CSharedConfig::Shared()->GetFuppesInstance(0)->GetContentDirectory()->GetIsRebuilding())  
+  if(!CContentDatabase::Shared()->IsRebuilding())  
     sResult << "<a href=\"/presentation/options.html?rebuild=db\">rebuild database</a>" << endl;
   else
     sResult << "database rebuild in progress" << endl;
@@ -489,6 +489,12 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
       CSharedConfig::Shared()->AddSharedDirectory(pRequest->GetPostVar("new_dir"));
     }
     
+    /* playlist_representation */
+    if(pRequest->PostVarExists("playlist_representation"))
+    {
+      cout << "TODO: CPresentationHandler::GetConfigHTML() :: playlist_representation" << endl;
+    }
+    
     /* max_file_name_length */
     if(pRequest->PostVarExists("max_file_name_length") && (pRequest->GetPostVar("max_file_name_length").length() > 0))
     {
@@ -556,10 +562,20 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
   
   // "add new form" controls
   sResult << "<p>" <<  
-               "<input name=\"new_dir\" />" << endl <<
+               "Add directory: <input name=\"new_dir\" />" << endl <<
                "<br />" << endl <<
                "<input type=\"submit\" />" << endl <<             
              "</p>" << endl;  
+  
+  // playlist representation
+  sResult << "<h2>playlist representation</h2>" << endl;
+  sResult << "<p>Choose how playlist items are represented. <br />\"file\" sends playlists as real playlist files (m3u or pls)<br />" <<
+             "\"container\" represents playlists as containers including the playlist items.<br />" << endl <<             
+             "<input type=\"radio\" name=\"playlist_representation\" value=\"file\"> file<br />" << endl <<
+             "<input type=\"radio\" name=\"playlist_representation\" value=\"container\"> container<br />" << endl <<
+             "<input type=\"submit\" />" << endl <<             
+             "</p>" << endl; 
+  
   
   // max filename length
   sResult << "<h2>max file name length</h2>" << endl;

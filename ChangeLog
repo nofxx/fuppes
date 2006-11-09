@@ -1,24 +1,30 @@
 Version 0.7
-  * processes UPnP events
-  ** list events
+  * added support for playlists (m3u, pls)
+    new configuration option: "playlist representation"
+  ** "file": playlists are send as playlist files
+  ** "container": playlists are shown as playlist containers
   
-  * code cleanup
-  ** moved transcoding functions from
-     CHTTPMessage object to CTranscodingMgr
-  ** moved http message parsing from 
-     CHTTPMessage object to CHTTPParser
-    
-  * minimal functionality to pass the Intel UPnP 1.0 test
-  * uses libuuid for real UUIDs under linux/unix
-  * fixed some minor memory leaks
+  * initial support for UPnP Eventing
   
   * fixed transcoding
   ** transcoding thread was started on HTTP HEAD request
   ** implemented transcoding cache
      parallel request of the same file will
      not start several transcoding threads
+  ** speed up memory reallocation
+
+  * code cleanup
+  ** moved transcoding functions from
+     CHTTPMessage object to CTranscodingCache
+  ** begun moving http message parsing from 
+     CHTTPMessage object to CHTTPParser
+
+  * uses libuuid for real UUIDs under linux/unix if available
+  * fixed some minor memory leaks
 
   * fixed bug #1504778
+  ** by mistake fuppes expected a blank in the SSDP-Messages where none is needed
+  ** it now correctly shows up on Win XP
   * win32: updated pcre.dll 5.0 to pcre3.dll 6.4
 
 Version 0.5.3 (2006-10-03)  

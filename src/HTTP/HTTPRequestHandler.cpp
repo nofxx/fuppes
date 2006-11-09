@@ -23,6 +23,7 @@
 
 #include "HTTPRequestHandler.h"
 #include "../Presentation/PresentationHandler.h"
+#include "../ContentDirectory/PlaylistFactory.h"
 #include "../UUID.h"
 
 #include <iostream>
@@ -58,8 +59,8 @@ bool CHTTPRequestHandler::HandleRequest(CHTTPMessage* pRequest, CHTTPMessage* pR
 
 bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {
-  /*cout << "CHTTPRequestHandler::HandleHTTPRequest()" << endl;  
-  cout << "Request: " << pRequest->GetRequest() << endl;*/
+  /*cout << "CHTTPRequestHandler::HandleHTTPRequest()" << endl;  */
+  cout << "Request: " << pRequest->GetRequest() << endl;
   
   pResponse->SetVersion(pRequest->GetVersion());
   
@@ -78,6 +79,19 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
   }
   
   
+  /* Playlist-Item */
+  if((sRequest.length() > 23) && (sRequest.substr(0, 23).compare("/MediaServer/Playlists/") == 0))
+  {
+    cout << "CHTTPRequestHandler::HandleHTTPRequest :: PLAYLIST REQUEST" << endl;
+    string sItemObjId = sRequest.substr(23, sRequest.length());    
+    cout << "OBJ ID; " << sItemObjId << endl;
+    CPlaylistFactory* pFact = new CPlaylistFactory();    
+    string sPlaylist = pFact->BuildPlaylist(sItemObjId);
+    pResponse->SetContent(sPlaylist);    
+    pResponse->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
+    delete pFact;
+    return true;
+  }  
   
   return false;
 }

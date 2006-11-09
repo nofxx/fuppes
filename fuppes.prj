@@ -103,7 +103,6 @@ module.source.files=\
 	UPnPBase.h\
 	SharedLog.cpp\
 	SharedLog.h\
-	RegEx.h\
 	Presentation/Stylesheet.h\
 	UUID.cpp\
 	UUID.h\
@@ -132,8 +131,6 @@ module.source.files=\
 	UPnPActions/UPnPBrowse.cpp\
 	ContentDirectory/UPnPObjectFactory.cpp\
 	ContentDirectory/UPnPObjectFactory.h\
-	md5.c\
-	md5.h\
 	ConnectionManager/ConnectionManager.cpp\
 	ConnectionManager/ConnectionManager.h\
 	ContentDirectory/ContentDirectoryDescription.cpp\
@@ -158,8 +155,6 @@ module.source.files=\
 	HTTP/HTTPServer.h\
 	HTTP/HTTPRequestHandler.cpp\
 	HTTP/HTTPRequestHandler.h\
-	Transcoding/TranscodingMgr.cpp\
-	Transcoding/TranscodingMgr.h\
 	HTTP/HTTPParser.cpp\
 	HTTP/HTTPParser.h\
 	Transcoding/TranscodingCache.cpp\

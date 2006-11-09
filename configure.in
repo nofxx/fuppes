@@ -6,13 +6,13 @@ AC_INIT(configure.in)
 
 #release versioning
 GENERIC_MAJOR_VERSION=0
-GENERIC_MINOR_VERSION=7
-#GENERIC_MICRO_VERSION=3
-#GENERIC_VERSION=$GENERIC_MAJOR_VERSION.$GENERIC_MINOR_VERSION.$GENERIC_MICRO_VERSION
-GENERIC_VERSION=$GENERIC_MAJOR_VERSION.$GENERIC_MINOR_VERSION
+GENERIC_MINOR_VERSION=5
+GENERIC_MICRO_VERSION=4a
+GENERIC_VERSION=$GENERIC_MAJOR_VERSION.$GENERIC_MINOR_VERSION.$GENERIC_MICRO_VERSION
+#GENERIC_VERSION=$GENERIC_MAJOR_VERSION.$GENERIC_MINOR_VERSION
 AC_SUBST(GENERIC_MAJOR_VERSION)
 AC_SUBST(GENERIC_MINOR_VERSION)
-#AC_SUBST(GENERIC_MICRO_VERSION)
+AC_SUBST(GENERIC_MICRO_VERSION)
 AC_SUBST(GENERIC_VERSION)
 
 VERSION=$GENERIC_VERSION
@@ -199,7 +199,7 @@ AM_CONDITIONAL(DISABLE_TRANSCODING, test x$ENABLE_TRANSCODING = xfalse)
 dnl Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h netinet/in.h string.h sys/ioctl.h sys/param.h sys/socket.h unistd.h sys/utsname.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h netinet/in.h string.h sys/ioctl.h sys/param.h sys/socket.h unistd.h sys/utsname.h uuid/uuid.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 
@@ -251,6 +251,8 @@ if test "x$have_lame" = "xyes"; then
     else
       echo "    flac  : no"      
     fi
+    
+    echo ""
   fi
   
 else

@@ -88,8 +88,11 @@ const std::string MIME_TYPE_IMAGE_GIF  = "image/gif";
 const std::string MIME_TYPE_VIDEO_X_MSVIDEO = "video/x-msvideo";
 const std::string MIME_TYPE_VIDEO_MPEG      = "video/mpeg";
 const std::string MIME_TYPE_VIDEO_X_MS_WMV  = "video/x-ms-wmv";
-
 const std::string MIME_TYPE_VIDEOS_X_MS_VOB = "video/x-ms-vob";
+
+/* playlist types */
+const std::string MIME_TYPE_AUDIO_X_SCPLS   = "audio/x-scpls"; // .pls
+const std::string MIME_TYPE_AUDIO_X_MPGEURL = "audio/x-mpegurl"; // .m3u
 
 /* TODO */
 
@@ -102,6 +105,7 @@ bool IsFile(std::string p_sFileName);
 bool DirectoryExists(std::string p_sDirName);
 bool IsDirectory(std::string p_sDirName);
 std::string ExtractFileExt(std::string p_sFileName);
+std::string ExtractFilePath(std::string p_sFileName);
 std::string TruncateFileExt(std::string p_sFileName);
 bool ExtractFolderFromPath(std::string p_sPath, std::string* p_sFolder);
 std::string TrimFileName(std::string p_sFileName, unsigned int p_nMaxLength);

@@ -132,9 +132,10 @@ CSharedConfig::CSharedConfig()
   m_bTranscodeFlac     = true;
   
   /* display settings */
-  m_DisplaySettings.bShowTranscodingTypeInItemNames = true;
-  
+  m_DisplaySettings.bShowTranscodingTypeInItemNames = true;  
   m_DisplaySettings.bShowDirNamesInFirstLevel = true;
+  
+  m_DisplaySettings.bShowPlaylistsAsContainers = false;
 }
 
 CSharedConfig::~CSharedConfig()
@@ -237,7 +238,7 @@ string CSharedConfig::GetAppFullname()
 
 string CSharedConfig::GetAppVersion()
 {
-	return "0.5.4a";
+	return "0.7a";
 }
 
 string CSharedConfig::GetHostname()
@@ -470,6 +471,8 @@ bool CSharedConfig::IsSupportedFileExtension(std::string p_sFileExtension)
     - bei Bedarf '.' abschneiden
     - extensions + transcoding [ja|nein] aus der config lesen  */
   
+  p_sFileExtension = ToLower(p_sFileExtension);
+  
   /* Audio */
   if((ToLower(p_sFileExtension).compare("mp3") == 0))
     return true;
@@ -503,6 +506,11 @@ bool CSharedConfig::IsSupportedFileExtension(std::string p_sFileExtension)
     return true;
   /*else if((ToLower(p_sFileExtension).compare("rm") == 0))
     return true;*/
+  
+  /* Playlists */
+  else if((p_sFileExtension.compare("m3u") == 0) || (p_sFileExtension.compare("pls") == 0))
+    return true;
+  
   else
     return false;
 }

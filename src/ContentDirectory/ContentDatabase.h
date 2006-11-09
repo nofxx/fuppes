@@ -50,7 +50,10 @@ typedef enum tagOBJECT_TYPE
   CONTAINER_PERSON = 4,
     CONTAINER_PERSON_MUSIC_ARTIST = 400,
   
-  CONTAINER_PLAYLIST_CONTAINER = 5,
+  /* "object.container.playlistContainer" and "object.item.playlistItem”
+     have the same OBJECT_TYPE in the database though the type of representation
+     is selected from the configuration at runtime */
+  CONTAINER_PLAYLIST_CONTAINER = 5,  
   
   CONTAINER_ALBUM = 6,
   
@@ -88,7 +91,7 @@ class CContentDatabase
 
     bool Init(bool* p_bIsNewDB);
   
-    long long int Insert(std::string p_sStatement);
+    unsigned int Insert(std::string p_sStatement);
     bool Select(std::string p_sStatement);
   
     bool Eof();
@@ -103,7 +106,18 @@ class CContentDatabase
     void Lock();
     void Unlock();
   
+    void BuildDB();
+    bool IsRebuilding() { return m_bIsRebuilding; };
+  
   private:    
+    void DbScanDir(std::string p_sDirectory, long long int p_nParentId);
+    void BuildPlaylists();
+    void ParsePlaylist(CSelectResult* pResult);
+    void ParseM3UPlaylist(CSelectResult* pResult);
+    void ParsePLSPlaylist(CSelectResult* pResult);
+  
+    bool m_bIsRebuilding;
+  
     static CContentDatabase* m_Instance;
     fuppesThreadMutex        m_Mutex;
     sqlite3*                 m_pDbHandle;  

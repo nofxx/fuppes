@@ -49,6 +49,7 @@ struct DisplaySettings
 {
   bool bShowTranscodingTypeInItemNames;
   bool bShowDirNamesInFirstLevel;
+  bool bShowPlaylistsAsContainers;
 };
 
 /*===============================================================================

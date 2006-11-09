@@ -35,6 +35,7 @@ h_sources = \
   ContentDirectory/ImageItem.h\
   ContentDirectory/VideoItem.h\
   ContentDirectory/FileDetails.h\
+  ContentDirectory/PlaylistFactory.h\
   ContentDirectory/UPnPObjectFactory.h\
   ContentDirectory/ContentDatabase.h\
   ContentDirectory/ContentDirectory.h\
@@ -80,6 +81,7 @@ cpp_sources = \
   ContentDirectory/ImageItem.cpp\
   ContentDirectory/VideoItem.cpp\
   ContentDirectory/FileDetails.cpp\
+  ContentDirectory/PlaylistFactory.cpp\
   ContentDirectory/UPnPObjectFactory.cpp\
   ContentDirectory/ContentDatabase.cpp\
 	ContentDirectory/ContentDirectory.cpp\

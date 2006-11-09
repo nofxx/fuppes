@@ -167,9 +167,22 @@ std::string ExtractFileExt(std::string p_sFileName)
   return sResult;
 }
 
+std::string ExtractFilePath(std::string p_sFileName)
+{
+  p_sFileName = p_sFileName.substr(0, p_sFileName.length() - ExtractFileExt(p_sFileName).length());
+  while((p_sFileName.length() > 0) && (p_sFileName.substr(p_sFileName.length() - 1, 1).compare(upnpPathDelim) != 0))
+  {
+    p_sFileName = p_sFileName.substr(0, p_sFileName.length() -1);    
+  }
+  return p_sFileName;
+}
+
 std::string TruncateFileExt(std::string p_sFileName)
 {
   std::string sExt = ExtractFileExt(p_sFileName);
+  if(sExt.length() == 0)
+    return p_sFileName;
+  
   std::string sResult = p_sFileName.substr(0, p_sFileName.length() - sExt.length() - 1);
   return sResult;
 }

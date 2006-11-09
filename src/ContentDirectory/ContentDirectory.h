@@ -87,19 +87,12 @@ public:
    */
   CUPnPObject* GetItemFromObjectID(std::string p_sObjectID);
 
-
-    
-  void BuildDB();
-  bool GetIsRebuilding() { return m_bIsRebuilding; }
   
 /* <\PUBLIC> */
 
 /* <PRIVATE> */
 
   private:
-    bool  m_bIsRebuilding;
-
-
     /*std::map<std::string, CUPnPObject*>           m_ObjectList;
     std::map<std::string, CUPnPObject*>::iterator m_ListIterator;
     CUPnPContainer*                               m_pBaseFolder;    */
@@ -133,14 +126,13 @@ public:
     void BuildDescription(xmlTextWriterPtr pWriter,
                           CSelectResult* pSQLResult,
                           CUPnPBrowse*  pUPnPBrowse,
-                          std::string p_sParentId,
-                          std::string p_sChildCount);
+                          std::string p_sParentId);
   
     void BuildContainerDescription(xmlTextWriterPtr pWriter,
                                    CSelectResult* pSQLResult,
                                    CUPnPBrowse*  pUPnPBrowse,
                                    std::string p_sParentId,
-                                   std::string p_sChildCount);
+                                   OBJECT_TYPE p_nContainerType);
     void BuildItemDescription(xmlTextWriterPtr pWriter,
                               CSelectResult* pSQLResult,
                               CUPnPBrowse*  pUPnPBrowse,
@@ -159,6 +151,10 @@ public:
                                    CUPnPBrowse*  pUPnPBrowse,
                                    std::string p_sObjectID); 
     void BuildVideoItemVideoBroadcastDescription(xmlTextWriterPtr pWriter,
+                                   CSelectResult* pSQLResult,
+                                   CUPnPBrowse*  pUPnPBrowse,
+                                   std::string p_sObjectID);   
+    void BuildPlaylistItemDescription(xmlTextWriterPtr pWriter,
                                    CSelectResult* pSQLResult,
                                    CUPnPBrowse*  pUPnPBrowse,
                                    std::string p_sObjectID);                                    

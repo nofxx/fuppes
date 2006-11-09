@@ -74,6 +74,9 @@ OBJECT_TYPE CFileDetails::GetObjectType(std::string p_sFileName)
   else if((sExt.compare("vob") == 0))
     return ITEM_VIDEO_ITEM_MOVIE; 
   
+  else if((sExt.compare("m3u") == 0) || (sExt.compare("pls") == 0))
+    return CONTAINER_PLAYLIST_CONTAINER;
+  
   /*else if((sExt.compare("rm") == 0))
     return ITEM_VIDEO_ITEM_MOVIE;*/
   

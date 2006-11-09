@@ -298,7 +298,7 @@ fuppesThreadCallback SessionLoop(void *arg)
     if(CSharedConfig::Shared()->IsAllowedIP(sIP))
     {    
       /* build response */    
-      bResult = false; //pHandler->HandleRequest(pRequest, pResponse);      
+      bResult = pHandler->HandleRequest(pRequest, pResponse);      
       if(!bResult)
         bResult = pSession->GetHTTPServer()->CallOnReceive(pRequest, pResponse);  	
       if(!bResult)
