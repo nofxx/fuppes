@@ -69,6 +69,7 @@ static int SelectCallback(void *pDatabase, int argc, char **argv, char **azColNa
 
 
 unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName);
+unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL);
 
 CContentDatabase* CContentDatabase::m_Instance = 0;
 
@@ -559,7 +560,7 @@ unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
           delete[] szBuf;
           
           CContentDatabase* pDB = new CContentDatabase();          
-          long long int nRowId = pDB->Insert(sSql.str());
+          unsigned int nRowId = pDB->Insert(sSql.str());
           delete pDB;
           
           if(nRowId == -1)
@@ -572,6 +573,25 @@ unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
           //DbScanDir(sTmp.str(), nRowId);          
 }
 
+unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL)
+{
+  stringstream sSql;
+  sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME, MD5, MIME_TYPE, DETAILS) values ";
+  sSql << "(" << ITEM_VIDEO_ITEM_VIDEO_BROADCAST << ", ";
+  sSql << p_nParentId << ", ";
+  sSql << "'" << SQLEscape(p_sURL) << "', ";
+  sSql << "'" << p_sURL << "', ";
+  //sSql << "'" << MD5Sum(sTmp.str()) << "', ";
+  sSql << "'" << "todo" << "', ";
+  sSql << "'" << "video/x-ms-asf" << "', ";
+  sSql << "'" << "details - todo" << "');";
+  
+  
+  CContentDatabase* pDB = new CContentDatabase();          
+  unsigned int nRowId = pDB->Insert(sSql.str());
+  delete pDB;
+  return nRowId;
+}
 
 void CContentDatabase::BuildPlaylists()
 {
@@ -687,8 +707,7 @@ void CContentDatabase::ParsePLSPlaylist(CSelectResult* pResult)
   if(!rxNumber.Search(sContent.c_str()))
     return;
   
-  int nEntryCount = atoi(rxNumber.Match(1));
-  cout << "PLS - COUNT: " << nEntryCount << endl;
+  int nEntryCount = atoi(rxNumber.Match(1));  
   for(int i = 0; i < nEntryCount; i++)
   {
     stringstream sExpr;
@@ -698,54 +717,57 @@ void CContentDatabase::ParsePLSPlaylist(CSelectResult* pResult)
       continue;
     
     string sFileName = rxFile.Match(1);
-    cout << "FILE: " << rxFile.Match(1) << endl;
+    //cout << "FILE: " << rxFile.Match(1) << endl;
     if(sFileName.length() == 0)
       continue;
         
     // relative or absolute file name 
-    bool bIsLocalFile = true;    
+    bool bIsLocalFile = true;
+    unsigned int nObjectID = 0;
+    unsigned int nPlaylistID = atoi(pResult->GetValue("ID").c_str());
+    
     if(sFileName.substr(0, 1).compare(upnpPathDelim) == 0)
     {
-      cout << "absolute" << endl;
+      //cout << "absolute" << endl;
       bIsLocalFile = true;
     }
     else
     {
-      cout << "relative or url" << endl;
+      //cout << "relative or url" << endl;
       RegEx rxUrl("\\w+://", PCRE_CASELESS);
       if(rxUrl.Search(sFileName.c_str()))
       {
         cout << "URL" << endl;
-        bIsLocalFile = false;
+        bIsLocalFile = false;        
+        nObjectID = InsertURL(nPlaylistID, sFileName);        
       }
       else
       {
         bIsLocalFile = true;
-        cout << "relative" << endl;
+        //cout << "relative" << endl;
         
         sFileName = ExtractFilePath(pResult->GetValue("PATH")) + sFileName;
-        cout << sFileName << endl;
-        
+        cout << sFileName << endl;        
       }
     
     }
     
     if(bIsLocalFile && FileExists(sFileName))
     {
-      unsigned int nObjectID   = GetObjectIDFromFileName(sFileName);
-      unsigned int nPlaylistID = atoi(pResult->GetValue("ID").c_str());
+      nObjectID = GetObjectIDFromFileName(sFileName);      
       if(nObjectID == 0)
       {
-        cout << "file does not exist in db" << endl;        
+        //cout << "file does not exist in db" << endl;        
         nObjectID = InsertFile(nPlaylistID, sFileName);       
-      }
-      
-      if(nObjectID > 0)
-      {       
-        cout << "file exists: " << nObjectID << endl;
-        InsertPlaylistItem(nPlaylistID, nObjectID, i + 1);
-      }
-      
+      }            
     } /* if(bIsLocalFile && FileExists(sFileName)) */    
+    
+    
+    if(nObjectID > 0)
+    {       
+        //cout << "file exists: " << nObjectID << endl;
+      InsertPlaylistItem(nPlaylistID, nObjectID, i + 1);
+    }
+    
   } /* for(int i = 0; i < nEntryCount; i++) */
 }

@@ -14,7 +14,7 @@
   multiple audio tracks and list the tracks as items
   inside the folder
 
-* playlist handling
+* playlist handling (0.7)
   * m3u
   * pls
   
@@ -65,3 +65,6 @@
 
 * spoken error messages
   e.g. "error initializing LAME encoder"
+
+* different settings for reqesting IPs
+  e.g. playlist files for TG 100 but playlist containers for Noxon

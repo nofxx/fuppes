@@ -746,6 +746,17 @@ bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
                 m_nMaxFileNameLength = atoi(sMaxFileNameLength.c_str());
             }
           }
+          else if(sContentDir.compare("playlist_representation") == 0)
+          {
+            if(pTmp->children)
+            {
+              string sPlaylistRepresentation = (char*)pTmp->children->content;              
+              if(sPlaylistRepresentation.compare("file") == 0)
+                m_DisplaySettings.bShowPlaylistsAsContainers = false;
+              else if(sPlaylistRepresentation.compare("container") == 0)
+                m_DisplaySettings.bShowPlaylistsAsContainers = true;
+            }
+          }
           
           pTmp = pTmp->next;
         }    
@@ -823,27 +834,11 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
 
 	/* fuppes_config */
 	xmlTextWriterStartElement(pWriter, BAD_CAST "fuppes_config");  
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "version", BAD_CAST "0.5"); 
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "version", BAD_CAST "0.7"); 
 	
     /* shared_directories */    
     xmlTextWriterWriteComment(pWriter, BAD_CAST "\r\n");
     xmlTextWriterStartElement(pWriter, BAD_CAST "shared_directories");
-        
-      /*xmlTextWriterStartElement(pWriter, BAD_CAST "dir");
-      #ifdef WIN32
-      xmlTextWriterWriteString(pWriter, BAD_CAST "C:\\Musik\\mp3s\\Marillion");      
-      #else
-      xmlTextWriterWriteString(pWriter, BAD_CAST "/mnt/musik/mp3s/Marillion");
-      #endif
-      xmlTextWriterEndElement(pWriter); 
-      
-      xmlTextWriterStartElement(pWriter, BAD_CAST "dir");
-      #ifdef WIN32
-      xmlTextWriterWriteString(pWriter, BAD_CAST "C:\\Musik\\mp3s\\Porcupine Tree");      
-      #else
-      xmlTextWriterWriteString(pWriter, BAD_CAST "/mnt/musik/mp3s/Porcupine Tree");
-      #endif
-      xmlTextWriterEndElement(pWriter); */
   
     /* end shared_directories */
     xmlTextWriterEndElement(pWriter);
@@ -887,6 +882,11 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
       xmlTextWriterWriteComment(pWriter, BAD_CAST sComment.str().c_str());
       xmlTextWriterStartElement(pWriter, BAD_CAST "max_file_name_length");
       xmlTextWriterWriteString(pWriter, BAD_CAST "0");
+      xmlTextWriterEndElement(pWriter);
+    
+      /* playlist_representation */
+      xmlTextWriterStartElement(pWriter, BAD_CAST "playlist_representation");
+      xmlTextWriterWriteString(pWriter, BAD_CAST "file"); // [file|container]
       xmlTextWriterEndElement(pWriter);
     
     

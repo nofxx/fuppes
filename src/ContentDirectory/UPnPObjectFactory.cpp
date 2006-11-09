@@ -48,10 +48,7 @@ CUPnPObject* CUPnPObjectFactory::CreateObjectFromId(std::string p_sObjectID)
   
   stringstream sSQL;
   sSQL << "select PARENT_ID, TYPE, PATH, FILE_NAME, MD5, MIME_TYPE, DETAILS from OBJECTS where ID = " << nObjID;
-  
-  cout << "CUPnPObjectFactory::CreateObjectFromId" << endl;
-  cout << "\t" << sSQL.str() << endl;
-  
+    
   CContentDatabase::Shared()->Lock();
   CContentDatabase::Shared()->Select(sSQL.str());
   if(!CContentDatabase::Shared()->Eof())

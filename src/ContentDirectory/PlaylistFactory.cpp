@@ -64,9 +64,7 @@ std::string CPlaylistFactory::BuildPLS(std::string p_sObjectId)
   sResult << "[playlist]\r\n";
   
   while(!pDb->Eof())
-  {
-    cout << "while" << endl;
-    
+  {    
     pRes = pDb->GetResult();
     
     char szItemId[11];         
@@ -81,6 +79,11 @@ std::string CPlaylistFactory::BuildPLS(std::string p_sObjectId)
         sResult << "File" << nNumber + 1 << "=";
         sResult << "http://" << CSharedConfig::Shared()->GetFuppesInstance(0)->GetHTTPServerURL() << "/MediaServer/AudioItems/" <<
                    szItemId << "." << ExtractFileExt(pRes->GetValue("FILE_NAME")) << "\r\n";      
+        nNumber++;
+        break;
+      
+      case ITEM_VIDEO_ITEM_VIDEO_BROADCAST:
+        sResult << pRes->GetValue("FILE_NAME") << "\r\n";
         nNumber++;
         break;
     }
@@ -110,7 +113,6 @@ std::string CPlaylistFactory::BuildM3U(std::string p_sObjectId)
   sSql << "select o.* from OBJECTS o, PLAYLIST_ITEMS p where o.ID = p.OBJECT_ID and p.PLAYLIST_ID = " << nObjectId << ";";
   pDb->Select(sSql.str());
   
-  cout << sSql.str() << endl;
     
   //sResult << "#EXTM3U\r\n"; 
 /*  
@@ -127,8 +129,6 @@ http://www.seite.de/musik/titel4.mp3 */
   
   while(!pDb->Eof())
   {
-    cout << "while" << endl;
-    
     pRes = pDb->GetResult();
     
     char szItemId[11];         
@@ -151,6 +151,5 @@ http://www.seite.de/musik/titel4.mp3 */
   
   pDb->ClearResult();
   delete pDb;
-  cout << sResult.str() << endl;
   return sResult.str();  
 }
