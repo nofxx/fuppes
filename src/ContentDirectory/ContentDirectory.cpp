@@ -322,23 +322,31 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
     CContentDatabase::Shared()->Unlock();  
     sSql.str("");
   }
-    
-  cout << "METADATA: " << nContainerType << endl;
   
-  
-  /* get child count */  
+  /* get child count */
+  bool bNeedCount = false;  
   if(nContainerType == CONTAINER_STORAGE_FOLDER)
+  {
     sSql << "select count(*) as COUNT from OBJECTS where " <<
             "PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << ";";
+    bNeedCount = true;
+  }
   else if(nContainerType == CONTAINER_PLAYLIST_CONTAINER)
+  {
     sSql << "select count(*) as COUNT from PLAYLIST_ITEMS where " <<
             "PLAYLIST_ID = " << pUPnPBrowse->GetObjectIDAsInt() << ";";          
+    bNeedCount = true;
+  }
   
-  CContentDatabase::Shared()->Lock();
-  CContentDatabase::Shared()->Select(sSql.str());        
-  string sChildCount = CContentDatabase::Shared()->GetResult()->GetValue("COUNT").c_str();
-  CContentDatabase::Shared()->ClearResult();
-  CContentDatabase::Shared()->Unlock();
+  string sChildCount = "0";
+  if(bNeedCount)
+  {
+    CContentDatabase::Shared()->Lock();
+    CContentDatabase::Shared()->Select(sSql.str());        
+    sChildCount = CContentDatabase::Shared()->GetResult()->GetValue("COUNT").c_str();
+    CContentDatabase::Shared()->ClearResult();
+    CContentDatabase::Shared()->Unlock();
+  }
   sSql.str("");
 
   string sParentId;

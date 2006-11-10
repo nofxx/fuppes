@@ -54,7 +54,7 @@ BuildCmd=
 Major=0
 Minor=7
 Release=0
-Build=2
+Build=12
 LanguageID=1033
 CharsetID=1252
 CompanyName=
@@ -919,26 +919,6 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit88]
-FileName=src\Transcoding\TranscodingMgr.cpp
-CompileCpp=1
-Folder=fuppes
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit89]
-FileName=src\Transcoding\TranscodingMgr.h
-CompileCpp=1
-Folder=fuppes
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit90]
 FileName=src\Transcoding\TranscodingCache.cpp
 CompileCpp=1
 Folder=fuppes
@@ -948,7 +928,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit91]
+[Unit89]
 FileName=src\Transcoding\TranscodingCache.h
 CompileCpp=1
 Folder=fuppes
@@ -958,7 +938,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit92]
+[Unit90]
 FileName=src\HTTP\HTTPParser.h
 CompileCpp=1
 Folder=fuppes
@@ -968,8 +948,28 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit93]
+[Unit91]
 FileName=src\HTTP\HTTPParser.cpp
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit92]
+FileName=src\ContentDirectory\PlaylistFactory.cpp
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit93]
+FileName=src\ContentDirectory\PlaylistFactory.h
 CompileCpp=1
 Folder=fuppes
 Compile=1
