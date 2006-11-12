@@ -135,7 +135,7 @@ CSharedConfig::CSharedConfig()
   m_DisplaySettings.bShowTranscodingTypeInItemNames = true;  
   m_DisplaySettings.bShowDirNamesInFirstLevel = true;
   
-  m_DisplaySettings.bShowPlaylistsAsContainers = false;
+  m_DisplaySettings.bShowPlaylistsAsContainers = true;
 }
 
 CSharedConfig::~CSharedConfig()
@@ -196,8 +196,8 @@ bool CSharedConfig::Refresh()
   m_pSharedDirNode  = NULL;
   m_pContentDirNode = NULL;
   
-  /*xmlFreeDoc(m_pDoc);
-  m_pDoc = NULL;*/
+  xmlFreeDoc(m_pDoc);
+  m_pDoc = NULL;
   
   /* ... and read the config file */
   bResult = ReadConfigFile(false);

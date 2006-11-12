@@ -68,3 +68,10 @@
 
 * different settings for reqesting IPs
   e.g. playlist files for TG 100 but playlist containers for Noxon
+
+* write pid file containing http url and pid to %tmp%
+* write log to file (optional)
+** temporary or static
+** display in webinterface if available
+
+* split folders containing a configurable amount of files

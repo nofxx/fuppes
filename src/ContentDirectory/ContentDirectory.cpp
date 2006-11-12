@@ -440,10 +440,19 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
     fflush(stdout);
     
     CContentDatabase::Shared()->Lock();
-    CContentDatabase::Shared()->Select(sSql.str());        
-    cout << "TYPE: " << CContentDatabase::Shared()->GetResult()->GetValue("TYPE") << endl;
-    fflush(stdout);
-    nContainerType = (OBJECT_TYPE)atoi(CContentDatabase::Shared()->GetResult()->GetValue("TYPE").c_str());
+    CContentDatabase::Shared()->Select(sSql.str()); 
+    if(!CContentDatabase::Shared()->Eof())
+    {
+      cout << "TYPE: " << CContentDatabase::Shared()->GetResult()->GetValue("TYPE") << endl;
+      fflush(stdout);
+      nContainerType = (OBJECT_TYPE)atoi(CContentDatabase::Shared()->GetResult()->GetValue("TYPE").c_str());
+    }
+    else
+    {
+      cout << "TYPE: UNKNOWN" << endl;
+      fflush(stdout);
+      nContainerType = OBJECT_TYPE_UNKNOWN;
+    }
     CContentDatabase::Shared()->ClearResult();
     CContentDatabase::Shared()->Unlock();  
     sSql.str("");
@@ -466,8 +475,11 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   cout << sSql.str() << endl;
   
   CContentDatabase::Shared()->Lock();
-  CContentDatabase::Shared()->Select(sSql.str());        
-  *p_pnTotalMatches  = atoi(CContentDatabase::Shared()->GetResult()->GetValue("COUNT").c_str());
+  CContentDatabase::Shared()->Select(sSql.str()); 
+  if(!CContentDatabase::Shared()->Eof())
+    *p_pnTotalMatches = atoi(CContentDatabase::Shared()->GetResult()->GetValue("COUNT").c_str());
+  else
+    *p_pnTotalMatches = 0;
   //string sChildCount = CContentDatabase::Shared()->GetResult()->GetValue("COUNT");
   CContentDatabase::Shared()->ClearResult();
   CContentDatabase::Shared()->Unlock();
@@ -566,7 +578,12 @@ void CContentDirectory::BuildDescription(xmlTextWriterPtr pWriter,
   {
     //cout << "ITEM_VIDEO_ITEM_VIDEO_BROADCAST" << endl;
     BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, ITEM_VIDEO_ITEM_VIDEO_BROADCAST, p_sParentId);
-  }   
+  } 
+  else if(pSQLResult->GetValue("TYPE").compare("201") == 0)
+  {
+    //cout << "ITEM_AUDIO_ITEM_AUDIO_BROADCAST" << endl;
+    BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, ITEM_AUDIO_ITEM_AUDIO_BROADCAST, p_sParentId);
+  }
 }
 
 
@@ -759,6 +776,9 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter, CSelectRe
       case ITEM_AUDIO_ITEM_MUSIC_TRACK:
         BuildAudioItemDescription(pWriter, pSQLResult, pUPnPBrowse, szObjId);
         break;
+      case ITEM_AUDIO_ITEM_AUDIO_BROADCAST:
+        BuildAudioItemAudioBroadcastDescription(pWriter, pSQLResult, pUPnPBrowse, szObjId);
+        break;      
       case ITEM_IMAGE_ITEM_PHOTO:
         BuildImageItemDescription(pWriter, pSQLResult, pUPnPBrowse, szObjId);
         break;
@@ -819,6 +839,31 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   
 }
 
+void CContentDirectory::BuildAudioItemAudioBroadcastDescription(xmlTextWriterPtr pWriter,
+                                                  CSelectResult* pSQLResult,
+                                                  CUPnPBrowse*  pUPnPBrowse,
+                                                  std::string p_sObjectID)
+{
+  /* class */
+  xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
+  xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.audioItem.audioBroadcast");
+  xmlTextWriterEndElement(pWriter);      
+  
+  /* res */
+  xmlTextWriterStartElement(pWriter, BAD_CAST "res");
+  
+  std::stringstream sTmp;
+  /*sTmp << "http-get:*:" << pSQLResult->GetValue("MIME_TYPE") << ":*";
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
+  sTmp.str("");*/
+  
+  sTmp << pSQLResult->GetValue("PATH");
+  //"http://" << m_sHTTPServerURL << "/MediaServer/VideoItems/" << p_sObjectID << "." << ExtractFileExt(pSQLResult->GetValue("FILE_NAME"));  
+  //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
+  xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
+  xmlTextWriterEndElement(pWriter);   
+}
+
 void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
                                                   CSelectResult* pSQLResult,
                                                   CUPnPBrowse*  pUPnPBrowse,
@@ -866,7 +911,7 @@ No */
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
   sTmp.str("");
   
-  sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/ImageItems/" << p_sObjectID;
+  sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/ImageItems/" << p_sObjectID << "." << ExtractFileExt(pSQLResult->GetValue("FILE_NAME"));
   //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
   xmlTextWriterEndElement(pWriter);  

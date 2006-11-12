@@ -142,6 +142,10 @@ public:
                                    CSelectResult* pSQLResult,
                                    CUPnPBrowse*  pUPnPBrowse,
                                    std::string p_sObjectID);      
+    void BuildAudioItemAudioBroadcastDescription(xmlTextWriterPtr pWriter,
+                                   CSelectResult* pSQLResult,
+                                   CUPnPBrowse*  pUPnPBrowse,
+                                   std::string p_sObjectID);                                    
     void BuildImageItemDescription(xmlTextWriterPtr pWriter,
                                    CSelectResult* pSQLResult,
                                    CUPnPBrowse*  pUPnPBrowse,

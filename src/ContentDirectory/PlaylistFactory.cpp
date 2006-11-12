@@ -75,14 +75,17 @@ std::string CPlaylistFactory::BuildPLS(std::string p_sObjectId)
     switch(nObjectType)
     {
       case ITEM_AUDIO_ITEM:
-      case ITEM_AUDIO_ITEM_MUSIC_TRACK:
+      case ITEM_AUDIO_ITEM_MUSIC_TRACK:        
         sResult << "File" << nNumber + 1 << "=";
         sResult << "http://" << CSharedConfig::Shared()->GetFuppesInstance(0)->GetHTTPServerURL() << "/MediaServer/AudioItems/" <<
                    szItemId << "." << ExtractFileExt(pRes->GetValue("FILE_NAME")) << "\r\n";      
+        sResult << "Title" << nNumber + 1 << "=" << TruncateFileExt(pRes->GetValue("FILE_NAME")) << "\r\n";
         nNumber++;
         break;
       
+      case ITEM_AUDIO_ITEM_AUDIO_BROADCAST:
       case ITEM_VIDEO_ITEM_VIDEO_BROADCAST:
+        sResult << "File" << nNumber + 1 << "=";
         sResult << pRes->GetValue("FILE_NAME") << "\r\n";
         nNumber++;
         break;

@@ -274,8 +274,8 @@ bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMe
   bool fRet = true;
 
   /* set HTTP Type */
-  //pMessageOut->SetVersion(pMessageIn->GetVersion());
-  pMessageOut->SetVersion(HTTP_VERSION_1_0);
+  pMessageOut->SetVersion(pMessageIn->GetVersion());
+  //pMessageOut->SetVersion(HTTP_VERSION_1_0);
     
   /* Handle message */
   HTTP_MESSAGE_TYPE nMsgType = pMessageIn->GetMessageType();
@@ -404,7 +404,7 @@ bool CFuppes::HandleHTTPRequest(CHTTPMessage* pMessageIn, CHTTPMessage* pMessage
   /* ImageItem */
   else if((strRequest.length() > 24) && (strRequest.substr(0, 24).compare("/MediaServer/ImageItems/") == 0))
   {
-    string sItemObjId = pMessageIn->GetRequest().substr(24, pMessageIn->GetRequest().length());
+    string sItemObjId = TruncateFileExt(pMessageIn->GetRequest().substr(24, pMessageIn->GetRequest().length()));
     CImageItem* pItem = (CImageItem*)m_pContentDirectory->GetItemFromObjectID(sItemObjId);
 
     if(pItem && FileExists(pItem->GetFileName()))

@@ -1,5 +1,5 @@
 Version 0.7
-  * added support for playlists (m3u, pls)
+  * initial support for playlists (m3u, pls)
     new configuration option: "playlist representation"
   ** "file": playlists are send as playlist files
   ** "container": playlists are shown as playlist containers
@@ -21,6 +21,8 @@ Version 0.7
 
   * uses libuuid for real UUIDs under linux/unix if available
   * fixed some minor memory leaks
+  * fixed HexToInt conversion for large numbers
+  * fixed HTTP 206 Response - no header was sent if offset was larger than the file
 
   * fixed bug #1504778
   ** by mistake fuppes expected a blank in the SSDP-Messages where none is needed

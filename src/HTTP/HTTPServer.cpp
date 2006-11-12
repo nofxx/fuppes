@@ -459,7 +459,7 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
     }
                 
     /*cout << sHeader << endl << endl;
-    fflush(stdout);*/
+    fflush(stdout);*/  
 
     
     /* read content length */
@@ -569,10 +569,12 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   /* send chunked message */
   else 
   {         
-    //cout << "CHUNKED: Start: " << p_Request->GetRangeStart() << " end: " << p_Request->GetRangeEnd() << endl;
+    /*cout << "CHUNKED: Start: " << p_Request->GetRangeStart() << " end: " << p_Request->GetRangeEnd() << endl;
+    cout << "LENGTH: " << p_Response->GetBinContentLength() << endl;
+    cout << p_Request->GetHeader() << endl;*/
     
     unsigned int nOffset = 0;
-    char szChunk[64000];
+    char* szChunk = NULL; //[64000];
     unsigned int nRequestSize = 64000; // - 1;
     //char* szChunk;
     /*szChunk = new char[32770];
@@ -582,11 +584,14 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     int nErr = 0;
     
     
-    if(p_Request->GetRangeStart() > 0)
+    if((p_Request->GetRangeStart() > 0) || ((p_Request->GetRangeEnd() > 0) && (p_Request->GetRangeEnd() < p_Response->GetBinContentLength())))
     {          
-      //nRequestSize = p_Request->GetRangeEnd() - p_Request->GetRangeStart() + 1;
-      
-      nOffset = p_Request->GetRangeStart();
+      if(p_Request->GetRangeEnd() > p_Request->GetRangeStart())
+        nRequestSize = p_Request->GetRangeEnd() - p_Request->GetRangeStart() + 1;
+      else
+        nRequestSize = p_Response->GetBinContentLength() - p_Request->GetRangeStart() + 1;
+            
+      nOffset = p_Request->GetRangeStart();      
       p_Response->SetMessageType(HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT);          
     }
     //cout << "LENG: " << p_Response->GetBinContentLength() << endl;
@@ -609,8 +614,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     
     //cout << p_Response->GetHeaderAsString() << endl;
     
-    /* send header if it is a HEAD rsponse and return */        
-    if((nErr != -1) && (p_Request->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD))
+    /* send header if it is a HEAD response and return */        
+    if((nErr != -1) && ((p_Request->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) || (p_Request->GetRangeStart() >= p_Response->GetBinContentLength())))
     {
       //cout << "send head response" << endl;
       #ifdef WIN32
@@ -619,6 +624,9 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), MSG_NOSIGNAL);
       #endif
     
+      /*cout << "SENT LAST HEADER" << endl;
+      cout << p_Response->GetHeaderAsString() << endl;*/
+      
       /*if(nErr == -1)
         cout << "[ERROR] send header" << endl;*/
       
@@ -629,14 +637,30 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     //cout << p_Response->GetHeaderAsString() << endl;
     
     
-    
-
-   
-    
     int nCnt = 0;
-    int nSend = 0;
+    int nSend = 0;    
+    bool bChunkLoop = false;
+    unsigned int nReqChunkSize = 0;
+    
+    cout << "requested: " << nRequestSize << endl;
+    
+    if(nRequestSize > 1048576)
+    {
+      cout << "request size too big" << endl;
+      nReqChunkSize = 1048576;
+      szChunk = new char[nReqChunkSize];
+      bChunkLoop = true;
+    }
+    else
+    {
+      cout << "request size ok" << endl;
+      szChunk = new char[nRequestSize];
+      nReqChunkSize = nRequestSize;
+      bChunkLoop = false;
+    }
+    
       
-    while((nErr != -1) && ((nRet = p_Response->GetBinContentChunk(szChunk, nRequestSize, nOffset)) > 0)) 
+    while((nErr != -1) && ((nRet = p_Response->GetBinContentChunk(szChunk, nReqChunkSize, nOffset)) > 0)) 
     {           
       
       /*cout << "read binary" << endl;
@@ -685,7 +709,25 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
      
      //nErr = -1;
      
-      if((nErr < 0) || ((p_Response->GetMessageType() == HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT) && (p_Request->GetHTTPConnection() == HTTP_CONNECTION_CLOSE)))
+      
+      if(bChunkLoop && nErr >= 0)
+      {
+        nRequestSize -= nReqChunkSize;
+        if(nRequestSize > 1048576)
+          nReqChunkSize = 1048576;
+        else
+          nReqChunkSize = nRequestSize;
+        
+        cout << "COUNT: " << nCnt << endl << " REQUEST LEFT: " << nRequestSize << endl << " kb: " << (double)nRequestSize / 1024 << " mb: " << (double)nRequestSize / 1024 / 1024 << endl;
+      }
+      
+      if((nErr < 0) || 
+         (
+          (p_Response->GetMessageType() == HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT) &&
+          (p_Request->GetHTTPConnection() == HTTP_CONNECTION_CLOSE) && 
+           !bChunkLoop
+         )
+        )
       {
         if(nErr < 0)
         {
@@ -723,8 +765,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
         
       } /* while */
 
-      
-      //delete [] szChunk;
+            
+      delete [] szChunk;
       //fsOut.close();
         
       //cout << " exiting " << endl;

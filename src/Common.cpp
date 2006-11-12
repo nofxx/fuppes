@@ -335,15 +335,14 @@ int HexToInt(std::string sHex)
   /* remove leading "0" */   
   if(sHex.find_first_not_of("0", 0) <= sHex.length())
     sHex = sHex.substr(sHex.find_first_not_of("0", 0), sHex.length());
-    
   
   /* taken from: http://bdn.borland.com/article/0,1410,17203,00.html */  
   int n = 0;         // position in string
   int m = 0;         // position in digit[] to shift
   int count;         // loop index
   int intValue = 0;  // integer value of hex string
-  int digit[5];      // hold values to convert
-  while (n < 4) {
+  int digit[10];     // hold values to convert
+  while (n < 9) {
      if (sHex[n]=='\0')
         break;
      if (sHex[n] > 0x29 && sHex[n] < 0x40 ) //if 0 to 9

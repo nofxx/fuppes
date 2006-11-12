@@ -158,7 +158,9 @@ module.source.files=\
 	HTTP/HTTPParser.cpp\
 	HTTP/HTTPParser.h\
 	Transcoding/TranscodingCache.cpp\
-	Transcoding/TranscodingCache.h
+	Transcoding/TranscodingCache.h\
+	ContentDirectory/PlaylistFactory.cpp\
+	ContentDirectory/PlaylistFactory.h
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

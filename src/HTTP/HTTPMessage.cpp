@@ -235,13 +235,13 @@ std::string CHTTPMessage::GetHeaderAsString()
         {
           if(m_nRangeEnd < m_nBinContentLength)
           {
-            sResult << "Content-Length: " << m_nRangeEnd - m_nRangeStart + 1<< "\r\n";
-            sResult << "Content-Range: " << m_nRangeStart << "-" << m_nRangeEnd << "\r\n";
+            sResult << "Content-Length: " << m_nRangeEnd - m_nRangeStart + 1 << "\r\n";
+            sResult << "Content-Range: bytes " << m_nRangeStart << "-" << m_nRangeEnd << "/" << m_nBinContentLength << "\r\n";
           }
           else
           {
-            sResult << "Content-Length: " << m_nBinContentLength - m_nRangeStart << "\r\n";
-            sResult << "Content-Range: " << m_nRangeStart << "-" << m_nRangeEnd << "\r\n";
+            sResult << "Content-Length: " << m_nBinContentLength - m_nRangeStart << "\r\n";            
+            sResult << "Content-Range: bytes " << m_nRangeStart << "-" << m_nBinContentLength - 1 << "/" << m_nBinContentLength << "\r\n";            
           }
         }
         else
@@ -249,7 +249,7 @@ std::string CHTTPMessage::GetHeaderAsString()
           sResult << "Content-Length: " << m_nBinContentLength << "\r\n";
         } 
       }
-    }  
+    } /* if(m_bIsBinary) */
     /* end Content length */        
     
     /* Accept-Range */
@@ -569,9 +569,6 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
       sSub = sMatch2.substr(1, sMatch2.length());
       m_nRangeEnd   = atoi(sSub.c_str());
     }
-        
-    /*cout << "RANGE-START: " << m_nRangeStart << endl;
-    cout << "RANGE-END: " << m_nRangeEnd << endl;*/
   }
   
   /* CONNETION */

@@ -213,24 +213,26 @@ unsigned int CContentDatabase::Insert(std::string p_sStatement)
 {
   Open();
   
-  int nTrans = sqlite3_exec(m_pDbHandle, "BEGIN TRANSACTION;", NULL, NULL, NULL);
-  if(nTrans != SQLITE_OK)
-    cout << "error start transaction" << endl;
-  
   char* szErr = 0;
+  
+  int nTrans = sqlite3_exec(m_pDbHandle, "BEGIN TRANSACTION;", NULL, NULL, &szErr);
+  if(nTrans != SQLITE_OK)
+    fprintf(stderr, "CContentDatabase::Insert - start transaction :: SQL error: %s\n", szErr);    
+    
   int nResult = sqlite3_exec(m_pDbHandle, p_sStatement.c_str(), NULL, NULL, &szErr);  
   if(nResult != SQLITE_OK)
   {
-    cout << szErr << endl;
+    fprintf(stderr, "CContentDatabase::Insert - insert :: SQL error: %s\n", szErr);    
     nResult = -1;
   }
   else  
   {
     nResult = sqlite3_last_insert_rowid(m_pDbHandle);
   }
-  nTrans = sqlite3_exec(m_pDbHandle, "COMMIT;", NULL, NULL, NULL);
+  nTrans = sqlite3_exec(m_pDbHandle, "COMMIT;", NULL, NULL, &szErr);
   if(nTrans != SQLITE_OK)
-    cout << "error commit transaction" << endl;
+    fprintf(stderr, "CContentDatabase::Insert - commit :: SQL error: %s\n", szErr);        
+    //cout << "error commit transaction" << endl;
   
   Close();
   return nResult;  
@@ -243,10 +245,21 @@ bool CContentDatabase::Select(std::string p_sStatement)
   bool bResult = true;
   
   char* szErr = 0;
-  int nResult =  sqlite3_exec(m_pDbHandle, p_sStatement.c_str(), SelectCallback, this, &szErr);
+  
+  int nResult = SQLITE_OK;  
+  int nTry = 0;
+  do    
+  {
+    nResult = sqlite3_exec(m_pDbHandle, p_sStatement.c_str(), SelectCallback, this, &szErr);
+    if(nTry > 0)
+      cout << "CContentDatabase::Select :: SQLITE_BUSY - " << nTry << endl;
+    nTry++;
+  }while(nResult == SQLITE_BUSY);
+    
   if(nResult != SQLITE_OK)
   {
-    fprintf(stderr, "SQL error: %s\n", szErr);
+    cout << "RESULT: " << nResult << endl;    
+    fprintf(stderr, "CContentDatabase::Select :: SQL error: %s, Statement: %s\n", szErr, p_sStatement.c_str());
     sqlite3_close(m_pDbHandle);    
     bResult = false;
   }
@@ -577,7 +590,9 @@ unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL)
 {
   stringstream sSql;
   sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME, MD5, MIME_TYPE, DETAILS) values ";
-  sSql << "(" << ITEM_VIDEO_ITEM_VIDEO_BROADCAST << ", ";
+  //sSql << "(" << ITEM_VIDEO_ITEM_VIDEO_BROADCAST << ", ";
+  sSql << "(" << ITEM_AUDIO_ITEM_AUDIO_BROADCAST << ", ";
+  
   sSql << p_nParentId << ", ";
   sSql << "'" << SQLEscape(p_sURL) << "', ";
   sSql << "'" << p_sURL << "', ";
@@ -585,6 +600,9 @@ unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL)
   sSql << "'" << "todo" << "', ";
   sSql << "'" << "video/x-ms-asf" << "', ";
   sSql << "'" << "details - todo" << "');";
+  
+  
+  
   
   
   CContentDatabase* pDB = new CContentDatabase();          
