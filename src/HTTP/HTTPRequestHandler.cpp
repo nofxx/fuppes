@@ -25,6 +25,7 @@
 #include "../Presentation/PresentationHandler.h"
 #include "../ContentDirectory/PlaylistFactory.h"
 #include "../UUID.h"
+#include "../GENA/SubscriptionMgr.h"
 
 #include <iostream>
 
@@ -49,8 +50,8 @@ bool CHTTPRequestHandler::HandleRequest(CHTTPMessage* pRequest, CHTTPMessage* pR
       return this->HandleHTTPRequest(pRequest, pResponse);
       
     /* GENA */
-    /*case HTTP_MESSAGE_TYPE_SUBSCRIBE:
-      return this->HandleGENAMessage(pRequest, pResponse);*/
+    case HTTP_MESSAGE_TYPE_SUBSCRIBE:
+      return this->HandleGENAMessage(pRequest, pResponse);
     
     default :
       return false;    
@@ -105,11 +106,16 @@ bool CHTTPRequestHandler::HandleSOAPAction(CHTTPMessage* pRequest, CHTTPMessage*
 
 bool CHTTPRequestHandler::HandleGENAMessage(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {
+  //cout << pRequest->GetMessage() << endl;
+  
+  CSubscriptionMgr::Shared()->HandleSubscription(pRequest, pResponse);
+  
   pResponse->SetVersion(pRequest->GetVersion());
   pResponse->SetMessageType(HTTP_MESSAGE_TYPE_GENA_OK);
  
-  string sID = GenerateUUID(); 
-  pResponse->SetGENASubscriptionID(sID);
+  cout << pResponse->GetHeaderAsString() << endl;
+  /*string sID = GenerateUUID();
+  pResponse->SetGENASubscriptionID(sID);*/
   
   
   return true;

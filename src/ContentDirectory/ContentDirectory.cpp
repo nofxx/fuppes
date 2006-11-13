@@ -301,9 +301,6 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
                         unsigned int* p_pnNumberReturned,
                         CUPnPBrowse*  pUPnPBrowse)
 {
-  cout << "METADATA: " << endl;
-  fflush(stdout);
-  
   *p_pnTotalMatches   = 1;
   *p_pnNumberReturned = 1;
   
@@ -424,10 +421,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
                           unsigned int* p_pnTotalMatches,
                           unsigned int* p_pnNumberReturned,
                           CUPnPBrowse*  pUPnPBrowse)
-{     
-  cout << "DIRECT CHILDREN: " << endl;
-  fflush(stdout);
-  
+{ 
   std::stringstream sSql;
   OBJECT_TYPE nContainerType = CONTAINER_STORAGE_FOLDER;
   
@@ -436,30 +430,21 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   {    
     sSql << "select TYPE from OBJECTS where ID = " << pUPnPBrowse->GetObjectIDAsInt() << ";";
   
-    cout << sSql.str() << endl;
-    fflush(stdout);
-    
     CContentDatabase::Shared()->Lock();
     CContentDatabase::Shared()->Select(sSql.str()); 
     if(!CContentDatabase::Shared()->Eof())
     {
-      cout << "TYPE: " << CContentDatabase::Shared()->GetResult()->GetValue("TYPE") << endl;
-      fflush(stdout);
       nContainerType = (OBJECT_TYPE)atoi(CContentDatabase::Shared()->GetResult()->GetValue("TYPE").c_str());
     }
     else
     {
-      cout << "TYPE: UNKNOWN" << endl;
-      fflush(stdout);
       nContainerType = OBJECT_TYPE_UNKNOWN;
     }
     CContentDatabase::Shared()->ClearResult();
     CContentDatabase::Shared()->Unlock();  
     sSql.str("");
   }
-  
-  cout << "DIRECT CHILDREN: " << nContainerType << endl;
-  
+    
   /* get total matches */
   if(nContainerType == CONTAINER_STORAGE_FOLDER)
   {
@@ -471,8 +456,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
     sSql << "select count(*) as COUNT from PLAYLIST_ITEMS where PLAYLIST_ID = " <<
             pUPnPBrowse->GetObjectIDAsInt(); // << " order by FILE_NAME ";        
   }
-  
-  cout << sSql.str() << endl;
+
   
   CContentDatabase::Shared()->Lock();
   CContentDatabase::Shared()->Select(sSql.str()); 
@@ -484,8 +468,6 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   CContentDatabase::Shared()->ClearResult();
   CContentDatabase::Shared()->Unlock();
   sSql.str("");
-  
-  cout << "DIRECT CHILDREN COUNT: " << *p_pnTotalMatches << endl;
   
   /* get description */
   if(nContainerType == CONTAINER_STORAGE_FOLDER)
@@ -552,7 +534,7 @@ void CContentDirectory::BuildDescription(xmlTextWriterPtr pWriter,
   }  
   else if(pSQLResult->GetValue("TYPE").compare("5") == 0)
   {    
-    cout << "CONTAINER_PLAYLIST_CONTAINER" << endl;
+    //cout << "CONTAINER_PLAYLIST_CONTAINER" << endl;
     if(CSharedConfig::Shared()->GetDisplaySettings().bShowPlaylistsAsContainers)
       BuildContainerDescription(pWriter, pSQLResult, pUPnPBrowse, p_sParentId, CONTAINER_PLAYLIST_CONTAINER);
     else
@@ -695,7 +677,7 @@ dc:rights dc O */
       sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/Playlists/" << szObjId << "." << ExtractFileExt(pSQLResult->GetValue("FILE_NAME"));    
       //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
    
-cout << sTmp.str() << endl;      
+//cout << sTmp.str() << endl;      
    
       xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
       xmlTextWriterEndElement(pWriter); 

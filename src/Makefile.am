@@ -40,6 +40,7 @@ h_sources = \
   ContentDirectory/ContentDatabase.h\
   ContentDirectory/ContentDirectory.h\
   ConnectionManager/ConnectionManager.h\
+  GENA/SubscriptionMgr.h\
   Presentation/PresentationHandler.h\
   Presentation/Stylesheet.h\
   Transcoding/WrapperBase.h\
@@ -88,6 +89,7 @@ cpp_sources = \
   ContentDirectory/ContentDirectoryDescription.cpp\
   ConnectionManager/ConnectionManager.cpp\
   ConnectionManager/ConnectionManagerDescription.cpp\
+  GENA/SubscriptionMgr.cpp\
   Presentation/PresentationHandler.cpp\
   Presentation/Images/fuppes_small_png.cpp\
   Presentation/Images/header_gradient_png.cpp\

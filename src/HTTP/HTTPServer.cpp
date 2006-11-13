@@ -642,18 +642,18 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     bool bChunkLoop = false;
     unsigned int nReqChunkSize = 0;
     
-    cout << "requested: " << nRequestSize << endl;
+    //cout << "requested: " << nRequestSize << endl;
     
     if(nRequestSize > 1048576)
     {
-      cout << "request size too big" << endl;
+      //cout << "request size too big" << endl;
       nReqChunkSize = 1048576;
       szChunk = new char[nReqChunkSize];
       bChunkLoop = true;
     }
     else
     {
-      cout << "request size ok" << endl;
+      //cout << "request size ok" << endl;
       szChunk = new char[nRequestSize];
       nReqChunkSize = nRequestSize;
       bChunkLoop = false;
@@ -718,7 +718,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
         else
           nReqChunkSize = nRequestSize;
         
-        cout << "COUNT: " << nCnt << endl << " REQUEST LEFT: " << nRequestSize << endl << " kb: " << (double)nRequestSize / 1024 << " mb: " << (double)nRequestSize / 1024 / 1024 << endl;
+        //cout << "COUNT: " << nCnt << endl << " REQUEST LEFT: " << nRequestSize << endl << " kb: " << (double)nRequestSize / 1024 << " mb: " << (double)nRequestSize / 1024 / 1024 << endl;
       }
       
       if((nErr < 0) || 

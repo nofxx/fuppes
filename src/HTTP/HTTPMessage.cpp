@@ -273,8 +273,11 @@ std::string CHTTPMessage::GetHeaderAsString()
   /* GENA header information */
   if(m_nHTTPMessageType == HTTP_MESSAGE_TYPE_GENA_OK)
   {
-    sResult << "SID: uuid:" << m_sGENASubscriptionID << "\r\n";
-    sResult << "Timeout: Second-" << 180 << "\r\n";
+    if(m_sGENASubscriptionID.length() > 0) // subscription or renew
+    {
+      sResult << "SID: uuid:" << m_sGENASubscriptionID << "\r\n";
+      sResult << "Timeout: Second-" << 180 << "\r\n";
+    }
   }
   
  	/* Server */
@@ -525,7 +528,7 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
   }
   
   /* Message SUBSCRIBE */
-  RegEx rxSUBSCRIBE("SUBSCRIBE +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
+  RegEx rxSUBSCRIBE("[SUBSCRIBE|UNSUBSCRIBE]+ +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
   if(rxSUBSCRIBE.Search(p_sMessage.c_str()))
   {
     m_nHTTPMessageType = HTTP_MESSAGE_TYPE_SUBSCRIBE;     

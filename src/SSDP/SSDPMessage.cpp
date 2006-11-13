@@ -172,10 +172,13 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
       if(rxUSN.Search(m_sMessage.c_str()))
       {
         m_sUSN = rxUSN.Match(1);
+        //cout << "USN: " << m_sUSN << endl;
         
         RegEx rxUUID("uuid:([A-Z|0-9|-]+)", PCRE_CASELESS);
-        if(rxUUID.Search(m_sUSN.c_str()))        
-          m_sUUID = rxUUID.Match(1);        
+        if(rxUUID.Search(m_sUSN.c_str()))
+          m_sUUID = rxUUID.Match(1);
+
+        //cout << "UUID: " << m_sUUID << endl;
       }
       
     } /* if(m_nMessageType != SSDP_MESSAGE_TYPE_M_SEARCH)  */

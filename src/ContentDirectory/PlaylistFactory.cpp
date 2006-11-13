@@ -58,7 +58,7 @@ std::string CPlaylistFactory::BuildPLS(std::string p_sObjectId)
   sSql << "select o.* from OBJECTS o, PLAYLIST_ITEMS p where o.ID = p.OBJECT_ID and p.PLAYLIST_ID = " << nObjectId << ";";
   pDb->Select(sSql.str());
   
-  cout << sSql.str() << endl;
+  //cout << sSql.str() << endl;
   
   int nNumber = 0;
   sResult << "[playlist]\r\n";
@@ -100,7 +100,7 @@ std::string CPlaylistFactory::BuildPLS(std::string p_sObjectId)
   
   pDb->ClearResult();
   delete pDb;
-  cout << sResult.str() << endl;
+  //cout << sResult.str() << endl;
   return sResult.str();  
 }
 

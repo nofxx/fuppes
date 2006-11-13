@@ -160,7 +160,9 @@ module.source.files=\
 	Transcoding/TranscodingCache.cpp\
 	Transcoding/TranscodingCache.h\
 	ContentDirectory/PlaylistFactory.cpp\
-	ContentDirectory/PlaylistFactory.h
+	ContentDirectory/PlaylistFactory.h\
+	GENA/SubscriptionMgr.cpp\
+	GENA/SubscriptionMgr.h
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

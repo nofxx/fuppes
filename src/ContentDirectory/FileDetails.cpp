@@ -153,8 +153,9 @@ std::string CFileDetails::GetObjectTypeAsString(unsigned int p_nObjectType)
       return "audioItem";
     case ITEM_AUDIO_ITEM_MUSIC_TRACK :
       return "audioItem.musicTrack";
-    /*ITEM_AUDIO_ITEM_AUDIO_BROADCAST = 201,
-    ITEM_AUDIO_ITEM_AUDIO_BOOK      = 202,*/
+    case ITEM_AUDIO_ITEM_AUDIO_BROADCAST :
+      return "audioItem.audioBroadcast";
+    //ITEM_AUDIO_ITEM_AUDIO_BOOK      = 202,*/
   
     case ITEM_VIDEO_ITEM :
       return "videoItem";
@@ -165,11 +166,12 @@ std::string CFileDetails::GetObjectTypeAsString(unsigned int p_nObjectType)
     //ITEM_VIDEO_ITEM_MUSIC_VIDEO_CLIP = 302,  
   
     /*CONTAINER_PERSON = 4,
-      CONTAINER_PERSON_MUSIC_ARTIST = 400,
+      CONTAINER_PERSON_MUSIC_ARTIST = 400,*/
     
-    CONTAINER_PLAYLIST_CONTAINER = 5,
+    case CONTAINER_PLAYLIST_CONTAINER :
+      return "container.playlistContainer";
     
-    CONTAINER_ALBUM = 6,
+    /*CONTAINER_ALBUM = 6,
     
       CONTAINER_ALBUM_MUSIC_ALBUM = 600,
       CONTAINER_ALBUM_PHOTO_ALBUM = 601,
