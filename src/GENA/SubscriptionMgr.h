@@ -28,9 +28,9 @@
 #include <map>
 #include "../HTTP/HTTPMessage.h"
  
-#define GENA_OK           0;
-#define GENA_PARSE_ERROR  1;
-#define GENA_UUID_UNKNOWN 2;
+#define GENA_OK           1;
+#define GENA_PARSE_ERROR  2;
+#define GENA_UUID_UNKNOWN 3;
  
 typedef enum tagSUBSCRIPTION_TYPE
 {
@@ -72,7 +72,7 @@ class CSubscriptionMgr
   private:  
     static CSubscriptionMgr* m_pInstance;
   
-    int ParseSubscription(CHTTPMessage* pRequest, CSubscription* pSubscription);
+    bool ParseSubscription(CHTTPMessage* pRequest, CSubscription* pSubscription);
   
     void AddSubscription(CSubscription* pSubscription);
     bool RenewSubscription(CSubscription* pSubscription);

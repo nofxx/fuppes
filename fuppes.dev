@@ -1,7 +1,7 @@
 [Project]
 FileName=fuppes.dev
 Name=fuppes
-UnitCount=93
+UnitCount=95
 Type=1
 Ver=1
 ObjFiles=
@@ -54,7 +54,7 @@ BuildCmd=
 Major=0
 Minor=7
 Release=0
-Build=12
+Build=35
 LanguageID=1033
 CharsetID=1252
 CompanyName=
@@ -970,6 +970,26 @@ BuildCmd=
 
 [Unit93]
 FileName=src\ContentDirectory\PlaylistFactory.h
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit94]
+FileName=src\GENA\SubscriptionMgr.h
+CompileCpp=1
+Folder=fuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit95]
+FileName=src\GENA\SubscriptionMgr.cpp
 CompileCpp=1
 Folder=fuppes
 Compile=1

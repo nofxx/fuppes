@@ -44,6 +44,8 @@ bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* 
     return false;
   }
   
+  cout << "SWITCH TYPE: " << pSubscription->GetType() << endl;
+  
   switch(pSubscription->GetType())
   {
     case ST_SUBSCRIBE:
@@ -52,6 +54,7 @@ bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* 
       break;
     case ST_RENEW:
       RenewSubscription(pSubscription);
+      cout << " pResponse->SetGENASubscriptionID(pSubscription->GetSID());" <<  endl << pSubscription->GetSID() << endl;
       pResponse->SetGENASubscriptionID(pSubscription->GetSID());
       delete pSubscription;
       break;
@@ -70,7 +73,7 @@ bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* 
 }
 
 
-int CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* pSubscription)
+bool CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* pSubscription)
 {
   cout << "CSubscriptionMgr::ParseSubscription" << endl;
   cout << pRequest->GetHeader() << endl;
@@ -78,7 +81,7 @@ int CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* p
   
   RegEx rxSubscribe("([SUBSCRIBE|UNSUBSCRIBE]+)", PCRE_CASELESS);
   if(!rxSubscribe.Search(pRequest->GetHeader().c_str()))
-    return GENA_PARSE_ERROR;
+    return false;
   
   string sSID = "";
   RegEx rxSID("SID: *uuid:([A-Z|0-9|-]+)", PCRE_CASELESS);
@@ -106,7 +109,7 @@ int CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* p
     pSubscription->SetSID(sSID);
     cout << "UNSUBSCRIPTION" << endl;
   }
-  
+  return true;      
 }
 
 void CSubscriptionMgr::AddSubscription(CSubscription* pSubscription)
@@ -126,10 +129,12 @@ bool CSubscriptionMgr::RenewSubscription(CSubscription* pSubscription)
   m_SubscriptionsIterator = m_Subscriptions.find(pSubscription->GetSID());
   if(m_SubscriptionsIterator != m_Subscriptions.end())
   {
+    cout << "RENEW found" << endl;
     m_Subscriptions[pSubscription->GetSID()]->Renew();
   }
   else
   {
+    cout << "RENEW NOT found" << endl;      
     return false;
   }
   
