@@ -22,6 +22,9 @@ Version 0.5.4
   * fixed HexToInt conversion for large numbers
   * fixed HTTP 206 Response - no header was sent if offset was larger than the file
 
+  * fixed UTF-8 conversion
+  ** new config option: "local_charset"
+
   * fixed bug #1504778
   ** by mistake fuppes expected a blank in the SSDP-Messages where none is needed
   ** it now correctly shows up on Win XP
