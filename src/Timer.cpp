@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -23,7 +23,6 @@
  
 
 #include "Timer.h"
-#include "SharedLog.h"
 
 #include <string>
 #include <sstream>
@@ -31,11 +30,8 @@
 
 using namespace std;
 
-const std::string LOGNAME = "Timer";
-
 fuppesThreadCallback TimerLoop(void *arg);
 fuppesThreadMutex TimerMutex;
-//unsigned int g_nTickCount;
 
 CTimer::CTimer(ITimer* p_OnTimerHandler)
 {
@@ -78,22 +74,17 @@ void CTimer::SetInterval(unsigned int p_nSeconds)
 void CTimer::Start()
 {
   void Cleanup(); 
-  m_bDoBreak = false;
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "Start");
-  fuppesThreadStart(m_TimerThread, TimerLoop);
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "Started");
+  m_bDoBreak = false;  
+  fuppesThreadStart(m_TimerThread, TimerLoop);  
 }
 
 void CTimer::Stop()
 {
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "Stop");
-  m_bDoBreak = true;  
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "Stopped");
+  m_bDoBreak = true; 
 }
 
 void CTimer::Reset()
 {
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "Reset");
   fuppesThreadLockMutex(&TimerMutex);
   m_nTickCount = 0;
   fuppesThreadUnlockMutex(&TimerMutex);
@@ -116,10 +107,6 @@ fuppesThreadCallback TimerLoop(void *arg)
   {
     if (pTimer->m_bDoBreak)
       break;
-    
-    /*std::stringstream sLog;
-    sLog << "timer loop. Interval: " << pTimer->GetInterval() << " Tick count: " << pTimer->m_nTickCount;  
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());  */
                           
     fuppesThreadLockMutex(&TimerMutex);
     pTimer->m_nTickCount++;
@@ -133,12 +120,7 @@ fuppesThreadCallback TimerLoop(void *arg)
       pTimer->m_nTickCount = 0;
       fuppesThreadUnlockMutex(&TimerMutex);
     }
-  }
-  
-  /* logging */
-  std::stringstream sLog;
-  sLog << "exiting timer loop. Interval: " << pTimer->GetInterval() << " Tick count: " << pTimer->m_nTickCount;  
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());  
+  }  
   
   /* exit thread */
   fuppesThreadExit();

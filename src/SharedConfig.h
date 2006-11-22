@@ -106,6 +106,9 @@ protected:
   
   std::string GetOSName();
   std::string GetOSVersion();
+  
+  std::string GetLocalCharset();
+  bool SetLocalCharset(std::string p_sCharset);
 	
 	std::string GetIPv4Address() { return m_sIP; }
   bool SetIPv4Address(std::string p_sIPAddress);
@@ -138,6 +141,8 @@ protected:
   
   bool AddSharedDirectory(std::string p_sDirectory);
   bool RemoveSharedDirectory(unsigned int p_nIndex);
+  
+  bool SetPlaylistRepresentation(std::string p_sRepresentation);  
 /* <\PUBLIC> */
   
   /** adds a instance of FUPPES
@@ -176,6 +181,7 @@ private:
   std::string m_sUUID;
   std::string m_sOSName;
   std::string m_sOSVersion;
+  std::string m_sLocalCharset;
 
   std::string m_sLameVersion;
   std::string m_sVorbisVersion;

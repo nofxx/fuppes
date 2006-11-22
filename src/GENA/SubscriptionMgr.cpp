@@ -185,3 +185,71 @@ HOST: 192.168.0.3:58642
 SID: uuid:b5117436-a4ef-4944-9fb0-30190a83e2aa
 USER-AGENT: Linux/2.6.16.16, UPnP/1.0, Intel SDK for UPnP devices /1.2
 */
+
+
+/*
+NOTIFY / HTTP/1.1
+HOST: 192.168.0.3:49152
+CONTENT-TYPE: text/xml
+CONTENT-LENGTH: 356
+NT: upnp:event
+NTS: upnp:propchange
+SID: uuid:0
+SEQ: 0
+User-Agent: SSDP CD Events
+Cache-Control: no-cache
+
+<e:propertyset xmlns:e="urn:schemas-upnp-org:event-1-0">
+<e:property>
+<SourceProtocolInfo>http-get:*:audio/mpeg:*,http-get:*:audio/mpegurl:*,http-get:*:image/jpeg:*</SourceProtocolInfo>
+</e:property>
+<e:property>
+<SinkProtocolInfo></SinkProtocolInfo>
+</e:property>
+<e:property>
+<CurrentConnectionIDs>0</CurrentConnectionIDs>
+</e:property>
+</e:propertyset>
+
+HTTP/1.1 200 OK
+SERVER: Linux/2.6.16.16, UPnP/1.0, Intel SDK for UPnP devices /1.2
+CONNECTION: close
+CONTENT-LENGTH: 41
+CONTENT-TYPE: text/html
+
+<html><body><h1>200 OK</h1></body></html>
+*/
+
+
+/*
+NOTIFY / HTTP/1.1
+HOST: 192.168.0.3:49152
+CONTENT-TYPE: text/xml
+CONTENT-LENGTH: 260
+NT: upnp:event
+NTS: upnp:propchange
+SID: uuid:1
+SEQ: 0
+User-Agent: SSDP CD Events
+Cache-Control: no-cache
+
+<e:propertyset xmlns:e="urn:schemas-upnp-org:event-1-0">
+<e:property>
+<SystemUpdateID>1</SystemUpdateID>
+</e:property>
+<e:property>
+<ContainerUpdateIDs></ContainerUpdateIDs>
+</e:property>
+<e:property>
+<TransferIDs></TransferIDs>
+</e:property>
+</e:propertyset>
+
+HTTP/1.1 200 OK
+SERVER: Linux/2.6.16.16, UPnP/1.0, Intel SDK for UPnP devices /1.2
+CONNECTION: close
+CONTENT-LENGTH: 41
+CONTENT-TYPE: text/html
+
+<html><body><h1>200 OK</h1></body></html>
+*/

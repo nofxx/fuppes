@@ -1,10 +1,8 @@
-Version 0.7
+Version 0.5.4
   * initial support for playlists (m3u, pls)
     new configuration option: "playlist representation"
   ** "file": playlists are send as playlist files
   ** "container": playlists are shown as playlist containers
-  
-  * initial support for UPnP Eventing
   
   * fixed transcoding
   ** transcoding thread was started on HTTP HEAD request

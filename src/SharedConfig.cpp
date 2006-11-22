@@ -78,6 +78,8 @@
 
 #endif
 
+const std::string NEEDED_CONFIGFILE_VERSION = "0.5.1";
+
 /*===============================================================================
  CLASS CSharedConfig
 ===============================================================================*/
@@ -111,6 +113,7 @@ CSharedConfig::CSharedConfig()
   m_nHTTPPort = 0;
   
   m_nMaxFileNameLength = 0;
+  m_sLocalCharset      = "";
   
   m_pDoc = NULL;
   m_pSharedDirNode  = NULL;
@@ -140,7 +143,7 @@ CSharedConfig::CSharedConfig()
 
 CSharedConfig::~CSharedConfig()
 {
-  xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);  
+  //xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);  
   xmlFreeDoc(m_pDoc);
 }
 
@@ -238,7 +241,7 @@ string CSharedConfig::GetAppFullname()
 
 string CSharedConfig::GetAppVersion()
 {
-	return "0.7a";
+	return "0.5.4";
 }
 
 string CSharedConfig::GetHostname()
@@ -364,10 +367,13 @@ bool CSharedConfig::RemoveSharedDirectory(unsigned int p_nIndex)
 
 bool CSharedConfig::IsAllowedIP(std::string p_sIPAddress)
 {
+  /* the host's address is always allowed to access */
   if(p_sIPAddress.compare(m_sIP) == 0)
     return true;
   
+  /* if no allowed ip is set all addresses are allowed */
   bool bResult = (m_vAllowedIPs.size() == 0);
+    
   for(unsigned int i = 0; i < m_vAllowedIPs.size(); i++)
   { 
     if(m_vAllowedIPs[i].compare(p_sIPAddress) == 0)
@@ -393,7 +399,8 @@ bool CSharedConfig::AddAllowedIP(std::string p_sIPAddress)
 {
   // search the allowed ips node
   xmlNode* pTmpNode = m_pNetSettingsNode->children;
-  string sName;
+  string sName;  
+  
   while(pTmpNode)
   { 
     sName = (char*)pTmpNode->name;
@@ -407,16 +414,15 @@ bool CSharedConfig::AddAllowedIP(std::string p_sIPAddress)
   if(!pTmpNode)
     pTmpNode = xmlNewChild(m_pNetSettingsNode, NULL, BAD_CAST "allowed_ips", NULL);    
   
-  // add new alloed ip child
+  // add new allowed ip child
   xmlNewTextChild(pTmpNode, NULL, BAD_CAST "allowed_ip", BAD_CAST p_sIPAddress.c_str());  
     
+  xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1); 
   return this->Refresh();
 }
 
 bool CSharedConfig::RemoveAllowedIP(unsigned int p_nIndex)
 {
-  //cout << "remove allowed ip: " << p_nIndex << endl;
-  
   // find allowed_ips node
   xmlNode* pAllowedIPs = m_pNetSettingsNode->children;
   string sName;
@@ -431,20 +437,21 @@ bool CSharedConfig::RemoveAllowedIP(unsigned int p_nIndex)
   
   // walk ip nodes
   pAllowedIPs = pAllowedIPs->children;
-  int i = 0;
+  string sIP;
   while(pAllowedIPs)
   {
-    //cout << pAllowedIPs->name << endl;
-    
-    if(i == p_nIndex)
+    if(pAllowedIPs->children)
     {
-      xmlUnlinkNode(pAllowedIPs);
-      xmlFreeNode(pAllowedIPs);
-      break;
+      sIP = (char*)pAllowedIPs->children->content;
+      if(sIP.compare(GetAllowedIP(p_nIndex)) == 0)
+      {
+        xmlUnlinkNode(pAllowedIPs);
+        xmlFreeNode(pAllowedIPs);
+        break;        
+      }
     }
-    
+        
     pAllowedIPs = pAllowedIPs->next;
-    i++;
   }  
   
   // save and refresh
@@ -575,6 +582,61 @@ void CSharedConfig::SetMaxFileNameLength(unsigned int p_nMaxFileNameLenght)
   this->Refresh();
 }
 
+bool CSharedConfig::SetPlaylistRepresentation(std::string p_sRepresentation)
+{
+  if(!m_pContentDirNode)
+    return false;
+  
+  xmlNode* pTmp = m_pContentDirNode->children;
+  string sTmp;
+  while(pTmp)
+  {
+    sTmp = (char*)pTmp->name;
+    if(sTmp.compare("playlist_representation") == 0)
+    {
+      if(!pTmp->children)
+        xmlNodeAddContent(pTmp, BAD_CAST p_sRepresentation.c_str());
+      else
+        xmlNodeSetContent(pTmp->children, BAD_CAST p_sRepresentation.c_str());      
+      break;
+    }    
+    pTmp = pTmp->next;
+  }
+  
+  xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);    
+  return this->Refresh();  
+}
+
+std::string CSharedConfig::GetLocalCharset()
+{  
+  return m_sLocalCharset;
+}
+
+bool CSharedConfig::SetLocalCharset(std::string p_sCharset)
+{
+  if(!m_pContentDirNode)
+    return false;
+  
+  xmlNode* pTmp = m_pContentDirNode->children;
+  string sTmp;
+  while(pTmp)
+  {
+    sTmp = (char*)pTmp->name;
+    if(sTmp.compare("local_charset") == 0)
+    {
+      if(!pTmp->children)
+        xmlNodeAddContent(pTmp, BAD_CAST p_sCharset.c_str());
+      else
+        xmlNodeSetContent(pTmp->children, BAD_CAST p_sCharset.c_str());      
+      break;
+    }    
+    pTmp = pTmp->next;
+  }
+  
+  xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);
+  return this->Refresh();
+}
+
 /* <\PUBLIC> */
 	
 /* <PRIVATE> */
@@ -652,8 +714,35 @@ bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
     xmlNode* pRootNode = NULL;  
     xmlNode* pTmpNode  = NULL;   
     pRootNode = xmlDocGetRootElement(m_pDoc);    
+       
     
-    //m_sConfigVersion
+    // version
+    xmlAttr* attr = pRootNode->properties;
+    while(attr)
+    {
+      string sAttr = (char*)attr->name;
+      if(sAttr.compare("version") == 0)
+      {
+        m_sConfigVersion = (char*)attr->children->content;
+      }
+      attr = attr->next;
+    }
+    
+    if(m_sConfigVersion.compare(NEEDED_CONFIGFILE_VERSION) != 0)
+    {
+      cout << "Your configuration is deprecated" << endl;
+      cout << "  your version  : " << m_sConfigVersion << endl;
+      cout << "  needed version: " << NEEDED_CONFIGFILE_VERSION << endl << endl;
+      
+      cout << "please remove the file \"" << m_sConfigFileName << "\" and restart fuppes." << endl;
+      cout << "(keep a backup of the old configfile to take over your settings)" << endl;
+      cout << "[exiting]" << endl;
+      
+      return false;
+    }
+    
+    // end version  
+    
     
     for(pTmpNode = pRootNode->children->next; pTmpNode; pTmpNode = pTmpNode->next)
     { 
@@ -734,10 +823,21 @@ bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
         string sContentDir;
         while(pTmp)
         {
-          sContentDir = (char*)pTmp->name;        
+          sContentDir = (char*)pTmp->name;          
+          
+          // local_charset
+          if(sContentDir.compare("local_charset") == 0)
+          {
+            if(pTmp->children)
+            {
+              m_sLocalCharset = (char*)pTmp->children->content;              
+              if(m_sLocalCharset.length() == 0)
+                m_sLocalCharset = "UTF-8";
+            }            
+          }          
           
           // max_file_name_length
-          if(sContentDir.compare("max_file_name_length") == 0)
+          else if(sContentDir.compare("max_file_name_length") == 0)
           {
             if(pTmp->children)
             {
@@ -746,6 +846,8 @@ bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
                 m_nMaxFileNameLength = atoi(sMaxFileNameLength.c_str());
             }
           }
+          
+          // playlist_representation
           else if(sContentDir.compare("playlist_representation") == 0)
           {
             if(pTmp->children)
@@ -834,7 +936,7 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
 
 	/* fuppes_config */
 	xmlTextWriterStartElement(pWriter, BAD_CAST "fuppes_config");  
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "version", BAD_CAST "0.7"); 
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "version", BAD_CAST NEEDED_CONFIGFILE_VERSION.c_str()); 
 	
     /* shared_directories */    
     xmlTextWriterWriteComment(pWriter, BAD_CAST "\r\n");
@@ -872,14 +974,24 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
     xmlTextWriterWriteComment(pWriter, BAD_CAST "\r\n");
     xmlTextWriterStartElement(pWriter, BAD_CAST "content_directory");
     
-      /* max_file_name_length */
       std::stringstream sComment;
-         sComment << "specify the maximum length for file names." << endl;
+      
+      /* charset */
+      sComment << "a list of possible charsets can be found under:" << endl << "      http://www.gnu.org/software/libiconv/";
+      xmlTextWriterWriteComment(pWriter, BAD_CAST sComment.str().c_str());
+      sComment.str("");
+      xmlTextWriterStartElement(pWriter, BAD_CAST "local_charset");
+      xmlTextWriterWriteString(pWriter, BAD_CAST "UTF-8");
+      xmlTextWriterEndElement(pWriter); 
+    
+      /* max_file_name_length */      
+      sComment << "specify the maximum length for file names." << endl;
          sComment << "      e.g. the Telegent TG 100 can handle file names up" << endl;
          sComment << "      to 101 characters. everything above leads to an error." << endl;
          sComment << "      if you leave the field empty or insert 0 the maximum" << endl;
          sComment << "      length is unlimited.";
       xmlTextWriterWriteComment(pWriter, BAD_CAST sComment.str().c_str());
+      sComment.str("");
       xmlTextWriterStartElement(pWriter, BAD_CAST "max_file_name_length");
       xmlTextWriterWriteString(pWriter, BAD_CAST "0");
       xmlTextWriterEndElement(pWriter);

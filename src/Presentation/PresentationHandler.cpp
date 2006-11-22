@@ -488,11 +488,17 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
     {     
       CSharedConfig::Shared()->AddSharedDirectory(pRequest->GetPostVar("new_dir"));
     }
+
+    /* local_charset */
+    if(pRequest->PostVarExists("local_charset"))
+    {
+      CSharedConfig::Shared()->SetLocalCharset(pRequest->GetPostVar("local_charset"));
+    }    
     
     /* playlist_representation */
     if(pRequest->PostVarExists("playlist_representation"))
     {
-      cout << "TODO: CPresentationHandler::GetConfigHTML() :: playlist_representation" << endl;
+      CSharedConfig::Shared()->SetPlaylistRepresentation(pRequest->GetPostVar("playlist_representation"));
     }
     
     /* max_file_name_length */
@@ -570,12 +576,33 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
   // playlist representation
   sResult << "<h2>playlist representation</h2>" << endl;
   sResult << "<p>Choose how playlist items are represented. <br />\"file\" sends playlists as real playlist files (m3u or pls)<br />" <<
-             "\"container\" represents playlists as containers including the playlist items.<br />" << endl <<             
-             "<input type=\"radio\" name=\"playlist_representation\" value=\"file\"> file<br />" << endl <<
-             "<input type=\"radio\" name=\"playlist_representation\" value=\"container\"> container<br />" << endl <<
-             "<input type=\"submit\" />" << endl <<             
+             "\"container\" represents playlists as containers including the playlist items.<br />" << endl;
+             if(CSharedConfig::Shared()->GetDisplaySettings().bShowPlaylistsAsContainers)  
+             {
+               sResult << "<input type=\"radio\" name=\"playlist_representation\" value=\"file\"> file<br />" << endl <<
+                          "<input type=\"radio\" name=\"playlist_representation\" value=\"container\" checked=\"checked\"> container<br />" << endl;
+             }
+             else
+             {
+               sResult << "<input type=\"radio\" name=\"playlist_representation\" value=\"file\" checked=\"checked\"> file<br />" << endl <<
+                          "<input type=\"radio\" name=\"playlist_representation\" value=\"container\"> container<br />" << endl;               
+             }
+             
+  sResult << "<input type=\"submit\" />" << endl <<             
              "</p>" << endl; 
   
+             
+  // charset
+  sResult << "<h2>character encoding</h2>" << endl;
+  sResult << "<p>Set your local character encoding.<br />" <<
+             "<a href=\"http://www.gnu.org/software/libiconv/\" target=\"blank\">http://www.gnu.org/software/libiconv/</a><br />" << endl <<
+             "</p>" << endl;
+             
+  sResult << "<p>" << endl <<
+             "<input name=\"local_charset\" value=\"" << CSharedConfig::Shared()->GetLocalCharset() << "\"/><br />" << endl;
+  sResult << "<input type=\"submit\" />" << endl <<             
+             "</p>" << endl;              
+             
   
   // max filename length
   sResult << "<h2>max file name length</h2>" << endl;
@@ -606,6 +633,9 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
   
   // allowed ip list
   sResult << "<p>" << endl <<  
+             "host address is always allowed to access." << endl <<
+             "</p>" << endl <<
+             "<p>" << endl <<
              "<table>" << endl <<
                "<thead>" << endl <<
                  "<tr>" <<

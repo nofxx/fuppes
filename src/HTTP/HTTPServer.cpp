@@ -615,7 +615,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     //cout << p_Response->GetHeaderAsString() << endl;
     
     /* send header if it is a HEAD response and return */        
-    if((nErr != -1) && ((p_Request->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) || (p_Request->GetRangeStart() >= p_Response->GetBinContentLength())))
+    if((nErr != -1) && ((p_Request->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) || ((p_Request->GetRangeStart() > 0) && (p_Request->GetRangeStart() >= p_Response->GetBinContentLength()))))
     {
       //cout << "send head response" << endl;
       #ifdef WIN32
@@ -665,9 +665,9 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       
       /*cout << "read binary" << endl;
       cout << "start: " << nOffset << endl;
-      cout << "requested: " << nRequestSize << endl;
+      cout << "requested: " << nReqChunkSize << endl;
       cout << "end: " << nRet << endl;
-      fflush(stdout);     */
+      fflush(stdout);*/
       
       /* send HTTP header when the first package is ready */
       if(nCnt == 0)

@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
-
+#include <iconv.h>
 #include <cstdio>
 #ifndef WIN32
 #include <dirent.h>
@@ -293,6 +293,7 @@ void CContentDatabase::BuildDB()
   
   CSharedLog::Shared()->Log(LOGNAME, "creating content database. this may take a while.");
   CContentDatabase::Shared()->Insert("delete from objects");
+  CContentDatabase::Shared()->Insert("delete from playlist_items");
   
   for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
   {
@@ -329,12 +330,45 @@ void CContentDatabase::BuildDB()
     }
   } // for
   
-  cout << "parsing playlists" << endl;
+  //cout << "parsing playlists" << endl;
   BuildPlaylists();
-  cout << "done parsing playlists" << endl;  
+  //cout << "done parsing playlists" << endl;  
   
   CSharedLog::Shared()->Log(LOGNAME, "content database created");   
   m_bIsRebuilding = false;
+}
+
+std::string ToUTF8(std::string p_sValue)
+{
+  if(xmlCheckUTF8((const unsigned char*)p_sValue.c_str()))
+    return p_sValue;
+   
+  if(CSharedConfig::Shared()->GetLocalCharset().compare("UTF-8") == 0)
+    return p_sValue;
+  
+  iconv_t icv = iconv_open("UTF-8", CSharedConfig::Shared()->GetLocalCharset().c_str());  
+  if(icv < 0)  
+    return p_sValue;  
+  
+  size_t nInbytes  = p_sValue.length(); 
+  char* szInBuf    = new char[p_sValue.length() + 1];
+  memcpy(szInBuf, p_sValue.c_str(), p_sValue.length());
+  szInBuf[p_sValue.length()] = '\0';
+
+  size_t nOutbytes = p_sValue.length() * 2;
+  char* szOutBuf   = new char[p_sValue.length() * 2 + 1];  
+  char* pOutBuf    = szOutBuf;  
+  memset(szOutBuf, 0, p_sValue.length() * 2 + 1);
+  
+  iconv(icv, &szInBuf, &nInbytes, &pOutBuf, &nOutbytes);
+  p_sValue = szOutBuf;  
+    
+  iconv_close(icv); 
+  
+  delete[] szOutBuf;
+  //delete[] szInBuf;
+  
+  return p_sValue;
 }
 
 void CContentDatabase::DbScanDir(std::string p_sDirectory, long long int p_nParentId)
@@ -405,70 +439,25 @@ void CContentDatabase::DbScanDir(std::string p_sDirectory, long long int p_nPare
         
         /* directory */
         if(IsDirectory(sTmp.str()))
-        {      
-
+        {
+          sTmpFileName = ToUTF8(sTmpFileName);
           sTmpFileName = SQLEscape(sTmpFileName);
-          
-          // to UTF-8
-          unsigned char* szBuf = new unsigned char[4096];
-          int nSize   = 4096;
-          int nLength = sTmpFileName.length();
-    
-          memcpy(szBuf, sTmpFileName.c_str(), sTmpFileName.length());
-          szBuf[sTmpFileName.length()] = '\0';
-    
-          /*cout << szBuf << endl; //pSQLResult->GetValue("FILE_NAME") << endl;
-          cout << xmlCheckUTF8(szBuf) << endl;
-          if(xmlCheckUTF8(szBuf))
-            cout << "true" << endl;
-          else
-            cout << "false" << endl;*/
-    
-          if(!xmlCheckUTF8(szBuf))
-          {
-            xmlCharEncoding nEnc = xmlDetectCharEncoding(szBuf, nLength);
-            cout << "ENCODING: " << nEnc << endl;
-            if(nEnc > 0)
-            {
-              xmlCharEncodingHandlerPtr	pEncHandler;
-              pEncHandler = xmlGetCharEncodingHandler(nEnc);
-              if(pEncHandler)
-              {
-                cout << "got handler: " << (*pEncHandler).name << endl;
-                int nRes = (*pEncHandler).input(szBuf, &nSize, (const unsigned char*)sTmpFileName.c_str(), &nLength);
-                cout << "Res: " << nRes << " nSize: " << nSize << endl;                             
-
-                cout << "ENCODED: " << szBuf << endl;                
-              }
-              else
-                cout << "no encoding handler found" << endl;
-              
-            }
-          }
-          
-          /*if(!xmlCheckUTF8(szBuf))
-          {
-            isolat1ToUTF8(szBuf, &nSize, (const unsigned char*)sTmpFileName.c_str(), &nLength);
-            szBuf[nSize] = '\0';
-          }*/
-          //cout << szBuf << endl;
-
-
           
           stringstream sSql;
           sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME) values ";
           sSql << "(" << CONTAINER_STORAGE_FOLDER << ", ";
           sSql << p_nParentId << ", ";
           sSql << "'" << SQLEscape(sTmp.str()) << "', ";
-          sSql << "'" << szBuf << "');";
-        
-          delete[] szBuf;
+          sSql << "'" << sTmpFileName << "');";
+            
           
           CContentDatabase::Shared()->Lock();
           long long int nRowId = CContentDatabase::Shared()->Insert(sSql.str());
           CContentDatabase::Shared()->Unlock();
           if(nRowId == -1)
             cout << "ERROR: " << sSql.str() << endl;
+          
+          /* recursively scan directories */
           DbScanDir(sTmp.str(), nRowId);          
         }
         else if(IsFile(sTmp.str()) && CSharedConfig::Shared()->IsSupportedFileExtension(sExt))
@@ -489,101 +478,55 @@ unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
 {
   OBJECT_TYPE nObjectType = CFileDetails::Shared()->GetObjectType(p_sFileName);         
           
-          
-          /*cout << "Parent: " << p_nParentId << endl;
-          cout << "FileName: " << sTmpFileName << endl;
-          cout << "Path: " << sTmp.str() << endl; 
-          cout << "Type: " << nObjectType << endl;*/
-          
-          /* todo: build file description          
-          switch(nObjectType)
-          {
-            case ITEM_AUDIO_ITEM_MUSIC_TRACK:
-              cout << "MusicTrack" << endl;
-              SMusicTrack TrackInfo = CFileDetails::Shared()->GetMusicTrackDetails(sTmp.str());
-              break;
-          }*/      
-          if(nObjectType == OBJECT_TYPE_UNKNOWN)
-            return false;          
-          
-          string sTmpFileName =  p_sFileName;
-          // vdr -> vob
-          if(ExtractFileExt(sTmpFileName) == "vdr")
-          {
-            sTmpFileName = TruncateFileExt(sTmpFileName) + ".vob";
-          }
-
-          int nPathLen = ExtractFilePath(sTmpFileName).length();
-          sTmpFileName = sTmpFileName.substr(nPathLen, sTmpFileName.length() - nPathLen);
-          
-          sTmpFileName = SQLEscape(sTmpFileName);          
-          
-          // convert filename to UTF-8
-          unsigned char* szBuf = new unsigned char[4096];
-          int nSize   = 4096;
-          int nLength = sTmpFileName.length();
-    
-          memcpy(szBuf, sTmpFileName.c_str(), sTmpFileName.length());
-          szBuf[sTmpFileName.length()] = '\0';
-    
-         /* if(!xmlCheckUTF8(szBuf))
-          {
-            isolat1ToUTF8(szBuf, &nSize, (const unsigned char*)sTmpFileName.c_str(), &nLength);
-            szBuf[nSize] = '\0';
-          }*/
-
-          
-          if(!xmlCheckUTF8(szBuf))
-          {
-            xmlInitCharEncodingHandlers();
-            
-            xmlCharEncoding nEnc = xmlDetectCharEncoding(szBuf, nLength);
-            cout << "ENCODING: " << nEnc << endl; // " " << xmlGetCharEncodingName(nEnc) << endl;
-            if(nEnc > 0)
-            {
-              xmlCharEncodingHandlerPtr	pEncHandler;
-              pEncHandler = xmlGetCharEncodingHandler(nEnc);
-              if(pEncHandler)
-              {
-                cout << "got handler: " << (*pEncHandler).name << endl;
-                int nRes = (*pEncHandler).input(szBuf, &nSize, (const unsigned char*)sTmpFileName.c_str(), &nLength);
-                cout << "Res: " << nRes << " nSize: " << nSize << endl;                             
-
-                cout << "ENCODED: " << szBuf << endl;                
-              }
-              else
-                cout << "no encoding handler found" << endl;
-              
-            }
-          }          
-          
-         
-          stringstream sSql;
-          sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME, MD5, MIME_TYPE, DETAILS) values ";
-          sSql << "(" << nObjectType << ", ";
-          sSql << p_nParentId << ", ";
-          sSql << "'" << SQLEscape(p_sFileName) << "', ";
-          sSql << "'" << szBuf << "', ";
-          //sSql << "'" << MD5Sum(sTmp.str()) << "', ";
-          sSql << "'" << "todo" << "', ";
-          sSql << "'" << CFileDetails::Shared()->GetMimeType(p_sFileName) << "', ";
-          sSql << "'" << "details - todo" << "');";
-          
-          //cout << sSql.str() << endl;
-          delete[] szBuf;
-          
-          CContentDatabase* pDB = new CContentDatabase();          
-          unsigned int nRowId = pDB->Insert(sSql.str());
-          delete pDB;
-          
-          if(nRowId == -1)
-          {
-            return 0;
-            cout << "ERROR: " << sSql.str() << endl;
-          }
-          else
-            return nRowId;
-          //DbScanDir(sTmp.str(), nRowId);          
+  /* todo: build file description          
+  switch(nObjectType)
+  {
+    case ITEM_AUDIO_ITEM_MUSIC_TRACK:
+      cout << "MusicTrack" << endl;
+      SMusicTrack TrackInfo = CFileDetails::Shared()->GetMusicTrackDetails(sTmp.str());
+      break;
+  }*/      
+  if(nObjectType == OBJECT_TYPE_UNKNOWN)
+    return false;          
+  
+  string sTmpFileName =  p_sFileName;
+  // vdr -> vob
+  if(ExtractFileExt(sTmpFileName) == "vdr") 
+  {
+    sTmpFileName = TruncateFileExt(sTmpFileName) + ".vob";
+  }
+  
+  int nPathLen = ExtractFilePath(sTmpFileName).length();
+  sTmpFileName = sTmpFileName.substr(nPathLen, sTmpFileName.length() - nPathLen);
+  
+  sTmpFileName = ToUTF8(sTmpFileName);
+  sTmpFileName = SQLEscape(sTmpFileName);        
+  
+  
+  stringstream sSql;
+  sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME, MD5, MIME_TYPE, DETAILS) values ";
+  sSql << "(" << nObjectType << ", ";
+  sSql << p_nParentId << ", ";
+  sSql << "'" << SQLEscape(p_sFileName) << "', ";
+  sSql << "'" << sTmpFileName << "', ";
+  //sSql << "'" << MD5Sum(sTmp.str()) << "', ";
+  sSql << "'" << "todo" << "', ";
+  sSql << "'" << CFileDetails::Shared()->GetMimeType(p_sFileName) << "', ";
+  sSql << "'" << "details - todo" << "');";
+  
+  //cout << sSql.str() << endl;         
+  
+  CContentDatabase* pDB = new CContentDatabase();          
+  unsigned int nRowId = pDB->Insert(sSql.str());
+  delete pDB;
+  
+  if(nRowId == -1)
+  {
+    return 0;
+    cout << "ERROR: " << sSql.str() << endl;
+  }
+  else
+    return nRowId;         
 }
 
 unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL)
@@ -600,10 +543,6 @@ unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL)
   sSql << "'" << "todo" << "', ";
   sSql << "'" << "video/x-ms-asf" << "', ";
   sSql << "'" << "details - todo" << "');";
-  
-  
-  
-  
   
   CContentDatabase* pDB = new CContentDatabase();          
   unsigned int nRowId = pDB->Insert(sSql.str());
@@ -644,7 +583,7 @@ void CContentDatabase::BuildPlaylists()
 
 void CContentDatabase::ParsePlaylist(CSelectResult* pResult)
 {
-  cout << "PLAYLIST: " << pResult->GetValue("PATH") << endl;
+  //cout << "PLAYLIST: " << pResult->GetValue("PATH") << endl;
   string sExt = ToLower(ExtractFileExt(pResult->GetValue("PATH")));
   if(sExt.compare("m3u") == 0)
     ParseM3UPlaylist(pResult);
@@ -654,10 +593,10 @@ void CContentDatabase::ParsePlaylist(CSelectResult* pResult)
 
 std::string ReadFile(std::string p_sFileName)
 {
-  std::fstream fsPlaylist;
-  char* szBuf;
-  long  nSize;  
-  string sResult;
+  fstream fsPlaylist;
+  char*   szBuf;
+  long    nSize;  
+  string  sResult;
   
   fsPlaylist.open(p_sFileName.c_str(), ios::in);
   if(fsPlaylist.fail())
@@ -713,9 +652,82 @@ bool InsertPlaylistItem(unsigned int p_nPlaylistID, unsigned int p_nItemID, int 
   delete pDB;
 }
 
+bool IsRelativeFileName(std::string p_sValue)
+{
+  RegEx rxUrl("\\w+://", PCRE_CASELESS);
+  if(rxUrl.Search(p_sValue.c_str()))
+    return false;
+  else
+    return true;
+}
+
+bool IsLocalFile(std::string p_sValue)
+{
+  if(p_sValue.length() == 0)
+    return false;
+  
+  /* absolute filename on unix systems? */
+  if(p_sValue.substr(0, 1).compare(upnpPathDelim) == 0)
+    return true;
+  
+  /* absolute filename on windows */
+  RegEx rxWin("^\\w:\\\\", PCRE_CASELESS);
+  if(rxWin.Search(p_sValue.c_str()))
+    return true;  
+  
+  /* relative filename */
+  if(IsRelativeFileName(p_sValue))
+    return true;  
+  
+  return false;
+}
+
 void CContentDatabase::ParseM3UPlaylist(CSelectResult* pResult)
 {
   std::string sContent = ReadFile(pResult->GetValue("PATH"));
+  std::string sFileName;
+  unsigned int nPlaylistID = atoi(pResult->GetValue("ID").c_str());
+  unsigned int nObjectID   = 0;
+  bool bIsLocalFile;
+  int nPlsPosi = 0;
+  
+  RegEx rxLines("(.*)\n", PCRE_CASELESS);
+  RegEx rxFile("^[#EXTM3U|#EXTINF]", PCRE_CASELESS);  
+  if(rxLines.Search(sContent.c_str()))
+  {
+    do
+    {
+      if(rxFile.Search(rxLines.Match(1)))
+        continue;      
+      
+      sFileName    = rxLines.Match(1);      
+      bIsLocalFile = IsLocalFile(sFileName);
+      
+      if(bIsLocalFile && FileExists(sFileName))
+      {
+        if(IsRelativeFileName(sFileName))
+          sFileName = ExtractFilePath(pResult->GetValue("PATH")) + sFileName;
+        
+        nObjectID = GetObjectIDFromFileName(sFileName);      
+        if(nObjectID == 0)
+        {
+          //cout << "file does not exist in db" << endl;        
+          nObjectID = InsertFile(nPlaylistID, sFileName);       
+        }            
+      } /* if(bIsLocalFile && FileExists(sFileName)) */
+      else if(!bIsLocalFile)
+      {
+        nObjectID = InsertURL(nPlaylistID, sFileName);
+      }     
+
+      if(nObjectID > 0)
+      {
+        nPlsPosi++;
+        InsertPlaylistItem(nPlaylistID, nObjectID, nPlsPosi);
+      }      
+      
+    }while(rxLines.SearchAgain());
+  }
 }
 
 void CContentDatabase::ParsePLSPlaylist(CSelectResult* pResult)
@@ -755,7 +767,7 @@ void CContentDatabase::ParsePLSPlaylist(CSelectResult* pResult)
       RegEx rxUrl("\\w+://", PCRE_CASELESS);
       if(rxUrl.Search(sFileName.c_str()))
       {
-        cout << "URL" << endl;
+        //cout << "URL" << endl;
         bIsLocalFile = false;        
         nObjectID = InsertURL(nPlaylistID, sFileName);        
       }
@@ -765,7 +777,7 @@ void CContentDatabase::ParsePLSPlaylist(CSelectResult* pResult)
         //cout << "relative" << endl;
         
         sFileName = ExtractFilePath(pResult->GetValue("PATH")) + sFileName;
-        cout << sFileName << endl;        
+        //cout << sFileName << endl;        
       }
     
     }

@@ -194,7 +194,6 @@ std::string CHTTPMessage::GetHeaderAsString()
     case HTTP_MESSAGE_TYPE_HEAD:	        /* todo */			                            break;
 		case HTTP_MESSAGE_TYPE_POST:          /* todo */		                              break;
 		case HTTP_MESSAGE_TYPE_200_OK:
-    case HTTP_MESSAGE_TYPE_GENA_OK:
       sResult << sVersion << " 200 OK\r\n";
       break;
     case HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT:
@@ -209,6 +208,12 @@ std::string CHTTPMessage::GetHeaderAsString()
 	  case HTTP_MESSAGE_TYPE_500_INTERNAL_SERVER_ERROR:
       sResult << sVersion << " " << "500 Internal Server Error\r\n";
       break;
+    
+    /* GENA */
+    case HTTP_MESSAGE_TYPE_GENA_OK:
+      sResult << sVersion << " 200 OK\r\n";
+      break;    
+    
     default:
       cout << "ERROR :: CHTTPMessage::GetHeaderAsString() - unhandled message type" << endl;
       fflush(stdout);
@@ -336,7 +341,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
   {    
     /*cout << "get transcode chunk" << endl;
     cout << "length: " << m_nBinContentLength << endl;
-    fflush(stdout);    */
+    fflush(stdout);*/
         
     fuppesThreadLockMutex(&TranscodeMutex);      
     
@@ -351,7 +356,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
 
       stringstream sLog;
       sLog << "we are sending faster then we can transcode!" << endl;
-      sLog << "  Try     : " << (nDelayCount + 1) << endl;
+      sLog << "  Try     : " << (nDelayCount + 1) << "/50" << endl;
       sLog << "  Lenght  : " << m_nBinContentLength << endl;
       sLog << "  Position: " << m_nBinContentPosition << endl;
       sLog << "  Size    : " << p_nSize << endl;
