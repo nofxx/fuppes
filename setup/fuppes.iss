@@ -1,6 +1,6 @@
 [Setup]
 AppName=Free UPnP Entertainment Service
-AppVerName=Free UPnP Entertainment Service 0.5.3
+AppVerName=Free UPnP Entertainment Service 0.5.4
 AppPublisher=Ulrich Völkel
 AppPublisherURL=http://sourceforge.net/projects/fuppes
 AppSupportURL=http://sourceforge.net/projects/fuppes
@@ -9,7 +9,7 @@ DefaultDirName={pf}\Free UPnP Entertainment Service\
 DefaultGroupName=Free UPnP Entertainment Service
 LicenseFile=..\setup\license-eng.rtf
 OutputDir=..\setup
-OutputBaseFilename=fuppes-0.5.3-win32-setup
+OutputBaseFilename=fuppes-0.5.4-win32-setup
 SolidCompression=true
 ShowTasksTreeLines=true
 SourceDir=..\win32
@@ -29,7 +29,7 @@ Name: quicklaunchicon; Description: {cm:CreateQuickLaunchIcon}; GroupDescription
 [Files]
 Source: ..\win32\fuppes.exe; DestDir: {app}; Flags: ignoreversion
 Source: ..\win32\iconv.dll; DestDir: {app}
-Source: ..\win32\pcre.dll; DestDir: {app}
+Source: ..\win32\pcre3.dll; DestDir: {app}
 Source: ..\AUTHORS; DestDir: {app}; Flags: ignoreversion
 Source: ..\ChangeLog; DestDir: {app}; Flags: ignoreversion; DestName: ChangeLog.txt
 Source: ..\COPYING; DestDir: {app}; Flags: ignoreversion; DestName: COPYING.txt
