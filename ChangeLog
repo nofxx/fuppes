@@ -1,4 +1,4 @@
-Version 0.5.4
+Version 0.5.4 (2006-11-23)
   * initial support for playlists (m3u, pls)
     new configuration option: "playlist representation"
   ** "file": playlists are send as playlist files

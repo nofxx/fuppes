@@ -360,7 +360,7 @@ std::string ToUTF8(std::string p_sValue)
   char* pOutBuf    = szOutBuf;  
   memset(szOutBuf, 0, p_sValue.length() * 2 + 1);
   
-  iconv(icv, &szInBuf, &nInbytes, &pOutBuf, &nOutbytes);
+  iconv(icv, (const char**)&szInBuf, &nInbytes, &pOutBuf, &nOutbytes);
   p_sValue = szOutBuf;  
     
   iconv_close(icv); 

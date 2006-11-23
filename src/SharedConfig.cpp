@@ -737,6 +737,7 @@ bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
       cout << "please remove the file \"" << m_sConfigFileName << "\" and restart fuppes." << endl;
       cout << "(keep a backup of the old configfile to take over your settings)" << endl;
       cout << "[exiting]" << endl;
+      fuppesSleep(3000);
       
       return false;
     }
