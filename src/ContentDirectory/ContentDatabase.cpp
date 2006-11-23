@@ -360,7 +360,11 @@ std::string ToUTF8(std::string p_sValue)
   char* pOutBuf    = szOutBuf;  
   memset(szOutBuf, 0, p_sValue.length() * 2 + 1);
   
+  #ifdef WIN32
   iconv(icv, (const char**)&szInBuf, &nInbytes, &pOutBuf, &nOutbytes);
+  #else
+  iconv(icv, &szInBuf, &nInbytes, &pOutBuf, &nOutbytes);  
+  #endif
   p_sValue = szOutBuf;  
     
   iconv_close(icv); 
@@ -654,11 +658,21 @@ bool InsertPlaylistItem(unsigned int p_nPlaylistID, unsigned int p_nItemID, int 
 
 bool IsRelativeFileName(std::string p_sValue)
 {
+  /* url */
   RegEx rxUrl("\\w+://", PCRE_CASELESS);
   if(rxUrl.Search(p_sValue.c_str()))
     return false;
-  else
-    return true;
+  
+  /* absolute filename on unix systems? */
+  if(p_sValue.substr(0, 1).compare(upnpPathDelim) == 0)
+    return false;
+  
+  /* absolute filename on windows */
+  RegEx rxWin("^\\w:\\\\", PCRE_CASELESS);
+  if(rxWin.Search(p_sValue.c_str()))
+    return false;   
+    
+  return true;
 }
 
 bool IsLocalFile(std::string p_sValue)
@@ -684,8 +698,8 @@ bool IsLocalFile(std::string p_sValue)
 
 void CContentDatabase::ParseM3UPlaylist(CSelectResult* pResult)
 {
-  std::string sContent = ReadFile(pResult->GetValue("PATH"));
-  std::string sFileName;
+  std::string  sContent = ReadFile(pResult->GetValue("PATH"));
+  std::string  sFileName;
   unsigned int nPlaylistID = atoi(pResult->GetValue("ID").c_str());
   unsigned int nObjectID   = 0;
   bool bIsLocalFile;
