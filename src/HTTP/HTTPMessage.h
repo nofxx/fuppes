@@ -31,7 +31,7 @@
 
 #include "../MessageBase.h"
 #include "../ContentDirectory/UPnPItem.h"
-#include "../UPnPAction.h"
+#include "../UPnPActions/UPnPAction.h"
 #include "../Transcoding/TranscodingCache.h"
 #include <string>
 #include <iostream>

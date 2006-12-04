@@ -6,10 +6,10 @@ INCLUDES = ${LIBXML_CFLAGS} ${PCRE_CFLAGS} ${VORBISFILE_CFLAGS} ${TAGLIB_CFLAGS}
 bin_PROGRAMS = fuppes
 
 h_sources = \
-  Common.h\
-  md5.h\
-  UUID.h\
-  Timer.h\
+  Common/Common.h\
+  Common/md5.h\
+  Common/UUID.h\
+  Common/Timer.h\
   MessageBase.h\
   SSDP/UDPSocket.h\
   SSDP/SSDPCtrl.h\
@@ -24,8 +24,8 @@ h_sources = \
   UPnPBase.h\
 	UPnPDevice.h\
 	UPnPService.h\
-  UPnPAction.h\
-  UPnPActionFactory.h\
+  UPnPActions/UPnPAction.h\
+  UPnPActions/UPnPActionFactory.h\
   UPnPActions/UPnPBrowse.h\
 	MediaServer.h\
   ContentDirectory/UPnPObject.h\
@@ -44,6 +44,7 @@ h_sources = \
   Presentation/PresentationHandler.h\
   Presentation/Stylesheet.h\
   Transcoding/WrapperBase.h\
+  Transcoding/TranscodingMgr.h\
   Transcoding/TranscodingCache.h\
   Transcoding/LameWrapper.h\
   Transcoding/VorbisWrapper.h\
@@ -55,10 +56,10 @@ h_sources = \
 	RegEx.h	
 
 cpp_sources = \
-  Common.cpp\
-  md5.c\
-  UUID.cpp\
-  Timer.cpp\
+  Common/Common.cpp\
+  Common/md5.c\
+  Common/UUID.cpp\
+  Common/Timer.cpp\
   MessageBase.cpp\
   SSDP/UDPSocket.cpp\
 	SSDP/SSDPCtrl.cpp\
@@ -73,8 +74,8 @@ cpp_sources = \
   UPnPBase.cpp\
 	UPnPDevice.cpp\
 	UPnPService.cpp\
-  UPnPAction.cpp\
-  UPnPActionFactory.cpp\
+  UPnPActions/UPnPAction.cpp\
+  UPnPActions/UPnPActionFactory.cpp\
   UPnPActions/UPnPBrowse.cpp\
 	MediaServer.cpp\
   ContentDirectory/UPnPContainer.cpp\
@@ -94,6 +95,7 @@ cpp_sources = \
   Presentation/Images/fuppes_small_png.cpp\
   Presentation/Images/header_gradient_png.cpp\
   Presentation/Images/header_gradient_small_png.cpp\
+  Transcoding/TranscodingMgr.cpp\
   Transcoding/TranscodingCache.cpp\
   Transcoding/LameWrapper.cpp\
   Transcoding/VorbisWrapper.cpp\

@@ -515,7 +515,7 @@ unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
   sSql << "'" << sTmpFileName << "', ";
   //sSql << "'" << MD5Sum(sTmp.str()) << "', ";
   sSql << "'" << "todo" << "', ";
-  sSql << "'" << CFileDetails::Shared()->GetMimeType(p_sFileName) << "', ";
+  sSql << "'" << CFileDetails::Shared()->GetMimeType(p_sFileName, false) << "', ";
   sSql << "'" << "details - todo" << "');";
   
   //cout << sSql.str() << endl;         
@@ -538,14 +538,15 @@ unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL)
   stringstream sSql;
   sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME, MD5, MIME_TYPE, DETAILS) values ";
   //sSql << "(" << ITEM_VIDEO_ITEM_VIDEO_BROADCAST << ", ";
-  sSql << "(" << ITEM_AUDIO_ITEM_AUDIO_BROADCAST << ", ";
+  sSql << "(" << ITEM_AUDIO_ITEM_MUSIC_TRACK << ", ";
+  //sSql << "(" <<  << ", ";
   
   sSql << p_nParentId << ", ";
   sSql << "'" << SQLEscape(p_sURL) << "', ";
   sSql << "'" << p_sURL << "', ";
   //sSql << "'" << MD5Sum(sTmp.str()) << "', ";
   sSql << "'" << "todo" << "', ";
-  sSql << "'" << "video/x-ms-asf" << "', ";
+  sSql << "'" << MIME_TYPE_AUDIO_MPEG << "', ";
   sSql << "'" << "details - todo" << "');";
   
   CContentDatabase* pDB = new CContentDatabase();          

@@ -46,7 +46,7 @@ class CSubscription
     void SetSID(std::string p_sSID) { m_sSID = p_sSID; }
     
     unsigned int GetTimeout() { return m_nTimeout; }
-    void SetTimeout(unsigned int p_nTimeout) { m_nTimeout = p_nTimeout; }
+    void SetTimeout(unsigned int p_nTimeout) { m_nTimeout = p_nTimeout; m_nTimeLeft = m_nTimeout; }
     
     std::string GetCallback() { return m_sCallback; }
     void SetCallback(std::string p_sCallback) { m_sCallback = p_sCallback; }
@@ -54,12 +54,15 @@ class CSubscription
     SUBSCRIPTION_TYPE GetType() { return m_nSubscriptionType; }
     void SetType(SUBSCRIPTION_TYPE p_nSubscriptionType) { m_nSubscriptionType = p_nSubscriptionType; }
     
-    void Renew() {}
+    void Renew();
+    void DecTimeLeft();
+    unsigned int GetTimeLeft() { return m_nTimeLeft; }
     
   private:
-    std::string      m_sSID;
-    unsigned int     m_nTimeout;
-    std::string      m_sCallback;
+    std::string        m_sSID;
+    unsigned int       m_nTimeout;
+    unsigned int       m_nTimeLeft;
+    std::string        m_sCallback;
     SUBSCRIPTION_TYPE  m_nSubscriptionType;
 };
  
@@ -69,8 +72,17 @@ class CSubscriptionMgr
     static CSubscriptionMgr* Shared();
 
     bool HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* pResponse);
+  
+    bool m_bDoLoop;
+  
+    std::map<std::string, CSubscription*>           m_Subscriptions;
+    std::map<std::string, CSubscription*>::iterator m_SubscriptionsIterator;  
+  
   private:  
     static CSubscriptionMgr* m_pInstance;
+  
+    CSubscriptionMgr();
+    ~CSubscriptionMgr();
   
     bool ParseSubscription(CHTTPMessage* pRequest, CSubscription* pSubscription);
   
@@ -78,9 +90,9 @@ class CSubscriptionMgr
     bool RenewSubscription(CSubscription* pSubscription);
     bool DeleteSubscription(CSubscription* pSubscription);
   
-    std::map<std::string, CSubscription*>           m_Subscriptions;
-    std::map<std::string, CSubscription*>::iterator m_SubscriptionsIterator;  
+  
     
+    fuppesThread m_MainLoop;    
 };
 
 #endif /* _SUBSCRIPTIONMGR_H */

@@ -51,7 +51,7 @@ bool CHTTPRequestHandler::HandleRequest(CHTTPMessage* pRequest, CHTTPMessage* pR
       
     /* GENA */
     case HTTP_MESSAGE_TYPE_SUBSCRIBE:
-      return false; //this->HandleGENAMessage(pRequest, pResponse);
+      return this->HandleGENAMessage(pRequest, pResponse);
     
     default :
       return false;    
@@ -106,7 +106,7 @@ bool CHTTPRequestHandler::HandleSOAPAction(CHTTPMessage* pRequest, CHTTPMessage*
 
 bool CHTTPRequestHandler::HandleGENAMessage(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {
-  return false;
+  //return false;
   //cout << pRequest->GetMessage() << endl;
   
   CSubscriptionMgr::Shared()->HandleSubscription(pRequest, pResponse);

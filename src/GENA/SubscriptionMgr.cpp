@@ -25,6 +25,22 @@
 #include "../RegEx.h"
 #include "../UUID.h"
 
+void CSubscription::Renew()
+{
+  m_nTimeLeft = m_nTimeout;
+}
+
+void CSubscription::DecTimeLeft()
+{
+  if(m_nTimeLeft > 0)
+    m_nTimeLeft--;
+}
+
+
+
+fuppesThreadMutex  g_SubscriptionsMutex;
+fuppesThreadCallback MainLoop(void *arg);
+
 CSubscriptionMgr* CSubscriptionMgr::m_pInstance = 0;
 
 CSubscriptionMgr* CSubscriptionMgr::Shared()
@@ -34,6 +50,26 @@ CSubscriptionMgr* CSubscriptionMgr::Shared()
   return m_pInstance;
 }
 
+CSubscriptionMgr::CSubscriptionMgr()
+{  
+  fuppesThreadInitMutex(&g_SubscriptionsMutex);
+  m_MainLoop = (fuppesThread)NULL;
+  m_bDoLoop = true;
+  
+  fuppesThreadStartArg(m_MainLoop, MainLoop, *this);
+}
+
+CSubscriptionMgr::~CSubscriptionMgr()
+{
+  m_bDoLoop = false;
+  
+  int nExitCode;
+  fuppesThreadCancel(m_MainLoop, nExitCode);
+  fuppesThreadClose(m_MainLoop);
+  m_MainLoop = (fuppesThread)NULL;  
+  
+  fuppesThreadDestroyMutex(&g_SubscriptionsMutex);
+}
 
 bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {
@@ -76,7 +112,7 @@ bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* 
 bool CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* pSubscription)
 {
   cout << "CSubscriptionMgr::ParseSubscription" << endl;
-  cout << pRequest->GetHeader() << endl;
+  //cout << pRequest->GetHeader() << endl;
   cout << endl << "SUBSCR COUNT: " << m_Subscriptions.size() << endl;
   
   RegEx rxSubscribe("([SUBSCRIBE|UNSUBSCRIBE]+)", PCRE_CASELESS);
@@ -102,6 +138,8 @@ bool CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* 
       pSubscription->SetSID(sSID);
       cout << "RENEW" << endl;
     }
+    
+    pSubscription->SetTimeout(180);    
   }
   else if(sSubscribe.compare("unsubscribe") == 0)
   {
@@ -119,44 +157,94 @@ void CSubscriptionMgr::AddSubscription(CSubscription* pSubscription)
   string sSID = GenerateUUID();
   pSubscription->SetSID(sSID);
   
+  fuppesThreadLockMutex(&g_SubscriptionsMutex);  
   m_Subscriptions[sSID] = pSubscription;
+  fuppesThreadUnlockMutex(&g_SubscriptionsMutex);
 }
 
 bool CSubscriptionMgr::RenewSubscription(CSubscription* pSubscription)
 {
   cout << "CSubscriptionMgr::RenewSubscription" << endl;
+  fuppesThreadLockMutex(&g_SubscriptionsMutex);  
+  
+  bool bResult = false;
   
   m_SubscriptionsIterator = m_Subscriptions.find(pSubscription->GetSID());
   if(m_SubscriptionsIterator != m_Subscriptions.end())
   {
     cout << "RENEW found" << endl;
     m_Subscriptions[pSubscription->GetSID()]->Renew();
+    bResult = true;
   }
   else
   {
     cout << "RENEW NOT found" << endl;      
-    return false;
+    bResult = false;
   }
   
-  return true;
+  fuppesThreadUnlockMutex(&g_SubscriptionsMutex);
+  return bResult;
 }
 
 bool CSubscriptionMgr::DeleteSubscription(CSubscription* pSubscription)
 {
   cout << "CSubscriptionMgr::DeleteSubscription" << endl;
     
+  fuppesThreadLockMutex(&g_SubscriptionsMutex);  
+  
+  bool bResult = false;
+  
   m_SubscriptionsIterator = m_Subscriptions.find(pSubscription->GetSID());
   /* found device */
   if(m_SubscriptionsIterator != m_Subscriptions.end())
   { 
     m_Subscriptions.erase(pSubscription->GetSID());
+    bResult = true;
   }
   else
   {
-    return false;
+    bResult = false;
   }
   
-  return true;
+  fuppesThreadUnlockMutex(&g_SubscriptionsMutex);
+  return bResult;
+}
+
+fuppesThreadCallback MainLoop(void *arg)
+{
+  CSubscriptionMgr* pMgr = (CSubscriptionMgr*)arg;
+  CSubscription* pSubscr = NULL;
+  
+  while(pMgr->m_bDoLoop)
+  {
+    cout << "CSubscriptionMgr::MainLoop" << endl;
+    
+    fuppesThreadLockMutex(&g_SubscriptionsMutex);    
+    
+    for(pMgr->m_SubscriptionsIterator = pMgr->m_Subscriptions.begin();
+        pMgr->m_SubscriptionsIterator != pMgr->m_Subscriptions.end();
+        pMgr->m_SubscriptionsIterator++)
+    {     
+      pSubscr = (*pMgr->m_SubscriptionsIterator).second;
+      
+      cout << "  subscr: " << pSubscr->GetSID() << endl;
+      cout << "    time left: " << pSubscr->GetTimeLeft() << endl;
+      
+      pSubscr->DecTimeLeft();      
+      
+      if(pSubscr->GetTimeLeft() == 0)
+      {
+        pMgr->m_Subscriptions.erase(pSubscr->GetSID());        
+        delete pSubscr;
+      }    
+    }
+    
+    fuppesThreadUnlockMutex(&g_SubscriptionsMutex);
+    
+    fuppesSleep(1000);
+  }
+  
+  fuppesThreadExit();
 }
 
 /* SUBSCRIBE

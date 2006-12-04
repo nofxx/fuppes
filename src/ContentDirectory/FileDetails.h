@@ -27,6 +27,23 @@
 #include "ContentDatabase.h"
 #include <string>
 
+struct FileType_t
+{
+  std::string sExt;
+  OBJECT_TYPE nObjectType;
+  std::string sMimeType;
+};
+
+struct TranscodingSetting_t
+{
+  std::string sExt;  
+  std::string sTargetExt;  
+  std::string sTargetMimeType;
+  OBJECT_TYPE nTargetObjectType;
+  std::string sDecoderName;
+  std::string sEncoderName;
+};
+
 struct SAudioItem
 { 
   std::string sTitle;
@@ -83,12 +100,14 @@ class CFileDetails
     static CFileDetails* Shared();
     OBJECT_TYPE GetObjectType(std::string p_sFileName);
     std::string GetObjectTypeAsString(unsigned int p_nObjectType);
-    std::string GetMimeType(std::string p_sFileName);
+    std::string GetMimeType(std::string p_sFileName, bool p_bTranscodingMimeType);
   
     //SMusicTrack GetMusicTrackDetails(std::string p_sFileName);
+    bool IsTranscodingExtension(std::string p_sExt);
   
   private:
-    static CFileDetails* m_Instance;
+    static CFileDetails* m_Instance; 
+    
 };
 
 #endif /* _FILEDETAILS_H */

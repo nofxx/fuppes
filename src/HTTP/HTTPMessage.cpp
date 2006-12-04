@@ -56,7 +56,7 @@
 #endif
 
 #include "../RegEx.h"
-#include "../UPnPActionFactory.h"
+#include "../UPnPActions/UPnPActionFactory.h"
 
 /*===============================================================================
  CONSTANTS

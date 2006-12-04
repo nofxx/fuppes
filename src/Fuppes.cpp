@@ -183,7 +183,7 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
       /* remove device from list of remote devices */
       m_RemoteDevices.erase(pSender->GetUUID());
       
-      /* stop the deivce's timer and */
+      /* stop the device's timer and */
       pSender->GetTimer()->Stop();      
       /* push it to the list containing timed out devices */
       m_TimedOutDevices.push_back(pSender);

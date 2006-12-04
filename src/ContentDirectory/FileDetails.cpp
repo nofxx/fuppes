@@ -32,6 +32,43 @@
 #include <sstream>
 #include <iostream>
 
+
+
+
+
+/** default file settings */
+struct FileType_t FileTypes[] = 
+{
+  /* audio types */
+  {"mp3" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "audio/mpeg"},
+  {"ogg" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "application/octet-stream"},
+  {"mpc" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "application/octet-stream"},
+  {"flac", ITEM_AUDIO_ITEM_MUSIC_TRACK, "audio/x-flac"},  
+  
+  /* image types */
+  {"jpeg", ITEM_IMAGE_ITEM_PHOTO, "image/jpeg"},
+  {"jpg" , ITEM_IMAGE_ITEM_PHOTO, "image/jpeg"},
+  
+  /* video types */
+  
+  
+  /* empty entry to mark the list's end */
+  {"", OBJECT_TYPE_UNKNOWN, ""}
+};
+
+
+struct TranscodingSetting_t TranscodingSettings[] =
+{
+  /* audio */
+  {"ogg" , "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK, "VorbisWrapper", "LameWrapper"},
+  {"mpc" , "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK, "MpcWrapper"   , "LameWrapper"},
+  {"flac", "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK, "FlacWrapper"  , "LameWrapper"},
+  
+  /* empty entry to mark the list's end */
+  {"", "", "", OBJECT_TYPE_UNKNOWN}
+};
+
+
 using namespace std;
 
 CFileDetails* CFileDetails::m_Instance = 0;
@@ -50,6 +87,23 @@ CFileDetails::CFileDetails()
 OBJECT_TYPE CFileDetails::GetObjectType(std::string p_sFileName)
 {
   string sExt = ToLower(ExtractFileExt(p_sFileName));
+  struct FileType_t* pType;   
+  
+  pType = FileTypes;
+  while(!pType->sExt.empty())
+  {
+    if(pType->sExt.compare(sExt) == 0)
+    {
+      return pType->nObjectType;
+      break;
+    } 
+    
+    pType++;
+  }
+  
+  
+  cout << "CFileDetails::GetObjectType :: NOT FOUND" << endl;
+  
   
   if((sExt.compare("mp3") == 0) || (sExt.compare("ogg") == 0) ||
      (sExt.compare("mpc") == 0) || (sExt.compare("flac") == 0))
@@ -84,10 +138,42 @@ OBJECT_TYPE CFileDetails::GetObjectType(std::string p_sFileName)
     return OBJECT_TYPE_UNKNOWN;  
 }
 
-std::string CFileDetails::GetMimeType(std::string p_sFileName)
+std::string CFileDetails::GetMimeType(std::string p_sFileName, bool p_bTranscodingMimeType)
 {
   string sExt = ToLower(ExtractFileExt(p_sFileName));
-
+  struct FileType_t* pType; 
+  struct TranscodingSetting_t* pTranscoding;
+  
+  pType = FileTypes;
+  while(!pType->sExt.empty())
+  {
+    if(pType->sExt.compare(sExt) == 0)
+    {
+      
+      /* check for transcoding settings */
+      if(p_bTranscodingMimeType)
+      {
+        pTranscoding = TranscodingSettings;
+        while(!pTranscoding->sExt.empty())
+        {
+          if(pTranscoding->sExt.compare(sExt) == 0)
+          {
+            return pTranscoding->sTargetMimeType;
+          }
+          pTranscoding++;
+        }
+      }
+      
+      /* return default mime type */      
+      return pType->sMimeType;      
+    } // if
+    
+    pType++;
+  } // while !sExt.empty
+  
+  
+  
+  
   /* audio types */
   if (sExt.compare("mp3") == 0)
     return MIME_TYPE_AUDIO_MPEG;  
@@ -188,6 +274,19 @@ std::string CFileDetails::GetObjectTypeAsString(unsigned int p_nObjectType)
     default :
       return "CFileDetails::GetObjectTypeAsString() :: unhandled type (please send a bugreport)";
   }
+}
+
+bool CFileDetails::IsTranscodingExtension(std::string p_sExt)
+{
+  TranscodingSetting_t* pTranscoding;
+  pTranscoding = TranscodingSettings;
+  while(!pTranscoding->sExt.empty())
+  {
+    if(pTranscoding->sExt.compare(p_sExt) == 0)
+      return true;
+    pTranscoding++;
+  }
+  return false;
 }
 
 /*SMusicTrack CFileDetails::GetMusicTrackDetails(std::string p_sFileName)
