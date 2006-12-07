@@ -27,7 +27,7 @@
 ===============================================================================*/
 
 #include "MessageBase.h"
-#include "RegEx.h"
+#include "Common/RegEx.h"
 
 #include <iostream>
 using namespace std;
@@ -62,7 +62,7 @@ bool CMessageBase::SetMessage(std::string p_sMessage)
 {
   m_sMessage = p_sMessage;
 
-  unsigned int nPos = m_sMessage.find("\r\n\r\n");  
+  std::string::size_type nPos = m_sMessage.find("\r\n\r\n");  
   if(nPos != string::npos)
   {
     m_sHeader  = m_sMessage.substr(0, nPos);

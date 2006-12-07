@@ -27,7 +27,7 @@
 ===============================================================================*/
 
 #include "HTTPMessage.h"
-#include "../Common.h"
+#include "../Common/Common.h"
 #include "../SharedLog.h"
 #include "../SharedConfig.h"
 #include "HTTPParser.h"
@@ -55,7 +55,7 @@
 
 #endif
 
-#include "../RegEx.h"
+#include "../Common/RegEx.h"
 #include "../UPnPActions/UPnPActionFactory.h"
 
 /*===============================================================================
@@ -658,6 +658,8 @@ bool CHTTPMessage::IsTranscoding()
 
 void CHTTPMessage::BreakTranscoding()
 {
+  cout << "CHTTPMessage::BreakTranscoding" << endl;
+  
   if(m_pTranscodingSessionInfo)
   {
     m_pTranscodingSessionInfo->m_bBreakTranscoding = true;   

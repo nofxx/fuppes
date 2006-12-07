@@ -9,16 +9,16 @@
   * vob (0.5.3)
   * vdr (0.5.3)
   
-* handle muliple audio tracks
+* handle multiple audio tracks
   create a virtual folder for a movie containing
   multiple audio tracks and list the tracks as items
   inside the folder
 
-* playlist handling (0.7)
+* playlist handling (0.5.4)
   * m3u
   * pls
   
-* eventing
+* eventing (0.7)
 
 * ContentDirectory
   * Browse
@@ -75,3 +75,5 @@
 ** display in webinterface if available
 
 * split folders containing a configurable amount of files
+
+* podcast support

@@ -30,7 +30,7 @@
 #include "Stylesheet.h"
 #include "../SharedConfig.h"
 #include "../SharedLog.h"
-#include "../Common.h"
+#include "../Common/Common.h"
 #include "../ContentDirectory/ContentDatabase.h"
 #include "../ContentDirectory/FileDetails.h"
 

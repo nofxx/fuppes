@@ -27,9 +27,9 @@
 ===============================================================================*/
 
 #include "HTTPClient.h"
-#include "../Common.h"
+#include "../Common/Common.h"
+#include "../Common/RegEx.h"
 #include "../SharedLog.h"
-#include "../RegEx.h"
 
 #ifndef WIN32
 #include <arpa/inet.h>

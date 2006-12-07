@@ -38,6 +38,7 @@
 #include <algorithm>
 #include <cctype>
 #include <fcntl.h>
+#include <iconv.h>
 
 using namespace std;
 
@@ -179,8 +180,8 @@ std::string ExtractFilePath(std::string p_sFileName)
 
 std::string TruncateFileExt(std::string p_sFileName)
 {
-  std::string sExt = ExtractFileExt(p_sFileName);
-  if(sExt.length() == 0)
+  std::string sExt = ExtractFileExt(p_sFileName);  
+  if((sExt.length() == 0) && (p_sFileName.substr(p_sFileName.length() - 1, 1).compare(".") != 0))
     return p_sFileName;
   
   std::string sResult = p_sFileName.substr(0, p_sFileName.length() - sExt.length() - 1);
@@ -386,6 +387,44 @@ std::string SQLEscape(std::string p_sValue)
   
   return p_sValue;
 }
+
+std::string ToUTF8(std::string p_sValue)
+{
+  if(xmlCheckUTF8((const unsigned char*)p_sValue.c_str()))
+    return p_sValue;
+   
+  if(CSharedConfig::Shared()->GetLocalCharset().compare("UTF-8") == 0)
+    return p_sValue;
+  
+  iconv_t icv = iconv_open("UTF-8", CSharedConfig::Shared()->GetLocalCharset().c_str());  
+  if(icv < 0)  
+    return p_sValue;  
+  
+  size_t nInbytes  = p_sValue.length(); 
+  char* szInBuf    = new char[p_sValue.length() + 1];
+  memcpy(szInBuf, p_sValue.c_str(), p_sValue.length());
+  szInBuf[p_sValue.length()] = '\0';
+
+  size_t nOutbytes = p_sValue.length() * 2;
+  char* szOutBuf   = new char[p_sValue.length() * 2 + 1];  
+  char* pOutBuf    = szOutBuf;  
+  memset(szOutBuf, 0, p_sValue.length() * 2 + 1);
+  
+  #ifdef WIN32
+  iconv(icv, (const char**)&szInBuf, &nInbytes, &pOutBuf, &nOutbytes);
+  #else
+  iconv(icv, &szInBuf, &nInbytes, &pOutBuf, &nOutbytes);  
+  #endif
+  p_sValue = szOutBuf;  
+    
+  iconv_close(icv); 
+  
+  delete[] szOutBuf;
+  //delete[] szInBuf;
+  
+  return p_sValue;
+}
+
 
 /*===============================================================================
  Common Functions

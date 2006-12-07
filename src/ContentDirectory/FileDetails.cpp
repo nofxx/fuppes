@@ -23,12 +23,15 @@
  
 #include "FileDetails.h"
 
-#include "../Common.h"
+#include "../Common/Common.h"
 #include "../SharedConfig.h"
-/* taglib
+
+#ifdef HAVE_TAGLIB
 #include <fileref.h>
 #include <tstring.h>
-#include <tag.h>*/
+#include <tag.h>
+#endif
+
 #include <sstream>
 #include <iostream>
 
@@ -289,43 +292,104 @@ bool CFileDetails::IsTranscodingExtension(std::string p_sExt)
   return false;
 }
 
-/*SMusicTrack CFileDetails::GetMusicTrackDetails(std::string p_sFileName)
+std::string CFileDetails::GetTargetMimeType(std::string p_sExt)
 {
-  cout << "GetMusicTrackDetails" << endl;
+  string sResult = "";
+  
+  TranscodingSetting_t* pTranscoding;
+  pTranscoding = TranscodingSettings;
+  while(!pTranscoding->sExt.empty())
+  {
+    if(pTranscoding->sExt.compare(p_sExt) == 0)
+    {
+      sResult = pTranscoding->sTargetMimeType;
+      break;
+    }    
+    pTranscoding++;
+  }
+  
+  return sResult;
+}
+
+std::string CFileDetails::GetTargetExtension(std::string p_sExt)
+{
+  string sResult = p_sExt;
+  
+  TranscodingSetting_t* pTranscoding;
+  pTranscoding = TranscodingSettings;
+  while(!pTranscoding->sExt.empty())
+  {
+    if(pTranscoding->sExt.compare(p_sExt) == 0)
+    {
+      sResult = pTranscoding->sTargetExt;
+      break;
+    }    
+    pTranscoding++;
+  }
+  
+  return sResult;
+}
+
+SMusicTrack CFileDetails::GetMusicTrackDetails(std::string p_sFileName, std::string* p_sResult)
+{  
+  //cout << "GetMusicTrackDetails" << endl;
   
   SMusicTrack Result;
+ 
+  stringstream sResult;
   
+  #ifdef HAVE_TAGLIB  
   TagLib::FileRef pFile(p_sFileName.c_str());
   
   TagLib::String sTmp = pFile.tag()->title();
-  cout << "Title: " << sTmp.to8Bit() << endl;
+  //cout << "Title: " << sTmp.to8Bit() << endl;
   Result.mAudioItem.sTitle = sTmp.to8Bit();  
   
   sTmp = pFile.tag()->artist();
-  cout << "Artist: " << sTmp.to8Bit() << endl;
+  //cout << "Artist: " << sTmp.to8Bit() << endl;
   Result.sArtist = sTmp.to8Bit();  
   
+  if(!sTmp.isEmpty())  
+    sResult << "<upnp:artist>" << sTmp.to8Bit() << "</upnp:artist>"; // << endl;
+  
+  
   sTmp = pFile.tag()->album();
-  cout << "Album: " << sTmp.to8Bit() << endl;
+  //cout << "Album: " << sTmp.to8Bit() << endl;
   Result.sAlbum = sTmp.to8Bit();  
   
+  if(!sTmp.isEmpty())  
+    sResult << "<upnp:album>" << sTmp.to8Bit() << "</upnp:album>"; // << endl;
+  
+  
   sTmp = pFile.tag()->comment();
-  cout << "Comment: " << sTmp.to8Bit() << endl;
+  //cout << "Comment: " << sTmp.to8Bit() << endl;
   Result.mAudioItem.sLongDescription = sTmp.to8Bit();    
   
   sTmp = pFile.tag()->genre();
-  cout << "Genre: " << sTmp.to8Bit() << endl;
+  //cout << "Genre: " << sTmp.to8Bit() << endl;
   Result.mAudioItem.sGenre = sTmp.to8Bit();      
 
+  if(!sTmp.isEmpty())  
+    sResult << "<upnp:genre>" << sTmp.to8Bit() << "</upnp:genre>"; // << endl;
+
+
   uint nTmp = pFile.tag()->year();
-  cout << "Year: " << nTmp << endl;
+  //cout << "Year: " << nTmp << endl;
   stringstream sDate;
   sDate << nTmp;
   Result.sDate = sDate.str();
   
   nTmp = pFile.tag()->track();
-  cout << "Track: " << nTmp << endl;  
+  //cout << "Track: " << nTmp << endl;  
   Result.nOriginalTrackNumber = nTmp;
   
+  if(nTmp > 0)
+    sResult << "<upnp:originalTrackNumber>" << nTmp << "</upnp:originalTrackNumber>"; // << endl;  
+  
+  #endif  
+  
+  //cout << ToUTF8(sResult.str()) << endl;
+  *p_sResult = sResult.str();
+  
   return Result;
-}*/
+}

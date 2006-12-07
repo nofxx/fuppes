@@ -24,7 +24,7 @@
 #include "TranscodingCache.h"
 
 #include "LameWrapper.h"
-#include "../Common.h"
+#include "../Common/Common.h"
 
 #ifndef DISABLE_VORBIS
 #include "VorbisWrapper.h"
@@ -332,7 +332,7 @@ CTranscodingCacheObject* CTranscodingCache::GetCacheObject(std::string p_sFileNa
     pResult = new CTranscodingCacheObject();    
     m_CachedObjects[p_sFileName] = pResult;
     pResult->m_sFileName = p_sFileName;
-  }  
+  } 
     
   pResult->m_nRefCount++;
   

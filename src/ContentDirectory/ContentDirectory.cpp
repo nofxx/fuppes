@@ -35,8 +35,8 @@
 #include "../UPnPActions/UPnPBrowse.h"
 #include "../SharedConfig.h"
 #include "../SharedLog.h"
-#include "../Common.h"
-#include "../RegEx.h"
+#include "../Common/Common.h"
+#include "../Common/RegEx.h"
 #include "FileDetails.h"
 #include "UPnPObjectFactory.h"
  
@@ -806,15 +806,28 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
     xmlTextWriterEndElement(pWriter);    
   }
   
+  
+  //cout << pSQLResult->GetValue("DETAILS") << endl;
+  xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("DETAILS").c_str());  
+   
+  
   /* res */
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
   
+  string sMimeType = pSQLResult->GetValue("MIME_TYPE");
+  string sExt      = ExtractFileExt(pSQLResult->GetValue("FILE_NAME"));
+  if(CFileDetails::Shared()->IsTranscodingExtension(sExt))
+  {
+    sMimeType = CFileDetails::Shared()->GetTargetMimeType(sExt);
+    sExt      = CFileDetails::Shared()->GetTargetExtension(sExt);
+  }
+  
   std::stringstream sTmp;
-  sTmp << "http-get:*:" << pSQLResult->GetValue("MIME_TYPE") << ":*";
+  sTmp << "http-get:*:" << sMimeType << ":*";
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
   sTmp.str("");
   
-  sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/AudioItems/" << p_sObjectID;
+  sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/AudioItems/" << p_sObjectID << "." << sExt;
   //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
   xmlTextWriterEndElement(pWriter); 

@@ -25,7 +25,7 @@
 #include <sstream>
 
 #include "ContentDatabase.h"
-#include "../Common.h"
+#include "../Common/Common.h"
 #include "../SharedConfig.h"
 #include "../Fuppes.h"
 

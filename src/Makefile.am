@@ -53,7 +53,7 @@ h_sources = \
 	SharedConfig.h\
   SharedLog.h\
 	Fuppes.h\
-	RegEx.h	
+	Common/RegEx.h	
 
 cpp_sources = \
   Common/Common.cpp\

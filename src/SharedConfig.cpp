@@ -41,8 +41,8 @@
 #include <net/if.h>
 #endif
 
-#include "Common.h"
-#include "UUID.h"
+#include "Common/Common.h"
+#include "Common/UUID.h"
 
 #include <sys/types.h>
 #include <fcntl.h>
@@ -322,16 +322,16 @@ unsigned int CSharedConfig::SharedDirCount()
  */
 bool CSharedConfig::AddSharedDirectory(std::string p_sDirectory)
 {  
-  unsigned char* szBuf = new unsigned char[4096];  
+  /*unsigned char* szBuf = new unsigned char[4096];  
   int nSize = 4096;
   int nLength = p_sDirectory.length();
   isolat1ToUTF8(szBuf, &nSize, (const unsigned char*)p_sDirectory.c_str(), &nLength);
-  szBuf[nSize] = '\0';  
-  
+  szBuf[nSize] = '\0';  */
+    
   if(m_pSharedDirNode)
-    xmlNewTextChild(m_pSharedDirNode, NULL, BAD_CAST "dir", BAD_CAST szBuf);
+    xmlNewTextChild(m_pSharedDirNode, NULL, BAD_CAST "dir", BAD_CAST p_sDirectory.c_str());
   
-  delete[] szBuf;
+  //delete[] szBuf;
   
   xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);    
   return this->Refresh();

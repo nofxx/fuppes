@@ -24,7 +24,7 @@
 #include "HTTPRequestHandler.h"
 #include "../Presentation/PresentationHandler.h"
 #include "../ContentDirectory/PlaylistFactory.h"
-#include "../UUID.h"
+#include "../Common/UUID.h"
 #include "../GENA/SubscriptionMgr.h"
 
 #include <iostream>

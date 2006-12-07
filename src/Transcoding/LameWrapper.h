@@ -26,7 +26,7 @@
 #ifndef _LAMEWRAPPER_H
 #define _LAMEWRAPPER_H
 
-#include "../Common.h"
+#include "../Common/Common.h"
 #include <lame/lame.h>
 #include <string>
 

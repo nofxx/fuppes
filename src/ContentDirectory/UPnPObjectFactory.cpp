@@ -27,7 +27,7 @@
 #include "ImageItem.h"
 #include "VideoItem.h"
 #include "ContentDatabase.h"
-#include "../Common.h"
+#include "../Common/Common.h"
 #include "../SharedConfig.h"
 
 #include <sstream>

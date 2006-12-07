@@ -22,7 +22,7 @@
  */
  
 #include "HTTPParser.h"
-#include "../RegEx.h"
+#include "../Common/RegEx.h"
 
 bool CHTTPParser::Parse(CHTTPMessage* pMessage)
 {

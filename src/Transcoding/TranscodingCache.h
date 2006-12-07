@@ -25,7 +25,7 @@
 #ifndef _TRANSCODINGCACHE_H
 #define _TRANSCODINGCACHE_H
 
-#include "../Common.h"
+#include "../Common/Common.h"
 #include "LameWrapper.h"
 #include "WrapperBase.h"
 #include <map>

@@ -1,9 +1,9 @@
 /***************************************************************************
- *            UPnPBrowse.cpp
+ *            TranscodingMgr.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -21,19 +21,26 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#include "UPnPBrowse.h"
-#include "../Common/Common.h"
+#include "TranscodingMgr.h"
 
-CUPnPBrowse::CUPnPBrowse(std::string p_sMessage):
-  CUPnPAction(UPNP_ACTION_TYPE_CONTENT_DIRECTORY_BROWSE, p_sMessage)
+#include "LameWrapper.h"
+#include "VorbisWrapper.h"
+#include "MpcWrapper.h"
+#include "FlacWrapper.h"
+
+CTranscodingMgr* CTranscodingMgr::m_Instance = 0;
+
+CTranscodingMgr* CTranscodingMgr::Shared()
 {
-}                                     
+	if (m_Instance == 0)
+		m_Instance = new CTranscodingMgr();
+	return m_Instance;
+}
 
-CUPnPBrowse::~CUPnPBrowse()
+CTranscodingMgr::CTranscodingMgr()
 {
 }
 
-unsigned int CUPnPBrowse::GetObjectIDAsInt()
+CTranscodingMgr::~CTranscodingMgr()
 {
-  return HexToInt(m_sObjectID);
 }

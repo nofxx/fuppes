@@ -29,9 +29,10 @@
 #include "UPnPDevice.h"
 #include "HTTP/HTTPMessage.h"
 #include "HTTP/HTTPClient.h"
-#include "Common.h"
+#include "Common/Common.h"
+#include "Common/RegEx.h"
 #include "SharedLog.h"
-#include "RegEx.h"
+
 
 #include <sstream>
 #include <iostream>

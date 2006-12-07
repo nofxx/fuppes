@@ -1,3 +1,12 @@
+Version 0.7
+  * UPnP eventing
+  * taglib support (optional)
+    
+  * fixed FLAC transcoding on 64 bit machines
+    (patch from Qball Cow. Big thanks!)
+  * fixed crash on 64 bit machines caused by an
+    unhandled out of range exception (Thanks again Qball)
+
 Version 0.5.4 (2006-11-23)
   * initial support for playlists (m3u, pls)
     new configuration option: "playlist representation"

@@ -32,7 +32,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "Common.h"
+#include "Common/Common.h"
 #include "SharedLog.h"
 #include "HTTP/HTTPMessage.h"
 #include "MediaServer.h"
@@ -354,7 +354,10 @@ bool CFuppes::HandleHTTPRequest(CHTTPMessage* pMessageIn, CHTTPMessage* pMessage
   /* AudioItem */
   else if((strRequest.length() > 24) && (strRequest.substr(0, 24).compare("/MediaServer/AudioItems/") == 0))
   {
+    cout << pMessageIn->GetRequest() << endl;
+    
     string sItemObjId = TruncateFileExt(pMessageIn->GetRequest().substr(24, pMessageIn->GetRequest().length()));
+    cout << sItemObjId << endl;
     CAudioItem* pItem = (CAudioItem*)m_pContentDirectory->GetItemFromObjectID(sItemObjId);
 
     if(pItem && FileExists(pItem->GetFileName()))

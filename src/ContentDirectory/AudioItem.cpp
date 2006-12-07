@@ -25,8 +25,9 @@
  INCLUDES
 ===============================================================================*/
 
-#include "../Common.h"
+#include "../Common/Common.h"
 #include "AudioItem.h"
+#include "FileDetails.h"
 #include <sstream>
 #include <string>
 
@@ -155,7 +156,13 @@ bool CAudioItem::SetupTranscoding()
 
 std::string CAudioItem::GetMimeType()
 {
+  string sExt = ExtractFileExt(m_sFileName);
+  
   //return "audio/mpeg";
+  if(CFileDetails::Shared()->IsTranscodingExtension(sExt))
+  {
+    m_sMimeType = CFileDetails::Shared()->GetTargetMimeType(sExt);
+  }
   return m_sMimeType;
 }
 

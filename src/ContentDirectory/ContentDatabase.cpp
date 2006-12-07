@@ -25,14 +25,13 @@
 #include "../SharedConfig.h"
 #include "../SharedLog.h"
 #include "FileDetails.h"
-#include "../RegEx.h"
+#include "../Common/RegEx.h"
 
 #include <sstream>
 #include <string>
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
-#include <iconv.h>
 #include <cstdio>
 #ifndef WIN32
 #include <dirent.h>
@@ -338,43 +337,6 @@ void CContentDatabase::BuildDB()
   m_bIsRebuilding = false;
 }
 
-std::string ToUTF8(std::string p_sValue)
-{
-  if(xmlCheckUTF8((const unsigned char*)p_sValue.c_str()))
-    return p_sValue;
-   
-  if(CSharedConfig::Shared()->GetLocalCharset().compare("UTF-8") == 0)
-    return p_sValue;
-  
-  iconv_t icv = iconv_open("UTF-8", CSharedConfig::Shared()->GetLocalCharset().c_str());  
-  if(icv < 0)  
-    return p_sValue;  
-  
-  size_t nInbytes  = p_sValue.length(); 
-  char* szInBuf    = new char[p_sValue.length() + 1];
-  memcpy(szInBuf, p_sValue.c_str(), p_sValue.length());
-  szInBuf[p_sValue.length()] = '\0';
-
-  size_t nOutbytes = p_sValue.length() * 2;
-  char* szOutBuf   = new char[p_sValue.length() * 2 + 1];  
-  char* pOutBuf    = szOutBuf;  
-  memset(szOutBuf, 0, p_sValue.length() * 2 + 1);
-  
-  #ifdef WIN32
-  iconv(icv, (const char**)&szInBuf, &nInbytes, &pOutBuf, &nOutbytes);
-  #else
-  iconv(icv, &szInBuf, &nInbytes, &pOutBuf, &nOutbytes);  
-  #endif
-  p_sValue = szOutBuf;  
-    
-  iconv_close(icv); 
-  
-  delete[] szOutBuf;
-  //delete[] szInBuf;
-  
-  return p_sValue;
-}
-
 void CContentDatabase::DbScanDir(std::string p_sDirectory, long long int p_nParentId)
 {
   #ifdef WIN32  
@@ -481,15 +443,8 @@ void CContentDatabase::DbScanDir(std::string p_sDirectory, long long int p_nPare
 unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
 {
   OBJECT_TYPE nObjectType = CFileDetails::Shared()->GetObjectType(p_sFileName);         
-          
-  /* todo: build file description          
-  switch(nObjectType)
-  {
-    case ITEM_AUDIO_ITEM_MUSIC_TRACK:
-      cout << "MusicTrack" << endl;
-      SMusicTrack TrackInfo = CFileDetails::Shared()->GetMusicTrackDetails(sTmp.str());
-      break;
-  }*/      
+
+  
   if(nObjectType == OBJECT_TYPE_UNKNOWN)
     return false;          
   
@@ -503,8 +458,21 @@ unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
   int nPathLen = ExtractFilePath(sTmpFileName).length();
   sTmpFileName = sTmpFileName.substr(nPathLen, sTmpFileName.length() - nPathLen);
   
+  string sDetails = "";
+  
+  // todo: build file description          
+  switch(nObjectType)
+  {
+    case ITEM_AUDIO_ITEM_MUSIC_TRACK:
+      cout << "MusicTrack" << endl;      
+      SMusicTrack TrackInfo = CFileDetails::Shared()->GetMusicTrackDetails(p_sFileName, &sDetails);
+      /*if(!TrackInfo.mAudioItem.sTitle.empty())
+        sTmpFileName = TrackInfo.mAudioItem.sTitle;*/
+      break;
+  }  
+  
   sTmpFileName = ToUTF8(sTmpFileName);
-  sTmpFileName = SQLEscape(sTmpFileName);        
+  sTmpFileName = SQLEscape(sTmpFileName);  
   
   
   stringstream sSql;
@@ -516,7 +484,7 @@ unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
   //sSql << "'" << MD5Sum(sTmp.str()) << "', ";
   sSql << "'" << "todo" << "', ";
   sSql << "'" << CFileDetails::Shared()->GetMimeType(p_sFileName, false) << "', ";
-  sSql << "'" << "details - todo" << "');";
+  sSql << "'" << SQLEscape(sDetails) << "');";
   
   //cout << sSql.str() << endl;         
   

@@ -22,8 +22,8 @@
  */
  
 #include "SubscriptionMgr.h"
-#include "../RegEx.h"
-#include "../UUID.h"
+#include "../Common/RegEx.h"
+#include "../Common/UUID.h"
 
 void CSubscription::Renew()
 {
@@ -217,7 +217,7 @@ fuppesThreadCallback MainLoop(void *arg)
   
   while(pMgr->m_bDoLoop)
   {
-    cout << "CSubscriptionMgr::MainLoop" << endl;
+    //cout << "CSubscriptionMgr::MainLoop" << endl;
     
     fuppesThreadLockMutex(&g_SubscriptionsMutex);    
     
@@ -227,8 +227,8 @@ fuppesThreadCallback MainLoop(void *arg)
     {     
       pSubscr = (*pMgr->m_SubscriptionsIterator).second;
       
-      cout << "  subscr: " << pSubscr->GetSID() << endl;
-      cout << "    time left: " << pSubscr->GetTimeLeft() << endl;
+      //cout << "  subscr: " << pSubscr->GetSID() << endl;
+      //cout << "    time left: " << pSubscr->GetTimeLeft() << endl;
       
       pSubscr->DecTimeLeft();      
       

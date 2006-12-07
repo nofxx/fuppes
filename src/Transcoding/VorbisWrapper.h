@@ -27,7 +27,7 @@
 #ifndef _VORBISWRAPPER_H
 #define _VORBISWRAPPER_H
 
-#include "../Common.h"
+#include "../Common/Common.h"
 #include <string>
 #include <vorbis/vorbisfile.h>
 

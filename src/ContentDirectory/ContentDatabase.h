@@ -28,7 +28,7 @@
 #include <string>
 #include <map>
 #include <list>
-#include "../Common.h"
+#include "../Common/Common.h"
 
 typedef enum tagOBJECT_TYPE
 {

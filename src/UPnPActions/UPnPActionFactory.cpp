@@ -26,9 +26,9 @@
  INCLUDES
 ===============================================================================*/
 
-#include "Common.h"
 #include "UPnPActionFactory.h"
-#include "RegEx.h"
+#include "../Common/Common.h"
+#include "../Common/RegEx.h"
 
 #include <iostream>
 #include <libxml/parser.h>

@@ -65,9 +65,9 @@ public:
   /** empty base class method
   *  @param  pWriter  XML container to write to
   */
-  void GetDescription(xmlTextWriterPtr pWriter)
+  /*void GetDescription(xmlTextWriterPtr pWriter)
   {
-  }
+  }*/
 
   virtual std::string GetMimeType() = 0;  
   virtual unsigned int GetSize() = 0;

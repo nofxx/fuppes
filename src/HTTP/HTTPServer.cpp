@@ -31,7 +31,7 @@
 #include "HTTPRequestHandler.h"
 #include "../SharedLog.h"
 #include "../SharedConfig.h"
-#include "../RegEx.h"
+#include "../Common/RegEx.h"
 
 #include <iostream>
 #include <sstream>
@@ -250,15 +250,14 @@ fuppesThreadCallback AcceptLoop(void *arg)
 		{	
       stringstream sMsg;
       sMsg << "new connection from " << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port);
-			CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
-      //cout << sMsg.str() << endl;
+			CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());      
       
-      /* start session thread */
+      /* start session thread ... */
       CHTTPSessionInfo* pSession = new CHTTPSessionInfo(pHTTPServer, nConnection, remote_ep);      
       fuppesThread SessionThread = (fuppesThread)NULL;      
       fuppesThreadStartArg(SessionThread, SessionLoop, *pSession);      
       pSession->SetThreadHandle(SessionThread);
-      /* and store the thread in the session list */
+      /* ... and store the thread in the session list */
       pHTTPServer->m_ThreadList.push_back(pSession);
 		}
     
@@ -281,17 +280,14 @@ fuppesThreadCallback SessionLoop(void *arg)
   CHTTPRequestHandler* pHandler  = new CHTTPRequestHandler();
   
   bool bKeepAlive = true;
-  
+  bool bResult    = false;
   
   while(bKeepAlive)
   {  
     /* receive HTTP-request */
-    bool bResult = ReceiveRequest(pSession, pRequest);  
-  
+    bResult = ReceiveRequest(pSession, pRequest);  
     if(!bResult)
       break;
-    
-    //cout << pRequest->GetHeader() << endl;
     
     /* check if requesting IP is allowed to */
     std::string sIP = inet_ntoa(pSession->GetRemoteEndPoint().sin_addr);    
@@ -307,6 +303,7 @@ fuppesThreadCallback SessionLoop(void *arg)
         break;
       }
     }
+    /* otherwise create a "403 (forbidden)" response */
     else
     {
       pResponse->SetVersion(HTTP_VERSION_1_0);
@@ -314,6 +311,7 @@ fuppesThreadCallback SessionLoop(void *arg)
       pResponse->SetMessage("403 Forbidden");
     }
     
+    /* send response */
     bResult = SendResponse(pSession, pResponse, pRequest);
     if(!bResult)
     {
@@ -364,41 +362,47 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
       break;
                    
     /* receive */     
-    nTmpRecv = recv(p_Session->GetConnection(), szBuffer, 4096, 0);
-    //cout << "new: " << nTmpRecv << " have: " << nBytesReceived << endl;
-    //fflush(stdout);
+    nTmpRecv = recv(p_Session->GetConnection(), szBuffer, 4096, 0);    
+    
+    /* error handleing */
     if(nTmpRecv < 0)
     {
       stringstream sLog;
       #ifdef WIN32      
       sLog << "error no. " << WSAGetLastError() << " " << strerror(WSAGetLastError()) << endl;
-      CSharedLog::Shared()->Error(LOGNAME, sLog.str());           
-      //cout << "bytes received: " << nBytesReceived << endl;
+      CSharedLog::Shared()->Error(LOGNAME, sLog.str());
+      
       if(WSAGetLastError() != WSAEWOULDBLOCK)
       {
         bDoReceive = false;
-        bRecvErr = true;
+        bRecvErr   = true;
         break;      
       }
       else
       {
-        //cout << nLoopCnt << endl;
         nLoopCnt++;        
         fuppesSleep(10);
         continue;
       }   
       #else
-      sLog << "error no. " << errno << " " << strerror(errno) << endl;
-      //cout << "bytes received: " << nBytesReceived << endl;
-      CSharedLog::Shared()->Error(LOGNAME, sLog.str());     
+      sLog << "error no. " << errno << " " << strerror(errno) << endl;      
+      CSharedLog::Shared()->Error(LOGNAME, sLog.str());
+      
       bDoReceive = false;
-      bRecvErr = true;
+      bRecvErr   = true;
       break;      
       #endif
-    }                  
+    } // if(nTmpRecv < 0)                 
     
-    /* append received buffer */
-    if((nBytesReceived > 0) && (nTmpRecv > 0))
+    /* create new buffer or ... */
+    if ((nBytesReceived == 0) && (nTmpRecv > 0))
+    {
+      szMsg = new char[nTmpRecv + 1];
+      memcpy(szMsg, szBuffer, nTmpRecv);
+      szMsg[nTmpRecv] = '\0';
+    }    
+    /* ... append received buffer or ... */
+    else if((nBytesReceived > 0) && (nTmpRecv > 0))
     {
       char* szTmp = new char[nBytesReceived + 1];
       memcpy(szTmp, szMsg, nBytesReceived);
@@ -411,18 +415,10 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
       szMsg[nBytesReceived + nTmpRecv] = '\0';
       
       delete[] szTmp;
-    }
-    else if ((nBytesReceived == 0) && (nTmpRecv > 0))
-    {
-      szMsg = new char[nTmpRecv + 1];
-      memcpy(szMsg, szBuffer, nTmpRecv);
-      szMsg[nTmpRecv] = '\0';
-    }
+    }    
+    /* ... close connection gracefully */
     else if(nTmpRecv == 0)
     {
-      /*cout << "connection gracefully closed" << endl;
-      fflush(stdout);*/
-      
       /* close connection */
       upnpSocketClose(p_Session->GetConnection()); 
       bDoReceive = false;
@@ -436,31 +432,23 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
     string sMsg = szMsg;     
     
     /* split header and content */
-    std::string sHeader  = "";
-    std::string sContent = "";
-    unsigned int nPos = sMsg.find("\r\n\r\n");  
+    string sHeader  = "";
+    string sContent = "";
+    string::size_type nPos = sMsg.find("\r\n\r\n");  
+    /* got the full header */
     if(nPos != string::npos)
-    {
-      /*cout << "full header" << endl;
-      fflush(stdout);*/
-            
+    {            
       sHeader = sMsg.substr(0, nPos);
       nPos += string("\r\n\r\n").length();
       sContent = sMsg.substr(nPos, sMsg.length() - nPos);
     }
+    /* header is incomplete */
     else
-    {      
-      /*CSharedLog::Shared()->Warning(LOGNAME, "did not received the full header.");
-      cout << sMsg << endl;
-      cout << "pos: " << nPos << " end: " << string::npos << endl;*/
-      //fuppesSleep(10);
+    {
       nRecvCnt++;
       continue;
     }
-                
-    /*cout << sHeader << endl << endl;
-    fflush(stdout);*/  
-
+    
     
     /* read content length */
     RegEx rxContentLength("CONTENT-LENGTH: *(\\d+)", PCRE_CASELESS);
@@ -468,22 +456,18 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
     {
       string sContentLength = rxContentLength.Match(1);    
       nContentLength = std::atoi(sContentLength.c_str());
-    }      
+    }
 
     /* check if we received the full content */
     if(sContent.length() < nContentLength)
     {
-      /*stringstream sLog;
-      sLog << "received less data then given in CONTENT-LENGTH. should: " << nContentLength << " have: " << sContent.length();
-      CSharedLog::Shared()->Warning(LOGNAME, sLog.str());*/
+      /* content incomplete */
       continue;
     }
     else
     {
-      /* full content */
-      bDoReceive = false;
-      /*cout << "full request" << endl;
-      cout << sMsg << endl;*/
+      /* full content => message is complete */
+      bDoReceive = false;      
     }
                   
     if(nTmpRecv == 0)      
@@ -501,25 +485,18 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
     sMsg << "bytes received: " << nBytesReceived;
     CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
 
-    /* Create message */    
-    bResult = p_Request->SetMessage(szMsg);
-    //cout << szMsg << endl << endl;
+    /* create message */    
+    bResult = p_Request->SetMessage(szMsg);    
   }
   
   return bResult;
-}
+} // ReceiveRequest
+
 
 bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMessage* p_Request)
 {
   unsigned int nRet = 0; 
       
-    
-  //cout << p_Response->GetMessageAsString() << endl << endl;
-  
-  /*cout << "RESPONSE TO: " << szMsg << endl;
-  fflush(stdout);      */
-  /*cout << "RESPONSE: " << p_Response->GetHeaderAsString() << endl;
-  fflush(stdout);*/
   if(!p_Response->IsChunked())
   { 
     /* send complete binary stream */
@@ -531,10 +508,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       CSharedLog::Shared()->ExtendedLog(LOGNAME, "header send");
       #ifdef WIN32
       send(p_Session->GetConnection(), p_Response->GetBinContent(), p_Response->GetBinContentLength(), 0);          
-      #else
-      //int nSnd = 
-      send(p_Session->GetConnection(), p_Response->GetBinContent(), p_Response->GetBinContentLength(), MSG_NOSIGNAL);
-      //cout << nSnd << endl;      
+      #else      
+      send(p_Session->GetConnection(), p_Response->GetBinContent(), p_Response->GetBinContentLength(), MSG_NOSIGNAL);      
       #endif
       CSharedLog::Shared()->ExtendedLog(LOGNAME, "content send");
       return true;
@@ -569,22 +544,16 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   /* send chunked message */
   else 
   {         
-    /*cout << "CHUNKED: Start: " << p_Request->GetRangeStart() << " end: " << p_Request->GetRangeEnd() << endl;
-    cout << "LENGTH: " << p_Response->GetBinContentLength() << endl;
-    cout << p_Request->GetHeader() << endl;*/
-    
-    unsigned int nOffset = 0;
-    char* szChunk = NULL; //[64000];
-    unsigned int nRequestSize = 64000; // - 1;
-    //char* szChunk;
-    /*szChunk = new char[32770];
-    unsigned int nRequestSize = 32770;// - 1; */
-/*    char szChunk[1024];
-    unsigned int nRequestSize = 1024;// - 1; */    
-    int nErr = 0;
+    unsigned int nOffset      = 0;
+    char*        szChunk      = NULL;
+    unsigned int nRequestSize = 64000;
+    int          nErr         = 0;    
     
     
-    if((p_Request->GetRangeStart() > 0) || ((p_Request->GetRangeEnd() > 0) && (p_Request->GetRangeEnd() < p_Response->GetBinContentLength())))
+    // set ranges
+    if((p_Request->GetRangeStart() > 0) ||
+       ((p_Request->GetRangeEnd() > 0) && (p_Request->GetRangeEnd() < p_Response->GetBinContentLength()))
+      )
     {          
       if(p_Request->GetRangeEnd() > p_Request->GetRangeStart())
         nRequestSize = p_Request->GetRangeEnd() - p_Request->GetRangeStart() + 1;
@@ -593,8 +562,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
             
       nOffset = p_Request->GetRangeStart();      
       p_Response->SetMessageType(HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT);          
-    }
-    //cout << "LENG: " << p_Response->GetBinContentLength() << endl;
+    }    
     
     p_Response->SetRangeStart(p_Request->GetRangeStart());
     if(p_Request->GetRangeEnd() > 0)
@@ -603,124 +571,88 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       p_Response->SetRangeEnd(p_Response->GetBinContentLength());
   
     
-    /* cout << p_Request->GetHeader() << endl;
-    fflush(stdout);*/
-    
-    
-  
+ 
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending chunked binary");
     CSharedLog::Shared()->DebugLog(LOGNAME, p_Response->GetHeaderAsString());
-    //cout << "Requested size: " << nRequestSize << " offset: " << nOffset << endl;
+
     
-    //cout << p_Response->GetHeaderAsString() << endl;
-    
-    /* send header if it is a HEAD response and return */        
-    if((nErr != -1) && ((p_Request->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) || ((p_Request->GetRangeStart() > 0) && (p_Request->GetRangeStart() >= p_Response->GetBinContentLength()))))
+    /* send header if it is a HEAD response or the start range is greater than the content and return */        
+    if((nErr != -1) && ((p_Request->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) ||
+       ((p_Request->GetRangeStart() > 0) && (p_Request->GetRangeStart() >= p_Response->GetBinContentLength()))))
     {
-      //cout << "send head response" << endl;
       #ifdef WIN32
       nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), 0);             
       #else
       nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), MSG_NOSIGNAL);
-      #endif
-    
-      /*cout << "SENT LAST HEADER" << endl;
-      cout << p_Response->GetHeaderAsString() << endl;*/
-      
-      /*if(nErr == -1)
-        cout << "[ERROR] send header" << endl;*/
-      
+      #endif      
       return true;
-    }
-   
-    //cout << "send get response" << endl;
-    //cout << p_Response->GetHeaderAsString() << endl;
+    }   
+        
     
-    
-    int nCnt = 0;
-    int nSend = 0;    
-    bool bChunkLoop = false;
+    int          nCnt          = 0;
+    int          nSend         = 0;    
+    bool         bChunkLoop    = false;
     unsigned int nReqChunkSize = 0;
     
-    //cout << "requested: " << nRequestSize << endl;
-    
+    /* set chunk size */
     if(nRequestSize > 1048576)
-    {
-      //cout << "request size too big" << endl;
+    {      
       nReqChunkSize = 1048576;
-      szChunk = new char[nReqChunkSize];
-      bChunkLoop = true;
+      szChunk       = new char[nReqChunkSize];
+      bChunkLoop    = true;
     }
     else
     {
-      //cout << "request size ok" << endl;
-      szChunk = new char[nRequestSize];
+      szChunk       = new char[nRequestSize];
       nReqChunkSize = nRequestSize;
-      bChunkLoop = false;
+      bChunkLoop    = false;
     }
     
-      
+     
+    /* send loop */
     while((nErr != -1) && ((nRet = p_Response->GetBinContentChunk(szChunk, nReqChunkSize, nOffset)) > 0)) 
-    {           
-      
-      /*cout << "read binary" << endl;
-      cout << "start: " << nOffset << endl;
-      cout << "requested: " << nReqChunkSize << endl;
-      cout << "end: " << nRet << endl;
-      fflush(stdout);*/
-      
+    { 
       /* send HTTP header when the first package is ready */
       if(nCnt == 0)
       {
-        //cout << "send transcoding header" << endl;
         #ifdef WIN32
         nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), 0);             
         #else
         nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), MSG_NOSIGNAL);
-        #endif        
-        
-        /*if(nErr == -1)
-          cout << "[ERROR] send header" << endl;*/
+        #endif       
       }
       
-      
+      /* send chunk */
       #ifdef WIN32
-      nErr = send(p_Session->GetConnection(), szChunk, nRet, 0);    
-      //char buffer = '\n';
-      //send(p_Session->GetConnection(), &buffer, 1, 0);        
+      nErr = send(p_Session->GetConnection(), szChunk, nRet, 0);      
       int nWSAErr = WSAGetLastError();    
       while(nErr < 0 && nWSAErr == 10035)
       {
         fuppesSleep(10);
-        nErr    = send(p_Session->GetConnection(), szChunk, nRet, 0);
-        //send(p_Session->GetConnection(), &buffer, 1, 0);        
+        nErr    = send(p_Session->GetConnection(), szChunk, nRet, 0);        
         nWSAErr = WSAGetLastError();
       }            
       #else
       nErr = send(p_Session->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);
       #endif
              
-      //cout << "count: " <<  nCnt << " send errno: " << nErr << endl;
-  
-      //fuppesSleep(100);
-      nSend += nRet; // + 1;            
+      nSend += nRet; 
       nCnt++;
-      nOffset += nRet; // - 1;            
-     
-     //nErr = -1;
-     
+      nOffset += nRet;
       
+      
+      /* calc next chunk size */
       if(bChunkLoop && nErr >= 0)
       {
         nRequestSize -= nReqChunkSize;
         if(nRequestSize > 1048576)
           nReqChunkSize = 1048576;
         else
-          nReqChunkSize = nRequestSize;
-        
-        //cout << "COUNT: " << nCnt << endl << " REQUEST LEFT: " << nRequestSize << endl << " kb: " << (double)nRequestSize / 1024 << " mb: " << (double)nRequestSize / 1024 / 1024 << endl;
+          nReqChunkSize = nRequestSize;        
       }
       
+      
+      /* error/connection handling */
       if((nErr < 0) || 
          (
           (p_Response->GetMessageType() == HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT) &&
@@ -729,47 +661,30 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
          )
         )
       {
+        
+        /* error handling */
         if(nErr < 0)
         {
           stringstream sLog;
           #ifdef WIN32
           sLog << "send error :: error no. " << WSAGetLastError() << " " << strerror(WSAGetLastError()) << endl;              
           CSharedLog::Shared()->Error(LOGNAME, sLog.str());     
-          #else              
-          //cout << "send error :: error no. " << errno << " " << strerror(errno) << endl;
+          #else          
           sLog << "send error :: error no. " << errno << " " << strerror(errno) << endl;
           CSharedLog::Shared()->Error(LOGNAME, sLog.str());
-          #endif
-  
+          #endif  
         }
-        /*else
-        {
-          cout << "connection closed  (send done)" << endl;
-        }*/
-        /*cout << "offset: " << nOffset << endl;
-        cout << "send: " << nSend << endl;
-        cout << "length: " << p_Response->GetBinContentLength() << endl;*/
         
-        //fflush(stdout); 
-        
+        /* break transcoding */
         if (p_Response->IsTranscoding())        
           p_Response->BreakTranscoding();
         
         break; 
-      }                         
-  
-        /*cout << "offset: " << nOffset << endl;
-        cout << "send: " << nSend << endl;
-        cout << "length: " << p_Response->GetBinContentLength() << endl; */
-        //cout << "send no.: " << nCnt << endl;
+      } 
         
-      } /* while */
-
+    } /* while */
             
-      delete [] szChunk;
-      //fsOut.close();
-        
-      //cout << " exiting " << endl;
+    delete [] szChunk;    
     return true;
   } /* else */
   

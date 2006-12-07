@@ -30,7 +30,7 @@ const std::string LOGNAME = "FLACDecoder";
 
 #include <sstream>
 #include <iostream>
-#include "../Common.h"
+#include "../Common/Common.h"
 
 using namespace std;
 
@@ -38,52 +38,36 @@ FLAC__StreamDecoderWriteStatus FLACFileDecoderWriteCallback(const FLAC__FileDeco
                                                             const FLAC__Frame* frame,
                                                             const FLAC__int32* const buffer[],
                                                             void *client_data)
-{
-  /*cout << "FLACFileDecoderWriteCallback" << endl;
-  fflush(stdout);*/
-  
+{  
   if (frame->header.number_type == FLAC__FRAME_NUMBER_TYPE_FRAME_NUMBER)
   {
-		//printf("1. frame@%uf(%u)... ", frame->header.number.frame_number, frame->header.blocksize);    
-    //memcpy(((CFLACDecoder*)client_data)->m_pPcmOut, buffer, frame->header.blocksize);
     ((CFLACDecoder*)client_data)->m_pPcmOut        = (char*)buffer;    
-    ((CFLACDecoder*)client_data)->m_nBytesReturned = frame->header.blocksize;
-    
+    ((CFLACDecoder*)client_data)->m_nBytesReturned = frame->header.blocksize;    
   }
 	else if (frame->header.number_type == FLAC__FRAME_NUMBER_TYPE_SAMPLE_NUMBER)
   {
-		//printf("2 .frame@%llu(%u)... ", frame->header.number.sample_number, frame->header.blocksize);    
+    ((CFLACDecoder*)client_data)->m_nBytesReturned = frame->header.blocksize;   
     
-    //memcpy(((CFLACDecoder*)client_data)->m_pPcmOut, buffer, frame->header.blocksize * ((CFLACDecoder*)client_data)->m_pFLACData->channels);
-    //((CFLACDecoder*)client_data)->m_pPcmOut        = (char*)buffer;    
-    ((CFLACDecoder*)client_data)->m_nBytesReturned = frame->header.blocksize; // * ((CFLACDecoder*)client_data)->m_pFLACData->channels; // * 2;    
-  
-     /*cout << "blocksize: " << ((CFLACDecoder*)client_data)->m_nBytesReturned << endl;
-    fflush(stdout);*/
+    int i;
+    int j;
+    int k = 0;    
     
-    
-    /*const unsigned channels = ((CFLACDecoder*)client_data)->m_pFLACData->channels;
-    const unsigned int wide_samples = frame->header.blocksize;
-	  unsigned int channel;	
-
-	  
-
-	  for (channel = 0; channel < channels; channel++)
-		  memcpy(&((CFLACDecoder*)client_data)->m_pPcmOut[channel][0], buffer[channel], sizeof(buffer[0][0]) * wide_samples);*/
-
-	
-    
-    
-  int i, j, k;
-    
-   k = 0;
-    for( j = 0; j < frame->header.blocksize; j++ ) {
-        for( i = 0; i < ((CFLACDecoder*)client_data)->m_pFLACData->channels; i++ ) {
-            int sample;
-            sample = buffer[i][j];
-            ((CFLACDecoder*)client_data)->m_pPcmOut[k++] = sample && 0xFF;
-            ((CFLACDecoder*)client_data)->m_pPcmOut[k++] = sample >> 8;
-        }
+    for(j = 0; j < frame->header.blocksize; j++) 
+    {
+      for(i = 0; i < ((CFLACDecoder*)client_data)->m_pFLACData->channels; i++) 
+      {
+        /*int sample;
+        sample = buffer[i][j];
+        ((CFLACDecoder*)client_data)->m_pPcmOut[k++] = sample && 0xFF;
+        ((CFLACDecoder*)client_data)->m_pPcmOut[k++] = sample >> 8;*/
+      
+        // flac fix from Qball Cow 2006-12-06
+        FLAC__uint16 sample = buffer[i][j];
+        unsigned char *uc = (unsigned char *)&sample;
+      
+        ((CFLACDecoder*)client_data)->m_pPcmOut[k++] = *(uc++);
+        ((CFLACDecoder*)client_data)->m_pPcmOut[k++] = *(uc);          
+      }
     }
     
     return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
@@ -93,17 +77,13 @@ FLAC__StreamDecoderWriteStatus FLACFileDecoderWriteCallback(const FLAC__FileDeco
 		ASSERT(0);
 		//dcd->error_occurred = true;
 		return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
-	}
-	//fflush(stdout);  
+	}	
 }
 
 void FLACFileDecoderMetadataCallback(const FLAC__FileDecoder *decoder,
                                      const FLAC__StreamMetadata *metadata,
                                      void *client_data)
 {
-  /*cout << "FLACFileDecoderMetadataCallback" << endl;
-  fflush(stdout);*/
-  
   ((CFLACDecoder*)client_data)->m_pFLACData->total_samples   = metadata->data.stream_info.total_samples;
   ((CFLACDecoder*)client_data)->m_pFLACData->channels        = metadata->data.stream_info.channels;
   ((CFLACDecoder*)client_data)->m_pFLACData->bits_per_sample = metadata->data.stream_info.bits_per_sample;  
@@ -118,7 +98,6 @@ void FLACFileDecoderErrorCallback(const FLAC__FileDecoder *decoder,
   /*cout << "FLACFileDecoderErrorCallback" << endl;
   fflush(stdout);*/
 }
-
 
 CFLACDecoder::CFLACDecoder()
 {
@@ -145,10 +124,7 @@ CFLACDecoder::~CFLACDecoder()
 }
 
 bool CFLACDecoder::LoadLib()
-{
-  /*cout << "load lib" << endl;
-  fflush(stdout);*/
-  
+{  
   #ifdef WIN32  
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libFLAC.dll");
   m_LibHandle = FuppesLoadLibrary("libFLAC.dll");
@@ -248,19 +224,13 @@ bool CFLACDecoder::LoadLib()
   {
     CSharedLog::Shared()->Warning(LOGNAME, "cannot load symbol 'FLAC__file_decoder_finish'");
     return false;
-  }  
-  
-  /*cout << "end load lib" << endl;
-  fflush(stdout);*/
+  }
   
   return true;
 }
 
 bool CFLACDecoder::OpenFile(std::string p_sFileName)
 {
-  /*cout << "FLAC: " << p_sFileName << endl;
-  fflush(stdout);*/
-  
   m_pFLACFileDecoder = m_FLACFileDecoderNew();
   
   if(!m_FLACFileDecoderSetWriteCallback(m_pFLACFileDecoder, FLACFileDecoderWriteCallback))

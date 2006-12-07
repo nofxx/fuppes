@@ -28,6 +28,13 @@
 
 #include "SharedLog.h"
 #include <iostream>
+#include <sstream>
+
+#ifdef USE_SYSLOG
+#include <syslog.h>
+#endif
+
+using namespace std;
 
 /*===============================================================================
  DEFINITIONS
@@ -68,12 +75,22 @@ CSharedLog::CSharedLog()
   SetLogLevel(1, false);
   #ifndef DISABLELOG
   fuppesThreadInitMutex(&m_Mutex);
+  
+  #ifdef USE_SYSLOG
+  openlog("FUPPES", 0, LOG_USER);
+  #endif
+  
   #endif
 }
 
 CSharedLog::~CSharedLog()
 {
   #ifndef DISABLELOG
+  
+  #ifdef USE_SYSLOG
+  closelog();
+  #endif
+  
   fuppesThreadDestroyMutex(&m_Mutex);
   #endif
 }
@@ -163,10 +180,16 @@ void CSharedLog::Log(std::string p_sSender, std::string p_sMessage)
   #ifndef DISABLELOG  
   if(m_bShowLog)
   {
-    fuppesThreadLockMutex(&m_Mutex);  
-    std::cout << "[" << p_sSender << "] " << p_sMessage << std::endl;  
+    //fuppesThreadLockMutex(&m_Mutex);
+    stringstream sLog;
+    sLog << "[" << p_sSender << "] " << p_sMessage << std::endl;
+    #ifdef USE_SYSLOG
+    syslog(LOG_INFO, sLog.str().c_str());
+    #else
+    cout << sLog.str() << endl;
     fflush(stdout);  
-    fuppesThreadUnlockMutex(&m_Mutex);    
+    #endif
+    //fuppesThreadUnlockMutex(&m_Mutex);    
   }  
   #endif
 }
@@ -208,10 +231,20 @@ void CSharedLog::Warning(std::string p_sSender, std::string p_sMessage)
   #ifndef DISABLELOG  
   if(m_bShowLog)
   {
-    fuppesThreadLockMutex(&m_Mutex);    
+    /*fuppesThreadLockMutex(&m_Mutex);    
     std::cout << "[WARNING :: " << p_sSender << "] " << p_sMessage << std::endl;  
     fflush(stdout);  
-    fuppesThreadUnlockMutex(&m_Mutex);
+    fuppesThreadUnlockMutex(&m_Mutex);*/
+    
+    stringstream sLog;
+    sLog << "[WARNING :: " << p_sSender << "] " << p_sMessage << std::endl;
+    #ifdef USE_SYSLOG
+    syslog(LOG_WARNING, sLog.str().c_str());
+    #else
+    cout << sLog.str() << endl;
+    fflush(stdout);  
+    #endif    
+    
   }
   #endif
 }

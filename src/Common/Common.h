@@ -32,6 +32,9 @@
 #include <string>
 #include <assert.h>
 
+#include <libxml/xmlwriter.h>
+#include "../SharedConfig.h"
+
 #ifdef WIN32
 
 /* T.S.NOTE: This must be defined to use InitializeCriticalSectionAndSpinCount() */
@@ -124,6 +127,7 @@ std::string Base64Decode(const std::string p_sInputString);
 int HexToInt(std::string sHex);
 std::string SQLEscape(std::string p_sValue);
 
+std::string ToUTF8(std::string p_sValue);
 
 /*===============================================================================
  Common Functions
