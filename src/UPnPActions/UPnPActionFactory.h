@@ -31,7 +31,7 @@
 
 #include <string>
 #include "UPnPAction.h"
-#include "UPnPActions/UPnPBrowse.h"
+#include "UPnPBrowse.h"
 
 /*===============================================================================
  CLASS CUPnPActionFactory
