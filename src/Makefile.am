@@ -28,15 +28,8 @@ h_sources = \
   UPnPActions/UPnPActionFactory.h\
   UPnPActions/UPnPBrowse.h\
 	MediaServer.h\
-  ContentDirectory/UPnPObject.h\
-  ContentDirectory/UPnPContainer.h\
-  ContentDirectory/UPnPItem.h\
-  ContentDirectory/AudioItem.h\
-  ContentDirectory/ImageItem.h\
-  ContentDirectory/VideoItem.h\
   ContentDirectory/FileDetails.h\
   ContentDirectory/PlaylistFactory.h\
-  ContentDirectory/UPnPObjectFactory.h\
   ContentDirectory/ContentDatabase.h\
   ContentDirectory/ContentDirectory.h\
   ConnectionManager/ConnectionManager.h\
@@ -78,13 +71,8 @@ cpp_sources = \
   UPnPActions/UPnPActionFactory.cpp\
   UPnPActions/UPnPBrowse.cpp\
 	MediaServer.cpp\
-  ContentDirectory/UPnPContainer.cpp\
-  ContentDirectory/AudioItem.cpp\
-  ContentDirectory/ImageItem.cpp\
-  ContentDirectory/VideoItem.cpp\
   ContentDirectory/FileDetails.cpp\
   ContentDirectory/PlaylistFactory.cpp\
-  ContentDirectory/UPnPObjectFactory.cpp\
   ContentDirectory/ContentDatabase.cpp\
 	ContentDirectory/ContentDirectory.cpp\
   ContentDirectory/ContentDirectoryDescription.cpp\

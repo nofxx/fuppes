@@ -25,16 +25,15 @@
 #ifndef _SHAREDLOG_H
 #define _SHAREDLOG_H
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "Common/Common.h"
 #include <string>
 
-/*===============================================================================
- CLASS CMessageBase
-===============================================================================*/
+#define LOG_NORMAL   0
+#define LOG_ERROR    1
+#define LOG_WARNING  2
+#define LOG_CRITICAL 3
+#define LOG_EXTENDED 4
+#define LOG_DEBUG    5 
 
 class CSharedLog
 {
@@ -73,6 +72,7 @@ public:
   void  Critical(std::string p_sSender, std::string p_sMessage);
   void  Error(std::string p_sSender, std::string p_sMessage);
 
+  void  Log(unsigned int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber);
 /*===============================================================================
  SET
 ===============================================================================*/  

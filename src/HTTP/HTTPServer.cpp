@@ -293,15 +293,10 @@ fuppesThreadCallback SessionLoop(void *arg)
     std::string sIP = inet_ntoa(pSession->GetRemoteEndPoint().sin_addr);    
     if(CSharedConfig::Shared()->IsAllowedIP(sIP))
     {    
-      /* build response */    
+      /* build response */   
       bResult = pHandler->HandleRequest(pRequest, pResponse);      
       if(!bResult)
-        bResult = pSession->GetHTTPServer()->CallOnReceive(pRequest, pResponse);  	
-      if(!bResult)
-      {
-        CSharedLog::Shared()->Error(LOGNAME, "handling HTTP message");    
-        break;
-      }
+        bResult = pSession->GetHTTPServer()->CallOnReceive(pRequest, pResponse);      
     }
     /* otherwise create a "403 (forbidden)" response */
     else

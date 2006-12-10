@@ -137,8 +137,8 @@ void CLameWrapper::Init()
 
 void CLameWrapper::PrintConfig()
 {
-  cout << "Closing library" << endl;
-  FuppesCloseLibrary(m_LibHandle);
+  if(m_LamePrintConfig)    
+    m_LamePrintConfig(m_LameGlobalFlags);
 }
 
 std::string CLameWrapper::GetVersion()

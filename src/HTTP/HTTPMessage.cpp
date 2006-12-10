@@ -88,8 +88,7 @@ CHTTPMessage::CHTTPMessage()
   m_nContentLength      = 0;
   m_pszBinContent       = NULL;
   m_bIsChunked          = false;
-  m_TranscodeThread     = (fuppesThread)NULL;
-  m_pUPnPItem           = NULL;
+  m_TranscodeThread     = (fuppesThread)NULL;  
   m_bIsBinary           = false;
   m_nRangeStart         = 0;
   m_nRangeEnd           = 0;
@@ -215,9 +214,7 @@ std::string CHTTPMessage::GetHeaderAsString()
       break;    
     
     default:
-      cout << "ERROR :: CHTTPMessage::GetHeaderAsString() - unhandled message type" << endl;
-      fflush(stdout);
-      ASSERT(0);                                  
+      CSharedLog::Shared()->Log(LOG_ERROR, "GetHeaderAsString() :: unhandled message type", __FILE__, __LINE__);      
       break;
 	}		  
   

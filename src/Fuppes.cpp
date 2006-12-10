@@ -37,27 +37,10 @@
 #include "HTTP/HTTPMessage.h"
 #include "MediaServer.h"
 #include "UPnPDevice.h"
-#include "ContentDirectory/AudioItem.h"
-#include "ContentDirectory/ImageItem.h"
-#include "ContentDirectory/VideoItem.h"
 
 using namespace std;
 
-/*===============================================================================
- CONSTANTS
-===============================================================================*/
-
 const string LOGNAME = "FUPPES";
-
-/*===============================================================================
- CLASS CFuppes
-===============================================================================*/
-
-/* <PUBLIC> */
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
 
 /** constructor
  *  @param  p_sIPAddress  IP-address of the network interface 
@@ -193,9 +176,6 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
   fuppesThreadUnlockMutex(&m_OnTimerMutex);
 }
 
-/*===============================================================================
- GET
-===============================================================================*/
 
 /** Returns URL of the HTTP member
  * @return std::string
@@ -229,13 +209,6 @@ std::vector<CUPnPDevice*> CFuppes::GetRemoteDevices()
   return vResult; 
 }
 
-/* <\PUBLIC> */
-
-/* <PRIVATE> */
-
-/*===============================================================================
- MESSAGE HANDLING
-===============================================================================*/
 
 void CFuppes::OnSSDPCtrlReceiveMsg(CSSDPMessage* pMessage)
 {
@@ -312,7 +285,7 @@ bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMe
 
 bool CFuppes::HandleHTTPRequest(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
 {  
-  /* Get request */
+  /* Get request */  
   std::string strRequest = pMessageIn->GetRequest();
 
   /* Root description */
@@ -338,148 +311,6 @@ bool CFuppes::HandleHTTPRequest(CHTTPMessage* pMessageIn, CHTTPMessage* pMessage
     pMessageOut->SetContent(m_pConnectionManager->GetServiceDescription());
     return true;
   }
-  
-  /* Presentation */
-  else if((strRequest.compare("/") == 0) || (ToLower(strRequest).compare("/index.html") == 0))
-  {
-    m_pPresentationRequestHandler->OnReceivePresentationRequest(this, pMessageIn, pMessageOut);
-    return true;
-  }  
-  else if((strRequest.length() > 14) && (ToLower(strRequest).substr(0, 14).compare("/presentation/") == 0))
-  {
-    m_pPresentationRequestHandler->OnReceivePresentationRequest(this, pMessageIn, pMessageOut);
-    return true;
-  }
-  
-  /* AudioItem */
-  else if((strRequest.length() > 24) && (strRequest.substr(0, 24).compare("/MediaServer/AudioItems/") == 0))
-  {
-    cout << pMessageIn->GetRequest() << endl;
-    
-    string sItemObjId = TruncateFileExt(pMessageIn->GetRequest().substr(24, pMessageIn->GetRequest().length()));
-    cout << sItemObjId << endl;
-    CAudioItem* pItem = (CAudioItem*)m_pContentDirectory->GetItemFromObjectID(sItemObjId);
-
-    if(pItem && FileExists(pItem->GetFileName()))
-    {
-      pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, pItem->GetMimeType());  //HTTP_CONTENT_TYPE_AUDIO_MPEG
-      if (!pItem->GetDoTranscode())
-        pMessageOut->LoadContentFromFile(pItem->GetFileName());
-      /* transcode only on GET */
-      else if(pMessageIn->GetMessageType() == HTTP_MESSAGE_TYPE_GET)
-      {
-        pMessageOut->TranscodeContentFromFile(pItem->GetFileName());     
-      }
-      else if(pMessageIn->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD)
-      {
-        //cout << "head response" << endl;
-        pMessageOut->SetIsChunked(true);
-      }
-      
-      stringstream sLog;
-      sLog << "sending audio file \"" << pItem->GetName() << "\""; 
-      CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str()); 
-      
-      delete pItem;
-      return true; 
-    }
-    else
-    {
-      if(!pItem)
-      {
-        CSharedLog::Shared()->Error(LOGNAME, "HandleHTTPGet() :: pItem is NULL");
-        return false;
-      }
-      else if(!FileExists(pItem->GetFileName()))
-      {
-        stringstream sLog;
-        sLog << "requested file: \"" << pItem->GetFileName() << "\" not found";
-        CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
-        pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_404_NOT_FOUND, "text/html");
-        
-        delete pItem;
-        return true;
-      }
-    }
-  } /* end AudioItem */
-  
-  
-  /* ImageItem */
-  else if((strRequest.length() > 24) && (strRequest.substr(0, 24).compare("/MediaServer/ImageItems/") == 0))
-  {
-    string sItemObjId = TruncateFileExt(pMessageIn->GetRequest().substr(24, pMessageIn->GetRequest().length()));
-    CImageItem* pItem = (CImageItem*)m_pContentDirectory->GetItemFromObjectID(sItemObjId);
-
-    if(pItem && FileExists(pItem->GetFileName()))
-    {
-      pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, pItem->GetMimeType()); 
-      pMessageOut->LoadContentFromFile(pItem->GetFileName());     
-      
-      stringstream sLog;
-      sLog << "sending image file \"" << pItem->GetName() << "\""; 
-      CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str()); 
-      
-      delete pItem;
-      return true; 
-    }
-    else
-    {
-      if(!pItem)
-      {
-        CSharedLog::Shared()->Error(LOGNAME, "HandleHTTPGet() :: pItem is NULL");
-        return false;
-      }
-      else if(!FileExists(pItem->GetFileName()))
-      {
-        stringstream sLog;
-        sLog << "requested file: \"" << pItem->GetFileName() << "\" not found";
-        CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
-        pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_404_NOT_FOUND, "text/html");
-        
-        delete pItem;
-        return true;
-      }
-    }
-  } /* end ImageItem */
-  
-  /* videoItem */
-  else if((strRequest.length() > 24) && (strRequest.substr(0, 24).compare("/MediaServer/VideoItems/") == 0))
-  {
-    string sItemObjId = pMessageIn->GetRequest().substr(24, pMessageIn->GetRequest().length());
-    sItemObjId = sItemObjId.substr(0, sItemObjId.length() - ExtractFileExt(sItemObjId).length() - 1);
-    CVideoItem* pItem = (CVideoItem*)m_pContentDirectory->GetItemFromObjectID(sItemObjId);
-
-    if(pItem && FileExists(pItem->GetFileName()))
-    {
-      pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, pItem->GetMimeType()); 
-      pMessageOut->LoadContentFromFile(pItem->GetFileName());
-      
-      stringstream sLog;
-      sLog << "sending video file \"" << pItem->GetName() << "\""; 
-      CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str()); 
-      
-      delete pItem;
-      return true; 
-    }
-    else
-    {
-      if(!pItem)
-      {
-        CSharedLog::Shared()->Error(LOGNAME, "HandleHTTPGet() :: pItem is NULL");
-        return false;
-      }
-      else if(!FileExists(pItem->GetFileName()))
-      {
-        stringstream sLog;
-        sLog << "requested file: \"" << pItem->GetFileName() << "\" not found";
-        CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
-        pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_404_NOT_FOUND, "text/html");
-        
-        delete pItem;
-        return true;
-      }
-    }
-  } /* end video item */   
   
   return false;
 }
@@ -568,5 +399,3 @@ void CFuppes::HandleSSDPByeBye(CSSDPMessage* pMessage)
     m_RemoteDevices.erase(pMessage->GetUUID());
   }
 }
-
-/* <\PRIVATE> */

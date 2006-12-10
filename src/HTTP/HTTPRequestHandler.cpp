@@ -26,8 +26,11 @@
 #include "../ContentDirectory/PlaylistFactory.h"
 #include "../Common/UUID.h"
 #include "../GENA/SubscriptionMgr.h"
+#include "../SharedLog.h"
+#include "../ContentDirectory/FileDetails.h"
 
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -60,11 +63,10 @@ bool CHTTPRequestHandler::HandleRequest(CHTTPMessage* pRequest, CHTTPMessage* pR
 
 bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {
-  /*cout << "CHTTPRequestHandler::HandleHTTPRequest()" << endl;  */
-  //cout << "Request: " << pRequest->GetRequest() << endl;
-  
-  pResponse->SetVersion(pRequest->GetVersion());  
+  CSharedLog::Shared()->Log(LOG_EXTENDED, "HandleHTTPRequest() :: " + pRequest->GetRequest(), __FILE__, __LINE__);  
+
   string sRequest = pRequest->GetRequest();  
+  bool   bResult  = false;  
   
   /* Presentation */
   if(
@@ -75,28 +77,50 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
     CPresentationHandler* pHandler = new CPresentationHandler();
     pHandler->OnReceivePresentationRequest(NULL, pRequest, pResponse);
     delete pHandler;
-    return true;
+    bResult = true;
   }
   
   
   /* Playlist-Item */
   if((sRequest.length() > 23) && (sRequest.substr(0, 23).compare("/MediaServer/Playlists/") == 0))
   {
-    string sItemObjId = sRequest.substr(23, sRequest.length());    
+    #warning FIXME: get the playlist type from db
+    string sObjectId = sRequest.substr(23, sRequest.length());
     CPlaylistFactory* pFact = new CPlaylistFactory();    
-    string sPlaylist = pFact->BuildPlaylist(sItemObjId);
+    string sPlaylist = pFact->BuildPlaylist(sObjectId);
     pResponse->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
-    if(ExtractFileExt(sItemObjId).compare("pls") == 0)
+    if(ExtractFileExt(sObjectId).compare("pls") == 0)
       pResponse->SetContentType(MIME_TYPE_AUDIO_X_SCPLS);
-    else if(ExtractFileExt(sItemObjId).compare("m3u") == 0)
+    else if(ExtractFileExt(sObjectId).compare("m3u") == 0)
       pResponse->SetContentType(MIME_TYPE_AUDIO_X_MPGEURL);
     pResponse->SetContent(sPlaylist);    
 
     delete pFact;
-    return true;
+    bResult = true;
+  }
+
+
+  /* AudioItem, ImageItem, videoItem */
+  else if(
+          ((sRequest.length() > 24) && (sRequest.substr(0, 24).compare("/MediaServer/AudioItems/") == 0)) ||
+          ((sRequest.length() > 24) && (sRequest.substr(0, 24).compare("/MediaServer/ImageItems/") == 0)) ||
+          ((sRequest.length() > 24) && (sRequest.substr(0, 24).compare("/MediaServer/VideoItems/") == 0))
+         )
+  {
+    string sObjectId = TruncateFileExt(sRequest.substr(24, sRequest.length()));
+    bResult = HandleItemRequest(sObjectId, pRequest->GetMessageType(), pResponse);    
+  }
+  
+  /* set remaining response values */
+  pResponse->SetVersion(pRequest->GetVersion());
+  if(!bResult)
+  {
+    pResponse->SetMessageType(HTTP_MESSAGE_TYPE_404_NOT_FOUND);
+    pResponse->SetContentType(MIME_TYPE_TEXT_HTML);    
+    bResult = false;
   }  
   
-  return false;
+  return bResult;
 }
     
 bool CHTTPRequestHandler::HandleSOAPAction(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
@@ -120,4 +144,64 @@ bool CHTTPRequestHandler::HandleGENAMessage(CHTTPMessage* pRequest, CHTTPMessage
   
   
   return true;
+}
+
+bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, HTTP_MESSAGE_TYPE p_nRequestType, CHTTPMessage* pResponse)
+{
+  std::stringstream sSql;
+  OBJECT_TYPE       nObjectType;
+  std::string       sExt;
+  std::string       sPath;
+  std::string       sMimeType;
+  CContentDatabase* pDb         = new CContentDatabase();  
+  bool              bResult     = false;  
+  
+  sSql << "select * from objects where ID = " << HexToInt(p_sObjectId) << ";";  
+  pDb->Select(sSql.str());
+  
+  if(!pDb->Eof())
+  {
+    //nObjectType = (OBJECT_TYPE)atoi(pDb->GetResult()->GetValue("TYPE").c_str());
+    //cout << "OBJECT_TYPE: " << nObjectType << endl;
+        
+    sPath = pDb->GetResult()->GetValue("PATH");    
+    sExt  = ExtractFileExt(sPath);
+    
+    if(!FileExists(sPath))
+    {
+      CSharedLog::Shared()->Log(LOG_WARNING, "file: " + sPath + " not found", __FILE__, __LINE__);
+      bResult = false;      
+    }
+    else
+    {    
+      if(CFileDetails::IsTranscodingExtension(sExt))
+      {
+        sMimeType = CFileDetails::GetTargetMimeType(sExt);
+        if(p_nRequestType == HTTP_MESSAGE_TYPE_GET)
+          pResponse->TranscodeContentFromFile(sPath);
+        else if(p_nRequestType == HTTP_MESSAGE_TYPE_HEAD)
+          pResponse->SetIsChunked(true); // mark the head response as chunked so the correct header will be build
+      }
+      else
+      {
+        sMimeType = pDb->GetResult()->GetValue("MIME_TYPE");
+        pResponse->LoadContentFromFile(sPath);
+      }
+    
+      // we always set the response ty to "200 OK"
+      // if the message should be a "206 partial content" 
+      // CHTTPServer will change the type
+      pResponse->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
+      pResponse->SetContentType(sMimeType);
+      bResult = true;
+    }
+  }
+  else // eof
+  {
+    CSharedLog::Shared()->Log(LOG_WARNING, "unknown object id: " + p_sObjectId , __FILE__, __LINE__);
+    bResult = false;
+  }
+  
+  delete pDb;
+  return bResult;
 }

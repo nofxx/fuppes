@@ -87,12 +87,8 @@ module.source.files=\
 	UPnPActions/UPnPBrowse.h\
 	ContentDirectory/ContentDirectory.cpp\
 	ContentDirectory/ContentDirectory.h\
-	ContentDirectory/AudioItem.h\
-	ContentDirectory/UPnPItem.h\
-	ContentDirectory/UPnPObject.h\
 	Presentation/PresentationHandler.cpp\
 	Presentation/PresentationHandler.h\
-	ContentDirectory/AudioItem.cpp\
 	UPnPBase.cpp\
 	UPnPBase.h\
 	SharedLog.cpp\
@@ -108,19 +104,11 @@ module.source.files=\
 	Transcoding/MpcWrapper.cpp\
 	Transcoding/MpcWrapper.h\
 	Transcoding/WrapperBase.h\
-	ContentDirectory/ImageItem.h\
-	ContentDirectory/ImageItem.cpp\
-	ContentDirectory/VideoItem.cpp\
-	ContentDirectory/VideoItem.h\
 	ContentDirectory/ContentDatabase.cpp\
 	ContentDirectory/ContentDatabase.h\
 	ContentDirectory/FileDetails.cpp\
 	ContentDirectory/FileDetails.h\
-	ContentDirectory/UPnPContainer.cpp\
-	ContentDirectory/UPnPContainer.h\
 	UPnPActions/UPnPBrowse.cpp\
-	ContentDirectory/UPnPObjectFactory.cpp\
-	ContentDirectory/UPnPObjectFactory.h\
 	ConnectionManager/ConnectionManager.cpp\
 	ConnectionManager/ConnectionManager.h\
 	ContentDirectory/ContentDirectoryDescription.cpp\

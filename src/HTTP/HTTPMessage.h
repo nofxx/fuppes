@@ -30,7 +30,6 @@
 ===============================================================================*/
 
 #include "../MessageBase.h"
-#include "../ContentDirectory/UPnPItem.h"
 #include "../UPnPActions/UPnPAction.h"
 #include "../Transcoding/TranscodingCache.h"
 #include <string>
@@ -184,7 +183,7 @@ public:
   void             SetContentType(std::string p_sContentType)           { m_sHTTPContentType = p_sContentType;     }
 	void						 SetContent(std::string p_sContent)                   { m_sContent         = p_sContent;         }
   void             SetBinContent(char* p_szBinContent, unsigned int p_nBinContenLength);
-  void             SetUPnPItem(CUPnPItem* pUPnPItem);
+  //void             SetUPnPItem(CUPnPItem* pUPnPItem);
   
   
   std::string  GetGENASubscriptionID() { return m_sGENASubscriptionID; }
@@ -241,8 +240,7 @@ private:
   std::string        m_sGENASubscriptionID;
   
    
-  bool               m_bIsChunked;
-  CUPnPItem*         m_pUPnPItem;
+  bool               m_bIsChunked;  
   CUPnPAction*       m_pUPnPAction;
   std::fstream       m_fsFile;
   unsigned int       m_nRangeStart;

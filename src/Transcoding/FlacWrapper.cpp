@@ -70,11 +70,11 @@ FLAC__StreamDecoderWriteStatus FLACFileDecoderWriteCallback(const FLAC__FileDeco
       }
     }
     
-    return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
-    
+    return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;    
   }
-	else {
-		ASSERT(0);
+	else 
+  {
+		CSharedLog::Shared()->Log(LOG_ERROR, "FLAC__STREAM_DECODER_WRITE_STATUS_ABORT", __FILE__, __LINE__);
 		//dcd->error_occurred = true;
 		return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
 	}	

@@ -27,18 +27,13 @@
 ===============================================================================*/
  
 #include "ContentDirectory.h" 
-#include "ContentDirectoryDescription.cpp" 
-#include "UPnPItem.h"
-#include "AudioItem.h"
-#include "ImageItem.h"
-#include "VideoItem.h"
+#include "ContentDirectoryDescription.cpp"
 #include "../UPnPActions/UPnPBrowse.h"
 #include "../SharedConfig.h"
 #include "../SharedLog.h"
 #include "../Common/Common.h"
 #include "../Common/RegEx.h"
 #include "FileDetails.h"
-#include "UPnPObjectFactory.h"
  
 #include <iostream>
 #include <sstream>
@@ -72,11 +67,11 @@ CUPnPService(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, p_sHTTPServerURL)
   {
     if(bIsNewDB)
     {
-      cout << "[ERROR] unable to create database file '" << CSharedConfig::Shared()->GetConfigDir() << "fuppes.db" << "'." << endl;
-      cout << "make shure you have write permissions on that directory" << endl;
-      fflush(stdout);
-    }
-    
+      stringstream sLog;
+      sLog << "unable to create database file '" << CSharedConfig::Shared()->GetConfigDir() << "fuppes.db" << "'." << endl <<
+              "make sure you have write permissions on that directory" << endl;      
+      CSharedLog::Shared()->Log(LOG_ERROR, sLog.str(), __FILE__, __LINE__);
+    }    
     return;
   } 
   
@@ -167,13 +162,13 @@ bool CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
 ===============================================================================*/
 
 /* GetItemFromObjectID */
-CUPnPObject* CContentDirectory::GetItemFromObjectID(std::string p_sObjectID)
+/*CUPnPObject* CContentDirectory::GetItemFromObjectID(std::string p_sObjectID)
 {
   CUPnPObjectFactory* pFact = new CUPnPObjectFactory(m_sHTTPServerURL);    
   CUPnPObject* pResult = pFact->CreateObjectFromId(p_sObjectID);  
   delete pFact;
   return pResult;  
-}
+}*/
 
 /* <\PUBLIC> */
 

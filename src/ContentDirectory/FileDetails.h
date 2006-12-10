@@ -104,9 +104,9 @@ class CFileDetails
   
     SMusicTrack GetMusicTrackDetails(std::string p_sFileName, std::string* p_sResult);
   
-    bool IsTranscodingExtension(std::string p_sExt);
-    std::string GetTargetMimeType(std::string p_sExt);
-    std::string GetTargetExtension(std::string p_sExt);
+    static bool IsTranscodingExtension(std::string p_sExt);
+    static std::string GetTargetMimeType(std::string p_sExt);
+    static std::string GetTargetExtension(std::string p_sExt);
   
   private:
     static CFileDetails* m_Instance; 

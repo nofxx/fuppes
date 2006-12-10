@@ -1025,7 +1025,7 @@ void CSharedConfig::CheckForTranscodingLibs()
   /* LAME */
   CLameWrapper* pLame = new CLameWrapper();
   m_bLameAvailable = pLame->LoadLib();
-  if(m_bLameAvailable)
+  if(m_bLameAvailable)  
     m_sLameVersion = pLame->GetVersion();
   delete pLame;  
   

@@ -31,8 +31,6 @@
 
 #include "../UPnPService.h"
 #include "../HTTP/HTTPMessage.h"
-#include "UPnPObject.h"
-#include "UPnPContainer.h"
 #include "ContentDatabase.h"
 #include "../UPnPActions/UPnPBrowse.h"
 
@@ -85,7 +83,7 @@ public:
    *  @param  p_sObjectID  object id to identify object
    *  @return  the UPnP object or NULL
    */
-  CUPnPObject* GetItemFromObjectID(std::string p_sObjectID);
+  //CUPnPObject* GetItemFromObjectID(std::string p_sObjectID);
 
   
 /* <\PUBLIC> */

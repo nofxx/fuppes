@@ -275,4 +275,36 @@ void CSharedLog::Error(std::string p_sSender, std::string p_sMessage)
   #endif
 }
 
+void CSharedLog::Log(unsigned int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber)
+{
+  #ifdef DISABLELOG
+  return;
+  #endif
+  
+  switch(nLogLevel)
+  {
+    case LOG_NORMAL:    
+      break;    
+    case LOG_ERROR:
+      break;
+    case LOG_WARNING:
+      break;
+    case LOG_CRITICAL:
+      break;
+    case LOG_EXTENDED:
+      break;
+    case LOG_DEBUG:
+      break;
+  }
+  
+  cout << "          (" << p_szFileName << " " << p_nLineNumber << ") " << endl;
+  if(nLogLevel >= LOG_EXTENDED)
+    cout << endl;
+  
+  cout << p_sMessage << endl;
+  
+  if(nLogLevel >= LOG_EXTENDED)  
+    cout << endl << "          (end " << p_szFileName << ")" << endl << endl;  
+}
+
 /* <\PUBLIC> */
