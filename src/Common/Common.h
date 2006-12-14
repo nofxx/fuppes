@@ -30,7 +30,9 @@
 ===============================================================================*/
 
 #include <string>
+#include <sstream>
 #include <assert.h>
+#include <exception>
 
 #include <libxml/xmlwriter.h>
 #include "../SharedConfig.h"
@@ -51,13 +53,25 @@
 #endif
 
 /*===============================================================================
- MACROS
+ EXCEPTIONS
 ===============================================================================*/
-
-#define SAFE_DELETE(_x_)            if(_x_){delete(_x_); _x_ = NULL;}
-#define BOOL_CHK_RET_POINTER(_x_)   assert(_x_); if(!_x_) return false
-#define STRING_CHK_RET_POINTER(_x_) assert(_x_); if(!_x_) return ""
-#define VOID_CHK_RET_POINTER(_x_)   assert(_x_); if(!_x_) return
+class EException: public std::exception
+{
+  public:
+    EException(std::string p_sException, char* p_szFile, int p_nLine) : std::exception()
+    {       
+      std::stringstream sRes;
+      sRes << p_sException << " (" << p_szFile << ", " << p_nLine << ")";
+      m_sException = sRes.str();
+    };
+      
+    ~EException() throw() {};
+      
+    std::string What() { return m_sException; };
+    
+  private:
+    std::string m_sException;
+};
 
 /*===============================================================================
  DEFINITIONS
@@ -65,39 +79,7 @@
 
 #define ASSERT assert
 
-/*===============================================================================
- CONSTATNS
-===============================================================================*/
-
-/*
- * mime types
- */
-
 const std::string MIME_TYPE_TEXT_HTML = "text/html";
-
-/* audio types */
-const std::string MIME_TYPE_AUDIO_MPEG              = "audio/mpeg";
-const std::string MIME_TYPE_AUDIO_X_FLAC            = "audio/x-flac";
-const std::string MIME_TYPE_APPLICATION_OCTETSTREAM = "application/octet-stream";
-//const std::string MIME_TYPE_AUDIO_X_PN_REALAUDIO    = "audio/x-pn-realaudio";
-
-/* image types */
-const std::string MIME_TYPE_IMAGE_PNG  = "image/png";
-const std::string MIME_TYPE_IMAGE_BMP  = "image/bmp";
-const std::string MIME_TYPE_IMAGE_JPEG = "image/jpeg";
-const std::string MIME_TYPE_IMAGE_GIF  = "image/gif";
-
-/* video types */
-const std::string MIME_TYPE_VIDEO_X_MSVIDEO = "video/x-msvideo";
-const std::string MIME_TYPE_VIDEO_MPEG      = "video/mpeg";
-const std::string MIME_TYPE_VIDEO_X_MS_WMV  = "video/x-ms-wmv";
-const std::string MIME_TYPE_VIDEOS_X_MS_VOB = "video/x-ms-vob";
-
-/* playlist types */
-const std::string MIME_TYPE_AUDIO_X_SCPLS   = "audio/x-scpls"; // .pls
-const std::string MIME_TYPE_AUDIO_X_MPGEURL = "audio/x-mpegurl"; // .m3u
-
-/* TODO */
 
 /*===============================================================================
  File Functions

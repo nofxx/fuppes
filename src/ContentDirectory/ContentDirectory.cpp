@@ -22,10 +22,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
- 
 #include "ContentDirectory.h" 
 #include "ContentDirectoryDescription.cpp"
 #include "../UPnPActions/UPnPBrowse.h"
@@ -40,22 +36,9 @@
 #include <libxml/xmlwriter.h>
 
 using namespace std;
- 
-/*===============================================================================
- CONSTANTS
-===============================================================================*/
 
 const string LOGNAME = "ContentDir";
- 
-/*===============================================================================
- CLASS CContentDirectory
-===============================================================================*/
 
-/* <PUBLIC> */
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
 
 /* constructor */
 CContentDirectory::CContentDirectory(std::string p_sHTTPServerURL):
@@ -70,7 +53,7 @@ CUPnPService(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, p_sHTTPServerURL)
       stringstream sLog;
       sLog << "unable to create database file '" << CSharedConfig::Shared()->GetConfigDir() << "fuppes.db" << "'." << endl <<
               "make sure you have write permissions on that directory" << endl;      
-      CSharedLog::Shared()->Log(LOG_ERROR, sLog.str(), __FILE__, __LINE__);
+      CSharedLog::Shared()->Log(L_ERROR, sLog.str(), __FILE__, __LINE__);
     }    
     return;
   } 
@@ -95,38 +78,32 @@ std::string CContentDirectory::GetServiceDescription()
 ===============================================================================*/
  
 /* HandleUPnPAction */
-bool CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut)
+void CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut)
 {
-  BOOL_CHK_RET_POINTER(pUPnPAction);
-  BOOL_CHK_RET_POINTER(pMessageOut);
-  
   string sContent = "";
   
   switch(pUPnPAction->GetActionType())
   {
-    /* Handle UPnP browse */
-    case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_BROWSE:
-      //cout << pUPnPAction->m_sMessage<< endl;
-      sContent = DbHandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);
-      //cout << sContent << endl; 
-      break;
-      
+    // Browse
+    case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_BROWSE:      
+      sContent = DbHandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);      
+      break;      
+    // GetSearchCapabilities
     case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SEARCH_CAPABILITIES:
       sContent = HandleUPnPGetSearchCapabilities(pUPnPAction);
-      break;
-      
+      break;      
+    // GetSortCapabilities
     case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SORT_CAPABILITIES:
       sContent = HandleUPnPGetSortCapabilities(pUPnPAction);
       break;
-      
+    // GetSystemUpdateID  
     case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SYSTEM_UPDATE_ID:
       sContent = HandleUPnPGetSystemUpdateID(pUPnPAction);
       break;
   }
   
   if(!sContent.empty())
-  {
-    /* Set a message for the incoming action */
+  {    
     pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml; charset=\"utf-8\"");
     pMessageOut->SetContent(sContent);
   }
@@ -152,28 +129,10 @@ bool CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
     "</s:Envelope>";
     
     pMessageOut->SetContent(sContent);    
-    //cout << pMessageOut->GetContent() << endl;
   }
-  return true;
 }
 
-/*===============================================================================
- GET
-===============================================================================*/
-
-/* GetItemFromObjectID */
-/*CUPnPObject* CContentDirectory::GetItemFromObjectID(std::string p_sObjectID)
-{
-  CUPnPObjectFactory* pFact = new CUPnPObjectFactory(m_sHTTPServerURL);    
-  CUPnPObject* pResult = pFact->CreateObjectFromId(p_sObjectID);  
-  delete pFact;
-  return pResult;  
-}*/
-
-/* <\PUBLIC> */
-
-/* <PRIVATE> */
-    
+  
 
 /* HandleUPnPBrowse */
 std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
@@ -813,7 +772,7 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   string sExt      = ExtractFileExt(pSQLResult->GetValue("FILE_NAME"));
   if(CFileDetails::Shared()->IsTranscodingExtension(sExt))
   {
-    sMimeType = CFileDetails::Shared()->GetTargetMimeType(sExt);
+    sMimeType = CFileDetails::Shared()->GetMimeType(sExt, true);
     sExt      = CFileDetails::Shared()->GetTargetExtension(sExt);
   }
   
@@ -937,6 +896,7 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "LastWriteDateTime", BAD_CAST "2006/03/05 10:25:17");           */
   /* Testende */
   
+  #warning TODO: transcoding
   sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/VideoItems/" << p_sObjectID << "." << ExtractFileExt(pSQLResult->GetValue("FILE_NAME"));  
   //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
@@ -1047,14 +1007,3 @@ std::string CContentDirectory::HandleUPnPGetSystemUpdateID(CUPnPAction* pAction)
 }
 
 /* <\PRIVATE> */
-
-
-/* Playlisten aufbauen 
-- objektliste erzeugen
-- objektliste durchlaufen und jede gefundene playliste:
-  - parsen
-  - pruefen, ob ein eintrag auf eine bereits eingelesene datei referenziert
-    - Ja: Eintrag in PLAYLIST_ITEMS mit referenz auf zugehoeriges OBJECTS.ID
-    - Nein: 
-
-*/

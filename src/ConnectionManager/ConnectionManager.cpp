@@ -37,8 +37,9 @@ std::string CConnectionManager::GetServiceDescription()
   return sConnectionManagerDescription;
 }
 
-bool CConnectionManager::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut)
+void CConnectionManager::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut)
 {
+  #warning todo
   pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_500_INTERNAL_SERVER_ERROR, "text/xml; charset=\"utf-8\"");            
 
   std::string sContent = 
@@ -58,7 +59,5 @@ bool CConnectionManager::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage
   "  </s:Body>"
   "</s:Envelope>";
   
-  pMessageOut->SetContent(sContent);      
-     
-  return true;
+  pMessageOut->SetContent(sContent);
 }

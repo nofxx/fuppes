@@ -25,6 +25,7 @@
 
 #include "../Common/Common.h"
 #include "../SharedConfig.h"
+#include "../SharedLog.h"
 
 #ifdef HAVE_TAGLIB
 #include <fileref.h>
@@ -34,8 +35,6 @@
 
 #include <sstream>
 #include <iostream>
-
-
 
 
 
@@ -51,9 +50,21 @@ struct FileType_t FileTypes[] =
   /* image types */
   {"jpeg", ITEM_IMAGE_ITEM_PHOTO, "image/jpeg"},
   {"jpg" , ITEM_IMAGE_ITEM_PHOTO, "image/jpeg"},
+  {"bmp" , ITEM_IMAGE_ITEM_PHOTO, "image/bmp"},
+  {"png" , ITEM_IMAGE_ITEM_PHOTO, "image/png"},
+  {"gif" , ITEM_IMAGE_ITEM_PHOTO, "image/gif"},
   
   /* video types */
+  {"mpeg", ITEM_VIDEO_ITEM_MOVIE, "video/mpeg"},
+  {"mpg" , ITEM_VIDEO_ITEM_MOVIE, "video/mpeg"},
+  {"avi" , ITEM_VIDEO_ITEM_MOVIE, "video/x-msvideo"},
+  {"wmv" , ITEM_VIDEO_ITEM_MOVIE, "video/x-ms-wmv"},
+  {"vob" , ITEM_VIDEO_ITEM_MOVIE, "video/x-ms-vob"},
+  {"vdr" , ITEM_VIDEO_ITEM_MOVIE, "application/x-extension-vdr"},
   
+  /* playlist types */
+  {"m3u", CONTAINER_PLAYLIST_CONTAINER, "audio/x-mpegurl"},
+  {"pls", CONTAINER_PLAYLIST_CONTAINER, "audio/x-scpls"},
   
   /* empty entry to mark the list's end */
   {"", OBJECT_TYPE_UNKNOWN, ""}
@@ -67,8 +78,12 @@ struct TranscodingSetting_t TranscodingSettings[] =
   {"mpc" , "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK, "MpcWrapper"   , "LameWrapper"},
   {"flac", "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK, "FlacWrapper"  , "LameWrapper"},
   
+  /* video */
+  {"vdr", "vob", "video/x-ms-vob", ITEM_VIDEO_ITEM_MOVIE, "", ""},
+  
+  
   /* empty entry to mark the list's end */
-  {"", "", "", OBJECT_TYPE_UNKNOWN}
+  {"", "", "", OBJECT_TYPE_UNKNOWN, "", ""}
 };
 
 
@@ -103,42 +118,9 @@ OBJECT_TYPE CFileDetails::GetObjectType(std::string p_sFileName)
     
     pType++;
   }
-  
-  
-  cout << "CFileDetails::GetObjectType :: NOT FOUND" << endl;
-  
-  
-  if((sExt.compare("mp3") == 0) || (sExt.compare("ogg") == 0) ||
-     (sExt.compare("mpc") == 0) || (sExt.compare("flac") == 0))
-    return ITEM_AUDIO_ITEM_MUSIC_TRACK;
 
-  else if((sExt.compare("jpeg") == 0) || (sExt.compare("jpg") == 0) ||
-          (sExt.compare("bmp") == 0) || (sExt.compare("png") == 0) ||
-          (sExt.compare("gif") == 0))
-    return ITEM_IMAGE_ITEM_PHOTO;
-  
-  else if((sExt.compare("mpeg") == 0) || (sExt.compare("mpg") == 0))
-    return ITEM_VIDEO_ITEM_MOVIE;
-  
-  else if((sExt.compare("avi") == 0))
-    return ITEM_VIDEO_ITEM_MOVIE;
-  
-  else if((sExt.compare("wmv") == 0))
-    return ITEM_VIDEO_ITEM_MOVIE;
-
-  else if((sExt.compare("vdr") == 0))
-    return ITEM_VIDEO_ITEM_MOVIE;    
-  else if((sExt.compare("vob") == 0))
-    return ITEM_VIDEO_ITEM_MOVIE; 
-  
-  else if((sExt.compare("m3u") == 0) || (sExt.compare("pls") == 0))
-    return CONTAINER_PLAYLIST_CONTAINER;
-  
-  /*else if((sExt.compare("rm") == 0))
-    return ITEM_VIDEO_ITEM_MOVIE;*/
-  
-  else  
-    return OBJECT_TYPE_UNKNOWN;  
+  CSharedLog::Shared()->Log(L_WARNING, "unhandled file extension: " + sExt, __FILE__, __LINE__);  
+  return OBJECT_TYPE_UNKNOWN;  
 }
 
 std::string CFileDetails::GetMimeType(std::string p_sFileName, bool p_bTranscodingMimeType)
@@ -161,6 +143,7 @@ std::string CFileDetails::GetMimeType(std::string p_sFileName, bool p_bTranscodi
         {
           if(pTranscoding->sExt.compare(sExt) == 0)
           {
+            #warning FIXME: check if transcoding libs are available
             return pTranscoding->sTargetMimeType;
           }
           pTranscoding++;
@@ -175,55 +158,8 @@ std::string CFileDetails::GetMimeType(std::string p_sFileName, bool p_bTranscodi
   } // while !sExt.empty
   
   
-  
-  
-  /* audio types */
-  if (sExt.compare("mp3") == 0)
-    return MIME_TYPE_AUDIO_MPEG;  
-  else if((sExt.compare("ogg") == 0) || (sExt.compare("mpc") == 0) || (sExt.compare("flac") == 0))
-  {
-    //cout << sExt << endl;
-    if(CSharedConfig::Shared()->IsTranscodingExtension(sExt))
-    {
-      //cout << MIME_TYPE_AUDIO_MPEG << endl;
-      return MIME_TYPE_AUDIO_MPEG;
-    }
-    else
-    {
-      //cout << "NOT: " << MIME_TYPE_AUDIO_MPEG << endl;
-      
-      if((sExt.compare("ogg") == 0) || (sExt.compare("mpc") == 0))
-        return MIME_TYPE_APPLICATION_OCTETSTREAM;
-      else if(sExt.compare("flac") == 0)
-        return MIME_TYPE_AUDIO_X_FLAC;
-    }
-  }
-  
-  /* image types */
-  else if((sExt.compare("jpeg") == 0) || (sExt.compare("jpg") == 0))
-    return MIME_TYPE_IMAGE_JPEG;
-  else if(sExt.compare("bmp") == 0)
-    return MIME_TYPE_IMAGE_BMP;
-  else if(sExt.compare("png") == 0)
-    return MIME_TYPE_IMAGE_PNG; 
-  else if(sExt.compare("gif") == 0)
-    return MIME_TYPE_IMAGE_GIF;
-  
-  /* video types */
-  else if((sExt.compare("mpeg") == 0) || (sExt.compare("mpg") == 0))
-    return MIME_TYPE_VIDEO_MPEG;
-  else if(sExt.compare("avi") == 0)
-    return MIME_TYPE_VIDEO_X_MSVIDEO;
-  else if(sExt.compare("wmv") == 0)
-    return MIME_TYPE_VIDEO_X_MS_WMV;  
-  /*else if(sExt.compare("rm") == 0)
-    return MIME_TYPE_AUDIO_X_PN_REALAUDIO;*/
-  else if(sExt.compare("vdr") == 0)
-    return MIME_TYPE_VIDEOS_X_MS_VOB;
-  else if(sExt.compare("vob") == 0)
-    return MIME_TYPE_VIDEOS_X_MS_VOB;  
-  
-  return "unknown";  
+  CSharedLog::Shared()->Log(L_WARNING, "unhandled file extension: " + sExt, __FILE__, __LINE__);  
+  return "";
 }
 
 std::string CFileDetails::GetObjectTypeAsString(unsigned int p_nObjectType)
@@ -290,25 +226,6 @@ bool CFileDetails::IsTranscodingExtension(std::string p_sExt)
     pTranscoding++;
   }
   return false;
-}
-
-std::string CFileDetails::GetTargetMimeType(std::string p_sExt)
-{
-  string sResult = "";
-  
-  TranscodingSetting_t* pTranscoding;
-  pTranscoding = TranscodingSettings;
-  while(!pTranscoding->sExt.empty())
-  {
-    if(pTranscoding->sExt.compare(p_sExt) == 0)
-    {
-      sResult = pTranscoding->sTargetMimeType;
-      break;
-    }    
-    pTranscoding++;
-  }
-  
-  return sResult;
 }
 
 std::string CFileDetails::GetTargetExtension(std::string p_sExt)

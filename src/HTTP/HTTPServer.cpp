@@ -75,8 +75,10 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
   	
   /* create socket */
 	m_Socket = socket(AF_INET, SOCK_STREAM, 0);
-  if(m_Socket == -1)  
-    CSharedLog::Shared()->Error(LOGNAME, "creating socket");	
+  if(m_Socket == -1) {    
+    CSharedLog::Shared()->Log(L_ERROR, "failed to create socket", __FILE__, __LINE__);
+    throw EException("failed to create socket", __FILE__, __LINE__);
+  }
   
   /* set socket non blocking */
   /*if(!fuppesSocketSetNonBlocking(m_Socket))
@@ -90,8 +92,10 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 	
   /* try to bind the socket */
 	int nRet = bind(m_Socket, (struct sockaddr*)&local_ep, sizeof(local_ep));	
-  if(nRet == -1)
-    CSharedLog::Shared()->Error(LOGNAME, "bind()");  
+  if(nRet == -1) {
+    CSharedLog::Shared()->Log(L_ERROR, "failed to bind socket", __FILE__, __LINE__);    
+    throw EException("failed to bind socket", __FILE__, __LINE__);
+  }
   
   /* get local end point to retreive port number on random ports */
 	socklen_t size = sizeof(local_ep);
@@ -114,13 +118,16 @@ void CHTTPServer::Start()
   
   /* listen on socket */
   int nRet = listen(m_Socket, 0);
-  if(nRet == -1)
-    CSharedLog::Shared()->Error(LOGNAME, "listen()");    
+  if(nRet == -1) {
+    CSharedLog::Shared()->Log(L_ERROR, "failed to listen on socket", __FILE__, __LINE__);
+    throw EException("failed to listen on socket", __FILE__, __LINE__);
+  }
 
   /* start accept thread */
-  fuppesThreadStart(accept_thread, AcceptLoop);
-  
+  fuppesThreadStart(accept_thread, AcceptLoop);  
   m_bIsRunning = true;
+  
+  CSharedLog::Shared()->Log(L_EXTENDED, "HTTPServer started", __FILE__, __LINE__);
 }
 
 void CHTTPServer::Stop()
@@ -143,6 +150,8 @@ void CHTTPServer::Stop()
   /* close socket */
   upnpSocketClose(m_Socket);
   m_bIsRunning = false;
+  
+  CSharedLog::Shared()->Log(L_EXTENDED, "HTTPServer stopped", __FILE__, __LINE__);
 }
 
 upnpSocket CHTTPServer::GetSocket()
@@ -163,18 +172,13 @@ std::string CHTTPServer::GetURL()
 
 bool CHTTPServer::SetReceiveHandler(IHTTPServer* pHandler)
 {
-	BOOL_CHK_RET_POINTER(pHandler);
-  
-  /* Save pointer to message handler */
   m_pReceiveHandler = pHandler;
-
   return true;
 }
 
 bool CHTTPServer::CallOnReceive(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
 {
-  fuppesThreadLockMutex(&m_ReceiveMutex);
-  BOOL_CHK_RET_POINTER(pMessageOut);
+  fuppesThreadLockMutex(&m_ReceiveMutex);  
 
   bool bResult = false;
   if(m_pReceiveHandler != NULL)

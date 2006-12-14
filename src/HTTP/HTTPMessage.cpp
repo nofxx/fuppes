@@ -214,7 +214,7 @@ std::string CHTTPMessage::GetHeaderAsString()
       break;    
     
     default:
-      CSharedLog::Shared()->Log(LOG_ERROR, "GetHeaderAsString() :: unhandled message type", __FILE__, __LINE__);      
+      CSharedLog::Shared()->Log(L_ERROR, "GetHeaderAsString() :: unhandled message type", __FILE__, __LINE__);      
       break;
 	}		  
   

@@ -30,28 +30,16 @@
 #include <iostream>
 #include <sstream>
 
-#ifdef USE_SYSLOG
-#include <syslog.h>
+#ifdef WIN32
+  #define HAVE_SYSLOG_H 0
+#else
+  #include "config.h"
+  #ifdef HAVE_SYSLOG_H
+  #include <syslog.h>
+  #endif
 #endif
 
 using namespace std;
-
-/*===============================================================================
- DEFINITIONS
-===============================================================================*/
-
-/* Define this to disable logging */
-//#define DISABLELOG
-
-/*===============================================================================
- CLASS CMessageBase
-===============================================================================*/
-
-/* <PUBLIC> */
-
-/*===============================================================================
- INSTANCE
-===============================================================================*/
 
 CSharedLog* CSharedLog::m_Instance = 0;
 
@@ -62,42 +50,41 @@ CSharedLog* CSharedLog::Shared()
 	return m_Instance;
 }
 
-/* <\PUBLIC> */
-
-/* <PRIVATE> */
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
 
 CSharedLog::CSharedLog()
 {
+  m_bUseSyslog = false;
+
   SetLogLevel(1, false);
   #ifndef DISABLELOG
-  fuppesThreadInitMutex(&m_Mutex);
-  
-  #ifdef USE_SYSLOG
-  openlog("FUPPES", 0, LOG_USER);
-  #endif
-  
+  fuppesThreadInitMutex(&m_Mutex);  
   #endif
 }
 
 CSharedLog::~CSharedLog()
 {
+  if(m_bUseSyslog)
+    closelog();
+  
   #ifndef DISABLELOG
-  
-  #ifdef USE_SYSLOG
-  closelog();
-  #endif
-  
   fuppesThreadDestroyMutex(&m_Mutex);
   #endif
 }
 
-/* <\PRIVATE> */
+void CSharedLog::SetUseSyslog(bool p_bUseSyslog)
+{
+  #ifdef HAVE_SYSLOG_H
+  m_bUseSyslog = p_bUseSyslog;
+  
+  if(m_bUseSyslog)
+    openlog("fuppes", 0, LOG_USER);
+  else
+    closelog();
+  #else
+  m_bUseSyslog = false;
+  #endif
+}
 
-/* <PUBLIC> */
 
 void CSharedLog::SetLogLevel(int p_nLogLevel, bool p_bPrintLogLevel)
 {
@@ -187,7 +174,7 @@ void CSharedLog::Log(std::string p_sSender, std::string p_sMessage)
     syslog(LOG_INFO, sLog.str().c_str());
     #else
     cout << sLog.str() << endl;
-    fflush(stdout);  
+    fflush(stdout);
     #endif
     //fuppesThreadUnlockMutex(&m_Mutex);    
   }  
@@ -275,13 +262,15 @@ void CSharedLog::Error(std::string p_sSender, std::string p_sMessage)
   #endif
 }
 
-void CSharedLog::Log(unsigned int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber)
+void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber)
 {
   #ifdef DISABLELOG
   return;
   #endif
   
-  switch(nLogLevel)
+  #warning todo  
+  
+  /*switch(nLogLevel)
   {
     case LOG_NORMAL:    
       break;    
@@ -295,16 +284,59 @@ void CSharedLog::Log(unsigned int nLogLevel, std::string p_sMessage, char* p_szF
       break;
     case LOG_DEBUG:
       break;
-  }
+  }*/
+  
+  #ifdef HAVE_SYSLOG_H
+  std::stringstream sLog;
+  
+  if(m_bUseSyslog)
+  {  
+    switch(nLogLevel)
+    {
+      case L_NORMAL:    
+        syslog(LOG_INFO, p_sMessage.c_str());
+        break;    
+      case L_ERROR:      
+        syslog(LOG_ERR, p_sMessage.c_str());
+        break;
+      case L_WARNING:
+        syslog(LOG_WARNING, p_sMessage.c_str());
+        break;
+      case L_CRITICAL:
+        syslog(LOG_WARNING, p_sMessage.c_str());
+        break;
+      case L_EXTENDED:
+        syslog(LOG_DEBUG, p_sMessage.c_str());
+        break;
+      case L_DEBUG:
+        syslog(LOG_DEBUG, p_sMessage.c_str());
+        break;
+    }
+  }  
+  #endif
+  
+  if(m_bUseSyslog)
+    return;
+    
   
   cout << "          (" << p_szFileName << " " << p_nLineNumber << ") " << endl;
-  if(nLogLevel >= LOG_EXTENDED)
+  if(nLogLevel >= L_EXTENDED)
     cout << endl;
   
   cout << p_sMessage << endl;
   
-  if(nLogLevel >= LOG_EXTENDED)  
+  if(nLogLevel >= L_EXTENDED)  
     cout << endl << "          (end " << p_szFileName << ")" << endl << endl;  
+}
+
+void CSharedLog::Syslog(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber)
+{
+  #ifdef HAVE_SYSLOG_H 
+  if(m_bUseSyslog)
+  { 
+    Log(nLogLevel, p_sMessage, p_szFileName, p_nLineNumber);
+  }
+  #endif
 }
 
 /* <\PUBLIC> */

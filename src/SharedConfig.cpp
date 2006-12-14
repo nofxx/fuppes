@@ -729,7 +729,7 @@ bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
     }
     
     if(m_sConfigVersion.compare(NEEDED_CONFIGFILE_VERSION) != 0)
-    {
+    {      
       cout << "Your configuration is deprecated" << endl;
       cout << "  your version  : " << m_sConfigVersion << endl;
       cout << "  needed version: " << NEEDED_CONFIGFILE_VERSION << endl << endl;
@@ -737,6 +737,8 @@ bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
       cout << "please remove the file \"" << m_sConfigFileName << "\" and restart fuppes." << endl;
       cout << "(keep a backup of the old configfile to take over your settings)" << endl;
       cout << "[exiting]" << endl;
+      
+      CSharedLog::Shared()->Syslog(L_ERROR, "please update the config file " + m_sConfigFileName, __FILE__, __LINE__);      
       fuppesSleep(3000);
       
       return false;

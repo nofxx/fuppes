@@ -148,9 +148,11 @@ int main(int argc, char* argv[])
   {
     for(int i = 1; i < argc; i++)
     {
-      cout << argv[i] << endl;      
-      if(strcmp(argv[i], "-d") == 0)
+      //cout << argv[i] << endl;      
+      if((strcmp(argv[i], "-d") == 0) || (strcmp(argv[i], "--daemon") == 0))
         bDaemonMode = true;
+      else if(strcmp(argv[i], "--syslog") == 0)
+        CSharedLog::Shared()->SetUseSyslog(true);
     }
   }
   
@@ -160,52 +162,41 @@ int main(int argc, char* argv[])
   WSAStartup(MAKEWORD(2,2), &wsa);
   #endif
   
+   
   /* daemon process */
   #ifndef WIN32
   if(bDaemonMode)
-  {
-    cout << "daemon mode" << endl;
+  {    
+    CSharedLog::Shared()->SetUseSyslog(true);
     
-    /* Our process ID and Session ID */
-    pid_t pid, sid;
+    if(!CSharedConfig::Shared()->SetupConfig())
+    return 1;
     
-    /* Fork off the parent process */
-    pid = fork();
+    cout << "daemon mode" << endl;    
+    
+    pid_t pid;    
+    pid = fork();    
+    
+    // error
     if (pid < 0) 
     {
-      exit(EXIT_FAILURE);
-    }
-    /* If we got a good PID, then
-       we can exit the parent process. */
-    if (pid > 0) 
+      CSharedLog::Shared()->Log(L_ERROR, "could not create child process", __FILE__, __LINE__);      
+      return 1;
+    }    
+    // parent process
+    else if (pid > 0) 
     {
-      exit(EXIT_SUCCESS);
-    }
-  
-    /* Change the file mode mask */
-    umask(0);
-            
-    /* Open any logs here */        
-            
-    /* Create a new SID for the child process */
-    sid = setsid();
-    if (sid < 0) 
+      cout << "[started]" << endl;
+      return 0;
+    }    
+    // child process
+    else if(pid == 0)
     {
-      /* Log the failure */
-      exit(EXIT_FAILURE);
+      //cout << "child process" << endl;
+      close(STDIN_FILENO);
+      close(STDOUT_FILENO);
+      close(STDERR_FILENO);      
     }
-    
-    /* Change the current working directory */
-    if ((chdir("/")) < 0) 
-    {
-      /* Log the failure */
-      exit(EXIT_FAILURE);
-    }
-    
-    /* Close out the standard file descriptors */
-    close(STDIN_FILENO);
-    close(STDOUT_FILENO);
-    close(STDERR_FILENO);
   }
   #endif
   
@@ -226,9 +217,17 @@ int main(int argc, char* argv[])
   /* Create presentation handler */
   CPresentationHandler* pPresentationHandler = new CPresentationHandler();
   
-  /* Create main server object (CFuppes) */  
-	CFuppes* pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUUID(), pPresentationHandler);	
-  CSharedConfig::Shared()->AddFuppesInstance(pFuppes);
+  /* Create main server object (CFuppes) */   
+  CFuppes* pFuppes = NULL;
+	try {
+    pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUUID(), pPresentationHandler);	
+    CSharedConfig::Shared()->AddFuppesInstance(pFuppes);
+  }
+  catch(EException ex) {
+    cout << ex.What() << endl;
+    cout << "[exiting]" << endl;
+    return 1;
+  }  
   
   /* todo: create a fuppes instance for each network interface */
   //CFuppes* pFuppes2 = new CFuppes("127.0.0.1", pPresentationHandler);	

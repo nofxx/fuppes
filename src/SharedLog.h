@@ -28,12 +28,14 @@
 #include "Common/Common.h"
 #include <string>
 
-#define LOG_NORMAL   0
-#define LOG_ERROR    1
-#define LOG_WARNING  2
-#define LOG_CRITICAL 3
-#define LOG_EXTENDED 4
-#define LOG_DEBUG    5 
+#define L_NORMAL   0
+
+#define L_EXTENDED 1
+#define L_DEBUG    2
+
+#define L_ERROR    3
+#define L_WARNING  4
+#define L_CRITICAL 5
 
 class CSharedLog
 {
@@ -59,6 +61,7 @@ public:
 ===============================================================================*/
 
   static CSharedLog* Shared();
+  void SetUseSyslog(bool p_bUseSyslog);
 
 /*===============================================================================
  LOGGING
@@ -72,7 +75,8 @@ public:
   void  Critical(std::string p_sSender, std::string p_sMessage);
   void  Error(std::string p_sSender, std::string p_sMessage);
 
-  void  Log(unsigned int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber);
+  void  Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber);
+  void  Syslog(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber);
 /*===============================================================================
  SET
 ===============================================================================*/  
@@ -99,6 +103,7 @@ private:
   bool               m_bShowExtendedLog;
   bool               m_bShowDebugLog;
   int                m_nLogLevel;
+  bool               m_bUseSyslog;
 
 /* <\PRIVATE> */
 

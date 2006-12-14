@@ -50,45 +50,64 @@ const string LOGNAME = "FUPPES";
  */
 CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID, IFuppes* pPresentationRequestHandler)
 {
+  CSharedLog::Shared()->Log(L_EXTENDED, "starting UPnP subsystem", __FILE__, __LINE__);  
+  
   ASSERT(NULL != pPresentationRequestHandler);
   
-  /* Set members */
+  /* set members */
   m_sIPAddress                  = p_sIPAddress;
   m_sUUID                       = p_sUUID;
   m_pPresentationRequestHandler = pPresentationRequestHandler;
-  fuppesThreadInitMutex(&m_OnTimerMutex);
-  
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "initializing devices");
-  
+  fuppesThreadInitMutex(&m_OnTimerMutex);  
+    
   /* init HTTP-server */
-  m_pHTTPServer = new CHTTPServer(m_sIPAddress);
-  m_pHTTPServer->SetReceiveHandler(this);
-	m_pHTTPServer->Start();
-  
+  try {
+    m_pHTTPServer = new CHTTPServer(m_sIPAddress);
+    m_pHTTPServer->SetReceiveHandler(this);
+    m_pHTTPServer->Start();
+  }
+  catch(EException ex) {    
+    throw;
+  }
+    
   /* init SSDP-controller */
-  m_pSSDPCtrl = new CSSDPCtrl(m_sIPAddress, m_pHTTPServer->GetURL());
-	m_pSSDPCtrl->SetReceiveHandler(this);
-  m_pSSDPCtrl->Start();
+  try {
+    m_pSSDPCtrl = new CSSDPCtrl(m_sIPAddress, m_pHTTPServer->GetURL());
+	  m_pSSDPCtrl->SetReceiveHandler(this);
+    m_pSSDPCtrl->Start();
+  }
+  catch(EException ex) {    
+    throw;
+  }
 
   /* Create MediaServer */
   m_pMediaServer = new CMediaServer(m_pHTTPServer->GetURL(), this);	  
   
-  /* Create ContentDirectory */
-  m_pContentDirectory = new CContentDirectory(m_pHTTPServer->GetURL());    
-  /* Add ContentDirectory to MediaServers service-list */
-	m_pMediaServer->AddUPnPService(m_pContentDirectory);
+  /* create ContentDirectory */
+  try {
+    m_pContentDirectory = new CContentDirectory(m_pHTTPServer->GetURL());   
+	  m_pMediaServer->AddUPnPService(m_pContentDirectory);
+  }
+  catch(EException ex) {
+    throw;
+  }    
 
-  m_pConnectionManager = new CConnectionManager(m_pHTTPServer->GetURL()); 
-  m_pMediaServer->AddUPnPService(m_pConnectionManager);
+  /* create ConnectionManager */
+  try {
+    m_pConnectionManager = new CConnectionManager(m_pHTTPServer->GetURL()); 
+    m_pMediaServer->AddUPnPService(m_pConnectionManager);
+  }
+  catch(EException ex) {
+    throw;
+  }
   
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "done");
+  CSharedLog::Shared()->Log(L_EXTENDED, "UPnP subsystem started", __FILE__, __LINE__);  
   
-  /* if everything is up and running,
-     multicast alive messages and search
-     for other devices */
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "multicasting alive messages");  
+  /* if everything is up and running, multicast alive messages
+     and search for other devices */       
+  CSharedLog::Shared()->Log(L_EXTENDED, "multicasting alive messages", __FILE__, __LINE__);  
   m_pSSDPCtrl->send_alive();
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "multicasting m-search");  
+  CSharedLog::Shared()->Log(L_EXTENDED, "multicasting m-search", __FILE__, __LINE__);    
   m_pSSDPCtrl->send_msearch();
   
   /* start alive timer */
@@ -99,12 +118,11 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID, IFuppes* pPresen
 /** destructor
  */
 CFuppes::~CFuppes()
-{
-  /* logging */
-  CSharedLog::Shared()->Log(LOGNAME, "shutting down");
+{  
+  CSharedLog::Shared()->Log(L_NORMAL, "shutting down", __FILE__, __LINE__);    
   
   /* multicast notify-byebye */
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "multicasting byebye messages");  
+  CSharedLog::Shared()->Log(L_EXTENDED, "multicasting byebye messages", __FILE__, __LINE__);
   m_pSSDPCtrl->send_byebye();  
   
   /* stop SSDP-controller */
@@ -118,12 +136,11 @@ CFuppes::~CFuppes()
   fuppesThreadDestroyMutex(&m_OnTimerMutex);
   
   /* destroy objects */
-  SAFE_DELETE(m_pContentDirectory);
-  SAFE_DELETE(m_pMediaServer);
-  SAFE_DELETE(m_pSSDPCtrl);
-  SAFE_DELETE(m_pHTTPServer);
+  delete m_pContentDirectory;
+  delete m_pMediaServer;
+  delete m_pSSDPCtrl;
+  delete m_pHTTPServer;
 }
-
 
 void CFuppes::CleanupTimedOutDevices()
 {  
@@ -324,14 +341,14 @@ bool CFuppes::HandleHTTPPostSOAPAction(CHTTPMessage* pMessageIn, CHTTPMessage* p
     return false;
   
   /* Handle UPnP action */
-  bool bRet = false;
+  bool bRet = true;
   switch(pAction->m_nTargetDevice)
   {
     case UPNP_DEVICE_TYPE_CONTENT_DIRECTORY:
-      bRet = m_pContentDirectory->HandleUPnPAction(pAction, pMessageOut);
+      m_pContentDirectory->HandleUPnPAction(pAction, pMessageOut);      
       break;
     case UPNP_DEVICE_TYPE_CONNECTION_MANAGER:
-      bRet = m_pConnectionManager->HandleUPnPAction(pAction, pMessageOut);
+      m_pConnectionManager->HandleUPnPAction(pAction, pMessageOut);
       break;
     default:
       bRet = false;
@@ -350,8 +367,8 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
     m_RemoteDevices[pMessage->GetUUID()]->GetTimer()->Reset();
     
     std::stringstream sMsg;
-    sMsg << "received \"Notify-Alive\" from known device id: " << pMessage->GetUUID();      
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
+    sMsg << "received \"Notify-Alive\" from known device id: " << pMessage->GetUUID();    
+    CSharedLog::Shared()->Log(L_EXTENDED, sMsg.str(), __FILE__, __LINE__);
   }
   
   /* new device */
@@ -359,7 +376,7 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
   {  
     std::stringstream sMsg;
     sMsg << "received \"Notify-Alive\" from unknown device id: " << pMessage->GetUUID();      
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
+    CSharedLog::Shared()->Log(L_EXTENDED, sMsg.str(), __FILE__, __LINE__);
     sMsg.str("");
         
     if((pMessage->GetLocation().compare("")) == 0)
@@ -369,31 +386,30 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
     if(pDevice->BuildFromDescriptionURL(pMessage->GetLocation()))
     {
       sMsg << "new device: " << pDevice->GetFriendlyName();
-      CSharedLog::Shared()->Log(LOGNAME, sMsg.str());      
+      CSharedLog::Shared()->Log(L_NORMAL, sMsg.str(), __FILE__, __LINE__);
       
       m_RemoteDevices[pMessage->GetUUID()] = pDevice;
       pDevice->GetTimer()->SetInterval(900);  // 900 sec = 15 min
       pDevice->GetTimer()->Start();
     }
     else      
-      delete pDevice;
-  
+      delete pDevice;  
   }
 }
 
 void CFuppes::HandleSSDPByeBye(CSSDPMessage* pMessage)
 {
   std::stringstream sLog;
-  sLog << "received \"Notify-ByeBye\" from device: " << pMessage->GetUUID();
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());
+  sLog << "received \"Notify-ByeBye\" from device: " << pMessage->GetUUID();  
+  CSharedLog::Shared()->Log(L_EXTENDED, sLog.str(), __FILE__, __LINE__);
   sLog.str("");
   
   m_RemoteDeviceIterator = m_RemoteDevices.find(pMessage->GetUUID());  
   /* found device */
   if(m_RemoteDeviceIterator != m_RemoteDevices.end())
   {
-    sLog << "received byebye from " << m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName();
-    CSharedLog::Shared()->Log(LOGNAME, sLog.str());
+    sLog << "received byebye from " << m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName();    
+    CSharedLog::Shared()->Log(L_NORMAL, sLog.str(), __FILE__, __LINE__);
     
     delete m_RemoteDevices[pMessage->GetUUID()];
     m_RemoteDevices.erase(pMessage->GetUUID());

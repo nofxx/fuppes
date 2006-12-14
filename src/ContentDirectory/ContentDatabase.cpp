@@ -514,8 +514,10 @@ unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL)
   sSql << "'" << p_sURL << "', ";
   //sSql << "'" << MD5Sum(sTmp.str()) << "', ";
   sSql << "'" << "todo" << "', ";
-  sSql << "'" << MIME_TYPE_AUDIO_MPEG << "', ";
+  sSql << "'" << "audio/mpeg" << "', ";
   sSql << "'" << "details - todo" << "');";
+  
+  #warning FIXME: mime type
   
   CContentDatabase* pDB = new CContentDatabase();          
   unsigned int nRowId = pDB->Insert(sSql.str());

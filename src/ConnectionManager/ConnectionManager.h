@@ -34,7 +34,7 @@ class CConnectionManager: public CUPnPService
   
     std::string GetServiceDescription();
     
-    bool HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut);
+    void HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut);
 };
 
 #endif /* _CONNECTIONMANAGER_H */

@@ -28,6 +28,7 @@
 
 #include "UDPSocket.h"
 #include "../SharedLog.h"
+#include "../Common/Common.h"
 
 #include <iostream>
 #include <sstream>
@@ -88,55 +89,48 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
 {
   /* Create socket */
 	m_Socket = socket(AF_INET, SOCK_DGRAM, 0);
-	if(m_Socket == -1)
-  {
-    CSharedLog::Shared()->Error(LOGNAME, "creating socket");
-    return false;
+	if(m_Socket == -1) {
+    CSharedLog::Shared()->Log(L_ERROR, "failed to create socket", __FILE__, __LINE__);    
+    throw EException("failed to create socket", __FILE__, __LINE__);    
   }
   
   /* Set socket options */
   int ret  = 0;
-#ifdef WIN32
-  //upnpSocketFlag(flag); 
+  #ifdef WIN32  
   bool bOptVal = true;
   ret = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, (char*)&bOptVal, sizeof(bool));
-#else
+  #else
   int flag = 1;
   ret = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
-#endif
-  if(ret == -1)
-  {
-    CSharedLog::Shared()->Error(LOGNAME, "setsockopt: SO_REUSEADDR");
-    return false;
+  #endif
+  if(ret == -1) {    
+    CSharedLog::Shared()->Log(L_ERROR, "failed to setsockopt: SO_REUSEADDR", __FILE__, __LINE__);
+    throw EException("failed to setsockopt: SO_REUSEADDR", __FILE__, __LINE__);
   }
 
-  if (!fuppesSocketSetNonBlocking(m_Socket))
-  {
-    CSharedLog::Shared()->Error(LOGNAME, "setsockopt: fuppesSocketSetNonBlocking");
-    return false;
+  // set nonblocking
+  if (!fuppesSocketSetNonBlocking(m_Socket)) {
+    CSharedLog::Shared()->Log(L_ERROR, "failed to setsockopt: fuppesSocketSetNonBlocking", __FILE__, __LINE__);
+    throw EException("failed to setsockopt: fuppesSocketSetNonBlocking", __FILE__, __LINE__);
   }
 	
 	/* Set local endpoint */
   m_LocalEndpoint.sin_family = AF_INET;	
-	if(p_bDoMulticast)
-	{
+	if(p_bDoMulticast) {
     m_LocalEndpoint.sin_addr.s_addr  = INADDR_ANY;
     m_LocalEndpoint.sin_port		     = htons(MULTICAST_PORT);
 	}
-  else 
-	{
+  else {
     m_LocalEndpoint.sin_addr.s_addr  = inet_addr(p_sIPAddress.c_str());		
     m_LocalEndpoint.sin_port		     = htons(0); /* use random port */
-	}
-	/* fill the rest of the structure with zero */
-	memset(&(m_LocalEndpoint.sin_zero), '\0', 8);
+	}	
+	memset(&(m_LocalEndpoint.sin_zero), '\0', 8); // fill the rest of the structure with zero
 	
 	/* Bind socket */
 	ret = bind(m_Socket, (struct sockaddr*)&m_LocalEndpoint, sizeof(m_LocalEndpoint)); 
-  if(ret == -1)
-  {
-    CSharedLog::Shared()->Error(LOGNAME, "bind");	
-    return false;
+  if(ret == -1) {
+    CSharedLog::Shared()->Log(L_ERROR, "failed to bind socket", __FILE__, __LINE__);
+    throw EException("failed to bind socket", __FILE__, __LINE__);
   }
 	
 	/* Get random port */
@@ -152,10 +146,9 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
 		stMreq.imr_multiaddr.s_addr = inet_addr(MULTICAST_IP); 
 		stMreq.imr_interface.s_addr  = INADDR_ANY; 	
 		ret = setsockopt(m_Socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&stMreq,sizeof(stMreq)); 	
-		if(ret == -1)
-    {
-      CSharedLog::Shared()->Error(LOGNAME, "setsockopt: multicast");
-      return false;
+		if(ret == -1) {      
+      CSharedLog::Shared()->Log(L_ERROR, "failed to setsockopt: multicast", __FILE__, __LINE__);
+      throw EException("failed to setsockopt: multicast", __FILE__, __LINE__);      
     }
 	}
   
@@ -166,7 +159,7 @@ void CUDPSocket::SetTTL(int p_nTTL)
 {
   int ret = setsockopt(m_Socket, IPPROTO_IP, IP_TTL, (char *)&p_nTTL, sizeof(p_nTTL)); 	
   if (ret == -1)
-    CSharedLog::Shared()->Error(LOGNAME, "setsockopt: TTL"); 
+    CSharedLog::Shared()->Log(L_ERROR, "setsockopt: TTL", __FILE__, __LINE__); 
 }
 
 /* TeardownSocket */

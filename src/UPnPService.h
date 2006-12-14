@@ -72,7 +72,7 @@ public:
    */
   virtual std::string GetServiceDescription() = 0;
 
-  virtual bool HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut) = 0;
+  virtual void HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut) = 0;
 
 /* <\PUBLIC> */
 

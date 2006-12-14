@@ -63,7 +63,7 @@ bool CHTTPRequestHandler::HandleRequest(CHTTPMessage* pRequest, CHTTPMessage* pR
 
 bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {
-  CSharedLog::Shared()->Log(LOG_EXTENDED, "HandleHTTPRequest() :: " + pRequest->GetRequest(), __FILE__, __LINE__);  
+  CSharedLog::Shared()->Log(L_EXTENDED, "HandleHTTPRequest() :: " + pRequest->GetRequest(), __FILE__, __LINE__);  
 
   string sRequest = pRequest->GetRequest();  
   bool   bResult  = false;  
@@ -89,10 +89,10 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
     CPlaylistFactory* pFact = new CPlaylistFactory();    
     string sPlaylist = pFact->BuildPlaylist(sObjectId);
     pResponse->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
-    if(ExtractFileExt(sObjectId).compare("pls") == 0)
-      pResponse->SetContentType(MIME_TYPE_AUDIO_X_SCPLS);
+    if(ExtractFileExt(sObjectId).compare("pls") == 0)      
+      pResponse->SetContentType(CFileDetails::GetMimeType("pls", false));
     else if(ExtractFileExt(sObjectId).compare("m3u") == 0)
-      pResponse->SetContentType(MIME_TYPE_AUDIO_X_MPGEURL);
+      pResponse->SetContentType(CFileDetails::GetMimeType("m3u", false));      
     pResponse->SetContent(sPlaylist);    
 
     delete pFact;
@@ -169,14 +169,14 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, HTTP_MESSAG
     
     if(!FileExists(sPath))
     {
-      CSharedLog::Shared()->Log(LOG_WARNING, "file: " + sPath + " not found", __FILE__, __LINE__);
+      CSharedLog::Shared()->Log(L_WARNING, "file: " + sPath + " not found", __FILE__, __LINE__);
       bResult = false;      
     }
     else
     {    
       if(CFileDetails::IsTranscodingExtension(sExt))
       {
-        sMimeType = CFileDetails::GetTargetMimeType(sExt);
+        sMimeType = CFileDetails::GetMimeType(sExt, true);
         if(p_nRequestType == HTTP_MESSAGE_TYPE_GET)
           pResponse->TranscodeContentFromFile(sPath);
         else if(p_nRequestType == HTTP_MESSAGE_TYPE_HEAD)
@@ -198,7 +198,7 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, HTTP_MESSAG
   }
   else // eof
   {
-    CSharedLog::Shared()->Log(LOG_WARNING, "unknown object id: " + p_sObjectId , __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_WARNING, "unknown object id: " + p_sObjectId , __FILE__, __LINE__);
     bResult = false;
   }
   

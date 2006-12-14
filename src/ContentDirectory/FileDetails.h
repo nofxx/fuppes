@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -100,12 +100,11 @@ class CFileDetails
     static CFileDetails* Shared();
     OBJECT_TYPE GetObjectType(std::string p_sFileName);
     std::string GetObjectTypeAsString(unsigned int p_nObjectType);
-    std::string GetMimeType(std::string p_sFileName, bool p_bTranscodingMimeType);
+    static std::string GetMimeType(std::string p_sFileName, bool p_bTranscodingMimeType);
   
     SMusicTrack GetMusicTrackDetails(std::string p_sFileName, std::string* p_sResult);
   
     static bool IsTranscodingExtension(std::string p_sExt);
-    static std::string GetTargetMimeType(std::string p_sExt);
     static std::string GetTargetExtension(std::string p_sExt);
   
   private:

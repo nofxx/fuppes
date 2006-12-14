@@ -66,7 +66,7 @@ CSSDPCtrl::~CSSDPCtrl()
   fuppesThreadDestroyMutex(&m_SessionReceiveMutex);
   fuppesThreadDestroyMutex(&m_SessionTimedOutMutex);
   
-  SAFE_DELETE(m_pNotifyMsgFactory);
+  delete m_pNotifyMsgFactory;
 }
 
 /*===============================================================================
@@ -75,15 +75,23 @@ CSSDPCtrl::~CSSDPCtrl()
 
 void CSSDPCtrl::Start()
 {	
-	m_Listener.SetupSocket(true, m_sIPAddress);
-	m_Listener.SetReceiveHandler(this);
-	m_Listener.BeginReceive();	
+	try {
+    m_Listener.SetupSocket(true, m_sIPAddress);
+	  m_Listener.SetReceiveHandler(this);
+	  m_Listener.BeginReceive();	
+  }
+  catch(...) {
+    throw;
+  }
+  
+  CSharedLog::Shared()->Log(L_EXTENDED, "SSDPController started", __FILE__, __LINE__);
 }
 
 void CSSDPCtrl::Stop()
 {	
   CleanupSessions();
-	m_Listener.EndReceive();	
+	m_Listener.EndReceive();  
+  CSharedLog::Shared()->Log(L_EXTENDED, "SSDPController stopped", __FILE__, __LINE__);
 }
 
 /*===============================================================================

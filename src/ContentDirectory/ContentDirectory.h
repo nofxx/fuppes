@@ -70,32 +70,13 @@ public:
 
   /** handles a UPnP action and creates the corresponding message
    *  @param  pUPnPAction  UPnP action to handle
-   *  @param  pMessageOut  the message, that was created for the action
-   *  @return returns true on success otherwise false
+   *  @param  pMessageOut  the message, that was created for the action   
    */
-  bool HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut);
+  void HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut);
 
-/*===============================================================================
- GET
-===============================================================================*/
 
-  /** returns a UPnP object for a specific object id
-   *  @param  p_sObjectID  object id to identify object
-   *  @return  the UPnP object or NULL
-   */
-  //CUPnPObject* GetItemFromObjectID(std::string p_sObjectID);
-
-  
-/* <\PUBLIC> */
-
-/* <PRIVATE> */
 
   private:
-    /*std::map<std::string, CUPnPObject*>           m_ObjectList;
-    std::map<std::string, CUPnPObject*>::iterator m_ListIterator;
-    CUPnPContainer*                               m_pBaseFolder;    */
-
-
     /** scans a specific directory
      *  @param  p_sDirectory  path to the directory to scan
      *  @param  p_pnCount  count of found objects
