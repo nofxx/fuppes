@@ -103,10 +103,10 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
   /* AudioItem, ImageItem, videoItem */
   else if(
           ((sRequest.length() > 24) && 
-            ((sRequest.substr(0, 24).compare("/MediaServer/AudioItems/") == 0) ||
-             (sRequest.substr(0, 24).compare("/MediaServer/ImageItems/") == 0) ||
-             (sRequest.substr(0, 24).compare("/MediaServer/VideoItems/") == 0)
-            ))
+           ((sRequest.substr(0, 24).compare("/MediaServer/AudioItems/") == 0) ||
+            (sRequest.substr(0, 24).compare("/MediaServer/ImageItems/") == 0) ||
+            (sRequest.substr(0, 24).compare("/MediaServer/VideoItems/") == 0)
+           )))
   {
     string sObjectId = TruncateFileExt(sRequest.substr(24, sRequest.length()));
     bResult = HandleItemRequest(sObjectId, pRequest->GetMessageType(), pResponse);    

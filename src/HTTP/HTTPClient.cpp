@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -45,21 +45,21 @@
 
 using namespace std;
 
-/*===============================================================================
- CONSTANTS
-===============================================================================*/
+CHTTPClient::CHTTPClient()
+{
+  m_AsyncThread = (fuppesThread)NULL;
+  m_bIsAsync    = false;
+}
 
-const std::string LOGNAME = "HTTPClient";
-
-/*===============================================================================
- CLASS CHTTPClient
-===============================================================================*/
-
-/* <PUBLIC> */
-
-/*===============================================================================
- MESSAGES
-===============================================================================*/
+CHTTPClient::~CHTTPClient()
+{
+  if(m_AsyncThread)
+  {
+    int nExitCode;
+    fuppesThreadCancel(m_AsyncThread, nExitCode);
+    fuppesThreadClose(m_AsyncThread);
+  }
+}
 
 bool CHTTPClient::Send(CHTTPMessage* pMessage, std::string p_sTargetIPAddress, unsigned int p_nTargetPort)
 {
@@ -73,16 +73,16 @@ bool CHTTPClient::Send(CHTTPMessage* pMessage, std::string p_sTargetIPAddress, u
   /* Connect */
   if(connect(sock, (struct sockaddr*)&addr, sizeof(addr)) == -1)
   {
-    CSharedLog::Shared()->Error(LOGNAME, "connect()");
+    CSharedLog::Shared()->Log(L_ERROR, "connect()", __FILE__, __LINE__);
     return false;
   }
   
   /* Send */
   std::string sMsg = pMessage->GetMessageAsString();  
-  CSharedLog::Shared()->Log(LOGNAME, sMsg);  
+  CSharedLog::Shared()->Log(L_DEBUG, sMsg, __FILE__, __LINE__);  
   if(send(sock, sMsg.c_str(), (int)strlen(sMsg.c_str()), 0) == -1)
   {
-    CSharedLog::Shared()->Error(LOGNAME, "send()");
+    CSharedLog::Shared()->Log(L_ERROR, "send()", __FILE__, __LINE__);
     return false;
   }
   
@@ -134,23 +134,23 @@ bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_s
   /* Connect */
   if(connect(sock, (struct sockaddr*)&addr, sizeof(addr)) == -1)
   {
-    CSharedLog::Shared()->Error(LOGNAME, "connect()");
+    CSharedLog::Shared()->Log(L_ERROR, "connect()",__FILE__, __LINE__);
     return false;
   }
 
   /* Get header */
   std::string sMsg = BuildGetHeader(p_sGet, p_sTargetIPAddress, p_nTargetPort);  
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "send GET Header");
+  CSharedLog::Shared()->Log(L_EXTENDED, "send GET Header", __FILE__, __LINE__);
 
   /* Send */
   if(-1 == send(sock, sMsg.c_str(), (int)strlen(sMsg.c_str()), 0))
   {
-    CSharedLog::Shared()->Error(LOGNAME, "send()");    
+    CSharedLog::Shared()->Log(L_ERROR, "send()", __FILE__, __LINE__);    
     return false;
   }
   else
   {
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, "receive answer");
+    CSharedLog::Shared()->Log(L_EXTENDED, "receive answer", __FILE__, __LINE__);
 
     char buffer[4096];
     int nBytesReceived;
@@ -160,7 +160,7 @@ bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_s
     {
       stringstream sMsg;
       sMsg << "received " << nBytesReceived << " bytes";
-      CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
+      CSharedLog::Shared()->Log(L_DEBUG, sMsg.str(), __FILE__, __LINE__);
       
       buffer[nBytesReceived] = '\0';
       sReceived << buffer;
@@ -168,14 +168,13 @@ bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_s
 
     if(sReceived.str().length() > 0)
     {
-      CSharedLog::Shared()->ExtendedLog(LOGNAME, "done receive");      
+      CSharedLog::Shared()->Log(L_EXTENDED, "done receive", __FILE__, __LINE__);      
       pResult->BuildFromString(sReceived.str());
-      CSharedLog::Shared()->ExtendedLog(LOGNAME, "done build msg");      
       return true;
     }
     else
     {
-      CSharedLog::Shared()->Error(LOGNAME, "recv()");
+      CSharedLog::Shared()->Log(L_ERROR, "recv()", __FILE__, __LINE__);
       return false;
     }
   }
@@ -183,13 +182,35 @@ bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_s
   return false;
 }
 
-/* <\PUBLIC> */
 
-/* <PRIVATE> */
+fuppesThreadCallback AsyncThread(void* arg)
+{
+  CHTTPClient* pClient = (CHTTPClient*)arg;                  
 
-/*===============================================================================
- HELPER
-===============================================================================*/
+  std::string   sIPAddress;
+  unsigned int  nPort;
+
+  // split URL
+  if(!SplitURL(pClient->m_sNotifyCallback, &sIPAddress, &nPort)) {
+    pClient->m_bAsyncDone = true;
+    fuppesThreadExit();
+  }
+
+
+
+
+  pClient->m_bAsyncDone = true;
+  fuppesThreadExit();
+}
+
+void CHTTPClient::AsyncNotify(std::string p_sCallback)
+{
+  m_sNotifyCallback = p_sCallback;
+  m_bIsAsync   = true;
+  m_bAsyncDone = false;
+  fuppesThreadStartArg(m_AsyncThread, AsyncThread, *this);
+}
+
 
 std::string CHTTPClient::BuildGetHeader(std::string p_sGet, std::string p_sTargetIPAddress, unsigned int p_nTargetPort)
 {

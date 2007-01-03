@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005, 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -25,26 +25,15 @@
 #ifndef _HTTPCLIENT_H
 #define _HTTPCLIENT_H
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "HTTPMessage.h"
-
-/*===============================================================================
- CLASS CHTTPClient
-===============================================================================*/
+#include "../Common/Common.h"
 
 class CHTTPClient
 {
+  public:
+    CHTTPClient();
+    ~CHTTPClient();
 
-/* <PUBLIC> */
-
-public:   
-
-/*===============================================================================
- MESSAGES
-===============================================================================*/
 
   bool Send(
     CHTTPMessage* pMessage,
@@ -64,24 +53,19 @@ public:
     unsigned int  p_nTargetPort = 80
     );
 
-/* <\PUBLIC> */
+    void AsyncNotify(std::string p_sCallback);
 
-/* <PRIVATE> */
+ 
+    fuppesThread m_AsyncThread;
+    std::string  m_sAsyncResult;
+    std::string  m_sNotifyCallback;
+    bool         m_bAsyncDone;
+    bool         m_bIsAsync;
 
-private:
-
-/*===============================================================================
- HELPER
-===============================================================================*/
-
-  std::string BuildGetHeader(
-    std::string  p_sGet,
-    std::string  p_sTargetIPAddress,
-    unsigned int p_nTargetPort
-    );
-
-/* <\PRIVATE> */
-
+  private:
+    std::string BuildGetHeader(std::string  p_sGet,
+                               std::string  p_sTargetIPAddress,
+                               unsigned int p_nTargetPort);
 };
 
 #endif /* _HTTPCLIENT_H */

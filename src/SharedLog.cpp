@@ -31,7 +31,7 @@
 #include <sstream>
 
 #ifdef WIN32
-  #define HAVE_SYSLOG_H 0
+  #undef HAVE_SYSLOG_H
 #else
   #include "config.h"
   #ifdef HAVE_SYSLOG_H
@@ -63,8 +63,10 @@ CSharedLog::CSharedLog()
 
 CSharedLog::~CSharedLog()
 {
+  #ifdef HAVE_SYSLOG_H
   if(m_bUseSyslog)
     closelog();
+  #endif
   
   #ifndef DISABLELOG
   fuppesThreadDestroyMutex(&m_Mutex);
@@ -75,7 +77,7 @@ void CSharedLog::SetUseSyslog(bool p_bUseSyslog)
 {
   #ifdef HAVE_SYSLOG_H
   m_bUseSyslog = p_bUseSyslog;
-  
+    
   if(m_bUseSyslog)
     openlog("fuppes", 0, LOG_USER);
   else

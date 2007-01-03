@@ -28,7 +28,15 @@
 CSubscription::CSubscription()
 { 
   m_bHandled = false;
+  m_pHTTPClient = NULL;
 }
+
+CSubscription::~CSubscription()
+{
+  if(m_pHTTPClient)
+    delete m_pHTTPClient;
+}
+
 
 void CSubscription::Renew()
 {
@@ -138,17 +146,17 @@ CSubscriptionMgr* CSubscriptionMgr::m_pInstance = 0;
 CSubscriptionMgr* CSubscriptionMgr::Shared()
 {
   if(m_pInstance == 0)
-    m_pInstance = new CSubscriptionMgr();
+    m_pInstance = new CSubscriptionMgr(true);
   return m_pInstance;
 }
 
-CSubscriptionMgr::CSubscriptionMgr()
+CSubscriptionMgr::CSubscriptionMgr(bool p_bSingelton)
 { 
   m_MainLoop = (fuppesThread)NULL;
   m_bDoLoop = true;
   
   // start main loop in singleton instance only
-  if(m_pInstance != 0)
+  if(p_bSingelton && !m_MainLoop)
   {
     CSharedLog::Shared()->Log(L_DEBUG, "start CSubscriptionMgr MainLoop", __FILE__, __LINE__);
     fuppesThreadStartArg(m_MainLoop, MainLoop, *this);
@@ -167,15 +175,15 @@ CSubscriptionMgr::~CSubscriptionMgr()
 
 bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {
+  CSharedLog::Shared()->Log(L_DEBUG, pRequest->GetHeader(), __FILE__, __LINE__);
+  
   CSubscription* pSubscription = new CSubscription();
   if(!this->ParseSubscription(pRequest, pSubscription))
   {
     delete pSubscription;
     return false;
   }
-  
-  cout << "SWITCH TYPE: " << pSubscription->GetType() << endl;
-  
+    
   switch(pSubscription->GetType())
   {
     case ST_SUBSCRIBE:
@@ -203,11 +211,7 @@ bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* 
 
 
 bool CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* pSubscription)
-{
-  cout << "CSubscriptionMgr::ParseSubscription" << endl;
-  //cout << pRequest->GetHeader() << endl;
-  cout << endl << "SUBSCR COUNT: " << m_Subscriptions.size() << endl;
-  
+{  
   RegEx rxSubscribe("([SUBSCRIBE|UNSUBSCRIBE]+)", PCRE_CASELESS);
   if(!rxSubscribe.Search(pRequest->GetHeader().c_str()))
     return false;
@@ -223,13 +227,23 @@ bool CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* 
     if(sSID.length() == 0)
     {
       pSubscription->SetType(ST_SUBSCRIBE);
-      cout << "SUBSCRIPTION" << endl;
+      
+      RegEx rxCallback("CALLBACK: *<*(http://[A-Z|0-9|\\-|_|/|\\.|:]+)>*", PCRE_CASELESS);
+      if(rxCallback.Search(pRequest->GetHeader().c_str())) {
+                                                           
+        string sCallback = rxCallback.Match(1);
+        if(sCallback[sCallback.length() - 1] != '/')
+          sCallback += "/";
+        pSubscription->SetCallback(sCallback);
+      }
+      else {
+        CSharedLog::Shared()->Log(L_EXTENDED_ERR, "parsing callback", __FILE__, __LINE__);
+      }      
     }
     else
     {
       pSubscription->SetType(ST_RENEW);
       pSubscription->SetSID(sSID);
-      cout << "RENEW" << endl;
     }
     
     pSubscription->SetTimeout(180);    
@@ -238,7 +252,6 @@ bool CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* 
   {
     pSubscription->SetType(ST_UNSUBSCRIBE);
     pSubscription->SetSID(sSID);
-    cout << "UNSUBSCRIPTION" << endl;
   }
   return true;      
 }
@@ -255,6 +268,7 @@ fuppesThreadCallback MainLoop(void *arg)
     
     CSubscriptionCache::Shared()->Lock();
     
+    // walk subscriptions and decrement timeout
     for(CSubscriptionCache::Shared()->m_SubscriptionsIterator  = CSubscriptionCache::Shared()->m_Subscriptions.begin();
         CSubscriptionCache::Shared()->m_SubscriptionsIterator != CSubscriptionCache::Shared()->m_Subscriptions.end();
         CSubscriptionCache::Shared()->m_SubscriptionsIterator++)
@@ -264,12 +278,15 @@ fuppesThreadCallback MainLoop(void *arg)
       //cout << "  subscr: " << pSubscr->GetSID() << endl;
       //cout << "    time left: " << pSubscr->GetTimeLeft() << endl;
       
-      if(!pSubscr->m_bHandled)
-      {
-        //
-      }
-      
       pSubscr->DecTimeLeft();      
+      
+      if(!pSubscr->m_bHandled)
+      {        
+        pSubscr->m_bHandled = true;
+        if(!pSubscr->m_pHTTPClient)
+          pSubscr->m_pHTTPClient = new CHTTPClient();
+        pSubscr->m_pHTTPClient->AsyncNotify(pSubscr->GetCallback());
+      }
       
       if(pSubscr->GetTimeLeft() == 0)
       {

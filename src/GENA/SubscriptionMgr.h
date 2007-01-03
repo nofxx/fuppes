@@ -27,6 +27,7 @@
 #include <string>
 #include <map>
 #include "../HTTP/HTTPMessage.h"
+#include "../HTTP/HTTPClient.h"
  
 #define GENA_OK           1;
 #define GENA_PARSE_ERROR  2;
@@ -43,6 +44,7 @@ class CSubscription
 {
   public:
     CSubscription();  
+    ~CSubscription();
   
     std::string GetSID() { return m_sSID; }
     void SetSID(std::string p_sSID) { m_sSID = p_sSID; }
@@ -61,6 +63,8 @@ class CSubscription
     unsigned int GetTimeLeft() { return m_nTimeLeft; }
     
     bool m_bHandled;
+    
+    CHTTPClient* m_pHTTPClient;
     
   private:
     std::string        m_sSID;
@@ -99,7 +103,7 @@ class CSubscriptionMgr
   public:
     static CSubscriptionMgr* Shared();
 
-    CSubscriptionMgr();
+    CSubscriptionMgr(bool p_bSingelton = false);
     ~CSubscriptionMgr();
   
     bool HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* pResponse);
