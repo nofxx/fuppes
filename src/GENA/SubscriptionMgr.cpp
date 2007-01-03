@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2006, 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -25,6 +25,11 @@
 #include "../Common/RegEx.h"
 #include "../Common/UUID.h"
 
+CSubscription::CSubscription()
+{ 
+  m_bHandled = false;
+}
+
 void CSubscription::Renew()
 {
   m_nTimeLeft = m_nTimeout;
@@ -37,8 +42,95 @@ void CSubscription::DecTimeLeft()
 }
 
 
+CSubscriptionCache* CSubscriptionCache::m_pInstance = 0;
 
-fuppesThreadMutex  g_SubscriptionsMutex;
+CSubscriptionCache* CSubscriptionCache::Shared()
+{
+  if(m_pInstance == 0)
+    m_pInstance = new CSubscriptionCache();
+  return m_pInstance;
+}
+
+
+CSubscriptionCache::CSubscriptionCache()
+{
+  fuppesThreadInitMutex(&m_Mutex);
+}
+
+CSubscriptionCache::~CSubscriptionCache()
+{
+  fuppesThreadDestroyMutex(&m_Mutex);
+}
+
+void CSubscriptionCache::Lock()
+{
+  fuppesThreadLockMutex(&m_Mutex); 
+}
+
+void CSubscriptionCache::Unlock()
+{
+  fuppesThreadUnlockMutex(&m_Mutex);  
+}
+
+void CSubscriptionCache::AddSubscription(CSubscription* pSubscription)
+{  
+  string sSID = GenerateUUID();
+  pSubscription->SetSID(sSID);
+  
+  fuppesThreadLockMutex(&m_Mutex);  
+  m_Subscriptions[sSID] = pSubscription;
+  fuppesThreadUnlockMutex(&m_Mutex);  
+}
+
+bool CSubscriptionCache::RenewSubscription(std::string pSID)
+{
+  CSharedLog::Shared()->Log(L_EXTENDED, "renew subscription \"" + pSID + "\"", __FILE__, __LINE__);  
+  
+  bool bResult = false;
+  
+  fuppesThreadLockMutex(&m_Mutex);
+  m_SubscriptionsIterator = m_Subscriptions.find(pSID);
+  if(m_SubscriptionsIterator != m_Subscriptions.end())
+  {    
+    CSharedLog::Shared()->Log(L_EXTENDED, "renew subscription \"" + pSID + "\" done", __FILE__, __LINE__, false);
+    m_Subscriptions[pSID]->Renew();
+    bResult = true;
+  }
+  else
+  {
+    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "renew subscription \"" + pSID + "\" faild", __FILE__, __LINE__, false);
+    bResult = false;
+  }
+  
+  fuppesThreadUnlockMutex(&m_Mutex);
+  return bResult;  
+}
+
+bool CSubscriptionCache::DeleteSubscription(std::string pSID)
+{
+  CSharedLog::Shared()->Log(L_EXTENDED, "delete subscription \"" + pSID + "\"", __FILE__, __LINE__);  
+    
+  bool bResult = false;
+  
+  fuppesThreadLockMutex(&m_Mutex);    
+  m_SubscriptionsIterator = m_Subscriptions.find(pSID);  
+  if(m_SubscriptionsIterator != m_Subscriptions.end())
+  { 
+    CSharedLog::Shared()->Log(L_EXTENDED, "delete subscription \"" + pSID + "\" done", __FILE__, __LINE__, false);    
+    m_Subscriptions.erase(pSID);
+    bResult = true;
+  }
+  else
+  {
+    CSharedLog::Shared()->Log(L_EXTENDED, "delete subscription \"" + pSID + "\" faild", __FILE__, __LINE__, false);        
+    bResult = false;
+  }
+  
+  fuppesThreadUnlockMutex(&m_Mutex);
+  return bResult;  
+}
+
+
 fuppesThreadCallback MainLoop(void *arg);
 
 CSubscriptionMgr* CSubscriptionMgr::m_pInstance = 0;
@@ -51,12 +143,16 @@ CSubscriptionMgr* CSubscriptionMgr::Shared()
 }
 
 CSubscriptionMgr::CSubscriptionMgr()
-{  
-  fuppesThreadInitMutex(&g_SubscriptionsMutex);
+{ 
   m_MainLoop = (fuppesThread)NULL;
   m_bDoLoop = true;
   
-  fuppesThreadStartArg(m_MainLoop, MainLoop, *this);
+  // start main loop in singleton instance only
+  if(m_pInstance != 0)
+  {
+    CSharedLog::Shared()->Log(L_DEBUG, "start CSubscriptionMgr MainLoop", __FILE__, __LINE__);
+    fuppesThreadStartArg(m_MainLoop, MainLoop, *this);
+  }
 }
 
 CSubscriptionMgr::~CSubscriptionMgr()
@@ -67,8 +163,6 @@ CSubscriptionMgr::~CSubscriptionMgr()
   fuppesThreadCancel(m_MainLoop, nExitCode);
   fuppesThreadClose(m_MainLoop);
   m_MainLoop = (fuppesThread)NULL;  
-  
-  fuppesThreadDestroyMutex(&g_SubscriptionsMutex);
 }
 
 bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
@@ -85,17 +179,16 @@ bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* 
   switch(pSubscription->GetType())
   {
     case ST_SUBSCRIBE:
-      AddSubscription(pSubscription);
+      CSubscriptionCache::Shared()->AddSubscription(pSubscription);
       pResponse->SetGENASubscriptionID(pSubscription->GetSID());
       break;
     case ST_RENEW:
-      RenewSubscription(pSubscription);
-      cout << " pResponse->SetGENASubscriptionID(pSubscription->GetSID());" <<  endl << pSubscription->GetSID() << endl;
+      CSubscriptionCache::Shared()->RenewSubscription(pSubscription->GetSID());      
       pResponse->SetGENASubscriptionID(pSubscription->GetSID());
       delete pSubscription;
       break;
     case ST_UNSUBSCRIBE:
-      DeleteSubscription(pSubscription);
+      CSubscriptionCache::Shared()->DeleteSubscription(pSubscription->GetSID());
       delete pSubscription;
       break;
     
@@ -150,65 +243,6 @@ bool CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* 
   return true;      
 }
 
-void CSubscriptionMgr::AddSubscription(CSubscription* pSubscription)
-{
-  cout << "CSubscriptionMgr::AddSubscription" << endl;
-  
-  string sSID = GenerateUUID();
-  pSubscription->SetSID(sSID);
-  
-  fuppesThreadLockMutex(&g_SubscriptionsMutex);  
-  m_Subscriptions[sSID] = pSubscription;
-  fuppesThreadUnlockMutex(&g_SubscriptionsMutex);
-}
-
-bool CSubscriptionMgr::RenewSubscription(CSubscription* pSubscription)
-{
-  cout << "CSubscriptionMgr::RenewSubscription" << endl;
-  fuppesThreadLockMutex(&g_SubscriptionsMutex);  
-  
-  bool bResult = false;
-  
-  m_SubscriptionsIterator = m_Subscriptions.find(pSubscription->GetSID());
-  if(m_SubscriptionsIterator != m_Subscriptions.end())
-  {
-    cout << "RENEW found" << endl;
-    m_Subscriptions[pSubscription->GetSID()]->Renew();
-    bResult = true;
-  }
-  else
-  {
-    cout << "RENEW NOT found" << endl;      
-    bResult = false;
-  }
-  
-  fuppesThreadUnlockMutex(&g_SubscriptionsMutex);
-  return bResult;
-}
-
-bool CSubscriptionMgr::DeleteSubscription(CSubscription* pSubscription)
-{
-  cout << "CSubscriptionMgr::DeleteSubscription" << endl;
-    
-  fuppesThreadLockMutex(&g_SubscriptionsMutex);  
-  
-  bool bResult = false;
-  
-  m_SubscriptionsIterator = m_Subscriptions.find(pSubscription->GetSID());
-  /* found device */
-  if(m_SubscriptionsIterator != m_Subscriptions.end())
-  { 
-    m_Subscriptions.erase(pSubscription->GetSID());
-    bResult = true;
-  }
-  else
-  {
-    bResult = false;
-  }
-  
-  fuppesThreadUnlockMutex(&g_SubscriptionsMutex);
-  return bResult;
-}
 
 fuppesThreadCallback MainLoop(void *arg)
 {
@@ -219,27 +253,32 @@ fuppesThreadCallback MainLoop(void *arg)
   {
     //cout << "CSubscriptionMgr::MainLoop" << endl;
     
-    fuppesThreadLockMutex(&g_SubscriptionsMutex);    
+    CSubscriptionCache::Shared()->Lock();
     
-    for(pMgr->m_SubscriptionsIterator = pMgr->m_Subscriptions.begin();
-        pMgr->m_SubscriptionsIterator != pMgr->m_Subscriptions.end();
-        pMgr->m_SubscriptionsIterator++)
+    for(CSubscriptionCache::Shared()->m_SubscriptionsIterator  = CSubscriptionCache::Shared()->m_Subscriptions.begin();
+        CSubscriptionCache::Shared()->m_SubscriptionsIterator != CSubscriptionCache::Shared()->m_Subscriptions.end();
+        CSubscriptionCache::Shared()->m_SubscriptionsIterator++)
     {     
-      pSubscr = (*pMgr->m_SubscriptionsIterator).second;
+      pSubscr = (*CSubscriptionCache::Shared()->m_SubscriptionsIterator).second;
       
       //cout << "  subscr: " << pSubscr->GetSID() << endl;
       //cout << "    time left: " << pSubscr->GetTimeLeft() << endl;
+      
+      if(!pSubscr->m_bHandled)
+      {
+        //
+      }
       
       pSubscr->DecTimeLeft();      
       
       if(pSubscr->GetTimeLeft() == 0)
       {
-        pMgr->m_Subscriptions.erase(pSubscr->GetSID());        
+        CSubscriptionCache::Shared()->m_Subscriptions.erase(pSubscr->GetSID());        
         delete pSubscr;
-      }    
+      }      
     }
     
-    fuppesThreadUnlockMutex(&g_SubscriptionsMutex);
+    CSubscriptionCache::Shared()->Unlock();    
     
     fuppesSleep(1000);
   }

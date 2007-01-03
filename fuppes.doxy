@@ -51,7 +51,7 @@ CREATE_SUBDIRS         = NO
 # Polish, Portuguese, Romanian, Russian, Serbian, Slovak, Slovene, Spanish, 
 # Swedish, and Ukrainian.
 
-OUTPUT_LANGUAGE        = German
+OUTPUT_LANGUAGE        = English
 
 # This tag can be used to specify the encoding used in the generated output. 
 # The encoding is not always determined by the language that is chosen, 
@@ -471,7 +471,7 @@ RECURSIVE              = YES
 # excluded from the INPUT source files. This way you can easily exclude a 
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                = src/RegEx.h src/md5.h src/md5.c
+EXCLUDE                = src/Common/RegEx.h src/Common/md5.h src/Common/md5.c
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 

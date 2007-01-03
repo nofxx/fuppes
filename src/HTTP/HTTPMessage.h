@@ -195,11 +195,11 @@ public:
 ===============================================================================*/
 
   bool             BuildFromString(std::string p_sMessage);
-  bool             LoadContentFromFile(std::string);	
-  bool             TranscodeContentFromFile(std::string p_sFileName);	  
-
-  void             BreakTranscoding();
+  bool             LoadContentFromFile(std::string);
+  bool             TranscodeContentFromFile(std::string p_sFileName);
+  void             BreakTranscoding();  
   bool             IsTranscoding();
+  
   
 /* <\PUBLIC> */
 
@@ -207,6 +207,7 @@ public:
   char*         m_pszBinContent;
   unsigned int  m_nBinContentLength; 
   bool          m_bIsBinary;
+  
   CTranscodeSessionInfo* m_pTranscodingSessionInfo;  
 
 /* <PRIVATE> */

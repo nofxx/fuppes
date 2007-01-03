@@ -674,7 +674,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
           #endif  
         }
         
-        /* break transcoding */
+        /* break transcoding */        
         if (p_Response->IsTranscoding())        
           p_Response->BreakTranscoding();
         

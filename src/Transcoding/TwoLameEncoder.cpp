@@ -1,9 +1,9 @@
 /***************************************************************************
- *            WrapperBase.h
+ *            TwoLameEncoder.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -20,30 +20,3 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
-#ifndef _WRAPPERBASE_H
-#define _WRAPPERBASE_H
-
-#include "../SharedLog.h"
-#include <string>
-
-class CEncoderBase
-{
-};
-
-class CDecoderBase
-{
-  public:
-    virtual bool LoadLib() = 0;
-    virtual bool OpenFile(std::string p_sFileName) = 0;      
-    virtual void CloseFile() = 0;    
-    virtual long DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize) = 0;  
-};
-
-class CTranscoderBase
-{
-  public:
-    virtual bool Transcode(std::string p_sInFile, std::string p_sParams, std::string* p_psOutFile) = 0;
-};
-
-#endif /* _WRAPPERBASE_H */

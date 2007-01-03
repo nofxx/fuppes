@@ -20,28 +20,31 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
 
 #ifndef _TRANSCODINGCACHE_H
 #define _TRANSCODINGCACHE_H
 
+#ifndef DISABLE_TRANSCODING
 #include "../Common/Common.h"
 #include "LameWrapper.h"
 #include "WrapperBase.h"
 #include <map>
+#endif
 
+#include <string>
 
 class CTranscodeSessionInfo
 {
   public:
     //CHTTPMessage* m_pHTTPMessage;
-    bool        m_bBreakTranscoding;
-    bool        m_bIsTranscoding;  
-    std::string m_sFileName;
+    bool          m_bBreakTranscoding;
+    bool          m_bIsTranscoding;
+    std::string   m_sInFileName;
     unsigned int* m_pnBinContentLength;
     char**        m_pszBinBuffer;
 };
 
+#ifndef DISABLE_TRANSCODING
 class CTranscodingCacheObject
 {
   public:
@@ -75,17 +78,18 @@ class CTranscodingCacheObject
   //private:
     unsigned int m_nRefCount;
     fuppesThreadMutex  m_Mutex;
-    
+        
     CLameWrapper* m_pLameWrapper;
     CDecoderBase* m_pDecoder;    
     
-    CTranscodeSessionInfo* m_pSessionInfo;
+    
+    CTranscodeSessionInfo* m_pSessionInfo;    
     
     int nBufferLength;  
     short int* pcmout;
     
 //  private:
-    std::string m_sFileName;
+    std::string m_sInFileName;
     fuppesThread m_TranscodeThread;
 };
 
@@ -115,5 +119,6 @@ class CTranscodingCache
   
   
 };
+#endif /* DISABLE_TRANSCODING */
 
 #endif /* _TRANSCODINGCACHE_H */

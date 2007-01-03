@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -307,7 +307,7 @@ std::string CPresentationHandler::GetPageFooter(PRESENTATION_PAGE p_nPresentatio
 {
   std::stringstream sResult;
   
-  sResult << "<p style=\"padding-top: 20pt; text-align: center;\"><small>copyright &copy; 2005, 2006 Ulrich V&ouml;lkel<!--<br />distributed under the GPL--></small></p>";
+  sResult << "<p style=\"padding-top: 20pt; text-align: center;\"><small>copyright &copy; 2005 - 2007 Ulrich V&ouml;lkel<!--<br />distributed under the GPL--></small></p>";
 
   sResult << "</div>" << endl; // #content
   sResult << "</div>" << endl; // #mainframe

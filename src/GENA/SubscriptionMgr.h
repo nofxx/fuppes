@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2006, 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -38,10 +38,12 @@ typedef enum tagSUBSCRIPTION_TYPE
   ST_RENEW       = 1,
   ST_UNSUBSCRIBE = 2
 } SUBSCRIPTION_TYPE;
- 
+
 class CSubscription
 {
   public:
+    CSubscription();  
+  
     std::string GetSID() { return m_sSID; }
     void SetSID(std::string p_sSID) { m_sSID = p_sSID; }
     
@@ -58,19 +60,48 @@ class CSubscription
     void DecTimeLeft();
     unsigned int GetTimeLeft() { return m_nTimeLeft; }
     
+    bool m_bHandled;
+    
   private:
     std::string        m_sSID;
     unsigned int       m_nTimeout;
     unsigned int       m_nTimeLeft;
     std::string        m_sCallback;
-    SUBSCRIPTION_TYPE  m_nSubscriptionType;
+    SUBSCRIPTION_TYPE  m_nSubscriptionType;    
 };
- 
+
+class CSubscriptionCache
+{
+  public:
+    static CSubscriptionCache* Shared();
+  
+    void AddSubscription(CSubscription* pSubscription);
+    bool RenewSubscription(std::string pSID);
+    bool DeleteSubscription(std::string pSID);    
+  
+    void Lock();
+    void Unlock();
+  
+  private:
+    static CSubscriptionCache* m_pInstance;
+    fuppesThreadMutex  m_Mutex;
+  
+    CSubscriptionCache();
+    ~CSubscriptionCache();
+  
+public:  
+    std::map<std::string, CSubscription*>           m_Subscriptions;  
+    std::map<std::string, CSubscription*>::iterator m_SubscriptionsIterator;  
+};
+
 class CSubscriptionMgr
 {
   public:
     static CSubscriptionMgr* Shared();
 
+    CSubscriptionMgr();
+    ~CSubscriptionMgr();
+  
     bool HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* pResponse);
   
     bool m_bDoLoop;
@@ -79,18 +110,9 @@ class CSubscriptionMgr
     std::map<std::string, CSubscription*>::iterator m_SubscriptionsIterator;  
   
   private:  
-    static CSubscriptionMgr* m_pInstance;
+    static CSubscriptionMgr* m_pInstance;   
   
-    CSubscriptionMgr();
-    ~CSubscriptionMgr();
-  
-    bool ParseSubscription(CHTTPMessage* pRequest, CSubscription* pSubscription);
-  
-    void AddSubscription(CSubscription* pSubscription);
-    bool RenewSubscription(CSubscription* pSubscription);
-    bool DeleteSubscription(CSubscription* pSubscription);
-  
-  
+    bool ParseSubscription(CHTTPMessage* pRequest, CSubscription* pSubscription);  
     
     fuppesThread m_MainLoop;    
 };

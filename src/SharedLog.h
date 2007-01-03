@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -31,11 +31,12 @@
 #define L_NORMAL   0
 
 #define L_EXTENDED 1
-#define L_DEBUG    2
+#define L_EXTENDED_ERR 2
+#define L_DEBUG    3
 
-#define L_ERROR    3
-#define L_WARNING  4
-#define L_CRITICAL 5
+#define L_ERROR    4
+#define L_WARNING  5
+#define L_CRITICAL 6
 
 class CSharedLog
 {
@@ -75,7 +76,7 @@ public:
   void  Critical(std::string p_sSender, std::string p_sMessage);
   void  Error(std::string p_sSender, std::string p_sMessage);
 
-  void  Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber);
+  void  Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber, bool p_bPrintLine = true);
   void  Syslog(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber);
 /*===============================================================================
  SET

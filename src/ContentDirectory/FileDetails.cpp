@@ -20,7 +20,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #include "FileDetails.h"
 
 #include "../Common/Common.h"
@@ -35,7 +35,6 @@
 
 #include <sstream>
 #include <iostream>
-
 
 
 /** default file settings */
@@ -80,7 +79,6 @@ struct TranscodingSetting_t TranscodingSettings[] =
   
   /* video */
   {"vdr", "vob", "video/x-ms-vob", ITEM_VIDEO_ITEM_MOVIE, "", ""},
-  
   
   /* empty entry to mark the list's end */
   {"", "", "", OBJECT_TYPE_UNKNOWN, "", ""}
@@ -128,6 +126,8 @@ std::string CFileDetails::GetMimeType(std::string p_sFileName, bool p_bTranscodi
   string sExt = ToLower(ExtractFileExt(p_sFileName));
   struct FileType_t* pType; 
   struct TranscodingSetting_t* pTranscoding;
+  
+  cout << "CFileDetails::GetMimeType " << p_sFileName << endl;
   
   pType = FileTypes;
   while(!pType->sExt.empty())

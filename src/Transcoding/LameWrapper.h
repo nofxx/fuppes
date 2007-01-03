@@ -74,9 +74,9 @@ typedef enum tagLAME_BITRATE
 /*
   1. create
   2. call LoadLib()
-  3. set compression ratio an other properties
+  3. set compression ratio and other properties
   4. call Init()
-  5. encoding using EncodeInterleaved() oder Encode()
+  5. encoding using EncodeInterleaved() 
   6. flush calling Flush()
   7. LameWrapper will clean up when it's deleted
 */ 

@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -262,7 +262,7 @@ void CSharedLog::Error(std::string p_sSender, std::string p_sMessage)
   #endif
 }
 
-void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber)
+void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber, bool p_bPrintLine)
 {
   #ifdef DISABLELOG
   return;
@@ -270,21 +270,31 @@ void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, 
   
   #warning todo  
   
-  /*switch(nLogLevel)
+  switch(nLogLevel)
   {
-    case LOG_NORMAL:    
+    case L_NORMAL:    
+      cout << p_sMessage << endl;
       break;    
-    case LOG_ERROR:
+    case L_ERROR:
+      cout << "==== " << p_szFileName << " " << p_nLineNumber << " ====" << endl;
+      cout << p_sMessage << endl << endl;
       break;
-    case LOG_WARNING:
+    case L_WARNING:
+      cout << p_sMessage << endl;
       break;
-    case LOG_CRITICAL:
+    case L_CRITICAL:
+      cout << p_sMessage << endl;
       break;
-    case LOG_EXTENDED:
+    case L_EXTENDED:
+    case L_EXTENDED_ERR:
+      cout << "==== " << p_szFileName << " " << p_nLineNumber << " ====" << endl;
+      cout << p_sMessage << endl << endl;
       break;
-    case LOG_DEBUG:
+    case L_DEBUG:
+      cout << "==== " << p_szFileName << " " << p_nLineNumber << " ====" << endl;
+      cout << p_sMessage << endl << endl;    
       break;
-  }*/
+  }
   
   #ifdef HAVE_SYSLOG_H
   std::stringstream sLog;
@@ -313,20 +323,8 @@ void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, 
         break;
     }
   }  
-  #endif
+  #endif 
   
-  if(m_bUseSyslog)
-    return;
-    
-  
-  cout << "          (" << p_szFileName << " " << p_nLineNumber << ") " << endl;
-  if(nLogLevel >= L_EXTENDED)
-    cout << endl;
-  
-  cout << p_sMessage << endl;
-  
-  if(nLogLevel >= L_EXTENDED)  
-    cout << endl << "          (end " << p_szFileName << ")" << endl << endl;  
 }
 
 void CSharedLog::Syslog(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber)

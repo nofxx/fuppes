@@ -40,6 +40,7 @@ h_sources = \
   Transcoding/TranscodingMgr.h\
   Transcoding/TranscodingCache.h\
   Transcoding/LameWrapper.h\
+  Transcoding/TwoLameEncoder.h\
   Transcoding/VorbisWrapper.h\
   Transcoding/MpcWrapper.h\
   Transcoding/FlacWrapper.h\
@@ -86,6 +87,7 @@ cpp_sources = \
   Transcoding/TranscodingMgr.cpp\
   Transcoding/TranscodingCache.cpp\
   Transcoding/LameWrapper.cpp\
+  Transcoding/TwoLameEncoder.cpp\
   Transcoding/VorbisWrapper.cpp\
   Transcoding/MpcWrapper.cpp\
   Transcoding/FlacWrapper.cpp\

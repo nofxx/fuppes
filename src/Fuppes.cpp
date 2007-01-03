@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -37,6 +37,7 @@
 #include "HTTP/HTTPMessage.h"
 #include "MediaServer.h"
 #include "UPnPDevice.h"
+#include "GENA/SubscriptionMgr.h"
 
 using namespace std;
 
@@ -80,6 +81,14 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID, IFuppes* pPresen
     throw;
   }
 
+  /* init SubscriptionMgr */
+  try {
+    CSubscriptionMgr::Shared();
+  }
+  catch(EException ex) {
+    throw;
+  }
+  
   /* Create MediaServer */
   m_pMediaServer = new CMediaServer(m_pHTTPServer->GetURL(), this);	  
   

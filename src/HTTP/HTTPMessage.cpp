@@ -36,25 +36,6 @@
 #include <sstream>
 #include <time.h>
 
-
-#ifndef DISABLE_TRANSCODING
-#include "../Transcoding/LameWrapper.h"
-#include "../Transcoding/WrapperBase.h"
-
-  #ifndef DISABLE_VORBIS
-  #include "../Transcoding/VorbisWrapper.h"
-  #endif
-  
-  #ifndef DISABLE_MUSEPACK
-  #include "../Transcoding/MpcWrapper.h"
-  #endif
-
-  #ifndef DISABLE_FLAC
-  #include "../Transcoding/FlacWrapper.h"
-  #endif
-
-#endif
-
 #include "../Common/RegEx.h"
 #include "../UPnPActions/UPnPActionFactory.h"
 
@@ -93,7 +74,7 @@ CHTTPMessage::CHTTPMessage()
   m_nRangeStart         = 0;
   m_nRangeEnd           = 0;
   m_nHTTPConnection     = HTTP_CONNECTION_UNKNOWN;
-  m_pUPnPAction         = NULL;
+  m_pUPnPAction         = NULL;  
   m_pTranscodingSessionInfo = NULL;
 }
 
@@ -113,7 +94,7 @@ CHTTPMessage::~CHTTPMessage()
   {    
     m_pTranscodingSessionInfo->m_pszBinBuffer = NULL;
     delete m_pTranscodingSessionInfo;
-  }  
+  }
   
   if(m_fsFile.is_open())
     m_fsFile.close();
@@ -420,6 +401,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     fuppesThreadUnlockMutex(&TranscodeMutex);
   
   }
+  
   return 0;
 }
 
@@ -621,6 +603,12 @@ bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
 
 bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName)
 { 
+  #ifdef DISABLE_TRANSCODING
+  return false;
+  #endif
+  
+  CSharedLog::Shared()->Log(L_EXTENDED, "TranscodeContentFromFile :: " + p_sFileName, __FILE__, __LINE__);
+  
   m_bIsChunked = true;
   m_bIsBinary  = true;  
     
@@ -636,7 +624,7 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName)
   m_pTranscodingSessionInfo = new CTranscodeSessionInfo();
   m_pTranscodingSessionInfo->m_bBreakTranscoding   = false;
   m_pTranscodingSessionInfo->m_bIsTranscoding      = true;
-  m_pTranscodingSessionInfo->m_sFileName           = p_sFileName;  
+  m_pTranscodingSessionInfo->m_sInFileName         = p_sFileName;  
   m_pTranscodingSessionInfo->m_pnBinContentLength  = &m_nBinContentLength;
   m_pTranscodingSessionInfo->m_pszBinBuffer        = &m_pszBinContent;
   
@@ -646,7 +634,7 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName)
 }
 
 bool CHTTPMessage::IsTranscoding()
-{
+{  
   if(m_pTranscodingSessionInfo)
     return m_pTranscodingSessionInfo->m_bIsTranscoding;
   else
@@ -655,8 +643,6 @@ bool CHTTPMessage::IsTranscoding()
 
 void CHTTPMessage::BreakTranscoding()
 {
-  cout << "CHTTPMessage::BreakTranscoding" << endl;
-  
   if(m_pTranscodingSessionInfo)
   {
     m_pTranscodingSessionInfo->m_bBreakTranscoding = true;   
@@ -670,9 +656,23 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   #ifndef DISABLE_TRANSCODING
   CTranscodeSessionInfo* pSession = (CTranscodeSessionInfo*)arg;
   
-  CTranscodingCacheObject* pCacheObj = CTranscodingCache::Shared()->GetCacheObject(pSession->m_sFileName);
+  CSharedLog::Shared()->Log(L_EXTENDED, "transcode loop :: " + pSession->m_sInFileName, __FILE__, __LINE__);
+  
+  CTranscodingCacheObject* pCacheObj = CTranscodingCache::Shared()->GetCacheObject(pSession->m_sInFileName);
   pCacheObj->Init(pSession);
   /* todo: error handling */
+  
+  
+  while(pCacheObj->Transcode() && (!pSession->m_bBreakTranscoding))
+  {
+    fuppesSleep(2000);
+  }
+  
+  CSharedLog::Shared()->Log(L_EXTENDED, "exit transcode loop :: " + pSession->m_sInFileName, __FILE__, __LINE__);
+  
+  CTranscodingCache::Shared()->ReleaseCacheObject(pCacheObj);
+  pSession->m_bIsTranscoding = false;
+  fuppesThreadExit();
   
   unsigned int nTranscodeLenght = 0;
   unsigned int nLength = *pSession->m_pnBinContentLength;  

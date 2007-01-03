@@ -43,6 +43,7 @@
 
 #include "Common/Common.h"
 #include "Common/UUID.h"
+#include "SharedLog.h"
 
 #include <sys/types.h>
 #include <fcntl.h>

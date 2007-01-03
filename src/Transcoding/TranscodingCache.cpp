@@ -20,6 +20,8 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
+ 
+#ifndef DISABLE_TRANSCODING
 
 #include "TranscodingCache.h"
 
@@ -55,7 +57,7 @@ CTranscodingCacheObject::CTranscodingCacheObject()
   m_pDecoder        = NULL;  
   m_bIsComplete     = false;
   m_pSessionInfo    = NULL;
-  m_bBreakTranscoding = false;
+  m_bBreakTranscoding = false;  
   
   fuppesThreadInitMutex(&m_Mutex);
 }
@@ -78,9 +80,9 @@ CTranscodingCacheObject::~CTranscodingCacheObject()
 
 bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
 {
-  m_sFileName = pSessionInfo->m_sFileName;
-  m_pSessionInfo = pSessionInfo;
-    
+  CSharedLog::Shared()->Log(L_EXTENDED, "Init " + pSessionInfo->m_sInFileName, __FILE__, __LINE__);  
+  m_pSessionInfo = pSessionInfo;  
+  
   /* initialize LAME */
   if(!m_pLameWrapper)
   {
@@ -100,7 +102,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
   if(!m_pDecoder)
   {  
     /* select decoder */
-    std::string sExt = ToLower(ExtractFileExt(m_sFileName));  
+    std::string sExt = ToLower(ExtractFileExt(m_pSessionInfo->m_sInFileName));  
     #ifndef DISABLE_VORBIS
     if(sExt.compare("ogg") == 0)        
       m_pDecoder = new CVorbisDecoder();
@@ -116,7 +118,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
       m_pDecoder = new CFLACDecoder();   
     #endif  
     
-    if(!m_pDecoder || !m_pDecoder->LoadLib() || !m_pDecoder->OpenFile(m_pSessionInfo->m_sFileName))
+    if(!m_pDecoder || !m_pDecoder->LoadLib() || !m_pDecoder->OpenFile(m_pSessionInfo->m_sInFileName))
     {
       delete m_pDecoder;
       m_pDecoder = NULL;      
@@ -198,7 +200,8 @@ int CTranscodingCacheObject::Append(char** p_pszBinBuffer, unsigned int p_nBinBu
 
 fuppesThreadCallback TranscodeThread(void *arg)
 {  
-  CTranscodingCacheObject* pCacheObj = (CTranscodingCacheObject*)arg; 
+  CTranscodingCacheObject* pCacheObj = (CTranscodingCacheObject*)arg;     
+  CSharedLog::Shared()->Log(L_EXTENDED, "TranscodeThread :: " + pCacheObj->m_pSessionInfo->m_sInFileName, __FILE__, __LINE__);   
   
   long  samplesRead  = 0;    
   int   nLameRet     = 0;  
@@ -331,7 +334,7 @@ CTranscodingCacheObject* CTranscodingCache::GetCacheObject(std::string p_sFileNa
   {
     pResult = new CTranscodingCacheObject();    
     m_CachedObjects[p_sFileName] = pResult;
-    pResult->m_sFileName = p_sFileName;
+    pResult->m_sInFileName = p_sFileName;
   } 
     
   pResult->m_nRefCount++;
@@ -348,7 +351,7 @@ void CTranscodingCache::ReleaseCacheObject(CTranscodingCacheObject* pCacheObj)
   pCacheObj->m_nRefCount--;  
   if(pCacheObj->m_nRefCount == 0)
   {  
-    m_CachedObjectsIterator = m_CachedObjects.find(pCacheObj->m_sFileName);
+    m_CachedObjectsIterator = m_CachedObjects.find(pCacheObj->m_sInFileName);
     if(m_CachedObjectsIterator != m_CachedObjects.end())
     {
       m_CachedObjects.erase(m_CachedObjectsIterator);
@@ -358,3 +361,5 @@ void CTranscodingCache::ReleaseCacheObject(CTranscodingCacheObject* pCacheObj)
 
   fuppesThreadUnlockMutex(&m_Mutex);  
 }
+
+#endif // DISABLE_TRANSCODING

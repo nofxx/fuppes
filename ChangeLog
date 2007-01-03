@@ -1,11 +1,28 @@
-Version 0.7
-  * UPnP eventing
-  * taglib support (optional)
+Version 0.7  
+  * initial taglib support (optional)
     
   * fixed FLAC transcoding on 64 bit machines
     (patch from Qball Cow. Big thanks!)
   * fixed crash on 64 bit machines caused by an
     unhandled out of range exception (Thanks again Qball)
+  
+  * syslog support (unix)
+  ** daemon mode will allway use syslog
+  ** use the parameter --syslog for the command line mode
+  
+  * fixed daemon mode
+  ** config file is now checked before forking
+
+  * code cleanup
+  ** new, easy to extend file extension to mime type mapping
+     take a look at "src/ContentDirectory/FileDetails.cpp"
+
+  * exception handling  
+
+  todo:
+    * UPnP eventing
+    * write TranscodingMgr
+    * cleanup logging
 
 Version 0.5.4 (2006-11-23)
   * initial support for playlists (m3u, pls)

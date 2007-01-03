@@ -152,7 +152,9 @@ module.source.files=\
 	Common/Timer.cpp\
 	Common/Timer.h\
 	Common/UUID.cpp\
-	Common/UUID.h
+	Common/UUID.h\
+	Transcoding/TwoLameEncoder.cpp\
+	Transcoding/TwoLameEncoder.h
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

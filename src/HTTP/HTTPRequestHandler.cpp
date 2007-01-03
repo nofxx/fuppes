@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2006, 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -102,10 +102,11 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
 
   /* AudioItem, ImageItem, videoItem */
   else if(
-          ((sRequest.length() > 24) && (sRequest.substr(0, 24).compare("/MediaServer/AudioItems/") == 0)) ||
-          ((sRequest.length() > 24) && (sRequest.substr(0, 24).compare("/MediaServer/ImageItems/") == 0)) ||
-          ((sRequest.length() > 24) && (sRequest.substr(0, 24).compare("/MediaServer/VideoItems/") == 0))
-         )
+          ((sRequest.length() > 24) && 
+            ((sRequest.substr(0, 24).compare("/MediaServer/AudioItems/") == 0) ||
+             (sRequest.substr(0, 24).compare("/MediaServer/ImageItems/") == 0) ||
+             (sRequest.substr(0, 24).compare("/MediaServer/VideoItems/") == 0)
+            ))
   {
     string sObjectId = TruncateFileExt(sRequest.substr(24, sRequest.length()));
     bResult = HandleItemRequest(sObjectId, pRequest->GetMessageType(), pResponse);    
@@ -132,8 +133,9 @@ bool CHTTPRequestHandler::HandleGENAMessage(CHTTPMessage* pRequest, CHTTPMessage
 {
   //return false;
   //cout << pRequest->GetMessage() << endl;
-  
-  CSubscriptionMgr::Shared()->HandleSubscription(pRequest, pResponse);
+  CSubscriptionMgr* pMgr = new CSubscriptionMgr();  
+  pMgr->HandleSubscription(pRequest, pResponse);
+  delete pMgr;  
   
   pResponse->SetVersion(pRequest->GetVersion());
   pResponse->SetMessageType(HTTP_MESSAGE_TYPE_GENA_OK);
@@ -176,9 +178,14 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, HTTP_MESSAG
     {    
       if(CFileDetails::IsTranscodingExtension(sExt))
       {
-        sMimeType = CFileDetails::GetMimeType(sExt, true);
+        CSharedLog::Shared()->Log(L_EXTENDED, "transcode " + sPath, __FILE__, __LINE__);  
+        #warning TODO: check if transcoding is possible
+        sMimeType = CFileDetails::GetMimeType(sPath, true);
         if(p_nRequestType == HTTP_MESSAGE_TYPE_GET)
+        {
+          cout << "TRANSCODE" << endl;
           pResponse->TranscodeContentFromFile(sPath);
+        }
         else if(p_nRequestType == HTTP_MESSAGE_TYPE_HEAD)
           pResponse->SetIsChunked(true); // mark the head response as chunked so the correct header will be build
       }
@@ -188,7 +195,9 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, HTTP_MESSAG
         pResponse->LoadContentFromFile(sPath);
       }
     
-      // we always set the response ty to "200 OK"
+      cout << "mime type: " << sMimeType << " " << __FILE__ << " " << __LINE__ << endl;
+      
+      // we always set the response type to "200 OK"
       // if the message should be a "206 partial content" 
       // CHTTPServer will change the type
       pResponse->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
