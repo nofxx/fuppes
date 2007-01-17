@@ -102,7 +102,7 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
 
   /* AudioItem, ImageItem, videoItem */
   else if(
-          ((sRequest.length() > 24) && 
+          ((sRequest.length() > 24) &&
            ((sRequest.substr(0, 24).compare("/MediaServer/AudioItems/") == 0) ||
             (sRequest.substr(0, 24).compare("/MediaServer/ImageItems/") == 0) ||
             (sRequest.substr(0, 24).compare("/MediaServer/VideoItems/") == 0)
@@ -169,33 +169,30 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, HTTP_MESSAG
     sPath = pDb->GetResult()->GetValue("PATH");    
     sExt  = ExtractFileExt(sPath);
     
-    if(!FileExists(sPath))
-    {
+    if(!FileExists(sPath)) {
       CSharedLog::Shared()->Log(L_WARNING, "file: " + sPath + " not found", __FILE__, __LINE__);
       bResult = false;      
     }
     else
     {    
-      if(CFileDetails::IsTranscodingExtension(sExt))
-      {
-        CSharedLog::Shared()->Log(L_EXTENDED, "transcode " + sPath, __FILE__, __LINE__);  
+      if(CFileDetails::IsTranscodingExtension(sExt)) {
+        CSharedLog::Shared()->Log(L_EXTENDED, "transcode " + sPath, __FILE__, __LINE__);
+        
         #warning TODO: check if transcoding is possible
         sMimeType = CFileDetails::GetMimeType(sPath, true);
-        if(p_nRequestType == HTTP_MESSAGE_TYPE_GET)
-        {
-          cout << "TRANSCODE" << endl;
+        if(p_nRequestType == HTTP_MESSAGE_TYPE_GET) {          
           pResponse->TranscodeContentFromFile(sPath);
         }
-        else if(p_nRequestType == HTTP_MESSAGE_TYPE_HEAD)
-          pResponse->SetIsChunked(true); // mark the head response as chunked so the correct header will be build
+        else if(p_nRequestType == HTTP_MESSAGE_TYPE_HEAD) {
+          // mark the head response as chunked so
+          // the correct header will be build
+          pResponse->SetIsChunked(true);
+        }
       }
-      else
-      {
+      else {
         sMimeType = pDb->GetResult()->GetValue("MIME_TYPE");
         pResponse->LoadContentFromFile(sPath);
-      }
-    
-      cout << "mime type: " << sMimeType << " " << __FILE__ << " " << __LINE__ << endl;
+      }      
       
       // we always set the response type to "200 OK"
       // if the message should be a "206 partial content" 

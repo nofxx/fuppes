@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -73,15 +73,15 @@ struct FileType_t FileTypes[] =
 struct TranscodingSetting_t TranscodingSettings[] =
 {
   /* audio */
-  {"ogg" , "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK, "VorbisWrapper", "LameWrapper"},
-  {"mpc" , "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK, "MpcWrapper"   , "LameWrapper"},
-  {"flac", "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK, "FlacWrapper"  , "LameWrapper"},
+  {"ogg" , "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK},
+  {"mpc" , "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK},
+  {"flac", "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK},
   
   /* video */
-  {"vdr", "vob", "video/x-ms-vob", ITEM_VIDEO_ITEM_MOVIE, "", ""},
+  {"vdr", "vob", "video/x-ms-vob", ITEM_VIDEO_ITEM_MOVIE},
   
   /* empty entry to mark the list's end */
-  {"", "", "", OBJECT_TYPE_UNKNOWN, "", ""}
+  {"", "", "", OBJECT_TYPE_UNKNOWN}
 };
 
 
@@ -125,9 +125,7 @@ std::string CFileDetails::GetMimeType(std::string p_sFileName, bool p_bTranscodi
 {
   string sExt = ToLower(ExtractFileExt(p_sFileName));
   struct FileType_t* pType; 
-  struct TranscodingSetting_t* pTranscoding;
-  
-  cout << "CFileDetails::GetMimeType " << p_sFileName << endl;
+  struct TranscodingSetting_t* pTranscoding;  
   
   pType = FileTypes;
   while(!pType->sExt.empty())

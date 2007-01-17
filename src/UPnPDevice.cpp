@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -355,21 +355,44 @@ std::string CUPnPDevice::GetDeviceDescription()
 /* ParseDescription */
 bool CUPnPDevice::ParseDescription(std::string p_sDescription)
 {
+  #warning todo: parse description
+  
+  /*xmlDocPtr pDoc = NULL;
+  pDoc = xmlReadMemory(p_sDescription.c_str(), p_sDescription.length(), "", NULL, 0);
+  if(!pDoc) {
+    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "xml parser error", __FILE__, __LINE__);
+    return false;    
+  }
+    
+  xmlNode* pRootNode = NULL;  
+  xmlNode* pTmpNode  = NULL;   
+  pRootNode = xmlDocGetRootElement(pDoc);  
+  
+  
+  xmlFreeDoc(pDoc);
+  xmlCleanupParser(); */  
+  
+  
   //cout << p_sDescription << endl;
   
   RegEx rxFriendlyName("<friendlyName>(.*)</friendlyName>", PCRE_CASELESS);
-  if(rxFriendlyName.Search(p_sDescription.c_str()))
-  {
+  if(rxFriendlyName.Search(p_sDescription.c_str())) {
     m_sFriendlyName = rxFriendlyName.Match(1);
   }
   
   RegEx rxUUID("<UDN>uuid:(.+)</UDN>", PCRE_CASELESS);
-  if(rxUUID.Search(p_sDescription.c_str()))
-  {
+  if(rxUUID.Search(p_sDescription.c_str())) {
     m_sUUID = rxUUID.Match(1);
   }
   
-  /* T.S.TODO: Get all other information from the device description */
+  RegEx rxDeviceType("<deviceType>(.*)</deviceType>", PCRE_CASELESS);
+  if(rxDeviceType.Search(p_sDescription.c_str())) {
+    string sDevType = ToLower(rxDeviceType.Match(1));    
+    if(sDevType.compare("urn:schemas-upnp-org:device:mediarenderer:1") == 0)    
+      m_nUPnPDeviceType = UPNP_DEVICE_TYPE_MEDIA_RENDERER;
+    else if(sDevType.compare("urn:schemas-upnp-org:device:mediaserver:1") == 0)    
+      m_nUPnPDeviceType = UPNP_DEVICE_TYPE_MEDIA_SERVER;
+  }
   
   /*<?xml version="1.0"?>
 <root

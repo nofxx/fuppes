@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -662,18 +662,6 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   pCacheObj->Init(pSession);
   /* todo: error handling */
   
-  
-  while(pCacheObj->Transcode() && (!pSession->m_bBreakTranscoding))
-  {
-    fuppesSleep(2000);
-  }
-  
-  CSharedLog::Shared()->Log(L_EXTENDED, "exit transcode loop :: " + pSession->m_sInFileName, __FILE__, __LINE__);
-  
-  CTranscodingCache::Shared()->ReleaseCacheObject(pCacheObj);
-  pSession->m_bIsTranscoding = false;
-  fuppesThreadExit();
-  
   unsigned int nTranscodeLenght = 0;
   unsigned int nLength = *pSession->m_pnBinContentLength;  
   
@@ -692,6 +680,19 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   pSession->m_bIsTranscoding = false;
   fuppesThreadExit(); 
   #endif /* ifndef DISABLE_TRANSCODING */
+  
+  
+  /* test transcode to temp file
+  while(pCacheObj->Transcode() && (!pSession->m_bBreakTranscoding))
+  {
+    fuppesSleep(2000);
+  }
+  
+  CSharedLog::Shared()->Log(L_EXTENDED, "exit transcode loop :: " + pSession->m_sInFileName, __FILE__, __LINE__);
+  
+  CTranscodingCache::Shared()->ReleaseCacheObject(pCacheObj);
+  pSession->m_bIsTranscoding = false;
+  fuppesThreadExit();*/
 }
 
 /* <\PUBLIC> */

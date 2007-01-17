@@ -39,9 +39,7 @@ struct TranscodingSetting_t
   std::string sExt;  
   std::string sTargetExt;  
   std::string sTargetMimeType;
-  OBJECT_TYPE nTargetObjectType;
-  std::string sDecoderName;
-  std::string sEncoderName;
+  OBJECT_TYPE nTargetObjectType;  
 };
 
 struct SAudioItem

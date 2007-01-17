@@ -38,6 +38,8 @@
 #include "Images/fuppes_small_png.cpp"
 #include "Images/header_gradient_png.cpp"
 #include "Images/header_gradient_small_png.cpp"
+#include "Images/device_type_unknown_png.cpp"
+#include "Images/device_type_media_server_png.cpp"
 
 #include <sstream>
 
@@ -147,6 +149,8 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
   
   
   
+  
+  
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/fuppes-small.png") == 0)
   {
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "send small fuppes logo");
@@ -176,6 +180,28 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
     
     //cout << sImg.length() << endl;
   }
+  
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/device-type-unknown.png") == 0)
+  {
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send device-type-unknown");
+    nPresentationPage = PRESENTATION_BINARY_IMAGE;
+    string sImg = Base64Decode(device_type_unknown_png);
+    pResult->SetBinContent((char*)sImg.c_str(), sImg.length());
+    
+    //cout << sImg.length() << endl;
+  }
+  
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/device-type-media-server.png") == 0)
+  {
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send device-type-media-server");
+    nPresentationPage = PRESENTATION_BINARY_IMAGE;
+    string sImg = Base64Decode(device_type_media_server_png);
+    pResult->SetBinContent((char*)sImg.c_str(), sImg.length());
+    
+    //cout << sImg.length() << endl;
+  }
+  
+  
   
   
   if(nPresentationPage == PRESENTATION_BINARY_IMAGE)
@@ -226,28 +252,36 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
   sResult << "<style type=\"text/css\">" << endl << GetStylesheet(p_sImgPath) << endl << "</style>";
   
   
-  /*sResult << "<script type=\"text/javascript\">"
-    "function Klappen(Id) {"
-    "var KlappText = document.getElementById('Remote'+Id);"
-    "var KlappBild = document.getElementById('Pic'+Id);"
-    "var jetec_Minus=\"minus.gif\", jetec_Plus=\"plus.gif\";"
-    "if (KlappText.style.display == 'none')"
-    "{"
-    "KlappText.style.display = '';"
-    "KlappBild.src = jetec_Minus;"
-    "}"
-    "else"
-    "{"
-    "KlappText.style.display = 'none';"
-    "KlappBild.src = jetec_Plus;"
-    "}"
-    "}"
-    "</script>"; */
-  
+  sResult << "<script type=\"text/javascript\"> \r\n"
+    "function Toggle(Id) { \r\n"
+    "  var remote = document.getElementById('Remote'+Id);"
+    "  var img    = document.getElementById('Pic'+Id);\r\n"
+    "  if (remote.style.display == 'none') { \r\n"
+    "    remote.style.display = '';"
+    "    img.src = \"minus.gif\";"
+    "  }"
+    "  else {"
+    "    remote.style.display = 'none';"
+    "    img.src = \"plus.gif\";"
+    "  }"
+    "} \r\n";
+    
+  sResult << 
+    "function CloseAll(Count) { "
+    "  var i = 0; "
+    "  for(i = 0; i < Count; i++) { "
+    "    Toggle(i); "
+    "  } "
+    "}";
+    
+  sResult << "</script>";  
   sResult << "</head>";
   /* header end */
   
-  sResult << "<body>";
+    
+  sResult << "<body onload=\"CloseAll(" << CSharedConfig::Shared()->GetFuppesInstance(0)->GetRemoteDevices().size() << ")\">";
+  
+  //pFuppes->GetRemoteDevices().size()
   
   /* title */
   sResult << "<div id=\"title\">" << endl;
@@ -685,15 +719,29 @@ std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes, std::s
         "<thead>";
     /*sResult << "<tr><th colspan=\"2\"><a href=\"javascript:Klappen(" << i << ")\"><img src=\"plus.gif\" id=\"Pic" << i << "\" border=\"0\">x</a> ";
     sResult<< pDevice->GetFriendlyName() << "</th></tr>" << endl;*/
-    sResult << "<tr>" << endl <<
-               "<th colspan=\"2\" style=\"background-image: url(" << p_sImgPath << "header-gradient-small.png); " <<
-               "color: #FFFFFF;\">" <<
-               //"<a href=\"javascript:Klappen(" << i << ")\"><!--<img src=\"plus.gif\" id=\"Pic" << i << "\" border=\"0\">-->x</a> " <<
-               pDevice->GetFriendlyName() << "</th></tr>" << endl;
+    sResult << "<tr><th colspan=\"2\" style=\"background-image: url(" << p_sImgPath << "header-gradient-small.png); color: #FFFFFF;\">" <<
+                 
+                 "<div style=\"float: left;\">";
+                 switch(pDevice->GetDeviceType())
+                 {
+                   case UPNP_DEVICE_TYPE_MEDIA_SERVER:
+                     sResult << "<img src=\"" << p_sImgPath << "device-type-media-server.png\" />";
+                     break;
+                   default:
+                     sResult << "<img src=\"" << p_sImgPath << "device-type-unknown.png\" />";                  
+                 }                      
+                 sResult << "</div>" <<        
+    
+                 "<div style=\"float: right;\">" <<
+                 "<a href=\"javascript:Toggle(" << i << ")\"><!--<img src=\"plus.gif\" id=\"Pic" << i << "\" border=\"0\">-->x</a> " <<
+                 "</div>" <<
+    
+                 pDevice->GetFriendlyName() <<
+               "</th></tr>" << endl;
     sResult << "</thead>" << endl;
     
-    //sResult << "<tbody id=\"Remote" << i << "\" style=\"display: none;\">" << endl;
-    sResult << "<tbody>" << endl;
+    sResult << "<tbody id=\"Remote" << i << "\">" << endl; // style=\"display: none;\"
+    //sResult << "<tbody>" << endl;
     
     
     sResult << "<tr><td>Type</td><td>" << pDevice->GetDeviceTypeAsString() << "</td></tr>" << endl;

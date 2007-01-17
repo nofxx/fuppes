@@ -236,7 +236,7 @@ fuppesThreadCallback TranscodeThread(void *arg)
     if((nAppendCount % 200) == 0)
     {      
       pCacheObj->Lock();
-
+      
       if(!pCacheObj->m_szBuffer)
         pCacheObj->m_szBuffer = (char*)malloc(nTmpSize * sizeof(char));
       else

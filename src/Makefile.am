@@ -84,6 +84,8 @@ cpp_sources = \
   Presentation/Images/fuppes_small_png.cpp\
   Presentation/Images/header_gradient_png.cpp\
   Presentation/Images/header_gradient_small_png.cpp\
+  Presentation/Images/device_type_unknown_png.cpp\
+  Presentation/Images/device_type_media_server_png.cpp\
   Transcoding/TranscodingMgr.cpp\
   Transcoding/TranscodingCache.cpp\
   Transcoding/LameWrapper.cpp\

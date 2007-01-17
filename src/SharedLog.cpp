@@ -289,10 +289,14 @@ void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, 
       break;
     case L_EXTENDED:
     case L_EXTENDED_ERR:
+      if(m_nLogLevel < 2)
+        break;     
       cout << "==== " << p_szFileName << " " << p_nLineNumber << " ====" << endl;
       cout << p_sMessage << endl << endl;
       break;
     case L_DEBUG:
+      if(m_nLogLevel < 3)
+        break;     
       cout << "==== " << p_szFileName << " " << p_nLineNumber << " ====" << endl;
       cout << p_sMessage << endl << endl;    
       break;

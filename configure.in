@@ -259,6 +259,13 @@ dnl Checks for library functions.
 
 dnl Checks for Additional stuffs.
 
+# HTTP Port
+AC_ARG_ENABLE(default-http-port,
+ [  --enable-default-http-port[=PORT] Set the default HTTP port],
+ [  CXXFLAGS="$CXXFLAGS -DDEFAULT_HTTP_PORT=$enableval" ])
+
+
+
 AC_OUTPUT([
 Makefile
 src/Makefile

@@ -17,7 +17,8 @@ Version 0.7
   ** new, easy to extend file extension to mime type mapping
      take a look at "src/ContentDirectory/FileDetails.cpp"
 
-  * exception handling  
+  * exception handling
+  * new ./configure option --enable-default-http-port=PORT  
 
   todo:
     * UPnP eventing

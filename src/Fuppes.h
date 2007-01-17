@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -125,7 +125,8 @@ private:
 
   std::map<std::string, CUPnPDevice*>           m_RemoteDevices;
   std::map<std::string, CUPnPDevice*>::iterator m_RemoteDeviceIterator;
-  
+  fuppesThreadMutex     m_RemoteDevicesMutex;
+
   std::list<CUPnPDevice*>           m_TimedOutDevices;
   std::list<CUPnPDevice*>::iterator m_TimedOutDevicesIterator;
 

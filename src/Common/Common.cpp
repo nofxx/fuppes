@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -103,8 +103,7 @@ bool IsDirectory(std::string p_sDirName)
 std::string MD5Sum(std::string p_sFileName)
 {
   std::fstream fsFile;   
-  int nFileSize = 0;
-  int nRest = 0;
+  int nFileSize = 0;  
   int nRead = 0;
   char szBuffer[200];
   
@@ -119,21 +118,19 @@ std::string MD5Sum(std::string p_sFileName)
     fsFile.seekg(0, ios::end); 
     nFileSize = streamoff(fsFile.tellg()); 
     fsFile.seekg(0, ios::beg);
-    
-    nRest = nFileSize;
-    
+        
     md5_init(&state);
-    while(nRest > 0)
+    while(nFileSize > 0)
     {    
-      if(nRest < 200)
-        nRead = nRest;
+      if(nFileSize < 200)
+        nRead = nFileSize;
       else
         nRead = 200;     
       
       fsFile.read(szBuffer, nRead);
       md5_append(&state, (const md5_byte_t *)szBuffer, nRead);
       
-      nRest -= nRead;
+      nFileSize -= nRead;
     }
     
     md5_finish(&state, digest);
@@ -226,15 +223,29 @@ bool ExtractFolderFromPath(std::string p_sPath, std::string* p_sFolder)
   }
 }
 
-std::string TrimFileName(std::string p_sFileName, unsigned int p_nMaxLength)
+std::string TrimFileName(std::string p_sFileName, unsigned int p_nMaxLength, bool p_bTruncateFileExt)
 { 
   if((p_nMaxLength == 0) || (p_sFileName.length() <= p_nMaxLength))
     return p_sFileName;
   
-  std::string sExt  = ExtractFileExt(p_sFileName);
-  std::string sFile = TruncateFileExt(p_sFileName);
-  sFile = sFile.substr(0, p_nMaxLength - sExt.length() - 1);
-  sFile = sFile + "." + sExt;
+  std::string  sExt  = "";
+  std::string  sFile = TruncateFileExt(p_sFileName);
+  unsigned int nLen = 0;
+  
+  if(p_bTruncateFileExt) {
+    nLen = p_nMaxLength;
+  }
+  else {
+    sExt = ExtractFileExt(p_sFileName);
+    nLen = p_nMaxLength - sExt.length() - 1;
+  }    
+  
+  sFile = sFile.substr(0, nLen);
+  
+  if(!p_bTruncateFileExt) {
+    sFile = sFile + "." + sExt;
+  }
+  
   return sFile;
 }
 
@@ -533,7 +544,6 @@ fuppesLibHandle FuppesLoadLibrary(std::string p_sLibName)
     return dlopen(p_sLibName.c_str(), RTLD_LAZY);
   #endif
 }
-
 
 fuppesProcHandle  FuppesGetProcAddress(fuppesLibHandle p_LibHandle, std::string p_sProcName)
 {

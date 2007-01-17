@@ -59,7 +59,8 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID, IFuppes* pPresen
   m_sIPAddress                  = p_sIPAddress;
   m_sUUID                       = p_sUUID;
   m_pPresentationRequestHandler = pPresentationRequestHandler;
-  fuppesThreadInitMutex(&m_OnTimerMutex);  
+  fuppesThreadInitMutex(&m_OnTimerMutex);
+  fuppesThreadInitMutex(&m_RemoteDevicesMutex);
     
   /* init HTTP-server */
   try {
@@ -143,6 +144,7 @@ CFuppes::~CFuppes()
   CleanupTimedOutDevices();  
   
   fuppesThreadDestroyMutex(&m_OnTimerMutex);
+  fuppesThreadDestroyMutex(&m_RemoteDevicesMutex);
   
   /* destroy objects */
   delete m_pContentDirectory;
@@ -185,6 +187,7 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
     sLog << "device: " << pSender->GetFriendlyName() << " timed out";
     CSharedLog::Shared()->Log(LOGNAME, sLog.str());
 
+    fuppesThreadLockMutex(&m_RemoteDevicesMutex);
     m_RemoteDeviceIterator = m_RemoteDevices.find(pSender->GetUUID());  
     /* found device */
     if(m_RemoteDeviceIterator != m_RemoteDevices.end())
@@ -197,6 +200,7 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
       /* push it to the list containing timed out devices */
       m_TimedOutDevices.push_back(pSender);
     }
+    fuppesThreadUnlockMutex(&m_RemoteDevicesMutex);
   }
   
   fuppesThreadUnlockMutex(&m_OnTimerMutex);
@@ -368,7 +372,9 @@ bool CFuppes::HandleHTTPPostSOAPAction(CHTTPMessage* pMessageIn, CHTTPMessage* p
 
 void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
 {
-  m_RemoteDeviceIterator = m_RemoteDevices.find(pMessage->GetUUID());
+  fuppesThreadLockMutex(&m_RemoteDevicesMutex);
+  
+  m_RemoteDeviceIterator = m_RemoteDevices.find(pMessage->GetUUID());  
   
   /* known device */
   if(m_RemoteDeviceIterator != m_RemoteDevices.end())
@@ -382,7 +388,7 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
   
   /* new device */
   else
-  {  
+  {
     std::stringstream sMsg;
     sMsg << "received \"Notify-Alive\" from unknown device id: " << pMessage->GetUUID();      
     CSharedLog::Shared()->Log(L_EXTENDED, sMsg.str(), __FILE__, __LINE__);
@@ -392,18 +398,20 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
       return;
       
     CUPnPDevice* pDevice = new CUPnPDevice(this);
-    if(pDevice->BuildFromDescriptionURL(pMessage->GetLocation()))
-    {
-      sMsg << "new device: " << pDevice->GetFriendlyName();
-      CSharedLog::Shared()->Log(L_NORMAL, sMsg.str(), __FILE__, __LINE__);
-      
+    if(pDevice->BuildFromDescriptionURL(pMessage->GetLocation())) {      
       m_RemoteDevices[pMessage->GetUUID()] = pDevice;
       pDevice->GetTimer()->SetInterval(900);  // 900 sec = 15 min
       pDevice->GetTimer()->Start();
+      
+      sMsg << "new device: " << pDevice->GetFriendlyName();
+      CSharedLog::Shared()->Log(L_NORMAL, sMsg.str(), __FILE__, __LINE__);
     }
-    else      
-      delete pDevice;  
+    else {
+      delete pDevice;
+    }
   }
+  
+  fuppesThreadUnlockMutex(&m_RemoteDevicesMutex);
 }
 
 void CFuppes::HandleSSDPByeBye(CSSDPMessage* pMessage)
@@ -412,6 +420,8 @@ void CFuppes::HandleSSDPByeBye(CSSDPMessage* pMessage)
   sLog << "received \"Notify-ByeBye\" from device: " << pMessage->GetUUID();  
   CSharedLog::Shared()->Log(L_EXTENDED, sLog.str(), __FILE__, __LINE__);
   sLog.str("");
+  
+  fuppesThreadLockMutex(&m_RemoteDevicesMutex);
   
   m_RemoteDeviceIterator = m_RemoteDevices.find(pMessage->GetUUID());  
   /* found device */
@@ -423,4 +433,6 @@ void CFuppes::HandleSSDPByeBye(CSSDPMessage* pMessage)
     delete m_RemoteDevices[pMessage->GetUUID()];
     m_RemoteDevices.erase(pMessage->GetUUID());
   }
+  
+  fuppesThreadUnlockMutex(&m_RemoteDevicesMutex);
 }

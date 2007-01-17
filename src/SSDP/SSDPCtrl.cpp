@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -252,14 +252,17 @@ void CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMe
         CSharedLog::Shared()->ExtendedLog(LOGNAME, "SSDP_MESSAGE_TYPE_M_SEARCH");
         HandleMSearch(pSSDPMessage);
         break;
-      default:
-        CSharedLog::Shared()->ExtendedLog(LOGNAME, "default");
-        if(m_pReceiveHandler != NULL)
+      
+      default:        
+        if(m_pReceiveHandler != NULL) {
+          fuppesThreadLockMutex(&m_SessionReceiveMutex);  
           m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pSSDPMessage);
+          fuppesThreadUnlockMutex(&m_SessionReceiveMutex);  
+        }
         else
           CSharedLog::Shared()->Warning(LOGNAME, "receive handler is null");          
         break;
-    }    
+    }
   }
 }
 

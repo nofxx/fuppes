@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2006, 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -24,6 +24,8 @@
 #ifndef _TRANSCODINGMGR_H
 #define _TRANSCODINGMGR_H
 
+#include "WrapperBase.h"
+
 class CTranscodingMgr
 {
   public:
@@ -35,6 +37,7 @@ class CTranscodingMgr
   
     static CTranscodingMgr* m_Instance;
   
+    CAudioEncoderBase* CreateAudioEncoder(std::string p_sFileExt);  
 };
 
 #endif // _TRANSCODINGMGR_H

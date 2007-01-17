@@ -93,7 +93,7 @@ std::string ExtractFileExt(std::string p_sFileName);
 std::string ExtractFilePath(std::string p_sFileName);
 std::string TruncateFileExt(std::string p_sFileName);
 bool ExtractFolderFromPath(std::string p_sPath, std::string* p_sFolder);
-std::string TrimFileName(std::string p_sFileName, unsigned int p_nMaxLength);
+std::string TrimFileName(std::string p_sFileName, unsigned int p_nMaxLength, bool p_bTruncateFileExt);
 
 std::string MD5Sum(std::string p_sFileName);
 

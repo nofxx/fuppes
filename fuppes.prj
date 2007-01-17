@@ -154,7 +154,8 @@ module.source.files=\
 	Common/UUID.cpp\
 	Common/UUID.h\
 	Transcoding/TwoLameEncoder.cpp\
-	Transcoding/TwoLameEncoder.h
+	Transcoding/TwoLameEncoder.h\
+	Presentation/Images/device_type_unknown_png.cpp
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

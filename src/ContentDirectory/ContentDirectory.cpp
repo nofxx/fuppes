@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -386,12 +386,10 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   
     CContentDatabase::Shared()->Lock();
     CContentDatabase::Shared()->Select(sSql.str()); 
-    if(!CContentDatabase::Shared()->Eof())
-    {
+    if(!CContentDatabase::Shared()->Eof()) {
       nContainerType = (OBJECT_TYPE)atoi(CContentDatabase::Shared()->GetResult()->GetValue("TYPE").c_str());
     }
-    else
-    {
+    else {
       nContainerType = OBJECT_TYPE_UNKNOWN;
     }
     CContentDatabase::Shared()->ClearResult();
@@ -400,15 +398,13 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   }
     
   /* get total matches */
-  if(nContainerType == CONTAINER_STORAGE_FOLDER)
-  {
+  if(nContainerType == CONTAINER_STORAGE_FOLDER) {
     sSql << "select count(*) as COUNT from OBJECTS where PARENT_ID = " <<
-            pUPnPBrowse->GetObjectIDAsInt(); // << " order by FILE_NAME ";        
+            pUPnPBrowse->GetObjectIDAsInt();
   }
-  else if(nContainerType == CONTAINER_PLAYLIST_CONTAINER)
-  {
+  else if(nContainerType == CONTAINER_PLAYLIST_CONTAINER) {
     sSql << "select count(*) as COUNT from PLAYLIST_ITEMS where PLAYLIST_ID = " <<
-            pUPnPBrowse->GetObjectIDAsInt(); // << " order by FILE_NAME ";        
+            pUPnPBrowse->GetObjectIDAsInt();
   }
 
   
@@ -597,8 +593,8 @@ dc:rights dc O */
      
     /* title */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");     
-    xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("FILE_NAME").c_str()); 
-    xmlTextWriterEndElement(pWriter); 
+    xmlTextWriterWriteString(pWriter, BAD_CAST TruncateFileExt(pSQLResult->GetValue("FILE_NAME")).c_str()); 
+    xmlTextWriterEndElement(pWriter);
    
     /* class */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");     
@@ -628,7 +624,7 @@ dc:rights dc O */
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
       sTmp.str("");
         
-      sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/Playlists/" << szObjId << "." << ExtractFileExt(pSQLResult->GetValue("FILE_NAME"));    
+      sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/Playlists/" << szObjId << "." << ExtractFileExt(pSQLResult->GetValue("PATH"));    
       //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
    
 //cout << sTmp.str() << endl;      
@@ -680,7 +676,8 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter, CSelectRe
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");    
     
     /* trim filename */
-    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), CSharedConfig::Shared()->GetMaxFileNameLength());    
+    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), CSharedConfig::Shared()->GetMaxFileNameLength(), true);    
+    sFileName = TruncateFileExt(sFileName);
     
     // to utf 8
     /*unsigned char* szBuf = new unsigned char[4096];
@@ -769,10 +766,9 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
   
   string sMimeType = pSQLResult->GetValue("MIME_TYPE");
-  string sExt      = ExtractFileExt(pSQLResult->GetValue("FILE_NAME"));
-  if(CFileDetails::Shared()->IsTranscodingExtension(sExt))
-  {
-    sMimeType = CFileDetails::Shared()->GetMimeType(sExt, true);
+  string sExt      = ExtractFileExt(pSQLResult->GetValue("PATH"));
+  if(CFileDetails::Shared()->IsTranscodingExtension(sExt)) {
+    sMimeType = CFileDetails::Shared()->GetMimeType(pSQLResult->GetValue("PATH"), true);
     sExt      = CFileDetails::Shared()->GetTargetExtension(sExt);
   }
   
@@ -781,8 +777,7 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
   sTmp.str("");
   
-  sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/AudioItems/" << p_sObjectID << "." << sExt;
-  //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
+  sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/AudioItems/" << p_sObjectID << "." << sExt;  
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
   xmlTextWriterEndElement(pWriter); 
   
@@ -807,8 +802,7 @@ void CContentDirectory::BuildAudioItemAudioBroadcastDescription(xmlTextWriterPtr
   sTmp.str("");*/
   
   sTmp << pSQLResult->GetValue("PATH");
-  //"http://" << m_sHTTPServerURL << "/MediaServer/VideoItems/" << p_sObjectID << "." << ExtractFileExt(pSQLResult->GetValue("FILE_NAME"));  
-  //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
+  //"http://" << m_sHTTPServerURL << "/MediaServer/VideoItems/" << p_sObjectID << "." << ExtractFileExt(pSQLResult->GetValue("FILE_NAME"));    
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
   xmlTextWriterEndElement(pWriter);   
 }
@@ -817,40 +811,24 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
                                                   CSelectResult* pSQLResult,
                                                   CUPnPBrowse*  pUPnPBrowse,
                                                   std::string p_sObjectID)
-{    
-
+{
   /* class */
   xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
   xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.imageItem");
   xmlTextWriterEndElement(pWriter);
 
-/* longDescription
-upnp
-No */
-
   /* storageMedium */
-  if(pUPnPBrowse->m_sFilter.find("upnp:storageMedium") != std::string::npos)
-  {  
+  if(pUPnPBrowse->m_sFilter.find("upnp:storageMedium") != std::string::npos) {  
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "storageMedium", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
     xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN");
     xmlTextWriterEndElement(pWriter);
   }
 
-/* rating
-upnp
-No
-
-description
-dc
-No
-
-publisher
-dc
-No */
-  
-/* rights
-dc
-No */  
+/* longDescription upnp No 
+   rating upnp No
+   description dc No
+   publisher dc No  
+   rights dc No */  
 
   /* res */
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
@@ -860,8 +838,7 @@ No */
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
   sTmp.str("");
   
-  sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/ImageItems/" << p_sObjectID << "." << ExtractFileExt(pSQLResult->GetValue("FILE_NAME"));
-  //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
+  sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/ImageItems/" << p_sObjectID << "." << ExtractFileExt(pSQLResult->GetValue("PATH"));
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
   xmlTextWriterEndElement(pWriter);  
     
@@ -883,22 +860,17 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   std::stringstream sTmp;
   sTmp << "http-get:*:" << pSQLResult->GetValue("MIME_TYPE") << ":*";
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
-  sTmp.str("");
+  sTmp.str("");   
+
+  /* set transcoding target extension 
+     as video transcoding is not yet supported
+     we just rename files e.g. vdr to vob */
+  string sExt = ExtractFileExt(pSQLResult->GetValue("PATH"));
+  if(CFileDetails::Shared()->IsTranscodingExtension(sExt)) {
+    sExt = CFileDetails::Shared()->GetTargetExtension(sExt);
+  }     
   
-  /* Test */
-  /*xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST "350513556");  
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST "44:52:36");    
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST "0"); 
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST "0");   
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitsPerSample", BAD_CAST "0");   
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "nrAudioChannels", BAD_CAST "0");   
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "BuildDateTime", BAD_CAST "2006/03/05 10:25:17");   
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "LastWriteDateTime", BAD_CAST "2006/03/05 10:25:17");           */
-  /* Testende */
-  
-  #warning TODO: transcoding
-  sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/VideoItems/" << p_sObjectID << "." << ExtractFileExt(pSQLResult->GetValue("FILE_NAME"));  
-  //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
+  sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/VideoItems/" << p_sObjectID << "." << sExt;  
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
   xmlTextWriterEndElement(pWriter);  
 }
@@ -921,20 +893,8 @@ void CContentDirectory::BuildVideoItemVideoBroadcastDescription(xmlTextWriterPtr
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
   sTmp.str("");*/
   
-  /* Test */
-  /*xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST "350513556");  
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST "44:52:36");    
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST "0"); 
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST "0");   
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitsPerSample", BAD_CAST "0");   
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "nrAudioChannels", BAD_CAST "0");   
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "BuildDateTime", BAD_CAST "2006/03/05 10:25:17");   
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "LastWriteDateTime", BAD_CAST "2006/03/05 10:25:17");           */
-  /* Testende */
-  
   sTmp << pSQLResult->GetValue("PATH");
   //"http://" << m_sHTTPServerURL << "/MediaServer/VideoItems/" << p_sObjectID << "." << ExtractFileExt(pSQLResult->GetValue("FILE_NAME"));  
-  //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
   xmlTextWriterEndElement(pWriter);  
 }
@@ -957,8 +917,7 @@ void CContentDirectory::BuildPlaylistItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
   sTmp.str("");
     
-  sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/Playlists/" << p_sObjectID << "." << ExtractFileExt(pSQLResult->GetValue("FILE_NAME"));    
-  //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
+  sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/Playlists/" << p_sObjectID << "." << ExtractFileExt(pSQLResult->GetValue("PATH"));      
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
   xmlTextWriterEndElement(pWriter);  
 }

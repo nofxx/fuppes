@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -111,8 +111,14 @@ CSharedConfig* CSharedConfig::Shared()
 CSharedConfig::CSharedConfig()
 {
   m_sUUID     = GenerateUUID();  
-  m_nHTTPPort = 0;
   
+  // ./configure --enable-default-http-port=PORT
+  #ifdef DEFAULT_HTTP_PORT
+  m_nHTTPPort = DEFAULT_HTTP_PORT;
+  #else
+  m_nHTTPPort = 0;
+  #endif
+    
   m_nMaxFileNameLength = 0;
   m_sLocalCharset      = "";
   
@@ -144,17 +150,8 @@ CSharedConfig::CSharedConfig()
 
 CSharedConfig::~CSharedConfig()
 {
-  //xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);  
   xmlFreeDoc(m_pDoc);
 }
-
-/* <\PROTECTED> */
-
-/* <PUBLIC> */
-
-/*===============================================================================
- INIT
-===============================================================================*/
 
 bool CSharedConfig::SetupConfig()
 {

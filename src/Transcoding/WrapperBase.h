@@ -27,7 +27,7 @@
 #include "../SharedLog.h"
 #include <string>
 
-class CEncoderBase
+class CAudioEncoderBase
 {
 };
 

@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -165,20 +165,20 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
       /* Server */
       RegEx rxServer("SERVER: +(.*)", PCRE_CASELESS);
       if(rxServer.Search(m_sMessage.c_str()))      
-        m_sServer = rxServer.Match(1);      
+        m_sServer = rxServer.Match(1);
       
       /* USN */
-      RegEx rxUSN("USN: +(.*)", PCRE_CASELESS);
+      RegEx rxUSN("USN: +(.*)\r\n", PCRE_CASELESS);
       if(rxUSN.Search(m_sMessage.c_str()))
       {
-        m_sUSN = rxUSN.Match(1);
-        //cout << "USN: " << m_sUSN << endl;
+        m_sUSN = rxUSN.Match(1);        
+        if(m_sUSN.find("::") != std::string::npos) {
+          m_sUSN = m_sUSN.substr(0, m_sUSN.find("::"));
+        }        
         
-        RegEx rxUUID("uuid:([A-Z|0-9|-]+)", PCRE_CASELESS);
+        RegEx rxUUID("uuid:(.*)", PCRE_CASELESS);        
         if(rxUUID.Search(m_sUSN.c_str()))
           m_sUUID = rxUUID.Match(1);
-
-        //cout << "UUID: " << m_sUUID << endl;
       }
       
     } /* if(m_nMessageType != SSDP_MESSAGE_TYPE_M_SEARCH)  */
