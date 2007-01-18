@@ -276,22 +276,19 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   
   /* get child count */
   bool bNeedCount = false;  
-  if(nContainerType == CONTAINER_STORAGE_FOLDER)
-  {
+  if(nContainerType == CONTAINER_STORAGE_FOLDER) {
     sSql << "select count(*) as COUNT from OBJECTS where " <<
             "PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << ";";
     bNeedCount = true;
   }
-  else if(nContainerType == CONTAINER_PLAYLIST_CONTAINER)
-  {
+  else if(nContainerType == CONTAINER_PLAYLIST_CONTAINER) {
     sSql << "select count(*) as COUNT from PLAYLIST_ITEMS where " <<
             "PLAYLIST_ID = " << pUPnPBrowse->GetObjectIDAsInt() << ";";          
     bNeedCount = true;
   }
   
   string sChildCount = "0";
-  if(bNeedCount)
-  {
+  if(bNeedCount) {
     CContentDatabase::Shared()->Lock();
     CContentDatabase::Shared()->Select(sSql.str());        
     sChildCount = CContentDatabase::Shared()->GetResult()->GetValue("COUNT").c_str();
@@ -307,7 +304,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   if(pUPnPBrowse->GetObjectIDAsInt() == 0)
   {
     sParentId = "-1";
-    sTitle    = "root";    
+    sTitle    = "root";   
     
     /* build container  */
     xmlTextWriterStartElement(pWriter, BAD_CAST "container"); 
@@ -340,7 +337,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   // sub folders
   else
   {
-    sSql << "select ID, PARENT_ID, FILE_NAME, TYPE, MIME_TYPE from OBJECTS where ID = " << pUPnPBrowse->GetObjectIDAsInt();
+    sSql << "select ID, PARENT_ID, PATH, FILE_NAME, TYPE, MIME_TYPE from OBJECTS where ID = " << pUPnPBrowse->GetObjectIDAsInt();
     CContentDatabase::Shared()->Lock();
     
     CContentDatabase::Shared()->Select(sSql.str());                
@@ -460,10 +457,8 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
     
     BuildDescription(pWriter, pRow, pUPnPBrowse, pUPnPBrowse->m_sObjectID);
         
-    CContentDatabase::Shared()->Next();                    
-
+    CContentDatabase::Shared()->Next();
     tmpInt++;
-    //cout << tmpInt << endl;
   }        
   
   CContentDatabase::Shared()->ClearResult();
@@ -476,45 +471,38 @@ void CContentDirectory::BuildDescription(xmlTextWriterPtr pWriter,
                                          CUPnPBrowse* pUPnPBrowse,
                                          std::string p_sParentId)
 {
+  OBJECT_TYPE nObjType = (OBJECT_TYPE)atoi(pSQLResult->GetValue("TYPE").c_str());
   
-  if(pSQLResult->GetValue("TYPE").compare("10") == 0)
+  switch(nObjType)
   {
-    //cout << "CONTAINER_STORAGE_FOLDER" << endl;
-    BuildContainerDescription(pWriter, pSQLResult, pUPnPBrowse, p_sParentId, CONTAINER_STORAGE_FOLDER);
-  }  
-  else if(pSQLResult->GetValue("TYPE").compare("5") == 0)
-  {    
-    //cout << "CONTAINER_PLAYLIST_CONTAINER" << endl;
-    if(CSharedConfig::Shared()->GetDisplaySettings().bShowPlaylistsAsContainers)
-      BuildContainerDescription(pWriter, pSQLResult, pUPnPBrowse, p_sParentId, CONTAINER_PLAYLIST_CONTAINER);
-    else
-      BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, CONTAINER_PLAYLIST_CONTAINER, p_sParentId);  
-  }  
-  
-  else if(pSQLResult->GetValue("TYPE").compare("100") == 0)
-  {
-    //cout << "ITEM_IMAGE_ITEM_PHOTO" << endl;
-    BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, ITEM_IMAGE_ITEM_PHOTO, p_sParentId);
-  }
-  else if(pSQLResult->GetValue("TYPE").compare("200") == 0)
-  {
-    //cout << "ITEM_AUDIO_ITEM_MUSIC_TRACK" << endl;
-    BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, ITEM_AUDIO_ITEM_MUSIC_TRACK, p_sParentId);
-  }
-  else if(pSQLResult->GetValue("TYPE").compare("300") == 0)
-  {
-    //cout << "ITEM_VIDEO_ITEM_MOVIE" << endl;
-    BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, ITEM_VIDEO_ITEM_MOVIE, p_sParentId);
-  }
-  else if(pSQLResult->GetValue("TYPE").compare("301") == 0)
-  {
-    //cout << "ITEM_VIDEO_ITEM_VIDEO_BROADCAST" << endl;
-    BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, ITEM_VIDEO_ITEM_VIDEO_BROADCAST, p_sParentId);
-  } 
-  else if(pSQLResult->GetValue("TYPE").compare("201") == 0)
-  {
-    //cout << "ITEM_AUDIO_ITEM_AUDIO_BROADCAST" << endl;
-    BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, ITEM_AUDIO_ITEM_AUDIO_BROADCAST, p_sParentId);
+    // CONTAINER_STORAGE_FOLDER
+    case CONTAINER_STORAGE_FOLDER :
+      BuildContainerDescription(pWriter, pSQLResult, pUPnPBrowse, p_sParentId, CONTAINER_STORAGE_FOLDER);         
+      break;
+      
+    // CONTAINER_PLAYLIST_CONTAINER
+    case CONTAINER_PLAYLIST_CONTAINER :
+      if(CSharedConfig::Shared()->GetDisplaySettings().bShowPlaylistsAsContainers)
+        BuildContainerDescription(pWriter, pSQLResult, pUPnPBrowse, p_sParentId, CONTAINER_PLAYLIST_CONTAINER);
+      else
+        BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, CONTAINER_PLAYLIST_CONTAINER, p_sParentId);           
+      break;      
+    
+    // ITEM_IMAGE_ITEM_PHOTO
+    // ITEM_AUDIO_ITEM_MUSIC_TRACK    
+    // ITEM_AUDIO_ITEM_AUDIO_BROADCAST
+    // ITEM_VIDEO_ITEM_MOVIE    
+    // ITEM_VIDEO_ITEM_VIDEO_BROADCAST
+    case ITEM_IMAGE_ITEM_PHOTO :
+    case ITEM_AUDIO_ITEM_MUSIC_TRACK :
+    case ITEM_AUDIO_ITEM_AUDIO_BROADCAST :
+    case ITEM_VIDEO_ITEM_MOVIE :  
+    case ITEM_VIDEO_ITEM_VIDEO_BROADCAST :
+      BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, nObjType, p_sParentId);
+      break;
+      
+    default :
+      throw EException("unhandled object type", __FILE__, __LINE__);
   }
 }
 

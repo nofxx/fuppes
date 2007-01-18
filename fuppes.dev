@@ -1,7 +1,7 @@
 [Project]
 FileName=fuppes.dev
 Name=fuppes
-UnitCount=85
+UnitCount=87
 Type=1
 Ver=1
 ObjFiles=
@@ -27,7 +27,7 @@ CustomMakefile=
 IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=0
-CompilerSettings=00000000010001000000c0
+CompilerSettings=00000000010000000000c0
 OverrideOutput=0
 
 [Unit6]
@@ -54,7 +54,7 @@ BuildCmd=
 Major=0
 Minor=7
 Release=0
-Build=32
+Build=42
 LanguageID=1033
 CharsetID=1252
 CompanyName=
@@ -899,7 +899,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit86]
-FileName=src\Common\md5.c
+FileName=src\Presentation\Images\device_type_unknown_png.cpp
 CompileCpp=1
 Folder=fuppes
 Compile=1
@@ -909,7 +909,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit87]
-FileName=src\Common\md5.h
+FileName=src\Presentation\Images\device_type_media_server_png.cpp
 CompileCpp=1
 Folder=fuppes
 Compile=1
