@@ -140,7 +140,7 @@ bool CHTTPRequestHandler::HandleGENAMessage(CHTTPMessage* pRequest, CHTTPMessage
   pResponse->SetVersion(pRequest->GetVersion());
   pResponse->SetMessageType(HTTP_MESSAGE_TYPE_GENA_OK);
  
-  cout << pResponse->GetHeaderAsString() << endl;
+  //cout << pResponse->GetHeaderAsString() << endl;
   /*string sID = GenerateUUID();
   pResponse->SetGENASubscriptionID(sID);*/
   

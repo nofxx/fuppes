@@ -270,35 +270,75 @@ void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, 
   return;
   #endif
   
-  #warning todo  
+  // printLine is always true on debug
+  if(m_nLogLevel == 3)
+    p_bPrintLine = true;
   
   switch(nLogLevel)
   {
     case L_NORMAL:    
       cout << p_sMessage << endl;
-      break;    
-    case L_ERROR:
-      cout << "==== " << p_szFileName << " " << p_nLineNumber << " ====" << endl;
-      cout << p_sMessage << endl << endl;
       break;
+    
+    // ERROR
+    case L_ERROR:
+      if(p_bPrintLine) {
+        cout << "==== " << p_szFileName << " " << p_nLineNumber << " ====" << endl;
+      }
+      
+      cout << p_sMessage << endl;
+      
+      if(p_bPrintLine) {
+        cout << endl;
+      }
+      break;
+    
+      // WARNING
     case L_WARNING:
       cout << p_sMessage << endl;
       break;
     case L_CRITICAL:
       cout << p_sMessage << endl;
       break;
-    case L_EXTENDED:
-    case L_EXTENDED_ERR:
+    
+    // EXTENDED
+    case L_EXTENDED:      
+    case L_EXTENDED_ERR:      
+    case L_EXTENDED_WARN:      
+    
       if(m_nLogLevel < 2)
-        break;     
-      cout << "==== " << p_szFileName << " " << p_nLineNumber << " ====" << endl;
-      cout << p_sMessage << endl << endl;
+        break;
+      
+      if(p_bPrintLine) {
+        cout << "==== ";
+        if(nLogLevel == L_EXTENDED_ERR)
+          cout << "ERROR ===";
+        else if(nLogLevel == L_EXTENDED_WARN)
+          cout << "WARNING ===";      
+        cout << p_szFileName << " " << p_nLineNumber << " ====" << endl;
+      }
+      
+      cout << p_sMessage << endl;
+      
+      if(p_bPrintLine) {
+        cout << endl;
+      }      
       break;
+      
+    // DEBUG
     case L_DEBUG:
       if(m_nLogLevel < 3)
         break;     
-      cout << "==== " << p_szFileName << " " << p_nLineNumber << " ====" << endl;
-      cout << p_sMessage << endl << endl;    
+      
+      if(p_bPrintLine) {
+        cout << "==== " << p_szFileName << " " << p_nLineNumber << " ====" << endl;
+      }
+      
+      cout << p_sMessage << endl;
+      
+      if(p_bPrintLine) {
+        cout << endl;
+      }
       break;
   }
   
@@ -322,6 +362,8 @@ void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, 
         syslog(LOG_WARNING, p_sMessage.c_str());
         break;
       case L_EXTENDED:
+      case L_EXTENDED_ERR:
+      case L_EXTENDED_WARN:
         syslog(LOG_DEBUG, p_sMessage.c_str());
         break;
       case L_DEBUG:

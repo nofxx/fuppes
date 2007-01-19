@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -134,7 +134,7 @@ bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_s
   /* Connect */
   if(connect(sock, (struct sockaddr*)&addr, sizeof(addr)) == -1)
   {
-    CSharedLog::Shared()->Log(L_ERROR, "connect()",__FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_ERROR, "connect()", __FILE__, __LINE__);
     return false;
   }
 
@@ -165,6 +165,8 @@ bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_s
       buffer[nBytesReceived] = '\0';
       sReceived << buffer;
     }
+    
+    upnpSocketClose(sock);
 
     if(sReceived.str().length() > 0)
     {
@@ -196,9 +198,35 @@ fuppesThreadCallback AsyncThread(void* arg)
     fuppesThreadExit();
   }
 
+  // create socket
+  upnpSocket sock = socket(AF_INET, SOCK_STREAM, 0);
+  sockaddr_in addr;
+  addr.sin_family      = PF_INET;
+  addr.sin_addr.s_addr = inet_addr(sIPAddress.c_str());
+  addr.sin_port        = htons(nPort);
 
+  // connect socket
+  if(connect(sock, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+    CSharedLog::Shared()->Log(L_ERROR, "connect()", __FILE__, __LINE__);
+    
+    pClient->m_bAsyncDone = true;
+    fuppesThreadExit();
+  }
 
+  // send message
+  /*if(send(sock, sMsg.c_str(), (int)strlen(sMsg.c_str()), 0) <= 0) {
+    CSharedLog::Shared()->Log(L_ERROR, "send()", __FILE__, __LINE__);    
+    
+    close(sock);
+    pClient->m_bAsyncDone = true;
+    fuppesThreadExit();
+  }*/
+  
+  // receive answer
 
+  
+  // clean up and exit
+  upnpSocketClose(sock);
   pClient->m_bAsyncDone = true;
   fuppesThreadExit();
 }

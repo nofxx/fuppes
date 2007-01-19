@@ -41,7 +41,7 @@
  
 using namespace std;
 
-const string LOGNAME = "ContentDatabase";
+//const string LOGNAME = "ContentDatabase";
  
 static int SelectCallback(void *pDatabase, int argc, char **argv, char **azColName)
 {
@@ -290,7 +290,8 @@ void CContentDatabase::BuildDB()
 {
   m_bIsRebuilding = true;
   
-  CSharedLog::Shared()->Log(LOGNAME, "creating content database. this may take a while.");
+  CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] creating database. this may take a while.", __FILE__, __LINE__, false);
+  
   CContentDatabase::Shared()->Insert("delete from objects");
   CContentDatabase::Shared()->Insert("delete from playlist_items");
   
@@ -321,29 +322,25 @@ void CContentDatabase::BuildDB()
       }
       
     }
-    else
-    {
-      stringstream sLog;
-      sLog << "shared directory: \"" << CSharedConfig::Shared()->GetSharedDir(i) << "\" not found";
-      CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
+    else {      
+      CSharedLog::Shared()->Log(L_WARNING, "shared directory: \"" + CSharedConfig::Shared()->GetSharedDir(i) + "\" not found", __FILE__, __LINE__, false);
     }
   } // for
   
   //cout << "parsing playlists" << endl;
   BuildPlaylists();
   //cout << "done parsing playlists" << endl;  
-  
-  CSharedLog::Shared()->Log(LOGNAME, "content database created");   
+    
+  CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] database created", __FILE__, __LINE__, false);
   m_bIsRebuilding = false;
 }
 
 void CContentDatabase::DbScanDir(std::string p_sDirectory, long long int p_nParentId)
 {
   #ifdef WIN32  
-  /* Add slash, if neccessary */
+  // append trailing backslash if neccessary
   char szTemp[MAX_PATH];
-  if(p_sDirectory.substr(p_sDirectory.length()-1).compare(upnpPathDelim) != 0)
-  {
+  if(p_sDirectory.substr(p_sDirectory.length()-1).compare(upnpPathDelim) != 0) {
     strcpy(szTemp, p_sDirectory.c_str());
     strcat(szTemp, upnpPathDelim);
   }
@@ -379,19 +376,16 @@ void CContentDatabase::DbScanDir(std::string p_sDirectory, long long int p_nPare
   dirent* pDirEnt;
   stringstream sTmp;
    
-  /* append upnpPathDelim if necessary */  
-  if(p_sDirectory.substr(p_sDirectory.length()-1).compare(upnpPathDelim) != 0)
-  {
+  // append trailing slash if neccessary
+  if(p_sDirectory.substr(p_sDirectory.length()-1).compare(upnpPathDelim) != 0) {
     sTmp << p_sDirectory << upnpPathDelim;
     p_sDirectory = sTmp.str();
     sTmp.str("");
   }
   
   if((pDir = opendir(p_sDirectory.c_str())) != NULL)
-  {
-    sTmp << "read directory: " << p_sDirectory;    
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, sTmp.str());
-    sTmp.str("");
+  {    
+    CSharedLog::Shared()->Log(L_EXTENDED, "read directory: " + p_sDirectory, __FILE__, __LINE__, false);
     
     while((pDirEnt = readdir(pDir)))
     {
@@ -423,7 +417,7 @@ void CContentDatabase::DbScanDir(std::string p_sDirectory, long long int p_nPare
           if(nRowId == -1)
             cout << "ERROR: " << sSql.str() << endl;
           
-          /* recursively scan directories */
+          // recursively scan subdirectories
           DbScanDir(sTmp.str(), nRowId);          
         }
         else if(IsFile(sTmp.str()) && CSharedConfig::Shared()->IsSupportedFileExtension(sExt))
@@ -450,8 +444,7 @@ unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
   
   string sTmpFileName =  p_sFileName;
   // vdr -> vob
-  if(ExtractFileExt(sTmpFileName) == "vdr") 
-  {
+  if(ExtractFileExt(sTmpFileName) == "vdr") {
     sTmpFileName = TruncateFileExt(sTmpFileName) + ".vob";
   }
   
@@ -463,13 +456,12 @@ unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
   // todo: build file description          
   switch(nObjectType)
   {
-    case ITEM_AUDIO_ITEM_MUSIC_TRACK:
-      cout << "MusicTrack" << endl;      
+    case ITEM_AUDIO_ITEM_MUSIC_TRACK:      
       SMusicTrack TrackInfo = CFileDetails::Shared()->GetMusicTrackDetails(p_sFileName, &sDetails);
       /*if(!TrackInfo.mAudioItem.sTitle.empty())
         sTmpFileName = TrackInfo.mAudioItem.sTitle;*/
       break;
-  }  
+  }
   
   sTmpFileName = ToUTF8(sTmpFileName);
   sTmpFileName = SQLEscape(sTmpFileName);  
@@ -481,8 +473,7 @@ unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
   sSql << p_nParentId << ", ";
   sSql << "'" << SQLEscape(p_sFileName) << "', ";
   sSql << "'" << sTmpFileName << "', ";
-  //sSql << "'" << MD5Sum(sTmp.str()) << "', ";
-  sSql << "'" << "todo" << "', ";
+  sSql << "'" << "todo" << "', ";   //sSql << "'" << MD5Sum(p_sFileName) << "', ";  
   sSql << "'" << CFileDetails::Shared()->GetMimeType(p_sFileName, false) << "', ";
   sSql << "'" << SQLEscape(sDetails) << "');";
   

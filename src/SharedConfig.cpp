@@ -79,7 +79,9 @@
 
 #endif
 
-const std::string NEEDED_CONFIGFILE_VERSION = "0.5.1";
+const std::string FUPPES_VERSION = "0.7";
+
+const std::string NEEDED_CONFIGFILE_VERSION = "0.7";
 
 /*===============================================================================
  CLASS CSharedConfig
@@ -126,22 +128,8 @@ CSharedConfig::CSharedConfig()
   m_pSharedDirNode  = NULL;
   m_pContentDirNode = NULL;
   
-  /* transcoding */
-  #ifdef DISABLE_TRANSCODING
-  m_bTranscodingEnabled = false;
-  #else
-  m_bTranscodingEnabled = true;
-  #endif
-  m_bLameAvailable     = false;
-  m_bVorbisAvailable   = false;
-  m_bMusePackAvailable = false;
-  m_bFlacAvailable     = false;
   
-  m_bTranscodeVorbis   = true;
-  m_bTranscodeMusePack = true;
-  m_bTranscodeFlac     = true;
-  
-  /* display settings */
+  // display settings
   m_DisplaySettings.bShowTranscodingTypeInItemNames = true;  
   m_DisplaySettings.bShowDirNamesInFirstLevel = true;
   
@@ -157,12 +145,12 @@ bool CSharedConfig::SetupConfig()
 {
   bool bResult = true;  
   
-  /* read config file */
+  // read config file
   bResult = ReadConfigFile(true);
   if(!bResult)
     return false;
   
-  /* Network settings */
+  // Network settings
   if(bResult && !ResolveHostAndIP())
   {
     cout << "[ERROR] can't resolve hostname and address" << endl;
@@ -173,15 +161,13 @@ bool CSharedConfig::SetupConfig()
   cout << "address : " << GetIPv4Address() << endl; 
   cout << endl;*/
 
+  
+  #warning todo: read from config
+  CTranscodingMgr::Shared()->SetDoUseLame(true);
+  
   /* OS information */
   GetOSInfo();
 
-
-  /* Transcoding */
-  #ifndef DISABLE_TRANSCODING  
-  CheckForTranscodingLibs();
-  //PrintTranscodingSettings();
-  #endif
   return bResult;
 }
 
@@ -206,7 +192,6 @@ bool CSharedConfig::Refresh()
   return bResult;
 }
 
-/* AddFuppesInstance */
 void CSharedConfig::AddFuppesInstance(CFuppes* pFuppes)
 {
   /* Add the instance to the list */
@@ -239,7 +224,7 @@ string CSharedConfig::GetAppFullname()
 
 string CSharedConfig::GetAppVersion()
 {
-	return "0.7";
+	return FUPPES_VERSION;
 }
 
 string CSharedConfig::GetHostname()
@@ -481,11 +466,11 @@ bool CSharedConfig::IsSupportedFileExtension(std::string p_sFileExtension)
   /* Audio */
   if((ToLower(p_sFileExtension).compare("mp3") == 0))
     return true;
-  else if((ToLower(p_sFileExtension).compare("ogg") == 0) && ((m_bTranscodingEnabled && m_bVorbisAvailable) || !m_bTranscodeVorbis))
+  else if((ToLower(p_sFileExtension).compare("ogg") == 0))
     return true;
-  else if((ToLower(p_sFileExtension).compare("mpc") == 0) && ((m_bTranscodingEnabled && m_bMusePackAvailable) || !m_bTranscodeMusePack))
+  else if((ToLower(p_sFileExtension).compare("mpc") == 0))
     return true;
-  else if((ToLower(p_sFileExtension).compare("flac") == 0) && ((m_bTranscodingEnabled && m_bFlacAvailable) || !m_bTranscodeFlac))
+  else if((ToLower(p_sFileExtension).compare("flac") == 0))
     return true;
     
   /* Images */
@@ -518,35 +503,6 @@ bool CSharedConfig::IsSupportedFileExtension(std::string p_sFileExtension)
   
   else
     return false;
-}
-
-FILE_KIND CSharedConfig::GetFileKindByExtension(std::string p_sFileExtension)
-{
-  FILE_KIND nResult = FILE_KIND_UNKNOWN;
-  
-  if(
-     (ToLower(p_sFileExtension).compare("mp3") == 0) ||
-     (ToLower(p_sFileExtension).compare("ogg") == 0) ||
-     (ToLower(p_sFileExtension).compare("mpc") == 0) ||
-     (ToLower(p_sFileExtension).compare("flac") == 0)
-    )
-    nResult = FILE_KIND_AUDIO;  
-  
-  return nResult;
-}
-
-bool CSharedConfig::IsTranscodingExtension(std::string p_sFileExt)
-{  
-  if((ToLower(p_sFileExt).compare("mp3") == 0))
-    return false;
-  else if((ToLower(p_sFileExt).compare("ogg") == 0) && m_bTranscodingEnabled && m_bVorbisAvailable && m_bTranscodeVorbis)
-    return true;
-  else if((ToLower(p_sFileExt).compare("mpc") == 0) && m_bTranscodingEnabled && m_bMusePackAvailable && m_bTranscodeMusePack)
-    return true;
-  else if((ToLower(p_sFileExt).compare("flac") == 0) && m_bTranscodingEnabled && m_bFlacAvailable && m_bTranscodeFlac)
-    return true;  
-  else
-    return false;  
 }
 
 
@@ -1018,114 +974,11 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
 }
 
   
-void CSharedConfig::CheckForTranscodingLibs()
-{
-  #ifndef DISABLE_TRANSCODING
-    
-  /* LAME */
-  CLameWrapper* pLame = new CLameWrapper();
-  m_bLameAvailable = pLame->LoadLib();
-  if(m_bLameAvailable)  
-    m_sLameVersion = pLame->GetVersion();
-  delete pLame;  
-  
-  if(m_bLameAvailable)
-  { 
-    /* Vorbis */
-    #ifndef DISABLE_VORBIS
-    CVorbisDecoder* pVorbis = new CVorbisDecoder();
-    m_bVorbisAvailable = pVorbis->LoadLib();
-    delete pVorbis;
-    #endif
-    
-    /* MusePack */
-    #ifndef DISABLE_MUSEPACK
-    CMpcDecoder* pMuse = new CMpcDecoder();
-    m_bMusePackAvailable = pMuse->LoadLib();
-    delete pMuse;
-    #endif
-    
-    /* FLAC */
-    #ifndef DISABLE_FLAC
-    CFLACDecoder* pFlac = new CFLACDecoder();
-    m_bFlacAvailable = pFlac->LoadLib();
-    delete pFlac;
-    #endif
-  }  
-   
-  #endif  
-}
+
 
 void CSharedConfig::PrintTranscodingSettings()
 {
-  #ifdef DISABLE_TRANSCODING 
-  cout << "compiled without transcoding support" << endl;
-  #else
-  if(!m_bLameAvailable)
-  {
-    cout << endl;
-    cout << "LAME not found. transcoding disabled!" << endl;
-    #ifdef WIN32
-    cout << "Get a copy of the lame_enc.dll and" << endl;
-    cout << "put it in the application directory." << endl;
-    #endif
-    cout << endl;
-    m_bTranscodingEnabled = false;
-  }
-  else
-  {
-    /* no decoder available */
-    if(!m_bVorbisAvailable && !m_bMusePackAvailable && !m_bFlacAvailable)
-    {
-      m_bTranscodingEnabled = false;
-      cout << endl;
-      cout << "no decoding library found. transcoding disabled" << endl;
-      cout << endl;
-    }
-    else
-    {
-      cout << "transcoding settings:" << endl;
-      
-      /* lame */
-      cout << "  lame    : (version: " << m_sLameVersion << ")" << endl;
-      
-      /* vorbis */
-      cout << "  vorbis  : ";
-      #ifdef DISABLE_VORBIS
-      cout << "compiled without vorbis support" << endl;
-      #else
-      if(m_bVorbisAvailable)
-        cout << "enabled" << endl;
-      else
-        cout << "disabled" << endl;
-      #endif      
-    
-      /* musepack */
-      cout << "  musepack: ";
-      #ifdef DISABLE_MUSEPACK
-      cout << "compiled without MusePack support" << endl;
-      #else
-      if(m_bMusePackAvailable)
-        cout << "enabled" << endl;
-      else
-        cout << "disabled" << endl;
-      #endif
-      
-      /* flac */
-      cout << "  flac    : ";
-      #ifdef DISABLE_FLAC
-      cout << "compiled without FLAC support" << endl;
-      #else
-      if(m_bFlacAvailable)
-        cout << "enabled" << endl;
-      else
-        cout << "disabled" << endl;
-      #endif
-      
-      cout << endl;      
-    }
-  }
-  #endif  
+  
     
 }
 

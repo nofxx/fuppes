@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -211,6 +211,7 @@ int main(int argc, char* argv[])
   
   cout << "FUPPES - Free UPnP Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;
   cout << "http://fuppes.sourceforge.net" << endl << endl;
+  
   if(!CSharedConfig::Shared()->SetupConfig())
     return 0;  
 	
@@ -227,7 +228,7 @@ int main(int argc, char* argv[])
     cout << ex.What() << endl;
     cout << "[exiting]" << endl;
     return 1;
-  }  
+  }
   
   /* todo: create a fuppes instance for each network interface */
   //CFuppes* pFuppes2 = new CFuppes("127.0.0.1", pPresentationHandler);	

@@ -66,7 +66,7 @@ typedef struct reader_data_t {
     mpc_bool_t seekable;
 } reader_data;
 
-class CMpcDecoder: public CDecoderBase
+class CMpcDecoder: public CAudioDecoderBase
 {
   public:
     CMpcDecoder();

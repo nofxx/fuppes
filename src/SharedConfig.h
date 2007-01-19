@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -36,14 +36,9 @@
 #include <libxml/tree.h>
 #include <libxml/xmlwriter.h>
 
-using namespace std;
+#include "Transcoding/TranscodingMgr.h"
 
-typedef enum tagFILE_KIND
-{
-  FILE_KIND_UNKNOWN  =  0,
-  FILE_KIND_AUDIO    =  1,
-  FILE_KIND_VIDEO    =  2
-}FILE_KIND;
+using namespace std;
 
 struct DisplaySettings
 {
@@ -122,8 +117,8 @@ protected:
   unsigned int SharedDirCount();
   
   bool IsSupportedFileExtension(std::string p_sFileExtension);
-  bool IsTranscodingEnabled() { return m_bTranscodingEnabled; }  
-  bool IsTranscodingExtension(std::string p_sFileExt);
+  
+  
   
   unsigned int AllowedIPCount();
   std::string GetAllowedIP(unsigned int p_nIdx);
@@ -132,8 +127,7 @@ protected:
   bool AddAllowedIP(std::string p_sIPAddress);
   bool RemoveAllowedIP(unsigned int p_nIndex);
   
-  
-  FILE_KIND GetFileKindByExtension(std::string p_sFileExtension);
+    
   DisplaySettings GetDisplaySettings() { return m_DisplaySettings; }
   
   unsigned int GetMaxFileNameLength() { return m_nMaxFileNameLength; }
@@ -183,25 +177,11 @@ private:
   std::string m_sOSVersion;
   std::string m_sLocalCharset;
 
-  std::string m_sLameVersion;
-  std::string m_sVorbisVersion;
-  std::string m_sMpcVersion;
-  std::string m_sFlacVersion;
-
   unsigned int m_nMaxFileNameLength;
 
   std::vector<std::string> m_vSharedDirectories;
   std::vector<std::string> m_vAllowedIPs;
   unsigned int m_nHTTPPort;
-  bool m_bTranscodingEnabled;
-  bool m_bLameAvailable;
-  bool m_bVorbisAvailable;
-  bool m_bMusePackAvailable;
-  bool m_bFlacAvailable;  
-  
-  bool m_bTranscodeVorbis;
-  bool m_bTranscodeMusePack;
-  bool m_bTranscodeFlac;  
 
   DisplaySettings m_DisplaySettings;
 
@@ -215,8 +195,7 @@ private:
   bool ResolveHostAndIP();
   bool ResolveIPByHostname();
   bool ResolveIPByInterface(std::string p_sInterfaceName);  
-  bool WriteDefaultConfig(std::string p_sFileName);
-  void CheckForTranscodingLibs();
+  bool WriteDefaultConfig(std::string p_sFileName);  
   bool GetOSInfo();
   
 

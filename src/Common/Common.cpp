@@ -26,6 +26,8 @@
 #include "RegEx.h"
 #include "md5.h"
 
+#include "../SharedConfig.h"
+
 #include <cstdio>
 #ifdef WIN32
 #include <sys/stat.h>

@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -38,8 +38,11 @@ CLameWrapper::CLameWrapper()
 
 CLameWrapper::~CLameWrapper()
 {
-  if(m_LibHandle)
+  if(m_LibHandle) {
+    if(m_LameClose)
+      m_LameClose(m_LameGlobalFlags);
     FuppesCloseLibrary(m_LibHandle);
+  }
 }
 
 bool CLameWrapper::LoadLib()
@@ -53,32 +56,30 @@ bool CLameWrapper::LoadLib()
   if(!m_LibHandle)
     m_LibHandle = FuppesLoadLibrary("libmp3lame.so");
   #endif
-  if(!m_LibHandle)
-  {
+  
+  if(!m_LibHandle) {
     stringstream sLog;
     sLog << "cannot open library";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   }   
    
-    
+  
+  // lame_init()
   m_LameInit = (LameInit_t)FuppesGetProcAddress(m_LibHandle, "lame_init");
-  if(!m_LameInit)
-  {
+  if(!m_LameInit) {
     stringstream sLog;
     sLog << "cannot load symbol 'lame_init'";
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   }
 
-  
+  // get_lame_version()
   m_LameGetVersion = (LameGetVersion_t)FuppesGetProcAddress(m_LibHandle, "get_lame_version");
-  if(!m_LameGetVersion)
-  {
+  if(!m_LameGetVersion) {
     stringstream sLog;
     sLog << "cannot load symbol 'get_lame_version'";
-    CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
-    //return false;
+    CSharedLog::Shared()->Warning(LOGNAME, sLog.str());    
   }
   
   m_LameInitParams = (LameInitParams_t)FuppesGetProcAddress(m_LibHandle, "lame_init_params");
@@ -126,6 +127,13 @@ bool CLameWrapper::LoadLib()
     return false;
   } 
     
+  // lame_close()
+  m_LameClose = (LameClose_t)FuppesGetProcAddress(m_LibHandle, "lame_close");
+  if(!m_LameClose) {     
+    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot load symbol 'lame_close'", __FILE__, __LINE__);
+    return false;
+  } 
+  
   m_LameGlobalFlags = m_LameInit();
   return true;
 }
@@ -161,8 +169,8 @@ int CLameWrapper::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples)
 }
 
 int CLameWrapper::Flush()
-{
-  return m_LameEncodeFlush(m_LameGlobalFlags, m_sMp3Buffer, LAME_MAXMP3BUFFER);
+{  
+  return m_LameEncodeFlush(m_LameGlobalFlags, m_sMp3Buffer, LAME_MAXMP3BUFFER);  
 }
 
 #endif /* DISABLE_TRANSCODING */

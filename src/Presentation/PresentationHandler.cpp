@@ -33,6 +33,7 @@
 #include "../Common/Common.h"
 #include "../ContentDirectory/ContentDatabase.h"
 #include "../ContentDirectory/FileDetails.h"
+#include "../Transcoding/TranscodingMgr.h"
 
 //#include "Images/fuppes_png.cpp"
 #include "Images/fuppes_small_png.cpp"
@@ -484,6 +485,13 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
   CContentDatabase::Shared()->ClearResult();
   CContentDatabase::Shared()->Unlock();
   // end Database status
+  
+  
+  string sTranscoding;
+  sResult << "<h1>transcoding</h1>";
+  CTranscodingMgr::Shared()->PrintTranscodingSettings(&sTranscoding);
+  sResult << sTranscoding;
+  
   
   // system status
   sResult << "<h1>system status</h1>" << endl;  

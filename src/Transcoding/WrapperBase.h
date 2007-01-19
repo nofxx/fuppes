@@ -24,14 +24,22 @@
 #ifndef _WRAPPERBASE_H
 #define _WRAPPERBASE_H
 
-#include "../SharedLog.h"
 #include <string>
+#include "../Common/Common.h"
+#include "../SharedLog.h"
 
 class CAudioEncoderBase
 {
+  public:
+    virtual bool LoadLib() = 0;
+  
+    virtual void  Init() = 0;      
+    virtual int   EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples) = 0;
+    virtual int   Flush() = 0;
+    virtual unsigned char* GetMp3Buffer() = 0;
 };
 
-class CDecoderBase
+class CAudioDecoderBase
 {
   public:
     virtual bool LoadLib() = 0;

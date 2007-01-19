@@ -24,10 +24,11 @@
 #include "SubscriptionMgr.h"
 #include "../Common/RegEx.h"
 #include "../Common/UUID.h"
+#include "../SharedLog.h"
 
 CSubscription::CSubscription()
 { 
-  m_bHandled = false;
+  m_bHandled   = false;
   m_pHTTPClient = NULL;
 }
 
@@ -168,9 +169,11 @@ CSubscriptionMgr::~CSubscriptionMgr()
   m_bDoLoop = false;
   
   int nExitCode;
-  fuppesThreadCancel(m_MainLoop, nExitCode);
-  fuppesThreadClose(m_MainLoop);
-  m_MainLoop = (fuppesThread)NULL;  
+  if(m_MainLoop) {
+    fuppesThreadCancel(m_MainLoop, nExitCode);
+    fuppesThreadClose(m_MainLoop);
+    m_MainLoop = (fuppesThread)NULL;  
+  }
 }
 
 bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* pResponse)

@@ -35,7 +35,6 @@
 #include <exception>
 
 #include <libxml/xmlwriter.h>
-#include "../SharedConfig.h"
 
 #ifdef WIN32
 

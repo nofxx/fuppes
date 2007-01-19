@@ -26,6 +26,7 @@
 #include "../Common/Common.h"
 #include "../SharedConfig.h"
 #include "../SharedLog.h"
+#include "../Transcoding/TranscodingMgr.h"
 
 #ifdef HAVE_TAGLIB
 #include <fileref.h>
@@ -134,16 +135,14 @@ std::string CFileDetails::GetMimeType(std::string p_sFileName, bool p_bTranscodi
     {
       
       /* check for transcoding settings */
-      if(p_bTranscodingMimeType)
+      if(p_bTranscodingMimeType && CTranscodingMgr::Shared()->IsTranscodingExtension(sExt))
       {
         pTranscoding = TranscodingSettings;
         while(!pTranscoding->sExt.empty())
         {
-          if(pTranscoding->sExt.compare(sExt) == 0)
-          {
-            #warning FIXME: check if transcoding libs are available
+          if(pTranscoding->sExt.compare(sExt) == 0)                      
             return pTranscoding->sTargetMimeType;
-          }
+          
           pTranscoding++;
         }
       }
@@ -219,8 +218,9 @@ bool CFileDetails::IsTranscodingExtension(std::string p_sExt)
   pTranscoding = TranscodingSettings;
   while(!pTranscoding->sExt.empty())
   {
-    if(pTranscoding->sExt.compare(p_sExt) == 0)
-      return true;
+    if(pTranscoding->sExt.compare(p_sExt) == 0)    
+      return CTranscodingMgr::Shared()->IsTranscodingExtension(p_sExt);
+    
     pTranscoding++;
   }
   return false;

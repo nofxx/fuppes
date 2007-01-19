@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net> 
+ *  Copyright (C) 2006, 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net> 
  ****************************************************************************/
 
 /*
@@ -26,7 +26,6 @@
 
 #ifndef DISABLE_TRANSCODING
 #include "../Common/Common.h"
-#include "LameWrapper.h"
 #include "WrapperBase.h"
 #include <map>
 #endif
@@ -66,8 +65,8 @@ class CTranscodingCacheObject
     // the buffer's size
     unsigned int m_nBufferSize;
   
-    bool m_bIsTranscoding;
-    bool m_bBreakTranscoding;
+    bool  m_bIsTranscoding;
+    bool  m_bBreakTranscoding;
     void* m_pTranscodingMgr;
   
     bool  m_bIsComplete;
@@ -78,15 +77,15 @@ class CTranscodingCacheObject
   //private:
     unsigned int m_nRefCount;
     fuppesThreadMutex  m_Mutex;
-        
-    CLameWrapper* m_pLameWrapper;
-    CDecoderBase* m_pDecoder;    
+
+    CAudioEncoderBase* m_pAudioEncoder;
+    CAudioDecoderBase* m_pDecoder;    
     
     
     CTranscodeSessionInfo* m_pSessionInfo;    
     
     int nBufferLength;  
-    short int* pcmout;
+    short int* m_pPcmOut;
     
 //  private:
     std::string m_sInFileName;

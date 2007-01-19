@@ -88,7 +88,7 @@ typedef struct flac_data_s {
 
 
 
-class CFLACDecoder: public CDecoderBase
+class CFLACDecoder: public CAudioDecoderBase
 {
   public:
     CFLACDecoder();

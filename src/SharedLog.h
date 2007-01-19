@@ -32,11 +32,12 @@
 
 #define L_EXTENDED 1
 #define L_EXTENDED_ERR 2
-#define L_DEBUG    3
+#define L_EXTENDED_WARN 3
+#define L_DEBUG    4
 
-#define L_ERROR    4
-#define L_WARNING  5
-#define L_CRITICAL 6
+#define L_ERROR    5
+#define L_WARNING  6
+#define L_CRITICAL 7
 
 class CSharedLog
 {

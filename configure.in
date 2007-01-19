@@ -183,7 +183,10 @@ if test "x$transcoding" = "xyes"; then
       LAME_LIBS="-lmp3lame"
       have_encoder=yes
     fi
+  else
+    CXXFLAGS="$CXXFLAGS -DDISABLE_LAME"
   fi
+  
   
   #
   # check for TwoLAME
@@ -193,6 +196,8 @@ if test "x$transcoding" = "xyes"; then
     if test "x$have_twolame" = "xyes"; then
       have_encoder=yes
     fi
+  else
+    CXXFLAGS="$CXXFLAGS -DDISABLE_TWOLAME"
   fi
   
   
@@ -207,7 +212,7 @@ if test "x$transcoding" = "xyes"; then
     if test "x$have_vorbis" = "xyes"; then      
       have_decoder=yes    
     else
-      CXXFLAGS="-DDISABLE_VORBIS $CXXFLAGS"
+      CXXFLAGS="$CXXFLAGS -DDISABLE_VORBIS"
     fi
     
     # musepack    
@@ -216,7 +221,7 @@ if test "x$transcoding" = "xyes"; then
       MUSEPACK_LIBS="-lmpcdec"
       have_decoder=yes
     else
-      CXXFLAGS="-DDISABLE_MUSEPACK $CXXFLAGS"
+      CXXFLAGS="$CXXFLAGS -DDISABLE_MUSEPACK"
     fi
     
     # FLAC_LIBS
@@ -225,7 +230,7 @@ if test "x$transcoding" = "xyes"; then
       FLAC_LIBS="-lFLAC"
       have_decoder=yes
     else
-      CXXFLAGS="-DDISABLE_FLAC $CXXFLAGS"
+      CXXFLAGS="$CXXFLAGS -DDISABLE_FLAC"
     fi    
 
   fi # have_encoder
@@ -240,7 +245,7 @@ AC_SUBST(FLAC_LIBS)
 if test "x$transcoding" = "xno"; then
   
   ENABLE_TRANSCODING="false"
-  CXXFLAGS="-DDISABLE_TRANSCODING $CXXFLAGS"  
+  CXXFLAGS="$CXXFLAGS -DDISABLE_TRANSCODING"
   AC_MSG_NOTICE(Transcoding disabled");     
 fi
 AM_CONDITIONAL(DISABLE_TRANSCODING, test x$ENABLE_TRANSCODING = xfalse)
@@ -295,14 +300,16 @@ if test "x$transcoding" = "xyes"; then
   fi
 
   # no decoder
-  if test "x$have_decoder" = "xno"; then    
-    echo "transcoding disabled"
-    echo ""
-    echo "An encoding library was found"
-    echo "but there is no decoding library."
-    echo "Please install the OGG/Vorbis, Musepack and/or FLAC libraries"
-    echo "and run ./configure again"
-    echo ""
+  if test "x$have_decoder" = "xno"; then 
+    if test "x$have_encoder" = "xyes"; then 
+      echo "transcoding disabled"
+      echo ""
+      echo "An encoding library was found"
+      echo "but there is no decoding library."
+      echo "Please install the OGG/Vorbis, Musepack and/or FLAC libraries"
+      echo "and run ./configure again"
+      echo ""
+    fi
     
     transcoding=no
   fi

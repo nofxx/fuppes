@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -26,6 +26,7 @@
 #ifndef _LAMEWRAPPER_H
 #define _LAMEWRAPPER_H
 
+#include "WrapperBase.h"
 #include "../Common/Common.h"
 #include <lame/lame.h>
 #include <string>
@@ -57,9 +58,9 @@ extern "C"
                
   //lame_encode_flush(gf, mp3buffer, LAME_MAXMP3BUFFER);
   typedef int (*LameEncodeFlush_t)(lame_global_flags*, unsigned char*, int);
-
-                      //lame_encode_buffer_interleaved(gf, pcmout, samplesRead, mp3buffer, LAME_MAXMP3BUFFER);
   
+  // int  lame_close (lame_global_flags*);
+  typedef int (*LameClose_t)(lame_global_flags*);
 }
 
 typedef enum tagLAME_BITRATE
@@ -81,7 +82,7 @@ typedef enum tagLAME_BITRATE
   7. LameWrapper will clean up when it's deleted
 */ 
 
-class CLameWrapper
+class CLameWrapper: public CAudioEncoderBase
 {  
   public:
     CLameWrapper();
@@ -112,6 +113,8 @@ class CLameWrapper
   
     LameEncodeBufferInterleaved_t m_LameEncodeBufferInterleaved;
     LameEncodeFlush_t             m_LameEncodeFlush;
+  
+    LameClose_t   m_LameClose;
 };
 
 #endif /* _LAMEWRAPPER_H */

@@ -54,7 +54,7 @@ extern "C"
 }
 #endif
 
-class CVorbisDecoder: public CDecoderBase
+class CVorbisDecoder: public CAudioDecoderBase
 {
   public:
     CVorbisDecoder();

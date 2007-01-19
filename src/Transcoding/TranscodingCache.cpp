@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net> 
+ *  Copyright (C) 2006, 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net> 
  ****************************************************************************/
 
 /*
@@ -24,21 +24,10 @@
 #ifndef DISABLE_TRANSCODING
 
 #include "TranscodingCache.h"
+#include "TranscodingMgr.h"
 
-#include "LameWrapper.h"
 #include "../Common/Common.h"
-
-#ifndef DISABLE_VORBIS
-#include "VorbisWrapper.h"
-#endif
-
-#ifndef DISABLE_MUSEPACK
-#include "MpcWrapper.h"
-#endif
-
-#ifndef DISABLE_FLAC
-#include "FlacWrapper.h"
-#endif
+#include "../SharedLog.h"
 
 #include <iostream>
 
@@ -53,7 +42,7 @@ CTranscodingCacheObject::CTranscodingCacheObject()
   m_nBufferSize     = 0;  
   m_bIsTranscoding  = false;  
   m_TranscodeThread = (fuppesThread)NULL; 
-  m_pLameWrapper    = NULL;
+  m_pAudioEncoder   = NULL;
   m_pDecoder        = NULL;  
   m_bIsComplete     = false;
   m_pSessionInfo    = NULL;
@@ -64,9 +53,8 @@ CTranscodingCacheObject::CTranscodingCacheObject()
 
 CTranscodingCacheObject::~CTranscodingCacheObject()
 {  
-  /* break transcoding */
-  if(m_bIsTranscoding)
-  {
+  // break transcoding
+  if(m_bIsTranscoding) {
     m_bBreakTranscoding = true;
     fuppesThreadClose(m_TranscodeThread);
   }
@@ -74,8 +62,8 @@ CTranscodingCacheObject::~CTranscodingCacheObject()
   fuppesThreadDestroyMutex(&m_Mutex);  
   free(m_szBuffer);
   
-  if(pcmout)
-    delete[] pcmout;
+  if(m_pPcmOut)
+    delete[] m_pPcmOut;
 }
 
 bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
@@ -83,65 +71,39 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
   CSharedLog::Shared()->Log(L_EXTENDED, "Init " + pSessionInfo->m_sInFileName, __FILE__, __LINE__);  
   m_pSessionInfo = pSessionInfo;  
   
-  /* initialize LAME */
-  if(!m_pLameWrapper)
-  {
-    m_pLameWrapper = new CLameWrapper();  
-    if(!m_pLameWrapper->LoadLib())
-    {      
-      delete m_pLameWrapper;
-      m_pLameWrapper = NULL;
+  // init encoder
+  if(!m_pAudioEncoder) {
+    
+    m_pAudioEncoder = CTranscodingMgr::Shared()->CreateAudioEncoder("mp3");
+    if(!m_pAudioEncoder->LoadLib()) {      
+      delete m_pAudioEncoder;
+      m_pAudioEncoder = NULL;
       return false;
     }
     
-    m_pLameWrapper->SetBitrate(LAME_BITRATE_320);
-    m_pLameWrapper->Init();
+    #warning todo: set bitrate from config
+    //m_pLameWrapper->SetBitrate(LAME_BITRATE_320);
+    m_pAudioEncoder->Init();
   }  
   
-  /* init decoder */
+  // init decoder
   if(!m_pDecoder)
   {  
-    /* select decoder */
+    // create decoder
+    unsigned int nBufferLength = 32768;
     std::string sExt = ToLower(ExtractFileExt(m_pSessionInfo->m_sInFileName));  
-    #ifndef DISABLE_VORBIS
-    if(sExt.compare("ogg") == 0)        
-      m_pDecoder = new CVorbisDecoder();
-    #endif  
     
-    #ifndef DISABLE_MUSEPACK
-    if(sExt.compare("mpc") == 0)      
-      m_pDecoder = new CMpcDecoder();
-    #endif 
+    m_pDecoder = CTranscodingMgr::Shared()->CreateAudioDecoder(sExt, &nBufferLength);
     
-    #ifndef DISABLE_FLAC    
-    if(sExt.compare("flac") == 0)    
-      m_pDecoder = new CFLACDecoder();   
-    #endif  
-    
-    if(!m_pDecoder || !m_pDecoder->LoadLib() || !m_pDecoder->OpenFile(m_pSessionInfo->m_sInFileName))
-    {
+    // init decoder
+    if(!m_pDecoder || !m_pDecoder->LoadLib() || !m_pDecoder->OpenFile(m_pSessionInfo->m_sInFileName)) {
       delete m_pDecoder;
       m_pDecoder = NULL;      
       return false;
     }
 
-    /* create pcm buffer */    
-    #ifndef DISABLE_MUSEPACK  
-    CMpcDecoder* pTmp = dynamic_cast<CMpcDecoder*>(m_pDecoder);  
-    if (pTmp)
-    {
-      pcmout = new short int[MPC_DECODER_BUFFER_LENGTH * 4];
-      nBufferLength = MPC_DECODER_BUFFER_LENGTH * 4;
-    }
-    else
-    {
-      pcmout = new short int[32768];  // 4096
-      nBufferLength = 32768;
-    }
-    #else
-    pcmout = new short int[32768];
-    nBufferLength = 32768;
-    #endif
+    // create pcm buffer
+    m_pPcmOut = new short int[nBufferLength];
   }    
 
   return true;
@@ -210,10 +172,10 @@ fuppesThreadCallback TranscodeThread(void *arg)
   unsigned int nTmpSize = 0;
   
   /* Transcoding loop */
-  while(((samplesRead = pCacheObj->m_pDecoder->DecodeInterleaved((char*)pCacheObj->pcmout, pCacheObj->nBufferLength)) >= 0) && !pCacheObj->m_bBreakTranscoding)
+  while(((samplesRead = pCacheObj->m_pDecoder->DecodeInterleaved((char*)pCacheObj->m_pPcmOut, pCacheObj->nBufferLength)) >= 0) && !pCacheObj->m_bBreakTranscoding)
   {    
     /* encode */
-    nLameRet = pCacheObj->m_pLameWrapper->EncodeInterleaved(pCacheObj->pcmout, samplesRead);
+    nLameRet = pCacheObj->m_pAudioEncoder->EncodeInterleaved(pCacheObj->m_pPcmOut, samplesRead);
     if(nLameRet == 0)
       continue;
     
@@ -224,7 +186,7 @@ fuppesThreadCallback TranscodeThread(void *arg)
       szTmpBuff = (char*)realloc(szTmpBuff, (nTmpSize + nLameRet) * sizeof(char));
     
     /* ... store encoded frames ... */
-    memcpy(&szTmpBuff[nTmpSize], pCacheObj->m_pLameWrapper->GetMp3Buffer(), nLameRet);    
+    memcpy(&szTmpBuff[nTmpSize], pCacheObj->m_pAudioEncoder->GetMp3Buffer(), nLameRet);    
     
     /* ... and set new temporary buffer size */
     nTmpSize += nLameRet;
@@ -276,7 +238,7 @@ fuppesThreadCallback TranscodeThread(void *arg)
     /* flush and end transcoding */
 
     /* flush mp3 */
-    nTmpSize = pCacheObj->m_pLameWrapper->Flush();
+    nTmpSize = pCacheObj->m_pAudioEncoder->Flush();
     pCacheObj->Lock();
     
     if(!pCacheObj->m_szBuffer)
@@ -284,7 +246,7 @@ fuppesThreadCallback TranscodeThread(void *arg)
       else
         pCacheObj->m_szBuffer = (char*)realloc(pCacheObj->m_szBuffer, (pCacheObj->m_nBufferSize + nTmpSize) * sizeof(char));
     
-    memcpy(&pCacheObj->m_szBuffer[pCacheObj->m_nBufferSize], pCacheObj->m_pLameWrapper->GetMp3Buffer(), nTmpSize);
+    memcpy(&pCacheObj->m_szBuffer[pCacheObj->m_nBufferSize], pCacheObj->m_pAudioEncoder->GetMp3Buffer(), nTmpSize);
     pCacheObj->m_nBufferSize += nTmpSize;
     
     pCacheObj->m_bIsComplete    = true;
