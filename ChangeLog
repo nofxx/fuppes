@@ -22,7 +22,6 @@ Version 0.7
   
   todo:
     * UPnP eventing    
-    ** new config options (enable lame|twolame)    
     * cleanup logging
     
 

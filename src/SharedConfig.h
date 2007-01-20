@@ -166,6 +166,7 @@ private:
   xmlNode*    m_pSharedDirNode;
   xmlNode*    m_pContentDirNode;
   xmlNode*    m_pNetSettingsNode;
+  xmlNode*    m_pTranscodingSettingsNode;
 
   std::string m_sConfigVersion;
   std::string m_sConfigFileName;
@@ -196,7 +197,7 @@ private:
   bool ResolveIPByHostname();
   bool ResolveIPByInterface(std::string p_sInterfaceName);  
   bool WriteDefaultConfig(std::string p_sFileName);  
-  bool GetOSInfo();
+  void GetOSInfo();
   
 
 /* <\PRIVATE> */

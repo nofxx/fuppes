@@ -250,8 +250,10 @@ bool CContentDatabase::Select(std::string p_sStatement)
   do    
   {
     nResult = sqlite3_exec(m_pDbHandle, p_sStatement.c_str(), SelectCallback, this, &szErr);
-    if(nTry > 0)
-      cout << "CContentDatabase::Select :: SQLITE_BUSY - " << nTry << endl;
+    if(nTry > 0) {
+      CSharedLog::Shared()->Log(L_EXTENDED_WARN, "SQLITE_BUSY", __FILE__, __LINE__);
+      fuppesSleep(100);
+    }
     nTry++;
   }while(nResult == SQLITE_BUSY);
     

@@ -213,12 +213,12 @@ int main(int argc, char* argv[])
   cout << "http://fuppes.sourceforge.net" << endl << endl;
   
   if(!CSharedConfig::Shared()->SetupConfig())
-    return 0;  
+    return 1;
 	
-  /* Create presentation handler */
+  // create presentation handler
   CPresentationHandler* pPresentationHandler = new CPresentationHandler();
   
-  /* Create main server object (CFuppes) */   
+  // create main fuppes object
   CFuppes* pFuppes = NULL;
 	try {
     pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUUID(), pPresentationHandler);	
@@ -230,12 +230,7 @@ int main(int argc, char* argv[])
     return 1;
   }
   
-  /* todo: create a fuppes instance for each network interface */
-  //CFuppes* pFuppes2 = new CFuppes("127.0.0.1", pPresentationHandler);	
-  //pPresentationHandler->AddFuppesInstance(pFuppes2);
-  	
   cout << "Webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
-  //cout << "Webinterface: http://" << pFuppes2->GetHTTPServerURL() << "/index.html" << endl;
   cout << endl;  
   cout << "r = rebuild database" << endl;  
   cout << "i = print system info" << endl;
@@ -248,7 +243,7 @@ int main(int argc, char* argv[])
   #endif
   cout << endl;
   
-  /* Handle input */
+  // handle input
   if(!bDaemonMode)
   {
     string input = "";
@@ -311,14 +306,14 @@ int main(int argc, char* argv[])
       fuppesSleep(1000);
   }
   
-  /* Destroy objects */
+  // destroy objects
   delete pFuppes;
   delete pPresentationHandler;
   
   delete CSharedConfig::Shared();
   delete CSharedLog::Shared();
   
-  /* Cleanup winsockets */
+  // cleanup winsockets
   #ifdef WIN32
   WSACleanup();
   #endif

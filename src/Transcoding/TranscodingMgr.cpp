@@ -165,9 +165,8 @@ void CTranscodingMgr::SetDoUseLame(bool p_bDoUseLame)
 void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
 {
   #ifdef DISABLE_TRANSCODING 
-  if(p_sHTMLVersion)
-    *p_sHTMLVersion = "<p>compiled without transcoding support</p>";
-  else  
+  p_sHTMLVersion ? 
+    *p_sHTMLVersion = "<p>compiled without transcoding support</p>" :  
     cout << "compiled without transcoding support" << endl;
   #else
   
@@ -250,7 +249,7 @@ void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
     #ifdef DISABLE_VORBIS    
     !p_sHTMLVersion ? cout << "compiled without Vorbis support" << endl : sHTML << "<td>compiled without Vorbis support</td></tr>";          
     #else
-    if(m_bVorbisAvailable)
+    if(m_bVorbisAvailable && m_bTranscodeVorbis)
       !p_sHTMLVersion ? cout << "enabled" << endl : sHTML << "<td>enabled</td></tr>";    
     else
       !p_sHTMLVersion ? cout << "disabled" << endl : sHTML << "<td>disabled</td></tr>"; 
@@ -261,7 +260,7 @@ void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
     #ifdef DISABLE_MUSEPACK    
     !p_sHTMLVersion ? cout << "compiled without MusePack support" << endl : sHTML << "<td>compiled without MusePack support</td></tr>";          
     #else
-    if(m_bMusePackAvailable)
+    if(m_bMusePackAvailable && m_bTranscodeMusePack)
       !p_sHTMLVersion ? cout << "enabled" << endl : sHTML << "<td>enabled</td></tr>";    
     else
       !p_sHTMLVersion ? cout << "disabled" << endl : sHTML << "<td>disabled</td></tr>"; 
@@ -272,7 +271,7 @@ void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
     #ifdef DISABLE_FLAC    
     !p_sHTMLVersion ? cout << "compiled without FLAC support" << endl : sHTML << "<td>compiled without FLAC support</td></tr>";          
     #else
-    if(m_bFlacAvailable)
+    if(m_bFlacAvailable && m_bTranscodeFlac)
       !p_sHTMLVersion ? cout << "enabled" << endl : sHTML << "<td>enabled</td></tr>";    
     else
       !p_sHTMLVersion ? cout << "disabled" << endl : sHTML << "<td>disabled</td></tr>"; 

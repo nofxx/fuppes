@@ -134,7 +134,7 @@ std::string CFileDetails::GetMimeType(std::string p_sFileName, bool p_bTranscodi
     if(pType->sExt.compare(sExt) == 0)
     {
       
-      /* check for transcoding settings */
+      // check for transcoding settings
       if(p_bTranscodingMimeType && CTranscodingMgr::Shared()->IsTranscodingExtension(sExt))
       {
         pTranscoding = TranscodingSettings;
@@ -147,7 +147,7 @@ std::string CFileDetails::GetMimeType(std::string p_sFileName, bool p_bTranscodi
         }
       }
       
-      /* return default mime type */      
+      // return default mime type
       return pType->sMimeType;      
     } // if
     

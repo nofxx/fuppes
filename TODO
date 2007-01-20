@@ -35,7 +35,7 @@
 
 * error handling on initialization
   * creating database
-  * binding HTTP server
+  * binding HTTP server (0.7)
   * etc...
 
 * webinterface
@@ -77,3 +77,5 @@
 * split folders containing a configurable amount of files
 
 * podcast support
+
+* exclude hidden files (e.g. .folder.png)

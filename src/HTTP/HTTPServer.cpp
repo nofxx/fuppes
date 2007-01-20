@@ -286,42 +286,55 @@ fuppesThreadCallback SessionLoop(void *arg)
   bool bKeepAlive = true;
   bool bResult    = false;
   
+  stringstream sLog;
+  
   while(bKeepAlive)
   {  
-    /* receive HTTP-request */
+    // receive HTTP-request
     bResult = ReceiveRequest(pSession, pRequest);  
     if(!bResult)
       break;
     
-    /* check if requesting IP is allowed to */
+    sLog << "REQUEST:" << endl << pRequest->GetMessage();    
+    CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__);
+    sLog.str("");
+    // end receive
+    
+    // check if requesting IP is allowed to access
     std::string sIP = inet_ntoa(pSession->GetRemoteEndPoint().sin_addr);    
-    if(CSharedConfig::Shared()->IsAllowedIP(sIP))
-    {    
-      /* build response */   
+    if(CSharedConfig::Shared()->IsAllowedIP(sIP)) {    
+      // build response
       bResult = pHandler->HandleRequest(pRequest, pResponse);      
       if(!bResult)
         bResult = pSession->GetHTTPServer()->CallOnReceive(pRequest, pResponse);      
     }
-    /* otherwise create a "403 (forbidden)" response */
-    else
-    {
+    // otherwise create a "403 (forbidden)" response
+    else {
       pResponse->SetVersion(HTTP_VERSION_1_0);
       pResponse->SetMessageType(HTTP_MESSAGE_TYPE_403_FORBIDDEN);
       pResponse->SetMessage("403 Forbidden");
     }
     
-    /* send response */
+    // send response
+    /*sLog << "RESPONSE to " << pRequest->GetRequest() << ":" << endl;
+    if(!pResponse->IsChunked() && pResponse->GetBinContentLength() == 0)
+      sLog << pResponse->GetMessageAsString();
+    else
+      sLog << pResponse->GetHeaderAsString() << endl << "binary";    
+    CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__);
+    sLog.str("");*/
+
     bResult = SendResponse(pSession, pResponse, pRequest);
-    if(!bResult)
-    {
+    if(!bResult) {
       CSharedLog::Shared()->Error(LOGNAME, "sending HTTP message");    
       break;
     }
+    // end send response
     
     bKeepAlive = false;
   }
   
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "done sending response");
+  //CSharedLog::Shared()->ExtendedLog(LOGNAME, "done sending response");
   
   
   /* close connection */
@@ -494,29 +507,33 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
 
 bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMessage* p_Request)
 {
-  unsigned int nRet = 0; 
-      
+  unsigned int nRet = 0;       
+  stringstream sLog;
+  
   if(!p_Response->IsChunked())
   { 
     /* send complete binary stream */
     if(p_Response->GetBinContentLength() > 0) 
     { 
-      CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending non chunked binary");
-      send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), 0);             
-      CSharedLog::Shared()->DebugLog(LOGNAME, p_Response->GetHeaderAsString());
-      CSharedLog::Shared()->ExtendedLog(LOGNAME, "header send");
+      sLog << p_Response->GetHeaderAsString() << "complete binary";
+      CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__);
+      sLog.str("");
+      
+      // send header
+      send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), 0);      
+      // send complete bin content
       #ifdef WIN32
       send(p_Session->GetConnection(), p_Response->GetBinContent(), p_Response->GetBinContentLength(), 0);          
       #else      
       send(p_Session->GetConnection(), p_Response->GetBinContent(), p_Response->GetBinContentLength(), MSG_NOSIGNAL);      
-      #endif
-      CSharedLog::Shared()->ExtendedLog(LOGNAME, "content send");
+      #endif      
       return true;
     } 
-    /* send text message */
+    // send text message
     else 
-    {           
-      CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending plain text");   
+    { 
+      CSharedLog::Shared()->Log(L_DEBUG, p_Response->GetMessageAsString(), __FILE__, __LINE__);      
+      
       #ifdef WIN32          
       send(p_Session->GetConnection(), p_Response->GetMessageAsString().c_str(), (int)strlen(p_Response->GetMessageAsString().c_str()), 0); 
       if(nRet == -1)
@@ -534,7 +551,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
         CSharedLog::Shared()->Error(LOGNAME, sLog.str());
       }          
       #endif
-      CSharedLog::Shared()->DebugLog(LOGNAME, p_Response->GetMessageAsString());
+      //CSharedLog::Shared()->DebugLog(LOGNAME, p_Response->GetMessageAsString());
       return true;
     } 
   }
@@ -571,14 +588,16 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   
     
  
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending chunked binary");
-    CSharedLog::Shared()->DebugLog(LOGNAME, p_Response->GetHeaderAsString());
+    //CSharedLog::Shared()->ExtendedLog(LOGNAME, "sending chunked binary");
+    //CSharedLog::Shared()->DebugLog(LOGNAME, p_Response->GetHeaderAsString());
 
     
     /* send header if it is a HEAD response or the start range is greater than the content and return */        
     if((nErr != -1) && ((p_Request->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) ||
        ((p_Request->GetRangeStart() > 0) && (p_Request->GetRangeStart() >= p_Response->GetBinContentLength()))))
     {
+      CSharedLog::Shared()->Log(L_DEBUG, p_Response->GetHeaderAsString(), __FILE__, __LINE__);      
+      
       #ifdef WIN32
       nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), 0);             
       #else
@@ -614,6 +633,11 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       /* send HTTP header when the first package is ready */
       if(nCnt == 0)
       {
+        sLog << p_Response->GetHeaderAsString() << "partial binary (" << nOffset << " - " << nOffset + nRet << ")";
+        CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__);
+        sLog.str("");
+        
+        
         #ifdef WIN32
         nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), 0);             
         #else

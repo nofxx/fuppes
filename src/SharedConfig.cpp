@@ -83,15 +83,6 @@ const std::string FUPPES_VERSION = "0.7";
 
 const std::string NEEDED_CONFIGFILE_VERSION = "0.7";
 
-/*===============================================================================
- CLASS CSharedConfig
-===============================================================================*/
-
-/* <PUBLIC> */
-
-/*===============================================================================
- INSTANCE
-===============================================================================*/
 
 CSharedConfig* CSharedConfig::m_Instance = 0;
 
@@ -101,14 +92,6 @@ CSharedConfig* CSharedConfig::Shared()
 		m_Instance = new CSharedConfig();
 	return m_Instance;
 }
-
-/* <\PUBLIC> */
-
-/* <PROTECTED> */
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
 
 CSharedConfig::CSharedConfig()
 {
@@ -127,7 +110,8 @@ CSharedConfig::CSharedConfig()
   m_pDoc = NULL;
   m_pSharedDirNode  = NULL;
   m_pContentDirNode = NULL;
-  
+  m_pNetSettingsNode = NULL;
+  m_pTranscodingSettingsNode = NULL;
   
   // display settings
   m_DisplaySettings.bShowTranscodingTypeInItemNames = true;  
@@ -160,12 +144,8 @@ bool CSharedConfig::SetupConfig()
   /*cout << "hostname: " << GetHostname() << endl; 
   cout << "address : " << GetIPv4Address() << endl; 
   cout << endl;*/
-
   
-  #warning todo: read from config
-  CTranscodingMgr::Shared()->SetDoUseLame(true);
-  
-  /* OS information */
+  // OS information
   GetOSInfo();
 
   return bResult;
@@ -182,6 +162,8 @@ bool CSharedConfig::Refresh()
   
   m_pSharedDirNode  = NULL;
   m_pContentDirNode = NULL;
+  m_pTranscodingSettingsNode = NULL;
+  m_pNetSettingsNode = NULL;
   
   xmlFreeDoc(m_pDoc);
   m_pDoc = NULL;
@@ -600,8 +582,7 @@ bool CSharedConfig::SetLocalCharset(std::string p_sCharset)
 ===============================================================================*/
 
 bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
-{
-  //xmlDocPtr pDoc    = NULL;  
+{  
   bool      bResult = true;
   
   if(!m_pDoc)
@@ -663,170 +644,182 @@ bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
   } /* if(!m_pDoc) */
   
   
-  if(bResult)
-  {
-    xmlNode* pRootNode = NULL;  
-    xmlNode* pTmpNode  = NULL;   
-    pRootNode = xmlDocGetRootElement(m_pDoc);    
-       
+  
+  if(!bResult) {
+    xmlCleanupParser();  
+    return false;
+  }
+  
+  // file exists and is valid
+  // let's parse  
+  xmlNode* pRootNode = NULL;  
+  xmlNode* pTmpNode  = NULL;   
+  pRootNode = xmlDocGetRootElement(m_pDoc);    
+     
+  
+  // version
+  xmlAttr* attr = pRootNode->properties;
+  while(attr) {
+    string sAttr = (char*)attr->name;
+    if(sAttr.compare("version") == 0)    
+      m_sConfigVersion = (char*)attr->children->content;    
+    attr = attr->next;
+  }
+  
+  if(m_sConfigVersion.compare(NEEDED_CONFIGFILE_VERSION) != 0)
+  {      
+    cout << "Your configuration is deprecated" << endl;
+    cout << "  your version  : " << m_sConfigVersion << endl;
+    cout << "  needed version: " << NEEDED_CONFIGFILE_VERSION << endl << endl;
     
-    // version
-    xmlAttr* attr = pRootNode->properties;
-    while(attr)
+    cout << "please remove the file \"" << m_sConfigFileName << "\" and restart fuppes." << endl;
+    cout << "(keep a backup of the old configfile to take over your settings)" << endl;
+    cout << "[exiting]" << endl;
+    
+    CSharedLog::Shared()->Syslog(L_ERROR, "please update the config file " + m_sConfigFileName, __FILE__, __LINE__);      
+    fuppesSleep(3000);
+    
+    return false;
+  }    
+  // end version  
+  
+  
+  // parse settings
+  for(pTmpNode = pRootNode->children->next; pTmpNode; pTmpNode = pTmpNode->next)
+  { 
+    string sName = (char*)pTmpNode->name;
+    
+    // shared_directories
+    if (sName.compare("shared_directories") == 0)
     {
-      string sAttr = (char*)attr->name;
-      if(sAttr.compare("version") == 0)
-      {
-        m_sConfigVersion = (char*)attr->children->content;
+      m_pSharedDirNode = pTmpNode;        
+      xmlNode* pTmp = m_pSharedDirNode->children;
+      
+      while (pTmp) {
+        m_vSharedDirectories.push_back((char*)pTmp->children->content);
+        pTmp = pTmp->next;
       }
-      attr = attr->next;
     }
-    
-    if(m_sConfigVersion.compare(NEEDED_CONFIGFILE_VERSION) != 0)
-    {      
-      cout << "Your configuration is deprecated" << endl;
-      cout << "  your version  : " << m_sConfigVersion << endl;
-      cout << "  needed version: " << NEEDED_CONFIGFILE_VERSION << endl << endl;
-      
-      cout << "please remove the file \"" << m_sConfigFileName << "\" and restart fuppes." << endl;
-      cout << "(keep a backup of the old configfile to take over your settings)" << endl;
-      cout << "[exiting]" << endl;
-      
-      CSharedLog::Shared()->Syslog(L_ERROR, "please update the config file " + m_sConfigFileName, __FILE__, __LINE__);      
-      fuppesSleep(3000);
-      
-      return false;
-    }
-    
-    // end version  
+    // shared_dir
     
     
-    for(pTmpNode = pRootNode->children->next; pTmpNode; pTmpNode = pTmpNode->next)
-    { 
-      string sName = (char*)pTmpNode->name;
+    // network_settings
+    else if(sName.compare("network_settings") == 0)
+    {
+      m_pNetSettingsNode = pTmpNode;
+      xmlNode* pNetNode = m_pNetSettingsNode->children;
       
-      /* shared_directories */
-      if(sName.compare("shared_directories") == 0)
+      while(pNetNode)
       {
-        m_pSharedDirNode = pTmpNode;        
-        xmlNode* pTmp = m_pSharedDirNode->children;
+        string sNet = (char*)pNetNode->name;      
         
-        while(pTmp)
-        {
-          m_vSharedDirectories.push_back((char*)pTmp->children->content);
-          pTmp = pTmp->next;
-        }       
-
-      }
-      /* shared_dir */
-      
-      
-      /* network_settings */
-      else if(sName.compare("network_settings") == 0)
-      {
-        m_pNetSettingsNode = pTmpNode;
-        xmlNode* pNetNode = m_pNetSettingsNode->children;
-        
-        while(pNetNode)
-        {
-          string sNet = (char*)pNetNode->name;      
-          
-          if(sNet.compare("ip_address") == 0)
-          {            
-            if(pNetNode->children)
-            {
-              string sIP = (char*)pNetNode->children->content;
-              if(sIP.compare("0") != 0)
-                m_sIP = sIP;
-            }
-          }
-          else if(sNet.compare("http_port") == 0)
-          {
-            if(pNetNode->children)
-            {
-              string sPort = (char*)pNetNode->children->content;
-              if(sPort.compare("0") != 0)
-                m_nHTTPPort = atoi(sPort.c_str());              
-            }
-          }
-          else if(sNet.compare("allowed_ips") == 0)
-          {
-            if(pNetNode->children)
-            {
-              xmlNode* pIPNode = pNetNode->children;
-              while(pIPNode)
-              {
-                if(pIPNode->children)
-                  m_vAllowedIPs.push_back((char*)pIPNode->children->content);                
-                
-                pIPNode = pIPNode->next;
-              }
-            }
-          }
-          
-          
-          pNetNode = pNetNode->next;
+        if ((sNet.compare("ip_address") == 0) && (pNetNode->children)) {
+          string sIP = (char*)pNetNode->children->content;
+          if(sIP.compare("0") != 0)
+            m_sIP = sIP;            
         }
-      }
-      /* end network_settings */
-      
-      
-      /* content_directory */
-      else if(sName.compare("content_directory") == 0)
-      {
-        m_pContentDirNode = pTmpNode;
-        xmlNode* pTmp = m_pContentDirNode->children;
+        else if ((sNet.compare("http_port") == 0) && (pNetNode->children)) {            
+          string sPort = (char*)pNetNode->children->content;
+          if(sPort.compare("0") != 0)
+            m_nHTTPPort = atoi(sPort.c_str());            
+        }
+        else if ((sNet.compare("allowed_ips") == 0) && (pNetNode->children)) {            
+          xmlNode* pIPNode = pNetNode->children;
+          while(pIPNode) {
+            if(pIPNode->children)
+              m_vAllowedIPs.push_back((char*)pIPNode->children->content);                
+            pIPNode = pIPNode->next;
+          }            
+        }          
         
-        string sContentDir;
-        while(pTmp)
-        {
-          sContentDir = (char*)pTmp->name;          
-          
-          // local_charset
-          if(sContentDir.compare("local_charset") == 0)
-          {
-            if(pTmp->children)
-            {
-              m_sLocalCharset = (char*)pTmp->children->content;              
-              if(m_sLocalCharset.length() == 0)
-                m_sLocalCharset = "UTF-8";
-            }            
-          }          
-          
-          // max_file_name_length
-          else if(sContentDir.compare("max_file_name_length") == 0)
-          {
-            if(pTmp->children)
-            {
-              string sMaxFileNameLength = (char*)pTmp->children->content;              
-              if(sMaxFileNameLength.compare("0") != 0)
-                m_nMaxFileNameLength = atoi(sMaxFileNameLength.c_str());
-            }
-          }
-          
-          // playlist_representation
-          else if(sContentDir.compare("playlist_representation") == 0)
-          {
-            if(pTmp->children)
-            {
-              string sPlaylistRepresentation = (char*)pTmp->children->content;              
-              if(sPlaylistRepresentation.compare("file") == 0)
-                m_DisplaySettings.bShowPlaylistsAsContainers = false;
-              else if(sPlaylistRepresentation.compare("container") == 0)
-                m_DisplaySettings.bShowPlaylistsAsContainers = true;
-            }
-          }
-          
-          pTmp = pTmp->next;
-        }    
+        pNetNode = pNetNode->next;
       }
-      /* end content_directory */      
-      
-    }   
+    }
+    // end network_settings
     
-  }  
+    
+    // content_directory
+    else if(sName.compare("content_directory") == 0)
+    {
+      m_pContentDirNode = pTmpNode;
+      xmlNode* pTmp = m_pContentDirNode->children;
+      
+      string sContentDir;
+      while(pTmp)
+      {
+        sContentDir = (char*)pTmp->name;          
+        
+        // local_charset
+        if ((sContentDir.compare("local_charset") == 0) && (pTmp->children)) {          
+          m_sLocalCharset = (char*)pTmp->children->content;              
+          if(m_sLocalCharset.length() == 0)
+            m_sLocalCharset = "UTF-8";                      
+        }        
+        // max_file_name_length
+        else if ((sContentDir.compare("max_file_name_length") == 0) && (pTmp->children)) { 
+          string sMaxFileNameLength = (char*)pTmp->children->content;              
+          if(sMaxFileNameLength.compare("0") != 0)
+            m_nMaxFileNameLength = atoi(sMaxFileNameLength.c_str());
+        }        
+        // playlist_representation
+        else if ((sContentDir.compare("playlist_representation") == 0) && (pTmp->children)) {
+          string sPlaylistRepresentation = (char*)pTmp->children->content;              
+          if(sPlaylistRepresentation.compare("file") == 0)
+            m_DisplaySettings.bShowPlaylistsAsContainers = false;
+          else if(sPlaylistRepresentation.compare("container") == 0)
+            m_DisplaySettings.bShowPlaylistsAsContainers = true;      
+        }
+        
+        pTmp = pTmp->next;
+      }    
+    }
+    // end content_directory
+
+    // transcoding_settings
+    else if(sName.compare("transcoding_settings") == 0)
+    {
+      m_pTranscodingSettingsNode = pTmpNode;
+      xmlNode* pTmp = m_pTranscodingSettingsNode->children;
+      
+      string sTranscodingSetting;
+      while(pTmp)
+      {
+        sTranscodingSetting = (char*)pTmp->name;
+        
+        // audio_encoder
+        if ((sTranscodingSetting.compare("audio_encoder") == 0) && (pTmp->children)) {
+          string sAudioEncoder = (char*)pTmp->children->content;
+          CTranscodingMgr::Shared()->SetDoUseLame((sAudioEncoder.compare("lame") == 0));
+        }
+        
+        // transcode_vorbis
+        if ((sTranscodingSetting.compare("transcode_vorbis") == 0) && (pTmp->children)) {
+          string sTranscodeVorbis = (char*)pTmp->children->content;          
+          CTranscodingMgr::Shared()->SetDoTranscodeVorbis((sTranscodeVorbis.compare("true") == 0));     
+        }
+        
+        // transcode_musepack
+        if ((sTranscodingSetting.compare("transcode_musepack") == 0) && (pTmp->children)) {
+          string sTranscodeMusePack = (char*)pTmp->children->content;          
+          CTranscodingMgr::Shared()->SetDoTranscodeMusePack((sTranscodeMusePack.compare("true") == 0));
+        }        
+        
+        // transcode_flac
+        if ((sTranscodingSetting.compare("transcode_flac") == 0) && (pTmp->children)) {
+          string sTranscodeFlac = (char*)pTmp->children->content;          
+          CTranscodingMgr::Shared()->SetDoTranscodeFlac((sTranscodeFlac.compare("true") == 0));
+        }        
+        
+        pTmp = pTmp->next;
+      }
+    }    
+    // end transcoding_settings
+
+    
+  }       
+  
   xmlCleanupParser();  
-  return bResult;
+  return true;
 }
 
 bool CSharedConfig::ResolveHostAndIP()
@@ -954,12 +947,43 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
       xmlTextWriterEndElement(pWriter);
     
       /* playlist_representation */
+      xmlTextWriterWriteComment(pWriter, BAD_CAST "[file|container]");
       xmlTextWriterStartElement(pWriter, BAD_CAST "playlist_representation");
       xmlTextWriterWriteString(pWriter, BAD_CAST "file"); // [file|container]
       xmlTextWriterEndElement(pWriter);
     
     
     /* end content directory */
+    xmlTextWriterEndElement(pWriter);
+    
+    
+    // transcoding_settings
+    xmlTextWriterWriteComment(pWriter, BAD_CAST "\r\n");
+    xmlTextWriterStartElement(pWriter, BAD_CAST "transcoding_settings");
+      
+      // audio_encoder
+      xmlTextWriterWriteComment(pWriter, BAD_CAST "[lame|twolame]");
+      xmlTextWriterStartElement(pWriter, BAD_CAST "audio_encoder");
+      xmlTextWriterWriteString(pWriter, BAD_CAST "lame"); // [lame|twolame]
+      xmlTextWriterEndElement(pWriter);
+      
+      // transcode_vorbis
+      xmlTextWriterWriteComment(pWriter, BAD_CAST "[true|false]");
+      xmlTextWriterStartElement(pWriter, BAD_CAST "transcode_vorbis");
+      xmlTextWriterWriteString(pWriter, BAD_CAST "true"); // [true|false]
+      xmlTextWriterEndElement(pWriter);
+      
+      // transcode_musepack
+      xmlTextWriterStartElement(pWriter, BAD_CAST "transcode_musepack");
+      xmlTextWriterWriteString(pWriter, BAD_CAST "true"); // [true|false]
+      xmlTextWriterEndElement(pWriter);
+      
+      // transcode_flac
+      xmlTextWriterStartElement(pWriter, BAD_CAST "transcode_flac");
+      xmlTextWriterWriteString(pWriter, BAD_CAST "true"); // [true|false]
+      xmlTextWriterEndElement(pWriter);
+    
+    // end transcoding_settings
     xmlTextWriterEndElement(pWriter);
     
   
@@ -992,10 +1016,8 @@ std::string CSharedConfig::GetOSVersion()
   return m_sOSVersion;
 }
 
-bool CSharedConfig::GetOSInfo()
+void CSharedConfig::GetOSInfo()
 {
-  bool bResult = true;
-  
   #ifdef WIN32
   m_sOSName    = "Windows";
   m_sOSVersion = "3.11";
@@ -1004,13 +1026,9 @@ bool CSharedConfig::GetOSInfo()
   uname(&sUtsName);  
   m_sOSName    = sUtsName.sysname;
   m_sOSVersion = sUtsName.release;
-  /*cout << sUtsName.sysname << endl;
-  cout << sUtsName.release << endl;
-  cout << sUtsName.version << endl;
+  /*cout << sUtsName.version << endl;
   cout << sUtsName.machine << endl;*/
-  #endif   
-  
-  return bResult;
+  #endif
 }
 
 /* <\PRIVATE> */

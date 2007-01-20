@@ -116,7 +116,7 @@ void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, std::string p_sContent
 bool CHTTPMessage::SetMessage(std::string p_sMessage)
 {   
   CMessageBase::SetMessage(p_sMessage);  
-  CSharedLog::Shared()->DebugLog(LOGNAME, p_sMessage);  
+  //CSharedLog::Shared()->DebugLog(LOGNAME, p_sMessage);  
 
   CHTTPParser* pParser = new CHTTPParser();
   pParser->Parse(this);
