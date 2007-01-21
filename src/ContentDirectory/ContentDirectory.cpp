@@ -581,7 +581,7 @@ dc:rights dc O */
      
     /* title */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");     
-    xmlTextWriterWriteString(pWriter, BAD_CAST TruncateFileExt(pSQLResult->GetValue("FILE_NAME")).c_str()); 
+    xmlTextWriterWriteString(pWriter, BAD_CAST TrimFileName(pSQLResult->GetValue("FILE_NAME"), CSharedConfig::Shared()->GetMaxFileNameLength()).c_str());    
     xmlTextWriterEndElement(pWriter);
    
     /* class */

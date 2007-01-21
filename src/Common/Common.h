@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -39,7 +39,7 @@
 #ifdef WIN32
 
 /* T.S.NOTE: This must be defined to use InitializeCriticalSectionAndSpinCount() */
-#define _WIN32_WINNT 0x0410 /* Windos 98 * or later */
+#define _WIN32_WINNT 0x0410 /* Windows 98 or later */
 
 #pragma comment(lib,"Wsock32.lib") 
 #pragma comment(lib,"Ws2_32.lib")
@@ -92,7 +92,7 @@ std::string ExtractFileExt(std::string p_sFileName);
 std::string ExtractFilePath(std::string p_sFileName);
 std::string TruncateFileExt(std::string p_sFileName);
 bool ExtractFolderFromPath(std::string p_sPath, std::string* p_sFolder);
-std::string TrimFileName(std::string p_sFileName, unsigned int p_nMaxLength, bool p_bTruncateFileExt);
+std::string TrimFileName(std::string p_sFileName, unsigned int p_nMaxLength, bool p_bTruncateFileExt = false);
 
 std::string MD5Sum(std::string p_sFileName);
 
@@ -105,7 +105,7 @@ std::string ToUpper(std::string p_sInput);
 bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPort);
 std::string Base64Decode(const std::string p_sInputString);
 
-int HexToInt(std::string sHex);
+unsigned int HexToInt(std::string sHex);
 std::string SQLEscape(std::string p_sValue);
 
 std::string ToUTF8(std::string p_sValue);

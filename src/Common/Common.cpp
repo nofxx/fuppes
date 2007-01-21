@@ -344,7 +344,7 @@ std::string Base64Decode(const std::string p_sInputString)
 /* end BASE64 decoding */
 
 
-int HexToInt(std::string sHex)
+unsigned int HexToInt(std::string sHex)
 {  
   /* remove leading "0" */   
   if(sHex.find_first_not_of("0", 0) <= sHex.length())
@@ -354,7 +354,7 @@ int HexToInt(std::string sHex)
   int n = 0;         // position in string
   int m = 0;         // position in digit[] to shift
   int count;         // loop index
-  int intValue = 0;  // integer value of hex string
+  unsigned int intValue = 0;  // integer value of hex string
   int digit[10];     // hold values to convert
   while (n < 9) {
      if (sHex[n]=='\0')

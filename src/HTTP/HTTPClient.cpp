@@ -30,12 +30,9 @@
 #include "../Common/Common.h"
 #include "../Common/RegEx.h"
 #include "../SharedLog.h"
+#include "../SharedConfig.h"
 
 #ifndef WIN32
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
 #include <pthread.h>
 #endif
 
@@ -65,13 +62,13 @@ bool CHTTPClient::Send(CHTTPMessage* pMessage, std::string p_sTargetIPAddress, u
 {
   /* Init socket */
   upnpSocket sock = socket(AF_INET, SOCK_STREAM, 0);
-  sockaddr_in addr;
-  addr.sin_family      = PF_INET;
-  addr.sin_addr.s_addr = inet_addr(p_sTargetIPAddress.c_str());
-  addr.sin_port        = htons(p_nTargetPort);
+  
+  m_RemoteEndpoint.sin_family      = PF_INET;
+  m_RemoteEndpoint.sin_addr.s_addr = inet_addr(p_sTargetIPAddress.c_str());
+  m_RemoteEndpoint.sin_port        = htons(p_nTargetPort);
   
   /* Connect */
-  if(connect(sock, (struct sockaddr*)&addr, sizeof(addr)) == -1)
+  if(connect(sock, (struct sockaddr*)&m_RemoteEndpoint, sizeof(m_RemoteEndpoint)) == -1)
   {
     CSharedLog::Shared()->Log(L_ERROR, "connect()", __FILE__, __LINE__);
     return false;
@@ -188,52 +185,77 @@ bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_s
 fuppesThreadCallback AsyncThread(void* arg)
 {
   CHTTPClient* pClient = (CHTTPClient*)arg;                  
-
-  std::string   sIPAddress;
-  unsigned int  nPort;
-
-  // split URL
-  if(!SplitURL(pClient->m_sNotifyCallback, &sIPAddress, &nPort)) {
-    pClient->m_bAsyncDone = true;
-    fuppesThreadExit();
-  }
-
-  // create socket
-  upnpSocket sock = socket(AF_INET, SOCK_STREAM, 0);
-  sockaddr_in addr;
-  addr.sin_family      = PF_INET;
-  addr.sin_addr.s_addr = inet_addr(sIPAddress.c_str());
-  addr.sin_port        = htons(nPort);
-
+  
+  cout << __FILE__ << " " << __LINE__ << endl << pClient->m_sNotifyMessage << endl;
+  
   // connect socket
-  if(connect(sock, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+  if(connect(pClient->m_Socket, (struct sockaddr*)&pClient->m_RemoteEndpoint, sizeof(pClient->m_RemoteEndpoint)) == -1) {
     CSharedLog::Shared()->Log(L_ERROR, "connect()", __FILE__, __LINE__);
     
     pClient->m_bAsyncDone = true;
     fuppesThreadExit();
   }
+  
+  cout << "CONNECTED" << endl;
+  
 
+  cout << "SEND:" << endl << pClient->m_sNotifyMessage << endl;
+  
   // send message
-  /*if(send(sock, sMsg.c_str(), (int)strlen(sMsg.c_str()), 0) <= 0) {
+  if(send(pClient->m_Socket, pClient->m_sNotifyMessage.c_str(), (int)strlen(pClient->m_sNotifyMessage.c_str()), 0) <= 0) {
     CSharedLog::Shared()->Log(L_ERROR, "send()", __FILE__, __LINE__);    
     
-    close(sock);
+    upnpSocketClose(pClient->m_Socket);
     pClient->m_bAsyncDone = true;
     fuppesThreadExit();
-  }*/
+  }
   
   // receive answer
 
   
   // clean up and exit
-  upnpSocketClose(sock);
+  upnpSocketClose(pClient->m_Socket);
+  cout << "DISCONNECTED" << endl;
+  
   pClient->m_bAsyncDone = true;
   fuppesThreadExit();
 }
 
-void CHTTPClient::AsyncNotify(std::string p_sCallback)
+void CHTTPClient::AsyncNotify(CEventNotification* pNotification)
 {
-  m_sNotifyCallback = p_sCallback;
+  // create socket
+	m_Socket = socket(AF_INET, SOCK_STREAM, 0);
+  if(m_Socket == -1)    
+    throw EException("failed to create socket", __FILE__, __LINE__);  
+   
+  // set local end point
+	m_LocalEndpoint.sin_family      = AF_INET;
+	m_LocalEndpoint.sin_addr.s_addr = inet_addr(CSharedConfig::Shared()->GetIPv4Address().c_str());
+	m_LocalEndpoint.sin_port				= htons(0);
+	memset(&(m_LocalEndpoint.sin_zero), '\0', 8);
+  
+  // bind the socket
+	int nRet = bind(m_Socket, (struct sockaddr*)&m_LocalEndpoint, sizeof(m_LocalEndpoint));	
+  if(nRet == -1)
+    throw EException("failed to bind socket", __FILE__, __LINE__);
+    
+  // fetch local end point to get port number on random ports
+	socklen_t size = sizeof(m_LocalEndpoint);
+	getsockname(m_Socket, (struct sockaddr*)&m_LocalEndpoint, &size);
+  
+  // set remote end point
+  m_RemoteEndpoint.sin_family      = AF_INET;
+  m_RemoteEndpoint.sin_addr.s_addr = inet_addr(pNotification->GetSubscriberIP().c_str());
+  m_RemoteEndpoint.sin_port        = htons(pNotification->GetSubscriberPort());
+  memset(&(m_LocalEndpoint.sin_zero), '\0', 8);
+  
+  // set the notification's host
+  stringstream sHost;
+  sHost << inet_ntoa(m_LocalEndpoint.sin_addr) << ":" << ntohs(m_LocalEndpoint.sin_port);  
+  pNotification->SetHost(sHost.str());
+  
+  // start async send
+  m_sNotifyMessage = pNotification->BuildHeader() + pNotification->GetContent();
   m_bIsAsync   = true;
   m_bAsyncDone = false;
   fuppesThreadStartArg(m_AsyncThread, AsyncThread, *this);

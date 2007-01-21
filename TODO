@@ -24,6 +24,41 @@
   * Browse
     * Filter
     * Sort
+  * Search (device that supports search?)
+  * update db
+  ** send ContainerUpdateIDs and SystemUpdateID
+  
+  
+  
+  * virtuelle ordner
+    * aufteilen nach namen
+    - virtuellen ordner erstellen
+      ID: 2^32 (bzw. size of unsigned int) - virt ordner anzahl
+      name: bsp. A, B, C / A - C
+    - reellen parent setzen (bsp. 1 für 'Alben')
+    - unterordner setzen (object id reeller ordner)    
+    - bei request browse = 1 virtuelle unterordner auflisten
+    - bei request browse = 2^32 reelle unterordner auflisten
+        
+    - attribut an shared dir(s) (alle/einzeln), ob virtuelle ordner erstellt werden sollen
+      und bis zu welcher verzeichnistiefe
+      
+    * aufteilen bei ChildCount > N
+      - wenn ein reeller ordner eine dateianzahl > N
+        enthält den Inhalt auf virtuelle Ordner "Ordnername"-Teil 1 - n aufteilen
+      - konfigurierbar für alle und einzelne shared dirs
+    
+    * aufteilen nach attributen
+      - bsp: genre, artist, dateityp, upnp-objekttyp,...
+    
+* EINSTELLUNGEN JE IP/HTTP USER-AGENT VARIABEL
+
+* Freizugebende Dateitypen konfigurierbar
+* option: versteckte/backup dateien ignorieren
+* option: bestimmte Dateinamen ignorieren (bsp: .folder.png) (reg ex)
+
+    
+    
     
 * ConnectionManager
 
@@ -77,5 +112,3 @@
 * split folders containing a configurable amount of files
 
 * podcast support
-
-* exclude hidden files (e.g. .folder.png)

@@ -50,6 +50,108 @@ void CSubscription::DecTimeLeft()
     m_nTimeLeft--;
 }
 
+CHTTPClient* CSubscription::GetHTTPClient()
+{
+  if(!m_pHTTPClient)
+    m_pHTTPClient = new CHTTPClient();
+  return m_pHTTPClient;
+}
+
+
+
+void CSubscription::AsyncReply()
+{
+  CEventNotification* pNotification = new CEventNotification();
+  
+  switch(m_nSubscriptionTarget)
+  {
+    case UPNP_DEVICE_TYPE_CONTENT_DIRECTORY :
+      
+      pNotification->SetContent(
+        "<e:propertyset xmlns:e=\"urn:schemas-upnp-org:event-1-0\">"
+        "<e:property>"
+        "<SystemUpdateID>1</SystemUpdateID>"
+        "</e:property>"
+        "<e:property>"
+        "<ContainerUpdateIDs></ContainerUpdateIDs>"
+        "</e:property>"
+        "</e:propertyset>");
+    
+     pNotification->SetCallback(m_sCallback);
+     pNotification->SetSID(m_sSID);
+/*
+NOTIFY / HTTP/1.1
+HOST: 192.168.0.3:49152
+CONTENT-TYPE: text/xml
+CONTENT-LENGTH: 260
+NT: upnp:event
+NTS: upnp:propchange
+SID: uuid:1
+SEQ: 0
+User-Agent: SSDP CD Events
+Cache-Control: no-cache
+
+<e:propertyset xmlns:e="urn:schemas-upnp-org:event-1-0">
+<e:property>
+<SystemUpdateID>1</SystemUpdateID>
+</e:property>
+<e:property>
+<ContainerUpdateIDs></ContainerUpdateIDs>
+</e:property>
+</e:propertyset>
+
+HTTP/1.1 200 OK
+SERVER: Linux/2.6.16.16, UPnP/1.0, Intel SDK for UPnP devices /1.2
+CONNECTION: close
+CONTENT-LENGTH: 41
+CONTENT-TYPE: text/html
+
+<html><body><h1>200 OK</h1></body></html>
+*/
+    
+      break;
+    case UPNP_DEVICE_TYPE_CONNECTION_MANAGER :
+      
+/*
+NOTIFY / HTTP/1.1
+HOST: 192.168.0.3:49152
+CONTENT-TYPE: text/xml
+CONTENT-LENGTH: 356
+NT: upnp:event
+NTS: upnp:propchange
+SID: uuid:0
+SEQ: 0
+User-Agent: SSDP CD Events
+Cache-Control: no-cache
+
+<e:propertyset xmlns:e="urn:schemas-upnp-org:event-1-0">
+<e:property>
+<SourceProtocolInfo>http-get:*:audio/mpeg:*,http-get:*:audio/mpegurl:*,http-get:*:image/jpeg:*</SourceProtocolInfo>
+</e:property>
+<e:property>
+<SinkProtocolInfo></SinkProtocolInfo>
+</e:property>
+<e:property>
+<CurrentConnectionIDs>0</CurrentConnectionIDs>
+</e:property>
+</e:propertyset>
+
+HTTP/1.1 200 OK
+SERVER: Linux/2.6.16.16, UPnP/1.0, Intel SDK for UPnP devices /1.2
+CONNECTION: close
+CONTENT-LENGTH: 41
+CONTENT-TYPE: text/html
+
+<html><body><h1>200 OK</h1></body></html>
+*/    
+    
+      break;
+  }
+  
+  this->GetHTTPClient()->AsyncNotify(pNotification);
+  delete pNotification;
+}
+
 
 CSubscriptionCache* CSubscriptionCache::m_pInstance = 0;
 
@@ -181,8 +283,12 @@ bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* 
   CSharedLog::Shared()->Log(L_DEBUG, pRequest->GetHeader(), __FILE__, __LINE__);
   
   CSubscription* pSubscription = new CSubscription();
-  if(!this->ParseSubscription(pRequest, pSubscription))
-  {
+  try {    
+    this->ParseSubscription(pRequest, pSubscription);
+  } 
+  catch (EException ex) {
+    CSharedLog::Shared()->Log(L_EXTENDED_ERR, ex.What(), __FILE__, __LINE__);
+    
     delete pSubscription;
     return false;
   }
@@ -207,22 +313,41 @@ bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* 
       delete pSubscription;
       return false;    
   }
-  
-  
+
   return true;
 }
 
 
-bool CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* pSubscription)
-{  
+void CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* pSubscription)
+{
+  // subscription type
   RegEx rxSubscribe("([SUBSCRIBE|UNSUBSCRIBE]+)", PCRE_CASELESS);
   if(!rxSubscribe.Search(pRequest->GetHeader().c_str()))
-    return false;
+    throw EException("parsing subscription", __FILE__, __LINE__);
   
+  // subscription target
+  RegEx rxTarget("[SUBSCRIBE|UNSUBSCRIBE] +(.+) +HTTP/1\\.[1|0]", PCRE_CASELESS);
+  if(rxTarget.Search(pRequest->GetHeader().c_str()))
+  {    
+    if (ToLower(rxTarget.Match(1)).compare("/upnpservices/contentdirectory/event/") == 0) {
+      pSubscription->SetSubscriptionTarget(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY);
+    }
+    else if (ToLower(rxTarget.Match(1)).compare("/upnpservices/connectionmanager/event/") == 0) {
+      pSubscription->SetSubscriptionTarget(UPNP_DEVICE_TYPE_CONNECTION_MANAGER);
+    }
+    else {
+      throw EException("unknown subscription target", __FILE__, __LINE__);
+    }    
+  }
+  else {
+    throw EException("parsing subscription", __FILE__, __LINE__);    
+  }
+  
+  // SID
   string sSID = "";
   RegEx rxSID("SID: *uuid:([A-Z|0-9|-]+)", PCRE_CASELESS);
   if(rxSID.Search(pRequest->GetHeader().c_str()))
-    sSID = rxSID.Match(1);
+    sSID = rxSID.Match(1);  
   
   string sSubscribe = ToLower(rxSubscribe.Match(1));
   if(sSubscribe.compare("subscribe") == 0)
@@ -240,7 +365,7 @@ bool CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* 
         pSubscription->SetCallback(sCallback);
       }
       else {
-        CSharedLog::Shared()->Log(L_EXTENDED_ERR, "parsing callback", __FILE__, __LINE__);
+        throw EException("parsing subscription callback", __FILE__, __LINE__);
       }      
     }
     else
@@ -255,11 +380,14 @@ bool CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* 
   {
     pSubscription->SetType(ST_UNSUBSCRIBE);
     pSubscription->SetSID(sSID);
-  }
-  return true;      
+  }  
 }
 
 
+/**
+ * the CSubscriptionMgr's MainLoop constantly
+ * walks the subscriptions and handles them
+ */
 fuppesThreadCallback MainLoop(void *arg)
 {
   CSubscriptionMgr* pMgr = (CSubscriptionMgr*)arg;
@@ -275,7 +403,7 @@ fuppesThreadCallback MainLoop(void *arg)
     for(CSubscriptionCache::Shared()->m_SubscriptionsIterator  = CSubscriptionCache::Shared()->m_Subscriptions.begin();
         CSubscriptionCache::Shared()->m_SubscriptionsIterator != CSubscriptionCache::Shared()->m_Subscriptions.end();
         CSubscriptionCache::Shared()->m_SubscriptionsIterator++)
-    {     
+    {
       pSubscr = (*CSubscriptionCache::Shared()->m_SubscriptionsIterator).second;
       
       //cout << "  subscr: " << pSubscr->GetSID() << endl;
@@ -285,10 +413,10 @@ fuppesThreadCallback MainLoop(void *arg)
       
       if(!pSubscr->m_bHandled)
       {        
-        pSubscr->m_bHandled = true;
-        if(!pSubscr->m_pHTTPClient)
-          pSubscr->m_pHTTPClient = new CHTTPClient();
-        pSubscr->m_pHTTPClient->AsyncNotify(pSubscr->GetCallback());
+        #warning todo: max send freq 0.5hz for "SystemUpdateID" and "ContainerUpdateIDs"
+        
+        pSubscr->m_bHandled = true;        
+        pSubscr->AsyncReply();
       }
       
       if(pSubscr->GetTimeLeft() == 0)

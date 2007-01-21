@@ -155,7 +155,9 @@ module.source.files=\
 	Common/UUID.h\
 	Transcoding/TwoLameEncoder.cpp\
 	Transcoding/TwoLameEncoder.h\
-	Presentation/Images/device_type_unknown_png.cpp
+	Presentation/Images/device_type_unknown_png.cpp\
+	GENA/EventNotification.cpp\
+	GENA/EventNotification.h
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

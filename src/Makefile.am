@@ -34,6 +34,7 @@ h_sources = \
   ContentDirectory/ContentDirectory.h\
   ConnectionManager/ConnectionManager.h\
   GENA/SubscriptionMgr.h\
+  GENA/EventNotification.h\
   Presentation/PresentationHandler.h\
   Presentation/Stylesheet.h\
   Transcoding/WrapperBase.h\
@@ -80,6 +81,7 @@ cpp_sources = \
   ConnectionManager/ConnectionManager.cpp\
   ConnectionManager/ConnectionManagerDescription.cpp\
   GENA/SubscriptionMgr.cpp\
+  GENA/EventNotification.cpp\
   Presentation/PresentationHandler.cpp\
   Presentation/Images/fuppes_small_png.cpp\
   Presentation/Images/header_gradient_png.cpp\

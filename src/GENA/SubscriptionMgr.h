@@ -29,10 +29,6 @@
 #include "../HTTP/HTTPMessage.h"
 #include "../HTTP/HTTPClient.h"
  
-#define GENA_OK           1;
-#define GENA_PARSE_ERROR  2;
-#define GENA_UUID_UNKNOWN 3;
- 
 typedef enum tagSUBSCRIPTION_TYPE
 {
   ST_SUBSCRIBE   = 0,
@@ -51,12 +47,18 @@ class CSubscription
     
     unsigned int GetTimeout() { return m_nTimeout; }
     void SetTimeout(unsigned int p_nTimeout) { m_nTimeout = p_nTimeout; m_nTimeLeft = m_nTimeout; }
+        
+    
+    SUBSCRIPTION_TYPE GetType() { return m_nSubscriptionType; }
+    void SetType(SUBSCRIPTION_TYPE p_nSubscriptionType) { m_nSubscriptionType = p_nSubscriptionType; }
+    
+    UPNP_DEVICE_TYPE GetSubscriptionTarget() { return m_nSubscriptionTarget; }
+    void SetSubscriptionTarget(UPNP_DEVICE_TYPE p_nTargetDeviceType) { m_nSubscriptionTarget = p_nTargetDeviceType; }
     
     std::string GetCallback() { return m_sCallback; }
     void SetCallback(std::string p_sCallback) { m_sCallback = p_sCallback; }
     
-    SUBSCRIPTION_TYPE GetType() { return m_nSubscriptionType; }
-    void SetType(SUBSCRIPTION_TYPE p_nSubscriptionType) { m_nSubscriptionType = p_nSubscriptionType; }
+    
     
     void Renew();
     void DecTimeLeft();
@@ -64,14 +66,20 @@ class CSubscription
     
     bool m_bHandled;
     
-    CHTTPClient* m_pHTTPClient;
     
+    void AsyncReply();
+    
+        
   private:
     std::string        m_sSID;
     unsigned int       m_nTimeout;
     unsigned int       m_nTimeLeft;
     std::string        m_sCallback;
-    SUBSCRIPTION_TYPE  m_nSubscriptionType;    
+    SUBSCRIPTION_TYPE  m_nSubscriptionType;  
+    UPNP_DEVICE_TYPE   m_nSubscriptionTarget;
+  
+    CHTTPClient* GetHTTPClient();
+    CHTTPClient* m_pHTTPClient;
 };
 
 class CSubscriptionCache
@@ -116,7 +124,7 @@ class CSubscriptionMgr
   private:  
     static CSubscriptionMgr* m_pInstance;   
   
-    bool ParseSubscription(CHTTPMessage* pRequest, CSubscription* pSubscription);  
+    void ParseSubscription(CHTTPMessage* pRequest, CSubscription* pSubscription);  
     
     fuppesThread m_MainLoop;    
 };

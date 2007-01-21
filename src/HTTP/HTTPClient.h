@@ -26,7 +26,15 @@
 #define _HTTPCLIENT_H
 
 #include "HTTPMessage.h"
+#include "../GENA/EventNotification.h"
 #include "../Common/Common.h"
+
+#ifndef WIN32
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#endif
 
 class CHTTPClient
 {
@@ -53,19 +61,25 @@ class CHTTPClient
     unsigned int  p_nTargetPort = 80
     );
 
-    void AsyncNotify(std::string p_sCallback);
+    void AsyncNotify(CEventNotification* pNotification);
 
  
     fuppesThread m_AsyncThread;
     std::string  m_sAsyncResult;
-    std::string  m_sNotifyCallback;
+    std::string  m_sNotifyMessage;
     bool         m_bAsyncDone;
     bool         m_bIsAsync;
+    
+    sockaddr_in m_LocalEndpoint;
+    sockaddr_in m_RemoteEndpoint;
+
+    upnpSocket  m_Socket;
 
   private:
     std::string BuildGetHeader(std::string  p_sGet,
                                std::string  p_sTargetIPAddress,
-                               unsigned int p_nTargetPort);
+                               unsigned int p_nTargetPort); 
+
 };
 
 #endif /* _HTTPCLIENT_H */
