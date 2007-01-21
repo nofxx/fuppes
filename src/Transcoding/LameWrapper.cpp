@@ -58,9 +58,7 @@ bool CLameWrapper::LoadLib()
   #endif
   
   if(!m_LibHandle) {
-    stringstream sLog;
-    sLog << "cannot open library";
-    CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
+    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot open library", __FILE__, __LINE__);
     return false;
   }   
    
@@ -77,9 +75,7 @@ bool CLameWrapper::LoadLib()
   // get_lame_version()
   m_LameGetVersion = (LameGetVersion_t)FuppesGetProcAddress(m_LibHandle, "get_lame_version");
   if(!m_LameGetVersion) {
-    stringstream sLog;
-    sLog << "cannot load symbol 'get_lame_version'";
-    CSharedLog::Shared()->Warning(LOGNAME, sLog.str());    
+    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'get_lame_version'", __FILE__, __LINE__);   
   }
   
   m_LameInitParams = (LameInitParams_t)FuppesGetProcAddress(m_LibHandle, "lame_init_params");
@@ -92,21 +88,13 @@ bool CLameWrapper::LoadLib()
   }
   
   m_LamePrintConfig = (LamePrintConfig_t)FuppesGetProcAddress(m_LibHandle, "lame_print_config");
-  if(!m_LamePrintConfig)
-  {
-    stringstream sLog;
-    sLog << "cannot load symbol 'lame_print_config'";
-    CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
-    //return false;
+  if(!m_LamePrintConfig) {
+    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_print_config'", __FILE__, __LINE__);
   }  
   
   m_LameSetCompressionRatio = (LameSetCompressionRatio_t)FuppesGetProcAddress(m_LibHandle, "lame_set_compression_ratio");
-  if(!m_LameSetCompressionRatio)
-  {
-    stringstream sLog;
-    sLog << "cannot load symbol 'lame_set_compression_ratio'";
-    CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
-    //return false;
+  if(!m_LameSetCompressionRatio) {
+    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_set_compression_ratio'", __FILE__, __LINE__);   
   }  
   
   m_LameEncodeBufferInterleaved = (LameEncodeBufferInterleaved_t)FuppesGetProcAddress(m_LibHandle, "lame_encode_buffer_interleaved");

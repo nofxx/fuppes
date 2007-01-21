@@ -75,6 +75,9 @@ void CSubscription::AsyncReply()
         "<e:property>"
         "<ContainerUpdateIDs></ContainerUpdateIDs>"
         "</e:property>"
+        "<e:property>"
+        "<TransferIDs></TransferIDs>"
+        "</e:property>"
         "</e:propertyset>");
     
      pNotification->SetCallback(m_sCallback);
@@ -111,6 +114,22 @@ CONTENT-TYPE: text/html
     
       break;
     case UPNP_DEVICE_TYPE_CONNECTION_MANAGER :
+      
+      pNotification->SetContent(
+        "<e:propertyset xmlns:e=\"urn:schemas-upnp-org:event-1-0\">"
+        "<e:property>"
+        "<SourceProtocolInfo>http-get:*:audio/mpeg:*,http-get:*:audio/mpegurl:*,http-get:*:image/jpeg:*</SourceProtocolInfo>"
+        "</e:property>"
+        "<e:property>"
+        "<SinkProtocolInfo></SinkProtocolInfo>"
+        "</e:property>"
+        "<e:property>"
+        "<CurrentConnectionIDs>0</CurrentConnectionIDs>"
+        "</e:property>"
+        "</e:propertyset>");
+    
+     pNotification->SetCallback(m_sCallback);
+     pNotification->SetSID(m_sSID);      
       
 /*
 NOTIFY / HTTP/1.1

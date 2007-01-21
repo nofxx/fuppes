@@ -24,6 +24,7 @@
 #include "EventNotification.h"
 
 #include "../Common/Common.h"
+#include "../Common/RegEx.h"
 #include <sstream>
 #include <iostream>
 using namespace std;
@@ -33,7 +34,7 @@ std::string CEventNotification::BuildHeader()
   stringstream sHeader;
   
   sHeader << 
-    "NOTIFY / HTTP/1.1\r\n" <<  
+    "NOTIFY " << m_sSubscriberPath << " HTTP/1.1\r\n" <<  
     "HOST: " << m_sHost << "\r\n" <<
     "CONTENT-TYPE: text/xml\r\n" <<
     "CONTENT-LENGTH: " << m_sContent.length() << "\r\n" <<
@@ -48,13 +49,10 @@ std::string CEventNotification::BuildHeader()
 }
 
 void CEventNotification::SetCallback(std::string p_sCallback)
-{
-  cout << __FILE__ << endl;
-  
-  cout << "CALLBACK: " << p_sCallback << endl;
-  
-  SplitURL(p_sCallback, &m_sSubscriberIP, &m_nSubscriberPort);
-  
-  cout << "IP: " << m_sSubscriberIP << endl;
-  cout << "Port: " << m_nSubscriberPort << endl;
+{ 
+  SplitURL(p_sCallback, &m_sSubscriberIP, &m_nSubscriberPort);  
+  RegEx rxCallback("[http://]*([0-9|\\.]+):*([0-9]*)(/.*)", PCRE_CASELESS);
+  if(rxCallback.Search(p_sCallback.c_str())) {
+    m_sSubscriberPath = rxCallback.Match(3);
+  }
 }

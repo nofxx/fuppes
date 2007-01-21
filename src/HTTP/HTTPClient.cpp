@@ -185,20 +185,14 @@ bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_s
 fuppesThreadCallback AsyncThread(void* arg)
 {
   CHTTPClient* pClient = (CHTTPClient*)arg;                  
-  
-  
-  
+    
   // connect socket
   if(connect(pClient->m_Socket, (struct sockaddr*)&pClient->m_RemoteEndpoint, sizeof(pClient->m_RemoteEndpoint)) == -1) {
     CSharedLog::Shared()->Log(L_ERROR, "connect()", __FILE__, __LINE__);
     
     pClient->m_bAsyncDone = true;
     fuppesThreadExit();
-  }
-  
-  cout << "CONNECTED" << endl;
-  
-  cout << __FILE__ << " SEND: " << __LINE__ << endl << pClient->m_sNotifyMessage << endl;
+  } 
   
   // send message
   if(send(pClient->m_Socket, pClient->m_sNotifyMessage.c_str(), (int)strlen(pClient->m_sNotifyMessage.c_str()), 0) <= 0) {
@@ -209,27 +203,22 @@ fuppesThreadCallback AsyncThread(void* arg)
     fuppesThreadExit();
   }
   
-  
   // receive answer
   char buffer[4096];  
   int nBytesReceived = 0;
   stringstream sReceived;
 
-  while((nBytesReceived = recv(pClient->m_Socket, buffer, sizeof(buffer), 0)) > 0)
-  { 
+  while((nBytesReceived = recv(pClient->m_Socket, buffer, sizeof(buffer), 0)) > 0) { 
     buffer[nBytesReceived] = '\0';
     sReceived << buffer;
   }
   
-  cout << "RECEIVED: " << sReceived.str() << endl;
-    
-
-
+  cout << "TODO :: RECEIVED (" << __FILE__ << ", " << __LINE__ << "): " << sReceived.str() << endl;
+  fflush(stdout);
+  pClient->m_sAsyncResult = sReceived.str();
   
   // clean up and exit
-  upnpSocketClose(pClient->m_Socket);
-  cout << "DISCONNECTED" << endl;
-  
+  upnpSocketClose(pClient->m_Socket);  
   pClient->m_bAsyncDone = true;
   fuppesThreadExit();
 }
@@ -260,7 +249,7 @@ void CHTTPClient::AsyncNotify(CEventNotification* pNotification)
   m_RemoteEndpoint.sin_family      = AF_INET;
   m_RemoteEndpoint.sin_addr.s_addr = inet_addr(pNotification->GetSubscriberIP().c_str());
   m_RemoteEndpoint.sin_port        = htons(pNotification->GetSubscriberPort());
-  memset(&(m_LocalEndpoint.sin_zero), '\0', 8);
+  memset(&(m_RemoteEndpoint.sin_zero), '\0', 8);
   
   // set the notification's host
   stringstream sHost;

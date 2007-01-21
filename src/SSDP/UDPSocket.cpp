@@ -195,6 +195,7 @@ void CUDPSocket::SendMulticast(std::string p_sMessage)
 	remote_ep.sin_family      = AF_INET;
   remote_ep.sin_addr.s_addr = inet_addr(MULTICAST_IP);
   remote_ep.sin_port				= htons(MULTICAST_PORT);
+	memset(&(remote_ep.sin_zero), '\0', 8);
 		
   /* Send message */
 	sendto(m_Socket, p_sMessage.c_str(), (int)strlen(p_sMessage.c_str()), 0, (struct sockaddr*)&remote_ep, sizeof(remote_ep));

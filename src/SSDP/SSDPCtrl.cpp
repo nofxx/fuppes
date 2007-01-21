@@ -172,6 +172,7 @@ void CSSDPCtrl::send_alive()
   
   CUDPSocket Sock;
 	Sock.SetupSocket(false, m_sIPAddress);
+	Sock.SetTTL(4);
 	
 	//m_LastMulticastEp = Sock.GetLocalEndPoint();
 	
@@ -201,7 +202,7 @@ void CSSDPCtrl::send_byebye()
 {
 	CUDPSocket Sock;
 	Sock.SetupSocket(false, m_sIPAddress);
-	
+	Sock.SetTTL(4);
   //m_LastMulticastEp = Sock.GetLocalEndPoint();	
 	
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_ROOT_DEVICE));

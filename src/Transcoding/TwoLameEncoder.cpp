@@ -56,9 +56,9 @@ bool CTwoLameEncoder::LoadLib()
   #endif
   
   if(!m_LibHandle) {
-    CSharedLog::Shared()->Log(L_ERROR, "cannot open library", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot open library", __FILE__, __LINE__);
     return false;
-  }   
+  }
    
     
   // twolame_init()

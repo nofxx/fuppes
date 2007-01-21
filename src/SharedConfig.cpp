@@ -126,29 +126,26 @@ CSharedConfig::~CSharedConfig()
 }
 
 bool CSharedConfig::SetupConfig()
-{
-  bool bResult = true;  
-  
+{  
   // read config file
-  bResult = ReadConfigFile(true);
-  if(!bResult)
+  if(!ReadConfigFile(true))
     return false;
   
   // Network settings
-  if(bResult && !ResolveHostAndIP())
-  {
+  if(!ResolveHostAndIP()) {
     cout << "[ERROR] can't resolve hostname and address" << endl;
     return false;
   }
   
-  /*cout << "hostname: " << GetHostname() << endl; 
-  cout << "address : " << GetIPv4Address() << endl; 
-  cout << endl;*/
-  
-  // OS information
+  // read OS information
   GetOSInfo();
+  
+  // transcoding mgr must be initialized
+  // by the main thread so let's do it
+  // when everytihng else is correct
+  CTranscodingMgr::Shared();
 
-  return bResult;
+  return true;
 }
 
 bool CSharedConfig::Refresh()
@@ -1019,8 +1016,22 @@ std::string CSharedConfig::GetOSVersion()
 void CSharedConfig::GetOSInfo()
 {
   #ifdef WIN32
-  m_sOSName    = "Windows";
-  m_sOSVersion = "3.11";
+  m_sOSName = "Windows";
+
+  OSVERSIONINFO osinfo;
+  osinfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+  if (!GetVersionEx(&osinfo)) {
+    m_sOSVersion = "?";
+  }
+  else {
+    int nMajor = osinfo.dwMajorVersion;
+    int nMinor = osinfo.dwMinorVersion;
+    int nBuild = osinfo.dwBuildNumber; 
+    
+    stringstream sVer;
+    sVer << nMajor << "." << nMinor << "." << nBuild;    
+    m_sOSVersion = sVer.str();
+  }
   #else  
   struct utsname sUtsName;
   uname(&sUtsName);  
