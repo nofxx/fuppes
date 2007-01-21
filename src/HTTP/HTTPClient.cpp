@@ -186,7 +186,7 @@ fuppesThreadCallback AsyncThread(void* arg)
 {
   CHTTPClient* pClient = (CHTTPClient*)arg;                  
   
-  cout << __FILE__ << " " << __LINE__ << endl << pClient->m_sNotifyMessage << endl;
+  
   
   // connect socket
   if(connect(pClient->m_Socket, (struct sockaddr*)&pClient->m_RemoteEndpoint, sizeof(pClient->m_RemoteEndpoint)) == -1) {
@@ -198,8 +198,7 @@ fuppesThreadCallback AsyncThread(void* arg)
   
   cout << "CONNECTED" << endl;
   
-
-  cout << "SEND:" << endl << pClient->m_sNotifyMessage << endl;
+  cout << __FILE__ << " SEND: " << __LINE__ << endl << pClient->m_sNotifyMessage << endl;
   
   // send message
   if(send(pClient->m_Socket, pClient->m_sNotifyMessage.c_str(), (int)strlen(pClient->m_sNotifyMessage.c_str()), 0) <= 0) {
@@ -210,7 +209,21 @@ fuppesThreadCallback AsyncThread(void* arg)
     fuppesThreadExit();
   }
   
+  
   // receive answer
+  char buffer[4096];  
+  int nBytesReceived = 0;
+  stringstream sReceived;
+
+  while((nBytesReceived = recv(pClient->m_Socket, buffer, sizeof(buffer), 0)) > 0)
+  { 
+    buffer[nBytesReceived] = '\0';
+    sReceived << buffer;
+  }
+  
+  cout << "RECEIVED: " << sReceived.str() << endl;
+    
+
 
   
   // clean up and exit
