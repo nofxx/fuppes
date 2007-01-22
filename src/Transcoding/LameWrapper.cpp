@@ -22,7 +22,8 @@
  */
  
 #ifndef DISABLE_TRANSCODING
- 
+#ifndef DISABLE_LAME 
+
 #include "LameWrapper.h"
 #include "../SharedLog.h"
 #include <iostream>
@@ -161,4 +162,5 @@ int CLameWrapper::Flush()
   return m_LameEncodeFlush(m_LameGlobalFlags, m_sMp3Buffer, LAME_MAXMP3BUFFER);  
 }
 
-#endif /* DISABLE_TRANSCODING */
+#endif // DISABLE_LAME
+#endif // DISABLE_TRANSCODING

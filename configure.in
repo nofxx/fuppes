@@ -21,6 +21,8 @@ VERSION=$GENERIC_VERSION
 AM_INIT_AUTOMAKE(fuppes, $GENERIC_VERSION, u-voelkel@users.sourceforge.net)
 AM_CONFIG_HEADER(config.h)
 
+AC_CONFIG_HEADERS
+
 AC_PROG_CXX
 AC_PROG_CC
 #AC_PROG_MAKE_SET
@@ -93,7 +95,7 @@ AC_SUBST(FUPPES_LIBS)
 dnl Checks for libraries.
 PKG_CHECK_MODULES(PCRE, libpcre >= 5.0)
 PKG_CHECK_MODULES(LIBXML, libxml-2.0 >= 2.6.1)
-PKG_CHECK_MODULES(SQLITE3, sqlite3 >= 3.3)
+PKG_CHECK_MODULES(SQLITE3, sqlite3 >= 3.2)
 PTHREAD_LIBS=""
 AC_CHECK_LIB(pthread, pthread_create, PTHREAD_LIBS="-lpthread")
 UUID_LIBS=""
@@ -182,6 +184,8 @@ if test "x$transcoding" = "xyes"; then
     if test "x$have_lame" = "xyes"; then    
       LAME_LIBS="-lmp3lame"
       have_encoder=yes
+    else
+      CXXFLAGS="$CXXFLAGS -DDISABLE_LAME"
     fi
   else
     CXXFLAGS="$CXXFLAGS -DDISABLE_LAME"
@@ -195,6 +199,8 @@ if test "x$transcoding" = "xyes"; then
     PKG_CHECK_MODULES(TWOLAME, twolame >= 0.3.8, have_twolame=yes, have_twolame=no)
     if test "x$have_twolame" = "xyes"; then
       have_encoder=yes
+    else
+      CXXFLAGS="$CXXFLAGS -DDISABLE_TWOLAME"
     fi
   else
     CXXFLAGS="$CXXFLAGS -DDISABLE_TWOLAME"
@@ -202,7 +208,7 @@ if test "x$transcoding" = "xyes"; then
   
   
   #
-  # if lame is found check for further libs
+  # if encoder was found check for further libs
   #
   have_decoder=no
   if test "x$have_encoder" = "xyes"; then

@@ -22,6 +22,7 @@
  */
  
 #ifndef DISABLE_TRANSCODING
+#ifndef DISABLE_TWOLAME
  
 #ifndef _TWOLAMEENCODER_H
 #define _TWOLAMEENCODER_H
@@ -113,4 +114,5 @@ class CTwoLameEncoder: public CAudioEncoderBase
 };
 
 #endif // _TWOLAMEENCODER_H
+#endif // DISABLE_TWOLAME
 #endif // DISABLE_TRANSCODING

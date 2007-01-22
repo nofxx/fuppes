@@ -22,6 +22,7 @@
  */
 
 #ifndef DISABLE_TRANSCODING
+#ifndef DISABLE_TWOLAME
  
 #include "TwoLameEncoder.h"
 #include "../SharedLog.h"
@@ -200,4 +201,5 @@ int CTwoLameEncoder::Flush()
   return m_TwoLameEncodeFlush(m_TwoLameOptions, m_sMp3Buffer, TWOLAME_MAX_BUFFER);
 }
 
-#endif /* DISABLE_TRANSCODING */
+#endif // DISABLE_TWOLAME
+#endif // DISABLE_TRANSCODING

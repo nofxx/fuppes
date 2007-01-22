@@ -22,7 +22,9 @@
  */
  
 #ifndef DISABLE_TRANSCODING
- 
+
+#ifndef DISABLE_LAME
+
 #ifndef _LAMEWRAPPER_H
 #define _LAMEWRAPPER_H
 
@@ -117,5 +119,6 @@ class CLameWrapper: public CAudioEncoderBase
     LameClose_t   m_LameClose;
 };
 
-#endif /* _LAMEWRAPPER_H */
-#endif /* DISABLE_TRANSCODING */
+#endif // _LAMEWRAPPER_H
+#endif // DISABLE_LAME
+#endif // DISABLE_TRANSCODING
