@@ -53,20 +53,20 @@ bool g_bExitApp;
 /* non-blocking getchar() */
 int fuppesGetch()
 {
-  int ch = -1;  
+  int ch = -1;
   struct termios newTerm;
-  struct termios oldTerm;  
+  struct termios oldTerm;
   tcgetattr(STDIN_FILENO, &oldTerm);
-  
-  newTerm = oldTerm;  
-  newTerm.c_lflag    &= ~(ICANON|ECHO);  
+
+  newTerm = oldTerm;
+  newTerm.c_lflag    &= ~(ICANON|ECHO);
   newTerm.c_cc[VMIN]  = 0; /* don't block for input */
   newTerm.c_cc[VTIME] = 0; /* timer is ignored */
-  
+
   if (0 == (ch = tcsetattr(STDIN_FILENO, TCSANOW, &newTerm)))
   {
     /* get a single character from stdin */
-    ch = getchar();    
+    ch = getchar();
     /* restore old settings */
     ch += tcsetattr(STDIN_FILENO, TCSANOW, &oldTerm);
   }
@@ -85,38 +85,38 @@ void SignalHandler(int p_nSignal)
       break;
     case SIGTERM:
       cout << "SIGTERM" << endl;
-      break;    
+      break;
   }*/
 }
 
 void PrintHelp()
-{  
-  cout << endl;  
+{
+  cout << endl;
   cout << "l = change log-level" << endl;
   cout << "    (disabled, normal, extended, debug) default is \"normal\"" << endl;
-  cout << "i = print system info" << endl; 
+  cout << "i = print system info" << endl;
   cout << "r = rebuild database" << endl;
   cout << "c = refresh configuration" << endl;
-  cout << "h = print this help" << endl;  
+  cout << "h = print this help" << endl;
   cout << endl;
   cout << "m = send m-search" << endl;
   cout << "a = send notify-alive" << endl;
   cout << "b = send notify-byebye" << endl;
   cout << endl;
-  
+
   #ifdef WIN32
-  cout << "q = quit" << endl;  
+  cout << "q = quit" << endl;
   #else
   cout << "ctrl-c or q = quit" << endl;
   #endif
 
-  cout << endl;  
+  cout << endl;
 }
 
 #ifdef WIN32
 bool CreateTrayIcon()
 {
-  NOTIFYICONDATA  m_tnd;  
+  NOTIFYICONDATA  m_tnd;
   m_tnd.cbSize = sizeof(NOTIFYICONDATA);
   /*m_tnd.hWnd   = void; //pParent->GetSafeHwnd()? pParent->GetSafeHwnd() : m_hWnd;
   m_tnd.uID    = uID;
@@ -124,9 +124,9 @@ bool CreateTrayIcon()
   m_tnd.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
   m_tnd.uCallbackMessage = WM_ICON_NOTIFY; //uCallbackMessage;
   _tcscpy(m_tnd.szTip, szToolTip); */
-  m_tnd.uFlags = NIF_MESSAGE; // | NIF_ICON | NIF_TIP;  
-  m_tnd.uCallbackMessage = WM_USER + 10;  
-  
+  m_tnd.uFlags = NIF_MESSAGE; // | NIF_ICON | NIF_TIP;
+  m_tnd.uCallbackMessage = WM_USER + 10;
+
   return Shell_NotifyIcon(NIM_ADD, &m_tnd);
 }
 #endif
@@ -140,88 +140,88 @@ bool CreateTrayIcon()
  *  @todo   create a CFuppes instance for each network interface
  */
 int main(int argc, char* argv[])
-{  
+{
   bool bDaemonMode = false;
   g_bExitApp = false;
-  
+
   if(argc > 1)
   {
     for(int i = 1; i < argc; i++)
     {
-      //cout << argv[i] << endl;      
+      //cout << argv[i] << endl;
       if((strcmp(argv[i], "-d") == 0) || (strcmp(argv[i], "--daemon") == 0))
         bDaemonMode = true;
       else if(strcmp(argv[i], "--syslog") == 0)
         CSharedLog::Shared()->SetUseSyslog(true);
     }
   }
-  
+
   /* Setup winsockets	*/
   #ifdef WIN32
   WSADATA wsa;
   WSAStartup(MAKEWORD(2,2), &wsa);
   #endif
-  
-   
+
+
   /* daemon process */
   #ifndef WIN32
   if(bDaemonMode)
-  {    
+  {
     CSharedLog::Shared()->SetUseSyslog(true);
-    
+
     if(!CSharedConfig::Shared()->SetupConfig())
     return 1;
-    
-    cout << "daemon mode" << endl;    
-    
-    pid_t pid;    
-    pid = fork();    
-    
+
+    cout << "daemon mode" << endl;
+
+    pid_t pid;
+    pid = fork();
+
     // error
-    if (pid < 0) 
+    if (pid < 0)
     {
-      CSharedLog::Shared()->Log(L_ERROR, "could not create child process", __FILE__, __LINE__);      
+      CSharedLog::Shared()->Log(L_ERROR, "could not create child process", __FILE__, __LINE__);
       return 1;
-    }    
+    }
     // parent process
-    else if (pid > 0) 
+    else if (pid > 0)
     {
       cout << "[started]" << endl;
       return 0;
-    }    
+    }
     // child process
     else if(pid == 0)
     {
       //cout << "child process" << endl;
       close(STDIN_FILENO);
       close(STDOUT_FILENO);
-      close(STDERR_FILENO);      
+      close(STDERR_FILENO);
     }
   }
   #endif
-  
-  #ifndef WIN32  
-  signal(SIGINT, SignalHandler);  /* ctrl-c */  
-  signal(SIGTERM, SignalHandler); /* start-stop-daemon -v --stop -nfuppes */ 
+
+  #ifndef WIN32
+  signal(SIGINT, SignalHandler);  /* ctrl-c */
+  signal(SIGTERM, SignalHandler); /* start-stop-daemon -v --stop -nfuppes */
   #endif
-  
+
   /*#ifdef WIN32
   CreateTrayIcon();
   #endif*/
-  
+
   cout << "FUPPES - Free UPnP Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;
   cout << "http://fuppes.sourceforge.net" << endl << endl;
-  
+
   if(!CSharedConfig::Shared()->SetupConfig())
     return 1;
-	
+
   // create presentation handler
   CPresentationHandler* pPresentationHandler = new CPresentationHandler();
-  
+
   // create main fuppes object
   CFuppes* pFuppes = NULL;
 	try {
-    pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUUID(), pPresentationHandler);	
+    pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUUID(), pPresentationHandler);
     CSharedConfig::Shared()->AddFuppesInstance(pFuppes);
   }
   catch(EException ex) {
@@ -229,20 +229,20 @@ int main(int argc, char* argv[])
     cout << "[exiting]" << endl;
     return 1;
   }
-  
+
   cout << "Webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
-  cout << endl;  
-  cout << "r = rebuild database" << endl;  
+  cout << endl;
+  cout << "r = rebuild database" << endl;
   cout << "i = print system info" << endl;
   cout << "h = print help" << endl;
   cout << endl;
   #ifdef WIN32
-  cout << "press \"q\" to quit" << endl;  
+  cout << "press \"q\" to quit" << endl;
   #else
   cout << "press \"ctrl-c\" or \"q\" to quit" << endl;
   #endif
   cout << endl;
-  
+
   // handle input
   if(!bDaemonMode)
   {
@@ -252,21 +252,21 @@ int main(int argc, char* argv[])
     #else
     while(!g_bExitApp && (input != "q"))
     #endif
-    {		
+    {
       input = "";
       #ifdef WIN32
       getline(cin, input);
       #else
       int nRes = -1;
       do {
-        nRes = fuppesGetch();        
+        nRes = fuppesGetch();
         if ((nRes > -1) && (nRes != 10))
-          input = nRes;        
+          input = nRes;
         fuppesSleep(100);
       }
-      while ((nRes != 10) && !g_bExitApp);      
+      while ((nRes != 10) && !g_bExitApp);
       #endif
-      
+
       if (input == "m")
         pFuppes->GetSSDPCtrl()->send_msearch();
       else if (input == "a")
@@ -274,7 +274,7 @@ int main(int argc, char* argv[])
       else if (input == "b")
         pFuppes->GetSSDPCtrl()->send_byebye();
       else if (input == "l")
-        CSharedLog::Shared()->ToggleLog();    
+        CSharedLog::Shared()->ToggleLog();
       else if (input == "h")
         PrintHelp();
       else if (input == "i")
@@ -283,10 +283,12 @@ int main(int argc, char* argv[])
         cout << "  version     : " << CSharedConfig::Shared()->GetAppVersion() << endl;
         cout << "  hostname    : " << CSharedConfig::Shared()->GetHostname() << endl;
         cout << "  OS          : " << CSharedConfig::Shared()->GetOSName() << " " << CSharedConfig::Shared()->GetOSVersion() << endl;
+        cout << "  build at    : " << __DATE__ << "" << __TIME__ << endl;
+        cout << "  build with  : " << __VERSION__ << endl;
         cout << "  address     : " << CSharedConfig::Shared()->GetIPv4Address() << endl;
         cout << "  sqlite      : " << CContentDatabase::Shared()->GetLibVersion() << endl;
         cout << "  log-level   : " << CSharedLog::Shared()->GetLogLevel() << endl;
-        cout << "  webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;        
+        cout << "  webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
         cout << endl;
         CSharedConfig::Shared()->PrintTranscodingSettings();
       }
@@ -297,7 +299,7 @@ int main(int argc, char* argv[])
       }
       else if (input == "c")
         CSharedConfig::Shared()->Refresh();
-        
+
     }
   }
   else
@@ -305,14 +307,14 @@ int main(int argc, char* argv[])
     while(!g_bExitApp)
       fuppesSleep(1000);
   }
-  
+
   // destroy objects
   delete pFuppes;
   delete pPresentationHandler;
-  
+
   delete CSharedConfig::Shared();
   delete CSharedLog::Shared();
-  
+
   // cleanup winsockets
   #ifdef WIN32
   WSACleanup();
