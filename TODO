@@ -19,6 +19,7 @@
   * pls
   
 * eventing (0.7)
+* controlling
 
 * ContentDirectory
   * Browse
@@ -41,7 +42,7 @@
     - bei request browse = 2^32 reelle unterordner auflisten
         
     - attribut an shared dir(s) (alle/einzeln), ob virtuelle ordner erstellt werden sollen
-      und bis zu welcher verzeichnistiefe
+      und bis zu welcher verzeichnistiefe (-4) bzw. welche ebenen (2,4,5)
       
     * aufteilen bei ChildCount > N
       - wenn ein reeller ordner eine dateianzahl > N

@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -109,10 +109,10 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
   }
 
   // set nonblocking
-  if (!fuppesSocketSetNonBlocking(m_Socket)) {
+  /*if (!fuppesSocketSetNonBlocking(m_Socket)) {
     CSharedLog::Shared()->Log(L_ERROR, "failed to setsockopt: fuppesSocketSetNonBlocking", __FILE__, __LINE__);
     throw EException("failed to setsockopt: fuppesSocketSetNonBlocking", __FILE__, __LINE__);
-  }
+  }*/
 	
 	/* Set local endpoint */
   m_LocalEndpoint.sin_family = AF_INET;	
@@ -215,18 +215,17 @@ void CUDPSocket::SendUnicast(std::string p_sMessage, sockaddr_in p_RemoteEndPoin
 /* BeginReceive */
 void CUDPSocket::BeginReceive()
 {
-  /* Start thread */
-  m_bBreakReceive = false;
+  /* Start thread */  
   fuppesThreadStart(m_ReceiveThread, ReceiveLoop);
 }
 
 /* EndReceive */
 void CUDPSocket::EndReceive()
 {
-  /* Exit thread */  
-  m_bBreakReceive = true;  
-  if(m_ReceiveThread)
-  {
+  /* Exit thread */    
+  if(m_ReceiveThread) {
+    int nExitCode = 0;
+    fuppesThreadCancel(m_ReceiveThread, nExitCode);    
     fuppesThreadClose(m_ReceiveThread);
     m_ReceiveThread = (fuppesThread)NULL;
   }
@@ -294,12 +293,11 @@ fuppesThreadCallback ReceiveLoop(void *arg)
 	sockaddr_in remote_ep;	
 	socklen_t   size = sizeof(remote_ep);	
 
-  while(!udp_sock->m_bBreakReceive)
-	{
+  while(true)
+  {
     bytes_received = recvfrom(udp_sock->GetSocketFd(), buffer, sizeof(buffer), 0, (struct sockaddr*)&remote_ep, &size);
-    if(bytes_received < 0)   
-    {  
-      fuppesSleep(100);
+    if(bytes_received <= 0) {
+      CSharedLog::Shared()->Log(L_EXTENDED_ERR, "error :: recvfrom()", __FILE__, __LINE__);
       continue;
     }
     
@@ -326,8 +324,7 @@ fuppesThreadCallback ReceiveLoop(void *arg)
 		}
 		
 		msg.str("");
-		msg.clear();
-		fuppesSleep(100);	
+		msg.clear();		
 	}
   
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "exiting ReceiveLoop()");

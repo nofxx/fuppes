@@ -1,4 +1,7 @@
-Version 0.7  
+Version 0.7 (2007-01-?)
+  * initial UPnP eventing
+    referring to the "Intel DeviceValidator" the eventing mechanism
+    is now UPnP 1.0 compliant
   * initial taglib support (optional)  
   * initial TwoLAME support (choose encoder at build or runtime)
   
@@ -18,12 +21,9 @@ Version 0.7
 
   * code cleanup
   * new, easy to extend file extension to mime type mapping
-    take a look at "src/ContentDirectory/FileDetails.cpp"
+    take a look at "src/ContentDirectory/FileDetails.cpp"    
   
-  todo:
-    * UPnP eventing    
-    * cleanup logging
-    
+  * fixed TTL (time to live) for SSDP alive messages
 
 Version 0.5.4 (2006-11-23)
   * initial support for playlists (m3u, pls)

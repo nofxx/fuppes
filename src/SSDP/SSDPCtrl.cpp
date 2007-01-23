@@ -77,6 +77,7 @@ void CSSDPCtrl::Start()
 {	
 	try {
     m_Listener.SetupSocket(true, m_sIPAddress);
+    m_Listener.SetTTL(4);
 	  m_Listener.SetReceiveHandler(this);
 	  m_Listener.BeginReceive();	
   }
