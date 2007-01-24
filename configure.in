@@ -239,6 +239,8 @@ if test "x$transcoding" = "xyes"; then
       CXXFLAGS="$CXXFLAGS -DDISABLE_FLAC"
     fi    
 
+  else
+    CXXFLAGS="$CXXFLAGS -DDISABLE_TRANSCODING"
   fi # have_encoder
 
 fi # transcoding = yes
@@ -366,10 +368,10 @@ fi
 
 # taglib
 echo ""
-if test "x$have_taglib"; then
+if test "x$have_taglib" = "xyes"; then
   echo "  taglib support enabled"
 else
-  echo "  taglib support enabled"
+  echo "  taglib support disabled"
 fi
 
 

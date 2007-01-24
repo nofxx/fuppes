@@ -39,6 +39,14 @@ using namespace std;
 
 const string LOGNAME = "HTTPServer";
 
+#ifndef WIN32
+// mac os x has no MSG_NOSIGNAL 
+// but >= 10.2 comes with SO_SIGPIPE
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL SO_NOSIGPIPE
+#endif
+#endif
+
 
 fuppesThreadCallback AcceptLoop(void *arg);
 fuppesThreadCallback SessionLoop(void *arg);
