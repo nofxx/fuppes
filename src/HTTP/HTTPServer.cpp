@@ -66,8 +66,16 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
   // create socket
 	m_Socket = socket(AF_INET, SOCK_STREAM, 0);
   if(m_Socket == -1)
-    throw EException("failed to create socket", __FILE__, __LINE__);
+	  throw EException("failed to create socket", __FILE__, __LINE__);
   
+	#ifdef FUPPES_TARGET_MAC_OSX
+	/* OS X does not support pthread_cancel
+	   so we need to set the socket to non blocking and
+		 constantly poll the cancellation state.
+		 otherwise fuppes will hang on shutdown
+		 same for UDPSocket */
+	fuppesSocketSetNonBlocking(m_Socket);
+	#endif
    
   // set local end point
 	local_ep.sin_family      = AF_INET;
@@ -226,6 +234,27 @@ void CHTTPServer::CleanupSessions()
  */
 fuppesThreadCallback AcceptLoop(void *arg)
 {
+int retval;
+// Set thread cancel state
+retval =
+pthread_setcancelstate(PTHREAD_CANCEL_ENABLE,NULL);
+if ( retval != 0 )
+{
+perror("Thread pthread_setcancelstate Failed...\n");
+exit(EXIT_FAILURE);
+}
+
+// Set thread cancel type
+retval =
+pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED,NULL);
+if ( retval != 0 )
+{
+perror("Thread pthread_setcanceltype failed...");
+exit(EXIT_FAILURE);
+}
+
+
+
   // local vars
 	CHTTPServer* pHTTPServer = (CHTTPServer*)arg; 
   
@@ -245,8 +274,13 @@ fuppesThreadCallback AcceptLoop(void *arg)
 	{
     // accept new connection
     nConnection = accept(nSocket, (struct sockaddr*)&remote_ep, &size);   
-		if(nConnection == -1)
-      continue;
+		if(nConnection == -1) {
+		  #ifdef FUPPES_TARGET_MAC_OSX
+      pthread_testcancel();
+			fuppesSleep(100);
+			#endif
+			continue;
+		}
 			
     // log
     stringstream sMsg;

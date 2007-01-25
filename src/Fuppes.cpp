@@ -136,9 +136,11 @@ CFuppes::~CFuppes()
   m_pSSDPCtrl->send_byebye();  
   
   /* stop SSDP-controller */
+	CSharedLog::Shared()->Log(L_EXTENDED, "stopping SSDP controller", __FILE__, __LINE__);
   m_pSSDPCtrl->Stop();
 
   /* stop HTTP-server */
+	CSharedLog::Shared()->Log(L_EXTENDED, "stopping HTTP server", __FILE__, __LINE__);
   m_pHTTPServer->Stop();
 
   CleanupTimedOutDevices();  

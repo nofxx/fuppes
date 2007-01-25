@@ -108,11 +108,14 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
     throw EException("failed to setsockopt: SO_REUSEADDR", __FILE__, __LINE__);
   }
 
-  // set nonblocking
-  /*if (!fuppesSocketSetNonBlocking(m_Socket)) {
-    CSharedLog::Shared()->Log(L_ERROR, "failed to setsockopt: fuppesSocketSetNonBlocking", __FILE__, __LINE__);
-    throw EException("failed to setsockopt: fuppesSocketSetNonBlocking", __FILE__, __LINE__);
-  }*/
+	#ifdef FUPPES_TARGET_MAC_OSX
+	/* OS X does not support pthread_cancel
+	   so we need to set the socket to non blocking and
+		 constantly poll the cancellation state.
+		 otherwise fuppes will hang on shutdown
+		 same for HTTPServer */
+	fuppesSocketSetNonBlocking(m_Socket);
+	#endif
 	
 	/* Set local endpoint */
   m_LocalEndpoint.sin_family = AF_INET;	
@@ -216,14 +219,16 @@ void CUDPSocket::SendUnicast(std::string p_sMessage, sockaddr_in p_RemoteEndPoin
 void CUDPSocket::BeginReceive()
 {
   /* Start thread */  
+	m_bBreakReceive = false;
   fuppesThreadStart(m_ReceiveThread, ReceiveLoop);
 }
 
 /* EndReceive */
 void CUDPSocket::EndReceive()
 {
-  /* Exit thread */    
-  if(m_ReceiveThread) {
+  /* Exit thread */	 
+  m_bBreakReceive = true;
+	if(m_ReceiveThread) {
     int nExitCode = 0;
     fuppesThreadCancel(m_ReceiveThread, nExitCode);    
     fuppesThreadClose(m_ReceiveThread);
@@ -280,6 +285,25 @@ sockaddr_in CUDPSocket::GetLocalEndPoint()
 
 fuppesThreadCallback ReceiveLoop(void *arg)
 {
+int retval;
+// Set thread cancel state
+retval =
+pthread_setcancelstate(PTHREAD_CANCEL_ENABLE,NULL);
+if ( retval != 0 )
+{
+perror("Thread pthread_setcancelstate Failed...\n");
+exit(EXIT_FAILURE);
+}
+
+// Set thread cancel type
+retval =
+pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED,NULL);
+if ( retval != 0 )
+{
+perror("Thread pthread_setcanceltype failed...");
+exit(EXIT_FAILURE);
+}
+
   CUDPSocket* udp_sock = (CUDPSocket*)arg;
   stringstream sLog;
   sLog << "listening on " << udp_sock->GetIPAddress() << ":" << udp_sock->GetPort();
@@ -293,12 +317,17 @@ fuppesThreadCallback ReceiveLoop(void *arg)
 	sockaddr_in remote_ep;	
 	socklen_t   size = sizeof(remote_ep);	
 
-  while(true)
+  while(!udp_sock->m_bBreakReceive)
   {
     bytes_received = recvfrom(udp_sock->GetSocketFd(), buffer, sizeof(buffer), 0, (struct sockaddr*)&remote_ep, &size);
     if(bytes_received <= 0) {
+		  #ifdef FUPPES_TARGET_MAC_OSX
+			pthread_testcancel();
+			fuppesSleep(100);
+			#else
       CSharedLog::Shared()->Log(L_EXTENDED_ERR, "error :: recvfrom()", __FILE__, __LINE__);
-      continue;
+      #endif
+			continue;
     }
     
 		buffer[bytes_received] = '\0';		

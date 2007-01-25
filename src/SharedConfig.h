@@ -25,6 +25,19 @@
 #ifndef _SHAREDCONFIG_H
 #define _SHAREDCONFIG_H
 
+
+/* OS dependent defines */
+// gcc -dM -E - < /dev/null
+#if defined(WIN32)
+  #define FUPPES_TARGET_WIN32
+#elif defined(__GNUC__) && defined(__LINUX__)
+  #define FUPPES_TARGET_LINUX
+#elif defined(__APPLE__)
+  #define FUPPES_TARGET_MAC_OSX
+#endif
+
+
+
 /*===============================================================================
  INCLUDES
 ===============================================================================*/

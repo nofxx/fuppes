@@ -175,8 +175,7 @@ public:
 
 /* <PRIVATE> */
 
-   //bool m_bBreakReceive;
-
+   bool m_bBreakReceive;
 private:
 
 /*===============================================================================
