@@ -51,42 +51,42 @@ bool g_bExitApp;
 
 #ifndef WIN32
 /* non-blocking getchar() */
-int fuppesGetch()
+struct termios savetty;
+
+void unsetcbreak (void)
 {
-  int ch = -1;
-  struct termios newTerm;
-  struct termios oldTerm;
-  tcgetattr(STDIN_FILENO, &oldTerm);
+	tcsetattr(0, TCSADRAIN, &savetty);
+}
 
-  newTerm = oldTerm;
-  newTerm.c_lflag    &= ~(ICANON|ECHO);
-  newTerm.c_cc[VMIN]  = 0; /* don't block for input */
-  newTerm.c_cc[VTIME] = 0; /* timer is ignored */
+void setcbreak (void)
+{
+  // set console to raw mode
+  struct termios tty;
+	tcgetattr(0, &savetty);
+	tcgetattr(0, &tty);
+	tty.c_lflag &= ~(ECHO|ECHONL|ICANON|IEXTEN);
+	tty.c_cc[VTIME] = 0;
+	tty.c_cc[VMIN] = 0;
+	tcsetattr(0, TCSADRAIN, &tty);
+}
 
-  if (0 == (ch = tcsetattr(STDIN_FILENO, TCSANOW, &newTerm)))
-  {
-    /* get a single character from stdin */
-    ch = getchar();
-    /* restore old settings */
-    ch += tcsetattr(STDIN_FILENO, TCSANOW, &oldTerm);
-  }
-  return ch;
+int fuppesGetch (void)
+{
+  setcbreak();  
+  static char line [2];
+	if (read (0, line, 1)) {    
+    unsetcbreak();    
+		return line[0];
+	}  
+  unsetcbreak();  
+	return -1;
 }
 #endif
 
+
 void SignalHandler(int p_nSignal)
-{
-  //cout << "SignalHandler: " << p_nSignal << endl;
+{  
   g_bExitApp = true;
-  /*switch(p_nSignal)
-  {
-    case SIGINT:
-      cout << "SIGINT" << endl;
-      break;
-    case SIGTERM:
-      cout << "SIGTERM" << endl;
-      break;
-  }*/
 }
 
 void PrintHelp()
@@ -259,12 +259,13 @@ int main(int argc, char* argv[])
       #else
       int nRes = -1;
       do {
-        nRes = fuppesGetch();
-        if ((nRes > -1) && (nRes != 10))
-          input = nRes;
         fuppesSleep(100);
+        
+        nRes = fuppesGetch();
+        if ((nRes > -1) && (nRes != 10) && (nRes != 13))
+          input = nRes;        
       }
-      while ((nRes != 10) && !g_bExitApp);
+      while ((nRes != 10) && (nRes != 13) && !g_bExitApp);
       #endif
 
       if (input == "m")

@@ -999,8 +999,7 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
 
 void CSharedConfig::PrintTranscodingSettings()
 {
-  
-    
+  CTranscodingMgr::Shared()->PrintTranscodingSettings();    
 }
 
 std::string CSharedConfig::GetOSName()

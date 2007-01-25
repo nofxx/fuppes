@@ -166,22 +166,27 @@ void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
 {
   #ifdef DISABLE_TRANSCODING
   if(p_sHTMLVersion)
-    *p_sHTMLVersion = "<p>compiled without transcoding support</p>";
+    *p_sHTMLVersion = "<p>compiled without transcoding support.</p>";
   else
-    cout << "compiled without transcoding support" << endl;
+    cout << "compiled without transcoding support." << endl;
   #else
 
   // no encoder available
   if(!m_bLameAvailable && !m_bTwoLameAvailable)
   {
-    cout << endl;
-    cout << "Neither LAME nor TwoLame found. Transcoding disabled!" << endl;
-    #ifdef WIN32
-    cout << "Get a copy of the lame_enc.dll and" << endl;
-    cout << "put it in the application directory." << endl;
-    #endif
-    cout << endl;
-
+    if(p_sHTMLVersion) {      
+      *p_sHTMLVersion = "<p>Neither LAME nor TwoLame found. Transcoding disabled!</p>";
+    }
+    else {    
+      cout << endl;
+      cout << "Neither LAME nor TwoLame found. Transcoding disabled!" << endl;
+      #ifdef WIN32
+      cout << "Get a copy of the lame_enc.dll and" << endl;
+      cout << "put it in the application directory." << endl;
+      #endif
+      cout << endl;
+    }
+      
     return;
   }
 
@@ -189,9 +194,14 @@ void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
   // no decoder
   if(!m_bVorbisAvailable && !m_bMusePackAvailable && !m_bFlacAvailable)
   {
-    cout << endl;
-    cout << "no decoding library found. Transcoding disabled!" << endl;
-    cout << endl;
+    if(p_sHTMLVersion) {
+      *p_sHTMLVersion = "<p>no decoding library found. Transcoding disabled!</p>";
+    }
+    else {
+      cout << endl;
+      cout << "no decoding library found. Transcoding disabled!" << endl;
+      cout << endl;
+    }    
   }
   else
   {
@@ -217,7 +227,7 @@ void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
     // lame end
 
     // twolame
-    !p_sHTMLVersion ? cout << "  twolame    : " : sHTML << "<tr><td>TwoLAME</td>";
+    !p_sHTMLVersion ? cout << "  twolame : " : sHTML << "<tr><td>TwoLAME</td>";
 
     #ifdef DISABLE_TWOLAME
     !p_sHTMLVersion ? cout << "compiled without TwoLame support" << endl : sHTML << "<td>compiled without TwoLame support</td></tr>";
@@ -246,7 +256,7 @@ void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
 
 
     // vorbis
-    !p_sHTMLVersion ? cout << "  vorbis    : " : sHTML << "<tr><td>Vorbis</td>";
+    !p_sHTMLVersion ? cout << "  vorbis  : " : sHTML << "<tr><td>Vorbis</td>";
     #ifdef DISABLE_VORBIS
     !p_sHTMLVersion ? cout << "compiled without Vorbis support" << endl : sHTML << "<td>compiled without Vorbis support</td></tr>";
     #else
@@ -257,7 +267,7 @@ void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
     #endif
 
     // musepack
-    !p_sHTMLVersion ? cout << "  musepack    : " : sHTML << "<tr><td>MusePack</td>";
+    !p_sHTMLVersion ? cout << "  musepack: " : sHTML << "<tr><td>MusePack</td>";
     #ifdef DISABLE_MUSEPACK
     !p_sHTMLVersion ? cout << "compiled without MusePack support" << endl : sHTML << "<td>compiled without MusePack support</td></tr>";
     #else
