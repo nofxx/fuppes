@@ -28,7 +28,7 @@
 
 #include "UDPSocket.h"
 #include "../SharedLog.h"
-#include "../Common/Common.h"
+#include "../SharedConfig.h"
 
 #include <iostream>
 #include <sstream>
@@ -285,6 +285,7 @@ sockaddr_in CUDPSocket::GetLocalEndPoint()
 
 fuppesThreadCallback ReceiveLoop(void *arg)
 {
+#ifndef FUPPES_TARGET_WIN32              
 int retval;
 // Set thread cancel state
 retval =
@@ -303,6 +304,7 @@ if ( retval != 0 )
 perror("Thread pthread_setcanceltype failed...");
 exit(EXIT_FAILURE);
 }
+#endif // FUPPES_TARGET_WIN32
 
   CUDPSocket* udp_sock = (CUDPSocket*)arg;
   stringstream sLog;

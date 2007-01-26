@@ -234,6 +234,9 @@ void CHTTPServer::CleanupSessions()
  */
 fuppesThreadCallback AcceptLoop(void *arg)
 {
+                     
+#ifndef FUPPES_TARGET_WIN32
+                     
 int retval;
 // Set thread cancel state
 retval =
@@ -252,6 +255,7 @@ if ( retval != 0 )
 perror("Thread pthread_setcanceltype failed...");
 exit(EXIT_FAILURE);
 }
+#endif // FUPPES_TARGET_WIN32
 
 
 
