@@ -1,9 +1,10 @@
-Version 0.7 (2007-01-?)
+Version 0.7 (??)
   * initial UPnP eventing
     referring to the "Intel DeviceValidator" the eventing mechanism
     is now UPnP 1.0 compliant
   * initial taglib support (optional)  
   * initial TwoLAME support (choose encoder at build or runtime)
+  * initial libnotify support (--enable-libnotify)
   
   * new ./configure option --enable-default-http-port=PORT  
 

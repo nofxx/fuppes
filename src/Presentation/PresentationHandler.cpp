@@ -253,7 +253,7 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
   sResult << "<style type=\"text/css\">" << endl << GetStylesheet(p_sImgPath) << endl << "</style>";
   
   
-  sResult << "<script type=\"text/javascript\"> \r\n"
+  /*sResult << "<script type=\"text/javascript\"> \r\n"
     "function Toggle(Id) { \r\n"
     "  var remote = document.getElementById('Remote'+Id);"
     "  var img    = document.getElementById('Pic'+Id);\r\n"
@@ -273,14 +273,14 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
     "  for(i = 0; i < Count; i++) { "
     "    Toggle(i); "
     "  } "
-    "}";
+    "}"; */
     
   sResult << "</script>";  
   sResult << "</head>";
   /* header end */
   
     
-  sResult << "<body onload=\"CloseAll(" << CSharedConfig::Shared()->GetFuppesInstance(0)->GetRemoteDevices().size() << ")\">";
+  sResult << "<body>";
   
   //pFuppes->GetRemoteDevices().size()
   
@@ -729,7 +729,7 @@ std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes, std::s
     sResult<< pDevice->GetFriendlyName() << "</th></tr>" << endl;*/
     sResult << "<tr><th colspan=\"2\" style=\"background-image: url(" << p_sImgPath << "header-gradient-small.png); color: #FFFFFF;\">" <<
                  
-                 "<div style=\"float: left;\">";
+                 /*"<div style=\"float: left;\">";
                  switch(pDevice->GetDeviceType())
                  {
                    case UPNP_DEVICE_TYPE_MEDIA_SERVER:
@@ -738,11 +738,11 @@ std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes, std::s
                    default:
                      sResult << "<img src=\"" << p_sImgPath << "device-type-unknown.png\" />";                  
                  }                      
-                 sResult << "</div>" <<        
+                 sResult << "</div>" <<  */       
     
-                 "<div style=\"float: right;\">" <<
+                 /*"<div style=\"float: right;\">" <<
                  "<a href=\"javascript:Toggle(" << i << ")\"><!--<img src=\"plus.gif\" id=\"Pic" << i << "\" border=\"0\">-->x</a> " <<
-                 "</div>" <<
+                 "</div>" << */
     
                  pDevice->GetFriendlyName() <<
                "</th></tr>" << endl;

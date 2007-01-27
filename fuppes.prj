@@ -157,7 +157,9 @@ module.source.files=\
 	Transcoding/TwoLameEncoder.h\
 	Presentation/Images/device_type_unknown_png.cpp\
 	GENA/EventNotification.cpp\
-	GENA/EventNotification.h
+	GENA/EventNotification.h\
+	GUI/NotificationMgr.cpp\
+	GUI/NotificationMgr.h
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

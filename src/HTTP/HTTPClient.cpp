@@ -213,9 +213,11 @@ fuppesThreadCallback AsyncThread(void* arg)
     sReceived << buffer;
   }
   
-  cout << "TODO :: RECEIVED (" << __FILE__ << ", " << __LINE__ << "): " << sReceived.str() << endl;
-  fflush(stdout);
+  #warning todo: handle notification response
   pClient->m_sAsyncResult = sReceived.str();
+  //cout << "TODO :: RECEIVED (" << __FILE__ << ", " << __LINE__ << "): " << sReceived.str() << endl;
+  //fflush(stdout);
+  
   
   // clean up and exit
   upnpSocketClose(pClient->m_Socket);  

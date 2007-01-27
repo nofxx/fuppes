@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id: $
 
-INCLUDES = ${LIBXML_CFLAGS} ${PCRE_CFLAGS} ${VORBISFILE_CFLAGS} ${TAGLIB_CFLAGS}
+INCLUDES = ${FUPPES_CFLAGS} ${LIBXML_CFLAGS} ${PCRE_CFLAGS} ${VORBISFILE_CFLAGS} ${TAGLIB_CFLAGS}
 
 bin_PROGRAMS = fuppes
 
@@ -45,6 +45,7 @@ h_sources = \
   Transcoding/VorbisWrapper.h\
   Transcoding/MpcWrapper.h\
   Transcoding/FlacWrapper.h\
+  GUI/NotificationMgr.h\
 	SharedConfig.h\
   SharedLog.h\
 	Fuppes.h\
@@ -95,6 +96,7 @@ cpp_sources = \
   Transcoding/VorbisWrapper.cpp\
   Transcoding/MpcWrapper.cpp\
   Transcoding/FlacWrapper.cpp\
+  GUI/NotificationMgr.cpp\
 	SharedConfig.cpp\
   SharedLog.cpp\
 	Fuppes.cpp\
@@ -103,6 +105,7 @@ cpp_sources = \
 fuppes_SOURCES = ${h_sources} ${cpp_sources}
 
 fuppes_LDFLAGS = \
+  $(LIBNOTIFY_LIBS)\
   $(FUPPES_LIBS)\
   ${PTHREAD_LIBS}\
   ${UUID_LIBS}\

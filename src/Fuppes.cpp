@@ -39,6 +39,8 @@
 #include "UPnPDevice.h"
 #include "GENA/SubscriptionMgr.h"
 
+#include "GUI/NotificationMgr.h"
+
 using namespace std;
 
 const string LOGNAME = "FUPPES";
@@ -407,6 +409,10 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
       
       sMsg << "new device: " << pDevice->GetFriendlyName();
       CSharedLog::Shared()->Log(L_NORMAL, sMsg.str(), __FILE__, __LINE__);
+      
+      stringstream sMsg;
+      sMsg << "new UPnP device:" << endl << pDevice->GetFriendlyName() << " (" << pDevice->GetDeviceTypeAsString() << ")";
+      CNotificationMgr::Shared()->Notify(pDevice->GetFriendlyName(), sMsg.str());      
     }
     else {
       delete pDevice;
@@ -431,6 +437,10 @@ void CFuppes::HandleSSDPByeBye(CSSDPMessage* pMessage)
   {
     sLog << "received byebye from " << m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName();    
     CSharedLog::Shared()->Log(L_NORMAL, sLog.str(), __FILE__, __LINE__);
+    
+    stringstream sMsg;
+    sMsg << "UPnP device gone:" << endl << m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName() << " (" << m_RemoteDevices[pMessage->GetUUID()]->GetDeviceTypeAsString() << ")";
+    CNotificationMgr::Shared()->Notify(m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName(), sMsg.str());
     
     delete m_RemoteDevices[pMessage->GetUUID()];
     m_RemoteDevices.erase(pMessage->GetUUID());

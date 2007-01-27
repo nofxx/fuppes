@@ -20,8 +20,7 @@ VERSION=$GENERIC_VERSION
 #AC_INIT(fuppes, $GENERIC_VERSION, u-voelkel@users.sourceforge.net)
 AM_INIT_AUTOMAKE(fuppes, $GENERIC_VERSION, u-voelkel@users.sourceforge.net)
 AM_CONFIG_HEADER(config.h)
-
-AC_CONFIG_HEADERS
+#AC_CONFIG_HEADERS([config.h:config.hin])
 
 AC_PROG_CXX
 AC_PROG_CC
@@ -89,8 +88,12 @@ nonstandard prefix so pkg-config can find them.]), [$4])
 #CXXFLAGS="-O0 -g"
 #CXXFLAGS="-O3"
 
+FUPPES_CFLAGS=""
 FUPPES_LIBS="-ldl $FUPPES_LIBS"
+
 AC_SUBST(FUPPES_LIBS)
+AC_SUBST(FUPPES_CFLAGS)
+
 
 dnl Checks for libraries.
 PKG_CHECK_MODULES(PCRE, libpcre >= 5.0)
@@ -134,6 +137,7 @@ else
 fi
 
 # END TAGLIB
+
 
 
 LAME_LIBS=""
@@ -276,6 +280,25 @@ dnl Checks for Additional stuffs.
 AC_ARG_ENABLE(default-http-port,
  [  --enable-default-http-port[=PORT] Set the default HTTP port],
  [  CXXFLAGS="$CXXFLAGS -DDEFAULT_HTTP_PORT=$enableval" ])
+# end HTTP Port
+
+# libnotify
+have_libnotify=no
+use_libnotify=no
+
+AC_ARG_ENABLE(libnotify, 
+            [  --enable-libnotify  Use libnotify if availabe],
+            [ use_libnotify=yes; ] )
+            
+if test "x$use_libnotify" = "xyes"; then
+  PKG_CHECK_MODULES(LIBNOTIFY, libnotify >= 0.4.3, have_libnotify=yes, have_libnotify=no)
+  
+  if test "x$have_libnotify" = "xyes"; then  
+    FUPPES_LIBS="$FUPPES_LIBS $LIBNOTIFY_LIBS"
+    CXXFLAGS="$CXXFLAGS $LIBNOTIFY_CFLAGS -DHAVE_LIBNOTIFY"
+  fi
+fi
+# end libnotify
 
 
 
@@ -374,6 +397,12 @@ else
   echo "  taglib support disabled"
 fi
 
+# libnotify
+if test "x$have_libnotify" = "xyes"; then
+  echo "  libnotify support enabled"
+else
+  echo "  libnotify support disabled"
+fi
 
 echo ""
 echo "Thanks for using fuppes"

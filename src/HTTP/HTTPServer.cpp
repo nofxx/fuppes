@@ -233,30 +233,22 @@ void CHTTPServer::CleanupSessions()
  * new connection and stores them in the session list
  */
 fuppesThreadCallback AcceptLoop(void *arg)
-{
-                     
-#ifndef FUPPES_TARGET_WIN32
-                     
-int retval;
-// Set thread cancel state
-retval =
-pthread_setcancelstate(PTHREAD_CANCEL_ENABLE,NULL);
-if ( retval != 0 )
-{
-perror("Thread pthread_setcancelstate Failed...\n");
-exit(EXIT_FAILURE);
-}
+{                     
+  #ifndef FUPPES_TARGET_WIN32                     
+  //set thread cancel state
+  int nRetVal = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+  if (nRetVal != 0) {
+    perror("Thread pthread_setcancelstate Failed...\n");
+    exit(EXIT_FAILURE);
+  }
 
-// Set thread cancel type
-retval =
-pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED,NULL);
-if ( retval != 0 )
-{
-perror("Thread pthread_setcanceltype failed...");
-exit(EXIT_FAILURE);
-}
-#endif // FUPPES_TARGET_WIN32
-
+  // set thread cancel type
+  nRetVal = pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
+  if (nRetVal != 0) {
+    perror("Thread pthread_setcanceltype failed...");
+    exit(EXIT_FAILURE);
+  }
+  #endif // FUPPES_TARGET_WIN32
 
 
   // local vars
