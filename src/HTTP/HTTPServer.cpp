@@ -37,6 +37,8 @@
 
 using namespace std;
 
+#define MAX_BUFFER_SIZE 1048576 // 1 mb
+
 const string LOGNAME = "HTTPServer";
 
 #ifndef WIN32
@@ -524,6 +526,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   // send text message
   if(!p_Response->IsBinary())
   { 
+	  // log
     CSharedLog::Shared()->Log(L_DEBUG, p_Response->GetMessageAsString(), __FILE__, __LINE__);      
     
     #ifdef WIN32          
@@ -551,30 +554,45 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   // send binary
   unsigned int nOffset      = 0;
   char*        szChunk      = NULL;
-  unsigned int nRequestSize = 64000;
+  unsigned int nRequestSize = MAX_BUFFER_SIZE;
   int          nErr         = 0;    
     
     
-  // set ranges
-  if((p_Request->GetRangeStart() > 0) ||
-     ((p_Request->GetRangeEnd() > 0) && (p_Request->GetRangeEnd() < p_Response->GetBinContentLength()))
-    )
-  {          
-    if(p_Request->GetRangeEnd() > p_Request->GetRangeStart())
-      nRequestSize = p_Request->GetRangeEnd() - p_Request->GetRangeStart() + 1;
-    else
-      nRequestSize = p_Response->GetBinContentLength() - p_Request->GetRangeStart() + 1;
-          
-    nOffset = p_Request->GetRangeStart();      
+  // calculate response ranges and request size
+	
+	// set response start range and the read offset
+	// to the request's start range
+	p_Response->SetRangeStart(p_Request->GetRangeStart());
+	nOffset = p_Request->GetRangeStart();
+	
+	// partial request
+  if((p_Request->GetRangeStart() > 0) || (p_Request->GetRangeEnd() > 0))
+	{
+    // not eof	
+	  if(p_Request->GetRangeEnd() < p_Response->GetBinContentLength())
+		{
+			// RANGE: BYTES=[n]-n+1
+		  // the request contains a range end value
+      if(p_Request->GetRangeEnd() > p_Request->GetRangeStart())
+        nRequestSize = p_Request->GetRangeEnd() - p_Request->GetRangeStart() + 1;
+      // RANGE: BYTES=n-
+			// the request does NOT conatin a range and value
+			else
+        nRequestSize = p_Response->GetBinContentLength() - p_Request->GetRangeStart() + 1;
+		}
+		
+		// set HTTP 206 partial content
     p_Response->SetMessageType(HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT);          
-  }    
-  
-  p_Response->SetRangeStart(p_Request->GetRangeStart());
-  if(p_Request->GetRangeEnd() > 0)
+  }
+	
+	// set range end
+  if(p_Request->GetRangeEnd() > 0) {
     p_Response->SetRangeEnd(p_Request->GetRangeEnd());
-  else
+  }
+	else {
     p_Response->SetRangeEnd(p_Response->GetBinContentLength());
-  
+  }
+
  
     
   // send header if it is a HEAD response 
@@ -582,7 +600,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   if((nErr != -1) && ((p_Request->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) ||
      ((p_Request->GetRangeStart() > 0) && (p_Request->GetRangeStart() >= p_Response->GetBinContentLength()))))
   {
-    CSharedLog::Shared()->Log(L_DEBUG, p_Response->GetHeaderAsString(), __FILE__, __LINE__);      
+	  // log
+		CSharedLog::Shared()->Log(L_DEBUG, p_Response->GetHeaderAsString(), __FILE__, __LINE__);      
     
     #ifdef WIN32
     nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), 0);             
@@ -599,8 +618,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   unsigned int nReqChunkSize = 0;
   
   // set chunk size
-  if(nRequestSize > 1048576) { // 1 mb  
-    nReqChunkSize = 1048576;
+  if(nRequestSize > MAX_BUFFER_SIZE) {  
+    nReqChunkSize = MAX_BUFFER_SIZE;
     szChunk       = new char[nReqChunkSize];
     bChunkLoop    = true;
   }
@@ -616,10 +635,10 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   { 
     // send HTTP header when the first package is ready
     if(nCnt == 0) {
-      sLog << p_Response->GetHeaderAsString() << "partial binary (" << nOffset << " - " << nOffset + nRet << ")";
+      // log
+			sLog << p_Response->GetHeaderAsString() << "partial binary (" << nOffset << " - " << nOffset + nRet << ")";
       CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__);
       sLog.str("");
-      
       
       #ifdef WIN32
       nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), 0);             
@@ -640,7 +659,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     #else
     nErr = send(p_Session->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);
     #endif
-           
+		       
     nSend += nRet; 
     nCnt++;
     nOffset += nRet;
@@ -649,8 +668,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     // calc next chunk size
     if(bChunkLoop && nErr >= 0) {
       nRequestSize -= nReqChunkSize;
-      if(nRequestSize > 1048576)
-        nReqChunkSize = 1048576; // 1 mb
+      if(nRequestSize > MAX_BUFFER_SIZE)
+        nReqChunkSize = MAX_BUFFER_SIZE;
       else
         nReqChunkSize = nRequestSize;        
     }

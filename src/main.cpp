@@ -148,11 +148,25 @@ int main(int argc, char* argv[])
   {
     for(int i = 1; i < argc; i++)
     {
-      //cout << argv[i] << endl;
-      if((strcmp(argv[i], "-d") == 0) || (strcmp(argv[i], "--daemon") == 0))
+      // --daemon
+			if((strcmp(argv[i], "-d") == 0) || (strcmp(argv[i], "--daemon") == 0))
         bDaemonMode = true;
+			// -- syslog 
       else if(strcmp(argv[i], "--syslog") == 0)
         CSharedLog::Shared()->SetUseSyslog(true);
+			// --loglevel
+			else if((strcmp(argv[i], "--loglevel") == 0) && (argc > i + 1)) {
+			
+			  if((strcmp(argv[i + 1], "none") == 0) || (strcmp(argv[i + 1], "0") == 0))
+				  CSharedLog::Shared()->SetLogLevel(0, false);
+				else if((strcmp(argv[i + 1], "normal") == 0) || (strcmp(argv[i + 1], "1") == 0))
+				  CSharedLog::Shared()->SetLogLevel(1, false);
+				else if((strcmp(argv[i + 1], "extended") == 0) || (strcmp(argv[i + 1], "2") == 0))
+				  CSharedLog::Shared()->SetLogLevel(2, false);
+				else if((strcmp(argv[i + 1], "debug") == 0) || (strcmp(argv[i + 1], "3") == 0))
+				  CSharedLog::Shared()->SetLogLevel(3, false);
+			} // end --loglevel
+			
     }
   }
 

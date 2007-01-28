@@ -85,7 +85,7 @@ CHTTPMessage::~CHTTPMessage()
     delete m_pUPnPAction;
   
   if(m_pszBinContent)
-    free(m_pszBinContent); //delete[] m_pszBinContent;
+    free(m_pszBinContent);
     
   if(m_TranscodeThread)
     fuppesThreadClose(m_TranscodeThread);
@@ -118,6 +118,7 @@ bool CHTTPMessage::SetMessage(std::string p_sMessage)
   CMessageBase::SetMessage(p_sMessage);  
   //CSharedLog::Shared()->DebugLog(LOGNAME, p_sMessage);  
 
+  #warning todo: complete HTTP parser
   CHTTPParser* pParser = new CHTTPParser();
   pParser->Parse(this);
   delete pParser;
@@ -130,7 +131,7 @@ void CHTTPMessage::SetBinContent(char* p_szBinContent, unsigned int p_nBinConten
   m_bIsBinary = true;
 
   m_nBinContentLength = p_nBinContenLength;      
-  m_pszBinContent     = (char*)malloc(sizeof(char) * (m_nBinContentLength + 1));//new char[m_nBinContentLength + 1];    
+  m_pszBinContent     = (char*)malloc(sizeof(char) * (m_nBinContentLength + 1));    
   memcpy(m_pszBinContent, p_szBinContent, m_nBinContentLength);
   m_pszBinContent[m_nBinContentLength] = '\0';   
 }
@@ -141,11 +142,8 @@ void CHTTPMessage::SetBinContent(char* p_szBinContent, unsigned int p_nBinConten
 
 CUPnPAction* CHTTPMessage::GetAction()
 {
-  //BOOL_CHK_RET_POINTER(pAction);
-
-  if(!m_pUPnPAction)
-  {                
-    /* Build UPnPAction */  
+  if(!m_pUPnPAction) {                
+    // Build UPnPAction 
     CUPnPActionFactory ActionFactory;
     m_pUPnPAction = ActionFactory.BuildActionFromString(m_sContent);  
   }
