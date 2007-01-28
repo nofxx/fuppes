@@ -147,7 +147,7 @@ bool CVorbisDecoder::OpenFile(std::string p_sFileName)
   }
   fprintf(stderr,"\nBitstream is %d channel, %ldHz\n", m_pVorbisInfo->channels, m_pVorbisInfo->rate);
   //fprintf(stderr,"\nDecoded length: %ld samples\n", (long)ov_pcm_total(&m_VorbisFile, -1));
-  fprintf(stderr,"Encoded by: %s\n\n", m_OvComment(&m_VorbisFile,-1)->vendor);*/
+  fprintf(stderr,"Encoded by: %s\n\n", m_OvComment(&m_VorbisFile,-1)->vendor); */
   
   return true;
 }
@@ -158,19 +158,25 @@ void CVorbisDecoder::CloseFile()
 }
 
 long CVorbisDecoder::DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize)
-{  
+{ 
   int bitstream = 0; 
   int bytesRead = m_OvRead(&m_VorbisFile, p_PcmOut, p_nSize, m_nEndianess, 2, 1, &bitstream);
   
+  // eof
   if(bytesRead == 0)
-  {
-      /* todo: error handling */
+  {    
     return -1;
   }
   else if(bytesRead < 0) 
   {
-    /* todo: error handling */
-    /* error in the stream */
+    // error in the stream
+    if(bytesRead == OV_HOLE)
+      CSharedLog::Shared()->Log(L_EXTENDED_ERR,"OV_HOLE", __FILE__, __LINE__);
+    else if(bytesRead == OV_EBADLINK)    
+      CSharedLog::Shared()->Log(L_EXTENDED_ERR,"OV_EBADLINK", __FILE__, __LINE__);
+    else {
+      CSharedLog::Shared()->Log(L_EXTENDED_ERR,"unknown stream error", __FILE__, __LINE__);      
+    }    
     return -1;
   }
   else 
@@ -178,7 +184,7 @@ long CVorbisDecoder::DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize)
     if(bitstream != 0)
       return -1;
     
-    /* calc samples an encode */
+    // calc samples and return
     long samplesRead = bytesRead / m_pVorbisInfo->channels / sizeof(short int);
     return samplesRead;
   }  

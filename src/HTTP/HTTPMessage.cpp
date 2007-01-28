@@ -318,13 +318,17 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
   {    
     /*cout << "get transcode chunk" << endl;
     cout << "length: " << m_nBinContentLength << endl;
+    if(IsTranscoding())
+      cout << "is transcoding: true" << endl;
+    else
+      cout << "is transcoding: false" << endl;
     fflush(stdout);*/
         
     fuppesThreadLockMutex(&TranscodeMutex);      
     
     unsigned int nRest       = m_nBinContentLength - m_nBinContentPosition;
     
-    //cout << "REST    : " << nRest << endl;
+    //cout << "REST 1   : " << nRest << endl;
     
     unsigned int nDelayCount = 0;  
     while(this->IsTranscoding() && (nRest < p_nSize) && !m_pTranscodingSessionInfo->m_bBreakTranscoding)
@@ -333,11 +337,11 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
 
       stringstream sLog;
       sLog << "we are sending faster then we can transcode!" << endl;
-      sLog << "  Try     : " << (nDelayCount + 1) << "/50" << endl;
-      sLog << "  Lenght  : " << m_nBinContentLength << endl;
-      sLog << "  Position: " << m_nBinContentPosition << endl;
-      sLog << "  Size    : " << p_nSize << endl;
-      sLog << "  Rest    : " << nRest << endl;
+      sLog << "  try     : " << (nDelayCount + 1) << "/50" << endl;
+      sLog << "  length  : " << m_nBinContentLength << endl;
+      sLog << "  position: " << m_nBinContentPosition << endl;
+      sLog << "  size    : " << p_nSize << endl;
+      sLog << "  rest    : " << nRest << endl;
       sLog << "delaying send-process!";
 
       //cout << sLog.str() << endl;
@@ -351,9 +355,8 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
       /* if bufer is still empty after n tries
          the machine seems to be too slow. so
          we give up */
-      if (nDelayCount == 50) /* 100 * 100ms = 10sec */
-      {
-        fuppesThreadLockMutex(&TranscodeMutex);    
+      if (nDelayCount == 50) /* 50 * 200ms = 10sec */
+      {        
         m_pTranscodingSessionInfo->m_bBreakTranscoding = true;
         fuppesThreadUnlockMutex(&TranscodeMutex);
         return 0;
@@ -361,11 +364,13 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     }
     
     nRest = m_nBinContentLength - m_nBinContentPosition;
+
+    //cout << "REST 2   : " << nRest << endl;
     
     if(nRest > p_nSize)
     {
-      /*cout << "copy content 1" << endl;
-      cout << "addr: " << &m_pszBinContent << endl;
+      //cout << "copy content 1" << endl;
+      /*cout << "addr: " << &m_pszBinContent << endl;
       fflush(stdout);*/
       
       memcpy(p_sContentChunk, &m_pszBinContent[m_nBinContentPosition], p_nSize);    
@@ -384,8 +389,8 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
       cout << "  Lenght  : " << m_nBinContentLength << endl;
       cout << "  Position: " << m_nBinContentPosition << endl;
       cout << "  Size    : " << p_nSize << endl;
-      cout << "  Rest    : " << nRest << endl;      
-      fflush(stdout);*/
+      cout << "  Rest    : " << nRest << endl;      */
+      /*fflush(stdout);*/
       
       memcpy(p_sContentChunk, &m_pszBinContent[m_nBinContentPosition], nRest);
       m_nBinContentPosition += nRest;

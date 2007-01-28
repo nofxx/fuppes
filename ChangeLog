@@ -4,7 +4,7 @@ Version 0.7 (??)
     is now UPnP 1.0 compliant
   * initial taglib support (optional)  
   * initial TwoLAME support (choose encoder at build or runtime)
-  * initial libnotify support (--enable-libnotify)
+  * initial libnotify support (./configure --enable-libnotify)
   
   * new ./configure option --enable-default-http-port=PORT  
 
@@ -17,7 +17,7 @@ Version 0.7 (??)
   ** daemon mode will allway use syslog
   ** use the parameter --syslog for the command line mode
   
-  * fixed daemon mode
+  * fixed daemon mode (unix)
   ** config file is now checked before forking
 
   * code cleanup

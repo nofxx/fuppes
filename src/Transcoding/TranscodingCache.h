@@ -84,7 +84,7 @@ class CTranscodingCacheObject
     
     CTranscodeSessionInfo* m_pSessionInfo;    
     
-    int nBufferLength;  
+    unsigned int nBufferLength;  
     short int* m_pPcmOut;
     
 //  private:

@@ -35,11 +35,15 @@
 #include <errno.h>
 #endif
 
-using namespace std;
 
+// the max buffer size for files directly served
+// from the local file system
 #define MAX_BUFFER_SIZE 1048576 // 1 mb
 
-const string LOGNAME = "HTTPServer";
+// the max buffer size for transcoded files
+#define MAX_TRANSCODING_BUFFER_SIZE 65536 // 64 kbyte
+
+
 
 #ifndef WIN32
 // mac os x has no MSG_NOSIGNAL 
@@ -49,6 +53,7 @@ const string LOGNAME = "HTTPServer";
 #endif
 #endif
 
+using namespace std;
 
 fuppesThreadCallback AcceptLoop(void *arg);
 fuppesThreadCallback SessionLoop(void *arg);
@@ -326,7 +331,7 @@ fuppesThreadCallback SessionLoop(void *arg)
     // send response
     bResult = SendResponse(pSession, pResponse, pRequest);
     if(!bResult) {
-      CSharedLog::Shared()->Error(LOGNAME, "sending HTTP message");    
+      CSharedLog::Shared()->Log(L_EXTENDED_ERR, "sending HTTP message", __FILE__, __LINE__);    
       break;
     }
     // end send response
@@ -483,7 +488,7 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
     // log
     stringstream sMsg;
     sMsg << "bytes received: " << nBytesReceived;
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, sMsg.str());
+    CSharedLog::Shared()->Log(L_EXTENDED, sMsg.str(), __FILE__, __LINE__);
 
     // create message
     bResult = p_Request->SetMessage(szMsg);    
@@ -616,10 +621,16 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   int          nSend         = 0;    
   bool         bChunkLoop    = false;
   unsigned int nReqChunkSize = 0;
+    
+  if (p_Response->IsTranscoding()) {    
+    nReqChunkSize = MAX_TRANSCODING_BUFFER_SIZE;    
+  }
+  else {    
+    nReqChunkSize = MAX_BUFFER_SIZE;    
+  }  
   
   // set chunk size
-  if(nRequestSize > MAX_BUFFER_SIZE) {  
-    nReqChunkSize = MAX_BUFFER_SIZE;
+  if(nRequestSize > nReqChunkSize) {    
     szChunk       = new char[nReqChunkSize];
     bChunkLoop    = true;
   }
@@ -628,7 +639,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     nReqChunkSize = nRequestSize;
     bChunkLoop    = false;
   }
-    
+  
      
   // send loop
   while((nErr != -1) && ((nRet = p_Response->GetBinContentChunk(szChunk, nReqChunkSize, nOffset)) > 0)) 
@@ -666,12 +677,12 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     
     
     // calc next chunk size
-    if(bChunkLoop && nErr >= 0) {
-      nRequestSize -= nReqChunkSize;
-      if(nRequestSize > MAX_BUFFER_SIZE)
-        nReqChunkSize = MAX_BUFFER_SIZE;
-      else
-        nReqChunkSize = nRequestSize;        
+    if(bChunkLoop && nErr >= 0) {      
+      if(nRequestSize > nReqChunkSize)
+        nRequestSize -= nReqChunkSize;      
+      
+      if(nRequestSize < nReqChunkSize)
+        nReqChunkSize = nRequestSize;       
     }
     
     
@@ -691,10 +702,10 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
         stringstream sLog;
         #ifdef WIN32
         sLog << "send error :: error no. " << WSAGetLastError() << " " << strerror(WSAGetLastError()) << endl;              
-        CSharedLog::Shared()->Error(LOGNAME, sLog.str());     
+        CSharedLog::Shared()->Log(L_EXTENDED_ERR, sLog.str(), __FILE__, __LINE__);     
         #else          
         sLog << "send error :: error no. " << errno << " " << strerror(errno) << endl;
-        CSharedLog::Shared()->Error(LOGNAME, sLog.str());
+        CSharedLog::Shared()->Log(L_EXTENDED_ERR, sLog.str(), __FILE__, __LINE__);
         #endif  
       }
       

@@ -332,14 +332,14 @@ CAudioDecoderBase* CTranscodingMgr::CreateAudioDecoder(std::string p_sFileExt, u
 
   #ifndef DISABLE_VORBIS
   if(p_sFileExt.compare("ogg") == 0) {
-    pResult = (CAudioDecoderBase*)(new CVorbisDecoder());
-    *p_nBufferSize = MPC_DECODER_BUFFER_LENGTH * 4;
+    pResult = (CAudioDecoderBase*)(new CVorbisDecoder());    
   }
   #endif
 
   #ifndef DISABLE_MUSEPACK
   if(p_sFileExt.compare("mpc") == 0) {
     pResult = (CAudioDecoderBase*)(new CMpcDecoder());
+    *p_nBufferSize = MPC_DECODER_BUFFER_LENGTH * 4;
   }
   #endif
 

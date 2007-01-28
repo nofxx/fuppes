@@ -81,7 +81,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
       return false;
     }
     
-    #warning todo: set bitrate from config
+    #warning todo: set encoder bitrate from config
     //m_pLameWrapper->SetBitrate(LAME_BITRATE_320);
     m_pAudioEncoder->Init();
   }  
@@ -90,7 +90,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
   if(!m_pDecoder)
   {  
     // create decoder
-    unsigned int nBufferLength = 32768;
+    nBufferLength = 32768;
     std::string sExt = ToLower(ExtractFileExt(m_pSessionInfo->m_sInFileName));  
     
     m_pDecoder = CTranscodingMgr::Shared()->CreateAudioDecoder(sExt, &nBufferLength);
@@ -193,9 +193,10 @@ fuppesThreadCallback TranscodeThread(void *arg)
     
     nAppendCount++;
     
+    #define APPEND_BUFFER_SIZE 65536 // 64 kb
     
-    /* append frames to the cache object's buffer */
-    if((nAppendCount % 200) == 0)
+    /* append frames to the cache-object's buffer */
+    if(((nAppendCount % 50) == 0) || (nTmpSize >= APPEND_BUFFER_SIZE))
     {      
       pCacheObj->Lock();
       
@@ -213,11 +214,11 @@ fuppesThreadCallback TranscodeThread(void *arg)
       free(szTmpBuff);
       szTmpBuff = NULL;
       nTmpSize = 0;
-      nAppendCount = 0;
+      //nAppendCount = 0;
     }
     
   }
-  
+    
   /* transcoding loop exited */
   if(!pCacheObj->m_bBreakTranscoding)
   {
@@ -252,12 +253,16 @@ fuppesThreadCallback TranscodeThread(void *arg)
     pCacheObj->m_bIsComplete    = true;
     pCacheObj->m_bIsTranscoding = false;
       
-    pCacheObj->Unlock();
+    pCacheObj->Unlock();    
   }
   
   /* delete temporary buffer */
   if(szTmpBuff)
     free(szTmpBuff);
+  
+  stringstream sLog;
+  sLog << "transcoding \"" << pCacheObj->m_pSessionInfo->m_sInFileName << "\" done. (" << pCacheObj->m_nBufferSize << " bytes)";  
+  CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__);  
   
   fuppesThreadExit();  
 }
@@ -310,12 +315,13 @@ void CTranscodingCache::ReleaseCacheObject(CTranscodingCacheObject* pCacheObj)
 {
   fuppesThreadLockMutex(&m_Mutex);  
     
-  pCacheObj->m_nRefCount--;  
+  pCacheObj->m_nRefCount--;
   if(pCacheObj->m_nRefCount == 0)
   {  
     m_CachedObjectsIterator = m_CachedObjects.find(pCacheObj->m_sInFileName);
     if(m_CachedObjectsIterator != m_CachedObjects.end())
     {
+      CSharedLog::Shared()->Log(L_DEBUG, "delete cache object: " + pCacheObj->m_sInFileName, __FILE__, __LINE__);
       m_CachedObjects.erase(m_CachedObjectsIterator);
       delete pCacheObj;
     } 
