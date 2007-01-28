@@ -151,7 +151,7 @@ public:
 
   void          Start();		
   void          Stop();
-  upnpSocket    GetSocket();
+  fuppesSocket  GetSocket() { return m_Socket; }
   std::string   GetURL();	
   void          CleanupSessions();
 

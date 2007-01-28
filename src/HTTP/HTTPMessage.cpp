@@ -68,7 +68,7 @@ CHTTPMessage::CHTTPMessage()
   m_nBinContentPosition = 0;
   m_nContentLength      = 0;
   m_pszBinContent       = NULL;
-  m_bIsChunked          = false;
+  //m_bIsChunked          = false;
   m_TranscodeThread     = (fuppesThread)NULL;  
   m_bIsBinary           = false;
   m_nRangeStart         = 0;
@@ -206,42 +206,44 @@ std::string CHTTPMessage::GetHeaderAsString()
     sResult << "Content-Type: " << m_sHTTPContentType << "\r\n";
     
     /* Content length */
-    if(!m_bIsBinary)
-    {
+    
+    // if it's a non binary file give the length of m_sContent
+    if(!m_bIsBinary) {
       sResult << "Content-Length: " << (int)strlen(m_sContent.c_str()) << "\r\n";
     }
+    // otherwise calc length
     else
-    {    
+    { 
+      // transcoding responses don't contain content length
       if(!this->IsTranscoding() && (m_nBinContentLength > 0))
       {      
+        // ranges
         if((m_nRangeStart > 0) || (m_nRangeEnd > 0))
         {
-          if(m_nRangeEnd < m_nBinContentLength)
-          {
+          if(m_nRangeEnd < m_nBinContentLength) {
             sResult << "Content-Length: " << m_nRangeEnd - m_nRangeStart + 1 << "\r\n";
             sResult << "Content-Range: bytes " << m_nRangeStart << "-" << m_nRangeEnd << "/" << m_nBinContentLength << "\r\n";
           }
-          else
-          {
+          else {
             sResult << "Content-Length: " << m_nBinContentLength - m_nRangeStart << "\r\n";            
             sResult << "Content-Range: bytes " << m_nRangeStart << "-" << m_nBinContentLength - 1 << "/" << m_nBinContentLength << "\r\n";            
           }
         }
-        else
-        {
+        // complete
+        else {
           sResult << "Content-Length: " << m_nBinContentLength << "\r\n";
         } 
       }
-    } /* if(m_bIsBinary) */
+    } // if(m_bIsBinary)
     /* end Content length */        
     
-    /* Accept-Range */
+    /* Accept-Ranges */
     sResult << "Accept-Ranges: bytes\r\n";
     
     /* Connection */
     sResult << "Connection: close\r\n";    
 	
-    /* Date */
+    // date
     char   szTime[30];
     time_t tTime = time(NULL);
     strftime(szTime, 30,"%a, %d %b %Y %H:%M:%S GMT" , gmtime(&tTime));   
@@ -254,20 +256,19 @@ std::string CHTTPMessage::GetHeaderAsString()
   
   
   /* GENA header information */
-  if(m_nHTTPMessageType == HTTP_MESSAGE_TYPE_GENA_OK)
+  else if(m_nHTTPMessageType == HTTP_MESSAGE_TYPE_GENA_OK)
   {
-    if(m_sGENASubscriptionID.length() > 0) // subscription or renew
-    {
+    // subscription or renew    
+    if(m_sGENASubscriptionID.length() > 0) { 
       sResult << "SID: uuid:" << m_sGENASubscriptionID << "\r\n";
       sResult << "Timeout: Second-" << 180 << "\r\n";
     }
   }
   
- 	/* Server */
-  sResult << "Server: " << CSharedConfig::Shared()->GetOSName() << "/" << CSharedConfig::Shared()->GetOSVersion() << ", ";
-  sResult << "UPnP/1.0, ";
-  sResult << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << "\r\n";  
-  
+ 	// server signature
+  sResult << 
+    "Server: " << CSharedConfig::Shared()->GetOSName() << "/" << CSharedConfig::Shared()->GetOSVersion() << ", " <<
+    "UPnP/1.0, " << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << "\r\n";  
 	
 	sResult << "\r\n";
 	return sResult.str();
@@ -576,7 +577,7 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
 
 bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
 {
-  m_bIsChunked = true;
+  //m_bIsChunked = true;
   m_bIsBinary  = true;  
   bool bResult = false;
   
@@ -609,7 +610,7 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName)
   
   CSharedLog::Shared()->Log(L_EXTENDED, "TranscodeContentFromFile :: " + p_sFileName, __FILE__, __LINE__);
   
-  m_bIsChunked = true;
+  //m_bIsChunked = true;
   m_bIsBinary  = true;  
     
   m_TranscodeThread = (fuppesThread)NULL;

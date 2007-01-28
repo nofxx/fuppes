@@ -152,11 +152,8 @@ public:
   unsigned int      GetBinContentLength() { return m_nBinContentLength; }
   char*             GetBinContent()       { return m_pszBinContent;     }
 	
-  bool              IsChunked()           { return m_bIsChunked;        }
-  void              SetIsChunked(bool p_bIsChunked) { m_bIsChunked = p_bIsChunked;
-                                                      if(m_bIsChunked)
-                                                        m_bIsBinary = m_bIsChunked;
-                                                    }  
+  bool              IsBinary()            { return m_bIsBinary;         }  
+  void              SetIsBinary(bool p_bIsBinary) { m_bIsBinary = p_bIsBinary; }
   
 
   CUPnPAction*      GetAction();
@@ -241,7 +238,7 @@ private:
   std::string        m_sGENASubscriptionID;
   
    
-  bool               m_bIsChunked;  
+  //bool               m_bIsChunked;  
   CUPnPAction*       m_pUPnPAction;
   std::fstream       m_fsFile;
   unsigned int       m_nRangeStart;

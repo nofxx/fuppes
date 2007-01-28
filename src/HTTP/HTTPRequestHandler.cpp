@@ -176,9 +176,8 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, HTTP_MESSAG
     else
     {    
       if(CFileDetails::IsTranscodingExtension(sExt)) {
-        CSharedLog::Shared()->Log(L_EXTENDED, "transcode " + sPath, __FILE__, __LINE__);
-        
-        #warning TODO: check if transcoding is possible
+        CSharedLog::Shared()->Log(L_EXTENDED, "transcode " + sPath, __FILE__, __LINE__);        
+     
         sMimeType = CFileDetails::GetMimeType(sPath, true);
         if(p_nRequestType == HTTP_MESSAGE_TYPE_GET) {          
           pResponse->TranscodeContentFromFile(sPath);
@@ -186,7 +185,7 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, HTTP_MESSAG
         else if(p_nRequestType == HTTP_MESSAGE_TYPE_HEAD) {
           // mark the head response as chunked so
           // the correct header will be build
-          pResponse->SetIsChunked(true);
+          pResponse->SetIsBinary(true);
         }
       }
       else {
