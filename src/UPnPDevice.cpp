@@ -114,7 +114,11 @@ bool CUPnPDevice::BuildFromDescriptionURL(std::string p_sDescriptionURL)
     
   /* Get description message */
   if(true == HTTPClient.Get(p_sDescriptionURL, &HTTPMessage))
-  {    
+  {
+	  if(HTTPMessage.GetMessageType() != HTTP_MESSAGE_TYPE_200_OK)
+		  return false; 
+		//cout << HTTPMessage.GetContent() << endl;	
+			
     return ParseDescription(HTTPMessage.GetContent());
   }
   else
@@ -352,12 +356,47 @@ std::string CUPnPDevice::GetDeviceDescription()
  HELPER
 ===============================================================================*/
 
+//xmlNode* FindNode(std::string p_sNodeName, xmlNode* pParentNode = NULL, bool p_bWalkSubnodes = false);
+
+xmlNode* FindNode(std::string p_sNodeName, xmlNode* pParentNode = NULL, bool p_bWalkSubnodes = false)
+{
+  if(!pParentNode || !pParentNode->children)
+	  return NULL;
+
+	xmlNode* pTmpNode = NULL;
+	xmlNode* pSubNode = NULL;
+	string   sNodeName;
+	
+	pTmpNode = pParentNode->children;
+	do {
+	  sNodeName = (char*)pTmpNode->name;
+		//cout << "search: " << sNodeName << endl;
+		
+		if(ToLower(sNodeName).compare(ToLower(p_sNodeName)) == 0) {
+		  return pTmpNode;
+		}
+		
+		if(p_bWalkSubnodes && pTmpNode->children) {
+		  pSubNode = FindNode(p_sNodeName, pTmpNode, true);
+			if(pSubNode)
+			  return pSubNode;
+		}
+		
+	  pTmpNode = pTmpNode->next;
+	}
+	while(pTmpNode);
+	
+	
+	return NULL;
+}
+
 /* ParseDescription */
 bool CUPnPDevice::ParseDescription(std::string p_sDescription)
 {
-  #warning todo: parse description
-  
-  /*xmlDocPtr pDoc = NULL;
+  #warning todo: parse complete description
+  //cout << p_sDescription << endl;
+	
+  xmlDocPtr pDoc = NULL;
   pDoc = xmlReadMemory(p_sDescription.c_str(), p_sDescription.length(), "", NULL, 0);
   if(!pDoc) {
     CSharedLog::Shared()->Log(L_EXTENDED_ERR, "xml parser error", __FILE__, __LINE__);
@@ -368,31 +407,60 @@ bool CUPnPDevice::ParseDescription(std::string p_sDescription)
   xmlNode* pTmpNode  = NULL;   
   pRootNode = xmlDocGetRootElement(pDoc);  
   
-  
+	// friendlyName
+	pTmpNode = FindNode("friendlyName", pRootNode, true);
+	if(pTmpNode)
+	  m_sFriendlyName = (char*)pTmpNode->children->content;
+
+	// UDN
+	pTmpNode = FindNode("UDN", pRootNode, true);
+	if(pTmpNode) {
+	  //m_sUUID = 
+	}
+	
+	// deviceType
+	pTmpNode = FindNode("deviceType", pRootNode, true);
+	if(pTmpNode) {
+	  string sDevType = ToLower((char*)pTmpNode->children->content);
+		
+    if(sDevType.compare("urn:schemas-upnp-org:device:mediarenderer:1") == 0)    
+      m_nUPnPDeviceType = UPNP_DEVICE_TYPE_MEDIA_RENDERER;
+    else if(sDevType.compare("urn:schemas-upnp-org:device:mediaserver:1") == 0)    
+      m_nUPnPDeviceType = UPNP_DEVICE_TYPE_MEDIA_SERVER;
+	}
+		
+			  
+				
+	// presentationURL
+	pTmpNode = FindNode("presentationURL", pRootNode, true);
+	if(pTmpNode) {
+	  m_sPresentationURL = (char*)pTmpNode->children->content;
+	}
+				
+	// manufacturer
+	pTmpNode = FindNode("manufacturer", pRootNode, true);
+	if(pTmpNode) {
+	  m_sManufacturer = (char*)pTmpNode->children->content;
+	}			
+				
+	// manufacturerURL
+	pTmpNode = FindNode("manufacturerURL", pRootNode, true);
+	if(pTmpNode) {
+	  m_sManufacturerURL = (char*)pTmpNode->children->content;
+	}	
+				
+								
   xmlFreeDoc(pDoc);
-  xmlCleanupParser(); */  
+  xmlCleanupParser(); 
   
   
-  //cout << p_sDescription << endl;
-  
-  RegEx rxFriendlyName("<friendlyName>(.*)</friendlyName>", PCRE_CASELESS);
-  if(rxFriendlyName.Search(p_sDescription.c_str())) {
-    m_sFriendlyName = rxFriendlyName.Match(1);
-  }
+
   
   RegEx rxUUID("<UDN>uuid:(.+)</UDN>", PCRE_CASELESS);
   if(rxUUID.Search(p_sDescription.c_str())) {
     m_sUUID = rxUUID.Match(1);
   }
   
-  RegEx rxDeviceType("<deviceType>(.*)</deviceType>", PCRE_CASELESS);
-  if(rxDeviceType.Search(p_sDescription.c_str())) {
-    string sDevType = ToLower(rxDeviceType.Match(1));    
-    if(sDevType.compare("urn:schemas-upnp-org:device:mediarenderer:1") == 0)    
-      m_nUPnPDeviceType = UPNP_DEVICE_TYPE_MEDIA_RENDERER;
-    else if(sDevType.compare("urn:schemas-upnp-org:device:mediaserver:1") == 0)    
-      m_nUPnPDeviceType = UPNP_DEVICE_TYPE_MEDIA_SERVER;
-  }
   
   /*<?xml version="1.0"?>
 <root

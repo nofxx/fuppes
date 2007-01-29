@@ -248,7 +248,8 @@ void CFuppes::OnSSDPCtrlReceiveMsg(CSSDPMessage* pMessage)
 {
 //  cout << inet_ntoa(pMessage->GetRemoteEndPoint().sin_addr) << ":" << ntohs(pMessage->GetRemoteEndPoint().sin_port) << endl;
   
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "OnSSDPCtrlReceiveMsg()");
+  CSharedLog::Shared()->Log(L_EXTENDED, "OnSSDPCtrlReceiveMsg()", __FILE__, __LINE__);
+	CSharedLog::Shared()->Log(L_DEBUG, pMessage->GetMessage(), __FILE__, __LINE__, false);
   
   if((m_sIPAddress.compare(inet_ntoa(pMessage->GetRemoteEndPoint().sin_addr)) != 0) || (pMessage->GetUUID().compare(m_sUUID) != 0))
   { 

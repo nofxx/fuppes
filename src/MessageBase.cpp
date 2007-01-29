@@ -64,14 +64,15 @@ bool CMessageBase::SetMessage(std::string p_sMessage)
 
   std::string::size_type nPos = m_sMessage.find("\r\n\r\n");  
   if(nPos != string::npos)
-  {
+  {	
     m_sHeader  = m_sMessage.substr(0, nPos);
-    m_sContent = m_sMessage.substr(nPos, m_sMessage.length() - nPos);    
-    
+    m_sContent = m_sMessage.substr(nPos + 4, m_sMessage.length() - nPos - 4);    
+
     return true;
   }
-  else
-    return false;  
+  else {
+		return false;
+	}  
 }
 
 /*===============================================================================

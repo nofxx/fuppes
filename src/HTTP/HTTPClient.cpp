@@ -168,7 +168,7 @@ bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_s
     if(sReceived.str().length() > 0)
     {
       CSharedLog::Shared()->Log(L_EXTENDED, "done receive", __FILE__, __LINE__);      
-      pResult->BuildFromString(sReceived.str());
+      pResult->SetMessage(sReceived.str());
       return true;
     }
     else

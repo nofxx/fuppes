@@ -30,43 +30,67 @@ bool CHTTPParser::Parse(CHTTPMessage* pMessage)
   std::string sType;
   int nVersion;
   
-  RegEx rxType("([GET|HEAD|POST|SUBSCRIBE|UNSUBSCRIBE|NOTIFY]+) +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
-  // it's a request
-  if(rxType.Search(pMessage->GetHeader().c_str()))
-  { 
-    sType = rxType.Match(1);
-    nVersion = atoi(rxType.Match(3));
+  RegEx rxRequest("([GET|HEAD|POST|SUBSCRIBE|UNSUBSCRIBE|NOTIFY]+) +(.+) +HTTP/1\\.([1|0])", PCRE_CASELESS);
+  RegEx rxResponse("HTTP/1\\.([1|0]) +(\\d+) +(.+)", PCRE_CASELESS);
+ 	
+	// it's a request
+  if(rxRequest.Search(pMessage->GetHeader().c_str())) { 
+    sType    = rxRequest.Match(1);
+    nVersion = atoi(rxRequest.Match(3));
   }
-  else
-  {
-    // check if it's a response
-    RegEx rxReq("HTTP/1\\.([1|0]) +(\\d+) +(.+)", PCRE_CASELESS);
-    if(rxReq.Search(pMessage->GetHeader().c_str()))
-    {
-      sType = rxReq.Match(2);
-      nVersion = atoi(rxReq.Match(1));
-    }
-    else
-      return false;
-  }
+	// it's a response
+  else if(rxResponse.Search(pMessage->GetHeader().c_str())) {
+		sType    = rxResponse.Match(2);
+		nVersion = atoi(rxResponse.Match(1));
+	}
+	else {
+		return false;
+	}
+  
+	// set version
+	if(nVersion == 0)
+	  pMessage->SetVersion(HTTP_VERSION_1_0);
+	else if(nVersion == 1)
+	  pMessage->SetVersion(HTTP_VERSION_1_1);
+	else
+	  return false;
     
-
+  // set message type
   sType = ToUpper(sType);
-  /*cout << "TYPE: " << sType << endl;
-  cout << "VERSION: " << nVersion << endl;*/
+	
+  // GET
+  if(sType.compare("GET") == 0) {
+	  pMessage->SetMessageType(HTTP_MESSAGE_TYPE_GET);
+	}
   
-  /* GET|HEAD */
-  if((sType.compare("GET") == 0) | (sType.compare("HEAD") == 0))
-  {
+	// HEAD
+  else if(sType.compare("HEAD") == 0) {
+	  pMessage->SetMessageType(HTTP_MESSAGE_TYPE_HEAD);
   }
-  
-  /* POST */
-  
+	
+  // POST
+	else if(sType.compare("POST") == 0) {
+	  pMessage->SetMessageType(HTTP_MESSAGE_TYPE_POST);
+  }
+
   /* SUBSCRIBE|UNSUBSCRIBE */
   
   /* NOTIFY */
   
-  /* 200 OK */
+  // 200 OK
+	else if(sType.compare("200") == 0) {
+	  pMessage->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
+	}
+	
+	// 403 FORBIDDEN
+	else if(sType.compare("403") == 0) {
+	  pMessage->SetMessageType(HTTP_MESSAGE_TYPE_403_FORBIDDEN);
+	}
+	
+	// 404 NOT FOUND
+	else if(sType.compare("404") == 0) {
+	  pMessage->SetMessageType(HTTP_MESSAGE_TYPE_404_NOT_FOUND);
+	}
   
   return true;
 }

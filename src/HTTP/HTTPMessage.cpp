@@ -457,7 +457,7 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
 {
   m_nBinContentLength = 0;
   m_sMessage = p_sMessage;
-  m_sContent = p_sMessage;  
+  //m_sContent = p_sMessage;  
   
   bool bResult = false;
 
@@ -738,7 +738,7 @@ bool CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
   if((unsigned int)m_nContentLength >= p_sMessage.length())                      
     return false;
   
-  m_sContent = p_sMessage.substr(p_sMessage.length() - m_nContentLength, m_nContentLength);
+  //m_sContent = p_sMessage.substr(p_sMessage.length() - m_nContentLength, m_nContentLength);
   
   return true;
 }
