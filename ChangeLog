@@ -27,6 +27,8 @@ Version 0.7 (??)
   * fixed TTL (time to live) for SSDP alive messages
   * (win32) now correctly linked against libws2_32 instead of libwinsock2
 
+  * webinterface: handling of urlencoded form values
+
 Version 0.5.4 (2006-11-23)
   * initial support for playlists (m3u, pls)
     new configuration option: "playlist representation"

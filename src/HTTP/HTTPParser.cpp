@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2006, 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -26,6 +26,8 @@
 
 bool CHTTPParser::Parse(CHTTPMessage* pMessage)
 {
+  m_pMessage = pMessage;
+
   /* find out the message type and HTTP version */
   std::string sType;
   int nVersion;
@@ -93,4 +95,73 @@ bool CHTTPParser::Parse(CHTTPMessage* pMessage)
 	}
   
   return true;
+}
+
+void CHTTPParser::ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage)
+{
+  m_pMessage = pMessage;
+  string sPost = m_pMessage->GetContent();
+	string sPart;
+	stringstream sVars;
+
+  RegEx rxValue("([\\w|_|-|\\d]+)=(.*)");
+	
+	while(sPost.length() > 0)
+	{
+	  if(sPost.find("&") != std::string::npos) {
+		  sPart = sPost.substr(0, sPost.find("&"));
+		  sPost = sPost.substr(sPost.find("&") + 1, sPost.length());
+		}
+		else {
+		  sPart = sPost;
+	    sPost = "";
+		}
+			
+		if(rxValue.Search(sPart.c_str())) {
+			sVars << rxValue.Match(1) << "=" << URLEncodeValueToPlain(rxValue.Match(2)) << "\r\n";
+		}
+		else {
+			sVars << sPart << "\r\n";
+		}	
+	}
+	
+  m_pMessage->SetContent(sVars.str());
+}
+
+std::string CHTTPParser::URLEncodeValueToPlain(std::string p_sValue)
+{
+  string sResult = p_sValue;
+	string sChar;
+	string sMatch;
+	char cChar;
+		
+	RegEx rxChar("%([A-F|0-9]{2})\\+*");
+	
+	if(rxChar.Search(p_sValue.c_str())) {
+	  sResult = "";
+		while(true) 
+		{
+		  sMatch = rxChar.Match(0);
+		  sChar  = rxChar.Match(1);
+		  
+			cChar = HexToInt(sChar);
+						
+			sResult += p_sValue.substr(0, p_sValue.find(sMatch));
+			sResult += cChar;
+			
+			if(strcmp(&sMatch[sMatch.length() - 1], "+") == 0) // +
+			  sResult += " ";
+			
+			p_sValue = p_sValue.substr(p_sValue.find(sMatch) + sMatch.length(), p_sValue.length());	
+		
+		  if(rxChar.Search(p_sValue.c_str()))
+			  continue;
+				
+			if(p_sValue.length() > 0) 
+			  sResult += p_sValue;
+			break;		
+		} // while bLoop
+	}	
+	
+	return sResult;
 }

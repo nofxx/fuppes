@@ -34,6 +34,7 @@
 #include "../ContentDirectory/ContentDatabase.h"
 #include "../ContentDirectory/FileDetails.h"
 #include "../Transcoding/TranscodingMgr.h"
+#include "../HTTP/HTTPParser.h"
 
 //#include "Images/fuppes_png.cpp"
 #include "Images/fuppes_small_png.cpp"
@@ -515,6 +516,10 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
   /* handle config changes */
   if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_POST)
   {
+		CHTTPParser* pParser = new CHTTPParser();
+		pParser->ConvertURLEncodeContentToPlain(pRequest);
+		delete pParser;	
+	
     /* remove shared dir(s) */    
     stringstream sVar;
     for(int i = CSharedConfig::Shared()->SharedDirCount() - 1; i >= 0; i--)

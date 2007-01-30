@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2006, 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -27,6 +27,12 @@ class CHTTPParser
 { 
   public:
     bool Parse(CHTTPMessage* pMessage);
-  
-  //private:
+		
+		void ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage);
+	
+  private:
+	  CHTTPMessage* m_pMessage;
+	
+		std::string URLEncodeValueToPlain(std::string p_sValue);
+		
 };

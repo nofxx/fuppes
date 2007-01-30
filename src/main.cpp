@@ -137,7 +137,6 @@ bool CreateTrayIcon()
 
 /** main function
  *  @return int
- *  @todo   create a CFuppes instance for each network interface
  */
 int main(int argc, char* argv[])
 {
