@@ -124,7 +124,8 @@ protected:
 	unsigned int GetHTTPPort() { return m_nHTTPPort; }
   bool SetHTTPPort(unsigned int p_nHTTPPort);
   
-  std::string GetConfigDir();
+	std::string CSharedConfig::GetConfigDir();
+  std::string GetConfigFileName() { return m_sConfigFileName; }
   
   std::string GetSharedDir(unsigned int p_nDirIdx);
   unsigned int SharedDirCount();

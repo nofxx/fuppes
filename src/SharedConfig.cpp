@@ -619,7 +619,12 @@ bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
       /*cout << "wrote default config to \"" << sFileName.str() << "\"" << endl;
       cout << "please edit the config-file and restart FUPPES" << endl;*/
       
-      this->WriteDefaultConfig(m_sConfigFileName);      
+      if(!this->WriteDefaultConfig(m_sConfigFileName)) {
+        cout << "[ERROR] can not create config file \"" << m_sConfigFileName << "\"." << endl;
+        fflush(stdout);
+				return false;
+      }			
+			
       bResult = this->ReadConfigFile(true);      
       if(bResult)
       {
@@ -627,11 +632,6 @@ bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
                 "  wrote configuration file to \"" << m_sConfigFileName << "\"." << endl <<
                 "  You can now configure fuppes via the webinterface." << endl << 
                 "  Thanks for using fuppes!" << endl << endl;        
-        fflush(stdout);
-      }
-      else      
-      {
-        cout << "[ERROR] can not create config file \"" << m_sConfigFileName << "\"." << endl;
         fflush(stdout);
       }
         
@@ -878,7 +878,9 @@ bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
 	std::stringstream sTmp;
 	
 	pWriter = xmlNewTextWriterFilename(p_sFileName.c_str(), 0);
-  xmlTextWriterSetIndent(pWriter, 4);
+  if(!pWriter)
+	  return false;
+	xmlTextWriterSetIndent(pWriter, 4);
 	xmlTextWriterStartDocument(pWriter, NULL, "UTF-8", NULL);
 
 	/* fuppes_config */

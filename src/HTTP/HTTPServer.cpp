@@ -503,29 +503,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
 {
   // local vars
   unsigned int nRet = 0;       
-  stringstream sLog;  
-  
-
-  // send complete binary stream
-  /*if(!p_Response->IsChunked() && (p_Response->GetBinContentLength() > 0))
-  { 
-    // log
-    sLog << p_Response->GetHeaderAsString() << "complete binary";
-    CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__);
-    sLog.str("");
-    
-    // send header
-    send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), 0);      
-    
-    // send complete bin content
-    #ifdef WIN32
-    send(p_Session->GetConnection(), p_Response->GetBinContent(), p_Response->GetBinContentLength(), 0);          
-    #else      
-    send(p_Session->GetConnection(), p_Response->GetBinContent(), p_Response->GetBinContentLength(), MSG_NOSIGNAL);      
-    #endif
-    return true;
-  }*/
-  // send complete binary
+  stringstream sLog;
 
 
   // send text message

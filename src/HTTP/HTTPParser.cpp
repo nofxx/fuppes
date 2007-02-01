@@ -100,7 +100,24 @@ bool CHTTPParser::Parse(CHTTPMessage* pMessage)
 void CHTTPParser::ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage)
 {
   m_pMessage = pMessage;
-  string sPost = m_pMessage->GetContent();
+ 
+  string sContentType;
+	string sBoundary;
+	
+	RegEx rxContentType("CONTENT-TYPE: *([text/plain|application/x\\-www\\-form\\-urlencoded]+)(.*)", PCRE_CASELESS);
+	if(rxContentType.Search(pMessage->GetHeader().c_str())) {
+	  sContentType = rxContentType.Match(1);
+		if(rxContentType.SubStrings() == 3)
+  		sBoundary = rxContentType.Match(2);
+		
+		if((ToLower(sContentType).compare("text/plain") == 0) && (ToLower(sBoundary).find("boundary") == std::string::npos))
+		  return;
+	}
+	else {
+	  return;
+	}
+	
+	string sPost = m_pMessage->GetContent();
 	string sPart;
 	stringstream sVars;
 

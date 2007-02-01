@@ -305,6 +305,10 @@ int main(int argc, char* argv[])
         cout << "  webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
         cout << endl;
         CSharedConfig::Shared()->PrintTranscodingSettings();
+				cout << endl;
+				cout << "configuration file:" << endl;
+				cout << "  " << CSharedConfig::Shared()->GetConfigFileName() << endl;
+				cout << endl;
       }
       else if (input == "r")
       {
