@@ -66,7 +66,7 @@
 * AVTransport
 
 * database:
-  * always insert original mime-types an set transcoding types if needed
+  * always insert original mime-types an set transcoding types if needed (0.7)
   * speedup inserts
 
 * error handling on initialization
@@ -97,7 +97,7 @@
 ** (os x) menu tray icon
 
 * presentation
-** handle application/x-www-form-urlencoded althoug text/plain is requested
+** handle application/x-www-form-urlencoded althoug text/plain is requested (0.7)
 
 * spoken error messages
   e.g. "error initializing LAME encoder"

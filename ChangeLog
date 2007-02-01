@@ -1,4 +1,4 @@
-Version 0.7 (??)
+Version 0.7 (2007-02-01)
   * initial UPnP eventing
     referring to the "Intel DeviceValidator" the eventing mechanism
     is now UPnP 1.0 compliant
@@ -14,7 +14,7 @@ Version 0.7 (??)
     unhandled out of range exception (Thanks again Qball)
   
   * syslog support (unix)
-  ** daemon mode will allway use syslog
+  ** daemon mode will allways use syslog
   ** use the parameter --syslog for the command line mode
   
   * fixed daemon mode (unix)
@@ -25,9 +25,12 @@ Version 0.7 (??)
     take a look at "src/ContentDirectory/FileDetails.cpp"    
   
   * fixed TTL (time to live) for SSDP alive messages
-  * (win32) now correctly linked against libws2_32 instead of libwinsock2
+  * (win32 build) now correctly linked against libws2_32 instead of libwinsock2
 
   * webinterface: handling of urlencoded form values
+
+  * fixed non blocking readline (mac os x)
+  * fixed pthread_cancel (mac os x)
 
 Version 0.5.4 (2006-11-23)
   * initial support for playlists (m3u, pls)
