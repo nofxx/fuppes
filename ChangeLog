@@ -1,7 +1,7 @@
 Version 0.7.1 (2007-02-03)
   * fixed bug #1650930 (win32)
   * Mac OS X fixes
-  ** correct handling of socket option SO_NOSIGNAL
+  ** correct handling of socket option SO_NOSIGPIPE
   ** fixed send() error handling
 
 Version 0.7 (2007-02-01)
