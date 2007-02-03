@@ -23,6 +23,16 @@
 
 #include "CommonFunctions.h"
 
+#ifndef WIN32
+#include <errno.h>
+#include <sys/errno.h>
+
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#endif
+
 // win32 and os x have no MSG_NOSIGNAL
 // mac os x uses setsockopt(SO_NOSIGPIPE) instead
 // win32 does not need this at all
@@ -40,7 +50,7 @@ int fuppesSocketSend(fuppesSocket p_Socket, const char* pBuffer, int p_nLength)
   // send loop
   do
   {    
-    // send again
+    // send
     nLastSend = send(p_Socket, &pBuffer[nFullSend], p_nLength - nFullSend, MSG_NOSIGNAL);
     
     bWouldBlock = false;

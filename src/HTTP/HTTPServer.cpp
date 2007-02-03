@@ -551,8 +551,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
 	  // log
     CSharedLog::Shared()->Log(L_DEBUG, p_Response->GetMessageAsString(), __FILE__, __LINE__);
         
+    // send
     nRet = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetMessageAsString().c_str(), (int)strlen(p_Response->GetMessageAsString().c_str()));
-
     #ifdef WIN32 
     if(nRet == -1) {
       stringstream sLog;            
@@ -622,18 +622,11 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
      ((p_Request->GetRangeStart() > 0) && (p_Request->GetRangeStart() >= p_Response->GetBinContentLength()))))
   {
 	  // log
-		CSharedLog::Shared()->Log(L_DEBUG, p_Response->GetHeaderAsString(), __FILE__, __LINE__);      
-    
-    /*#ifdef WIN32
-    nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), 0);             
-    #else
-    nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), MSG_NOSIGNAL);
-    #endif*/
-    
+		CSharedLog::Shared()->Log(L_DEBUG, p_Response->GetHeaderAsString(), __FILE__, __LINE__);    
     // send
     nErr = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()));
            
-    return true;
+    return (nErr > 0);
   }   
         
     
@@ -671,74 +664,21 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       sLog.str("");
       
       // send
-      fuppesSocketSend(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()));
+      nErr = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()));
       
-      /*#ifdef WIN32
-      nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), 0);             
-      #else
-      nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), MSG_NOSIGNAL);
-      #endif*/
+      if(nErr < 0)
+        return false;
     }
     
     
     // send chunk
     nErr = fuppesSocketSend(p_Session->GetConnection(), szChunk, nRet);
     
-    /*
-    // send chunk
-    #ifdef WIN32
-    nErr = send(p_Session->GetConnection(), szChunk, nRet, 0);      
-    int nWSAErr = WSAGetLastError();    
-    while(nErr < 0 && nWSAErr == 10035) {
-      fuppesSleep(10);
-      nErr    = send(p_Session->GetConnection(), szChunk, nRet, 0);        
-      nWSAErr = WSAGetLastError();
-    } 
-		//#endif
-							 
-		#else
-				
-		#warning todo: cleanup
-																																																																
-		//#ifdef FUPPES_TARGET_MAC_OSX
-    nErr = send(p_Session->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);
-		int nTmpRet = nRet;
-		if(nErr > 0)
-		  nTmpRet -= nErr;
-		
-		//cout << __FILE__ << __LINE__ << " CHECK OSX send() EAGAIN: ";
-		while((nErr < 0 && errno == EAGAIN) || (nTmpRet > 0)) {
-		  //cout << "TRUE nErr: " << nErr << " nTmpRet: " << nTmpRet <<  endl;
-      fuppesSleep(100);
-      nErr = send(p_Session->GetConnection(), &szChunk[nRet - nTmpRet], nTmpRet, MSG_NOSIGNAL);
-			
-			if(nErr > 0)
-			  nTmpRet -= nErr;
-			else {
-			  if (errno != EAGAIN) {
-				  //cout << "ERROR: " << errno << " " << strerror(errno) << endl;
-				  //fflush(stdout);
-					break;
-				}
-			}
-    }		
-		//cout << "FALSE nErr:" << nErr << " errno: " << errno << endl; 
-	  //fflush(stdout);
-																														 																           
-    //#else
-    //nErr = send(p_Session->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);
-    #endif
-		*/
-		
-		/*cout << "SEND: " << nErr << endl;
-		cout << "RET: " << nRet << endl;*/
-		
-		       
     nSend += nRet; 
     nCnt++;
     nOffset += nRet;
-    
-    
+
+
     // calc next chunk size
     if(bChunkLoop && nErr >= 0) {      
       if(nRequestSize > nReqChunkSize)
@@ -747,8 +687,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       if(nRequestSize < nReqChunkSize)
         nReqChunkSize = nRequestSize;       
     }
-    
-    
+        
     // error/connection handling
     if((nErr < 0) || 
        (
