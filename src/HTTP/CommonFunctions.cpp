@@ -44,7 +44,6 @@ int fuppesSocketSend(fuppesSocket p_Socket, const char* pBuffer, int p_nLength)
 {
   int  nLastSend = 0;
   int  nFullSend = 0;
-  int  nErrNo = 0;
   bool bWouldBlock = false; 
     
   // send loop
@@ -55,11 +54,9 @@ int fuppesSocketSend(fuppesSocket p_Socket, const char* pBuffer, int p_nLength)
     
     bWouldBlock = false;
     #ifdef WIN32
-    nErrNo = WSAGetLastError();
-    bWouldBlock = (nErrNo == 10035);    
+    bWouldBlock = (WSAGetLastError() == WSAEWOULDBLOCK);    
     #else
-    nErrNo = errno;
-    bWouldBlock = (nErrNo == EAGAIN);
+    bWouldBlock = (errno == EAGAIN);
     #endif
     
     // incomplete

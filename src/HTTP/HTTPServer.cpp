@@ -669,6 +669,11 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       if(nErr < 0)
         return false;
     }
+		else {
+			sLog << "partial binary (" << nOffset << " - " << nOffset + nRet << ")";
+      CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__);
+      sLog.str("");		  
+		}
     
     
     // send chunk
