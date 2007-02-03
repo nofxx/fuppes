@@ -313,7 +313,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     return nRead;
   }  
   
-  /* read transcoded data from memory */
+  /* read (transcoded) data from memory */
   else
   {    
     /*cout << "get transcode chunk" << endl;
@@ -323,8 +323,9 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     else
       cout << "is transcoding: false" << endl;
     fflush(stdout);*/
-        
-    fuppesThreadLockMutex(&TranscodeMutex);      
+    
+    if(IsTranscoding())
+      fuppesThreadLockMutex(&TranscodeMutex);      
     
     unsigned int nRest       = m_nBinContentLength - m_nBinContentPosition;
     
@@ -375,7 +376,8 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
       
       memcpy(p_sContentChunk, &m_pszBinContent[m_nBinContentPosition], p_nSize);    
       m_nBinContentPosition += p_nSize;
-      fuppesThreadUnlockMutex(&TranscodeMutex);
+      if(IsTranscoding())
+        fuppesThreadUnlockMutex(&TranscodeMutex);
       
       /*cout << "copy content end 1" << endl;
       fflush(stdout);*/
@@ -394,7 +396,8 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
       
       memcpy(p_sContentChunk, &m_pszBinContent[m_nBinContentPosition], nRest);
       m_nBinContentPosition += nRest;
-      fuppesThreadUnlockMutex(&TranscodeMutex);
+      if(IsTranscoding())
+        fuppesThreadUnlockMutex(&TranscodeMutex);
       
       /*cout << "copy content end 2" << endl;
       fflush(stdout);*/
@@ -402,7 +405,8 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
       return nRest;
     }
      
-    fuppesThreadUnlockMutex(&TranscodeMutex);
+    if(IsTranscoding())
+      fuppesThreadUnlockMutex(&TranscodeMutex);
   
   }
   

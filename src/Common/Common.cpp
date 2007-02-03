@@ -534,6 +534,27 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle)
   #endif
 }
 
+
+bool fuppesThreadLockMutex(fuppesThreadMutex* p_ThreadMutex)
+{
+  #warning todo: check if mutex is initialized (uninitialized mutexes will crash on win32)
+  #ifdef WIN32
+  EnterCriticalSection(p_ThreadMutex);
+  #else
+  pthread_mutex_lock(p_ThreadMutex);
+  #endif  
+}
+
+bool fuppesThreadUnlockMutex(fuppesThreadMutex* p_ThreadMutex)
+{
+  #warning todo: check if mutex is initialized (uninitialized mutexes will crash on win32)
+  #ifdef WIN32
+  LeaveCriticalSection(p_ThreadMutex);
+  #else
+  pthread_mutex_unlock(p_ThreadMutex);
+  #endif  
+}
+
 /*===============================================================================
  Library functions
 ===============================================================================*/

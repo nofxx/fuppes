@@ -142,6 +142,8 @@ bool fuppesSocketSetNonBlocking(fuppesSocket p_SocketHandle);
 
 bool fuppesThreadClose(fuppesThread p_ThreadHandle);
 
+bool fuppesThreadLockMutex(fuppesThreadMutex* p_ThreadMutex);
+bool fuppesThreadUnlockMutex(fuppesThreadMutex* p_ThreadMutex);
 
 
 /*===============================================================================
@@ -191,8 +193,8 @@ bool              FuppesCloseLibrary(fuppesLibHandle p_LibHandle);
 
 //#define fuppesThreadMutex                                   CRITICAL_SECTION
 #define fuppesThreadInitMutex(_mutex_)                      InitializeCriticalSectionAndSpinCount(_mutex_, 0x80000400)
-#define fuppesThreadLockMutex(_mutex_)                      EnterCriticalSection(_mutex_)
-#define fuppesThreadUnlockMutex(_mutex_)                    LeaveCriticalSection(_mutex_)
+//#define fuppesThreadLockMutex(_mutex_)                      EnterCriticalSection(_mutex_)
+//#define fuppesThreadUnlockMutex(_mutex_)                    LeaveCriticalSection(_mutex_)
 #define fuppesThreadDestroyMutex(_mutex_) 
 
 #else
@@ -224,8 +226,8 @@ bool              FuppesCloseLibrary(fuppesLibHandle p_LibHandle);
 
 //#define fuppesThreadMutex                                   pthread_mutex_t
 #define fuppesThreadInitMutex(_mutex_)                      pthread_mutex_init(_mutex_, NULL)
-#define fuppesThreadLockMutex(_mutex_)                      pthread_mutex_lock(_mutex_)
-#define fuppesThreadUnlockMutex(_mutex_)                    pthread_mutex_unlock(_mutex_)
+//#define fuppesThreadLockMutex(_mutex_)                      pthread_mutex_lock(_mutex_)
+//#define fuppesThreadUnlockMutex(_mutex_)                    pthread_mutex_unlock(_mutex_)
 #define fuppesThreadDestroyMutex(_mutex_)                   pthread_mutex_destroy(_mutex_)
 
 #endif
