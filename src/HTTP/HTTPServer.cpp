@@ -409,6 +409,7 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
       #endif
       CSharedLog::Shared()->Log(L_EXTENDED_ERR, sLog.str(), __FILE__, __LINE__);
       
+      // WIN32 :: WSAEWOULDBLOCK handling
       #ifdef WIN32
       if(WSAGetLastError() != WSAEWOULDBLOCK) {
         bDoReceive = false;
@@ -420,9 +421,8 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
         fuppesSleep(10);
         continue;
       }
-      #endif
-			
-			#warning todo: cleanup
+      #else			
+			// MAC OS X :: EAGAIN handling
 			#ifdef FUPPES_TARGET_MAC_OSX
 			if(errno == EAGAIN) {
 				nLoopCnt++;
@@ -433,12 +433,14 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
 				bDoReceive = false;
         bRecvErr   = true;
         break;  
-			}
-			
-			#else
+			}			
+			// non blocking
+      #else      
       bDoReceive = false;
       bRecvErr   = true;
       break;      
+      #endif
+      
       #endif
     } // if(nTmpRecv < 0)                 
     

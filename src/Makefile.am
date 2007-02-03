@@ -21,6 +21,7 @@ h_sources = \
 	HTTP/HTTPServer.h\
   HTTP/HTTPClient.h\
   HTTP/HTTPRequestHandler.h\
+  HTTP/CommonFunctions.h\
   UPnPBase.h\
 	UPnPDevice.h\
 	UPnPService.h\
@@ -67,6 +68,7 @@ cpp_sources = \
 	HTTP/HTTPServer.cpp\
   HTTP/HTTPClient.cpp\
   HTTP/HTTPRequestHandler.cpp\
+  HTTP/CommonFunctions.cpp\
   UPnPBase.cpp\
 	UPnPDevice.cpp\
 	UPnPService.cpp\
