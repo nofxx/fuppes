@@ -1,7 +1,7 @@
 [Project]
 FileName=fuppes.dev
 Name=fuppes
-UnitCount=93
+UnitCount=95
 Type=1
 Ver=1
 ObjFiles=
@@ -53,19 +53,19 @@ BuildCmd=
 [VersionInfo]
 Major=0
 Minor=7
-Release=0
-Build=2
+Release=1
+Build=12
 LanguageID=1033
 CharsetID=1252
 CompanyName=Ulrich Völkel
-FileVersion=0.7
+FileVersion=0.7.1
 FileDescription=A Free Universal Plug and Play Media Server
 InternalName=fuppes
 LegalCopyright=Ulrich Völkel
 LegalTrademarks=
 OriginalFilename=fuppes.exe
 ProductName=Free UPnP Entertainment Service
-ProductVersion=0.7
+ProductVersion=0.7.1
 AutoIncBuildNr=1
 
 [Unit10]
@@ -979,7 +979,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit94]
-FileName=src\UPnPActions\UPnPActionFactory.cpp
+FileName=src\HTTP\CommonFunctions.cpp
 CompileCpp=1
 Folder=fuppes
 Compile=1
@@ -989,7 +989,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit95]
-FileName=src\UPnPActions\UPnPActionFactory.h
+FileName=src\HTTP\CommonFunctions.h
 CompileCpp=1
 Folder=fuppes
 Compile=1

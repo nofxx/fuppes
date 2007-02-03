@@ -68,7 +68,10 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
   string sRequest = pRequest->GetRequest();  
   bool   bResult  = false;  
   
-  /* Presentation */
+  // set version
+  pResponse->SetVersion(pRequest->GetVersion());
+  
+  // Presentation
   if(
      ((sRequest.compare("/") == 0) || (ToLower(sRequest).compare("/index.html") == 0)) ||
      ((sRequest.length() > 14) && (ToLower(sRequest).substr(0, 14).compare("/presentation/") == 0))
@@ -76,8 +79,8 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
   {
     CPresentationHandler* pHandler = new CPresentationHandler();
     pHandler->OnReceivePresentationRequest(NULL, pRequest, pResponse);
-    delete pHandler;
-    bResult = true;
+    delete pHandler;    
+    return true;
   }
   
   
@@ -113,7 +116,6 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
   }
   
   /* set remaining response values */
-  pResponse->SetVersion(pRequest->GetVersion());
   if(!bResult)
   {
     pResponse->SetMessageType(HTTP_MESSAGE_TYPE_404_NOT_FOUND);

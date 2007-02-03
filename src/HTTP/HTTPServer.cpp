@@ -25,6 +25,7 @@
 #include "HTTPServer.h"
 #include "HTTPMessage.h"
 #include "HTTPRequestHandler.h"
+#include "CommonFunctions.h"
 #include "../SharedLog.h"
 #include "../SharedConfig.h"
 #include "../Common/RegEx.h"
@@ -548,17 +549,17 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   if(!p_Response->IsBinary())
   { 
 	  // log
-    CSharedLog::Shared()->Log(L_DEBUG, p_Response->GetMessageAsString(), __FILE__, __LINE__);      
-    
-    #ifdef WIN32          
-    send(p_Session->GetConnection(), p_Response->GetMessageAsString().c_str(), (int)strlen(p_Response->GetMessageAsString().c_str()), 0); 
+    CSharedLog::Shared()->Log(L_DEBUG, p_Response->GetMessageAsString(), __FILE__, __LINE__);
+        
+    nRet = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetMessageAsString().c_str(), (int)strlen(p_Response->GetMessageAsString().c_str()));
+
+    #ifdef WIN32 
     if(nRet == -1) {
       stringstream sLog;            
       sLog << "send error :: error no. " << WSAGetLastError() << " " << strerror(WSAGetLastError()) << endl;              
       CSharedLog::Shared()->Log(L_EXTENDED_ERR, sLog.str(), __FILE__, __LINE__);
     }
     #else
-    nRet = send(p_Session->GetConnection(), p_Response->GetMessageAsString().c_str(), (int)strlen(p_Response->GetMessageAsString().c_str()), MSG_NOSIGNAL); 
     if(nRet == -1) {
       stringstream sLog;       
       sLog << "send error :: error no. " << errno << " " << strerror(errno) << endl;
@@ -614,7 +615,6 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     p_Response->SetRangeEnd(p_Response->GetBinContentLength());
   }
 
- 
     
   // send header if it is a HEAD response 
   // or the start range is greater than the content and return
@@ -624,11 +624,15 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
 	  // log
 		CSharedLog::Shared()->Log(L_DEBUG, p_Response->GetHeaderAsString(), __FILE__, __LINE__);      
     
-    #ifdef WIN32
+    /*#ifdef WIN32
     nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), 0);             
     #else
     nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), MSG_NOSIGNAL);
-    #endif    
+    #endif*/
+    
+    // send
+    nErr = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()));
+           
     return true;
   }   
         
@@ -655,8 +659,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     nReqChunkSize = nRequestSize;
     bChunkLoop    = false;
   }
-  
-     
+
   // send loop
   while((nErr != -1) && ((nRet = p_Response->GetBinContentChunk(szChunk, nReqChunkSize, nOffset)) > 0)) 
   { 
@@ -667,13 +670,21 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__);
       sLog.str("");
       
-      #ifdef WIN32
+      // send
+      fuppesSocketSend(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()));
+      
+      /*#ifdef WIN32
       nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), 0);             
       #else
       nErr = send(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()), MSG_NOSIGNAL);
-      #endif       
+      #endif*/
     }
     
+    
+    // send chunk
+    nErr = fuppesSocketSend(p_Session->GetConnection(), szChunk, nRet);
+    
+    /*
     // send chunk
     #ifdef WIN32
     nErr = send(p_Session->GetConnection(), szChunk, nRet, 0);      
@@ -714,10 +725,10 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
 		//cout << "FALSE nErr:" << nErr << " errno: " << errno << endl; 
 	  //fflush(stdout);
 																														 																           
-    /*#else
-    nErr = send(p_Session->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);*/
+    //#else
+    //nErr = send(p_Session->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);
     #endif
-		
+		*/
 		
 		/*cout << "SEND: " << nErr << endl;
 		cout << "RET: " << nRet << endl;*/
@@ -756,8 +767,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
         sLog << "send error :: error no. " << WSAGetLastError() << " " << strerror(WSAGetLastError()) << endl;              
         CSharedLog::Shared()->Log(L_EXTENDED_ERR, sLog.str(), __FILE__, __LINE__);     
         #else          
-        //sLog << "send error :: error no. " << errno << " " << strerror(errno) << endl;
-        //CSharedLog::Shared()->Log(L_EXTENDED_ERR, sLog.str(), __FILE__, __LINE__);
+        sLog << "send error :: error no. " << errno << " " << strerror(errno) << endl;
+        CSharedLog::Shared()->Log(L_EXTENDED_ERR, sLog.str(), __FILE__, __LINE__);
         #endif  
       }
       

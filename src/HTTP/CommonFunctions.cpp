@@ -41,7 +41,7 @@ int fuppesSocketSend(fuppesSocket p_Socket, const char* pBuffer, int p_nLength)
   do
   {    
     // send again
-    nLastSend = send(p_Socket, pBuffer[nFullSend], p_nLength - nFullSend);
+    nLastSend = send(p_Socket, &pBuffer[nFullSend], p_nLength - nFullSend, MSG_NOSIGNAL);
     
     bWouldBlock = false;
     #ifdef WIN32
@@ -67,10 +67,8 @@ int fuppesSocketSend(fuppesSocket p_Socket, const char* pBuffer, int p_nLength)
     // would block
     if(bWouldBlock)
       fuppesSleep(100);      
-    
 
-      
-  } while ((nRes < 0) || (nFullSend < p_nLength) || bWouldBlock);    
+  } while ((nLastSend < 0) || (nFullSend < p_nLength) || bWouldBlock);    
   
   return nFullSend;
 }
