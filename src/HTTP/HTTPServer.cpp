@@ -46,11 +46,18 @@
 
 
 #ifndef WIN32
+
 // mac os x has no MSG_NOSIGNAL 
 // but >= 10.2 comes with SO_SIGPIPE
+// SO_NOSIGPIPE is a setsockopt() option
+// and not a send() parameter as MSG_NOSIGNAL
 #ifndef MSG_NOSIGNAL
-#define MSG_NOSIGNAL SO_NOSIGPIPE
+#define USE_SO_NOSIGPIPE
+#define MSG_NOSIGNAL 0
 #endif
+
+#include <sys/errno.h>
+
 #endif
 
 using namespace std;
@@ -83,7 +90,14 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 		 same for UDPSocket */
 	fuppesSocketSetNonBlocking(m_Socket);
 	#endif
-   
+	
+	#ifdef USE_SO_NOSIGPIPE
+  int flag = 1;
+  int nOpt = setsockopt(m_Socket, SOL_SOCKET, SO_NOSIGPIPE, &flag, sizeof(flag));	  
+	if(nOpt < 0)
+	  throw EException("failed to setsockopt(SO_NOSIGPIPE)", __FILE__, __LINE__);
+  #endif 
+	 
   // set local end point
 	local_ep.sin_family      = AF_INET;
 	local_ep.sin_addr.s_addr = inet_addr(p_sIPAddress.c_str());
@@ -259,7 +273,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
 		if(nConnection == -1) {
 		  #ifdef FUPPES_TARGET_MAC_OSX
       pthread_testcancel();
-			fuppesSleep(100);
+			fuppesSleep(10);
 			#endif
 			continue;
 		}
@@ -269,6 +283,13 @@ fuppesThreadCallback AcceptLoop(void *arg)
     sMsg << "new connection from " << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port);
 		CSharedLog::Shared()->Log(L_EXTENDED, sMsg.str(), __FILE__, __LINE__);
       
+		#ifdef USE_SO_NOSIGPIPE	
+		int flag = 1;
+    int nOpt = setsockopt(nConnection, SOL_SOCKET, SO_NOSIGPIPE, &flag, sizeof(flag));	  
+	  if(nOpt < 0)
+	    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "setsockopt(SO_NOSIGPIPE)", __FILE__, __LINE__);
+		#endif
+			
     // start session thread ...
     CHTTPSessionInfo* pSession = new CHTTPSessionInfo(pHTTPServer, nConnection, remote_ep);      
     fuppesThread SessionThread = (fuppesThread)NULL;
@@ -399,7 +420,22 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
         fuppesSleep(10);
         continue;
       }
-      #else      
+      #endif
+			
+			#warning todo: cleanup
+			#ifdef FUPPES_TARGET_MAC_OSX
+			if(errno == EAGAIN) {
+				nLoopCnt++;
+				fuppesSleep(10);
+				continue;
+			}
+			else {
+				bDoReceive = false;
+        bRecvErr   = true;
+        break;  
+			}
+			
+			#else
       bDoReceive = false;
       bRecvErr   = true;
       break;      
@@ -644,10 +680,46 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       fuppesSleep(10);
       nErr    = send(p_Session->GetConnection(), szChunk, nRet, 0);        
       nWSAErr = WSAGetLastError();
-    }            
-    #else
+    } 
+		//#endif
+							 
+		#else
+				
+		#warning todo: cleanup
+																																																																
+		//#ifdef FUPPES_TARGET_MAC_OSX
     nErr = send(p_Session->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);
+		int nTmpRet = nRet;
+		if(nErr > 0)
+		  nTmpRet -= nErr;
+		
+		//cout << __FILE__ << __LINE__ << " CHECK OSX send() EAGAIN: ";
+		while((nErr < 0 && errno == EAGAIN) || (nTmpRet > 0)) {
+		  //cout << "TRUE nErr: " << nErr << " nTmpRet: " << nTmpRet <<  endl;
+      fuppesSleep(100);
+      nErr = send(p_Session->GetConnection(), &szChunk[nRet - nTmpRet], nTmpRet, MSG_NOSIGNAL);
+			
+			if(nErr > 0)
+			  nTmpRet -= nErr;
+			else {
+			  if (errno != EAGAIN) {
+				  //cout << "ERROR: " << errno << " " << strerror(errno) << endl;
+				  //fflush(stdout);
+					break;
+				}
+			}
+    }		
+		//cout << "FALSE nErr:" << nErr << " errno: " << errno << endl; 
+	  //fflush(stdout);
+																														 																           
+    /*#else
+    nErr = send(p_Session->GetConnection(), szChunk, nRet, MSG_NOSIGNAL);*/
     #endif
+		
+		
+		/*cout << "SEND: " << nErr << endl;
+		cout << "RET: " << nRet << endl;*/
+		
 		       
     nSend += nRet; 
     nCnt++;
@@ -682,8 +754,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
         sLog << "send error :: error no. " << WSAGetLastError() << " " << strerror(WSAGetLastError()) << endl;              
         CSharedLog::Shared()->Log(L_EXTENDED_ERR, sLog.str(), __FILE__, __LINE__);     
         #else          
-        sLog << "send error :: error no. " << errno << " " << strerror(errno) << endl;
-        CSharedLog::Shared()->Log(L_EXTENDED_ERR, sLog.str(), __FILE__, __LINE__);
+        //sLog << "send error :: error no. " << errno << " " << strerror(errno) << endl;
+        //CSharedLog::Shared()->Log(L_EXTENDED_ERR, sLog.str(), __FILE__, __LINE__);
         #endif  
       }
       
@@ -696,7 +768,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     } 
       
   } // while
-          
+
   delete [] szChunk;    
   return true;  
 }
