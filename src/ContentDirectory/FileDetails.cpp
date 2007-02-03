@@ -155,7 +155,7 @@ std::string CFileDetails::GetMimeType(std::string p_sFileName, bool p_bTranscodi
   } // while !sExt.empty
   
   
-  CSharedLog::Shared()->Log(L_WARNING, "unhandled file extension: " + sExt, __FILE__, __LINE__);  
+  CSharedLog::Shared()->Log(L_EXTENDED_WARN, "unhandled file extension: " + sExt, __FILE__, __LINE__);  
   return "";
 }
 

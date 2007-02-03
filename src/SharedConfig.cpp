@@ -79,7 +79,7 @@
 
 #endif
 
-const std::string FUPPES_VERSION = "0.7";
+const std::string FUPPES_VERSION = "0.7.1";
 
 const std::string NEEDED_CONFIGFILE_VERSION = "0.7";
 
