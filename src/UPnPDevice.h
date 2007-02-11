@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -124,22 +124,12 @@ public:
    *  @param  p_nIndex  index of the service to get
    *  @return  pointer to the service or NULL
    */
-  CUPnPService* GetUPnPService(int p_nIndex);
-
-  /** returns the device type of this device
-   *  @return  the device type (see UPNP_DEVICE_TYPE enumeration)
-   */
-  UPNP_DEVICE_TYPE GetDeviceType();	  
-  
-  /** returns the device type of this device as string
-   *  @return  the device type as string
-   */
-  std::string GetDeviceTypeAsString();	  
+  CUPnPService* GetUPnPService(int p_nIndex);  
 	
   /** returns the whole device description
    *  @return  the device descripition as string
    */
-  std::string GetDeviceDescription();		
+  std::string GetDeviceDescription(CHTTPMessage* pRequest);		
 
   /** returns the friendly name of this device
    *  @return  name of the device

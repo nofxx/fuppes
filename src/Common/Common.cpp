@@ -401,15 +401,26 @@ std::string SQLEscape(std::string p_sValue)
   return p_sValue;
 }
 
-std::string ToUTF8(std::string p_sValue)
+std::string ToUTF8(std::string p_sValue, std::string p_sEncoding)
 {
   if(xmlCheckUTF8((const unsigned char*)p_sValue.c_str()))
     return p_sValue;
    
-  if(CSharedConfig::Shared()->GetLocalCharset().compare("UTF-8") == 0)
-    return p_sValue;
+	iconv_t icv; 
+	 
+	if(p_sEncoding.length() == 0) {
+    if(CSharedConfig::Shared()->GetLocalCharset().compare("UTF-8") == 0)
+      return p_sValue;
   
-  iconv_t icv = iconv_open("UTF-8", CSharedConfig::Shared()->GetLocalCharset().c_str());  
+		icv = iconv_open("UTF-8", CSharedConfig::Shared()->GetLocalCharset().c_str());
+	}
+	else {
+    if(p_sEncoding.compare("UTF-8") == 0)
+      return p_sValue;
+  
+		icv = iconv_open("UTF-8", p_sEncoding.c_str());
+	}
+	
   if(icv < 0)  
     return p_sValue;  
   
@@ -433,7 +444,7 @@ std::string ToUTF8(std::string p_sValue)
   iconv_close(icv); 
   
   delete[] szOutBuf;
-  //delete[] szInBuf;
+  delete[] szInBuf;
   
   return p_sValue;
 }

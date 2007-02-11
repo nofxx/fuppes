@@ -112,7 +112,16 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID, IFuppes* pPresen
   catch(EException ex) {
     throw;
   }
-  
+	
+	// XMSMediaReceiverRegistrar
+	try {
+	  m_pXMSMediaReceiverRegistrar = new CXMSMediaReceiverRegistrar();
+		m_pMediaServer->AddUPnPService(m_pXMSMediaReceiverRegistrar);
+	}
+	catch(EException ex) {
+	  throw;
+	}
+	
   CSharedLog::Shared()->Log(L_EXTENDED, "UPnP subsystem started", __FILE__, __LINE__);  
   
   /* if everything is up and running, multicast alive messages
@@ -327,7 +336,7 @@ bool CFuppes::HandleHTTPRequest(CHTTPMessage* pMessageIn, CHTTPMessage* pMessage
   if(ToLower(strRequest).compare("/description.xml") == 0)
   {
     pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml"); //HTTP_CONTENT_TYPE_TEXT_XML
-    pMessageOut->SetContent(m_pMediaServer->GetDeviceDescription());
+    pMessageOut->SetContent(m_pMediaServer->GetDeviceDescription(pMessageIn));
     return true;
   }
   
@@ -412,7 +421,7 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
       CSharedLog::Shared()->Log(L_NORMAL, sMsg.str(), __FILE__, __LINE__);
       
       stringstream sMsg;
-      sMsg << "new UPnP device:" << endl << pDevice->GetFriendlyName() << " (" << pDevice->GetDeviceTypeAsString() << ")";
+      sMsg << "new UPnP device:" << endl << pDevice->GetFriendlyName() << " (" << pDevice->GetUPnPDeviceTypeAsString() << ")";
       CNotificationMgr::Shared()->Notify(pDevice->GetFriendlyName(), sMsg.str());      
     }
     else {
@@ -440,7 +449,7 @@ void CFuppes::HandleSSDPByeBye(CSSDPMessage* pMessage)
     CSharedLog::Shared()->Log(L_NORMAL, sLog.str(), __FILE__, __LINE__);
     
     stringstream sMsg;
-    sMsg << "UPnP device gone:" << endl << m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName() << " (" << m_RemoteDevices[pMessage->GetUUID()]->GetDeviceTypeAsString() << ")";
+    sMsg << "UPnP device gone:" << endl << m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName() << " (" << m_RemoteDevices[pMessage->GetUUID()]->GetUPnPDeviceTypeAsString() << ")";
     CNotificationMgr::Shared()->Notify(m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName(), sMsg.str());
     
     delete m_RemoteDevices[pMessage->GetUUID()];

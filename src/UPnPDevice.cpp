@@ -156,35 +156,12 @@ CUPnPService* CUPnPDevice::GetUPnPService(int p_nIndex)
   return m_vUPnPServices[p_nIndex];
 }
 
-/* GetDeviceType */
-UPNP_DEVICE_TYPE CUPnPDevice::GetDeviceType()
-{
-	return m_nUPnPDeviceType;
-}
-
-std::string CUPnPDevice::GetDeviceTypeAsString()
-{
-  switch(m_nUPnPDeviceType)
-  {
-    case UPNP_DEVICE_TYPE_MEDIA_SERVER :
-      return "MediaServer";
-    case UPNP_DEVICE_TYPE_MEDIA_RENDERER :
-      return "MediaRenderer";
-    default:
-      return "Unknown";
-  }
-}
-
 /* GetDeviceDescription */
-std::string CUPnPDevice::GetDeviceDescription()
+std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 {		
 	xmlTextWriterPtr writer;
 	xmlBufferPtr buf;
 	std::stringstream sTmp;	
-	
-	/*xmlChar *szTmp;	
-	  tmp = ConvertInput("<äöü>", "UTF-8");
-    xmlTextWriterWriteComment(writer, tmp);*/
 	
 	buf    = xmlBufferCreate();   
 	writer = xmlNewTextWriterMemory(buf, 0);    
@@ -225,10 +202,20 @@ std::string CUPnPDevice::GetDeviceDescription()
 			sTmp.str("");
       xmlTextWriterEndElement(writer);
 		
-			/* friendlyName */
-			xmlTextWriterStartElement(writer, BAD_CAST "friendlyName");
-			xmlTextWriterWriteString(writer, BAD_CAST m_sFriendlyName.c_str());
-      xmlTextWriterEndElement(writer);
+			// friendlyName
+			if(pRequest->GetDeviceSettings()->m_bXBox360Support) {
+			  stringstream sName;
+				sName << m_sFriendlyName << " : 1 : Windows Media Connect";
+			
+				xmlTextWriterStartElement(writer, BAD_CAST "friendlyName");
+			  xmlTextWriterWriteString(writer, BAD_CAST sName.str().c_str());
+        xmlTextWriterEndElement(writer);
+			}
+			else {
+				xmlTextWriterStartElement(writer, BAD_CAST "friendlyName");
+				xmlTextWriterWriteString(writer, BAD_CAST m_sFriendlyName.c_str());
+        xmlTextWriterEndElement(writer);
+			}
 			
 			/* manufacturer */
 			xmlTextWriterStartElement(writer, BAD_CAST "manufacturer");
@@ -245,10 +232,17 @@ std::string CUPnPDevice::GetDeviceDescription()
       xmlTextWriterWriteString(writer, BAD_CAST m_sModelDescription.c_str());
 			xmlTextWriterEndElement(writer);
 			
-			/* modelName */
-			xmlTextWriterStartElement(writer, BAD_CAST "modelName");
-      xmlTextWriterWriteString(writer, BAD_CAST m_sModelName.c_str());
-			xmlTextWriterEndElement(writer);
+			// modelName
+			if(pRequest->GetDeviceSettings()->m_bXBox360Support) {
+			  xmlTextWriterStartElement(writer, BAD_CAST "modelName");
+        xmlTextWriterWriteString(writer, BAD_CAST "Windows Media Connect");
+			  xmlTextWriterEndElement(writer);
+			}
+			else {
+			  xmlTextWriterStartElement(writer, BAD_CAST "modelName");
+        xmlTextWriterWriteString(writer, BAD_CAST m_sModelName.c_str());
+			  xmlTextWriterEndElement(writer);
+			}
 			
 			/* modelNumber */
 			xmlTextWriterStartElement(writer, BAD_CAST "modelNumber");
@@ -282,6 +276,26 @@ std::string CUPnPDevice::GetDeviceDescription()
       for(unsigned int i = 0; i < m_vUPnPServices.size(); i++)
 			{
 				CUPnPService* pTmp = m_vUPnPServices[i];				
+				
+			  if(pTmp->GetUPnPDeviceType() == UPNP_SERVICE_TYPE_XMS_MEDIA_RECEIVER_REGISTRAR)
+				{
+				  if(!pRequest->GetDeviceSettings()->m_bXBox360Support)
+			      continue;
+				
+				  stringstream sDescription;
+					sDescription << 
+						"<service>" <<
+						"<serviceType>urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1</serviceType>" <<
+						"<serviceId>urn:microsoft.com:serviceId:X_MS_MediaReceiverRegistrar</serviceId>" <<
+						"<SCPDURL>/UPnPServices/" << pTmp->GetUPnPDeviceTypeAsString() << "/description.xml</SCPDURL>" <<
+						"<controlURL>/UPnPServices/" << pTmp->GetUPnPDeviceTypeAsString() << "/control</controlURL>" <<
+						"<eventSubURL>/UPnPServices/" << pTmp->GetUPnPDeviceTypeAsString() << "/event</eventSubURL>" <<
+						"</service>";
+												
+					xmlTextWriterWriteRaw(writer, BAD_CAST sDescription.str().c_str());
+					continue;
+				}
+				
 				/* service */
 				xmlTextWriterStartElement(writer, BAD_CAST "service");
 				
@@ -322,7 +336,8 @@ std::string CUPnPDevice::GetDeviceDescription()
 				
 				/* end service */
 				xmlTextWriterEndElement(writer);				
-			}			
+			}
+			
 			/* end serviceList */
 			xmlTextWriterEndElement(writer);
 			

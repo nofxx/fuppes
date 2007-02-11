@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -33,6 +33,7 @@
 #include "../HTTP/HTTPMessage.h"
 #include "ContentDatabase.h"
 #include "../UPnPActions/UPnPBrowse.h"
+#include "../UPnPActions/UPnPSearch.h"
 
 #include <map>
 #include <string>
@@ -148,6 +149,8 @@ public:
     std::string HandleUPnPGetSortCapabilities(CUPnPAction* pAction);
     
     std::string HandleUPnPGetSystemUpdateID(CUPnPAction* pAction);    
+		
+    std::string HandleUPnPSearch(CUPnPSearch* pSearch);
 
 /* <\PRIVATE> */
 

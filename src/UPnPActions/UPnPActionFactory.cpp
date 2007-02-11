@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -29,6 +29,7 @@
 #include "UPnPActionFactory.h"
 #include "../Common/Common.h"
 #include "../Common/RegEx.h"
+#include "../SharedLog.h"
 
 #include <iostream>
 #include <libxml/parser.h>
@@ -83,6 +84,10 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent)
     pAction = new CUPnPBrowse(p_sContent);
     ParseBrowseAction((CUPnPBrowse*)pAction);
   }
+	else if(sName.compare("Search") == 0) {
+	  pAction = new CUPnPSearch(p_sContent);
+		ParseSearchAction((CUPnPSearch*)pAction);
+	}
   else if(sName.compare("GetSearchCapabilities") == 0)
   {
     pAction = new CUPnPAction(UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SEARCH_CAPABILITIES, p_sContent);
@@ -99,6 +104,12 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent)
   {
     pAction = new CUPnPAction(UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_PROTOCOL_INFO, p_sContent);
   }
+	else {
+	
+	  stringstream sLog;
+	  sLog << "unhandled UPnP Action \"" << sName << "\"";
+		CSharedLog::Shared()->Log(L_EXTENDED_ERR, sLog.str(), __FILE__, __LINE__);
+	}
   
   /* Target */
   if(pAction)
@@ -184,4 +195,55 @@ bool CUPnPActionFactory::ParseBrowseAction(CUPnPBrowse* pAction)
   pAction->m_sSortCriteria = "";
 
   return true;     
+}
+
+bool CUPnPActionFactory::ParseSearchAction(CUPnPSearch* pAction)
+{
+  /*
+	<?xml version="1.0" encoding="utf-8"?>
+	<s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+	<s:Body>
+	  <u:Search xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1">
+		  <ContainerID>0</ContainerID>
+			<SearchCriteria>(upnp:class contains "object.item.imageItem") and (dc:title contains "")</SearchCriteria>
+			<Filter>*</Filter>
+			<StartingIndex>0</StartingIndex>
+			<RequestedCount>7</RequestedCount>
+			<SortCriteria></SortCriteria>
+		</u:Search>
+	</s:Body>
+	</s:Envelope> */
+  
+  // Container ID
+  RegEx rxContainerID("<ContainerID>(.+)</ContainerID>");
+  if (rxContainerID.Search(pAction->m_sMessage.c_str()))
+    pAction->m_sContainerID = rxContainerID.Match(1);
+	
+	// Search Criteria
+	RegEx rxSearchCriteria("<SearchCriteria>(.+)</SearchCriteria>");
+	if(rxSearchCriteria.Search(pAction->m_sMessage.c_str()))
+	  pAction->m_sSearchCriteria = rxSearchCriteria.Match(1);
+	
+  // Filter
+  RegEx rxFilter("<Filter>(.+)</Filter>");
+  if(rxFilter.Search(pAction->m_sMessage.c_str()))  
+    pAction->m_sFilter = rxFilter.Match(1);  
+  else
+    pAction->m_sFilter = "*";
+
+  // Starting index
+  RegEx rxStartIdx("<StartingIndex>(.+)</StartingIndex>");
+  if(rxStartIdx.Search(pAction->m_sMessage.c_str()))  
+    pAction->m_nStartingIndex = atoi(rxStartIdx.Match(1));
+
+  // Requested count
+  RegEx rxReqCnt("<RequestedCount>(.+)</RequestedCount>");
+  if(rxReqCnt.Search(pAction->m_sMessage.c_str()))  
+    pAction->m_nRequestedCount = atoi(rxReqCnt.Match(1)); 
+
+  // sort
+	pAction->m_sSortCriteria = "";
+	
+	
+	return true;
 }

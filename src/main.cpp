@@ -222,7 +222,7 @@ int main(int argc, char* argv[])
   CreateTrayIcon();
   #endif*/
 
-  cout << "FUPPES - Free UPnP Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;
+  cout << "FUPPES - the Free UPnP Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;
   cout << "http://fuppes.sourceforge.net" << endl << endl;
 
   if(!CSharedConfig::Shared()->SetupConfig())

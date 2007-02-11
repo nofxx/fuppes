@@ -28,6 +28,7 @@ h_sources = \
   UPnPActions/UPnPAction.h\
   UPnPActions/UPnPActionFactory.h\
   UPnPActions/UPnPBrowse.h\
+  UPnPActions/UPnPSearch.h\
 	MediaServer.h\
   ContentDirectory/FileDetails.h\
   ContentDirectory/PlaylistFactory.h\
@@ -47,6 +48,9 @@ h_sources = \
   Transcoding/MpcWrapper.h\
   Transcoding/FlacWrapper.h\
   GUI/NotificationMgr.h\
+	Configuration/DeviceSettings.h\
+	Configuration/DeviceIdentificationMgr.h\
+	XMSMediaReceiverRegistrar.h\
 	SharedConfig.h\
   SharedLog.h\
 	Fuppes.h\
@@ -75,6 +79,7 @@ cpp_sources = \
   UPnPActions/UPnPAction.cpp\
   UPnPActions/UPnPActionFactory.cpp\
   UPnPActions/UPnPBrowse.cpp\
+  UPnPActions/UPnPSearch.cpp\
 	MediaServer.cpp\
   ContentDirectory/FileDetails.cpp\
   ContentDirectory/PlaylistFactory.cpp\
@@ -99,6 +104,9 @@ cpp_sources = \
   Transcoding/MpcWrapper.cpp\
   Transcoding/FlacWrapper.cpp\
   GUI/NotificationMgr.cpp\
+	Configuration/DeviceSettings.cpp\
+	Configuration/DeviceIdentificationMgr.cpp\
+	XMSMediaReceiverRegistrar.cpp\
 	SharedConfig.cpp\
   SharedLog.cpp\
 	Fuppes.cpp\

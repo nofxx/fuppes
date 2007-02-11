@@ -43,6 +43,7 @@
 
 #include "Common/Common.h"
 #include "Common/UUID.h"
+#include "Common/RegEx.h"
 #include "SharedLog.h"
 
 #include <sys/types.h>
@@ -133,7 +134,6 @@ bool CSharedConfig::SetupConfig()
   
   // Network settings
   if(!ResolveHostAndIP()) {
-    cout << "[ERROR] can't resolve hostname and address" << endl;
     return false;
   }
   
@@ -606,9 +606,12 @@ bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
     
     if(FileExists(m_sConfigFileName))
     { 
-      m_pDoc = xmlReadFile(m_sConfigFileName.c_str(), NULL, XML_PARSE_NOBLANKS);
-      if(m_pDoc != NULL)  
-        bResult = true;
+      m_pDoc  = xmlReadFile(m_sConfigFileName.c_str(), "UTF-8", XML_PARSE_NOBLANKS);
+      if(m_pDoc == NULL) {
+        cout << "[ERROR] parsing config file \"" << m_sConfigFileName << "\"." << endl;
+        fflush(stdout);
+				return false;
+			}
     }
     /* config does not exist 
        write default config, reload it and show
@@ -827,15 +830,41 @@ bool CSharedConfig::ResolveHostAndIP()
   {    
     m_sHostname = name;
     
-    if(((m_sIP == "") && !ResolveIPByHostname()) || m_sIP == "127.0.0.1")
+		if((m_sIP == "") || (m_sIP.compare("127.0.0.1") == 0))
+		  ResolveIPByHostname();
+		
+    if((m_sIP == "") || (m_sIP.compare("127.0.0.1") == 0))
     {
-      return ResolveIPByInterface("eth0");    
+			if(m_sIP.compare("127.0.0.1") == 0)
+			  cout << "detected ip 127.0.0.1. it's possible but sensless." << endl;
+		
+		  string sIface;
+		  #ifdef WIN32
+			cout << "please enter the ip address of your lan adapter" << endl;
+			cin >> sIface;
+			if(sIface.length() > 0)
+			  m_sIP = sIface;
+			return true;
+			#else
+    	cout << "please enter the ip address or name of your lan adapter" << endl;			
+			cin >> sIface;
+			RegEx rxIP("\\d+\\.\\d+\\.\\d+\\.\\d");
+			if(rxIP.Search(sIface.c_str())) {
+			  m_sIP = rxIP.Match(0);
+				return true;
+			}
+			else {
+		    return ResolveIPByInterface(sIface);
+			}
+			#endif
     }
     else    
-      return true;    
+      return true;
   }
-  else 
-    return false;
+  else {
+    cout << "[ERROR] can't resolve hostname" << endl;
+		return false;
+	}
 }
 
 bool CSharedConfig::ResolveIPByHostname()
@@ -850,8 +879,9 @@ bool CSharedConfig::ResolveIPByHostname()
       m_sIP = inet_ntoa(*addr);
       return true;
     }
-    else
-      return false;
+    else {
+			return false;
+		}
 }
 
 bool CSharedConfig::ResolveIPByInterface(std::string p_sInterfaceName)
@@ -864,8 +894,10 @@ bool CSharedConfig::ResolveIPByInterface(std::string p_sInterfaceName)
   int       fd;
   
   strcpy (ifa.ifr_name, p_sInterfaceName.c_str());
-  if(((fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) || ioctl(fd, SIOCGIFADDR, &ifa))
-      return false;
+  if(((fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) || ioctl(fd, SIOCGIFADDR, &ifa)) {
+		cout << "[ERROR] can't resolve ip from interface \"" << p_sInterfaceName << "\"." << endl;
+		return false;
+	}
   saddr = (struct sockaddr_in*)&ifa.ifr_addr;
   m_sIP = inet_ntoa(saddr->sin_addr);
   return true;

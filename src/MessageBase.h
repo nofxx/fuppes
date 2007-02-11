@@ -108,9 +108,6 @@ protected:
 
 /* <\PROTECTED> */
 
-  private:
-    void TrySplitMessage();
-
 };
 
 #endif /* _MESSAGEBASE_H */

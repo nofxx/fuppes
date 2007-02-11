@@ -37,6 +37,7 @@
 #include "UPnPDevice.h"
 #include "ContentDirectory/ContentDirectory.h"
 #include "ConnectionManager/ConnectionManager.h"
+#include "XMSMediaReceiverRegistrar.h"
 
 /*===============================================================================
  FORWARD DECLARATIONS
@@ -118,6 +119,7 @@ private:
   CMediaServer*         m_pMediaServer;
   CContentDirectory*    m_pContentDirectory;    
   CConnectionManager*   m_pConnectionManager;
+	CXMSMediaReceiverRegistrar* m_pXMSMediaReceiverRegistrar;
   std::string           m_sIPAddress;
   std::string           m_sUUID;
   IFuppes*              m_pPresentationRequestHandler;

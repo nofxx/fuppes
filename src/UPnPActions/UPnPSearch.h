@@ -1,9 +1,9 @@
 /***************************************************************************
- *            HTTPParser.h
+ *            UPnPSearch.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006, 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -20,20 +20,26 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
+ 
+#ifndef _UPNPSEARCH_H
+#define _UPNPSEARCH_H
 
-#include "HTTPMessage.h"
+#include "UPnPAction.h"
 
-class CHTTPParser
-{ 
+class CUPnPSearch: public CUPnPAction
+{
   public:
-    bool Parse(CHTTPMessage* pMessage);
+	  CUPnPSearch(std::string p_sMessage);
+		~CUPnPSearch();
 		
-		void ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage);
-	
-  private:
-	  CHTTPMessage* m_pMessage;
-	
-		std::string URLEncodeValueToPlain(std::string p_sValue);
-		void ParseCommonValues();
+		std::string BuildSQL();
 		
+		std::string      m_sContainerID;
+    std::string      m_sSearchCriteria;
+    std::string      m_sFilter;
+    unsigned int     m_nStartingIndex;
+    unsigned int     m_nRequestedCount;
+    std::string      m_sSortCriteria;
 };
+
+#endif // _UPNPSEARCH_H

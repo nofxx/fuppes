@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -42,6 +42,19 @@ typedef enum tagUPNP_ACTION_TYPE
         
   UPNP_ACTION_TYPE_CONTENT_DIRECTORY_BROWSE,
   
+	/*
+POST /UPnPServices/ContentDirectory/control/ HTTP/1.1
+Host: 192.168.0.3:60230
+User-Agent: UPnP/1.0 DLNADOC/1.00
+SOAPACTION: "urn:schemas-upnp-org:service:ContentDirectory:1#Search"
+Content-Type: text/xml; charset="utf-8"
+Content-Length: 517
+
+<?xml version="1.0" encoding="utf-8"?><s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body><u:Search xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"><ContainerID>0</ContainerID><SearchCriteria>(upnp:class contains "object.item.imageItem") and (dc:title contains "")</SearchCriteria><Filter>*</Filter><StartingIndex>0</StartingIndex><RequestedCount>7</RequestedCount><SortCriteria></SortCriteria></u:Search></s:Body></s:Envelope>
+*/
+	
+	UPNP_ACTION_TYPE_CONTENT_DIRECTORY_SEARCH,
+	
   /* POST /UPnPServices/ContentDirectory/control/ HTTP/1.1
   HOST: 192.168.0.3:1117
   SOAPACTION: "urn:schemas-upnp-org:service:ContentDirectory:1#GetSearchCapabilities"

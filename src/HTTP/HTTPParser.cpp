@@ -23,12 +23,13 @@
  
 #include "HTTPParser.h"
 #include "../Common/RegEx.h"
+#include "../Configuration/DeviceIdentificationMgr.h"
 
 bool CHTTPParser::Parse(CHTTPMessage* pMessage)
 {
   m_pMessage = pMessage;
 
-  /* find out the message type and HTTP version */
+  /* detect message type and HTTP version */
   std::string sType;
   int nVersion;
   
@@ -94,8 +95,28 @@ bool CHTTPParser::Parse(CHTTPMessage* pMessage)
 	  pMessage->SetMessageType(HTTP_MESSAGE_TYPE_404_NOT_FOUND);
 	}
   
+	
+	ParseCommonValues();
+	
+	//CSharedConfig::Shared()->DetectDevice(pMessage);
+	CDeviceIdentificationMgr::Shared()->IdentifyDevice(m_pMessage);
+	
   return true;
 }
+
+
+void CHTTPParser::ParseCommonValues()
+{
+  //cout << m_pMessage->GetHeader() << endl;
+
+  RegEx rxUserAgent("USER-AGENT: *(.*)\\r", PCRE_CASELESS);
+	if(rxUserAgent.Search(m_pMessage->GetHeader().c_str())) {
+	 // cout << __FILE__ << " AGENT: " << rxUserAgent.Match(1) << "." <<  endl;
+		m_pMessage->m_sUserAgent = rxUserAgent.Match(1);
+	}
+}
+
+
 
 void CHTTPParser::ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage)
 {

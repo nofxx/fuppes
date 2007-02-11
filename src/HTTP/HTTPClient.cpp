@@ -135,6 +135,8 @@ bool CHTTPClient::Get(std::string p_sGet, CHTTPMessage* pResult, std::string p_s
     return false;
   }
 
+  pResult->SetRemoteEndPoint(addr);
+
   /* Get header */
   std::string sMsg = BuildGetHeader(p_sGet, p_sTargetIPAddress, p_nTargetPort);  
   CSharedLog::Shared()->Log(L_EXTENDED, "send GET Header", __FILE__, __LINE__);

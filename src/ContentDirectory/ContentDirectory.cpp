@@ -87,7 +87,11 @@ void CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
     // Browse
     case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_BROWSE:      
       sContent = DbHandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);      
-      break;      
+      break;
+		// Search
+		case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_SEARCH:
+		  sContent = HandleUPnPSearch((CUPnPSearch*)pUPnPAction);
+			break;
     // GetSearchCapabilities
     case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SEARCH_CAPABILITIES:
       sContent = HandleUPnPGetSearchCapabilities(pUPnPAction);
@@ -953,4 +957,11 @@ std::string CContentDirectory::HandleUPnPGetSystemUpdateID(CUPnPAction* pAction)
     "</s:Envelope>";            
 }
 
-/* <\PRIVATE> */
+
+std::string CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch)
+{
+  cout << __FILE__ << __LINE__ << " " << pSearch->BuildSQL() << endl;
+
+  return "";
+}
+

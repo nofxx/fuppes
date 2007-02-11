@@ -242,18 +242,23 @@ void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPM
 std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentationPage, std::string p_sImgPath, std::string p_sPageName)
 {
   std::stringstream sResult; 
-
-  
+	 
   /* header */
   sResult << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n";
   sResult << "<head>";  
-  sResult << "<title>" << CSharedConfig::Shared()->GetAppName() << " - " << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion() << endl;
-  sResult << " (" << CSharedConfig::Shared()->GetHostname() << ")" << endl;
+  sResult << "<title>" << CSharedConfig::Shared()->GetAppName() << " - " << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion();
+  sResult << " (" << CSharedConfig::Shared()->GetHostname() << ")";
   sResult << "</title>" << endl;
-  
-  /* stylesheet */
-  sResult << "<style type=\"text/css\">" << endl << GetStylesheet(p_sImgPath) << endl << "</style>";
-  
+
+	//sResult << "<meta http-equiv=\"Content-Script-Type\" content=\"text/javascript\">" << endl;
+	sResult << "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">" << endl;
+  sResult << "<meta http-equiv=\"Content-Style-Type\" content=\"text/css\">" << endl;  
+
+	
+  // stylesheet
+	sResult << "<style type=\"text/css\">" << endl << GetStylesheet(p_sImgPath) << endl << "</style>";
+
+	
   
   /*sResult << "<script type=\"text/javascript\"> \r\n"
     "function Toggle(Id) { \r\n"
@@ -277,7 +282,7 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
     "  } "
     "}"; */
     
-  sResult << "</script>";  
+  //sResult << "</script>";  
   sResult << "</head>";
   /* header end */
   
@@ -517,6 +522,8 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
   /* handle config changes */
   if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_POST)
   {
+  	cout << pRequest->GetMessage() << endl;
+	
 		CHTTPParser* pParser = new CHTTPParser();
 		pParser->ConvertURLEncodeContentToPlain(pRequest);
 		delete pParser;	
@@ -590,7 +597,7 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
   sResult << "<h1>ContentDirectory settings</h1>" << endl;
   // shared dirs
   sResult << "<h2>shared directories</h2>" << endl;
-  sResult << "<form method=\"POST\" action=\"/presentation/config.html\" accept-charset=\"UTF-8\" enctype=\"text/plain\">" << endl;
+  sResult << "<form method=\"POST\" action=\"/presentation/config.html\" enctype=\"text/plain\">" << endl;  //  accept-charset=\"UTF-8\"
   
   // directory list
   sResult << "<p>" << endl <<  
@@ -758,7 +765,7 @@ std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes, std::s
     //sResult << "<tbody>" << endl;
     
     
-    sResult << "<tr><td>Type</td><td>" << pDevice->GetDeviceTypeAsString() << "</td></tr>" << endl;
+    sResult << "<tr><td>Type</td><td>" << pDevice->GetUPnPDeviceTypeAsString() << "</td></tr>" << endl;
     sResult << "<tr><td>UUID</td><td>" << pDevice->GetUUID() << "</td></tr>" << endl;
     sResult << "<tr><td>Time Out</td><td style=\"border-style: solid; border-width: 1px;\">" << pDevice->GetTimer()->GetCount() / 60 << "min. " << pDevice->GetTimer()->GetCount() % 60 << "sec.</td></tr>" << endl;
     //sResult << "<tr><td>Status</td><td>"   << "<i>todo</i>" << "</td></tr>" << endl;

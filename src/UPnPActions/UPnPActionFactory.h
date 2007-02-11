@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -32,6 +32,7 @@
 #include <string>
 #include "UPnPAction.h"
 #include "UPnPBrowse.h"
+#include "UPnPSearch.h"
 
 /*===============================================================================
  CLASS CUPnPActionFactory
@@ -60,6 +61,8 @@ class CUPnPActionFactory
   private:
           
     bool ParseBrowseAction(CUPnPBrowse* pAction);
+		
+		bool ParseSearchAction(CUPnPSearch* pAction);
 
 };
 

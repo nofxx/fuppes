@@ -29,6 +29,7 @@
  INCLUDES
 ===============================================================================*/
 
+#include "../Configuration/DeviceSettings.h"
 #include "../MessageBase.h"
 #include "../UPnPActions/UPnPAction.h"
 #include "../Transcoding/TranscodingCache.h"
@@ -197,6 +198,8 @@ public:
   void             BreakTranscoding();  
   bool             IsTranscoding();
   
+	CDeviceSettings* GetDeviceSettings() { return m_pDeviceSettings; }
+	void SetDeviceSettings(CDeviceSettings* pSettings) { m_pDeviceSettings = pSettings; }
   
 /* <\PUBLIC> */
 
@@ -205,6 +208,8 @@ public:
   unsigned int  m_nBinContentLength; 
   bool          m_bIsBinary;
   
+	std::string   m_sUserAgent;
+	
   CTranscodeSessionInfo* m_pTranscodingSessionInfo;  
 
 /* <PRIVATE> */
@@ -237,12 +242,13 @@ private:
   // Header information: Subscription-ID (GENA - Request & Response)
   std::string        m_sGENASubscriptionID;
   
-   
-  //bool               m_bIsChunked;  
-  CUPnPAction*       m_pUPnPAction;
+	
+	CUPnPAction*       m_pUPnPAction;
   std::fstream       m_fsFile;
   unsigned int       m_nRangeStart;
   unsigned int       m_nRangeEnd;
+	
+	CDeviceSettings*   m_pDeviceSettings;
 
   unsigned int       m_nBinContentPosition;
   fuppesThread       m_TranscodeThread;

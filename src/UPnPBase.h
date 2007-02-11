@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -44,7 +44,8 @@ typedef enum tagUPNP_DEVICE_TYPE
   UPNP_DEVICE_TYPE_CONTENT_DIRECTORY,
   UPNP_DEVICE_TYPE_RENDERING_CONTROL,
   UPNP_DEVICE_TYPE_CONNECTION_MANAGER,
-  UPNP_DEVICE_TYPE_AV_TRANSPORT
+  UPNP_DEVICE_TYPE_AV_TRANSPORT,
+	UPNP_SERVICE_TYPE_XMS_MEDIA_RECEIVER_REGISTRAR
 }UPNP_DEVICE_TYPE;
 
 /*===============================================================================
@@ -82,6 +83,7 @@ public:
   *  @return device type as string
   */
   std::string GetUPnPDeviceTypeAsString();
+	UPNP_DEVICE_TYPE GetUPnPDeviceType() { return m_nUPnPDeviceType; }
 
 /* <\PUBLIC> */
 

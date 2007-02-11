@@ -108,7 +108,7 @@ std::string Base64Decode(const std::string p_sInputString);
 unsigned int HexToInt(std::string sHex);
 std::string SQLEscape(std::string p_sValue);
 
-std::string ToUTF8(std::string p_sValue);
+std::string ToUTF8(std::string p_sValue, std::string p_sEncoding = "");
 
 /*===============================================================================
  Common Functions

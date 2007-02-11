@@ -326,10 +326,11 @@ fuppesThreadCallback SessionLoop(void *arg)
   while(bKeepAlive)
   {  
     // receive HTTP-request
+		pRequest->SetRemoteEndPoint(pSession->GetRemoteEndPoint());
     bResult = ReceiveRequest(pSession, pRequest);  
     if(!bResult)
       break;
-    
+
     sLog << "REQUEST:" << endl << pRequest->GetMessage();    
     CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__);
     sLog.str("");
@@ -337,7 +338,7 @@ fuppesThreadCallback SessionLoop(void *arg)
     
     // check if requesting IP is allowed to access
     std::string sIP = inet_ntoa(pSession->GetRemoteEndPoint().sin_addr);    
-    if(CSharedConfig::Shared()->IsAllowedIP(sIP)) {    
+    if(CSharedConfig::Shared()->IsAllowedIP(sIP)) {
       // build response
       bResult = pHandler->HandleRequest(pRequest, pResponse);      
       if(!bResult)
@@ -530,7 +531,7 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
     CSharedLog::Shared()->Log(L_EXTENDED, sMsg.str(), __FILE__, __LINE__);
 
     // create message
-    bResult = p_Request->SetMessage(szMsg);    
+    bResult = p_Request->SetMessage(szMsg); 
   }
   
   return bResult;

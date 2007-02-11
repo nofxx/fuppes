@@ -1,9 +1,9 @@
 /***************************************************************************
- *            HTTPParser.h
- *
+ *            XMSMediaReceiverRegistrar.h
+ * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006, 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -20,20 +20,21 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
+ 
+#ifndef _XMSMEDIARECEIVERREGISTRAR_H
+#define _XMSMEDIARECEIVERREGISTRAR_H
 
-#include "HTTPMessage.h"
+#include "UPnPService.h"
 
-class CHTTPParser
-{ 
+class CXMSMediaReceiverRegistrar: public CUPnPService
+{
   public:
-    bool Parse(CHTTPMessage* pMessage);
+    CXMSMediaReceiverRegistrar();
+    ~CXMSMediaReceiverRegistrar();
 		
-		void ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage);
-	
-  private:
-	  CHTTPMessage* m_pMessage;
-	
-		std::string URLEncodeValueToPlain(std::string p_sValue);
-		void ParseCommonValues();
-		
+		std::string GetServiceDescription();
+    void HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut);
+
 };
+
+#endif // _XMSMEDIARECEIVERREGISTRAR_H

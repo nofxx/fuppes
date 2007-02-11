@@ -37,11 +37,6 @@
 #endif
 
 
-
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include <string>
 #include <vector>
 
@@ -60,50 +55,25 @@ struct DisplaySettings
   bool bShowPlaylistsAsContainers;
 };
 
-/*===============================================================================
- CLASS CSharedConfig
-===============================================================================*/
 
 class CFuppes;
 
 class CSharedConfig
 {
-
-/* <PROTECTED> */
-
-protected:
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-
-		CSharedConfig();    
-
-/* <\PROTECTED> */
-
-/* <PUBLIC> */
+  protected:
+		CSharedConfig(); 
 
 	public:
     ~CSharedConfig();
+    static CSharedConfig* Shared();		
 
-/*===============================================================================
- INSTANCE
-===============================================================================*/
 
-  static CSharedConfig* Shared();
-
-/*===============================================================================
- INIT
-===============================================================================*/
 
   bool SetupConfig();
   bool Refresh();
 
   void PrintTranscodingSettings();
   
-/*===============================================================================
- GET
-===============================================================================*/
 
   std::string GetAppName();
 	std::string GetAppFullname();
@@ -151,37 +121,29 @@ protected:
   bool RemoveSharedDirectory(unsigned int p_nIndex);
   
   bool SetPlaylistRepresentation(std::string p_sRepresentation);  
-/* <\PUBLIC> */
-  
-  /** adds a instance of FUPPES
-   *  @param pFuppes  the instance to add
-   */
+
   void AddFuppesInstance(CFuppes* pFuppes);
 	
   CFuppes* GetFuppesInstance(unsigned int p_nIndex);
   unsigned int GetFuppesInstanceCount();
   
-/* <PRIVATE> */
+	bool IsXBox360SupportEnabled() { return m_bXBox360Support; }
+
 
 private:
 
-/*===============================================================================
- INSTANCE
-===============================================================================*/
-    
+
   static CSharedConfig* m_Instance;
 
-/*===============================================================================
- MEMBERS
-===============================================================================*/
-  
-  /* xml config nodes */
+
+  // xml config nodes
   xmlDocPtr   m_pDoc;
   xmlNode*    m_pSharedDirNode;
   xmlNode*    m_pContentDirNode;
   xmlNode*    m_pNetSettingsNode;
   xmlNode*    m_pTranscodingSettingsNode;
 
+  // member vars
   std::string m_sConfigVersion;
   std::string m_sConfigFileName;
 
@@ -197,14 +159,15 @@ private:
   std::vector<std::string> m_vSharedDirectories;
   std::vector<std::string> m_vAllowedIPs;
   unsigned int m_nHTTPPort;
+  
+	bool m_bXBox360Support;
+
 
   DisplaySettings m_DisplaySettings;
 
 
   std::vector<CFuppes*> m_vFuppesInstances;
-/*===============================================================================
- HELPER
-===============================================================================*/
+
 
   bool ReadConfigFile(bool p_bIsInit);
   bool ResolveHostAndIP();
@@ -213,9 +176,6 @@ private:
   bool WriteDefaultConfig(std::string p_sFileName);  
   void GetOSInfo();
   
-
-/* <\PRIVATE> */
-
 };
 
-#endif /* _SHAREDCONFIG_H */
+#endif // _SHAREDCONFIG_H

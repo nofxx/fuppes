@@ -60,7 +60,7 @@ fuppesThreadMutex TranscodeMutex;
 
 CHTTPMessage::CHTTPMessage()
 {
-  /* Init */
+  // Init
   m_nHTTPVersion			  = HTTP_VERSION_UNKNOWN;
   m_nHTTPMessageType    = HTTP_MESSAGE_TYPE_UNKNOWN;
 	m_sHTTPContentType    = "";
@@ -68,19 +68,19 @@ CHTTPMessage::CHTTPMessage()
   m_nBinContentPosition = 0;
   m_nContentLength      = 0;
   m_pszBinContent       = NULL;
-  //m_bIsChunked          = false;
   m_TranscodeThread     = (fuppesThread)NULL;  
   m_bIsBinary           = false;
   m_nRangeStart         = 0;
   m_nRangeEnd           = 0;
   m_nHTTPConnection     = HTTP_CONNECTION_UNKNOWN;
-  m_pUPnPAction         = NULL;  
+  m_pUPnPAction         = NULL;
+	m_pDeviceSettings			= NULL;
   m_pTranscodingSessionInfo = NULL;
 }
 
 CHTTPMessage::~CHTTPMessage()
 {
-  /* Cleanup */
+  // Cleanup
   if(m_pUPnPAction)
     delete m_pUPnPAction;
   

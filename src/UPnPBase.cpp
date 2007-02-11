@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -28,6 +28,7 @@
 
 #include "Common/Common.h"
 #include "UPnPBase.h"
+#include "SharedLog.h"
 
 /*===============================================================================
  CLASS CUPnPBase
@@ -59,11 +60,25 @@ std::string	CUPnPBase::GetUPnPDeviceTypeAsString()
 	/* Set string for the corrseponding device type */
   switch(m_nUPnPDeviceType)
 	{
-		case UPNP_DEVICE_TYPE_ROOT_DEVICE:        sResult = "RootDevice";        break;
-		case UPNP_DEVICE_TYPE_MEDIA_SERVER:			  sResult = "MediaServer";       break;
-    case UPNP_DEVICE_TYPE_CONTENT_DIRECTORY:  sResult = "ContentDirectory";  break;
-    case UPNP_DEVICE_TYPE_CONNECTION_MANAGER: sResult = "ConnectionManager"; break;
-    default:                                  ASSERT(0);                     break;
+		case UPNP_DEVICE_TYPE_ROOT_DEVICE:        
+		  sResult = "RootDevice";        
+			break;
+		case UPNP_DEVICE_TYPE_MEDIA_SERVER:			  
+		  sResult = "MediaServer";       
+			break;
+    case UPNP_DEVICE_TYPE_CONTENT_DIRECTORY:  
+		  sResult = "ContentDirectory";  
+			break;
+    case UPNP_DEVICE_TYPE_CONNECTION_MANAGER:
+		  sResult = "ConnectionManager";
+			break;
+		case UPNP_SERVICE_TYPE_XMS_MEDIA_RECEIVER_REGISTRAR:
+		  sResult = "XMSMediaReceiverRegistrar";
+			break;
+    default:
+		  CSharedLog::Shared()->Log(L_EXTENDED_ERR, "unhandled UPnP device type", __FILE__, __LINE__);
+			sResult = "unknown";
+			break;
 	}
 	
 	return sResult;

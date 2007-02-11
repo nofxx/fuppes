@@ -1,9 +1,9 @@
 /***************************************************************************
- *            HTTPParser.h
- *
+ *            XMSMediaReceiverRegistrar.cpp
+ * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006, 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -20,20 +20,30 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
+ 
+#include "XMSMediaReceiverRegistrar.h"
 
-#include "HTTPMessage.h"
+CXMSMediaReceiverRegistrar::CXMSMediaReceiverRegistrar():
+CUPnPService(UPNP_SERVICE_TYPE_XMS_MEDIA_RECEIVER_REGISTRAR, "")
+{
+}
 
-class CHTTPParser
-{ 
-  public:
-    bool Parse(CHTTPMessage* pMessage);
+CXMSMediaReceiverRegistrar::~CXMSMediaReceiverRegistrar()
+{
+}
+
+std::string CXMSMediaReceiverRegistrar::GetServiceDescription()
+{
+/*<service>
+<serviceType>urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1</serviceType>
+<serviceId>urn:microsoft.com:serviceId:X_MS_MediaReceiverRegistrar</serviceId>
+<SCPDURL>/web/msr.xml</SCPDURL>
+<controlURL>/web/msr_control</controlURL>
+<eventSubURL>/web/msr_event</eventSubURL>
+</service>*/
+return "";
+}
 		
-		void ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage);
-	
-  private:
-	  CHTTPMessage* m_pMessage;
-	
-		std::string URLEncodeValueToPlain(std::string p_sValue);
-		void ParseCommonValues();
-		
-};
+void CXMSMediaReceiverRegistrar::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut)
+{
+}
