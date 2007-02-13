@@ -116,14 +116,50 @@ Content-Length: 517
   Content-Length: 294
   
   <?xml version="1.0" encoding="utf-8"?>
-  <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s=
-  "http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
+						  xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
      <s:Body>
         <u:GetProtocolInfo xmlns:u="urn:schemas-upnp-org:service:ConnectionManager
   :1" />
      </s:Body>
   </s:Envelope> */
-  UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_PROTOCOL_INFO  
+  UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_PROTOCOL_INFO,
+	
+	/*
+	POST /web/msr_control HTTP/1.1
+	User-Agent: Xbox/2.0.4552.0 UPnP/1.0 Xbox/2.0.4552.0
+	SOAPACTION: "urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1#IsAuthorized"
+	CONTENT-TYPE: text/xml; charset="utf-8"
+	Content-Length: 304
+
+	<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" 
+						  s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+   <s:Body>
+      <u:IsAuthorized xmlns:u="urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1">
+			  <DeviceID></DeviceID>
+			</u:IsAuthorized>
+   </s:Body>
+  </s:Envelope> */
+  UPNP_ACTION_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR_IS_AUTHORIZED,
+	
+	/*
+	POST /web/msr_control HTTP/1.1
+	User-Agent: Xbox/2.0.4552.0 UPnP/1.0 Xbox/2.0.4552.0
+	SOAPACTION: "urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1#IsValidated"
+	CONTENT-TYPE: text/xml; charset="utf-8"
+	Content-Length: 302
+
+	<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"
+							s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <s:Body>
+      <u:IsValidated xmlns:u="urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1">
+			  <DeviceID></DeviceID>
+			</u:IsValidated>
+    </s:Body>
+  </s:Envelope>
+	*/
+  UPNP_ACTION_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR_IS_VALIDATED
+	
   
 }UPNP_ACTION_TYPE;
 

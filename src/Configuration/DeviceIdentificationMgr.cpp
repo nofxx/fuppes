@@ -46,7 +46,7 @@ CDeviceIdentificationMgr::CDeviceIdentificationMgr()
 	pSettings->m_slUserAgents.push_back("XBox/2.0.\\d+.\\d+ UPnP/1.0 XBox/2.0.\\d+.\\d+");
 	m_Settings.push_back(pSettings);
 
-  pSettings = new CDeviceSettings("Noxon audio");
+  /*pSettings = new CDeviceSettings("Noxon audio");
 	pSettings->m_bShowPlaylistAsFile = true;
 	pSettings->m_bXBox360Support = true;
 	pSettings->m_slUserAgents.push_back("Mozilla/4.0 \\(compatible\\)");
@@ -59,7 +59,7 @@ CDeviceIdentificationMgr::CDeviceIdentificationMgr()
 	pSettings->m_bXBox360Support = false;
 	//pSettings->m_slUserAgents.push_back("Cybetran ...");
 	pSettings->m_slIPAddresses.push_back("192.168.0.23");
-	m_Settings.push_back(pSettings);
+	m_Settings.push_back(pSettings);*/
 
   // default settings
   m_pDefaultSettings = new CDeviceSettings("default");

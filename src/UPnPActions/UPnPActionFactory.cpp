@@ -104,6 +104,12 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent)
   {
     pAction = new CUPnPAction(UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_PROTOCOL_INFO, p_sContent);
   }
+	else if(sName.compare("IsAuthorized") == 0) {
+	  pAction = new CUPnPAction(UPNP_ACTION_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR_IS_AUTHORIZED, p_sContent);
+	}
+	else if(sName.compare("IsValidated") == 0) {
+	  pAction = new CUPnPAction(UPNP_ACTION_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR_IS_VALIDATED, p_sContent);
+	}
 	else {
 	
 	  stringstream sLog;
@@ -124,7 +130,12 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent)
     else if(sNs.compare("urn:schemas-upnp-org:service:ConnectionManager:1") == 0)
     {
       pAction->m_nTargetDevice = UPNP_DEVICE_TYPE_CONNECTION_MANAGER;
-    }  
+    }
+		else if(sNs.compare("urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1") == 0)
+		{
+      pAction->m_nTargetDevice = UPNP_SERVICE_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR;
+		}
+		
   }
 
 

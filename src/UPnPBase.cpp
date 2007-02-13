@@ -72,7 +72,7 @@ std::string	CUPnPBase::GetUPnPDeviceTypeAsString()
     case UPNP_DEVICE_TYPE_CONNECTION_MANAGER:
 		  sResult = "ConnectionManager";
 			break;
-		case UPNP_SERVICE_TYPE_XMS_MEDIA_RECEIVER_REGISTRAR:
+		case UPNP_SERVICE_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR:
 		  sResult = "XMSMediaReceiverRegistrar";
 			break;
     default:

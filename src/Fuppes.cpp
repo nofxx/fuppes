@@ -376,6 +376,9 @@ bool CFuppes::HandleHTTPPostSOAPAction(CHTTPMessage* pMessageIn, CHTTPMessage* p
       break;
     case UPNP_DEVICE_TYPE_CONNECTION_MANAGER:
       m_pConnectionManager->HandleUPnPAction(pAction, pMessageOut);
+      break;    
+		case UPNP_SERVICE_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR:
+      m_pXMSMediaReceiverRegistrar->HandleUPnPAction(pAction, pMessageOut);
       break;
     default:
       bRet = false;

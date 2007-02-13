@@ -750,9 +750,7 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   }
   
   
-  //cout << pSQLResult->GetValue("DETAILS") << endl;
-  xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("DETAILS").c_str());  
-   
+  xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("DETAILS").c_str());   
   
   /* res */
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");

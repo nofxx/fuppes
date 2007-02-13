@@ -235,7 +235,7 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 			// modelName
 			if(pRequest->GetDeviceSettings()->m_bXBox360Support) {
 			  xmlTextWriterStartElement(writer, BAD_CAST "modelName");
-        xmlTextWriterWriteString(writer, BAD_CAST "Windows Media Connect");
+        xmlTextWriterWriteString(writer, BAD_CAST "Windows Media Connect compatible (fuppes)");
 			  xmlTextWriterEndElement(writer);
 			}
 			else {
@@ -271,13 +271,14 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
       xmlTextWriterWriteString(writer, BAD_CAST m_sUPC.c_str());
 			xmlTextWriterEndElement(writer);		
 		
-		  /* serviceList */
+		  // serviceList
+			CUPnPService* pTmp;			
 			xmlTextWriterStartElement(writer, BAD_CAST "serviceList");			
       for(unsigned int i = 0; i < m_vUPnPServices.size(); i++)
 			{
-				CUPnPService* pTmp = m_vUPnPServices[i];				
+				pTmp = m_vUPnPServices[i];				
 				
-			  if(pTmp->GetUPnPDeviceType() == UPNP_SERVICE_TYPE_XMS_MEDIA_RECEIVER_REGISTRAR)
+			  if(pTmp->GetUPnPDeviceType() == UPNP_SERVICE_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR)
 				{
 				  if(!pRequest->GetDeviceSettings()->m_bXBox360Support)
 			      continue;
@@ -363,15 +364,6 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 	return output.str();
 }
 
-/* <\PUBLIC> */
-
-/* <PRIVATE> */
-
-/*===============================================================================
- HELPER
-===============================================================================*/
-
-//xmlNode* FindNode(std::string p_sNodeName, xmlNode* pParentNode = NULL, bool p_bWalkSubnodes = false);
 
 xmlNode* FindNode(std::string p_sNodeName, xmlNode* pParentNode = NULL, bool p_bWalkSubnodes = false)
 {
@@ -531,5 +523,3 @@ bool CUPnPDevice::ParseDescription(std::string p_sDescription)
 
   return true;
 }
-
-/* <\PRIVATE> */

@@ -46,6 +46,7 @@ struct SAudioItem
 { 
   std::string sTitle;
   std::string sGenre;
+	std::string sDuration;
   std::string sDescription;
   std::string sLongDescription;
   std::string sPublisher;

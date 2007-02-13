@@ -31,6 +31,7 @@
 #ifdef HAVE_TAGLIB
 #include <fileref.h>
 #include <tstring.h>
+#include <tfile.h>
 #include <tag.h>
 #endif
 
@@ -256,10 +257,21 @@ SMusicTrack CFileDetails::GetMusicTrackDetails(std::string p_sFileName, std::str
   #ifdef HAVE_TAGLIB  
   TagLib::FileRef pFile(p_sFileName.c_str());
   
+	if (pFile.isNull())
+	  return Result;
+	
   TagLib::String sTmp = pFile.tag()->title();
   //cout << "Title: " << sTmp.to8Bit() << endl;
   Result.mAudioItem.sTitle = sTmp.to8Bit();  
   
+	//string duration = "0:00:00.00";	
+	long length = pFile.audioProperties()->length();
+  stringstream s; 
+	s << length/(60*60) << ":" << length/60 << ":" << (length - length/60);
+	
+  Result.mAudioItem.sDuration = s.str();
+	
+	
   sTmp = pFile.tag()->artist();
   //cout << "Artist: " << sTmp.to8Bit() << endl;
   Result.sArtist = sTmp.to8Bit();  

@@ -24,7 +24,7 @@
 #include "XMSMediaReceiverRegistrar.h"
 
 CXMSMediaReceiverRegistrar::CXMSMediaReceiverRegistrar():
-CUPnPService(UPNP_SERVICE_TYPE_XMS_MEDIA_RECEIVER_REGISTRAR, "")
+CUPnPService(UPNP_SERVICE_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR, "")
 {
 }
 
@@ -34,16 +34,64 @@ CXMSMediaReceiverRegistrar::~CXMSMediaReceiverRegistrar()
 
 std::string CXMSMediaReceiverRegistrar::GetServiceDescription()
 {
-/*<service>
-<serviceType>urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1</serviceType>
-<serviceId>urn:microsoft.com:serviceId:X_MS_MediaReceiverRegistrar</serviceId>
-<SCPDURL>/web/msr.xml</SCPDURL>
-<controlURL>/web/msr_control</controlURL>
-<eventSubURL>/web/msr_event</eventSubURL>
-</service>*/
-return "";
+  return "";
 }
 		
 void CXMSMediaReceiverRegistrar::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut)
 {
+  string sContent = "";
+
+  if(pUPnPAction->GetActionType() == UPNP_ACTION_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR_IS_AUTHORIZED)
+	{
+	  sContent =
+  		"<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+		  "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
+			"  <s:Body>"
+			"    <u:IsAuthorizedResponse xmlns:u=\"urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1\">"
+			"      <Result>1</Result>"
+			"    </u:IsAuthorizedResponse>"
+			"  </s:Body>"
+			"</s:Envelope>";
+	}
+	else if(pUPnPAction->GetActionType() == UPNP_ACTION_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR_IS_VALIDATED)
+  {
+	  sContent =
+  		"<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+		  "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
+			"  <s:Body>"
+			"    <u:IsValidatedResponse xmlns:u=\"urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1\">"
+			"      <Result>1</Result>"
+			"    </u:IsValidatedResponse>"
+			"  </s:Body>"
+			"</s:Envelope>";
+	}
+
+  if(!sContent.empty())
+  {    
+    pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml; charset=\"utf-8\"");
+    pMessageOut->SetContent(sContent);
+  }
+  else
+  {
+    pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_500_INTERNAL_SERVER_ERROR, "text/xml; charset=\"utf-8\"");            
+
+    sContent = 
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>"  
+    "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
+    "  <s:Body>"
+    "    <s:Fault>"
+    "      <faultcode>s:Client</faultcode>"
+    "      <faultstring>UPnPError</faultstring>"
+    "      <detail>"
+    "        <UPnPError xmlns=\"urn:schemas-upnp-org:control-1-0\">"
+    "          <errorCode>401</errorCode>"
+    "          <errorDescription>Invalid Action</errorDescription>"
+    "        </UPnPError>"
+    "      </detail>"
+    "    </s:Fault>"
+    "  </s:Body>"
+    "</s:Envelope>";
+    
+    pMessageOut->SetContent(sContent);
+	}
 }
