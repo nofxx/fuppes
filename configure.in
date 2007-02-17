@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl $Id: $
 
 AC_INIT(configure.in)
-
+AM_CONFIG_HEADER(config.h)
 
 #release versioning
 GENERIC_MAJOR_VERSION=0
@@ -19,15 +19,16 @@ VERSION=$GENERIC_VERSION
 
 #AC_INIT(fuppes, $GENERIC_VERSION, u-voelkel@users.sourceforge.net)
 AM_INIT_AUTOMAKE(fuppes, $GENERIC_VERSION, u-voelkel@users.sourceforge.net)
-AM_CONFIG_HEADER(config.h)
+#AM_CONFIG_HEADER(config.h)
 #AC_CONFIG_HEADERS([config.h:config.hin])
 
 AC_PROG_CXX
 AC_PROG_CC
+AC_PROG_INSTALL
 #AC_PROG_MAKE_SET
 
-AC_LANG([C])
-AC_LANG([C++])
+#AC_LANG([C])
+#AC_LANG([C++])
 
 dnl Checks for programs.
 
@@ -83,17 +84,15 @@ nonstandard prefix so pkg-config can find them.]), [$4])
   fi
 ])
 
-
-#CXXFLAGS="-DUSE_SYSLOG $CXXFLAGS"
 #CXXFLAGS="-O0 -g"
 #CXXFLAGS="-O3"
 
 FUPPES_CFLAGS=""
-FUPPES_LIBS="-ldl $FUPPES_LIBS"
+FUPPES_LIBS=""
+#FUPPES_LIBS="-ldl $FUPPES_LIBS"
 
 AC_SUBST(FUPPES_LIBS)
 AC_SUBST(FUPPES_CFLAGS)
-
 
 dnl Checks for libraries.
 PKG_CHECK_MODULES(PCRE, libpcre >= 5.0)
@@ -171,6 +170,17 @@ AC_ARG_ENABLE(lame,
             [  --disable-lame  Do not use LAME],
             [ use_lame=no; ] )
               
+AC_ARG_WITH(lame-dir, AC_HELP_STRING([--with-lame-dir=path],
+            [include path of lame/lame.h]),
+            [
+	      	if test "x$withval" != "x"; then
+	          LAME_H_DIR="$withval/"
+		  CXXFLAGS="$CXXFLAGS -I$withval"
+		fi
+	    ],
+	    [LAME_H_DIR=""])
+AC_SUBST(LAME_H_DIR)
+
 AC_ARG_ENABLE(twolame, 
             [  --disable-twolame  Do not use TwoLAME],
             [ use_twolame=no; ] )              
@@ -184,7 +194,7 @@ if test "x$transcoding" = "xyes"; then
   # check for LAME
   #  
   if test "x$use_lame" = "xyes"; then
-    AC_CHECK_HEADERS(lame/lame.h, have_lame=yes, have_lame=no)
+    AC_CHECK_HEADERS([${LAME_H_DIR}lame/lame.h], have_lame=yes, have_lame=no)
     if test "x$have_lame" = "xyes"; then    
       LAME_LIBS="-lmp3lame"
       have_encoder=yes
@@ -226,7 +236,18 @@ if test "x$transcoding" = "xyes"; then
     fi
     
     # musepack    
-    AC_CHECK_HEADERS(mpcdec/config_types.h, have_mpc=yes, have_mpc=no)
+    AC_ARG_WITH(mpc-dir, AC_HELP_STRING([--with-mpc-dir=path],
+            [include path of mpcdec/mpcdec.h]),
+            [
+                if test "x$withval" != "x"; then
+                  MPC_H_DIR="$withval/"
+                  CXXFLAGS="$CXXFLAGS -I$withval"
+                fi
+            ],
+            [MPC_H_DIR=""])
+    AC_SUBST(MPC_H_DIR)
+
+    AC_CHECK_HEADERS(${MPC_H_DIR}mpcdec/config_types.h, have_mpc=yes, have_mpc=no)
     if test "x$have_mpc" = "xyes"; then      
       MUSEPACK_LIBS="-lmpcdec"
       have_decoder=yes
@@ -235,7 +256,19 @@ if test "x$transcoding" = "xyes"; then
     fi
     
     # FLAC_LIBS
-    AC_CHECK_HEADERS(FLAC/file_decoder.h, have_flac=yes, have_flac=no)
+    AC_ARG_WITH(flac-dir, AC_HELP_STRING([--with-flac-dir=path],
+            [include path of FLAC/file_decoder.h]),
+            [
+                if test "x$withval" != "x"; then
+                  FLAC_H_DIR="$withval/"
+                  CXXFLAGS="$CXXFLAGS -I$withval"
+                fi
+            ],
+            [FLAC_H_DIR=""])
+    AC_SUBST(FLAC_H_DIR)
+
+
+    AC_CHECK_HEADERS(${FLAC_H_DIR}FLAC/file_decoder.h, have_flac=yes, have_flac=no)
     if test "x$have_flac" = "xyes"; then      
       FLAC_LIBS="-lFLAC"
       have_decoder=yes

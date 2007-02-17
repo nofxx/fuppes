@@ -434,11 +434,11 @@ std::string ToUTF8(std::string p_sValue, std::string p_sEncoding)
   char* pOutBuf    = szOutBuf;  
   memset(szOutBuf, 0, p_sValue.length() * 2 + 1);
   
-  #ifdef WIN32
+  //#ifdef WIN32
   iconv(icv, (const char**)&szInBuf, &nInbytes, &pOutBuf, &nOutbytes);
-  #else
-  iconv(icv, &szInBuf, &nInbytes, &pOutBuf, &nOutbytes);  
-  #endif
+  //#else
+  //iconv(icv, &szInBuf, &nInbytes, &pOutBuf, &nOutbytes);  
+  //#endif
   p_sValue = szOutBuf;  
     
   iconv_close(icv); 
