@@ -1,19 +1,9 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl $Id: $
 
-# version
-GENERIC_MAJOR_VERSION=0
-GENERIC_MINOR_VERSION=7
-GENERIC_MICRO_VERSION=2a
-GENERIC_VERSION=$GENERIC_MAJOR_VERSION.$GENERIC_MINOR_VERSION.$GENERIC_MICRO_VERSION
-#GENERIC_VERSION=$GENERIC_MAJOR_VERSION.$GENERIC_MINOR_VERSION
-AC_SUBST(GENERIC_VERSION)
-VERSION=$GENERIC_VERSION
-
-
-AC_INIT(configure.in)
+AC_INIT([fuppes], [0.7.2.a], [u-voelkel@users.sourceforge.net])
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(fuppes, $GENERIC_VERSION, u-voelkel@users.sourceforge.net)
+AM_INIT_AUTOMAKE(fuppes, 0.7.2a, u-voelkel@users.sourceforge.net)
 
 AC_PROG_CC
 AC_PROG_CXX
@@ -124,33 +114,46 @@ AC_MSG_CHECKING([for type of second arg to iconv])
 
 # TAGLIB
 have_taglib=no
-TAGLIB_LIBS=""
-TAGLIB_CFLAGS=""
 
 if test -z "$TAGLIB_CONFIG"; then
   AC_PATH_PROG(TAGLIB_CONFIG, taglib-config, no)
 fi
+
+AH_TEMPLATE([HAVE_TAGLIB], [])
 
 if test "$TAGLIB_CONFIG" = "no" ; then   
    AC_MSG_NOTICE([*** taglib support disabled ***]);
    echo "  the taglib-config script could not be found."
    echo "  taglib support disabled"   
 else  
+	AC_DEFINE([HAVE_TAGLIB], [1], [])
+
   AC_MSG_CHECKING(TAGLIB_CFLAGS)
   TAGLIB_CFLAGS=`$TAGLIB_CONFIG --cflags`
-  TAGLIB_CFLAGS="$TAGLIB_CFLAGS -DHAVE_TAGLIB"
+	FUPPES_CFLAGS="$FUPPES_CFLAGS $TAGLIB_CFLAGS"
   AC_MSG_RESULT($TAGLIB_CFLAGS)
-  AC_SUBST(TAGLIB_CFLAGS)
-  AC_MSG_CHECKING(TAGLIB_LIBS)  
-  TAGLIB_LIBS=`$TAGLIB_CONFIG --libs`
+  
+	AC_MSG_CHECKING(TAGLIB_LIBS)
+	TAGLIB_LIBS=`$TAGLIB_CONFIG --libs`
+  FUPPES_LIBS="$FUPPES_LIBS $TAGLIB_LIBS"
   AC_MSG_RESULT($TAGLIB_LIBS)
-  AC_SUBST(TAGLIB_LIBS)
   
   have_taglib=yes
 fi
-
 # END TAGLIB
 
+#
+# ImageMagick
+#
+AH_TEMPLATE([HAVE_IMAGEMAGICK], [])
+have_imagemagick="no"
+PKG_CHECK_MODULES(IMAGEMAGICK, ImageMagick++ >= 6.3, have_imagemagick=yes, have_imagemagick=no)
+if test "x$have_imagemagick" = "xyes"; then
+  FUPPES_LIBS="$FUPPES_LIBS $IMAGEMAGICK_LIBS $IMAGEMAGICK_LDFLAGS"
+  FUPPES_CFLAGS="$FUPPES_CFLAGS $IMAGEMAGICK_CFLAGS $IMAGEMAGICK_CPPFLAGS"
+	AC_DEFINE([HAVE_IMAGEMAGICK], [1], [])
+fi
+#end ImageMagick
 
 
 LAME_LIBS=""
@@ -207,31 +210,35 @@ if test "x$transcoding" = "xyes"; then
   #
   # check for LAME
   #  
+	AH_TEMPLATE([DISABLE_LAME], [])
   if test "x$use_lame" = "xyes"; then
     AC_CHECK_HEADERS([${LAME_H_DIR}lame/lame.h], have_lame=yes, have_lame=no)
     if test "x$have_lame" = "xyes"; then    
       LAME_LIBS="-lmp3lame"
       have_encoder=yes
     else
-      CXXFLAGS="$CXXFLAGS -DDISABLE_LAME"
+			AC_DEFINE([DISABLE_LAME], [1], [])
     fi
   else
-    CXXFLAGS="$CXXFLAGS -DDISABLE_LAME"
+		AC_DEFINE([DISABLE_LAME], [1], [])
   fi
   
   
   #
   # check for TwoLAME
   #
+	AH_TEMPLATE([DISABLE_TWOLAME], [])
   if test "x$use_twolame" = "xyes"; then
     PKG_CHECK_MODULES(TWOLAME, twolame >= 0.3.8, have_twolame=yes, have_twolame=no)
     if test "x$have_twolame" = "xyes"; then
       have_encoder=yes
     else
-      CXXFLAGS="$CXXFLAGS -DDISABLE_TWOLAME"
+			AC_DEFINE([DISABLE_TWOLAME], [1], [])
+			#CXXFLAGS="$CXXFLAGS -DDISABLE_TWOLAME"
     fi
   else
-    CXXFLAGS="$CXXFLAGS -DDISABLE_TWOLAME"
+		AC_DEFINE([DISABLE_TWOLAME], [1], [])
+    #CXXFLAGS="$CXXFLAGS -DDISABLE_TWOLAME"
   fi
   
   
@@ -242,14 +249,17 @@ if test "x$transcoding" = "xyes"; then
   if test "x$have_encoder" = "xyes"; then
 
     # vorbis
+	  AH_TEMPLATE([DISABLE_VORBIS], [])
     PKG_CHECK_MODULES(VORBISFILE, vorbisfile >= 1.0, have_vorbis=yes, have_vorbis=no)    
     if test "x$have_vorbis" = "xyes"; then      
       have_decoder=yes    
     else
-      CXXFLAGS="$CXXFLAGS -DDISABLE_VORBIS"
+      #CXXFLAGS="$CXXFLAGS -DDISABLE_VORBIS"
+			AC_DEFINE([DISABLE_VORBIS], [1], [])
     fi
     
-    # musepack    
+    # musepack
+	  AH_TEMPLATE([DISABLE_MUSEPACK], []) 
     AC_ARG_WITH(mpc-dir, AC_HELP_STRING([--with-mpc-dir=path],
             [include path of mpcdec/mpcdec.h]),
             [
@@ -266,10 +276,12 @@ if test "x$transcoding" = "xyes"; then
       MUSEPACK_LIBS="-lmpcdec"
       have_decoder=yes
     else
-      CXXFLAGS="$CXXFLAGS -DDISABLE_MUSEPACK"
+			AC_DEFINE([DISABLE_MUSEPACK], [1], [])
+      #CXXFLAGS="$CXXFLAGS -DDISABLE_MUSEPACK"
     fi
     
     # FLAC_LIBS
+		AH_TEMPLATE([DISABLE_FLAC], [])
     AC_ARG_WITH(flac-dir, AC_HELP_STRING([--with-flac-dir=path],
             [include path of FLAC/file_decoder.h]),
             [
@@ -287,11 +299,13 @@ if test "x$transcoding" = "xyes"; then
       FLAC_LIBS="-lFLAC"
       have_decoder=yes
     else
-      CXXFLAGS="$CXXFLAGS -DDISABLE_FLAC"
+      #CXXFLAGS="$CXXFLAGS -DDISABLE_FLAC"
+			AC_DEFINE([DISABLE_FLAC], [1], [])
     fi    
 
   else
-    CXXFLAGS="$CXXFLAGS -DDISABLE_TRANSCODING"
+    #CXXFLAGS="$CXXFLAGS -DDISABLE_TRANSCODING"
+		AC_DEFINE([DISABLE_FLAC], [1], [])
   fi # have_encoder
 
 fi # transcoding = yes

@@ -45,6 +45,16 @@
 #include <windows.h>
 #endif
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
+#ifdef HAVE_IMAGEMAGICK
+#ifdef WIN32
+#include <Magick++.h> 
+#endif
+#endif
+
 using namespace std;
 
 bool g_bExitApp;
@@ -140,6 +150,7 @@ bool CreateTrayIcon()
  */
 int main(int argc, char* argv[])
 {
+
   bool bDaemonMode = false;
   g_bExitApp = false;
 
@@ -175,6 +186,17 @@ int main(int argc, char* argv[])
   WSAStartup(MAKEWORD(2,2), &wsa);
   #endif
 
+  // setup imagemagick
+	#ifdef HAVE_IMAGEMAGICK
+	#ifdef WIN32
+	try {
+	  Magick::InitializeMagick(*argv);
+	}
+	catch(Magick::Exception &ex) {
+	  cout << ex.what() << endl;
+	}
+	#endif
+	#endif
 
   /* daemon process */
   #ifndef WIN32

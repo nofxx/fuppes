@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -48,11 +48,11 @@ struct SAudioItem
   std::string sGenre;
 	std::string sDuration;
   std::string sDescription;
-  std::string sLongDescription;
+  /*std::string sLongDescription;
   std::string sPublisher;
   std::string sLanguage;
   std::string sRelation;
-  std::string sRights;
+  std::string sRights;*/
 };
 
   struct SMusicTrack
@@ -61,11 +61,39 @@ struct SAudioItem
     std::string sArtist;
     std::string sAlbum;
     int         nOriginalTrackNumber;
-    std::string sPlaylist;
+    /*std::string sPlaylist;
     std::string sStorageMedium;
-    std::string sContributor;
+    std::string sContributor;*/
     std::string sDate;
   };
+
+
+struct SImageItem {
+	std::string sDescription;
+  std::string sLongDescription;
+	std::string sPublisher;
+	std::string sRating;
+	std::string sRights;
+	std::string sStorageMedium;
+	std::string sDate;
+	
+	unsigned int nSize;
+	unsigned int nHeight;
+	unsigned int nWidth;
+};
+
+  /*struct SPhoto {
+    std::string sAlbum;
+  };*/
+/*upnp:longDescription upnp O
+  upnp:storageMedium upnp O
+  upnp:rating upnp O
+  dc:description dc O
+  dc:publisher dc O
+  dc:date dc O
+  dc:rights dc O
+	
+	upnp:album upnp O*/
 
 struct SVideoItem
 {
@@ -101,8 +129,9 @@ class CFileDetails
     std::string GetObjectTypeAsString(unsigned int p_nObjectType);
     static std::string GetMimeType(std::string p_sFileName, bool p_bTranscodingMimeType);
   
-    SMusicTrack GetMusicTrackDetails(std::string p_sFileName, std::string* p_sResult);
-  
+    bool GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pMusicTrack);
+    bool GetImageDetails(std::string p_sFileName, SImageItem* pImageItem);
+	
     static bool IsTranscodingExtension(std::string p_sExt);
     static std::string GetTargetExtension(std::string p_sExt);
   

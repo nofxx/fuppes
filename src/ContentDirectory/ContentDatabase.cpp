@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -40,8 +40,6 @@
 #include <sys/stat.h> 
  
 using namespace std;
-
-//const string LOGNAME = "ContentDatabase";
  
 static int SelectCallback(void *pDatabase, int argc, char **argv, char **azColName)
 {
@@ -141,6 +139,14 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
     if(Insert("CREATE INDEX IDX_PARENT_ID ON OBJECTS (PARENT_ID);") < 0)
       return false;
     
+		if(Insert("CREATE TABLE AUDIO_ITEMS (ID INTEGER PRIMARY KEY, DATE TEXT, TRACK_NO INTEGER, DESCRIPTION TEXT, DURATION TEXT, GENRE TEXT, ALBUM TEXT, ARTIST TEXT, TITLE TEXT);") < 0)
+		  return false;
+		
+		if(Insert("CREATE TABLE IMAGE_ITEMS (ID INTEGER PRIMARY KEY, RESOLUTION TEXT);") < 0)
+		  return false;
+			
+    if(Insert("CREATE TABLE VIDEO_ITEMS (ID INTEGER PRIMARY KEY, RESOLUTION TEXT);") < 0)
+		  return false;
     
     string sTablePlaylistItems =
       "create table PLAYLIST_ITEMS ("
@@ -296,6 +302,9 @@ void CContentDatabase::BuildDB()
   
   CContentDatabase::Shared()->Insert("delete from objects");
   CContentDatabase::Shared()->Insert("delete from playlist_items");
+	CContentDatabase::Shared()->Insert("delete from audio_items");
+	CContentDatabase::Shared()->Insert("delete from video_items");
+	CContentDatabase::Shared()->Insert("delete from image_items");
   
   for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
   {
@@ -436,6 +445,42 @@ void CContentDatabase::DbScanDir(std::string p_sDirectory, long long int p_nPare
   #endif         
 }
 
+unsigned int InsertAudioFile(unsigned int p_nObjectId, std::string p_sFileName)
+{
+	struct SMusicTrack TrackInfo; 
+	if(!CFileDetails::Shared()->GetMusicTrackDetails(p_sFileName, &TrackInfo))
+	  return 0;
+		
+	stringstream sSql;
+	sSql << 
+	  "insert into AUDIO_ITEMS " <<
+		"(ID, TITLE, ARTIST, ALBUM, TRACK_NO, GENRE, DURATION, DATE) " <<
+		"values (" <<
+		p_nObjectId << ", " <<
+		"'" << SQLEscape(TrackInfo.mAudioItem.sTitle) << "', " <<
+		"'" << SQLEscape(TrackInfo.sArtist) << "', " <<
+		"'" << SQLEscape(TrackInfo.sAlbum) << "', " <<
+		TrackInfo.nOriginalTrackNumber << ", " <<
+		"'" << SQLEscape(TrackInfo.mAudioItem.sGenre) << "', " <<
+		"'" << TrackInfo.mAudioItem.sDuration << "', " <<
+		"'" << TrackInfo.sDate << "')";
+		
+	cout << sSql.str() << endl;
+		
+	CContentDatabase* pDB = new CContentDatabase();          
+  unsigned int nRowId = pDB->Insert(sSql.str());
+  delete pDB;
+
+	return nRowId;
+}
+
+unsigned int InsertImageFile(unsigned int p_nObjectId, std::string p_sFileName)
+{
+  struct SImageItem ImageItem;
+	if(!CFileDetails::Shared()->GetImageDetails(p_sFileName, &ImageItem))
+	  return 0;
+} 
+
 unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
 {
   OBJECT_TYPE nObjectType = CFileDetails::Shared()->GetObjectType(p_sFileName);         
@@ -454,30 +499,20 @@ unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
   sTmpFileName = sTmpFileName.substr(nPathLen, sTmpFileName.length() - nPathLen);
   
   string sDetails = "";
-  
-  // todo: build file description          
-  switch(nObjectType)
-  {
-    case ITEM_AUDIO_ITEM_MUSIC_TRACK:      
-      SMusicTrack TrackInfo = CFileDetails::Shared()->GetMusicTrackDetails(p_sFileName, &sDetails);
-      /*if(!TrackInfo.mAudioItem.sTitle.empty())
-        sTmpFileName = TrackInfo.mAudioItem.sTitle;*/
-      break;
-  }
+
   
   sTmpFileName = ToUTF8(sTmpFileName);
   sTmpFileName = SQLEscape(sTmpFileName);  
   
   
   stringstream sSql;
-  sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME, MD5, MIME_TYPE, DETAILS) values ";
+  sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME, MD5, MIME_TYPE) values ";
   sSql << "(" << nObjectType << ", ";
   sSql << p_nParentId << ", ";
   sSql << "'" << SQLEscape(p_sFileName) << "', ";
   sSql << "'" << sTmpFileName << "', ";
   sSql << "'" << "todo" << "', ";   //sSql << "'" << MD5Sum(p_sFileName) << "', ";  
-  sSql << "'" << CFileDetails::Shared()->GetMimeType(p_sFileName, false) << "', ";
-  sSql << "'" << SQLEscape(sDetails) << "');";
+  sSql << "'" << CFileDetails::Shared()->GetMimeType(p_sFileName, false) << "');";
   
   //cout << sSql.str() << endl;         
   
@@ -485,13 +520,24 @@ unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
   unsigned int nRowId = pDB->Insert(sSql.str());
   delete pDB;
   
-  if(nRowId == -1)
-  {
+  if(nRowId == -1) {
     return 0;
     cout << "ERROR: " << sSql.str() << endl;
   }
-  else
-    return nRowId;         
+	
+	// build file description          
+  switch(nObjectType)
+  {
+    case ITEM_AUDIO_ITEM_MUSIC_TRACK:     
+		  InsertAudioFile(nRowId, p_sFileName); 
+      break;
+		case ITEM_IMAGE_ITEM_PHOTO:
+		  InsertImageFile(nRowId, p_sFileName);
+			break;
+  }
+	
+	
+	return nRowId;         
 }
 
 unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL)

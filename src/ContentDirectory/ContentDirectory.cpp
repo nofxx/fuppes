@@ -734,23 +734,28 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterEndElement(pWriter);
 
   /* creator */
-  if(pUPnPBrowse->m_sFilter.find("dc:creator") != std::string::npos)
-  {
+  if(pUPnPBrowse->m_sFilter.find("dc:creator") != std::string::npos) {
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "creator", BAD_CAST "http://purl.org/dc/elements/1.1/");    
     xmlTextWriterWriteString(pWriter, BAD_CAST "-Unknown-");
     xmlTextWriterEndElement(pWriter);
   }
 
   /* storageMedium */
-  if(pUPnPBrowse->m_sFilter.find("upnp:storageMedium") != std::string::npos)
-  {
+  if(pUPnPBrowse->m_sFilter.find("upnp:storageMedium") != std::string::npos) {
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "storageMedium", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
     xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN");
     xmlTextWriterEndElement(pWriter);    
   }
   
   
-  xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("DETAILS").c_str());   
+	  /*if(nTmp > 0)
+    sResult << "<upnp:artist>" << sTmp.to8Bit() << "</upnp:artist>"; // << endl;
+    sResult << "<upnp:album>" << sTmp.to8Bit() << "</upnp:album>"; // << endl;
+      sResult << "<upnp:genre>" << sTmp.to8Bit() << "</upnp:genre>"; // << endl;
+    sResult << "<upnp:originalTrackNumber>" << nTmp << "</upnp:originalTrackNumber>"; // << endl;  
+  */
+	
+  //xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("DETAILS").c_str());   
   
   /* res */
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
