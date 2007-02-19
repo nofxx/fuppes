@@ -22,9 +22,9 @@
  */
  
 #ifndef DISABLE_TRANSCODING
-#ifndef DISABLE_LAME 
-
 #include "LameWrapper.h"
+#ifdef HAVE_LAME
+
 #include "../SharedLog.h"
 #include <iostream>
 #include <sstream>
@@ -34,7 +34,8 @@ const std::string LOGNAME = "LameWrapper";
 using namespace std;
 
 CLameWrapper::CLameWrapper()
-{  
+{
+  m_LibHandle = NULL;
 }
 
 CLameWrapper::~CLameWrapper()
@@ -162,5 +163,5 @@ int CLameWrapper::Flush()
   return m_LameEncodeFlush(m_LameGlobalFlags, m_sMp3Buffer, LAME_MAXMP3BUFFER);  
 }
 
-#endif // DISABLE_LAME
+#endif // HAVE_LAME
 #endif // DISABLE_TRANSCODING

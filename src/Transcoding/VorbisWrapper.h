@@ -21,8 +21,12 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #ifndef DISABLE_TRANSCODING
-#ifndef DISABLE_VORBIS
+#ifdef HAVE_VORBIS
 
 #ifndef _VORBISWRAPPER_H
 #define _VORBISWRAPPER_H
@@ -88,7 +92,7 @@ class CVorbisDecoder: public CAudioDecoderBase
   
 };
 
-#endif /* _VORBISWRAPPER_H */
+#endif // _VORBISWRAPPER_H
 
-#endif /* DISABLE_VORBIS */
-#endif /* DISABLE_TRANSCODING */
+#endif // HAVE_VORBIS
+#endif // DISABLE_TRANSCODING

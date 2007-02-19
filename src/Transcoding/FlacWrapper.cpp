@@ -22,9 +22,8 @@
  */
 
 #ifndef DISABLE_TRANSCODING
-#ifndef DISABLE_FLAC
-
 #include "FlacWrapper.h"
+#ifdef HAVE_FLAC
 
 const std::string LOGNAME = "FLACDecoder";
 
@@ -305,5 +304,5 @@ long CFLACDecoder::DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize)
     return -1;
 }
 
-#endif /* DISABLE_FLAC */
-#endif /* DISABLE_TRANSCODING */
+#endif // HAVE_FLAC
+#endif // DISABLE_TRANSCODING

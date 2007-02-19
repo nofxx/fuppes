@@ -22,9 +22,9 @@
  */
 
 #ifndef DISABLE_TRANSCODING
-#ifndef DISABLE_VORBIS
-
 #include "VorbisWrapper.h"
+#ifdef HAVE_VORBIS
+
 #include <sstream>
 #include <iostream>
 
@@ -61,7 +61,7 @@ bool CVorbisDecoder::LoadLib()
   m_LibHandle = FuppesLoadLibrary("vorbisfile.dll");  
   #else
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libvorbis");
-  m_LibHandle = FuppesLoadLibrary("libvorbisfile.so");
+  m_LibHandle = FuppesLoadLibrary("libvorbisfile.dylib");
   #endif
   if(!m_LibHandle)
   {
@@ -190,5 +190,5 @@ long CVorbisDecoder::DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize)
   }  
 }
 
-#endif /* DISABLE_VORBIS */
-#endif /* DISABLE_TRANSCODING */
+#endif // HAVE_VORBIS
+#endif // DISABLE_TRANSCODING

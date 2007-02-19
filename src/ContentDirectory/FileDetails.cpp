@@ -40,12 +40,14 @@
 #endif
 
 #ifdef HAVE_IMAGEMAGICK
-#include <Magick++/Image.h> 
+//#include <Magick++.h> 
+#include <wand/MagickWand.h>
 #endif
 
 #include <sstream>
 #include <iostream>
 
+using namespace std;
 
 /** default file settings */
 struct FileType_t FileTypes[] = 
@@ -93,9 +95,7 @@ struct TranscodingSetting_t TranscodingSettings[] =
   /* empty entry to mark the list's end */
   {"", "", "", OBJECT_TYPE_UNKNOWN}
 };
-
-
-using namespace std;
+ 
 
 CFileDetails* CFileDetails::m_Instance = 0;
 
@@ -311,25 +311,29 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pM
 
 bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageItem)
 {
-  #ifdef HAVE_IMAGEMAGICK
-	cout << "GET IMAGE DETAILS" << endl;
-	Magick::Image img;
-	img.read(p_sFileName);
+  #ifdef HAVE_IMAGEMAGICK	
+	MagickWand* pWand;
+	MagickBooleanType bStatus;
+	unsigned long nHeight;
+	unsigned long nWidth;
 	
-	unsigned int nDepth = img.depth();
-	cout << "Depth: " << nDepth << endl;
+	MagickWandGenesis();
+	pWand = NewMagickWand();
+	bStatus = MagickReadImage(pWand, p_sFileName.c_str());
+	if (bStatus == MagickFalse)
+    return false;
 	
+	// width/height
+	nWidth  = MagickGetImageWidth(pWand);
+	nHeight = MagickGetImageHeight(pWand);
+		
+	pImageItem->nWidth  = nWidth;
+	pImageItem->nHeight = nHeight;
 	
+	pWand = DestroyMagickWand(pWand);
+	MagickWandTerminus();
 	
-/*	size	Geometry	void	const Geometry &geometry_	
-	
-	width
-
-
-unsigned int width_
-
-height*/
-	
+	return true;
 	#else
 	return false;
 	#endif

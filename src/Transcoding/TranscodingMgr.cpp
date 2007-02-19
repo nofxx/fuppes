@@ -23,25 +23,29 @@
 
 #include "TranscodingMgr.h"
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #ifndef DISABLE_TRANSCODING
 
-  #ifndef DISABLE_LAME
+  #ifdef HAVE_LAME
   #include "LameWrapper.h"
   #endif
 
-  #ifndef DISABLE_TWOLAME
+  #ifdef HAVE_TWOLAME
   #include "TwoLameEncoder.h"
   #endif
 
-  #ifndef DISABLE_VORBIS
+  #ifdef HAVE_VORBIS
   #include "VorbisWrapper.h"
   #endif
 
-  #ifndef DISABLE_MUSEPACK
+  #ifdef HAVE_MUSEPACK
   #include "MpcWrapper.h"
   #endif
 
-  #ifndef DISABLE_FLAC
+  #ifdef HAVE_FLAC
   #include "FlacWrapper.h"
   #endif
 
@@ -72,33 +76,33 @@ CTranscodingMgr::CTranscodingMgr()
 
   m_bUseLame = false;
 
-  #ifndef DISABLE_LAME
+  #ifdef HAVE_LAME
   CLameWrapper* pLameEncoder = new CLameWrapper();
   m_bLameAvailable = pLameEncoder->LoadLib();
   m_bUseLame = m_bLameAvailable;
   delete pLameEncoder;
   #endif
 
-  #ifndef DISABLE_TWOLAME
+  #ifdef HAVE_TWOLAME
   CTwoLameEncoder* pTwoLameEncoder = new CTwoLameEncoder();
   m_bTwoLameAvailable = pTwoLameEncoder->LoadLib();
   delete pTwoLameEncoder;
   #endif
 
 
-  #ifndef DISABLE_VORBIS
+  #ifdef HAVE_VORBIS
   CVorbisDecoder* pVorbisDecoder = new CVorbisDecoder();
   m_bVorbisAvailable = pVorbisDecoder->LoadLib();
   delete pVorbisDecoder;
   #endif
 
-  #ifndef DISABLE_MUSEPACK
+  #ifdef HAVE_MUSEPACK
   CMpcDecoder* pMpcDecoder = new CMpcDecoder();
   m_bMusePackAvailable = pMpcDecoder->LoadLib();
   delete pMpcDecoder;
   #endif
 
-  #ifndef DISABLE_FLAC
+  #ifdef HAVE_FLAC
   CFLACDecoder* pFlacDecoder = new CFLACDecoder();
   m_bFlacAvailable = pFlacDecoder->LoadLib();
   delete pFlacDecoder;
@@ -216,7 +220,7 @@ void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
     // lame
     !p_sHTMLVersion ? cout << "  lame    : " : sHTML << "<tr><td>LAME</td>";
 
-    #ifdef DISABLE_LAME
+    #ifndef HAVE_LAME
     !p_sHTMLVersion ? cout << "compiled without Lame support" << endl : sHTML << "<td>compiled without Lame support</td></tr>";
     #else
     if(m_bLameAvailable)
@@ -229,7 +233,7 @@ void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
     // twolame
     !p_sHTMLVersion ? cout << "  twolame : " : sHTML << "<tr><td>TwoLAME</td>";
 
-    #ifdef DISABLE_TWOLAME
+    #ifndef HAVE_TWOLAME
     !p_sHTMLVersion ? cout << "compiled without TwoLame support" << endl : sHTML << "<td>compiled without TwoLame support</td></tr>";
     #else
     if(m_bTwoLameAvailable)
@@ -257,7 +261,7 @@ void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
 
     // vorbis
     !p_sHTMLVersion ? cout << "  vorbis  : " : sHTML << "<tr><td>Vorbis</td>";
-    #ifdef DISABLE_VORBIS
+    #ifndef HAVE_VORBIS
     !p_sHTMLVersion ? cout << "compiled without Vorbis support" << endl : sHTML << "<td>compiled without Vorbis support</td></tr>";
     #else
     if(m_bVorbisAvailable && m_bTranscodeVorbis)
@@ -268,7 +272,7 @@ void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
 
     // musepack
     !p_sHTMLVersion ? cout << "  musepack: " : sHTML << "<tr><td>MusePack</td>";
-    #ifdef DISABLE_MUSEPACK
+    #ifndef HAVE_MUSEPACK
     !p_sHTMLVersion ? cout << "compiled without MusePack support" << endl : sHTML << "<td>compiled without MusePack support</td></tr>";
     #else
     if(m_bMusePackAvailable && m_bTranscodeMusePack)
@@ -279,7 +283,7 @@ void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
 
     // flac
     !p_sHTMLVersion ? cout << "  flac    : " : sHTML << "<tr><td>FLAC</td>";
-    #ifdef DISABLE_FLAC
+    #ifndef HAVE_FLAC
     !p_sHTMLVersion ? cout << "compiled without FLAC support" << endl : sHTML << "<td>compiled without FLAC support</td></tr>";
     #else
     if(m_bFlacAvailable && m_bTranscodeFlac)
@@ -307,12 +311,12 @@ CAudioEncoderBase* CTranscodingMgr::CreateAudioEncoder(std::string p_sFileExt)
     CAudioEncoderBase* pResult = NULL;
 
     if(m_bUseLame) {
-      #ifndef DISABLE_LAME
+      #ifdef HAVE_LAME
       pResult = (CAudioEncoderBase*)(new CLameWrapper());
       #endif
     }
     else {
-      #ifndef DISABLE_TWOLAME
+      #ifdef HAVE_TWOLAME
       pResult = (CAudioEncoderBase*)(new CTwoLameEncoder());
       #endif
     }
@@ -330,20 +334,20 @@ CAudioDecoderBase* CTranscodingMgr::CreateAudioDecoder(std::string p_sFileExt, u
 
   #ifndef DISABLE_TRANSCODING
 
-  #ifndef DISABLE_VORBIS
+  #ifdef HAVE_VORBIS
   if(p_sFileExt.compare("ogg") == 0) {
     pResult = (CAudioDecoderBase*)(new CVorbisDecoder());    
   }
   #endif
 
-  #ifndef DISABLE_MUSEPACK
+  #ifdef HAVE_MUSEPACK
   if(p_sFileExt.compare("mpc") == 0) {
     pResult = (CAudioDecoderBase*)(new CMpcDecoder());
     *p_nBufferSize = MPC_DECODER_BUFFER_LENGTH * 4;
   }
   #endif
 
-  #ifndef DISABLE_FLAC
+  #ifdef HAVE_FLAC
   if(p_sFileExt.compare("flac") == 0) {
     pResult = (CAudioDecoderBase*)(new CFLACDecoder());
   }

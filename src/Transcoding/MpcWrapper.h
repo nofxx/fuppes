@@ -21,8 +21,12 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+ 
 #ifndef DISABLE_TRANSCODING
-#ifndef DISABLE_MUSEPACK
+#ifdef  HAVE_MUSEPACK
  
 #ifndef _MPCWRAPPER_H
 #define _MPCWRAPPER_H
@@ -93,7 +97,7 @@ class CMpcDecoder: public CAudioDecoderBase
     MpcDecoderDecode_t     m_MpcDecoderDecode;    
 };
 
-#endif /* _MPCWRAPPER_H */
+#endif // _MPCWRAPPER_H
 
-#endif /* DISABLE_MUSEPACK */
-#endif /* DISABLE_TRANSCODING */
+#endif // HAVE_MUSEPACK
+#endif // DISABLE_TRANSCODING

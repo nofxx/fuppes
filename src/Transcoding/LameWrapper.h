@@ -21,9 +21,12 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef DISABLE_TRANSCODING
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif 
 
-#ifndef DISABLE_LAME
+#ifndef DISABLE_TRANSCODING
+#ifdef  HAVE_LAME
 
 #ifndef _LAMEWRAPPER_H
 #define _LAMEWRAPPER_H
@@ -87,8 +90,8 @@ typedef enum tagLAME_BITRATE
 class CLameWrapper: public CAudioEncoderBase
 {  
   public:
-    CLameWrapper();
-    ~CLameWrapper();
+		CLameWrapper();
+    virtual ~CLameWrapper();
     bool LoadLib();
   
     void Init();
@@ -120,5 +123,5 @@ class CLameWrapper: public CAudioEncoderBase
 };
 
 #endif // _LAMEWRAPPER_H
-#endif // DISABLE_LAME
+#endif // HAVE_LAME
 #endif // DISABLE_TRANSCODING

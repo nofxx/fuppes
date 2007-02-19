@@ -28,9 +28,8 @@
  */
 
 #ifndef DISABLE_TRANSCODING
-#ifndef DISABLE_MUSEPACK
-
 #include "MpcWrapper.h"
+#ifdef HAVE_MUSEPACK
 
 #include <iostream>
 #include <sstream>
@@ -266,5 +265,5 @@ long CMpcDecoder::DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize)
   }
 }
 
-#endif /* DISABLE_MUSEPACK */
-#endif /* DISABLE_TRANSCODING */
+#endif // HAVE_MUSEPACK
+#endif // DISABLE_TRANSCODING

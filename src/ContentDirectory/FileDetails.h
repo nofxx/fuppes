@@ -77,7 +77,6 @@ struct SImageItem {
 	std::string sStorageMedium;
 	std::string sDate;
 	
-	unsigned int nSize;
 	unsigned int nHeight;
 	unsigned int nWidth;
 };

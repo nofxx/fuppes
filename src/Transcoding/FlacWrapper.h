@@ -21,8 +21,12 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+ 
 #ifndef DISABLE_TRANSCODING
-#ifndef DISABLE_FLAC
+#ifdef  HAVE_FLAC
  
 #ifndef _FLACWRAPPER_H
 #define _FLACWRAPPER_H
@@ -123,7 +127,7 @@ class CFLACDecoder: public CAudioDecoderBase
     FLACFileDecoderFinish_t               m_FLACFileDecoderFinish;
 };
 
-#endif /* _FLACWRAPPER_H */
+#endif // _FLACWRAPPER_H
 
-#endif /* DISABLE_FLAC */
-#endif /* DISABLE_TRANSCODING */
+#endif // HAVE_FLAC
+#endif // DISABLE_TRANSCODING

@@ -20,9 +20,13 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
+
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
  
 #ifndef DISABLE_TRANSCODING
-#ifndef DISABLE_TWOLAME
+#ifdef  HAVE_TWOLAME
  
 #ifndef _TWOLAMEENCODER_H
 #define _TWOLAMEENCODER_H
@@ -114,5 +118,5 @@ class CTwoLameEncoder: public CAudioEncoderBase
 };
 
 #endif // _TWOLAMEENCODER_H
-#endif // DISABLE_TWOLAME
+#endif // HAVE_TWOLAME
 #endif // DISABLE_TRANSCODING

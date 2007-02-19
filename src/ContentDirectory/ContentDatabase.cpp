@@ -128,8 +128,8 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
       "  PATH TEXT NOT NULL,"
       "  FILE_NAME TEXT DEFAULT NULL,"
       "  MD5 TEXT DEFAULT NULL,"
-      "  MIME_TYPE TEXT DEFAULT NULL,"
-      "  DETAILS TEXT DEFAULT NULL"
+      "  MIME_TYPE TEXT DEFAULT NULL",
+			"  UPDATE_ID INTEGER DEFAULT 0"
       ");";        
     
     if(Insert(sTableObjects) < 0)
@@ -142,7 +142,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 		if(Insert("CREATE TABLE AUDIO_ITEMS (ID INTEGER PRIMARY KEY, DATE TEXT, TRACK_NO INTEGER, DESCRIPTION TEXT, DURATION TEXT, GENRE TEXT, ALBUM TEXT, ARTIST TEXT, TITLE TEXT);") < 0)
 		  return false;
 		
-		if(Insert("CREATE TABLE IMAGE_ITEMS (ID INTEGER PRIMARY KEY, RESOLUTION TEXT);") < 0)
+		if(Insert("CREATE TABLE IMAGE_ITEMS (ID INTEGER PRIMARY KEY, WIDTH INTEGER, HEIGHT INTEGER);") < 0)
 		  return false;
 			
     if(Insert("CREATE TABLE VIDEO_ITEMS (ID INTEGER PRIMARY KEY, RESOLUTION TEXT);") < 0)
@@ -153,7 +153,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
       "  ID INTEGER PRIMARY KEY AUTOINCREMENT, "
       "  PLAYLIST_ID INTEGER NOT NULL, " // id des playlist objektes OBJECTS.ID
       "  OBJECT_ID INTEGER NOT NULL, " // id des zugehoerigen eintrags aus OBJECTS.ID
-      "  POSITION INTEGER NOT NULL " // position in der liste */
+      "  POSITION INTEGER NOT NULL " // position in der liste
       ");";
     
     if(Insert(sTablePlaylistItems) < 0)
@@ -479,6 +479,23 @@ unsigned int InsertImageFile(unsigned int p_nObjectId, std::string p_sFileName)
   struct SImageItem ImageItem;
 	if(!CFileDetails::Shared()->GetImageDetails(p_sFileName, &ImageItem))
 	  return 0;
+		
+	stringstream sSql;
+	sSql << 
+	  "insert into IMAGE_ITEMS " <<
+		"(ID, WIDTH, HEIGHT) " <<
+		"values (" <<
+		p_nObjectId << ", " <<
+		ImageItem.nWidth << ", " <<
+		ImageItem.nHeight << ")";
+	
+	cout << sSql.str() << endl;
+		
+	CContentDatabase* pDB = new CContentDatabase();          
+  unsigned int nRowId = pDB->Insert(sSql.str());
+  delete pDB;
+
+	return nRowId;
 } 
 
 unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
@@ -664,6 +681,7 @@ bool InsertPlaylistItem(unsigned int p_nPlaylistID, unsigned int p_nItemID, int 
   pDB->Insert(sSQL.str());
   
   delete pDB;
+	return true;
 }
 
 bool IsRelativeFileName(std::string p_sValue)
