@@ -423,14 +423,26 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   /* get description */
   if(nContainerType == CONTAINER_STORAGE_FOLDER)
   {
-    sSql << "select ID, TYPE, PATH, FILE_NAME, MIME_TYPE, DETAILS " <<
-            "from OBJECTS where PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " " <<
-            "order by TYPE, FILE_NAME ";
+    sSql << 
+      "select " <<
+      "  o.ID, o.TYPE, o.PATH, o.FILE_NAME, o.MIME_TYPE, " <<
+      "  i.height, i.width, " <<
+      "  a.DURATION " <<
+      "from " <<
+      "  OBJECTS o " <<
+      "  left join AUDIO_ITEMS a on (a.id = o.id) " <<
+      "  left join IMAGE_ITEMS i on (i.id = o.id) " <<
+      "where " <<
+      "  o.PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " " <<
+      "order by " <<
+      "  o.TYPE, o.FILE_NAME ";
+      
+      cout << sSql.str() << endl;
   }
   else if(nContainerType == CONTAINER_PLAYLIST_CONTAINER)
   {
       sSql << "select " <<
-              "  o.ID, o.TYPE, o.PATH, o.FILE_NAME, o.MIME_TYPE, o.DETAILS " <<
+              "  o.ID, o.TYPE, o.PATH, o.FILE_NAME, o.MIME_TYPE " <<
               "from " <<
               "  OBJECTS o, PLAYLIST_ITEMS p " <<
               "where " <<
@@ -665,36 +677,13 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter, CSelectRe
     }
     
     /* title */
-    xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");    
-    
-    /* trim filename */
-    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), CSharedConfig::Shared()->GetMaxFileNameLength(), true);    
-    sFileName = TruncateFileExt(sFileName);
-    
-    // to utf 8
-    /*unsigned char* szBuf = new unsigned char[4096];
-    int nSize   = 4096;
-    int nLength = pSQLResult->GetValue("FILE_NAME").length();
-    
-    memcpy(szBuf, pSQLResult->GetValue("FILE_NAME").c_str(), pSQLResult->GetValue("FILE_NAME").length());
-    szBuf[pSQLResult->GetValue("FILE_NAME").length()] = '\0';
-    
-    cout << szBuf << endl; //pSQLResult->GetValue("FILE_NAME") << endl;
-    cout << xmlCheckUTF8(szBuf) << endl;
-    if(xmlCheckUTF8(szBuf))
-      cout << "true" << endl;
-    else
-      cout << "false" << endl;
-    
-    if(!xmlCheckUTF8(szBuf))
-    {
-      isolat1ToUTF8(szBuf, &nSize, (const unsigned char*)pSQLResult->GetValue("FILE_NAME").c_str(), &nLength);
-      szBuf[nSize] = '\0';
-    }
-    cout << szBuf << endl;
-    xmlTextWriterWriteString(pWriter, BAD_CAST szBuf);*/    
-    xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
+    xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
+      /* trim filename */
+      string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), CSharedConfig::Shared()->GetMaxFileNameLength(), true);    
+      sFileName = TruncateFileExt(sFileName);
+      xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
     xmlTextWriterEndElement(pWriter);
+    
     
     switch(p_nObjectType)
     {
@@ -767,10 +756,14 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
     sExt      = CFileDetails::Shared()->GetTargetExtension(sExt);
   }
   
+  // protocol info
   std::stringstream sTmp;
   sTmp << "http-get:*:" << sMimeType << ":*";
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
   sTmp.str("");
+  
+  // duration
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->GetValue("DURATION").c_str());
   
   sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/AudioItems/" << p_sObjectID << "." << sExt;  
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
@@ -828,9 +821,15 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
   /* res */
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
   
+  // protocol info
   std::stringstream sTmp;
   sTmp << "http-get:*:" << pSQLResult->GetValue("MIME_TYPE") << ":*";
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
+  sTmp.str("");
+  
+  // resolution
+  sTmp << pSQLResult->GetValue("WIDTH") << "x" << pSQLResult->GetValue("HEIGHT");
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.str().c_str());
   sTmp.str("");
   
   sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/ImageItems/" << p_sObjectID << "." << ExtractFileExt(pSQLResult->GetValue("PATH"));

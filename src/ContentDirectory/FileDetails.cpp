@@ -271,11 +271,23 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pM
 	sTmp = pFile.tag()->title();
   pMusicTrack->mAudioItem.sTitle = sTmp.to8Bit(true);  
   
-	//string duration = "0:00:00.00";	
+	//string duration = "H+:MM:SS(.00)";	
 	long length = pFile.audioProperties()->length();
-  stringstream s; 
-	s << length/(60*60) << ":" << length/60 << ":" << (length - length/60);
-  pMusicTrack->mAudioItem.sDuration = s.str();
+  char s[4];
+  stringstream sDuration;
+	sDuration << length/(60*60) << ":";
+  sprintf(s, "%02ld:", length/60);
+  s[3] = '\0';
+  sDuration << s;
+  sprintf(s, "%02ld", (length - length/60));
+  s[2] = '\0';
+  sDuration << s;
+   
+  /*cout << p_sFileName << endl;
+ 	cout << length/(60*60) << ":" << length/60 << ":" << (length - length/60) << endl;
+  cout << "DURATION: " << sDuration.str() << endl << endl;*/
+  
+  pMusicTrack->mAudioItem.sDuration = sDuration.str();
 	
 	// artist
   sTmp = pFile.tag()->artist();
@@ -320,8 +332,10 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
 	MagickWandGenesis();
 	pWand = NewMagickWand();
 	bStatus = MagickReadImage(pWand, p_sFileName.c_str());
-	if (bStatus == MagickFalse)
-    return false;
+	if (bStatus == MagickFalse) {
+    DestroyMagickWand(pWand);
+		return false;
+	}
 	
 	// width/height
 	nWidth  = MagickGetImageWidth(pWand);
