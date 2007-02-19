@@ -49,12 +49,6 @@
 #include "../config.h"
 #endif
 
-#ifdef HAVE_IMAGEMAGICK
-#ifdef WIN32
-#include <Magick++.h> 
-#endif
-#endif
-
 using namespace std;
 
 bool g_bExitApp;
@@ -150,7 +144,6 @@ bool CreateTrayIcon()
  */
 int main(int argc, char* argv[])
 {
-
   bool bDaemonMode = false;
   g_bExitApp = false;
 
@@ -185,18 +178,6 @@ int main(int argc, char* argv[])
   WSADATA wsa;
   WSAStartup(MAKEWORD(2,2), &wsa);
   #endif
-
-  // setup imagemagick
-	#ifdef HAVE_IMAGEMAGICK
-	#ifdef WIN32
-	try {
-	  Magick::InitializeMagick(*argv);
-	}
-	catch(Magick::Exception &ex) {
-	  cout << ex.what() << endl;
-	}
-	#endif
-	#endif
 
   /* daemon process */
   #ifndef WIN32
@@ -319,7 +300,7 @@ int main(int argc, char* argv[])
         cout << "  version     : " << CSharedConfig::Shared()->GetAppVersion() << endl;
         cout << "  hostname    : " << CSharedConfig::Shared()->GetHostname() << endl;
         cout << "  OS          : " << CSharedConfig::Shared()->GetOSName() << " " << CSharedConfig::Shared()->GetOSVersion() << endl;
-        cout << "  build at    : " << __DATE__ << "" << __TIME__ << endl;
+        cout << "  build at    : " << __DATE__ << " " << __TIME__ << endl;
         cout << "  build with  : " << __VERSION__ << endl;
         cout << "  address     : " << CSharedConfig::Shared()->GetIPv4Address() << endl;
         cout << "  sqlite      : " << CContentDatabase::Shared()->GetLibVersion() << endl;

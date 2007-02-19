@@ -128,24 +128,24 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
       "  PATH TEXT NOT NULL,"
       "  FILE_NAME TEXT DEFAULT NULL,"
       "  MD5 TEXT DEFAULT NULL,"
-      "  MIME_TYPE TEXT DEFAULT NULL",
+      "  MIME_TYPE TEXT DEFAULT NULL,"
 			"  UPDATE_ID INTEGER DEFAULT 0"
       ");";        
     
-    if(Insert(sTableObjects) < 0)
+    if(!Execute(sTableObjects))
       return false;
-    if(Insert("CREATE INDEX IDX_FILE_NAME ON OBJECTS (FILE_NAME);") < 0)
+    if(!Execute("CREATE INDEX IDX_FILE_NAME ON OBJECTS (FILE_NAME);"))
       return false;
-    if(Insert("CREATE INDEX IDX_PARENT_ID ON OBJECTS (PARENT_ID);") < 0)
+    if(!Execute("CREATE INDEX IDX_PARENT_ID ON OBJECTS (PARENT_ID);"))
       return false;
     
-		if(Insert("CREATE TABLE AUDIO_ITEMS (ID INTEGER PRIMARY KEY, DATE TEXT, TRACK_NO INTEGER, DESCRIPTION TEXT, DURATION TEXT, GENRE TEXT, ALBUM TEXT, ARTIST TEXT, TITLE TEXT);") < 0)
+		if(!Execute("CREATE TABLE AUDIO_ITEMS (ID INTEGER PRIMARY KEY, DATE TEXT, TRACK_NO INTEGER, DESCRIPTION TEXT, DURATION TEXT, GENRE TEXT, ALBUM TEXT, ARTIST TEXT, TITLE TEXT);"))
 		  return false;
 		
-		if(Insert("CREATE TABLE IMAGE_ITEMS (ID INTEGER PRIMARY KEY, WIDTH INTEGER, HEIGHT INTEGER);") < 0)
+		if(!Execute("CREATE TABLE IMAGE_ITEMS (ID INTEGER PRIMARY KEY, WIDTH INTEGER, HEIGHT INTEGER);"))
 		  return false;
 			
-    if(Insert("CREATE TABLE VIDEO_ITEMS (ID INTEGER PRIMARY KEY, RESOLUTION TEXT);") < 0)
+    if(!Execute("CREATE TABLE VIDEO_ITEMS (ID INTEGER PRIMARY KEY, RESOLUTION TEXT);"))
 		  return false;
     
     string sTablePlaylistItems =
@@ -156,7 +156,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
       "  POSITION INTEGER NOT NULL " // position in der liste
       ");";
     
-    if(Insert(sTablePlaylistItems) < 0)
+    if(!Execute(sTablePlaylistItems))
       return false;    
   }
   else
@@ -200,8 +200,7 @@ void CContentDatabase::ClearResult()
 
 bool CContentDatabase::Open()
 {  
-  if(sqlite3_open(m_sDbFileName.c_str(), &m_pDbHandle))
-  {
+  if(sqlite3_open(m_sDbFileName.c_str(), &m_pDbHandle)) {
     fprintf(stderr, "Can't create/open database: %s\n", sqlite3_errmsg(m_pDbHandle));
     sqlite3_close(m_pDbHandle);
     return false;
@@ -217,30 +216,47 @@ void CContentDatabase::Close()
 unsigned int CContentDatabase::Insert(std::string p_sStatement)
 {
   Open();
-  
+
   char* szErr = 0;
   
-  int nTrans = sqlite3_exec(m_pDbHandle, "BEGIN TRANSACTION;", NULL, NULL, &szErr);
+  /*int nTrans = sqlite3_exec(m_pDbHandle, "BEGIN TRANSACTION;", NULL, NULL, &szErr);
   if(nTrans != SQLITE_OK)
-    fprintf(stderr, "CContentDatabase::Insert - start transaction :: SQL error: %s\n", szErr);    
+    fprintf(stderr, "CContentDatabase::Insert - start transaction :: SQL error: %s\n", szErr);  */
     
   int nResult = sqlite3_exec(m_pDbHandle, p_sStatement.c_str(), NULL, NULL, &szErr);  
-  if(nResult != SQLITE_OK)
-  {
+  if(nResult != SQLITE_OK) {
     fprintf(stderr, "CContentDatabase::Insert - insert :: SQL error: %s\n", szErr);    
-    nResult = -1;
+    nResult = 0;
   }
-  else  
-  {
+  else {
     nResult = sqlite3_last_insert_rowid(m_pDbHandle);
   }
-  nTrans = sqlite3_exec(m_pDbHandle, "COMMIT;", NULL, NULL, &szErr);
+	
+  /*nTrans = sqlite3_exec(m_pDbHandle, "COMMIT;", NULL, NULL, &szErr);
   if(nTrans != SQLITE_OK)
-    fprintf(stderr, "CContentDatabase::Insert - commit :: SQL error: %s\n", szErr);        
-    //cout << "error commit transaction" << endl;
-  
+    fprintf(stderr, "CContentDatabase::Insert - commit :: SQL error: %s\n", szErr);       */ 
+
   Close();
   return nResult;  
+}
+
+bool CContentDatabase::Execute(std::string p_sStatement)
+{
+  Open();
+	bool bResult = false;
+  char* szErr = 0;
+	
+  int nStat = sqlite3_exec(m_pDbHandle, p_sStatement.c_str(), NULL, NULL, &szErr);  
+  if(nStat != SQLITE_OK) {
+    fprintf(stderr, "CContentDatabase::Execute :: SQL error: %s\n", szErr);    
+    bResult = false;
+  }
+  else {
+    bResult = true;
+  }
+	
+	Close();
+	return bResult;
 }
 
 bool CContentDatabase::Select(std::string p_sStatement)
@@ -263,8 +279,7 @@ bool CContentDatabase::Select(std::string p_sStatement)
     nTry++;
   }while(nResult == SQLITE_BUSY);
     
-  if(nResult != SQLITE_OK)
-  {
+  if(nResult != SQLITE_OK) {
     cout << "RESULT: " << nResult << endl;    
     fprintf(stderr, "CContentDatabase::Select :: SQL error: %s, Statement: %s\n", szErr, p_sStatement.c_str());
     sqlite3_close(m_pDbHandle);    
@@ -300,11 +315,11 @@ void CContentDatabase::BuildDB()
   
   CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] creating database. this may take a while.", __FILE__, __LINE__, false);
   
-  CContentDatabase::Shared()->Insert("delete from objects");
-  CContentDatabase::Shared()->Insert("delete from playlist_items");
-	CContentDatabase::Shared()->Insert("delete from audio_items");
-	CContentDatabase::Shared()->Insert("delete from video_items");
-	CContentDatabase::Shared()->Insert("delete from image_items");
+  CContentDatabase::Shared()->Execute("delete from objects");
+  CContentDatabase::Shared()->Execute("delete from playlist_items");
+	CContentDatabase::Shared()->Execute("delete from audio_items");
+	CContentDatabase::Shared()->Execute("delete from video_items");
+	CContentDatabase::Shared()->Execute("delete from image_items");
   
   for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
   {
@@ -537,9 +552,8 @@ unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
   unsigned int nRowId = pDB->Insert(sSql.str());
   delete pDB;
   
-  if(nRowId == -1) {
+  if(nRowId == 0) {
     return 0;
-    cout << "ERROR: " << sSql.str() << endl;
   }
 	
 	// build file description          
@@ -551,6 +565,29 @@ unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
 		case ITEM_IMAGE_ITEM_PHOTO:
 		  InsertImageFile(nRowId, p_sFileName);
 			break;
+		
+		case OBJECT_TYPE_UNKNOWN:
+		case ITEM_IMAGE_ITEM:
+		case ITEM_AUDIO_ITEM:
+		case ITEM_AUDIO_ITEM_AUDIO_BROADCAST:
+		case ITEM_AUDIO_ITEM_AUDIO_BOOK:
+		case ITEM_VIDEO_ITEM:
+		case ITEM_VIDEO_ITEM_MOVIE:
+		case ITEM_VIDEO_ITEM_VIDEO_BROADCAST:
+		case ITEM_VIDEO_ITEM_MUSIC_VIDEO_CLIP:
+		case CONTAINER_PERSON:
+		case CONTAINER_PERSON_MUSIC_ARTIST:
+		case CONTAINER_PLAYLIST_CONTAINER:
+		case CONTAINER_ALBUM:
+		case CONTAINER_ALBUM_MUSIC_ALBUM:
+		case CONTAINER_ALBUM_PHOTO_ALBUM:
+		case CONTAINER_GENRE:
+		case CONTAINER_GENRE_MUSIC_GENRE:
+		case CONTAINER_GENRE_MOVIE_GENRE:
+		case CONTAINER_STORAGE_SYSTEM:
+		case CONTAINER_STORAGE_VOLUME:
+		case CONTAINER_STORAGE_FOLDER:
+		  break;
   }
 	
 	

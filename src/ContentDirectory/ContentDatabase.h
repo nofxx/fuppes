@@ -92,6 +92,7 @@ class CContentDatabase
     bool Init(bool* p_bIsNewDB);
   
     unsigned int Insert(std::string p_sStatement);
+    bool Execute(std::string p_sStatement);
     bool Select(std::string p_sStatement);
   
     bool Eof();
