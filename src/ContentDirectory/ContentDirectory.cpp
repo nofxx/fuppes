@@ -82,28 +82,28 @@ void CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
 {
   string sContent = "";
   
-  switch(pUPnPAction->GetActionType())
+  switch((UPNP_CONTENT_DIRECTORY_ACTIONS)pUPnPAction->GetActionType())
   {
     // Browse
-    case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_BROWSE:      
+    case UPNP_BROWSE:      
       sContent = DbHandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);      
       break;
 		// Search
-		case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_SEARCH:
+		case UPNP_SEARCH:
 		  sContent = HandleUPnPSearch((CUPnPSearch*)pUPnPAction);
 			break;
     // GetSearchCapabilities
-    case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SEARCH_CAPABILITIES:
+    case UPNP_GET_SEARCH_CAPABILITIES:
       sContent = HandleUPnPGetSearchCapabilities(pUPnPAction);
       break;      
     // GetSortCapabilities
-    case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SORT_CAPABILITIES:
+    case UPNP_GET_SORT_CAPABILITIES:
       sContent = HandleUPnPGetSortCapabilities(pUPnPAction);
       break;
     // GetSystemUpdateID  
-    case UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SYSTEM_UPDATE_ID:
+    case UPNP_GET_SYSTEM_UPDATE_ID:
       sContent = HandleUPnPGetSystemUpdateID(pUPnPAction);
-      break;
+      break;	
   }
   
   if(!sContent.empty())
@@ -191,7 +191,7 @@ std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
         case UPNP_BROWSE_FLAG_DIRECT_CHILDREN:
           CSharedLog::Shared()->DebugLog(LOGNAME, "CContentDirectory::DbHandleUPnPBrowse - BrowseDirectChildren");
           BrowseDirectChildren(resWriter, &nTotalMatches, &nNumberReturned, pUPnPBrowse);
-          break;        
+          break;
       }   
   
       /*cout << "start idx: " << pUPnPBrowse->m_nStartingIndex << endl;
@@ -427,7 +427,8 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
       "select " <<
       "  o.ID, o.TYPE, o.PATH, o.FILE_NAME, o.MIME_TYPE, " <<
       "  i.height, i.width, " <<
-      "  a.DURATION " <<
+      "  a.TITLE, a.DURATION, a.ALBUM, a.ARTIST, " <<
+			"  a.TRACK_NO, a.BITRATE, a.SAMPLERATE, a.CHANNELS " <<
       "from " <<
       "  OBJECTS o " <<
       "  left join AUDIO_ITEMS a on (a.id = o.id) " <<
@@ -676,13 +677,13 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter, CSelectRe
       xmlTextWriterEndElement(pWriter);
     }
     
-    /* title */
-    xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
-      /* trim filename */
+    // title
+    /*xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
+      // trim filename
       string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), CSharedConfig::Shared()->GetMaxFileNameLength(), true);    
       sFileName = TruncateFileExt(sFileName);
       xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
-    xmlTextWriterEndElement(pWriter);
+    xmlTextWriterEndElement(pWriter);*/
     
     
     switch(p_nObjectType)
@@ -717,9 +718,21 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
                                                   CUPnPBrowse*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {
+  // title
+  xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
+    // trim filename
+    string sFileName = pSQLResult->GetValue("FILE_NAME");
+		if(!pSQLResult->GetValue("TITLE").empty())
+		  sFileName = pSQLResult->GetValue("TITLE");
+			
+	  sFileName = TrimFileName(sFileName, CSharedConfig::Shared()->GetMaxFileNameLength(), true);    
+    sFileName = TruncateFileExt(sFileName);
+    xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
+	xmlTextWriterEndElement(pWriter);
+
   /* class */
   xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
-  xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.audioItem.musicTrack");
+    xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.audioItem.musicTrack");
   xmlTextWriterEndElement(pWriter);
 
   /* creator */
@@ -736,15 +749,23 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
     xmlTextWriterEndElement(pWriter);    
   }
   
-  
-	  /*if(nTmp > 0)
-    sResult << "<upnp:artist>" << sTmp.to8Bit() << "</upnp:artist>"; // << endl;
-    sResult << "<upnp:album>" << sTmp.to8Bit() << "</upnp:album>"; // << endl;
-      sResult << "<upnp:genre>" << sTmp.to8Bit() << "</upnp:genre>"; // << endl;
-    sResult << "<upnp:originalTrackNumber>" << nTmp << "</upnp:originalTrackNumber>"; // << endl;  
-  */
+	#warning todo: filter
+	xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "artist", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
+    xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("ARTIST").c_str());
+	xmlTextWriterEndElement(pWriter); 
 	
-  //xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("DETAILS").c_str());   
+	xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "album", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
+    xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("ALBUM").c_str());
+	xmlTextWriterEndElement(pWriter);
+
+	xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "genre", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
+    xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("GENRE").c_str());
+	xmlTextWriterEndElement(pWriter);
+	
+	xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "originalTrackNumber", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
+    xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("TRACK_NO").c_str());
+	xmlTextWriterEndElement(pWriter);
+	
   
   /* res */
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
@@ -761,10 +782,20 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   sTmp << "http-get:*:" << sMimeType << ":*";
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
   sTmp.str("");
-  
+
   // duration
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->GetValue("DURATION").c_str());
-  
+	
+	// nrAudioChannels 
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "nrAudioChannels", BAD_CAST pSQLResult->GetValue("CHANNELS").c_str());
+ 
+  // sampleFrequency
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST pSQLResult->GetValue("SAMPLERATE").c_str());
+
+	// bitrate
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("BITRATE").c_str());
+
+
   sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/AudioItems/" << p_sObjectID << "." << sExt;  
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
   xmlTextWriterEndElement(pWriter); 
@@ -776,6 +807,14 @@ void CContentDirectory::BuildAudioItemAudioBroadcastDescription(xmlTextWriterPtr
                                                   CUPnPBrowse*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {
+  // title
+	xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
+    // trim filename
+    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), CSharedConfig::Shared()->GetMaxFileNameLength(), true);    
+    sFileName = TruncateFileExt(sFileName);
+    xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
+	xmlTextWriterEndElement(pWriter);
+
   /* class */
   xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
   xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.audioItem.audioBroadcast");
@@ -800,6 +839,14 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
                                                   CUPnPBrowse*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {
+  // title
+	xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
+    // trim filename
+    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), CSharedConfig::Shared()->GetMaxFileNameLength(), true);    
+    sFileName = TruncateFileExt(sFileName);
+    xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
+	xmlTextWriterEndElement(pWriter);
+
   /* class */
   xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
   xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.imageItem");
@@ -843,6 +890,14 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
                                                   CUPnPBrowse*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {   
+  // title
+	xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
+    // trim filename
+    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), CSharedConfig::Shared()->GetMaxFileNameLength(), true);    
+    sFileName = TruncateFileExt(sFileName);
+    xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
+	xmlTextWriterEndElement(pWriter);
+
   /* class */
   xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
   xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.videoItem.movie");
@@ -873,7 +928,15 @@ void CContentDirectory::BuildVideoItemVideoBroadcastDescription(xmlTextWriterPtr
                                                   CSelectResult* pSQLResult,
                                                   CUPnPBrowse*  pUPnPBrowse,
                                                   std::string p_sObjectID)
-{   
+{ 
+  // title
+	xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
+    // trim filename
+    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), CSharedConfig::Shared()->GetMaxFileNameLength(), true);    
+    sFileName = TruncateFileExt(sFileName);
+    xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
+	xmlTextWriterEndElement(pWriter);
+  
   /* class */
   xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
   xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.videoItem.videoBroadcast");
@@ -898,7 +961,15 @@ void CContentDirectory::BuildPlaylistItemDescription(xmlTextWriterPtr pWriter,
                                                   CUPnPBrowse*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {   
-  /* class */
+  // title
+	xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
+		// trim filename
+		string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), CSharedConfig::Shared()->GetMaxFileNameLength(), true);    
+		sFileName = TruncateFileExt(sFileName);
+		xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
+	xmlTextWriterEndElement(pWriter);  
+	
+	/* class */
   xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
   xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.playlistItem");
   xmlTextWriterEndElement(pWriter);      

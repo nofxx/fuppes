@@ -278,8 +278,7 @@ CSubscriptionMgr::CSubscriptionMgr(bool p_bSingelton)
   m_bDoLoop = true;
   
   // start main loop in singleton instance only
-  if(p_bSingelton && !m_MainLoop)
-  {
+  if(p_bSingelton && !m_MainLoop) {
     CSharedLog::Shared()->Log(L_DEBUG, "start CSubscriptionMgr MainLoop", __FILE__, __LINE__);
     fuppesThreadStartArg(m_MainLoop, MainLoop, *this);
   }
@@ -288,10 +287,9 @@ CSubscriptionMgr::CSubscriptionMgr(bool p_bSingelton)
 CSubscriptionMgr::~CSubscriptionMgr()
 {
   m_bDoLoop = false;
-  
-  int nExitCode;
-  if(m_MainLoop) {
-    fuppesThreadCancel(m_MainLoop, nExitCode);
+	
+	if(m_MainLoop) {
+    fuppesThreadCancel(m_MainLoop);
     fuppesThreadClose(m_MainLoop);
     m_MainLoop = (fuppesThread)NULL;  
   }

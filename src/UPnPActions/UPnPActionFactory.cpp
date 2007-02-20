@@ -22,10 +22,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "UPnPActionFactory.h"
 #include "../Common/Common.h"
 #include "../Common/RegEx.h"
@@ -37,21 +33,8 @@
 
 using namespace std;
 
-/*===============================================================================
- CLASS CUPnPActionFactory
-===============================================================================*/
-
-/* <PUBLIC> */
-
-/*===============================================================================
- UPNP ACTIONS
-===============================================================================*/
-
 CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent)
 {  
-  //BOOL_CHK_RET_POINTER(pAction);  
-  //cout << p_sContent << endl;
-  
   xmlDocPtr pDoc = NULL;
   pDoc = xmlReadMemory(p_sContent.c_str(), p_sContent.length(), "", NULL, 0);
   if(!pDoc)
@@ -62,82 +45,66 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent)
   pRootNode = xmlDocGetRootElement(pDoc);
     
   pTmpNode = NULL;
-  /* get first first-level child element */
-  for(pTmpNode = pRootNode->children; pTmpNode; pTmpNode = pTmpNode->next)
-  {
-    if(pTmpNode->type == XML_ELEMENT_NODE)
-      break;
-  }
-
-  /* get first second-level element */
-  for(pTmpNode = pTmpNode->children; pTmpNode; pTmpNode = pTmpNode->next)
-  {
-    if(pTmpNode->type == XML_ELEMENT_NODE)
-      break;
-  }
-
-  string sName = (char*)pTmpNode->name;  
-  CUPnPAction* pAction = NULL;  
-  
-  if(sName.compare("Browse") == 0)
-  {
-    pAction = new CUPnPBrowse(p_sContent);
-    ParseBrowseAction((CUPnPBrowse*)pAction);
-  }
-	else if(sName.compare("Search") == 0) {
-	  pAction = new CUPnPSearch(p_sContent);
-		ParseSearchAction((CUPnPSearch*)pAction);
-	}
-  else if(sName.compare("GetSearchCapabilities") == 0)
-  {
-    pAction = new CUPnPAction(UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SEARCH_CAPABILITIES, p_sContent);
-  }
-  else if(sName.compare("GetSortCapabilities") == 0)
-  {
-    pAction = new CUPnPAction(UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SORT_CAPABILITIES, p_sContent);
-  }
-  else if(sName.compare("GetSystemUpdateID") == 0)
-  {
-    pAction = new CUPnPAction(UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SYSTEM_UPDATE_ID, p_sContent);
-  }  
-  else if(sName.compare("GetProtocolInfo") == 0)
-  {
-    pAction = new CUPnPAction(UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_PROTOCOL_INFO, p_sContent);
-  }
-	else if(sName.compare("IsAuthorized") == 0) {
-	  pAction = new CUPnPAction(UPNP_ACTION_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR_IS_AUTHORIZED, p_sContent);
-	}
-	else if(sName.compare("IsValidated") == 0) {
-	  pAction = new CUPnPAction(UPNP_ACTION_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR_IS_VALIDATED, p_sContent);
-	}
-	else {
 	
+  // get first first-level child element
+  for(pTmpNode = pRootNode->children; pTmpNode; pTmpNode = pTmpNode->next) {
+    if(pTmpNode->type == XML_ELEMENT_NODE)
+      break;
+  }
+
+  // get first second-level element
+  for(pTmpNode = pTmpNode->children; pTmpNode; pTmpNode = pTmpNode->next) {
+    if(pTmpNode->type == XML_ELEMENT_NODE)
+      break;
+  }
+
+  
+  CUPnPAction* pAction = NULL;  
+  string sNs   = (char*)pTmpNode->nsDef->href;
+	string sName = (char*)pTmpNode->name;
+			
+	if(sNs.compare("urn:schemas-upnp-org:service:ContentDirectory:1") == 0)
+	{    
+    if(sName.compare("Browse") == 0) {
+      pAction = new CUPnPBrowse(p_sContent);
+      ParseBrowseAction((CUPnPBrowse*)pAction);
+    }
+	  else if(sName.compare("Search") == 0) {
+	    pAction = new CUPnPSearch(p_sContent);
+		  ParseSearchAction((CUPnPSearch*)pAction);
+	  }
+    else if(sName.compare("GetSearchCapabilities") == 0) {
+      pAction = new CUPnPAction(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, UPNP_GET_SEARCH_CAPABILITIES, p_sContent);
+    }
+    else if(sName.compare("GetSortCapabilities") == 0) {
+      pAction = new CUPnPAction(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, UPNP_GET_SORT_CAPABILITIES, p_sContent);
+    }
+    else if(sName.compare("GetSystemUpdateID") == 0) {
+      pAction = new CUPnPAction(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, UPNP_GET_SYSTEM_UPDATE_ID, p_sContent);
+    }  
+    else if(sName.compare("GetProtocolInfo") == 0) {
+    pAction = new CUPnPAction(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, UPNP_GET_PROTOCOL_INFO, p_sContent);
+    }
+	}
+	else if(sNs.compare("urn:schemas-upnp-org:service:ConnectionManager:1") == 0)
+	{
+	  pAction = new CUPnPAction(UPNP_DEVICE_TYPE_CONNECTION_MANAGER, UPNP_UNKNOWN, p_sContent);
+	}
+	else if(sNs.compare("urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1") == 0)
+	{
+	  if(sName.compare("IsAuthorized") == 0) {
+	    pAction = new CUPnPAction(UPNP_SERVICE_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR, UPNP_IS_AUTHORIZED, p_sContent);
+	  }
+	  else if(sName.compare("IsValidated") == 0) {
+	    pAction = new CUPnPAction(UPNP_SERVICE_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR, UPNP_IS_VALIDATED, p_sContent);
+	  }
+	}
+	
+	if(!pAction) {
 	  stringstream sLog;
 	  sLog << "unhandled UPnP Action \"" << sName << "\"";
 		CSharedLog::Shared()->Log(L_EXTENDED_ERR, sLog.str(), __FILE__, __LINE__);
-	}
-  
-  /* Target */
-  if(pAction)
-  {
-    string sNs = (char*)pTmpNode->nsDef->href;
-    //cout << sNs << endl;
-      
-    if(sNs.compare("urn:schemas-upnp-org:service:ContentDirectory:1") == 0)
-    {    
-      pAction->m_nTargetDevice = UPNP_DEVICE_TYPE_CONTENT_DIRECTORY;                                                                      
-    }
-    else if(sNs.compare("urn:schemas-upnp-org:service:ConnectionManager:1") == 0)
-    {
-      pAction->m_nTargetDevice = UPNP_DEVICE_TYPE_CONNECTION_MANAGER;
-    }
-		else if(sNs.compare("urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1") == 0)
-		{
-      pAction->m_nTargetDevice = UPNP_SERVICE_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR;
-		}
-		
-  }
-
+	}		
 
   /*cout << "[UPnPActionFactory] Browse Action:" << endl;
   cout << "\tObjectID: " << ((CUPnPBrowse*)pResult)->m_sObjectID << endl;
@@ -150,7 +117,6 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent)
   return pAction;
 }
 
-/* <\PUBLIC> */
 
 bool CUPnPActionFactory::ParseBrowseAction(CUPnPBrowse* pAction)
 {
@@ -170,13 +136,13 @@ bool CUPnPActionFactory::ParseBrowseAction(CUPnPBrowse* pAction)
   
   /* Object ID */
   RegEx rxObjId("<ObjectID>(.+)</ObjectID>");
-  if (rxObjId.Search(pAction->m_sMessage.c_str()))
+  if (rxObjId.Search(pAction->GetContent().c_str()))
     pAction->m_sObjectID = rxObjId.Match(1);
   
   /* Browse flag */
   pAction->m_nBrowseFlag = UPNP_BROWSE_FLAG_UNKNOWN;    
   RegEx rxBrowseFlag("<BrowseFlag>(.+)</BrowseFlag>");
-  if(rxBrowseFlag.Search(pAction->m_sMessage.c_str()))
+  if(rxBrowseFlag.Search(pAction->GetContent().c_str()))
   {
     string sMatch = rxBrowseFlag.Match(1);
     if(sMatch.compare("BrowseMetadata") == 0)
@@ -187,19 +153,19 @@ bool CUPnPActionFactory::ParseBrowseAction(CUPnPBrowse* pAction)
   
   /* Filter */
   RegEx rxFilter("<Filter>(.+)</Filter>");
-  if(rxFilter.Search(pAction->m_sMessage.c_str()))  
+  if(rxFilter.Search(pAction->GetContent().c_str()))  
     pAction->m_sFilter = rxFilter.Match(1);  
   else
     pAction->m_sFilter = "*";
 
   /* Starting index */
   RegEx rxStartIdx("<StartingIndex>(.+)</StartingIndex>");
-  if(rxStartIdx.Search(pAction->m_sMessage.c_str()))  
+  if(rxStartIdx.Search(pAction->GetContent().c_str()))  
     pAction->m_nStartingIndex = atoi(rxStartIdx.Match(1));
 
   /* Requested count */
   RegEx rxReqCnt("<RequestedCount>(.+)</RequestedCount>");
-  if(rxReqCnt.Search(pAction->m_sMessage.c_str()))  
+  if(rxReqCnt.Search(pAction->GetContent().c_str()))  
     pAction->m_nRequestedCount = atoi(rxReqCnt.Match(1));  
   
   /* Sort */
@@ -227,29 +193,29 @@ bool CUPnPActionFactory::ParseSearchAction(CUPnPSearch* pAction)
   
   // Container ID
   RegEx rxContainerID("<ContainerID>(.+)</ContainerID>");
-  if (rxContainerID.Search(pAction->m_sMessage.c_str()))
+  if (rxContainerID.Search(pAction->GetContent().c_str()))
     pAction->m_sContainerID = rxContainerID.Match(1);
 	
 	// Search Criteria
 	RegEx rxSearchCriteria("<SearchCriteria>(.+)</SearchCriteria>");
-	if(rxSearchCriteria.Search(pAction->m_sMessage.c_str()))
+	if(rxSearchCriteria.Search(pAction->GetContent().c_str()))
 	  pAction->m_sSearchCriteria = rxSearchCriteria.Match(1);
 	
   // Filter
   RegEx rxFilter("<Filter>(.+)</Filter>");
-  if(rxFilter.Search(pAction->m_sMessage.c_str()))  
+  if(rxFilter.Search(pAction->GetContent().c_str()))  
     pAction->m_sFilter = rxFilter.Match(1);  
   else
     pAction->m_sFilter = "*";
 
   // Starting index
   RegEx rxStartIdx("<StartingIndex>(.+)</StartingIndex>");
-  if(rxStartIdx.Search(pAction->m_sMessage.c_str()))  
+  if(rxStartIdx.Search(pAction->GetContent().c_str()))  
     pAction->m_nStartingIndex = atoi(rxStartIdx.Match(1));
 
   // Requested count
   RegEx rxReqCnt("<RequestedCount>(.+)</RequestedCount>");
-  if(rxReqCnt.Search(pAction->m_sMessage.c_str()))  
+  if(rxReqCnt.Search(pAction->GetContent().c_str()))  
     pAction->m_nRequestedCount = atoi(rxReqCnt.Match(1)); 
 
   // sort

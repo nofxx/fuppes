@@ -169,7 +169,7 @@ private:
   std::vector<CFuppes*> m_vFuppesInstances;
 
 
-  bool ReadConfigFile(bool p_bIsInit);
+  bool ReadConfigFile();
   bool ResolveHostAndIP();
   bool ResolveIPByHostname();
   bool ResolveIPByInterface(std::string p_sInterfaceName);  

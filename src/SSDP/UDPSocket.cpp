@@ -229,8 +229,7 @@ void CUDPSocket::EndReceive()
   /* Exit thread */	 
   m_bBreakReceive = true;
 	if(m_ReceiveThread) {
-    int nExitCode = 0;
-    fuppesThreadCancel(m_ReceiveThread, nExitCode);    
+    fuppesThreadCancel(m_ReceiveThread);    
     fuppesThreadClose(m_ReceiveThread);
     m_ReceiveThread = (fuppesThread)NULL;
   }

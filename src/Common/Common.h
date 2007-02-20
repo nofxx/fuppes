@@ -140,6 +140,7 @@ bool fuppesSocketSetNonBlocking(fuppesSocket p_SocketHandle);
   typedef pthread_mutex_t   fuppesThreadMutex;
 #endif
 
+int  fuppesThreadCancel(fuppesThread p_ThreadHandle);
 bool fuppesThreadClose(fuppesThread p_ThreadHandle);
 
 bool fuppesThreadLockMutex(fuppesThreadMutex* p_ThreadMutex);
@@ -186,7 +187,7 @@ bool              FuppesCloseLibrary(fuppesLibHandle p_LibHandle);
 //#define fuppesThread                                        HANDLE
 #define fuppesThreadStart(_handle_, _callback_)             _handle_ = CreateThread(NULL, 0, &_callback_, this, 0, NULL)
 //#define fuppesThreadClose(_handle_)                         WaitForSingleObject(_handle_, INFINITE); CloseHandle(_handle_)
-#define fuppesThreadCancel(_handle_, _exit_code_)           TerminateThread(_handle_, _exit_code_);
+//#define fuppesThreadCancel(_handle_, _exit_code_)           TerminateThread(_handle_, _exit_code_);
 #define fuppesThreadExit()                                  ExitThread(0);
 #define fuppesThreadStartArg(_handle_, _callback_, _arg_)   _handle_ = CreateThread(NULL, 0, &_callback_, &_arg_, 0, NULL)
 #define fuppesThreadCallback                                DWORD WINAPI
@@ -219,7 +220,7 @@ bool              FuppesCloseLibrary(fuppesLibHandle p_LibHandle);
 //#define fuppesThread                                        pthread_t
 #define fuppesThreadStart(_handle_, _callback_)             pthread_create(&_handle_, NULL, &_callback_, this);
 //#define fuppesThreadClose(_handle_)                         pthread_join(_handle_, NULL);
-#define fuppesThreadCancel(_handle_, _exit_code_)           pthread_cancel(_handle_);
+//#define fuppesThreadCancel(_handle_, _exit_code_)           pthread_cancel(_handle_);
 #define fuppesThreadExit()                                  pthread_exit(NULL);
 #define fuppesThreadStartArg(_handle_, _callback_, _arg_)   pthread_create(&_handle_, NULL, &_callback_, &_arg_);
 #define fuppesThreadCallback                                void*

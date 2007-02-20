@@ -41,7 +41,7 @@ void CXMSMediaReceiverRegistrar::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTT
 {
   string sContent = "";
 
-  if(pUPnPAction->GetActionType() == UPNP_ACTION_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR_IS_AUTHORIZED)
+  if(pUPnPAction->GetActionType() == UPNP_IS_AUTHORIZED)
 	{
 	  sContent =
   		"<?xml version=\"1.0\" encoding=\"utf-8\"?>"
@@ -53,7 +53,7 @@ void CXMSMediaReceiverRegistrar::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTT
 			"  </s:Body>"
 			"</s:Envelope>";
 	}
-	else if(pUPnPAction->GetActionType() == UPNP_ACTION_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR_IS_VALIDATED)
+	else if(pUPnPAction->GetActionType() == UPNP_IS_VALIDATED)
   {
 	  sContent =
   		"<?xml version=\"1.0\" encoding=\"utf-8\"?>"

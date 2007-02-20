@@ -76,7 +76,6 @@ cpp_sources = \
   UPnPBase.cpp\
 	UPnPDevice.cpp\
 	UPnPService.cpp\
-  UPnPActions/UPnPAction.cpp\
   UPnPActions/UPnPActionFactory.cpp\
   UPnPActions/UPnPBrowse.cpp\
   UPnPActions/UPnPSearch.cpp\

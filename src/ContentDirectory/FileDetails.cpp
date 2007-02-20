@@ -271,7 +271,8 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pM
 	sTmp = pFile.tag()->title();
   pMusicTrack->mAudioItem.sTitle = sTmp.to8Bit(true);  
   
-	//string duration = "H+:MM:SS(.00)";	
+	//string duration = "H+:MM:SS(.00)";
+	//pFile.audioProperties()->ReadStyle = TagLib::Accurate;
 	long length = pFile.audioProperties()->length();
   char s[4];
   stringstream sDuration;
@@ -282,12 +283,22 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pM
   sprintf(s, "%02ld", (length - length/60));
   s[2] = '\0';
   sDuration << s;
-   
-  /*cout << p_sFileName << endl;
- 	cout << length/(60*60) << ":" << length/60 << ":" << (length - length/60) << endl;
-  cout << "DURATION: " << sDuration.str() << endl << endl;*/
+	
+  cout << p_sFileName << endl << "DURATION:" << endl;
+ 	cout << length << endl;
+	cout << length/(60*60) << ":" << length/60 << ":" << (length - length/60) << endl;
+  cout << sDuration.str() << endl << endl;
   
   pMusicTrack->mAudioItem.sDuration = sDuration.str();
+	
+	// channels
+	pMusicTrack->mAudioItem.nNrAudioChannels = pFile.audioProperties()->channels();
+	
+	// bitrate
+	pMusicTrack->mAudioItem.nBitrate = pFile.audioProperties()->bitrate();
+	
+	// samplerate
+	pMusicTrack->mAudioItem.nSampleRate = pFile.audioProperties()->sampleRate();
 	
 	// artist
   sTmp = pFile.tag()->artist();
@@ -344,7 +355,7 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
 	pImageItem->nWidth  = nWidth;
 	pImageItem->nHeight = nHeight;
 	
-	pWand = DestroyMagickWand(pWand);
+	DestroyMagickWand(pWand);
 	MagickWandTerminus();
 	
 	return true;

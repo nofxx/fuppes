@@ -53,6 +53,10 @@ struct SAudioItem
   std::string sLanguage;
   std::string sRelation;
   std::string sRights;*/
+	
+	int nNrAudioChannels;
+	int nBitrate;
+	int nSampleRate;
 };
 
   struct SMusicTrack

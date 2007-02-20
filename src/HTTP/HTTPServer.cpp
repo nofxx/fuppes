@@ -154,8 +154,7 @@ void CHTTPServer::Stop()
   // stop accept thread
   m_bBreakAccept = true;
   if(accept_thread) {
-    int nExitCode;    
-    fuppesThreadCancel(accept_thread, nExitCode);
+    fuppesThreadCancel(accept_thread);
     fuppesThreadClose(accept_thread);
     accept_thread = (fuppesThread)NULL;    
   }
@@ -542,9 +541,8 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
 bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMessage* p_Request)
 {
   // local vars
-  unsigned int nRet = 0;       
+	int nRet = 0;       
   stringstream sLog;
-
 
   // send text message
   if(!p_Response->IsBinary())

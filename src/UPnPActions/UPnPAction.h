@@ -25,23 +25,39 @@
 #ifndef _UPNPACTION_H
 #define _UPNPACTION_H
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "../UPnPBase.h"
 #include <string>
 
-/*===============================================================================
- DEFINITIONS
-===============================================================================*/
+#define UPNP_UNKNOWN 0
 
-typedef enum tagUPNP_ACTION_TYPE
+typedef enum {
+  UPNP_BROWSE									 = 1,
+	UPNP_SEARCH									 = 2,
+	UPNP_GET_SEARCH_CAPABILITIES = 3,
+	UPNP_GET_SORT_CAPABILITIES   = 4,
+  UPNP_GET_SYSTEM_UPDATE_ID		 = 5,
+	UPNP_GET_PROTOCOL_INFO		   = 6
+} UPNP_CONTENT_DIRECTORY_ACTIONS;
+
+typedef enum {
+} UPNP_AV_TRANSPORT_ACTIONS;
+
+typedef enum {
+} UPNP_CONNECTION_MANAGER_ACTIONS;
+
+typedef enum
+{
+  UPNP_IS_AUTHORIZED = 1,
+  UPNP_IS_VALIDATED  = 2
+} UPNP_X_MS_MEDIA_RECEIVER_REGISTRAR_ACTIONS;
+
+
+/*typedef enum tagUPNP_ACTION_TYPE
 {
   UPNP_ACTION_TYPE_UNKNOWN,
         
   UPNP_ACTION_TYPE_CONTENT_DIRECTORY_BROWSE,
-  
+  */
 	/*
 POST /UPnPServices/ContentDirectory/control/ HTTP/1.1
 Host: 192.168.0.3:60230
@@ -53,7 +69,7 @@ Content-Length: 517
 <?xml version="1.0" encoding="utf-8"?><s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body><u:Search xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"><ContainerID>0</ContainerID><SearchCriteria>(upnp:class contains "object.item.imageItem") and (dc:title contains "")</SearchCriteria><Filter>*</Filter><StartingIndex>0</StartingIndex><RequestedCount>7</RequestedCount><SortCriteria></SortCriteria></u:Search></s:Body></s:Envelope>
 */
 	
-	UPNP_ACTION_TYPE_CONTENT_DIRECTORY_SEARCH,
+	//UPNP_ACTION_TYPE_CONTENT_DIRECTORY_SEARCH,
 	
   /* POST /UPnPServices/ContentDirectory/control/ HTTP/1.1
   HOST: 192.168.0.3:1117
@@ -70,7 +86,7 @@ Content-Length: 517
      </s:Body>
   </s:Envelope> */
   
-  UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SEARCH_CAPABILITIES,
+  //UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SEARCH_CAPABILITIES,
   
   /*
   POST /UPnPServices/ContentDirectory/control/ HTTP/1.1
@@ -89,7 +105,7 @@ Content-Length: 517
      </s:Body>
   </s:Envelope> */
   
-  UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SORT_CAPABILITIES,
+  //UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SORT_CAPABILITIES,
   /*
   POST /UPnPServices/ContentDirectory/control/ HTTP/1.1
   HOST: 192.168.0.3:1117
@@ -106,7 +122,7 @@ Content-Length: 517
      </s:Body>
   </s:Envelope> */
   
-  UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SYSTEM_UPDATE_ID,
+  //UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_SYSTEM_UPDATE_ID,
   
   /*
   POST /UPnPServices/ConnectionManager/control/ HTTP/1.1
@@ -123,7 +139,7 @@ Content-Length: 517
   :1" />
      </s:Body>
   </s:Envelope> */
-  UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_PROTOCOL_INFO,
+  //UPNP_ACTION_TYPE_CONTENT_DIRECTORY_GET_PROTOCOL_INFO,
 	
 	/*
 	POST /web/msr_control HTTP/1.1
@@ -140,7 +156,7 @@ Content-Length: 517
 			</u:IsAuthorized>
    </s:Body>
   </s:Envelope> */
-  UPNP_ACTION_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR_IS_AUTHORIZED,
+  //UPNP_ACTION_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR_IS_AUTHORIZED,
 	
 	/*
 	POST /web/msr_control HTTP/1.1
@@ -158,47 +174,34 @@ Content-Length: 517
     </s:Body>
   </s:Envelope>
 	*/
-  UPNP_ACTION_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR_IS_VALIDATED
+ /* UPNP_ACTION_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR_IS_VALIDATED
 	
   
-}UPNP_ACTION_TYPE;
-
-/*===============================================================================
- CLASS CUPnPAction
-===============================================================================*/
+}UPNP_ACTION_TYPE; */
 
 class CUPnPAction
 {
+  public:
 
-/* <PUBLIC> */
+    /** constructor */
+	  CUPnPAction(UPNP_DEVICE_TYPE p_nTargetDeviceType, int p_nActionType, std::string p_sContent) 
+	  {
+	    m_nActionType       = p_nActionType;
+      m_sContent          = p_sContent;
+			m_nTargetDeviceType = p_nTargetDeviceType;
+	  }
 
-public:
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-
-  /** constructor
-  */
-  CUPnPAction(UPNP_ACTION_TYPE p_nType, std::string p_sMessage);
-
-  /** destructor
-  */
-  virtual ~CUPnPAction();
+    /** destructor */
+    virtual ~CUPnPAction() {};
   
-  UPNP_ACTION_TYPE GetActionType() { return m_nActionType; }
+    int GetActionType() { return m_nActionType; }
+		std::string GetContent() { return m_sContent; }
+		UPNP_DEVICE_TYPE GetTargetDeviceType() { return m_nTargetDeviceType; }
 
-/*===============================================================================
- MEMBERS
-===============================================================================*/
-
-//  protected:
-    UPNP_DEVICE_TYPE m_nTargetDevice;
-    UPNP_ACTION_TYPE m_nActionType;
-    std::string      m_sMessage;
-
-/* <\PUBLIC> */
-
+  private:
+    UPNP_DEVICE_TYPE m_nTargetDeviceType;
+    int              m_nActionType;
+    std::string      m_sContent;
 };
 
-#endif /* _UPNPACTION_H */
+#endif // _UPNPACTION_H

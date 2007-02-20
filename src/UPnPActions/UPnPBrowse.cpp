@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -25,7 +25,7 @@
 #include "../Common/Common.h"
 
 CUPnPBrowse::CUPnPBrowse(std::string p_sMessage):
-  CUPnPAction(UPNP_ACTION_TYPE_CONTENT_DIRECTORY_BROWSE, p_sMessage)
+  CUPnPAction(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, UPNP_BROWSE, p_sMessage)
 {
 }                                     
 

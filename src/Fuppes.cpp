@@ -369,7 +369,7 @@ bool CFuppes::HandleHTTPPostSOAPAction(CHTTPMessage* pMessageIn, CHTTPMessage* p
   
   /* Handle UPnP action */
   bool bRet = true;
-  switch(pAction->m_nTargetDevice)
+  switch(pAction->GetTargetDeviceType())
   {
     case UPNP_DEVICE_TYPE_CONTENT_DIRECTORY:
       m_pContentDirectory->HandleUPnPAction(pAction, pMessageOut);      

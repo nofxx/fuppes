@@ -129,6 +129,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
       "  FILE_NAME TEXT DEFAULT NULL,"
       "  MD5 TEXT DEFAULT NULL,"
       "  MIME_TYPE TEXT DEFAULT NULL,"
+			"  SIZE INTEGER, "
 			"  UPDATE_ID INTEGER DEFAULT 0"
       ");";        
     
@@ -139,7 +140,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
     if(!Execute("CREATE INDEX IDX_PARENT_ID ON OBJECTS (PARENT_ID);"))
       return false;
     
-		if(!Execute("CREATE TABLE AUDIO_ITEMS (ID INTEGER PRIMARY KEY, DATE TEXT, TRACK_NO INTEGER, DESCRIPTION TEXT, DURATION TEXT, GENRE TEXT, ALBUM TEXT, ARTIST TEXT, TITLE TEXT);"))
+		if(!Execute("CREATE TABLE AUDIO_ITEMS (ID INTEGER PRIMARY KEY, DATE TEXT, TRACK_NO INTEGER, DESCRIPTION TEXT, DURATION TEXT, GENRE TEXT, ALBUM TEXT, ARTIST TEXT, TITLE TEXT, CHANNELS INTEGER, BITRATE INTEGER, SAMPLERATE INTEGER);"))
 		  return false;
 		
 		if(!Execute("CREATE TABLE IMAGE_ITEMS (ID INTEGER PRIMARY KEY, WIDTH INTEGER, HEIGHT INTEGER);"))
@@ -469,7 +470,7 @@ unsigned int InsertAudioFile(unsigned int p_nObjectId, std::string p_sFileName)
 	stringstream sSql;
 	sSql << 
 	  "insert into AUDIO_ITEMS " <<
-		"(ID, TITLE, ARTIST, ALBUM, TRACK_NO, GENRE, DURATION, DATE) " <<
+		"(ID, TITLE, ARTIST, ALBUM, TRACK_NO, GENRE, DURATION, DATE, CHANNELS, BITRATE, SAMPLERATE) " <<
 		"values (" <<
 		p_nObjectId << ", " <<
 		"'" << SQLEscape(TrackInfo.mAudioItem.sTitle) << "', " <<
@@ -478,9 +479,12 @@ unsigned int InsertAudioFile(unsigned int p_nObjectId, std::string p_sFileName)
 		TrackInfo.nOriginalTrackNumber << ", " <<
 		"'" << SQLEscape(TrackInfo.mAudioItem.sGenre) << "', " <<
 		"'" << TrackInfo.mAudioItem.sDuration << "', " <<
-		"'" << TrackInfo.sDate << "')";
+		"'" << TrackInfo.sDate << "', " <<
+		TrackInfo.mAudioItem.nNrAudioChannels << ", " <<
+		TrackInfo.mAudioItem.nBitrate << ", " <<
+		TrackInfo.mAudioItem.nSampleRate << ")";
 		
-	//cout << sSql.str() << endl;
+	cout << sSql.str() << endl;
 		
 	CContentDatabase* pDB = new CContentDatabase();          
   unsigned int nRowId = pDB->Insert(sSql.str());
@@ -504,7 +508,7 @@ unsigned int InsertImageFile(unsigned int p_nObjectId, std::string p_sFileName)
 		ImageItem.nWidth << ", " <<
 		ImageItem.nHeight << ")";
 	
-	//cout << sSql.str() << endl;
+	cout << sSql.str() << endl;
 		
 	CContentDatabase* pDB = new CContentDatabase();          
   unsigned int nRowId = pDB->Insert(sSql.str());
@@ -570,22 +574,22 @@ unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
 		case ITEM_IMAGE_ITEM:
 		case ITEM_AUDIO_ITEM:
 		case ITEM_AUDIO_ITEM_AUDIO_BROADCAST:
-		case ITEM_AUDIO_ITEM_AUDIO_BOOK:
+		//case ITEM_AUDIO_ITEM_AUDIO_BOOK:
 		case ITEM_VIDEO_ITEM:
 		case ITEM_VIDEO_ITEM_MOVIE:
 		case ITEM_VIDEO_ITEM_VIDEO_BROADCAST:
-		case ITEM_VIDEO_ITEM_MUSIC_VIDEO_CLIP:
-		case CONTAINER_PERSON:
-		case CONTAINER_PERSON_MUSIC_ARTIST:
+		//case ITEM_VIDEO_ITEM_MUSIC_VIDEO_CLIP:
+		//case CONTAINER_PERSON:
+		//case CONTAINER_PERSON_MUSIC_ARTIST:
 		case CONTAINER_PLAYLIST_CONTAINER:
-		case CONTAINER_ALBUM:
-		case CONTAINER_ALBUM_MUSIC_ALBUM:
-		case CONTAINER_ALBUM_PHOTO_ALBUM:
-		case CONTAINER_GENRE:
-		case CONTAINER_GENRE_MUSIC_GENRE:
-		case CONTAINER_GENRE_MOVIE_GENRE:
-		case CONTAINER_STORAGE_SYSTEM:
-		case CONTAINER_STORAGE_VOLUME:
+		//case CONTAINER_ALBUM:
+		//case CONTAINER_ALBUM_MUSIC_ALBUM:
+		//case CONTAINER_ALBUM_PHOTO_ALBUM:
+		//case CONTAINER_GENRE:
+		//case CONTAINER_GENRE_MUSIC_GENRE:
+		//case CONTAINER_GENRE_MOVIE_GENRE:
+		//case CONTAINER_STORAGE_SYSTEM:
+		//case CONTAINER_STORAGE_VOLUME:
 		case CONTAINER_STORAGE_FOLDER:
 		  break;
   }

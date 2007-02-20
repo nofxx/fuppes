@@ -43,7 +43,7 @@ bool CDeviceSettings::HasUserAgent(std::string p_sUserAgent)
 	{
 		sUserAgent = *it;
 	
-		pRxUserAgent = new RegEx(sUserAgent.c_str());
+		pRxUserAgent = new RegEx(sUserAgent.c_str(), PCRE_CASELESS);
 		if(pRxUserAgent->Search(p_sUserAgent.c_str())) {
 			bResult = true;
 			delete pRxUserAgent;

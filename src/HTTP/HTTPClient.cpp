@@ -50,10 +50,8 @@ CHTTPClient::CHTTPClient()
 
 CHTTPClient::~CHTTPClient()
 {
-  if(m_AsyncThread)
-  {
-    int nExitCode;
-    fuppesThreadCancel(m_AsyncThread, nExitCode);
+  if(m_AsyncThread) {
+    fuppesThreadCancel(m_AsyncThread);
     fuppesThreadClose(m_AsyncThread);
   }
 }

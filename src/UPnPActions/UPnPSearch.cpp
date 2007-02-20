@@ -31,7 +31,7 @@
 using namespace std;
 
 CUPnPSearch::CUPnPSearch(std::string p_sMessage):
-  CUPnPAction(UPNP_ACTION_TYPE_CONTENT_DIRECTORY_SEARCH, p_sMessage)
+  CUPnPAction(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, UPNP_SEARCH, p_sMessage)
 {
 }                                     
 

@@ -80,7 +80,7 @@
 
 #endif
 
-const std::string FUPPES_VERSION = "0.7.1";
+const std::string FUPPES_VERSION = "0.7.2-dev";
 
 const std::string NEEDED_CONFIGFILE_VERSION = "0.7";
 
@@ -129,7 +129,7 @@ CSharedConfig::~CSharedConfig()
 bool CSharedConfig::SetupConfig()
 {  
   // read config file
-  if(!ReadConfigFile(true))
+  if(!ReadConfigFile())
     return false;
   
   // Network settings
@@ -166,7 +166,7 @@ bool CSharedConfig::Refresh()
   m_pDoc = NULL;
   
   /* ... and read the config file */
-  bResult = ReadConfigFile(false);
+  bResult = ReadConfigFile();
   
   return bResult;
 }
@@ -307,11 +307,10 @@ bool CSharedConfig::RemoveSharedDirectory(unsigned int p_nIndex)
   if(m_pSharedDirNode)
   {
     xmlNode* tmpNode = m_pSharedDirNode->children;
-    int i = 0;
+    unsigned int i = 0;
     while(tmpNode)
     {
-      if(i == p_nIndex)
-      {
+      if(i == p_nIndex) {
         xmlUnlinkNode(tmpNode);
         xmlFreeNode(tmpNode);
         break;
@@ -578,7 +577,7 @@ bool CSharedConfig::SetLocalCharset(std::string p_sCharset)
  HELPER
 ===============================================================================*/
 
-bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
+bool CSharedConfig::ReadConfigFile()
 {  
   bool      bResult = true;
   
@@ -628,7 +627,7 @@ bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
 				return false;
       }			
 			
-      bResult = this->ReadConfigFile(true);      
+      bResult = this->ReadConfigFile();      
       if(bResult)
       {
         cout << "[INFORMATION]" << endl <<

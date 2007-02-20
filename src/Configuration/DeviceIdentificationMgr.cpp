@@ -43,7 +43,7 @@ CDeviceIdentificationMgr::CDeviceIdentificationMgr()
   pSettings = new CDeviceSettings("XBox 360");
 	pSettings->m_bShowPlaylistAsFile = true;
 	pSettings->m_bXBox360Support = true;
-	pSettings->m_slUserAgents.push_back("XBox/2.0.\\d+.\\d+ UPnP/1.0 XBox/2.0.\\d+.\\d+");
+	pSettings->m_slUserAgents.push_back("Xbox/2.0.\\d+.\\d+ UPnP/1.0 Xbox/2.0.\\d+.\\d+");
 	m_Settings.push_back(pSettings);
 
   /*pSettings = new CDeviceSettings("Noxon audio");

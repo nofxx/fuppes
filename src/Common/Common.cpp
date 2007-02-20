@@ -548,6 +548,16 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle)
 }
 
 
+int fuppesThreadCancel(fuppesThread p_ThreadHandle)
+{
+  #ifdef WIN32
+	int nExitCode;
+	TerminateThread(p_ThreadHandle, nExitCode);
+	#else
+	pthread_cancel(p_ThreadHandle);
+	#endif
+}
+
 bool fuppesThreadLockMutex(fuppesThreadMutex* p_ThreadMutex)
 {
   #warning todo: check if mutex is initialized (uninitialized mutexes will crash on win32)
