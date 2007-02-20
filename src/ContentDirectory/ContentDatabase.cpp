@@ -480,7 +480,7 @@ unsigned int InsertAudioFile(unsigned int p_nObjectId, std::string p_sFileName)
 		"'" << TrackInfo.mAudioItem.sDuration << "', " <<
 		"'" << TrackInfo.sDate << "')";
 		
-	cout << sSql.str() << endl;
+	//cout << sSql.str() << endl;
 		
 	CContentDatabase* pDB = new CContentDatabase();          
   unsigned int nRowId = pDB->Insert(sSql.str());
@@ -504,7 +504,7 @@ unsigned int InsertImageFile(unsigned int p_nObjectId, std::string p_sFileName)
 		ImageItem.nWidth << ", " <<
 		ImageItem.nHeight << ")";
 	
-	cout << sSql.str() << endl;
+	//cout << sSql.str() << endl;
 		
 	CContentDatabase* pDB = new CContentDatabase();          
   unsigned int nRowId = pDB->Insert(sSql.str());
