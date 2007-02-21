@@ -25,10 +25,6 @@
 #ifndef _UPNPDEVICE_H
 #define _UPNPDEVICE_H
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include <string>
 #include <vector>
 #include <libxml/xmlwriter.h>
@@ -36,6 +32,7 @@
 #include "UPnPBase.h"
 #include "UPnPService.h"
 #include "Common/Timer.h"
+#include "HTTP/HTTPClient.h"
 
 using namespace std;
 
@@ -45,42 +42,26 @@ class IUPnPDevice
 {
   public:
     virtual void OnTimer(CUPnPDevice* pSender) = 0;
+		virtual void OnNewDevice(CUPnPDevice* pSender) = 0;
 };
 
-/*===============================================================================
- CLASS CUPnPDevice
-===============================================================================*/
 
-class CUPnPDevice: public CUPnPBase, ITimer
+class CUPnPDevice: public CUPnPBase, ITimer, IHTTPClient
 {
-
-/* <PROTECTED> */
-
-protected:
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
+  protected:
 
   /** constructor
    *  @param  nType  the device type
    *  @param  p_sHTTPServerURL  URL of the HTTP server
    */
-  CUPnPDevice(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL, IUPnPDevice* pOnTimerHandler);		
+  CUPnPDevice(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL, IUPnPDevice* pEventHandler);		
 
-/* <\PROTECTED> */
 
-/* <PUBLIC> */
-
-public:
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
+  public:
   
   /** constructor
    */
-  CUPnPDevice(IUPnPDevice* pOnTimerHandler);
+  CUPnPDevice(IUPnPDevice* pEventHandler, std::string p_sUUID);
 
   /** destructor
    */
@@ -95,25 +76,22 @@ public:
    */
   CTimer* GetTimer() { return m_pTimer; }
 
+  CHTTPClient* GetHTTPClient() { return m_pHTTPClient; }
 
-/*===============================================================================
- BUILD DEVICE
-===============================================================================*/
 
   /** gets a device description from a specific URL and builds the device
    *  @param  p_sDescriptionURL URL where we can get the device description message
    *  @return returns true on success otherwise false
    */
-  bool BuildFromDescriptionURL(std::string p_sDescriptionURL);
+  void BuildFromDescriptionURL(std::string p_sDescriptionURL);
+
+  void OnAsyncReceiveMsg(CHTTPMessage* pMessage);
 
   /** adds a UPnP service to this device
    *  @param  pService the service to add to the device
    */
   void AddUPnPService(CUPnPService* pService);
 
-/*===============================================================================
- GET
-===============================================================================*/
 
   /** returns the count of all services for this device
    *  @return returns the count or 0
@@ -142,17 +120,8 @@ public:
   std::string GetUUID() { return m_sUUID; }
   
   bool GetIsLocalDevice() { return m_bIsLocalDevice; }
-  
-/* <\PUBLIC> */
-
-/* <PROTECTED> */
 
   protected:
-  
-/*===============================================================================
- MEMBERS
-===============================================================================*/
-  
     std::string   m_sFriendlyName;
     std::string   m_sManufacturer;
     std::string   m_sManufacturerURL;
@@ -165,26 +134,18 @@ public:
     std::string   m_sUPC;
     std::string   m_sPresentationURL;
 
-/* <\PROTECTED> */
 
 	private:
     bool         m_bIsLocalDevice;
     CTimer*      m_pTimer;
-    IUPnPDevice* m_pOnTimerHandler;
+    IUPnPDevice* m_pEventHandler;
+		CHTTPClient* m_pHTTPClient;
   
   
-/* <PRIVATE> */
 
-/*===============================================================================
- MEMBERS
-===============================================================================*/
-
-	UPNP_DEVICE_TYPE           m_nUPnPDeviceType;			
+	//UPNP_DEVICE_TYPE           m_nUPnPDeviceType;			
 	std::vector<CUPnPService*> m_vUPnPServices;
 
-/*===============================================================================
- HELPER
-===============================================================================*/
   
   /** gets all information from a device description
   *  @param  p_sDescription string with the device description
@@ -192,8 +153,6 @@ public:
   */
   bool ParseDescription(std::string p_sDescription);
 
-/* <\PRIVATE> */
-
 };
 
-#endif /* _UPNPDEVICE_H */
+#endif // _UPNPDEVICE_H

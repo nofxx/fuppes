@@ -326,8 +326,8 @@ void CContentDatabase::BuildDB()
   {
     if(DirectoryExists(CSharedConfig::Shared()->GetSharedDir(i)))
     {  
-      if(CSharedConfig::Shared()->GetDisplaySettings().bShowDirNamesInFirstLevel)
-      {      
+      //if(CSharedConfig::Shared()->GetDisplaySettings().bShowDirNamesInFirstLevel)
+      //{      
         string sFileName;
         ExtractFolderFromPath(CSharedConfig::Shared()->GetSharedDir(i), &sFileName);          
         
@@ -342,11 +342,11 @@ void CContentDatabase::BuildDB()
         long long int nRowId = CContentDatabase::Shared()->Insert(sSql.str());
         CContentDatabase::Shared()->Unlock();
         DbScanDir(CSharedConfig::Shared()->GetSharedDir(i), nRowId);
-      }
+      /*}
       else
       {
         DbScanDir(CSharedConfig::Shared()->GetSharedDir(i), 0);        
-      }
+      }*/
       
     }
     else {      

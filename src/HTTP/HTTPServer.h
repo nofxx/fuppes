@@ -25,10 +25,6 @@
 #ifndef _HTTPSERVER_H
 #define _HTTPSERVER_H
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "../Common/Common.h"
 
 #ifndef WIN32
@@ -45,35 +41,14 @@
 
 using namespace std;
 
-/*===============================================================================
- FORWARD DECLARATIONS
-===============================================================================*/
-
 class CHTTPServer;
 class CHTTPMessage;
 
-/*===============================================================================
- CLASS IHTTPServer
-===============================================================================*/
-
 class IHTTPServer
 {
-
-/* <PUBLIC> */
-
   public:
-
-	  virtual bool OnHTTPServerReceiveMsg(
-      CHTTPMessage* pMessageIn,
-      CHTTPMessage* pMessageOut) = 0;
-
-/* <\PUBLIC> */
-
+	  virtual bool OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut) = 0;
 };
-
-/*===============================================================================
- CLASS CHTTPSessionInfo
-===============================================================================*/
 
 class CHTTPSessionInfo
 {
@@ -193,4 +168,4 @@ public:
 
 };
 
-#endif /* _HTTPSERVER_H */
+#endif // _HTTPSERVER_H

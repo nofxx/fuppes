@@ -551,17 +551,17 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
     }    
     
     /* playlist_representation */
-    if(pRequest->PostVarExists("playlist_representation"))
+    /*if(pRequest->PostVarExists("playlist_representation"))
     {
       CSharedConfig::Shared()->SetPlaylistRepresentation(pRequest->GetPostVar("playlist_representation"));
-    }
+    }*/
     
     /* max_file_name_length */
-    if(pRequest->PostVarExists("max_file_name_length") && (pRequest->GetPostVar("max_file_name_length").length() > 0))
+    /*if(pRequest->PostVarExists("max_file_name_length") && (pRequest->GetPostVar("max_file_name_length").length() > 0))
     {
       int nMaxFileNameLength = atoi(pRequest->GetPostVar("max_file_name_length").c_str());      
       CSharedConfig::Shared()->SetMaxFileNameLength(nMaxFileNameLength);
-    }
+    }*/
     
     /* ip address */
     if(pRequest->PostVarExists("ip_address") && (pRequest->GetPostVar("ip_address").length() > 0))
@@ -629,7 +629,7 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
              "</p>" << endl;  
   
   // playlist representation
-  sResult << "<h2>playlist representation</h2>" << endl;
+  /*sResult << "<h2>playlist representation</h2>" << endl;
   sResult << "<p>Choose how playlist items are represented. <br />\"file\" sends playlists as real playlist files (m3u or pls)<br />" <<
              "\"container\" represents playlists as containers including the playlist items.<br />" << endl;
              if(CSharedConfig::Shared()->GetDisplaySettings().bShowPlaylistsAsContainers)  
@@ -644,7 +644,7 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
              }
              
   sResult << "<input type=\"submit\" />" << endl <<             
-             "</p>" << endl; 
+             "</p>" << endl; */
   
              
   // charset
@@ -660,7 +660,7 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
              
   
   // max filename length
-  sResult << "<h2>max file name length</h2>" << endl;
+  /*sResult << "<h2>max file name length</h2>" << endl;
   sResult << "<p>The \"max file name length\" option sets the maximum length for file names in the directory listings.<br />" <<
              "some devices can't handle an unlimited length.<br />" << endl <<
              "(e.g. the Telegent TG 100 crashes on receiving file names larger then 101 characters.)<br />" << endl <<
@@ -671,7 +671,7 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
                "<input name=\"max_file_name_length\" value=\"" << CSharedConfig::Shared()->GetMaxFileNameLength() << "\" />" << endl <<
                "<br />" << endl <<
                "<input type=\"submit\" />" << endl <<             
-             "</p>" << endl;  
+             "</p>" << endl;  */
   
   
   sResult << "<h1>Network settings</h1>" << endl;

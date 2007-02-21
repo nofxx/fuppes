@@ -30,6 +30,15 @@ using namespace std;
 CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
 {
   m_sDeviceName = p_sDeviceName;
+	
+  m_bShowPlaylistAsContainer = false;
+	m_bXBox360Support					 = false;
+	m_nMaxFileNameLength			 = 0;
+	
+	m_ImageSettings.bResize = false;
+	m_ImageSettings.bResizeIfLarger = false;
+	m_ImageSettings.nMaxWidth = 0;
+	m_ImageSettings.nMaxHeight = 0;
 }
 
 bool CDeviceSettings::HasUserAgent(std::string p_sUserAgent)

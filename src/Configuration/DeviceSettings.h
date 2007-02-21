@@ -27,6 +27,14 @@
 #include <string>
 #include <list>
 
+typedef struct {
+  bool bResize;
+	bool bResizeIfLarger;
+	int  nMaxWidth;
+	int  nMaxHeight;
+	enum { resize, scale } nResizeMethod; // resize = better quality (lower) | scale = lower quality (faster)
+} ImageSettings_t;
+
 class CDeviceSettings
 {
   public:
@@ -37,8 +45,11 @@ class CDeviceSettings
 		bool HasIP(std::string p_sIPAddress);
 		std::list<std::string> m_slIPAddresses;
 		
-		bool m_bShowPlaylistAsFile;
+		bool m_bShowPlaylistAsContainer;
 		bool m_bXBox360Support;
+		int  m_nMaxFileNameLength;
+		
+		ImageSettings_t m_ImageSettings;
 
  // private:
 	  std::string m_sDeviceName;

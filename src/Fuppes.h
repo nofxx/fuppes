@@ -92,6 +92,7 @@ public:
   virtual ~CFuppes();
 
   void OnTimer(CUPnPDevice* pSender);
+	void OnNewDevice(CUPnPDevice* pSender);
 
 /*==============================================================================
  GET

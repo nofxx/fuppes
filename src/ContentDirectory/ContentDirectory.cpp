@@ -499,10 +499,11 @@ void CContentDirectory::BuildDescription(xmlTextWriterPtr pWriter,
       
     // CONTAINER_PLAYLIST_CONTAINER
     case CONTAINER_PLAYLIST_CONTAINER :
-      if(CSharedConfig::Shared()->GetDisplaySettings().bShowPlaylistsAsContainers)
+		  
+      if(pUPnPBrowse->GetDeviceSettings()->m_bShowPlaylistAsContainer)
         BuildContainerDescription(pWriter, pSQLResult, pUPnPBrowse, p_sParentId, CONTAINER_PLAYLIST_CONTAINER);
       else
-        BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, CONTAINER_PLAYLIST_CONTAINER, p_sParentId);           
+        BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, CONTAINER_PLAYLIST_CONTAINER, p_sParentId);
       break;      
     
     // ITEM_IMAGE_ITEM_PHOTO
@@ -598,7 +599,7 @@ dc:rights dc O */
      
     /* title */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");     
-    xmlTextWriterWriteString(pWriter, BAD_CAST TrimFileName(pSQLResult->GetValue("FILE_NAME"), CSharedConfig::Shared()->GetMaxFileNameLength()).c_str());    
+      xmlTextWriterWriteString(pWriter, BAD_CAST TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->GetDeviceSettings()->m_nMaxFileNameLength).c_str());    
     xmlTextWriterEndElement(pWriter);
    
     /* class */
@@ -725,7 +726,7 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
 		if(!pSQLResult->GetValue("TITLE").empty())
 		  sFileName = pSQLResult->GetValue("TITLE");
 			
-	  sFileName = TrimFileName(sFileName, CSharedConfig::Shared()->GetMaxFileNameLength(), true);    
+	  sFileName = TrimFileName(sFileName, pUPnPBrowse->GetDeviceSettings()->m_nMaxFileNameLength, true);    
     sFileName = TruncateFileExt(sFileName);
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);
@@ -810,7 +811,7 @@ void CContentDirectory::BuildAudioItemAudioBroadcastDescription(xmlTextWriterPtr
   // title
 	xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
     // trim filename
-    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), CSharedConfig::Shared()->GetMaxFileNameLength(), true);    
+    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->GetDeviceSettings()->m_nMaxFileNameLength, true);    
     sFileName = TruncateFileExt(sFileName);
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);
@@ -842,7 +843,7 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
   // title
 	xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
     // trim filename
-    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), CSharedConfig::Shared()->GetMaxFileNameLength(), true);    
+    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->GetDeviceSettings()->m_nMaxFileNameLength, true);    
     sFileName = TruncateFileExt(sFileName);
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);
@@ -875,9 +876,11 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
   sTmp.str("");
   
   // resolution
-  sTmp << pSQLResult->GetValue("WIDTH") << "x" << pSQLResult->GetValue("HEIGHT");
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.str().c_str());
-  sTmp.str("");
+	if((pSQLResult->GetValue("WIDTH").compare("NULL") != 0) && (pSQLResult->GetValue("HEIGHT").compare("NULL") != 0)) {
+    sTmp << pSQLResult->GetValue("WIDTH") << "x" << pSQLResult->GetValue("HEIGHT");
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.str().c_str());
+    sTmp.str("");
+	}
   
   sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/ImageItems/" << p_sObjectID << "." << ExtractFileExt(pSQLResult->GetValue("PATH"));
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
@@ -893,7 +896,7 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   // title
 	xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
     // trim filename
-    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), CSharedConfig::Shared()->GetMaxFileNameLength(), true);    
+    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->GetDeviceSettings()->m_nMaxFileNameLength, true);    
     sFileName = TruncateFileExt(sFileName);
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);
@@ -932,7 +935,7 @@ void CContentDirectory::BuildVideoItemVideoBroadcastDescription(xmlTextWriterPtr
   // title
 	xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
     // trim filename
-    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), CSharedConfig::Shared()->GetMaxFileNameLength(), true);    
+    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->GetDeviceSettings()->m_nMaxFileNameLength, true);    
     sFileName = TruncateFileExt(sFileName);
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);
@@ -964,7 +967,7 @@ void CContentDirectory::BuildPlaylistItemDescription(xmlTextWriterPtr pWriter,
   // title
 	xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
 		// trim filename
-		string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), CSharedConfig::Shared()->GetMaxFileNameLength(), true);    
+		string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->GetDeviceSettings()->m_nMaxFileNameLength, true);    
 		sFileName = TruncateFileExt(sFileName);
 		xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);  

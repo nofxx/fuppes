@@ -21,18 +21,12 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
 
 #include "UPnPDevice.h"
 #include "HTTP/HTTPMessage.h"
-#include "HTTP/HTTPClient.h"
 #include "Common/Common.h"
 #include "Common/RegEx.h"
 #include "SharedLog.h"
-
 
 #include <sstream>
 #include <iostream>
@@ -40,93 +34,65 @@
 
 using namespace std;
 
-/*===============================================================================
- CONSTANTS
-===============================================================================*/
-
-const string LOGNAME = "UPNPDevice";
-
-/*===============================================================================
- CLASS CUPnPDevice
-===============================================================================*/
-
-/* <PROTECTED> */
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-
 /* constructor */
-CUPnPDevice::CUPnPDevice(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL, IUPnPDevice* pOnTimerHandler):
+CUPnPDevice::CUPnPDevice(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL, IUPnPDevice* pEventHandler):
   CUPnPBase(nType, p_sHTTPServerURL)
 {
   /* this constructor is for local devices only */
   m_bIsLocalDevice  = true;  
-  m_pOnTimerHandler = pOnTimerHandler;
+  m_pEventHandler   = pEventHandler;
   
   m_pTimer = new CTimer(this);
+	m_pHTTPClient = NULL;
 }
 
-/* <\PROTECTED> */
 
-/* <PUBLIC> */
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-
-CUPnPDevice::CUPnPDevice(IUPnPDevice* pOnTimerHandler):
+CUPnPDevice::CUPnPDevice(IUPnPDevice* pEventHandler, std::string p_sUUID):
   CUPnPBase(UPNP_DEVICE_TYPE_UNKNOWN, "")
 {
   /* this constructor is for remote devices only */
   m_bIsLocalDevice  = false;
-  m_pOnTimerHandler = pOnTimerHandler;
-  
+  m_pEventHandler   = pEventHandler;
+  m_sUUID						= p_sUUID;
+	
   m_pTimer = new CTimer(this);
+	m_pHTTPClient = NULL;
 }
 
 CUPnPDevice::~CUPnPDevice()
 {
+  if(m_pHTTPClient)
+	  delete m_pHTTPClient;
   delete m_pTimer;
 }
 
 
-/*===============================================================================
- TIMER
-===============================================================================*/
-
 void CUPnPDevice::OnTimer()
 {
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "OnTimer()");
-  if(m_pOnTimerHandler != NULL)
-    m_pOnTimerHandler->OnTimer(this);
+  CSharedLog::Shared()->Log(L_DEBUG, "OnTimer()", __FILE__, __LINE__);
+  if(m_pEventHandler != NULL)
+    m_pEventHandler->OnTimer(this);
 }
 
-/*===============================================================================
- BUILD DEVICE
-===============================================================================*/
+void CUPnPDevice::OnAsyncReceiveMsg(CHTTPMessage* pMessage)
+{
+	if(ParseDescription(pMessage->GetContent())) {
+		if(m_pEventHandler)
+		  m_pEventHandler->OnNewDevice(this);
+	}
+	
+	delete m_pHTTPClient;
+	m_pHTTPClient = NULL;
+}
+
 
 /* BuildFromDescriptionURL */
-bool CUPnPDevice::BuildFromDescriptionURL(std::string p_sDescriptionURL)
-{    
-  CHTTPClient  HTTPClient;
-  CHTTPMessage HTTPMessage;
-    
-  /* Get description message */
-  if(true == HTTPClient.Get(p_sDescriptionURL, &HTTPMessage))
-  {
-	  if(HTTPMessage.GetMessageType() != HTTP_MESSAGE_TYPE_200_OK)
-		  return false; 
-		//cout << HTTPMessage.GetContent() << endl;	
-			
-    return ParseDescription(HTTPMessage.GetContent());
-  }
-  else
-  {
-    /* We could not get the device description */
-    CSharedLog::Shared()->Error(LOGNAME, "BuildFromDescriptionURL");
-    return false;
-  }
+void CUPnPDevice::BuildFromDescriptionURL(std::string p_sDescriptionURL)
+{	
+  if(!m_pHTTPClient)
+	  m_pHTTPClient = new CHTTPClient(this);
+		
+	m_pHTTPClient->AsyncGet(p_sDescriptionURL);
 }
 
 /* AddUPnPService */
@@ -135,10 +101,6 @@ void CUPnPDevice::AddUPnPService(CUPnPService* pUPnPService)
 	/* Add service to vector */
   m_vUPnPServices.push_back(pUPnPService);
 }
-
-/*===============================================================================
- GET
-===============================================================================*/
 
 /* GetUPnPServiceCount */
 int CUPnPDevice::GetUPnPServiceCount()
@@ -149,7 +111,6 @@ int CUPnPDevice::GetUPnPServiceCount()
 /* GetUPnPService */
 CUPnPService* CUPnPDevice::GetUPnPService(int p_nIndex)
 {
-	ASSERT(p_nIndex >= 0);
   if(p_nIndex < 0)
     return NULL;
 
@@ -429,7 +390,7 @@ bool CUPnPDevice::ParseDescription(std::string p_sDescription)
 	pTmpNode = FindNode("deviceType", pRootNode, true);
 	if(pTmpNode) {
 	  string sDevType = ToLower((char*)pTmpNode->children->content);
-		
+
     if(sDevType.compare("urn:schemas-upnp-org:device:mediarenderer:1") == 0)    
       m_nUPnPDeviceType = UPNP_DEVICE_TYPE_MEDIA_RENDERER;
     else if(sDevType.compare("urn:schemas-upnp-org:device:mediaserver:1") == 0)    

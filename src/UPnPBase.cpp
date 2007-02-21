@@ -60,9 +60,9 @@ std::string	CUPnPBase::GetUPnPDeviceTypeAsString()
 	/* Set string for the corrseponding device type */
   switch(m_nUPnPDeviceType)
 	{
-		case UPNP_DEVICE_TYPE_ROOT_DEVICE:        
+		/*case UPNP_DEVICE_TYPE_ROOT_DEVICE:        
 		  sResult = "RootDevice";        
-			break;
+			break;*/
 		case UPNP_DEVICE_TYPE_MEDIA_SERVER:			  
 		  sResult = "MediaServer";       
 			break;

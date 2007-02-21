@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2006 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -45,6 +45,8 @@ std::string CPlaylistFactory::BuildPlaylist(std::string p_sObjectId)
   return "";
 }
 
+
+#warning todo: audio details
 
 std::string CPlaylistFactory::BuildPLS(std::string p_sObjectId)
 {
@@ -89,6 +91,9 @@ std::string CPlaylistFactory::BuildPLS(std::string p_sObjectId)
         sResult << pRes->GetValue("FILE_NAME") << "\r\n";
         nNumber++;
         break;
+				
+			default:
+			  break;
     }
     
     
@@ -146,9 +151,11 @@ http://www.seite.de/musik/titel4.mp3 */
         sResult << "http://" << CSharedConfig::Shared()->GetFuppesInstance(0)->GetHTTPServerURL() << "/MediaServer/AudioItems/" <<
                    szItemId << "." << ExtractFileExt(pRes->GetValue("FILE_NAME")) << "\r\n";      
         break;
+				
+			default:
+			  break;
     }
-    
-    
+
     pDb->Next();
   }
   

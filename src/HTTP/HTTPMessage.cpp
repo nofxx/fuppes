@@ -118,10 +118,8 @@ bool CHTTPMessage::SetMessage(std::string p_sMessage)
   CMessageBase::SetMessage(p_sMessage);  
   //CSharedLog::Shared()->DebugLog(LOGNAME, p_sMessage);  
 
-  #warning todo: complete HTTP parser
-  CHTTPParser* pParser = new CHTTPParser();
-  pParser->Parse(this);
-  delete pParser;
+  CHTTPParser Parser;
+  Parser.Parse(this);
   
   return BuildFromString(p_sMessage);
 }
@@ -146,6 +144,7 @@ CUPnPAction* CHTTPMessage::GetAction()
     // Build UPnPAction 
     CUPnPActionFactory ActionFactory;
     m_pUPnPAction = ActionFactory.BuildActionFromString(m_sContent);  
+		m_pUPnPAction->SetDeviceSettings(m_pDeviceSettings);
   }
   return m_pUPnPAction;
 }

@@ -25,20 +25,12 @@
 #ifndef _UPNPBASE_H
 #define _UPNPBASE_H
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include <string>
-
-/*===============================================================================
- DEFINITIONS
-===============================================================================*/
 
 typedef enum tagUPNP_DEVICE_TYPE
 {
   UPNP_DEVICE_TYPE_UNKNOWN,
-  UPNP_DEVICE_TYPE_ROOT_DEVICE,
+  //UPNP_DEVICE_TYPE_ROOT_DEVICE,
   UPNP_DEVICE_TYPE_MEDIA_SERVER,
   UPNP_DEVICE_TYPE_MEDIA_RENDERER,
   UPNP_DEVICE_TYPE_CONTENT_DIRECTORY,
@@ -48,20 +40,10 @@ typedef enum tagUPNP_DEVICE_TYPE
 	UPNP_SERVICE_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR
 }UPNP_DEVICE_TYPE;
 
-/*===============================================================================
- CLASS CUPnPBase
-===============================================================================*/
-
 class CUPnPBase
 {
 
-/* <PROTECTED> */
-
 protected:
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
 
   /** constructor
   *  @param  nType  the device type
@@ -69,49 +51,23 @@ protected:
   */
   CUPnPBase(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL);  
 
-/* <\PROTECTED> */ 
-  
-/* <PUBLIC> */
 
 public:
 
-/*===============================================================================
- GET
-===============================================================================*/
-  
   /** returns the device type
   *  @return device type as string
   */
   std::string GetUPnPDeviceTypeAsString();
 	UPNP_DEVICE_TYPE GetUPnPDeviceType() { return m_nUPnPDeviceType; }
 
-/* <\PUBLIC> */
-
-/* <PROTECTED> */
   
 protected:
-
-/*===============================================================================
- MEMBERS
-===============================================================================*/
 
   std::string m_sHTTPServerURL;
 
   UPNP_DEVICE_TYPE m_nUPnPDeviceType;
-/* <\PROTECTED> */
 
-/* <PRIVATE> */
-
-private:
-
-/*===============================================================================
- MEMBERS
-===============================================================================*/
-
-  
-
-/* <\PRIVATE> */
 
 };
 
-#endif /* _UPNPBASE_H */
+#endif // _UPNPBASE_H 

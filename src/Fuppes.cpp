@@ -168,10 +168,10 @@ CFuppes::~CFuppes()
 
 void CFuppes::CleanupTimedOutDevices()
 {  
-  /* iterate device list */            
+  // iterate device list ...
   for(m_TimedOutDevicesIterator = m_TimedOutDevices.begin(); m_TimedOutDevicesIterator != m_TimedOutDevices.end(); m_TimedOutDevicesIterator++)
   {
-    /* and delete timed out devices */
+    // ... and delete timed out devices
     CUPnPDevice* pTimedOutDevice = *m_TimedOutDevicesIterator;      
     m_TimedOutDevicesIterator = m_TimedOutDevices.erase(m_TimedOutDevicesIterator);
     delete pTimedOutDevice;
@@ -184,8 +184,8 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
   
   CleanupTimedOutDevices();
   
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "OnTimer()");
-  /* local device must send alive message */
+  CSharedLog::Shared()->Log(L_EXTENDED, "OnTimer()", __FILE__, __LINE__);
+  // local device must send alive message
   if(pSender->GetIsLocalDevice())
   {
     stringstream sLog;
@@ -193,32 +193,32 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
     CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());    
     m_pSSDPCtrl->send_alive();    
   }
-  /* remote device timed out */
+  // remote device timed out
   else
   {
-    stringstream sLog;
-    sLog << "device: " << pSender->GetFriendlyName() << " timed out";
-    CSharedLog::Shared()->Log(LOGNAME, sLog.str());
+	  if(!pSender->GetFriendlyName().empty()) {
+      stringstream sLog;
+      sLog << "device: " << pSender->GetFriendlyName() << " timed out";
+      CSharedLog::Shared()->Log(LOGNAME, sLog.str());
+		}
 
     fuppesThreadLockMutex(&m_RemoteDevicesMutex);
     m_RemoteDeviceIterator = m_RemoteDevices.find(pSender->GetUUID());  
-    /* found device */
-    if(m_RemoteDeviceIterator != m_RemoteDevices.end())
-    { 
-      /* remove device from list of remote devices */
-      m_RemoteDevices.erase(pSender->GetUUID());
-      
-      /* stop the device's timer and */
-      pSender->GetTimer()->Stop();      
-      /* push it to the list containing timed out devices */
+    // found device
+    if(m_RemoteDeviceIterator != m_RemoteDevices.end()) { 
+      // remove device from list of remote devices
+      m_RemoteDevices.erase(pSender->GetUUID());			
+      // stop the device's timer and HTTP client and ...
+      pSender->GetTimer()->Stop();
+      // ... push it to the list containing timed out devices
       m_TimedOutDevices.push_back(pSender);
     }
-    fuppesThreadUnlockMutex(&m_RemoteDevicesMutex);
+		fuppesThreadUnlockMutex(&m_RemoteDevicesMutex);
+
   }
   
   fuppesThreadUnlockMutex(&m_OnTimerMutex);
 }
-
 
 /** Returns URL of the HTTP member
  * @return std::string
@@ -414,24 +414,35 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
     if((pMessage->GetLocation().compare("")) == 0)
       return;
       
-    CUPnPDevice* pDevice = new CUPnPDevice(this);
-    if(pDevice->BuildFromDescriptionURL(pMessage->GetLocation())) {      
-      m_RemoteDevices[pMessage->GetUUID()] = pDevice;
-      pDevice->GetTimer()->SetInterval(900);  // 900 sec = 15 min
-      pDevice->GetTimer()->Start();
-      
-      sMsg << "new device: " << pDevice->GetFriendlyName();
-      CSharedLog::Shared()->Log(L_NORMAL, sMsg.str(), __FILE__, __LINE__);
-      
-      stringstream sMsg;
-      sMsg << "new UPnP device:" << endl << pDevice->GetFriendlyName() << " (" << pDevice->GetUPnPDeviceTypeAsString() << ")";
-      CNotificationMgr::Shared()->Notify(pDevice->GetFriendlyName(), sMsg.str());      
-    }
-    else {
-      delete pDevice;
-    }
+    CUPnPDevice* pDevice = new CUPnPDevice(this, pMessage->GetUUID());
+		m_RemoteDevices[pMessage->GetUUID()] = pDevice;
+		pDevice->BuildFromDescriptionURL(pMessage->GetLocation());
+		pDevice->GetTimer()->SetInterval(10);  // wait max. 30 sec. for description
+		pDevice->GetTimer()->Start();
+
   }
   
+  fuppesThreadUnlockMutex(&m_RemoteDevicesMutex);
+}
+
+void CFuppes::OnNewDevice(CUPnPDevice* pSender)
+{
+  fuppesThreadLockMutex(&m_RemoteDevicesMutex);
+
+  m_RemoteDeviceIterator = m_RemoteDevices.find(pSender->GetUUID());  
+  if(m_RemoteDeviceIterator != m_RemoteDevices.end())
+	{
+	  stringstream sMsg;
+		sMsg << "new device: " << pSender->GetFriendlyName() << " :: " << pSender->GetUPnPDeviceTypeAsString();
+	  CSharedLog::Shared()->Log(L_NORMAL, sMsg.str(), __FILE__, __LINE__);
+	  sMsg.str("");
+	
+	  pSender->GetTimer()->SetInterval(900); // 900 sec = 15 min
+			
+	  sMsg << "new UPnP device:" << endl << pSender->GetFriendlyName() << " (" << pSender->GetUPnPDeviceTypeAsString() << ")";
+	  CNotificationMgr::Shared()->Notify(pSender->GetFriendlyName(), sMsg.str());
+	}
+	
   fuppesThreadUnlockMutex(&m_RemoteDevicesMutex);
 }
 

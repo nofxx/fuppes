@@ -97,8 +97,6 @@ bool CHTTPParser::Parse(CHTTPMessage* pMessage)
   
 	
 	ParseCommonValues();
-	
-	//CSharedConfig::Shared()->DetectDevice(pMessage);
 	CDeviceIdentificationMgr::Shared()->IdentifyDevice(m_pMessage);
 	
   return true;

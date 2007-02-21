@@ -26,6 +26,7 @@
 #define _UPNPACTION_H
 
 #include "../UPnPBase.h"
+#include "../Configuration/DeviceSettings.h"
 #include <string>
 
 #define UPNP_UNKNOWN 0
@@ -51,6 +52,38 @@ typedef enum
   UPNP_IS_VALIDATED  = 2
 } UPNP_X_MS_MEDIA_RECEIVER_REGISTRAR_ACTIONS;
 
+
+class CUPnPAction
+{
+  public:
+
+    /** constructor */
+	  CUPnPAction(UPNP_DEVICE_TYPE p_nTargetDeviceType, int p_nActionType, std::string p_sContent) 
+	  {
+	    m_nActionType       = p_nActionType;
+      m_sContent          = p_sContent;
+			m_nTargetDeviceType = p_nTargetDeviceType;
+	  }
+
+    /** destructor */
+    virtual ~CUPnPAction() {};
+  
+    int GetActionType() { return m_nActionType; }
+		std::string GetContent() { return m_sContent; }
+		UPNP_DEVICE_TYPE GetTargetDeviceType() { return m_nTargetDeviceType; }
+
+    CDeviceSettings* GetDeviceSettings() { return m_pDeviceSettings; }
+	  void SetDeviceSettings(CDeviceSettings* pSettings) { m_pDeviceSettings = pSettings; }
+
+  private:
+    UPNP_DEVICE_TYPE m_nTargetDeviceType;
+    int              m_nActionType;
+    std::string      m_sContent;
+		
+		CDeviceSettings*   m_pDeviceSettings;
+};
+
+#endif // _UPNPACTION_H
 
 /*typedef enum tagUPNP_ACTION_TYPE
 {
@@ -179,29 +212,3 @@ Content-Length: 517
   
 }UPNP_ACTION_TYPE; */
 
-class CUPnPAction
-{
-  public:
-
-    /** constructor */
-	  CUPnPAction(UPNP_DEVICE_TYPE p_nTargetDeviceType, int p_nActionType, std::string p_sContent) 
-	  {
-	    m_nActionType       = p_nActionType;
-      m_sContent          = p_sContent;
-			m_nTargetDeviceType = p_nTargetDeviceType;
-	  }
-
-    /** destructor */
-    virtual ~CUPnPAction() {};
-  
-    int GetActionType() { return m_nActionType; }
-		std::string GetContent() { return m_sContent; }
-		UPNP_DEVICE_TYPE GetTargetDeviceType() { return m_nTargetDeviceType; }
-
-  private:
-    UPNP_DEVICE_TYPE m_nTargetDeviceType;
-    int              m_nActionType;
-    std::string      m_sContent;
-};
-
-#endif // _UPNPACTION_H

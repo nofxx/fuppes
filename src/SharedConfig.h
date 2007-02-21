@@ -48,12 +48,11 @@
 
 using namespace std;
 
-struct DisplaySettings
-{
+/*typedef struct {
   bool bShowTranscodingTypeInItemNames;
   bool bShowDirNamesInFirstLevel;
   bool bShowPlaylistsAsContainers;
-};
+} DisplaySettings_t;*/
 
 
 class CFuppes;
@@ -112,29 +111,28 @@ class CSharedConfig
   bool RemoveAllowedIP(unsigned int p_nIndex);
   
     
-  DisplaySettings GetDisplaySettings() { return m_DisplaySettings; }
+  //DisplaySettings_t GetDisplaySettings() { return m_DisplaySettings; }
   
-  unsigned int GetMaxFileNameLength() { return m_nMaxFileNameLength; }
-  void SetMaxFileNameLength(unsigned int p_nMaxFileNameLenght);
+  /*unsigned int GetMaxFileNameLength() { return m_nMaxFileNameLength; }
+  void SetMaxFileNameLength(unsigned int p_nMaxFileNameLenght); */
   
   bool AddSharedDirectory(std::string p_sDirectory);
   bool RemoveSharedDirectory(unsigned int p_nIndex);
   
-  bool SetPlaylistRepresentation(std::string p_sRepresentation);  
+  //bool SetPlaylistRepresentation(std::string p_sRepresentation);  
 
   void AddFuppesInstance(CFuppes* pFuppes);
 	
   CFuppes* GetFuppesInstance(unsigned int p_nIndex);
   unsigned int GetFuppesInstanceCount();
   
-	bool IsXBox360SupportEnabled() { return m_bXBox360Support; }
+	//bool IsXBox360SupportEnabled() { return m_bXBox360Support; }
+  bool UseImageMagick() { return m_bUseImageMagick; }
 
 
 private:
 
-
   static CSharedConfig* m_Instance;
-
 
   // xml config nodes
   xmlDocPtr   m_pDoc;
@@ -144,7 +142,7 @@ private:
   xmlNode*    m_pTranscodingSettingsNode;
 
   // member vars
-  std::string m_sConfigVersion;
+  std::string m_sConfigVersion;  
   std::string m_sConfigFileName;
 
   std::string m_sHostname;
@@ -153,17 +151,18 @@ private:
   std::string m_sOSName;
   std::string m_sOSVersion;
   std::string m_sLocalCharset;
+	std::string m_sTempDir;
 
-  unsigned int m_nMaxFileNameLength;
+
+  //unsigned int m_nMaxFileNameLength;
 
   std::vector<std::string> m_vSharedDirectories;
   std::vector<std::string> m_vAllowedIPs;
   unsigned int m_nHTTPPort;
   
-	bool m_bXBox360Support;
+	bool m_bUseImageMagick;
 
-
-  DisplaySettings m_DisplaySettings;
+  //DisplaySettings_t m_DisplaySettings;
 
 
   std::vector<CFuppes*> m_vFuppesInstances;

@@ -36,50 +36,37 @@
 #include <sys/socket.h>
 #endif
 
+class IHTTPClient
+{
+  public:
+	  virtual void OnAsyncReceiveMsg(CHTTPMessage* pMessage) = 0;
+};
+
 class CHTTPClient
 {
   public:
-    CHTTPClient();
+    CHTTPClient(IHTTPClient* pAsyncReceiveHandler = NULL);
     ~CHTTPClient();
 
-
-  bool Send(
-    CHTTPMessage* pMessage,
-    std::string   p_sTargetIPAddress,
-    unsigned int  p_nTargetPort = 80
-    );
-  
-  bool Get(
-    std::string   p_sGetURL,
-    CHTTPMessage* pResult
-    );
-
-  bool Get(
-    std::string   p_sGet,
-    CHTTPMessage* pResult,
-    std::string   p_sTargetIPAddress,
-    unsigned int  p_nTargetPort = 80
-    );
-
+    bool AsyncGet(std::string p_sGetURL);
     void AsyncNotify(CEventNotification* pNotification);
-
  
     fuppesThread m_AsyncThread;
     std::string  m_sAsyncResult;
-    std::string  m_sNotifyMessage;
+    std::string  m_sMessage;
     bool         m_bAsyncDone;
     bool         m_bIsAsync;
-    
-    sockaddr_in m_LocalEndpoint;
-    sockaddr_in m_RemoteEndpoint;
+ 	  IHTTPClient* m_pAsyncReceiveHandler;
 
-    upnpSocket  m_Socket;
+    sockaddr_in  m_LocalEndpoint;
+    sockaddr_in  m_RemoteEndpoint;
+
+    upnpSocket   m_Socket;
 
   private:
     std::string BuildGetHeader(std::string  p_sGet,
                                std::string  p_sTargetIPAddress,
                                unsigned int p_nTargetPort); 
-
 };
 
-#endif /* _HTTPCLIENT_H */
+#endif // _HTTPCLIENT_H

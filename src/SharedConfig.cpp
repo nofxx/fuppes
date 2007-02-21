@@ -105,7 +105,7 @@ CSharedConfig::CSharedConfig()
   m_nHTTPPort = 0;
   #endif
     
-  m_nMaxFileNameLength = 0;
+  //m_nMaxFileNameLength = 0;
   m_sLocalCharset      = "";
   
   m_pDoc = NULL;
@@ -115,10 +115,9 @@ CSharedConfig::CSharedConfig()
   m_pTranscodingSettingsNode = NULL;
   
   // display settings
-  m_DisplaySettings.bShowTranscodingTypeInItemNames = true;  
-  m_DisplaySettings.bShowDirNamesInFirstLevel = true;
-  
-  m_DisplaySettings.bShowPlaylistsAsContainers = true;
+  /*m_DisplaySettings.bShowTranscodingTypeInItemNames = true;  
+  m_DisplaySettings.bShowDirNamesInFirstLevel       = true;
+  m_DisplaySettings.bShowPlaylistsAsContainers      = true;*/
 }
 
 CSharedConfig::~CSharedConfig()
@@ -129,9 +128,31 @@ CSharedConfig::~CSharedConfig()
 bool CSharedConfig::SetupConfig()
 {  
   // read config file
-  if(!ReadConfigFile())
+  if(!ReadConfigFile()) {
     return false;
+	}
   
+	#warning todo: system checks (e.g. XP firewall)
+
+	/*stringstream sTemp;
+	#ifdef WIN32
+	sTemp << getenv("TEMP") << "\\fuppes\\";
+	m_sTempDir = sTemp.str();
+	if(!DirectoryExists(m_sTempDir)) 
+		CreateDirectory(m_sTempDir.c_str(), NULL);
+	#else
+  char* szTmp = getenv("TEMP");
+	if(szTmp != NULL)
+	  sTemp << szTmp << "/fuppes/";
+	else
+	  sTemp << "/tmp/fuppes/";
+	m_sTempDir = sTemp.str();
+	if(!DirectoryExists(m_sTempDir)) 
+		mkdir(m_sTempDir.c_str(), S_IRWXU | S_IRWXG);
+	#endif
+	cout << "TEMP: " << m_sTempDir << "." << endl; */
+	
+	
   // Network settings
   if(!ResolveHostAndIP()) {
     return false;
@@ -149,11 +170,9 @@ bool CSharedConfig::SetupConfig()
 }
 
 bool CSharedConfig::Refresh()
-{
-  bool bResult = false;
-  
-  /* reset all variables and containers ... */
-  m_nMaxFileNameLength = 0;  
+{  
+  // reset all variables and containers ...
+  //m_nMaxFileNameLength = 0;  
   m_vSharedDirectories.clear();    
   m_vAllowedIPs.clear();
   
@@ -165,10 +184,8 @@ bool CSharedConfig::Refresh()
   xmlFreeDoc(m_pDoc);
   m_pDoc = NULL;
   
-  /* ... and read the config file */
-  bResult = ReadConfigFile();
-  
-  return bResult;
+  // ... and read the config file
+  return ReadConfigFile();
 }
 
 void CSharedConfig::AddFuppesInstance(CFuppes* pFuppes)
@@ -485,7 +502,7 @@ bool CSharedConfig::IsSupportedFileExtension(std::string p_sFileExtension)
 
 
 
-void CSharedConfig::SetMaxFileNameLength(unsigned int p_nMaxFileNameLenght)
+/*void CSharedConfig::SetMaxFileNameLength(unsigned int p_nMaxFileNameLenght)
 {
   if(!m_pContentDirNode)
     return;
@@ -512,9 +529,9 @@ void CSharedConfig::SetMaxFileNameLength(unsigned int p_nMaxFileNameLenght)
   
   xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);    
   this->Refresh();
-}
+}*/
 
-bool CSharedConfig::SetPlaylistRepresentation(std::string p_sRepresentation)
+/*bool CSharedConfig::SetPlaylistRepresentation(std::string p_sRepresentation)
 {
   if(!m_pContentDirNode)
     return false;
@@ -537,7 +554,7 @@ bool CSharedConfig::SetPlaylistRepresentation(std::string p_sRepresentation)
   
   xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);    
   return this->Refresh();  
-}
+}*/
 
 std::string CSharedConfig::GetLocalCharset()
 {  
@@ -755,19 +772,19 @@ bool CSharedConfig::ReadConfigFile()
             m_sLocalCharset = "UTF-8";                      
         }        
         // max_file_name_length
-        else if ((sContentDir.compare("max_file_name_length") == 0) && (pTmp->children)) { 
+        /*else if ((sContentDir.compare("max_file_name_length") == 0) && (pTmp->children)) { 
           string sMaxFileNameLength = (char*)pTmp->children->content;              
           if(sMaxFileNameLength.compare("0") != 0)
             m_nMaxFileNameLength = atoi(sMaxFileNameLength.c_str());
-        }        
+        } */       
         // playlist_representation
-        else if ((sContentDir.compare("playlist_representation") == 0) && (pTmp->children)) {
+        /*else if ((sContentDir.compare("playlist_representation") == 0) && (pTmp->children)) {
           string sPlaylistRepresentation = (char*)pTmp->children->content;              
           if(sPlaylistRepresentation.compare("file") == 0)
             m_DisplaySettings.bShowPlaylistsAsContainers = false;
           else if(sPlaylistRepresentation.compare("container") == 0)
             m_DisplaySettings.bShowPlaylistsAsContainers = true;      
-        }
+        }*/
         
         pTmp = pTmp->next;
       }    
