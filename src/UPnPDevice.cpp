@@ -81,8 +81,8 @@ void CUPnPDevice::OnAsyncReceiveMsg(CHTTPMessage* pMessage)
 		  m_pEventHandler->OnNewDevice(this);
 	}
 	
-	delete m_pHTTPClient;
-	m_pHTTPClient = NULL;
+	/*delete m_pHTTPClient;
+	m_pHTTPClient = NULL;*/
 }
 
 

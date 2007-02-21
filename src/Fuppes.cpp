@@ -456,18 +456,26 @@ void CFuppes::HandleSSDPByeBye(CSSDPMessage* pMessage)
   fuppesThreadLockMutex(&m_RemoteDevicesMutex);
   
   m_RemoteDeviceIterator = m_RemoteDevices.find(pMessage->GetUUID());  
-  /* found device */
+  // found device
   if(m_RemoteDeviceIterator != m_RemoteDevices.end())
   {
-    sLog << "received byebye from " << m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName();    
+    sLog << "received byebye from " << m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName() << " :: " << m_RemoteDevices[pMessage->GetUUID()]->GetUPnPDeviceTypeAsString();    
     CSharedLog::Shared()->Log(L_NORMAL, sLog.str(), __FILE__, __LINE__);
     
     stringstream sMsg;
     sMsg << "UPnP device gone:" << endl << m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName() << " (" << m_RemoteDevices[pMessage->GetUUID()]->GetUPnPDeviceTypeAsString() << ")";
     CNotificationMgr::Shared()->Notify(m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName(), sMsg.str());
     
+		cout << "DELETE 1" << endl;
+		fflush(stdout);
+		
     delete m_RemoteDevices[pMessage->GetUUID()];
+		
+			cout << "DELETE 2" << endl;
+		fflush(stdout);
     m_RemoteDevices.erase(pMessage->GetUUID());
+			cout << "DELETE 3" << endl;
+		fflush(stdout);
   }
   
   fuppesThreadUnlockMutex(&m_RemoteDevicesMutex);
