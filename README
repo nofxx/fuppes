@@ -1,4 +1,4 @@
-  FUPPES- Free UPnP Entertainment Service  
+  FUPPES - the Free UPnP Entertainment Service  
 
   http://fuppes.sourceforge.net/
   http://sourceforge.net/projects/fuppes/
@@ -21,19 +21,35 @@ dependencies:
 
   SQLite (public domain)
   http://sqlite.org/
-  
-  UUID library (as-is) (e2fsporgs)
+	
+optional (recommended) libs:
+	
+	UUID library (as-is) (e2fsporgs)
   Copyright (C) 1996, 1997, 1998 Theodore Ts'o
-  
+	
   TagLib (LGPL 2.1)
   http://developer.kde.org/~wheeler/taglib.html
+	
+	ImageMagick (GPL like)
+	http://imagemagick.org
+	
+	libextractor
+	libexif
+	
+	libnotification
 
-  to use transcoding capabilities you need
+to use transcoding capabilities you need
   
-    The non-mp3 ;) encoder:
+    The non-mp3 encoder:
       LAME (LGPL)
       http://lame.sourceforge.net/
-    
+  
+	  or
+	
+		MPEG Audio Layer 2 encoder:
+		  TwoLAME (LGPL)
+			http://www.twolame.org/
+		
   and depeding on which formats you want to transcode one or more
   of the following libraries
   
@@ -89,7 +105,7 @@ win32 binary package comes with:
   see COPYING-FLAC for details
 
 mpcdec.dll, vorbisfile.dll, libFLAC.dll and sqlite3.dll are compiled by myself.
-The DevC++ project files can be found under http://ulrich-voelkel.de/svn/fuppes.
+The DevC++ project files can be found under http://fuppes.ulrich-voelkel.de.
 
 
 The "Free UPnP Entertainment Service" is distributed under the terms of the

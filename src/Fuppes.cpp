@@ -465,17 +465,9 @@ void CFuppes::HandleSSDPByeBye(CSSDPMessage* pMessage)
     stringstream sMsg;
     sMsg << "UPnP device gone:" << endl << m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName() << " (" << m_RemoteDevices[pMessage->GetUUID()]->GetUPnPDeviceTypeAsString() << ")";
     CNotificationMgr::Shared()->Notify(m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName(), sMsg.str());
-    
-		cout << "DELETE 1" << endl;
-		fflush(stdout);
-		
+
     delete m_RemoteDevices[pMessage->GetUUID()];
-		
-			cout << "DELETE 2" << endl;
-		fflush(stdout);
     m_RemoteDevices.erase(pMessage->GetUUID());
-			cout << "DELETE 3" << endl;
-		fflush(stdout);
   }
   
   fuppesThreadUnlockMutex(&m_RemoteDevicesMutex);

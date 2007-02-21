@@ -61,7 +61,7 @@ bool CVorbisDecoder::LoadLib()
   m_LibHandle = FuppesLoadLibrary("vorbisfile.dll");  
   #else
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libvorbis");
-  m_LibHandle = FuppesLoadLibrary("libvorbisfile.dylib");
+  m_LibHandle = FuppesLoadLibrary("/opt/local/lib/libvorbisfile.dylib");
   #endif
   if(!m_LibHandle)
   {

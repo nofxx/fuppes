@@ -4,15 +4,20 @@ Version 0.7.2
     * initial XBox 360 support
     * initial UPnP Search support
     * initial support for device specific settings
+		* initial support for ImageMagick
 	
   - fixed bugs
 	
     * fixed ip address detection
     * fixed crash if config is malformed
     * fixed urlencoded form value handling
-    * send utf-8 encoding in http header (todo)
     * fixed compilation error
       (implemented detection of second iconv param)
+
+  - todo
+    * send utf-8 encoding in http header
+		* README
+		
 
 Version 0.7.1 (2007-02-03)
   * fixed bug #1650930 (win32)
