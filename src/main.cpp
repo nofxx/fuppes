@@ -117,6 +117,15 @@ void PrintHelp()
   cout << endl;
 }
 
+void PrintParams()
+{
+  cout << endl;
+  cout << "  --help" << endl;
+  cout << "  --loglevel [none|normal|extended|debug]" << endl;
+  cout << "  --daemon" << endl;
+  cout << endl;
+}
+
 #ifdef WIN32
 bool CreateTrayIcon()
 {
@@ -154,21 +163,25 @@ int main(int argc, char* argv[])
       // --daemon
 			if((strcmp(argv[i], "-d") == 0) || (strcmp(argv[i], "--daemon") == 0))
         bDaemonMode = true;
-			// -- syslog 
+	  // --help 
+      else if(strcmp(argv[i], "--help") == 0) {
+        PrintParams();
+		return 0;
+	  }
+	  // --syslog 
       else if(strcmp(argv[i], "--syslog") == 0)
         CSharedLog::Shared()->SetUseSyslog(true);
-			// --loglevel
-			else if((strcmp(argv[i], "--loglevel") == 0) && (argc > i + 1)) {
-			
-			  if((strcmp(argv[i + 1], "none") == 0) || (strcmp(argv[i + 1], "0") == 0))
-				  CSharedLog::Shared()->SetLogLevel(0, false);
-				else if((strcmp(argv[i + 1], "normal") == 0) || (strcmp(argv[i + 1], "1") == 0))
-				  CSharedLog::Shared()->SetLogLevel(1, false);
-				else if((strcmp(argv[i + 1], "extended") == 0) || (strcmp(argv[i + 1], "2") == 0))
-				  CSharedLog::Shared()->SetLogLevel(2, false);
-				else if((strcmp(argv[i + 1], "debug") == 0) || (strcmp(argv[i + 1], "3") == 0))
-				  CSharedLog::Shared()->SetLogLevel(3, false);
-			} // end --loglevel
+	  // --loglevel
+	  else if((strcmp(argv[i], "--loglevel") == 0) && (argc > i + 1)) {
+		if((strcmp(argv[i + 1], "none") == 0) || (strcmp(argv[i + 1], "0") == 0))
+		  CSharedLog::Shared()->SetLogLevel(0, false);
+		else if((strcmp(argv[i + 1], "normal") == 0) || (strcmp(argv[i + 1], "1") == 0))
+		  CSharedLog::Shared()->SetLogLevel(1, false);
+		else if((strcmp(argv[i + 1], "extended") == 0) || (strcmp(argv[i + 1], "2") == 0))
+		  CSharedLog::Shared()->SetLogLevel(2, false);
+		else if((strcmp(argv[i + 1], "debug") == 0) || (strcmp(argv[i + 1], "3") == 0))
+		  CSharedLog::Shared()->SetLogLevel(3, false);
+		} // end --loglevel
 			
     }
   }
@@ -225,8 +238,9 @@ int main(int argc, char* argv[])
   CreateTrayIcon();
   #endif*/
 
-  cout << "FUPPES - the Free UPnP Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;
-  cout << "http://fuppes.sourceforge.net" << endl << endl;
+  cout << "            FUPPES - " << CSharedConfig::Shared()->GetAppVersion() << endl;
+  cout << "    the Free UPnP Entertainment Service" << endl;
+  cout << "       http://fuppes.sourceforge.net" << endl << endl;
 
   if(!CSharedConfig::Shared()->SetupConfig())
     return 1;
