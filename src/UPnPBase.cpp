@@ -21,20 +21,10 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
 
 #include "Common/Common.h"
 #include "UPnPBase.h"
 #include "SharedLog.h"
-
-/*===============================================================================
- CLASS CUPnPBase
-===============================================================================*/
-
-/* <PROTECTED> */
 
 /* constructor */
 CUPnPBase::CUPnPBase(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL)
@@ -44,44 +34,33 @@ CUPnPBase::CUPnPBase(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL)
   m_sHTTPServerURL  = p_sHTTPServerURL;
 }
 
-/* <\PROTECTED> */
-
-/* <PUBLIC> */
-
-/*===============================================================================
- GET
-===============================================================================*/
-
-/* GetUPnPDeviceTypeAsString */
 std::string	CUPnPBase::GetUPnPDeviceTypeAsString()
 {
-	std::string sResult;
+  std::string sResult;
 	
-	/* Set string for the corrseponding device type */
+  // Set string for the corrseponding device type
   switch(m_nUPnPDeviceType)
-	{
-		/*case UPNP_DEVICE_TYPE_ROOT_DEVICE:        
-		  sResult = "RootDevice";        
-			break;*/
-		case UPNP_DEVICE_TYPE_MEDIA_SERVER:			  
-		  sResult = "MediaServer";       
-			break;
-    case UPNP_DEVICE_TYPE_CONTENT_DIRECTORY:  
-		  sResult = "ContentDirectory";  
-			break;
-    case UPNP_DEVICE_TYPE_CONNECTION_MANAGER:
-		  sResult = "ConnectionManager";
-			break;
-		case UPNP_SERVICE_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR:
-		  sResult = "XMSMediaReceiverRegistrar";
-			break;
+  {
+    case UPNP_DEVICE_MEDIA_SERVER:			  
+	  sResult = "MediaServer";       
+	  break;
+    case UPNP_DEVICE_MEDIA_RENDERER:
+      sResult = "MediaRenderer";
+	  break;
+    case UPNP_SERVICE_CONTENT_DIRECTORY:  
+	  sResult = "ContentDirectory";  
+	  break;
+    case UPNP_SERVICE_CONNECTION_MANAGER:
+	  sResult = "ConnectionManager";
+	  break;
+	case UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR:
+	  sResult = "XMSMediaReceiverRegistrar";
+	  break;
     default:
-		  CSharedLog::Shared()->Log(L_EXTENDED_ERR, "unhandled UPnP device type", __FILE__, __LINE__);
-			sResult = "unknown";
-			break;
-	}
+      CSharedLog::Shared()->Log(L_EXTENDED_ERR, "unhandled UPnP device type", __FILE__, __LINE__);
+      sResult = "unknown";
+      break;
+  }
 	
-	return sResult;
+  return sResult;
 }
-
-/* <\PUBLIC> */

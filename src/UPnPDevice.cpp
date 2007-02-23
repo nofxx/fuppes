@@ -48,7 +48,7 @@ CUPnPDevice::CUPnPDevice(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL, I
 
 
 CUPnPDevice::CUPnPDevice(IUPnPDevice* pEventHandler, std::string p_sUUID):
-  CUPnPBase(UPNP_DEVICE_TYPE_UNKNOWN, "")
+  CUPnPBase(UPNP_DEVICE_UNKNOWN, "")
 {
   /* this constructor is for remote devices only */
   m_bIsLocalDevice  = false;
@@ -239,7 +239,7 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 			{
 				pTmp = m_vUPnPServices[i];				
 				
-			  if(pTmp->GetUPnPDeviceType() == UPNP_SERVICE_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR)
+			  if(pTmp->GetUPnPDeviceType() == UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR)
 				{
 				  if(!pRequest->GetDeviceSettings()->m_bXBox360Support)
 			      continue;
@@ -392,9 +392,9 @@ bool CUPnPDevice::ParseDescription(std::string p_sDescription)
 	  string sDevType = ToLower((char*)pTmpNode->children->content);
 
     if(sDevType.compare("urn:schemas-upnp-org:device:mediarenderer:1") == 0)    
-      m_nUPnPDeviceType = UPNP_DEVICE_TYPE_MEDIA_RENDERER;
+      m_nUPnPDeviceType = UPNP_DEVICE_MEDIA_RENDERER;
     else if(sDevType.compare("urn:schemas-upnp-org:device:mediaserver:1") == 0)    
-      m_nUPnPDeviceType = UPNP_DEVICE_TYPE_MEDIA_SERVER;
+      m_nUPnPDeviceType = UPNP_DEVICE_MEDIA_SERVER;
 	}
 		
 			  

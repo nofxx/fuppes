@@ -25,7 +25,7 @@
 #include "../Common/Common.h"
 
 CUPnPBrowse::CUPnPBrowse(std::string p_sMessage):
-  CUPnPAction(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, UPNP_BROWSE, p_sMessage)
+  CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_BROWSE, p_sMessage)
 {
 }                                     
 

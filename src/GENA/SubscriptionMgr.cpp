@@ -65,7 +65,7 @@ void CSubscription::AsyncReply()
   
   switch(m_nSubscriptionTarget)
   {
-    case UPNP_DEVICE_TYPE_CONTENT_DIRECTORY :
+    case UPNP_SERVICE_CONTENT_DIRECTORY :
       
       pNotification->SetContent(
         "<e:propertyset xmlns:e=\"urn:schemas-upnp-org:event-1-0\">"
@@ -113,7 +113,7 @@ CONTENT-TYPE: text/html
 */
     
       break;
-    case UPNP_DEVICE_TYPE_CONNECTION_MANAGER :
+    case UPNP_SERVICE_CONNECTION_MANAGER :
       
       pNotification->SetContent(
         "<e:propertyset xmlns:e=\"urn:schemas-upnp-org:event-1-0\">"
@@ -347,10 +347,10 @@ void CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* 
   if(rxTarget.Search(pRequest->GetHeader().c_str()))
   {    
     if (ToLower(rxTarget.Match(1)).compare("/upnpservices/contentdirectory/event/") == 0) {
-      pSubscription->SetSubscriptionTarget(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY);
+      pSubscription->SetSubscriptionTarget(UPNP_SERVICE_CONTENT_DIRECTORY);
     }
     else if (ToLower(rxTarget.Match(1)).compare("/upnpservices/connectionmanager/event/") == 0) {
-      pSubscription->SetSubscriptionTarget(UPNP_DEVICE_TYPE_CONNECTION_MANAGER);
+      pSubscription->SetSubscriptionTarget(UPNP_SERVICE_CONNECTION_MANAGER);
     }
     else {
       throw EException("unknown subscription target", __FILE__, __LINE__);

@@ -42,7 +42,7 @@ const string LOGNAME = "ContentDir";
 
 /* constructor */
 CContentDirectory::CContentDirectory(std::string p_sHTTPServerURL):
-CUPnPService(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, p_sHTTPServerURL)
+CUPnPService(UPNP_SERVICE_CONTENT_DIRECTORY, p_sHTTPServerURL)
 {
   /* Init database */  
   bool bIsNewDB = false;   
@@ -428,11 +428,14 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
       "  o.ID, o.TYPE, o.PATH, o.FILE_NAME, o.MIME_TYPE, " <<
       "  i.height, i.width, " <<
       "  a.TITLE, a.DURATION, a.ALBUM, a.ARTIST, " <<
-			"  a.TRACK_NO, a.BITRATE, a.SAMPLERATE, a.CHANNELS " <<
+			"  a.TRACK_NO, a.BITRATE, a.SAMPLERATE, a.CHANNELS, " <<
+			"  v.DURATION as VIDEO_DURATION, v.BITRATE as VIDEO_BITRATE, " << 
+			"  v.WIDTH as VIDEO_WIDTH, v.HEIGHT as VIDEO_HEIGHT, v.SIZE as VIDEO_SIZE " <<
       "from " <<
       "  OBJECTS o " <<
       "  left join AUDIO_ITEMS a on (a.id = o.id) " <<
       "  left join IMAGE_ITEMS i on (i.id = o.id) " <<
+      "  left join VIDEO_ITEMS v on (v.id = o.id) " <<
       "where " <<
       "  o.PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " " <<
       "order by " <<
@@ -913,6 +916,22 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   sTmp << "http-get:*:" << pSQLResult->GetValue("MIME_TYPE") << ":*";
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
   sTmp.str("");   
+
+
+  // duration
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->GetValue("VIDEO_DURATION").c_str());
+	
+	// resolution 
+  sTmp << pSQLResult->GetValue("VIDEO_WIDTH") << "x" << pSQLResult->GetValue("VIDEO_HEIGHT");
+	xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.str().c_str());
+	sTmp.str("");
+
+	// bitrate
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("VIDEO_BITRATE").c_str());
+
+  // size
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->GetValue("VIDEO_SIZE").c_str());
+
 
   /* set transcoding target extension 
      as video transcoding is not yet supported

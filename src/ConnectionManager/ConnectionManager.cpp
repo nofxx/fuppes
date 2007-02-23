@@ -27,7 +27,7 @@
 using namespace std;
 
 CConnectionManager::CConnectionManager(std::string p_sHTTPServerURL):
-CUPnPService(UPNP_DEVICE_TYPE_CONNECTION_MANAGER, p_sHTTPServerURL)
+CUPnPService(UPNP_SERVICE_CONNECTION_MANAGER, p_sHTTPServerURL)
 {
 }
 

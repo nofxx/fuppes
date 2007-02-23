@@ -32,7 +32,12 @@
 #define _FLACWRAPPER_H
 
 #include "WrapperBase.h"
+
+#ifdef HAVE_FILEDECODER
 #include <FLAC/file_decoder.h>
+#else
+#include <FLAC/stream_decoder.h>
+#endif
 
 #ifdef __cplusplus
 extern "C"

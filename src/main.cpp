@@ -49,6 +49,10 @@
 #include "../config.h"
 #endif
 
+#ifdef HAVE_IMAGEMAGICK
+#include <wand/MagickWand.h>
+#endif
+
 using namespace std;
 
 bool g_bExitApp;
@@ -260,6 +264,13 @@ int main(int argc, char* argv[])
     return 1;
   }
 
+  // init remaining stuff
+	#ifdef HAVE_IMAGEMAGICK
+	cout << "wand genesis" << endl; fflush(stdout);
+	MagickWandGenesis();
+	cout << "wand done" << endl; fflush(stdout);
+  #endif
+
   cout << "Webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
   cout << endl;
   cout << "r = rebuild database" << endl;
@@ -349,6 +360,13 @@ int main(int argc, char* argv[])
 
   delete CSharedConfig::Shared();
   delete CSharedLog::Shared();
+
+  // uninit other stuff
+	#ifdef HAVE_IMAGEMAGICK
+	cout << "wand terminus" << endl; fflush(stdout);
+	MagickWandTerminus();
+	cout << "wand terminus done" << endl; fflush(stdout);
+  #endif
 
   // cleanup winsockets
   #ifdef WIN32

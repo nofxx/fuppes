@@ -110,6 +110,12 @@ struct SVideoItem
   std::string sPublisher;
   std::string sLanguage;
   std::string sRelation;
+	
+	std::string  sDuration;
+	int nHeight;
+	int nWidth;
+	unsigned int nSize;
+	int nBitrate;
 };
   
   struct sMovie
@@ -134,6 +140,7 @@ class CFileDetails
   
     bool GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pMusicTrack);
     bool GetImageDetails(std::string p_sFileName, SImageItem* pImageItem);
+	  bool GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoItem);
 	
     static bool IsTranscodingExtension(std::string p_sExt);
     static std::string GetTargetExtension(std::string p_sExt);

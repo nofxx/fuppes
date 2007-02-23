@@ -24,7 +24,7 @@
 #include "XMSMediaReceiverRegistrar.h"
 
 CXMSMediaReceiverRegistrar::CXMSMediaReceiverRegistrar():
-CUPnPService(UPNP_SERVICE_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR, "")
+CUPnPService(UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR, "")
 {
 }
 

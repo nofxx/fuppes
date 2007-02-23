@@ -290,15 +290,14 @@ bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMe
 {
   bool fRet = true;
 
-  /* set HTTP Type */
+  // set HTTP version
   pMessageOut->SetVersion(pMessageIn->GetVersion());
-  //pMessageOut->SetVersion(HTTP_VERSION_1_0);
-    
-  /* Handle message */
+
+  // handle message
   HTTP_MESSAGE_TYPE nMsgType = pMessageIn->GetMessageType();
   switch(nMsgType)
   {
-    /* HTTP */
+    // HTTP request
     case HTTP_MESSAGE_TYPE_GET:
       fRet = HandleHTTPRequest(pMessageIn, pMessageOut);
       break;
@@ -308,17 +307,18 @@ bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMe
     case HTTP_MESSAGE_TYPE_POST:
       fRet = HandleHTTPRequest(pMessageIn, pMessageOut);
       break;
-    
-    /* SOAP */
+
+    // SOAP
     case HTTP_MESSAGE_TYPE_POST_SOAP_ACTION:
       fRet = HandleHTTPPostSOAPAction(pMessageIn, pMessageOut);
       break;
-    
+
+		// HTTP response
     case HTTP_MESSAGE_TYPE_200_OK:
       break;
     case HTTP_MESSAGE_TYPE_404_NOT_FOUND:
       break;
-    
+
     default:    
         fRet = false;
       break;
@@ -328,56 +328,53 @@ bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMe
 }
 
 bool CFuppes::HandleHTTPRequest(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
-{  
-  /* Get request */  
+{
+  // Get request
   std::string strRequest = pMessageIn->GetRequest();
 
-  /* Root description */
-  if(ToLower(strRequest).compare("/description.xml") == 0)
-  {
-    pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml"); //HTTP_CONTENT_TYPE_TEXT_XML
+  // Root description
+  if(ToLower(strRequest).compare("/description.xml") == 0) {
+    pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml"); // HTTP_CONTENT_TYPE_TEXT_XML
     pMessageOut->SetContent(m_pMediaServer->GetDeviceDescription(pMessageIn));
     return true;
   }
-  
-  /* ContentDirectory description */
-  else if(strRequest.compare("/UPnPServices/ContentDirectory/description.xml") == 0)
-  {
+
+  // ContentDirectory description
+  else if(strRequest.compare("/UPnPServices/ContentDirectory/description.xml") == 0) {
     pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml");
     pMessageOut->SetContent(m_pContentDirectory->GetServiceDescription());
     return true;
   }
 
-  /* ConnectionManager description */
-  else if(strRequest.compare("/UPnPServices/ConnectionManager/description.xml") == 0)
-  {
+  // ConnectionManager description
+  else if(strRequest.compare("/UPnPServices/ConnectionManager/description.xml") == 0) {
     pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml");    
     pMessageOut->SetContent(m_pConnectionManager->GetServiceDescription());
     return true;
   }
-  
+
   return false;
 }
 
 bool CFuppes::HandleHTTPPostSOAPAction(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
 {     
-  /* Get UPnP action */
+  // get UPnP action
   CUPnPAction* pAction;
   pAction = pMessageIn->GetAction();  
   if(!pAction)
     return false;
   
-  /* Handle UPnP action */
+  // handle UPnP action
   bool bRet = true;
   switch(pAction->GetTargetDeviceType())
   {
-    case UPNP_DEVICE_TYPE_CONTENT_DIRECTORY:
+    case UPNP_SERVICE_CONTENT_DIRECTORY:
       m_pContentDirectory->HandleUPnPAction(pAction, pMessageOut);      
       break;
-    case UPNP_DEVICE_TYPE_CONNECTION_MANAGER:
+    case UPNP_SERVICE_CONNECTION_MANAGER:
       m_pConnectionManager->HandleUPnPAction(pAction, pMessageOut);
       break;    
-		case UPNP_SERVICE_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR:
+		case UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR:
       m_pXMSMediaReceiverRegistrar->HandleUPnPAction(pAction, pMessageOut);
       break;
     default:
@@ -390,10 +387,10 @@ bool CFuppes::HandleHTTPPostSOAPAction(CHTTPMessage* pMessageIn, CHTTPMessage* p
 void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
 {
   fuppesThreadLockMutex(&m_RemoteDevicesMutex);
-  
+
   m_RemoteDeviceIterator = m_RemoteDevices.find(pMessage->GetUUID());  
-  
-  /* known device */
+
+  // known device
   if(m_RemoteDeviceIterator != m_RemoteDevices.end())
   {
     m_RemoteDevices[pMessage->GetUUID()]->GetTimer()->Reset();
@@ -402,8 +399,8 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
     sMsg << "received \"Notify-Alive\" from known device id: " << pMessage->GetUUID();    
     CSharedLog::Shared()->Log(L_EXTENDED, sMsg.str(), __FILE__, __LINE__);
   }
-  
-  /* new device */
+
+  // new device
   else
   {
     std::stringstream sMsg;
@@ -419,9 +416,8 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
 		pDevice->BuildFromDescriptionURL(pMessage->GetLocation());
 		pDevice->GetTimer()->SetInterval(10);  // wait max. 30 sec. for description
 		pDevice->GetTimer()->Start();
-
   }
-  
+
   fuppesThreadUnlockMutex(&m_RemoteDevicesMutex);
 }
 
@@ -452,16 +448,16 @@ void CFuppes::HandleSSDPByeBye(CSSDPMessage* pMessage)
   sLog << "received \"Notify-ByeBye\" from device: " << pMessage->GetUUID();  
   CSharedLog::Shared()->Log(L_EXTENDED, sLog.str(), __FILE__, __LINE__);
   sLog.str("");
-  
+
   fuppesThreadLockMutex(&m_RemoteDevicesMutex);
-  
+
   m_RemoteDeviceIterator = m_RemoteDevices.find(pMessage->GetUUID());  
   // found device
   if(m_RemoteDeviceIterator != m_RemoteDevices.end())
   {
     sLog << "received byebye from " << m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName() << " :: " << m_RemoteDevices[pMessage->GetUUID()]->GetUPnPDeviceTypeAsString();    
     CSharedLog::Shared()->Log(L_NORMAL, sLog.str(), __FILE__, __LINE__);
-    
+
     stringstream sMsg;
     sMsg << "UPnP device gone:" << endl << m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName() << " (" << m_RemoteDevices[pMessage->GetUUID()]->GetUPnPDeviceTypeAsString() << ")";
     CNotificationMgr::Shared()->Notify(m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName(), sMsg.str());

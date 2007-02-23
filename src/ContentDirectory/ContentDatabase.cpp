@@ -140,13 +140,31 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
     if(!Execute("CREATE INDEX IDX_PARENT_ID ON OBJECTS (PARENT_ID);"))
       return false;
     
-		if(!Execute("CREATE TABLE AUDIO_ITEMS (ID INTEGER PRIMARY KEY, DATE TEXT, TRACK_NO INTEGER, DESCRIPTION TEXT, DURATION TEXT, GENRE TEXT, ALBUM TEXT, ARTIST TEXT, TITLE TEXT, CHANNELS INTEGER, BITRATE INTEGER, SAMPLERATE INTEGER);"))
+		if(!Execute("CREATE TABLE AUDIO_ITEMS ( "
+				"ID INTEGER PRIMARY KEY, "
+				"DATE TEXT, "
+				"TRACK_NO INTEGER, "
+				"DESCRIPTION TEXT, "
+				"DURATION TEXT, "
+				"GENRE TEXT, "
+				"ALBUM TEXT, "
+				"ARTIST TEXT, "
+				"TITLE TEXT, "
+				"CHANNELS INTEGER, "
+				"BITRATE INTEGER, "
+				"SAMPLERATE INTEGER);"))
 		  return false;
 		
 		if(!Execute("CREATE TABLE IMAGE_ITEMS (ID INTEGER PRIMARY KEY, WIDTH INTEGER, HEIGHT INTEGER);"))
 		  return false;
 			
-    if(!Execute("CREATE TABLE VIDEO_ITEMS (ID INTEGER PRIMARY KEY, RESOLUTION TEXT);"))
+    if(!Execute("CREATE TABLE VIDEO_ITEMS ( "
+				"ID INTEGER PRIMARY KEY, "
+				"WIDTH INTEGER, " 
+				"HEIGHT INTEGER, "
+				"DURATION TEXT, "
+				"SIZE INTEGER, "
+				"BITRATE INTEGER );"))
 		  return false;
     
     string sTablePlaylistItems =
@@ -517,6 +535,33 @@ unsigned int InsertImageFile(unsigned int p_nObjectId, std::string p_sFileName)
 	return nRowId;
 } 
 
+unsigned int InsertVideoFile(unsigned int p_nObjectId, std::string p_sFileName)
+{
+  struct SVideoItem VideoItem;
+	if(!CFileDetails::Shared()->GetVideoDetails(p_sFileName, &VideoItem))
+	  return 0;
+		
+	stringstream sSql;
+	sSql << 
+	  "insert into VIDEO_ITEMS " <<
+		"(ID, WIDTH, HEIGHT, DURATION, SIZE, BITRATE) " <<
+		"values (" <<
+		p_nObjectId << ", " <<
+		VideoItem.nWidth << ", " <<
+		VideoItem.nHeight << "," <<
+		"'" << VideoItem.sDuration << "', " <<
+		VideoItem.nSize << ", " <<
+		VideoItem.nBitrate << ");";
+	
+	cout << sSql.str() << endl;
+		
+	CContentDatabase* pDB = new CContentDatabase();          
+  unsigned int nRowId = pDB->Insert(sSql.str());
+  delete pDB;
+
+	return nRowId;
+} 
+
 unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
 {
   OBJECT_TYPE nObjectType = CFileDetails::Shared()->GetObjectType(p_sFileName);         
@@ -569,28 +614,12 @@ unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
 		case ITEM_IMAGE_ITEM_PHOTO:
 		  InsertImageFile(nRowId, p_sFileName);
 			break;
-		
-		case OBJECT_TYPE_UNKNOWN:
-		case ITEM_IMAGE_ITEM:
-		case ITEM_AUDIO_ITEM:
-		case ITEM_AUDIO_ITEM_AUDIO_BROADCAST:
-		//case ITEM_AUDIO_ITEM_AUDIO_BOOK:
 		case ITEM_VIDEO_ITEM:
 		case ITEM_VIDEO_ITEM_MOVIE:
-		case ITEM_VIDEO_ITEM_VIDEO_BROADCAST:
-		//case ITEM_VIDEO_ITEM_MUSIC_VIDEO_CLIP:
-		//case CONTAINER_PERSON:
-		//case CONTAINER_PERSON_MUSIC_ARTIST:
-		case CONTAINER_PLAYLIST_CONTAINER:
-		//case CONTAINER_ALBUM:
-		//case CONTAINER_ALBUM_MUSIC_ALBUM:
-		//case CONTAINER_ALBUM_PHOTO_ALBUM:
-		//case CONTAINER_GENRE:
-		//case CONTAINER_GENRE_MUSIC_GENRE:
-		//case CONTAINER_GENRE_MOVIE_GENRE:
-		//case CONTAINER_STORAGE_SYSTEM:
-		//case CONTAINER_STORAGE_VOLUME:
-		case CONTAINER_STORAGE_FOLDER:
+		  InsertVideoFile(nRowId, p_sFileName);
+		  break;
+
+    default:
 		  break;
   }
 	

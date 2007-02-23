@@ -68,7 +68,7 @@ bool CLameWrapper::LoadLib()
 		fuppesSleep(2000);
 	}*/
 
-  cout << "LAME" << endl;
+  //cout << "LAME" << endl;
 
   #ifdef WIN32
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening lame_enc.dll");

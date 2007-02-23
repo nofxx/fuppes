@@ -74,29 +74,29 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent)
 		  ParseSearchAction((CUPnPSearch*)pAction);
 	  }
     else if(sName.compare("GetSearchCapabilities") == 0) {
-      pAction = new CUPnPAction(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, UPNP_GET_SEARCH_CAPABILITIES, p_sContent);
+      pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_SEARCH_CAPABILITIES, p_sContent);
     }
     else if(sName.compare("GetSortCapabilities") == 0) {
-      pAction = new CUPnPAction(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, UPNP_GET_SORT_CAPABILITIES, p_sContent);
+      pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_SORT_CAPABILITIES, p_sContent);
     }
     else if(sName.compare("GetSystemUpdateID") == 0) {
-      pAction = new CUPnPAction(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, UPNP_GET_SYSTEM_UPDATE_ID, p_sContent);
+      pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_SYSTEM_UPDATE_ID, p_sContent);
     }  
     else if(sName.compare("GetProtocolInfo") == 0) {
-    pAction = new CUPnPAction(UPNP_DEVICE_TYPE_CONTENT_DIRECTORY, UPNP_GET_PROTOCOL_INFO, p_sContent);
+    pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_PROTOCOL_INFO, p_sContent);
     }
 	}
 	else if(sNs.compare("urn:schemas-upnp-org:service:ConnectionManager:1") == 0)
 	{
-	  pAction = new CUPnPAction(UPNP_DEVICE_TYPE_CONNECTION_MANAGER, UPNP_UNKNOWN, p_sContent);
+	  pAction = new CUPnPAction(UPNP_SERVICE_CONNECTION_MANAGER, UPNP_UNKNOWN, p_sContent);
 	}
 	else if(sNs.compare("urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1") == 0)
 	{
 	  if(sName.compare("IsAuthorized") == 0) {
-	    pAction = new CUPnPAction(UPNP_SERVICE_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR, UPNP_IS_AUTHORIZED, p_sContent);
+	    pAction = new CUPnPAction(UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR, UPNP_IS_AUTHORIZED, p_sContent);
 	  }
 	  else if(sName.compare("IsValidated") == 0) {
-	    pAction = new CUPnPAction(UPNP_SERVICE_TYPE_X_MS_MEDIA_RECEIVER_REGISTRAR, UPNP_IS_VALIDATED, p_sContent);
+	    pAction = new CUPnPAction(UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR, UPNP_IS_VALIDATED, p_sContent);
 	  }
 	}
 	

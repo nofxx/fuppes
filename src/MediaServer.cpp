@@ -45,7 +45,7 @@ using namespace std;
 ===============================================================================*/
 
 CMediaServer::CMediaServer(std::string p_sHTTPServerURL, IUPnPDevice* pOnTimerHandler):
-  CUPnPDevice(UPNP_DEVICE_TYPE_MEDIA_SERVER, p_sHTTPServerURL, pOnTimerHandler)
+  CUPnPDevice(UPNP_DEVICE_MEDIA_SERVER, p_sHTTPServerURL, pOnTimerHandler)
 {
   /* Set common data for FUPPES */
 
