@@ -8,11 +8,6 @@ AM_INIT_AUTOMAKE(fuppes, 0.7.2a, u-voelkel@users.sourceforge.net)
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
-#AC_PROG_MAKE_SET
-
-#AC_LANG([C])
-#AC_LANG([C++])
-
 
 dnl Checks for programs.
 
@@ -136,8 +131,8 @@ fi
 
 if test "$TAGLIB_CONFIG" = "no" ; then   
    AC_MSG_NOTICE([*** taglib support disabled ***]);
-   echo "  the taglib-config script could not be found."
-   echo "  taglib support disabled"   
+   #echo "  the taglib-config script could not be found."
+   #echo "  taglib support disabled"   
 else  
 	AC_DEFINE([HAVE_TAGLIB], [1], [])
 
@@ -177,8 +172,8 @@ fi
 
 if test "$MAGICK_CONFIG" = "no" ; then   
    AC_MSG_NOTICE([*** ImageMagick support disabled ***]);
-   echo "  the Magick++-config script could not be found."
-   echo "  ImageMagick support disabled"   
+   #echo "  the Magick++-config script could not be found."
+   #echo "  ImageMagick support disabled"   
 else  
   AC_DEFINE([HAVE_IMAGEMAGICK], [1], [])
 

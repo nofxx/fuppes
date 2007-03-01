@@ -31,7 +31,7 @@
 
 #define UPNP_UNKNOWN 0
 
-typedef enum {
+typedef enum UPNP_CONTENT_DIRECTORY_ACTIONS {
   UPNP_BROWSE									 = 1,
 	UPNP_SEARCH									 = 2,
 	UPNP_GET_SEARCH_CAPABILITIES = 3,
@@ -40,14 +40,13 @@ typedef enum {
 	UPNP_GET_PROTOCOL_INFO		   = 6
 } UPNP_CONTENT_DIRECTORY_ACTIONS;
 
-typedef enum {
+typedef enum UPNP_AV_TRANSPORT_ACTIONS {
 } UPNP_AV_TRANSPORT_ACTIONS;
 
-typedef enum {
+typedef enum UPNP_CONNECTION_MANAGER_ACTIONS {
 } UPNP_CONNECTION_MANAGER_ACTIONS;
 
-typedef enum
-{
+typedef enum UPNP_X_MS_MEDIA_RECEIVER_REGISTRAR_ACTIONS {
   UPNP_IS_AUTHORIZED = 1,
   UPNP_IS_VALIDATED  = 2
 } UPNP_X_MS_MEDIA_RECEIVER_REGISTRAR_ACTIONS;
@@ -74,6 +73,9 @@ class CUPnPAction
 
     CDeviceSettings* GetDeviceSettings() { return m_pDeviceSettings; }
 	  void SetDeviceSettings(CDeviceSettings* pSettings) { m_pDeviceSettings = pSettings; }
+
+  //protected:
+  	std::string      m_sFilter;
 
   private:
     UPNP_DEVICE_TYPE m_nTargetDeviceType;

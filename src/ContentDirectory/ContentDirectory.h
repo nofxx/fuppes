@@ -105,42 +105,42 @@ public:
 
     void BuildDescription(xmlTextWriterPtr pWriter,
                           CSelectResult* pSQLResult,
-                          CUPnPBrowse*  pUPnPBrowse,
+                          CUPnPAction*  pUPnPBrowse,
                           std::string p_sParentId);
   
     void BuildContainerDescription(xmlTextWriterPtr pWriter,
                                    CSelectResult* pSQLResult,
-                                   CUPnPBrowse*  pUPnPBrowse,
+                                   CUPnPAction*  pUPnPBrowse,
                                    std::string p_sParentId,
                                    OBJECT_TYPE p_nContainerType);
     void BuildItemDescription(xmlTextWriterPtr pWriter,
                               CSelectResult* pSQLResult,
-                              CUPnPBrowse*  pUPnPBrowse,
+                              CUPnPAction*  pUPnPBrowse,
                               OBJECT_TYPE p_nObjectType,
                               std::string p_sParentId);      
     void BuildAudioItemDescription(xmlTextWriterPtr pWriter,
                                    CSelectResult* pSQLResult,
-                                   CUPnPBrowse*  pUPnPBrowse,
+                                   CUPnPAction*  pUPnPBrowse,
                                    std::string p_sObjectID);      
     void BuildAudioItemAudioBroadcastDescription(xmlTextWriterPtr pWriter,
                                    CSelectResult* pSQLResult,
-                                   CUPnPBrowse*  pUPnPBrowse,
+                                   CUPnPAction*  pUPnPBrowse,
                                    std::string p_sObjectID);                                    
     void BuildImageItemDescription(xmlTextWriterPtr pWriter,
                                    CSelectResult* pSQLResult,
-                                   CUPnPBrowse*  pUPnPBrowse,
+                                   CUPnPAction*  pUPnPBrowse,
                                    std::string p_sObjectID);
     void BuildVideoItemDescription(xmlTextWriterPtr pWriter,
                                    CSelectResult* pSQLResult,
-                                   CUPnPBrowse*  pUPnPBrowse,
+                                   CUPnPAction*  pUPnPBrowse,
                                    std::string p_sObjectID); 
     void BuildVideoItemVideoBroadcastDescription(xmlTextWriterPtr pWriter,
                                    CSelectResult* pSQLResult,
-                                   CUPnPBrowse*  pUPnPBrowse,
+                                   CUPnPAction*  pUPnPBrowse,
                                    std::string p_sObjectID);   
     void BuildPlaylistItemDescription(xmlTextWriterPtr pWriter,
                                    CSelectResult* pSQLResult,
-                                   CUPnPBrowse*  pUPnPBrowse,
+                                   CUPnPAction*  pUPnPBrowse,
                                    std::string p_sObjectID);                                    
 
 

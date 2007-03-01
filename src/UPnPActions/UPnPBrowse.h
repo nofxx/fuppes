@@ -63,7 +63,7 @@ class CUPnPBrowse: public CUPnPAction
 
     std::string      m_sObjectID;
     UPNP_BROWSE_FLAG m_nBrowseFlag;
-    std::string      m_sFilter;
+    //std::string      m_sFilter;
     unsigned int     m_nStartingIndex;
     unsigned int     m_nRequestedCount;
     std::string      m_sSortCriteria;

@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -109,6 +109,7 @@ class CContentDatabase
     void BuildDB();
     bool IsRebuilding() { return m_bIsRebuilding; };
   
+		fuppesThreadMutex m_Mutex;
   private:    
     void DbScanDir(std::string p_sDirectory, long long int p_nParentId);
     void BuildPlaylists();
@@ -119,11 +120,10 @@ class CContentDatabase
     bool m_bIsRebuilding;
   
     static CContentDatabase* m_Instance;
-    fuppesThreadMutex        m_Mutex;
-    sqlite3*                 m_pDbHandle;  
+		sqlite3*                 m_pDbHandle;  
     std::string              m_sDbFileName;    
     bool Open();
     void Close();
 };
 
-#endif /* _CONTENTDATABASE_H */
+#endif // _CONTENTDATABASE_H

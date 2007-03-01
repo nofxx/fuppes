@@ -11,6 +11,6 @@ EXTRA_DIST = \
 	ChangeLog\
 	INSTALL\
 	NEWS\
-	TODO
+	TODO\
+	configure.in
 
-#MAKEFLAGS = -s

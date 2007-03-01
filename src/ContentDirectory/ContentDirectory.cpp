@@ -426,16 +426,13 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
     sSql << 
       "select " <<
       "  o.ID, o.TYPE, o.PATH, o.FILE_NAME, o.MIME_TYPE, " <<
-      "  i.height, i.width, " <<
-      "  a.TITLE, a.DURATION, a.ALBUM, a.ARTIST, " <<
-			"  a.TRACK_NO, a.BITRATE, a.SAMPLERATE, a.CHANNELS, " <<
-			"  v.DURATION as VIDEO_DURATION, v.BITRATE as VIDEO_BITRATE, " << 
-			"  v.WIDTH as VIDEO_WIDTH, v.HEIGHT as VIDEO_HEIGHT, v.SIZE as VIDEO_SIZE " <<
+      "  d.IV_HEIGHT, d.IV_WIDTH, " <<
+      "  o.TITLE, d.AV_DURATION, d.A_ALBUM, d.A_ARTIST, d.A_GENRE, " <<
+			"  d.A_TRACK_NO, d.AV_BITRATE, d.A_SAMPLERATE, d.A_CHANNELS, " <<
+			"  d.AV_DURATION, d.SIZE " <<
       "from " <<
       "  OBJECTS o " <<
-      "  left join AUDIO_ITEMS a on (a.id = o.id) " <<
-      "  left join IMAGE_ITEMS i on (i.id = o.id) " <<
-      "  left join VIDEO_ITEMS v on (v.id = o.id) " <<
+      "  left join OBJECT_DETAILS d on (d.OBJECT_ID = o.id) " <<
       "where " <<
       "  o.PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " " <<
       "order by " <<
@@ -488,7 +485,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
 
 void CContentDirectory::BuildDescription(xmlTextWriterPtr pWriter,
                                          CSelectResult* pSQLResult,
-                                         CUPnPBrowse* pUPnPBrowse,
+                                         CUPnPAction* pUPnPBrowse,
                                          std::string p_sParentId)
 {
   OBJECT_TYPE nObjType = (OBJECT_TYPE)atoi(pSQLResult->GetValue("TYPE").c_str());
@@ -530,7 +527,7 @@ void CContentDirectory::BuildDescription(xmlTextWriterPtr pWriter,
 
 void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter, 
                                                   CSelectResult* pSQLResult, 
-                                                  CUPnPBrowse* pUPnPBrowse, 
+                                                  CUPnPAction* pUPnPBrowse, 
                                                   std::string p_sParentId,
                                                   OBJECT_TYPE p_nContainerType)
 {
@@ -648,7 +645,7 @@ dc:rights dc O */
 }
 
 
-void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, CUPnPBrowse* pUPnPBrowse, OBJECT_TYPE p_nObjectType, std::string p_sParentId)
+void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter, CSelectResult* pSQLResult, CUPnPAction* pUPnPBrowse, OBJECT_TYPE p_nObjectType, std::string p_sParentId)
 {
   /* item */
   xmlTextWriterStartElement(pWriter, BAD_CAST "item");
@@ -666,16 +663,14 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter, CSelectRe
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "restricted", BAD_CAST "0");    
   
     /* date */
-    if(pUPnPBrowse->m_sFilter.find("dc:date") != std::string::npos)
-    {
+    if(pUPnPBrowse->m_sFilter.find("dc:date") != std::string::npos) {
       xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "date", BAD_CAST "http://purl.org/dc/elements/1.1/");    
       xmlTextWriterWriteString(pWriter, BAD_CAST "2005-10-15");
       xmlTextWriterEndElement(pWriter);
     }
     
     /* writeStatus */
-    if(pUPnPBrowse->m_sFilter.find("upnp:writeStatus") != std::string::npos)
-    {
+    if(pUPnPBrowse->m_sFilter.find("upnp:writeStatus") != std::string::npos) {
       xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "writeStatus", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
       xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN");
       xmlTextWriterEndElement(pWriter);
@@ -719,14 +714,14 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter, CSelectRe
 
 void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
                                                   CSelectResult* pSQLResult,
-                                                  CUPnPBrowse*  pUPnPBrowse,
+                                                  CUPnPAction*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {
   // title
   xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
     // trim filename
     string sFileName = pSQLResult->GetValue("FILE_NAME");
-		if(!pSQLResult->GetValue("TITLE").empty())
+		if(pSQLResult->GetValue("TITLE").compare("NULL") != 0)
 		  sFileName = pSQLResult->GetValue("TITLE");
 			
 	  sFileName = TrimFileName(sFileName, pUPnPBrowse->GetDeviceSettings()->m_nMaxFileNameLength, true);    
@@ -755,19 +750,19 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   
 	#warning todo: filter
 	xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "artist", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
-    xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("ARTIST").c_str());
+    xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("A_ARTIST").c_str());
 	xmlTextWriterEndElement(pWriter); 
 	
 	xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "album", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
-    xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("ALBUM").c_str());
+    xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("A_ALBUM").c_str());
 	xmlTextWriterEndElement(pWriter);
 
 	xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "genre", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
-    xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("GENRE").c_str());
+    xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("A_GENRE").c_str());
 	xmlTextWriterEndElement(pWriter);
 	
 	xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "originalTrackNumber", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
-    xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("TRACK_NO").c_str());
+    xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("A_TRACK_NO").c_str());
 	xmlTextWriterEndElement(pWriter);
 	
   
@@ -788,16 +783,16 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   sTmp.str("");
 
   // duration
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->GetValue("DURATION").c_str());
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->GetValue("AV_DURATION").c_str());
 	
 	// nrAudioChannels 
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "nrAudioChannels", BAD_CAST pSQLResult->GetValue("CHANNELS").c_str());
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "nrAudioChannels", BAD_CAST pSQLResult->GetValue("A_CHANNELS").c_str());
  
   // sampleFrequency
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST pSQLResult->GetValue("SAMPLERATE").c_str());
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST pSQLResult->GetValue("A_SAMPLERATE").c_str());
 
 	// bitrate
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("BITRATE").c_str());
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("AV_BITRATE").c_str());
 
 
   sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/AudioItems/" << p_sObjectID << "." << sExt;  
@@ -808,7 +803,7 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
 
 void CContentDirectory::BuildAudioItemAudioBroadcastDescription(xmlTextWriterPtr pWriter,
                                                   CSelectResult* pSQLResult,
-                                                  CUPnPBrowse*  pUPnPBrowse,
+                                                  CUPnPAction*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {
   // title
@@ -840,7 +835,7 @@ void CContentDirectory::BuildAudioItemAudioBroadcastDescription(xmlTextWriterPtr
 
 void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
                                                   CSelectResult* pSQLResult,
-                                                  CUPnPBrowse*  pUPnPBrowse,
+                                                  CUPnPAction*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {
   // title
@@ -879,8 +874,8 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
   sTmp.str("");
   
   // resolution
-	if((pSQLResult->GetValue("WIDTH").compare("NULL") != 0) && (pSQLResult->GetValue("HEIGHT").compare("NULL") != 0)) {
-    sTmp << pSQLResult->GetValue("WIDTH") << "x" << pSQLResult->GetValue("HEIGHT");
+	if((pSQLResult->GetValue("IV_WIDTH").compare("NULL") != 0) && (pSQLResult->GetValue("IV_HEIGHT").compare("NULL") != 0)) {
+    sTmp << pSQLResult->GetValue("IV_WIDTH") << "x" << pSQLResult->GetValue("IV_HEIGHT");
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.str().c_str());
     sTmp.str("");
 	}
@@ -893,7 +888,7 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
 
 void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
                                                   CSelectResult* pSQLResult,
-                                                  CUPnPBrowse*  pUPnPBrowse,
+                                                  CUPnPAction*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {   
   // title
@@ -919,18 +914,20 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
 
 
   // duration
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->GetValue("VIDEO_DURATION").c_str());
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->GetValue("AV_DURATION").c_str());
 	
 	// resolution 
-  sTmp << pSQLResult->GetValue("VIDEO_WIDTH") << "x" << pSQLResult->GetValue("VIDEO_HEIGHT");
-	xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.str().c_str());
-	sTmp.str("");
+	if((pSQLResult->GetValue("IV_WIDTH").compare("NULL") != 0) && (pSQLResult->GetValue("IV_HEIGHT").compare("NULL") != 0)) {
+    sTmp << pSQLResult->GetValue("IV_WIDTH") << "x" << pSQLResult->GetValue("IV_HEIGHT");
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.str().c_str());
+    sTmp.str("");
+	}
 
 	// bitrate
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("VIDEO_BITRATE").c_str());
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("AV_BITRATE").c_str());
 
   // size
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->GetValue("VIDEO_SIZE").c_str());
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->GetValue("SIZE").c_str());
 
 
   /* set transcoding target extension 
@@ -948,7 +945,7 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
 
 void CContentDirectory::BuildVideoItemVideoBroadcastDescription(xmlTextWriterPtr pWriter,
                                                   CSelectResult* pSQLResult,
-                                                  CUPnPBrowse*  pUPnPBrowse,
+                                                  CUPnPAction*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 { 
   // title
@@ -980,7 +977,7 @@ void CContentDirectory::BuildVideoItemVideoBroadcastDescription(xmlTextWriterPtr
 
 void CContentDirectory::BuildPlaylistItemDescription(xmlTextWriterPtr pWriter,
                                                   CSelectResult* pSQLResult,
-                                                  CUPnPBrowse*  pUPnPBrowse,
+                                                  CUPnPAction*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {   
   // title
@@ -1016,7 +1013,7 @@ std::string CContentDirectory::HandleUPnPGetSearchCapabilities(CUPnPAction* pAct
     "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
     "  <s:Body>"
     "    <u:GetSearchCapabilitiesResponse xmlns:u=\"urn:schemas-upnp-org:service:ContentDirectory:1\">"
-    "      <SearchCaps></SearchCaps>"
+    "      <SearchCaps>dc:title,upnp:class</SearchCaps>"
     "    </u:GetSearchCapabilitiesResponse>"
     "  </s:Body>"
     "</s:Envelope>";
@@ -1055,7 +1052,136 @@ std::string CContentDirectory::HandleUPnPGetSystemUpdateID(CUPnPAction* pAction)
 
 std::string CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch)
 {
-  cout << __FILE__ << __LINE__ << " " << pSearch->BuildSQL() << endl;
+  cout << __FILE__ << __LINE__ << " HandleUPnPSearch()" << endl;
+
+	CContentDatabase* pDb  = new CContentDatabase();
+	CSelectResult*    pRow = NULL;
+
+  // get total matches
+	string sCount = "select count(o.ID) as VALUE from OBJECTS o " + pSearch->BuildSQL(false);
+	int nTotalMatches = 0;
+	pDb->Select(sCount);
+  nTotalMatches = atoi(pDb->GetResult()->GetValue("VALUE").c_str());
+	pDb->ClearResult();
+
+  // get items
+  string sItems = "select o.*, d.* from OBJECTS o left join OBJECT_DETAILS d on (d.OBJECT_ID = o.ID) " + pSearch->BuildSQL(true);
+	int nNumberReturned = 0;
+
+  cout << sItems << endl;
+
+	pDb->Select(sItems);
+
+	
+
+	
+	
+  xmlTextWriterPtr writer;
+	xmlBufferPtr buf;
+	std::stringstream sTmp;	
+	
+	buf    = xmlBufferCreate();   
+	writer = xmlNewTextWriterMemory(buf, 0);    
+	xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL);
+  
+  /* root */
+  xmlTextWriterStartElementNS(writer, BAD_CAST "s", BAD_CAST "Envelope", NULL);    
+  xmlTextWriterWriteAttributeNS(writer, BAD_CAST "s", 
+    BAD_CAST "encodingStyle", 
+    BAD_CAST  "http://schemas.xmlsoap.org/soap/envelope/", 
+    BAD_CAST "http://schemas.xmlsoap.org/soap/encoding/");
+   
+    /* body */
+    xmlTextWriterStartElementNS(writer, BAD_CAST "s", BAD_CAST "Body", NULL);    
+  
+      /* browse response */
+      xmlTextWriterStartElementNS(writer, BAD_CAST "u",        
+        BAD_CAST "SearchResponse", 
+        BAD_CAST "urn:schemas-upnp-org:service:ContentDirectory:1");
+          
+      /* result */
+      xmlTextWriterStartElement(writer, BAD_CAST "Result");
+          
+      /* build result xml */
+      xmlTextWriterPtr resWriter;
+      xmlBufferPtr resBuf;
+      resBuf    = xmlBufferCreate();   
+      resWriter = xmlNewTextWriterMemory(resBuf, 0);    
+      xmlTextWriterStartDocument(resWriter, NULL, "UTF-8", NULL);
+  
+      xmlTextWriterStartElementNS(resWriter, NULL, BAD_CAST "DIDL-Lite", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite");
+          
+  
+	while(!pDb->Eof()) {
+	  pRow = pDb->GetResult();
+	  cout << "result " << nNumberReturned++ << ": " << pRow->GetValue("TITLE") << endl;
+		
+		BuildDescription(resWriter, pRow, pSearch, "0");
+		
+		pDb->Next();
+	}
+			
+
+              
+      /* finalize result xml */
+      xmlTextWriterEndElement(resWriter);
+      xmlTextWriterEndDocument(resWriter);
+      xmlFreeTextWriter(resWriter);
+
+      std::stringstream sResOutput;
+      sResOutput << (const char*)resBuf->content;
+
+      xmlBufferFree(resBuf);        
+      string sTmpRes = sResOutput.str().substr(strlen("<?xml version=\"1.0\" encoding=\"UTF-8\"?> "));
+      xmlTextWriterWriteString(writer, BAD_CAST sTmpRes.c_str());
+      
+      /* end result */
+      xmlTextWriterEndElement(writer);
+        
+      /* number returned */
+      xmlTextWriterStartElement(writer, BAD_CAST "NumberReturned");
+      sTmp << nNumberReturned;
+      xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
+      sTmp.str("");
+      xmlTextWriterEndElement(writer);
+      
+      /* total matches */
+      xmlTextWriterStartElement(writer, BAD_CAST "TotalMatches");
+      sTmp << nTotalMatches;
+      xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
+      sTmp.str("");
+      xmlTextWriterEndElement(writer);
+      
+      /* update id */
+      xmlTextWriterStartElement(writer, BAD_CAST "UpdateID");
+      xmlTextWriterWriteString(writer, BAD_CAST "0");
+      xmlTextWriterEndElement(writer);
+  
+      /* end browse response */
+      xmlTextWriterEndElement(writer);
+      
+    /* end body */
+    xmlTextWriterEndElement(writer);
+   
+	/* end root */
+	xmlTextWriterEndElement(writer);
+  xmlTextWriterEndDocument(writer);
+	xmlFreeTextWriter(writer);
+	
+	std::stringstream output;
+	output << (const char*)buf->content;	
+  CSharedLog::Shared()->DebugLog(LOGNAME, output.str());
+  
+	xmlBufferFree(buf);
+  
+	delete pDb;
+	
+  cout << output.str() << endl;
+  
+	return output.str();  
+	
+	
+	cout << "returned: " << nNumberReturned << " total: " << nTotalMatches << endl;
 
   return "";
 }

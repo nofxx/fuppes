@@ -32,11 +32,11 @@ class CUPnPSearch: public CUPnPAction
 	  CUPnPSearch(std::string p_sMessage);
 		~CUPnPSearch();
 		
-		std::string BuildSQL();
+		std::string BuildSQL(bool p_bLimit = false);
 		
 		std::string      m_sContainerID;
     std::string      m_sSearchCriteria;
-    std::string      m_sFilter;
+    //std::string      m_sFilter;
     unsigned int     m_nStartingIndex;
     unsigned int     m_nRequestedCount;
     std::string      m_sSortCriteria;

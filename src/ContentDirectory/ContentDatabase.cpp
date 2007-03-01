@@ -26,6 +26,7 @@
 #include "../SharedLog.h"
 #include "FileDetails.h"
 #include "../Common/RegEx.h"
+#include "../Common/Common.h"
 
 #include <sstream>
 #include <string>
@@ -41,24 +42,22 @@
  
 using namespace std;
  
-static int SelectCallback(void *pDatabase, int argc, char **argv, char **azColName)
+int SelectCallback(void *pDatabase, int argc, char **argv, char **azColName)
 {
   /*for(int i = 0; i<argc; i++){
     printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
   }*/
     
-  /* build new result set */  
-  ((CContentDatabase*)pDatabase)->m_nRowsReturned++;
-  
+  // build new result set
   CSelectResult* pResult = new CSelectResult();
-  for(int i = 0; i < argc; i++)
-  {
+  for(int i = 0; i < argc; i++) {
     string sFieldName = azColName[i];
     pResult->m_FieldValues[sFieldName] = argv[i] ? argv[i] : "NULL";        
   }  
   ((CContentDatabase*)pDatabase)->m_ResultList.push_back(pResult);
-    
-  /* select first entry */
+  ((CContentDatabase*)pDatabase)->m_nRowsReturned++;
+		  
+  // select first entry
   ((CContentDatabase*)pDatabase)->m_ResultListIterator = ((CContentDatabase*)pDatabase)->m_ResultList.begin();
 
   return 0;
@@ -67,6 +66,7 @@ static int SelectCallback(void *pDatabase, int argc, char **argv, char **azColNa
 
 unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName);
 unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL);
+
 
 CContentDatabase* CContentDatabase::m_Instance = 0;
 
@@ -85,15 +85,18 @@ CContentDatabase::CContentDatabase()
   
   m_nRowsReturned = 0;
   m_bIsRebuilding = false;
-  
-  fuppesThreadInitMutex(&m_Mutex);
+  	
+	if(m_Instance == this)
+    fuppesThreadInitMutex(&m_Mutex);
 }
  
 CContentDatabase::~CContentDatabase()
 {
-  fuppesThreadDestroyMutex(&m_Mutex);
+	if(m_Instance == this)
+    fuppesThreadDestroyMutex(&m_Mutex);
+
   ClearResult();
-  sqlite3_close(m_pDbHandle);
+  Close();
 }
 
 std::string CContentDatabase::GetLibVersion()
@@ -118,29 +121,56 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
     return false;
   }
   
+	// CREATE TABLE OBJECTS (TITLE TEXT, ID INTEGER PRIMARY KEY, PARENT_ID INTEGER, TYPE INTEGER, PATH TEXT, FILE_NAME TEXT, MD5 TEXT, MIME_TYPE TEXT, SIZE INTEGER, UPDATE_ID INTEGER);
+	
+	// CREATE TABLE OBJECT_DETAILS (AV_BITRATE INTEGER, AV_DURATION TEXT, A_ALBUM TEXT, A_ARTIST TEXT, A_CHANNELS INTEGER, A_DESCRIPTION TEXT, A_GENRE TEXT, A_SAMPLERATE INTEGER, A_TRACK_NO INTEGER, DATE TEXT, ID INTEGER, IV_HEIGHT INTEGER, IV_WIDTH INTEGER, SIZE INTEGER);
+	
   if(bIsNewDb)
   {
-    string sTableObjects = 
-      "create table OBJECTS ("
-      "  ID INTEGER PRIMARY KEY AUTOINCREMENT,"
-      "  PARENT_ID INTEGER NOT NULL DEFAULT 0,"
-      "  TYPE INTEGER NOT NULL,"
-      "  PATH TEXT NOT NULL,"
-      "  FILE_NAME TEXT DEFAULT NULL,"
-      "  MD5 TEXT DEFAULT NULL,"
-      "  MIME_TYPE TEXT DEFAULT NULL,"
-			"  SIZE INTEGER, "
-			"  UPDATE_ID INTEGER DEFAULT 0"
-      ");";        
+		if(!Execute("CREATE TABLE OBJECTS ("
+				"  ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+				"  PARENT_ID INTEGER NOT NULL DEFAULT 0,"
+				"  TYPE INTEGER NOT NULL,"
+				"  PATH TEXT NOT NULL,"
+				"  FILE_NAME TEXT DEFAULT NULL,"
+				"  TITLE TEXT DEFAULT NULL, "
+				"  MD5 TEXT DEFAULT NULL,"
+				"  MIME_TYPE TEXT DEFAULT NULL,"
+				"  SIZE INTEGER DEFAULT 0, "
+				"  UPDATE_ID INTEGER DEFAULT 0"
+				");"))   
+			return false;
     
-    if(!Execute(sTableObjects))
+		if(!Execute("CREATE UNIQUE INDEX IDX_ID ON OBJECTS(ID);"))
       return false;
-    if(!Execute("CREATE INDEX IDX_FILE_NAME ON OBJECTS (FILE_NAME);"))
+		if(!Execute("CREATE INDEX IDX_FILE_NAME ON OBJECTS (FILE_NAME);"))
       return false;
     if(!Execute("CREATE INDEX IDX_PARENT_ID ON OBJECTS (PARENT_ID);"))
       return false;
     
-		if(!Execute("CREATE TABLE AUDIO_ITEMS ( "
+		if(!Execute("CREATE TABLE OBJECT_DETAILS ( "
+				"  OBJECT_ID INTEGER, "
+				"  AV_BITRATE INTEGER, "
+				"  AV_DURATION TEXT, "
+				"  A_ALBUM TEXT, "
+				"  A_ARTIST TEXT, "
+				"  A_CHANNELS INTEGER, "
+				"  A_DESCRIPTION TEXT, "
+				"  A_GENRE TEXT, "
+				"  A_SAMPLERATE INTEGER, "
+				"  A_TRACK_NO INTEGER, "
+				"  DATE TEXT, "
+				"  IV_HEIGHT INTEGER, "
+				"  IV_WIDTH INTEGER, "
+				"  SIZE INTEGER "
+				");"))
+			return false;
+		
+		if(!Execute("CREATE UNIQUE INDEX IDX_OBJECT_ID ON OBJECT_DETAILS(OBJECT_ID);"))
+      return false;
+		
+		
+		/*if(!Execute("CREATE TABLE AUDIO_ITEMS ( "
 				"ID INTEGER PRIMARY KEY, "
 				"DATE TEXT, "
 				"TRACK_NO INTEGER, "
@@ -165,7 +195,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 				"DURATION TEXT, "
 				"SIZE INTEGER, "
 				"BITRATE INTEGER );"))
-		  return false;
+		  return false; */
     
     string sTablePlaylistItems =
       "create table PLAYLIST_ITEMS ("
@@ -189,12 +219,12 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 
 void CContentDatabase::Lock()
 {
-  fuppesThreadLockMutex(&m_Mutex);
+  fuppesThreadLockMutex(&CContentDatabase::Shared()->m_Mutex);
 }
 
 void CContentDatabase::Unlock()
 {
-  fuppesThreadUnlockMutex(&m_Mutex);
+  fuppesThreadUnlockMutex(&CContentDatabase::Shared()->m_Mutex);
 }
 
 void CContentDatabase::ClearResult()
@@ -234,6 +264,7 @@ void CContentDatabase::Close()
 
 unsigned int CContentDatabase::Insert(std::string p_sStatement)
 {
+  Lock();
   Open();
 
   char* szErr = 0;
@@ -256,11 +287,13 @@ unsigned int CContentDatabase::Insert(std::string p_sStatement)
     fprintf(stderr, "CContentDatabase::Insert - commit :: SQL error: %s\n", szErr);       */ 
 
   Close();
+	Unlock();
   return nResult;  
 }
 
 bool CContentDatabase::Execute(std::string p_sStatement)
 {
+  Lock();
   Open();
 	bool bResult = false;
   char* szErr = 0;
@@ -275,11 +308,13 @@ bool CContentDatabase::Execute(std::string p_sStatement)
   }
 	
 	Close();
+	Unlock();
 	return bResult;
 }
 
 bool CContentDatabase::Select(std::string p_sStatement)
 {  
+  Lock();
   Open();  
   ClearResult();    
   bool bResult = true;
@@ -306,6 +341,7 @@ bool CContentDatabase::Select(std::string p_sStatement)
   }
   
   Close();
+	Unlock();
   return bResult;
 }
 
@@ -336,9 +372,11 @@ void CContentDatabase::BuildDB()
   
   CContentDatabase::Shared()->Execute("delete from objects");
   CContentDatabase::Shared()->Execute("delete from playlist_items");
-	CContentDatabase::Shared()->Execute("delete from audio_items");
+	/*CContentDatabase::Shared()->Execute("delete from audio_items");
 	CContentDatabase::Shared()->Execute("delete from video_items");
-	CContentDatabase::Shared()->Execute("delete from image_items");
+	CContentDatabase::Shared()->Execute("delete from image_items");*/
+	CContentDatabase::Shared()->Execute("delete from object_details");
+
   
   for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
   {
@@ -487,8 +525,8 @@ unsigned int InsertAudioFile(unsigned int p_nObjectId, std::string p_sFileName)
 		
 	stringstream sSql;
 	sSql << 
-	  "insert into AUDIO_ITEMS " <<
-		"(ID, TITLE, ARTIST, ALBUM, TRACK_NO, GENRE, DURATION, DATE, CHANNELS, BITRATE, SAMPLERATE) " <<
+	  "insert into OBJECT_DETAILS " <<
+		"(OBJECT_ID, TITLE, A_ARTIST, A_ALBUM, A_TRACK_NO, A_GENRE, AV_DURATION, DATE, A_CHANNELS, AV_BITRATE, A_SAMPLERATE) " <<
 		"values (" <<
 		p_nObjectId << ", " <<
 		"'" << SQLEscape(TrackInfo.mAudioItem.sTitle) << "', " <<
@@ -519,8 +557,8 @@ unsigned int InsertImageFile(unsigned int p_nObjectId, std::string p_sFileName)
 		
 	stringstream sSql;
 	sSql << 
-	  "insert into IMAGE_ITEMS " <<
-		"(ID, WIDTH, HEIGHT) " <<
+	  "insert into OBJECT_DETAILS " <<
+		"(OBJECT_ID, IV_WIDTH, IV_HEIGHT) " <<
 		"values (" <<
 		p_nObjectId << ", " <<
 		ImageItem.nWidth << ", " <<
@@ -543,8 +581,8 @@ unsigned int InsertVideoFile(unsigned int p_nObjectId, std::string p_sFileName)
 		
 	stringstream sSql;
 	sSql << 
-	  "insert into VIDEO_ITEMS " <<
-		"(ID, WIDTH, HEIGHT, DURATION, SIZE, BITRATE) " <<
+	  "insert into OBJECT_DETAILS " <<
+		"(OBJECT_ID, IV_WIDTH, IV_HEIGHT, AV_DURATION, SIZE, AV_BITRATE) " <<
 		"values (" <<
 		p_nObjectId << ", " <<
 		VideoItem.nWidth << ", " <<
@@ -587,10 +625,11 @@ unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
   
   
   stringstream sSql;
-  sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME, MD5, MIME_TYPE) values ";
+  sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME, TITLE, MD5, MIME_TYPE) values ";
   sSql << "(" << nObjectType << ", ";
   sSql << p_nParentId << ", ";
   sSql << "'" << SQLEscape(p_sFileName) << "', ";
+  sSql << "'" << sTmpFileName << "', ";
   sSql << "'" << sTmpFileName << "', ";
   sSql << "'" << "todo" << "', ";   //sSql << "'" << MD5Sum(p_sFileName) << "', ";  
   sSql << "'" << CFileDetails::Shared()->GetMimeType(p_sFileName, false) << "');";

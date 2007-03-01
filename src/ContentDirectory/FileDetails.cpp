@@ -46,7 +46,6 @@
 #ifdef HAVE_LIBAVFORMAT
 #include <avformat.h>
 #include <avcodec.h>
-
 #endif
 
 #include <sstream>
@@ -339,7 +338,9 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pM
 
 bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageItem)
 {
-  #ifdef HAVE_IMAGEMAGICK	
+  #ifdef HAVE_IMAGEMAGICK
+	return false;
+	
 	MagickWand* pWand;
 	MagickBooleanType bStatus;
 	unsigned long nHeight;
@@ -384,75 +385,66 @@ bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoIt
 		av_close_input_file(pFormatCtx);
 	  return false;
 	}
+		
+	// duration
+	if(pFormatCtx->duration != AV_NOPTS_VALUE) {
+  	cout << pFormatCtx->duration << endl;
+ 
+	  int hours, mins, secs, us;
+		secs = pFormatCtx->duration / AV_TIME_BASE;
+		us   = pFormatCtx->duration % AV_TIME_BASE;
+		mins = secs / 60;
+		secs %= 60;
+		hours = mins / 60;
+		mins %= 60;
 	
+		char szDuration[11];
+	  sprintf(szDuration, "%02d:%02d:%02d.%01d", hours, mins, secs, (10 * us) / AV_TIME_BASE);
+	  szDuration[10] = '\0';
+		
+	  pVideoItem->sDuration = szDuration;
+	}
+	else {
+	  pVideoItem->sDuration = "NULL";
+	}
 	
-	/*int64_t duration;
-    int64_t file_size;
-
-    int bit_rate;*/
-	
-	int hours, mins, secs, us;
-            secs = pFormatCtx->duration / AV_TIME_BASE;
-            us = pFormatCtx->duration % AV_TIME_BASE;
-            mins = secs / 60;
-            secs %= 60;
-            hours = mins / 60;
-            mins %= 60;
-	printf("%02d:%02d:%02d.%01d\n", hours, mins, secs, (10 * us) / AV_TIME_BASE);
-	
-	char szDuration[11];
-	sprintf(szDuration, "%02d:%02d:%02d.%01d\n", hours, mins, secs, (10 * us) / AV_TIME_BASE);
-	szDuration[10] = '\0';
-	
-	cout << "SZ: " << szDuration << endl;
-	
-	pVideoItem->sDuration = szDuration;
-	
-	if(pFormatCtx->bit_rate > 0)
+	// bitrate
+	if(pFormatCtx->bit_rate)
   	pVideoItem->nBitrate = pFormatCtx->bit_rate / 8;
+	else
+	  pVideoItem->nBitrate = 0;
+
+  // filesize
 	pVideoItem->nSize = pFormatCtx->file_size;
 	
-	cout << "no streams: " << pFormatCtx->nb_streams << endl;
 	
-	for(int i = 0; i < pFormatCtx->nb_streams; i++) {
+	for(int i = 0; i < pFormatCtx->nb_streams; i++) 
+  {
 	  AVStream* pStream = pFormatCtx->streams[i];
 	  AVCodec* pCodec;
-		
-		cout << "stream " << i + 1 << ": ";
-		
+				
 		pCodec = avcodec_find_decoder(pStream->codec->codec_id);
-		if(!pCodec)
-		  cout << " no decoder";
-		else {
-		  cout << " decoder: " << pCodec->name;
-			
-			switch(pStream->codec->codec_type) {
+		if(pCodec)
+		{			
+			switch(pStream->codec->codec_type)
+			{
 			  case CODEC_TYPE_VIDEO:
-			    cout << ", " << pStream->codec->width << "x" << pStream->codec->height;
 					pVideoItem->nWidth  = pStream->codec->width;
 					pVideoItem->nHeight = pStream->codec->height;
 					break;
 			  case CODEC_TYPE_AUDIO:
-				  cout << ", audio " << endl;
 					break;
 				case CODEC_TYPE_DATA:
-				  cout << ", data";
 					break;
 				case CODEC_TYPE_SUBTITLE:
-				  cout << ", subtitle";
 					break;
 				default:
-				  cout << ", unhandled codec type";
 					break;
 			}
 		}
-		
-		cout << endl;
 	}
 	
-	cout << endl << endl;
-
-	dump_format(pFormatCtx, 0, p_sFileName.c_str(), false);
+	//dump_avformat(pFormatCtx, 0, p_sFileName.c_str(), false);
 	av_close_input_file(pFormatCtx);
 	
 	return true;
@@ -461,14 +453,17 @@ bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoIt
 	#endif
 }
 
-/*
-void dump_format(AVFormatContext *ic,
+
+/*void dump_avformat(AVFormatContext *ic,
                  int index,
                  const char *url,
                  int is_output)
 {
     int i, flags;
     char buf[256];
+
+
+  cout << "DUMP AV FORMAT" << endl;
 
     av_log(NULL, AV_LOG_INFO, "%s #%d, %s, %s '%s':\n",
             is_output ? "Output" : "Input",
@@ -506,6 +501,9 @@ void dump_format(AVFormatContext *ic,
         }
         av_log(NULL, AV_LOG_INFO, "\n");
     }
+    
+    cout << "NO STREAMS: " << ic->nb_streams << endl;
+    
     for(i=0;i<ic->nb_streams;i++) {
         AVStream *st = ic->streams[i];
         int g= ff_gcd(st->time_base.num, st->time_base.den);
@@ -535,6 +533,10 @@ void dump_format(AVFormatContext *ic,
         }
         av_log(NULL, AV_LOG_INFO, "\n");
     }
+
+
+  cout << endl << endl;
+  fuppesSleep(1000);
 } */
 
 /*
