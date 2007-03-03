@@ -409,7 +409,8 @@ std::string SQLEscape(std::string p_sValue)
 
 std::string ToUTF8(std::string p_sValue, std::string p_sEncoding)
 {
-  if(xmlCheckUTF8((const unsigned char*)p_sValue.c_str()))
+  #ifdef HAVE_ICONV
+	if(xmlCheckUTF8((const unsigned char*)p_sValue.c_str()))
     return p_sValue;
    
 	iconv_t icv; 
@@ -447,7 +448,8 @@ std::string ToUTF8(std::string p_sValue, std::string p_sEncoding)
   
   delete[] szOutBuf;
   //delete[] szInBuf;
-  
+  #endif
+	
   return p_sValue;
 }
 

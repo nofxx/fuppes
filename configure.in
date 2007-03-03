@@ -80,6 +80,8 @@ AC_CHECK_LIB(uuid, uuid_generate, UUID_LIBS="-luuid")
 
 
 # iconv()
+have_iconv=no
+AH_TEMPLATE([HAVE_ICONV], [])
 AH_TEMPLATE([ICONV_SECOND_ARG], [second argument of iconv])
 AC_MSG_CHECKING([for type of second arg to iconv])
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
@@ -92,6 +94,8 @@ AC_MSG_CHECKING([for type of second arg to iconv])
               char* * outbuf, size_t * outbytesleft); 
   ]])],[
    AC_DEFINE([ICONV_SECOND_ARG], [const char**], [])
+	 AC_DEFINE([HAVE_ICONV], [1], [])
+	 have_iconv=yes
    AC_MSG_RESULT([const char**])
   ],[ 
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
@@ -104,9 +108,11 @@ AC_MSG_CHECKING([for type of second arg to iconv])
               char* * outbuf, size_t * outbytesleft);
   ]])],[
    AC_DEFINE([ICONV_SECOND_ARG], [char**], [])
+	 AC_DEFINE([HAVE_ICONV], [1], [])
+	 have_iconv=yes
    AC_MSG_RESULT([char**])
   ],[ 
-  AC_MSG_ERROR(cannot determine second iconv argument)
+    AC_MSG_NOTICE(cannot determine second iconv argument. see config.log for details)
   ])
 ])
 
@@ -518,9 +524,15 @@ else # transcoding = yes
   echo "  audio transcoding disabled"  
 fi
 
+# iconv
+echo ""
+if test "x$have_iconv" = "xyes"; then
+  echo "  iconv      : enabled"
+else
+  echo "  iconv      : disabled"
+fi
 
 # taglib
-echo ""
 if test "x$have_taglib" = "xyes"; then
   echo "  taglib     : enabled"
 else

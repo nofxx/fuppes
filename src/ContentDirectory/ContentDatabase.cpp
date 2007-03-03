@@ -526,10 +526,10 @@ unsigned int InsertAudioFile(unsigned int p_nObjectId, std::string p_sFileName)
 	stringstream sSql;
 	sSql << 
 	  "insert into OBJECT_DETAILS " <<
-		"(OBJECT_ID, TITLE, A_ARTIST, A_ALBUM, A_TRACK_NO, A_GENRE, AV_DURATION, DATE, A_CHANNELS, AV_BITRATE, A_SAMPLERATE) " <<
+		"(OBJECT_ID, A_ARTIST, A_ALBUM, A_TRACK_NO, A_GENRE, AV_DURATION, DATE, A_CHANNELS, AV_BITRATE, A_SAMPLERATE) " <<
 		"values (" <<
 		p_nObjectId << ", " <<
-		"'" << SQLEscape(TrackInfo.mAudioItem.sTitle) << "', " <<
+		//"'" << SQLEscape(TrackInfo.mAudioItem.sTitle) << "', " <<
 		"'" << SQLEscape(TrackInfo.sArtist) << "', " <<
 		"'" << SQLEscape(TrackInfo.sAlbum) << "', " <<
 		TrackInfo.nOriginalTrackNumber << ", " <<
@@ -544,6 +544,16 @@ unsigned int InsertAudioFile(unsigned int p_nObjectId, std::string p_sFileName)
 		
 	CContentDatabase* pDB = new CContentDatabase();          
   unsigned int nRowId = pDB->Insert(sSql.str());
+	
+	if(nRowId > 0) {
+	  sSql.str("");
+		sSql << 
+		  "update OBJECTS " <<
+			"set TITLE = '" << SQLEscape(TrackInfo.mAudioItem.sTitle) << "' " <<
+			"where ID = " << p_nObjectId << ";";
+		pDB->Execute(sSql.str());
+	}
+	
   delete pDB;
 
 	return nRowId;

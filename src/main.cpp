@@ -53,6 +53,8 @@
 #include <wand/MagickWand.h>
 #endif
 
+#include "Common/RegEx.h"
+
 using namespace std;
 
 bool g_bExitApp;
@@ -130,23 +132,23 @@ void PrintParams()
   cout << endl;
 }
 
-#ifdef WIN32
+/*#ifdef WIN32
 bool CreateTrayIcon()
 {
   NOTIFYICONDATA  m_tnd;
-  m_tnd.cbSize = sizeof(NOTIFYICONDATA);
+  m_tnd.cbSize = sizeof(NOTIFYICONDATA);*/
   /*m_tnd.hWnd   = void; //pParent->GetSafeHwnd()? pParent->GetSafeHwnd() : m_hWnd;
   m_tnd.uID    = uID;
   m_tnd.hIcon  = void; //icon;
   m_tnd.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
   m_tnd.uCallbackMessage = WM_ICON_NOTIFY; //uCallbackMessage;
   _tcscpy(m_tnd.szTip, szToolTip); */
-  m_tnd.uFlags = NIF_MESSAGE; // | NIF_ICON | NIF_TIP;
+ /* m_tnd.uFlags = NIF_MESSAGE; // | NIF_ICON | NIF_TIP;
   m_tnd.uCallbackMessage = WM_USER + 10;
 
   return Shell_NotifyIcon(NIM_ADD, &m_tnd);
 }
-#endif
+#endif*/
 
 /*===============================================================================
  MAIN
@@ -190,13 +192,13 @@ int main(int argc, char* argv[])
     }
   }
 
-  /* Setup winsockets	*/
+  // Setup winsockets	
   #ifdef WIN32
   WSADATA wsa;
   WSAStartup(MAKEWORD(2,2), &wsa);
   #endif
 
-  /* daemon process */
+  // daemon process 
   #ifndef WIN32
   if(bDaemonMode)
   {
@@ -234,13 +236,13 @@ int main(int argc, char* argv[])
   #endif
 
   #ifndef WIN32
-  signal(SIGINT, SignalHandler);  /* ctrl-c */
-  signal(SIGTERM, SignalHandler); /* start-stop-daemon -v --stop -nfuppes */
+  signal(SIGINT, SignalHandler);  // ctrl-c
+  signal(SIGTERM, SignalHandler); // start-stop-daemon -v --stop -nfuppes
   #endif
 
-  /*#ifdef WIN32
-  CreateTrayIcon();
-  #endif*/
+  //#ifdef WIN32
+  //CreateTrayIcon();
+  //#endif
 
   cout << "            FUPPES - " << CSharedConfig::Shared()->GetAppVersion() << endl;
   cout << "    the Free UPnP Entertainment Service" << endl;
@@ -375,4 +377,6 @@ int main(int argc, char* argv[])
 
   cout << "[FUPPES] exit" << endl;
   return 0;
+
 }
+
