@@ -84,11 +84,7 @@ public:
  CONSTRUCTOR / DESTRUCTOR
 ===============================================================================*/
   
-  CFuppes(
-    std::string p_sIPAddress,
-    std::string p_sUUID,
-    IFuppes*    pPresentationRequestHandler
-    );
+  CFuppes(std::string p_sIPAddress, std::string p_sUUID);
   virtual ~CFuppes();
 
   void OnTimer(CUPnPDevice* pSender);

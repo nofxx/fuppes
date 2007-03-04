@@ -18,6 +18,9 @@ Version 0.7.2
     * send utf-8 encoding in http header
 		* README
 		
+  * win32 (pcre from 3.3.7 to 3.3.13)
+  * initial windows gui
+
 
 Version 0.7.1 (2007-02-03)
   * fixed bug #1650930 (win32)

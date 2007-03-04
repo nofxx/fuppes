@@ -106,6 +106,7 @@ private:
   bool               m_bShowDebugLog;
   int                m_nLogLevel;
   bool               m_bUseSyslog;
+  bool               m_bGUILog;
 
 /* <\PRIVATE> */
 

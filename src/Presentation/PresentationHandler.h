@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -29,9 +29,9 @@
  INCLUDES
 ===============================================================================*/
 
-#include "../Fuppes.h"
 #include "../UPnPDevice.h"
 #include "../HTTP/HTTPMessage.h"
+#include "../Fuppes.h"
 
 #include <string>
 #include <vector>
@@ -53,7 +53,7 @@ typedef enum tagPRESENTATION_PAGE
  CLASS CPresentationHandler
 ===============================================================================*/
 
-class CPresentationHandler: public IFuppes
+class CPresentationHandler
 {
 
 /* <PUBLIC> */
@@ -84,7 +84,7 @@ public:
    *  @param pMessage  the incoming message
    *  @param pResult  the outgoing message
    */
-  void OnReceivePresentationRequest(CFuppes* pSender, CHTTPMessage* pMessage, CHTTPMessage* pResult);
+  void OnReceivePresentationRequest(CHTTPMessage* pMessage, CHTTPMessage* pResult);
   
 
 /* <PRIVATE> */

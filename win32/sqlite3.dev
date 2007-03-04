@@ -1,7 +1,7 @@
 [Project]
 FileName=sqlite3.dev
 Name=sqlite3
-UnitCount=56
+UnitCount=65
 Type=3
 Ver=1
 ObjFiles=
@@ -10,9 +10,9 @@ Libs=
 PrivateResource=sqlite3_private.rc
 ResourceIncludes=
 MakeIncludes=
-Compiler=-DBUILDING_DLL=1 -DNO_TCL_@@_
-CppCompiler=-DBUILDING_DLL=1_@@_
-Linker=--export-all-symbols_@@_--add-stdcall-alias_@@_
+Compiler=-DBUILDING_DLL=1 -DNO_TCL   -fexpensive-optimizations -O1 -DTHREADSAFE_@@_
+CppCompiler=-DBUILDING_DLL=1 -fexpensive-optimizations -O1 -DTHREADSAFE_@@_
+Linker=--add-stdcall-alias_@@_--export-all-symbols_@@_--exclude-symbols main_@@_
 IsCpp=0
 Icon=
 ExeOutput=
@@ -27,29 +27,9 @@ CustomMakefile=
 IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=0
-CompilerSettings=0000000001100000000000
-
-[Unit1]
-FileName=where.c
-CompileCpp=0
-Folder=sqlite3
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
+CompilerSettings=0000000000000000000000
 
 [Unit2]
-FileName=analyze.c
-CompileCpp=0
-Folder=sqlite3
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit3]
 FileName=attach.c
 CompileCpp=0
 Folder=sqlite3
@@ -59,7 +39,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit4]
+[Unit3]
 FileName=auth.c
 CompileCpp=0
 Folder=sqlite3
@@ -69,7 +49,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit5]
+[Unit4]
 FileName=btree.c
 CompileCpp=0
 Folder=sqlite3
@@ -79,7 +59,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit6]
+[Unit5]
 FileName=btree.h
 CompileCpp=0
 Folder=sqlite3
@@ -89,7 +69,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit7]
+[Unit6]
 FileName=build.c
 CompileCpp=0
 Folder=sqlite3
@@ -99,7 +79,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit8]
+[Unit7]
 FileName=callback.c
 CompileCpp=0
 Folder=sqlite3
@@ -109,7 +89,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit9]
+[Unit8]
 FileName=complete.c
 CompileCpp=0
 Folder=sqlite3
@@ -119,7 +99,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit10]
+[Unit9]
 FileName=date.c
 CompileCpp=0
 Folder=sqlite3
@@ -129,7 +109,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit11]
+[Unit10]
 FileName=delete.c
 CompileCpp=0
 Folder=sqlite3
@@ -139,7 +119,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit12]
+[Unit11]
 FileName=expr.c
 CompileCpp=0
 Folder=sqlite3
@@ -149,7 +129,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit13]
+[Unit12]
 FileName=func.c
 CompileCpp=0
 Folder=sqlite3
@@ -159,7 +139,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit14]
+[Unit13]
 FileName=hash.c
 CompileCpp=0
 Folder=sqlite3
@@ -169,7 +149,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit15]
+[Unit14]
 FileName=hash.h
 CompileCpp=0
 Folder=sqlite3
@@ -179,7 +159,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit16]
+[Unit15]
 FileName=insert.c
 CompileCpp=0
 Folder=sqlite3
@@ -189,7 +169,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit17]
+[Unit16]
 FileName=keywordhash.h
 CompileCpp=0
 Folder=sqlite3
@@ -199,7 +179,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit18]
+[Unit17]
 FileName=legacy.c
 CompileCpp=0
 Folder=sqlite3
@@ -209,7 +189,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit19]
+[Unit18]
 FileName=main.c
 CompileCpp=0
 Folder=sqlite3
@@ -219,7 +199,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit20]
+[Unit19]
 FileName=opcodes.c
 CompileCpp=0
 Folder=sqlite3
@@ -229,7 +209,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit21]
+[Unit20]
 FileName=opcodes.h
 CompileCpp=0
 Folder=sqlite3
@@ -239,7 +219,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit22]
+[Unit21]
 FileName=os.h
 CompileCpp=0
 Folder=sqlite3
@@ -249,7 +229,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit23]
+[Unit22]
 FileName=os_common.h
 CompileCpp=0
 Folder=sqlite3
@@ -259,8 +239,8 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit26]
-FileName=pager.h
+[Unit23]
+FileName=os_win.c
 CompileCpp=0
 Folder=sqlite3
 Compile=1
@@ -269,7 +249,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit27]
+[Unit26]
 FileName=parse.c
 CompileCpp=0
 Folder=sqlite3
@@ -279,7 +259,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit28]
+[Unit27]
 FileName=parse.h
 CompileCpp=0
 Folder=sqlite3
@@ -289,7 +269,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit29]
+[Unit28]
 FileName=pragma.c
 CompileCpp=0
 Folder=sqlite3
@@ -299,7 +279,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit30]
+[Unit29]
 FileName=prepare.c
 CompileCpp=0
 Folder=sqlite3
@@ -309,7 +289,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit31]
+[Unit30]
 FileName=printf.c
 CompileCpp=0
 Folder=sqlite3
@@ -319,7 +299,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit32]
+[Unit31]
 FileName=random.c
 CompileCpp=0
 Folder=sqlite3
@@ -329,7 +309,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit33]
+[Unit32]
 FileName=select.c
 CompileCpp=0
 Folder=sqlite3
@@ -339,7 +319,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit34]
+[Unit33]
 FileName=shell.c
 CompileCpp=0
 Folder=sqlite3
@@ -349,7 +329,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit35]
+[Unit34]
 FileName=sqlite3.h
 CompileCpp=0
 Folder=sqlite3
@@ -359,7 +339,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit36]
+[Unit35]
 FileName=sqliteInt.h
 CompileCpp=0
 Folder=sqlite3
@@ -369,7 +349,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit37]
+[Unit36]
 FileName=table.c
 CompileCpp=0
 Folder=sqlite3
@@ -379,7 +359,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit38]
+[Unit37]
 FileName=tclsqlite.c
 CompileCpp=0
 Folder=sqlite3
@@ -389,7 +369,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit39]
+[Unit38]
 FileName=tokenize.c
 CompileCpp=0
 Folder=sqlite3
@@ -399,7 +379,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit40]
+[Unit39]
 FileName=trigger.c
 CompileCpp=0
 Folder=sqlite3
@@ -409,7 +389,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit41]
+[Unit40]
 FileName=update.c
 CompileCpp=0
 Folder=sqlite3
@@ -419,7 +399,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit42]
+[Unit41]
 FileName=utf.c
 CompileCpp=0
 Folder=sqlite3
@@ -429,7 +409,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit43]
+[Unit42]
 FileName=util.c
 CompileCpp=0
 Folder=sqlite3
@@ -439,7 +419,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit44]
+[Unit43]
 FileName=vacuum.c
 CompileCpp=0
 Folder=sqlite3
@@ -449,7 +429,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit45]
+[Unit44]
 FileName=vdbe.c
 CompileCpp=0
 Folder=sqlite3
@@ -459,7 +439,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit46]
+[Unit45]
 FileName=vdbe.h
 CompileCpp=0
 Folder=sqlite3
@@ -469,7 +449,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit47]
+[Unit46]
 FileName=vdbeapi.c
 CompileCpp=0
 Folder=sqlite3
@@ -479,7 +459,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit48]
+[Unit47]
 FileName=vdbeaux.c
 CompileCpp=0
 Folder=sqlite3
@@ -489,7 +469,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit49]
+[Unit48]
 FileName=vdbefifo.c
 CompileCpp=0
 Folder=sqlite3
@@ -499,7 +479,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit50]
+[Unit49]
 FileName=vdbeInt.h
 CompileCpp=0
 Folder=sqlite3
@@ -509,7 +489,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit51]
+[Unit50]
 FileName=vdbemem.c
 CompileCpp=0
 Folder=sqlite3
@@ -519,7 +499,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit52]
+[Unit51]
 FileName=alter.c
 CompileCpp=0
 Folder=sqlite3
@@ -529,7 +509,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit53]
+[Unit52]
 FileName=os.c
 CompileCpp=0
 Folder=sqlite3
@@ -539,7 +519,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit54]
+[Unit53]
 FileName=os_unix.c
 CompileCpp=0
 Folder=sqlite3
@@ -549,8 +529,18 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit55]
+[Unit54]
 FileName=vtab.c
+CompileCpp=0
+Folder=sqlite3
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit55]
+FileName=loadext.c
 CompileCpp=0
 Folder=sqlite3
 Compile=1
@@ -562,8 +552,8 @@ BuildCmd=
 [VersionInfo]
 Major=3
 Minor=3
-Release=7
-Build=7
+Release=13
+Build=1
 LanguageID=1033
 CharsetID=1252
 CompanyName=
@@ -574,20 +564,10 @@ LegalCopyright=http://sqlite.org
 LegalTrademarks=
 OriginalFilename=
 ProductName=SQLite
-ProductVersion=3.3.7
+ProductVersion=3.3.13
 AutoIncBuildNr=1
 
 [Unit24]
-FileName=os_win.c
-CompileCpp=0
-Folder=sqlite3
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit25]
 FileName=pager.c
 CompileCpp=0
 Folder=sqlite3
@@ -597,8 +577,118 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
+[Unit25]
+FileName=pager.h
+CompileCpp=0
+Folder=sqlite3
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
 [Unit56]
-FileName=loadext.c
+FileName=where.c
+CompileCpp=0
+Folder=sqlite3
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit1]
+FileName=analyze.c
+CompileCpp=0
+Folder=sqlite3
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit57]
+FileName=fts1.c
+CompileCpp=0
+Folder=sqlite3
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit58]
+FileName=fts1.h
+CompileCpp=0
+Folder=sqlite3
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit59]
+FileName=fts1_hash.c
+CompileCpp=0
+Folder=sqlite3
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit60]
+FileName=fts1_hash.h
+CompileCpp=0
+Folder=sqlite3
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit61]
+FileName=fts1_porter.c
+CompileCpp=0
+Folder=sqlite3
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit62]
+FileName=fts1_tokenizer1.c
+CompileCpp=0
+Folder=sqlite3
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit63]
+FileName=fts1_tokenizer.h
+CompileCpp=0
+Folder=sqlite3
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit64]
+FileName=os_os2.c
+CompileCpp=0
+Folder=sqlite3
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit65]
+FileName=sqlite3ext.h
 CompileCpp=0
 Folder=sqlite3
 Compile=1

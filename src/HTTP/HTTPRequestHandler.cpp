@@ -78,7 +78,7 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
     )
   {
     CPresentationHandler* pHandler = new CPresentationHandler();
-    pHandler->OnReceivePresentationRequest(NULL, pRequest, pResponse);
+    pHandler->OnReceivePresentationRequest(pRequest, pResponse);
     delete pHandler;    
     return true;
   }

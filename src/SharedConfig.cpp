@@ -164,7 +164,7 @@ bool CSharedConfig::SetupConfig()
   // transcoding mgr must be initialized
   // by the main thread so let's do it
   // when everytihng else is correct
-  CTranscodingMgr::Shared();
+  //CTranscodingMgr::Shared();
 
   return true;
 }
@@ -840,11 +840,15 @@ bool CSharedConfig::ReadConfigFile()
 
 bool CSharedConfig::ResolveHostAndIP()
 {
-  char name[MAXHOSTNAMELEN];
-  int nRet = gethostname(name, MAXHOSTNAMELEN);
+  //char name[80] = "muddy";
+  m_sHostname = "muddy";
+  m_sIP = "192.168.0.3";
+  return true;
+  
+  /*int nRet = 0; //gethostname(name, MAXHOSTNAMELEN);
   if(0 == nRet)
   {    
-    m_sHostname = name;
+    //m_sHostname = name;
     
 		if((m_sIP == "") || (m_sIP.compare("127.0.0.1") == 0))
 		  ResolveIPByHostname();
@@ -880,7 +884,7 @@ bool CSharedConfig::ResolveHostAndIP()
   else {
     cout << "[ERROR] can't resolve hostname" << endl;
 		return false;
-	}
+	}*/
 }
 
 bool CSharedConfig::ResolveIPByHostname()

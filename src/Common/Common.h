@@ -39,7 +39,9 @@
 #ifdef WIN32
 
 /* T.S.NOTE: This must be defined to use InitializeCriticalSectionAndSpinCount() */
+#ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0410 /* Windows 98 or later */
+#endif
 
 #pragma comment(lib,"Wsock32.lib") 
 #pragma comment(lib,"Ws2_32.lib")

@@ -72,6 +72,7 @@ class CSelectResult
 {
   public:
     std::string  GetValue(std::string p_sFieldName);
+    bool         IsNull(std::string p_sFieldName);
   
   //private:
     std::map<std::string, std::string> m_FieldValues;
@@ -83,7 +84,7 @@ class CContentDatabase
   public:
     static CContentDatabase* Shared();  
   
-    CContentDatabase();
+    CContentDatabase(bool p_bShared = false);
     ~CContentDatabase();
   
     std::string GetLibVersion();

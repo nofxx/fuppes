@@ -51,16 +51,13 @@ const string LOGNAME = "FUPPES";
  *  @param  p_sUUID       UUID this instance should be started with
  *  @param  pPresentationRequestHandler pointer to an object implementing the request handler
  */
-CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID, IFuppes* pPresentationRequestHandler)
+CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
 {
   CSharedLog::Shared()->Log(L_EXTENDED, "starting UPnP subsystem", __FILE__, __LINE__);  
-  
-  ASSERT(NULL != pPresentationRequestHandler);
-  
+ 
   /* set members */
   m_sIPAddress                  = p_sIPAddress;
   m_sUUID                       = p_sUUID;
-  m_pPresentationRequestHandler = pPresentationRequestHandler;
   fuppesThreadInitMutex(&m_OnTimerMutex);
   fuppesThreadInitMutex(&m_RemoteDevicesMutex);
     

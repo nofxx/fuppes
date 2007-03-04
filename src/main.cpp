@@ -31,7 +31,6 @@
 #include "SharedConfig.h"
 #include "SharedLog.h"
 #include "Fuppes.h"
-#include "Presentation/PresentationHandler.h"
 #include "ContentDirectory/ContentDatabase.h"
 
 #ifndef WIN32
@@ -252,12 +251,12 @@ int main(int argc, char* argv[])
     return 1;
 
   // create presentation handler
-  CPresentationHandler* pPresentationHandler = new CPresentationHandler();
+  //CPresentationHandler* pPresentationHandler = new CPresentationHandler();
 
   // create main fuppes object
   CFuppes* pFuppes = NULL;
 	try {
-    pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUUID(), pPresentationHandler);
+    pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUUID());
     CSharedConfig::Shared()->AddFuppesInstance(pFuppes);
   }
   catch(EException ex) {
@@ -358,7 +357,7 @@ int main(int argc, char* argv[])
 
   // destroy objects
   delete pFuppes;
-  delete pPresentationHandler;
+  //delete pPresentationHandler;
 
   delete CSharedConfig::Shared();
   delete CSharedLog::Shared();

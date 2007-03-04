@@ -84,7 +84,7 @@ CPresentationHandler::~CPresentationHandler()
 
 
 
-void CPresentationHandler::OnReceivePresentationRequest(CFuppes* pSender, CHTTPMessage* pMessage, CHTTPMessage* pResult)
+void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, CHTTPMessage* pResult)
 {
   PRESENTATION_PAGE nPresentationPage = PRESENTATION_PAGE_UNKNOWN;
   string sContent;

@@ -64,6 +64,21 @@ int SelectCallback(void *pDatabase, int argc, char **argv, char **azColName)
 }
 
 
+std::string CSelectResult::GetValue(std::string p_sFieldName)
+{
+  return m_FieldValues[p_sFieldName];
+}
+
+bool CSelectResult::IsNull(std::string p_sFieldName)
+{
+  std::string sValue = GetValue(p_sFieldName);
+  if((sValue.length() == 0) || (sValue.compare("NULL") == 0))
+    return true;
+  else
+    return false;
+}
+
+
 unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName);
 unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL);
 
@@ -73,11 +88,11 @@ CContentDatabase* CContentDatabase::m_Instance = 0;
 CContentDatabase* CContentDatabase::Shared()
 {
 	if (m_Instance == 0)
-		m_Instance = new CContentDatabase();
+		m_Instance = new CContentDatabase(true);
 	return m_Instance;
 }
 
-CContentDatabase::CContentDatabase()
+CContentDatabase::CContentDatabase(bool p_bShared)
 { 
   stringstream sDbFile;
   sDbFile << CSharedConfig::Shared()->GetConfigDir() << "fuppes.db";  
@@ -86,14 +101,16 @@ CContentDatabase::CContentDatabase()
   m_nRowsReturned = 0;
   m_bIsRebuilding = false;
   	
-	if(m_Instance == this)
+	if(p_bShared) {            
     fuppesThreadInitMutex(&m_Mutex);
+  }
 }
  
 CContentDatabase::~CContentDatabase()
 {
-	if(m_Instance == this)
+	/*if(m_Instance == this) {                 
     fuppesThreadDestroyMutex(&m_Mutex);
+  }*/
 
   ClearResult();
   Close();
@@ -102,11 +119,6 @@ CContentDatabase::~CContentDatabase()
 std::string CContentDatabase::GetLibVersion()
 {
   return sqlite3_libversion();
-}
-
-std::string CSelectResult::GetValue(std::string p_sFieldName)
-{
-  return m_FieldValues[p_sFieldName];
 }
 
 bool CContentDatabase::Init(bool* p_bIsNewDB)
@@ -121,10 +133,6 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
     return false;
   }
   
-	// CREATE TABLE OBJECTS (TITLE TEXT, ID INTEGER PRIMARY KEY, PARENT_ID INTEGER, TYPE INTEGER, PATH TEXT, FILE_NAME TEXT, MD5 TEXT, MIME_TYPE TEXT, SIZE INTEGER, UPDATE_ID INTEGER);
-	
-	// CREATE TABLE OBJECT_DETAILS (AV_BITRATE INTEGER, AV_DURATION TEXT, A_ALBUM TEXT, A_ARTIST TEXT, A_CHANNELS INTEGER, A_DESCRIPTION TEXT, A_GENRE TEXT, A_SAMPLERATE INTEGER, A_TRACK_NO INTEGER, DATE TEXT, ID INTEGER, IV_HEIGHT INTEGER, IV_WIDTH INTEGER, SIZE INTEGER);
-	
   if(bIsNewDb)
   {
 		if(!Execute("CREATE TABLE OBJECTS ("
@@ -314,6 +322,9 @@ bool CContentDatabase::Execute(std::string p_sStatement)
 
 bool CContentDatabase::Select(std::string p_sStatement)
 {  
+  cout << "SELECT :: " << p_sStatement << endl;
+  fflush(stdout);
+   
   Lock();
   Open();  
   ClearResult();    
@@ -342,6 +353,10 @@ bool CContentDatabase::Select(std::string p_sStatement)
   
   Close();
 	Unlock();
+	
+  cout << "SELECT DONE" << endl << endl;
+  fflush(stdout);	
+	
   return bResult;
 }
 
@@ -365,7 +380,7 @@ void CContentDatabase::Next()
 
 
 void CContentDatabase::BuildDB()
-{
+{     
   m_bIsRebuilding = true;
   
   CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] creating database. this may take a while.", __FILE__, __LINE__, false);
