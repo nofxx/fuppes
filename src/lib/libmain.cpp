@@ -26,6 +26,8 @@
  INCLUDES
 ===============================================================================*/
 
+#include "../../include/fuppes.h"
+
 #include <iostream>
 #include "Common/Common.h"
 #include "SharedConfig.h"
@@ -156,7 +158,7 @@ bool CreateTrayIcon()
 /** main function
  *  @return int
  */
-int main(int argc, char* argv[])
+int libmain(int argc, char* argv[])
 {
   bool bDaemonMode = false;
   g_bExitApp = false;

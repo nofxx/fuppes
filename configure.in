@@ -2,12 +2,13 @@ dnl Process this file with autoconf to produce a configure script.
 dnl $Id: $
 
 AC_INIT([fuppes], [0.7.2a], [u-voelkel@users.sourceforge.net])
-AM_CONFIG_HEADER(config.h)
+AM_CONFIG_HEADER(src/config.h)
 AM_INIT_AUTOMAKE(fuppes, 0.7.2a, u-voelkel@users.sourceforge.net)
 
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
+AC_PROG_LIBTOOL
 
 dnl Checks for programs.
 
@@ -451,6 +452,8 @@ dnl summary
 echo ""
 echo "  SUMMARY"
 echo ""
+
+echo $host
 
 if test "x$transcoding" = "xyes"; then
 

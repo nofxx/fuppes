@@ -12,5 +12,7 @@ EXTRA_DIST = \
 	INSTALL\
 	NEWS\
 	TODO\
-	configure.in
-
+	configure.in\
+	Makefile.am\
+	src/Makefile.am\
+	include/fuppes.h

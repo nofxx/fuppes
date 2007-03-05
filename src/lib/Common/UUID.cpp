@@ -29,7 +29,7 @@
 #else
 
 #ifdef HAVE_CONFIG_H
-#include "../config.h"
+#include "../../config.h"
 #else
 #undef HAVE_UUID_UUID_H
 #endif

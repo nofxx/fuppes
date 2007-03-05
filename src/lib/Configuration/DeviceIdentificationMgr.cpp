@@ -22,6 +22,7 @@
  */
  
 #include "DeviceIdentificationMgr.h"
+#include "../SharedLog.h"
 #include <iostream>
 
 using namespace std;
