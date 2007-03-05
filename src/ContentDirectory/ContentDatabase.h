@@ -104,14 +104,16 @@ class CContentDatabase
     unsigned int  m_nRowsReturned;  
   
     void ClearResult();
-    void Lock();
-    void Unlock();
+
   
     void BuildDB();
     bool IsRebuilding() { return m_bIsRebuilding; };
   
 		fuppesThreadMutex m_Mutex;
   private:    
+		void Lock();
+    void Unlock();
+	
     void DbScanDir(std::string p_sDirectory, long long int p_nParentId);
     void BuildPlaylists();
     void ParsePlaylist(CSelectResult* pResult);

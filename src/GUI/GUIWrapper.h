@@ -34,7 +34,7 @@ typedef enum GUI_EVENT {
 class IGUIWrapper
 {
   public:
-    virtual void GUIEvent(GUI_EVENT pEvent);
+    virtual void GUIEvent(GUI_EVENT pEvent) = 0;
 };
 
 class IGUI
@@ -49,7 +49,7 @@ class IGUI
         m_pEventHandler->GUIEvent(pEvent);
     }
     
-    virtual void AddLogMsg(std::string p_sMessage);
+    virtual void AddLogMsg(std::string p_sMessage) = 0;
     
   private:
     IGUIWrapper* m_pEventHandler;    

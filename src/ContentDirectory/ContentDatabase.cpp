@@ -227,12 +227,16 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 
 void CContentDatabase::Lock()
 {
+  cout << "LOCK" << endl; fflush(stdout);
   fuppesThreadLockMutex(&CContentDatabase::Shared()->m_Mutex);
+	cout << "LOCKED" << endl; fflush(stdout);
 }
 
 void CContentDatabase::Unlock()
 {
+  cout << "UNLOCK" << endl; fflush(stdout);
   fuppesThreadUnlockMutex(&CContentDatabase::Shared()->m_Mutex);
+  cout << "UNLOCKED" << endl; fflush(stdout);
 }
 
 void CContentDatabase::ClearResult()
@@ -257,21 +261,27 @@ void CContentDatabase::ClearResult()
 
 bool CContentDatabase::Open()
 {  
+  cout << "OPEN" << endl; fflush(stdout);
   if(sqlite3_open(m_sDbFileName.c_str(), &m_pDbHandle)) {
     fprintf(stderr, "Can't create/open database: %s\n", sqlite3_errmsg(m_pDbHandle));
     sqlite3_close(m_pDbHandle);
     return false;
   }
-  return true;
+  cout << "OPENED" << endl; fflush(stdout);
+	return true;
 }
 
 void CContentDatabase::Close()
 {
+  cout << "CLOSE" << endl; fflush(stdout);
   sqlite3_close(m_pDbHandle);
+  cout << "CLOSED" << endl; fflush(stdout);
 }
 
 unsigned int CContentDatabase::Insert(std::string p_sStatement)
 {
+  cout << "INSERT :: " << p_sStatement << endl; fflush(stdout);
+
   Lock();
   Open();
 
@@ -296,6 +306,9 @@ unsigned int CContentDatabase::Insert(std::string p_sStatement)
 
   Close();
 	Unlock();
+	
+  cout << "INSERT DONE" << endl; fflush(stdout);
+	
   return nResult;  
 }
 
@@ -381,6 +394,9 @@ void CContentDatabase::Next()
 
 void CContentDatabase::BuildDB()
 {     
+  if(CContentDatabase::Shared()->IsRebuilding())
+	  return;
+
   m_bIsRebuilding = true;
   
   CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] creating database. this may take a while.", __FILE__, __LINE__, false);
@@ -393,6 +409,8 @@ void CContentDatabase::BuildDB()
 	CContentDatabase::Shared()->Execute("delete from object_details");
 
   
+	cout << "deleted" << endl; fflush(stdout);
+	
   for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
   {
     if(DirectoryExists(CSharedConfig::Shared()->GetSharedDir(i)))
@@ -409,9 +427,11 @@ void CContentDatabase::BuildDB()
         sSql << "'" << CSharedConfig::Shared()->GetSharedDir(i) << "', ";
         sSql << "'" << sFileName << "');";
         
-        CContentDatabase::Shared()->Lock();
-        long long int nRowId = CContentDatabase::Shared()->Insert(sSql.str());
-        CContentDatabase::Shared()->Unlock();
+				cout << sSql.str() << endl; fflush(stdout);
+				
+        //CContentDatabase::Shared()->Lock();
+        long long int nRowId = Insert(sSql.str());
+        //CContentDatabase::Shared()->Unlock();
         DbScanDir(CSharedConfig::Shared()->GetSharedDir(i), nRowId);
       /*}
       else
@@ -509,9 +529,9 @@ void CContentDatabase::DbScanDir(std::string p_sDirectory, long long int p_nPare
           sSql << "'" << sTmpFileName << "');";
             
           
-          CContentDatabase::Shared()->Lock();
-          long long int nRowId = CContentDatabase::Shared()->Insert(sSql.str());
-          CContentDatabase::Shared()->Unlock();
+          //CContentDatabase::Shared()->Lock();
+          long long int nRowId = Insert(sSql.str());
+          //CContentDatabase::Shared()->Unlock();
           if(nRowId == -1)
             cout << "ERROR: " << sSql.str() << endl;
           
@@ -717,8 +737,6 @@ unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL)
 
 void CContentDatabase::BuildPlaylists()
 {
-  this->Lock();
-  
   stringstream sGetPlaylists;
     sGetPlaylists << 
     "select     " << 
@@ -728,22 +746,18 @@ void CContentDatabase::BuildPlaylists()
     "where      " <<
     "  TYPE = 5 ";  
   
-  if(!this->Select(sGetPlaylists.str()))
-  {
-    this->Unlock();
+  if(!this->Select(sGetPlaylists.str())) {
     return;
   }
   
   CSelectResult* pResult = NULL;
-  while(!this->Eof())
-  {
+  while(!this->Eof()) {
     pResult = GetResult();    
     ParsePlaylist(pResult);    
     this->Next();
   }  
   
   this->ClearResult();
-  this->Unlock();
 }
 
 void CContentDatabase::ParsePlaylist(CSelectResult* pResult)

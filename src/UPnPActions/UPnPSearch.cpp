@@ -143,6 +143,22 @@ std::string CUPnPSearch::BuildSQL(bool p_bLimit)
 	}
 	
 	
+	/* XBox 360
+	
+	Request type	ContainerID	SearchCriteria
+List all albums								7																	(upnp:class = "object.container.album.musicAlbum")
+List contents of an album			The id of the album container			(upnp:class derivedfrom "object.item.audioItem"
+List all artists							6																	(upnp:class = "object.container.person.musicArtist")
+List all albums by an artist	1																	(upnp:class = "object.container.album.musicAlbum") and (upnp:artist = "artistname")
+List all playlists						F																	(upnp:class = "object.container.playlistContainer")
+List contents of a playlist		The id of the playlist						(upnp:class derivedfrom "object.item.audioItem")
+List all songs								4																	(upnp:class derivedfrom "object.item.audioItem")
+List all genres								5																	(upnp:class = "object.container.genre.musicGenre")
+List contents of a genre			The id of the genre								(upnp:class derivedfrom "object.item.audioItem")
+*/
+	
+	
+	
 	if(p_bLimit) {
 		if((m_nRequestedCount > 0) || (m_nStartingIndex > 0)) {
       sSql << " limit " << m_nStartingIndex << ", ";

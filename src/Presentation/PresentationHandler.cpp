@@ -222,7 +222,7 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
     sResult << GetPageFooter(nPresentationPage);
     
     pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    
-    pResult->SetContentType("text/html"); // HTTP_CONTENT_TYPE_TEXT_HTML
+    pResult->SetContentType("text/html; charset=\"utf-8\""); // HTTP_CONTENT_TYPE_TEXT_HTML
     pResult->SetContent(sResult.str());    
   }  
   else if(nPresentationPage == PRESENTATION_PAGE_UNKNOWN) 
@@ -452,10 +452,10 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
   //*p_psImgPath = "Status";
   
   //sResult
-  CContentDatabase::Shared()->Lock();
+  CContentDatabase* pDb = new CContentDatabase();
   std::stringstream sSQL;
   sSQL << "select TYPE, count(*) as VALUE from OBJECTS group by TYPE;";
-  CContentDatabase::Shared()->Select(sSQL.str());
+  pDb->Select(sSQL.str());
   int nType = 0;  
   
   // Database status
@@ -473,14 +473,14 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
       "</thead>" << endl << 
       "<tbody>" << endl;  
   
-  while (!CContentDatabase::Shared()->Eof())
+  while (!pDb->Eof())
   {
     sResult << "<tr>" << endl;
     
-    nType = atoi(CContentDatabase::Shared()->GetResult()->GetValue("TYPE").c_str());
+    nType = atoi(pDb->GetResult()->GetValue("TYPE").c_str());
     sResult << "<td>" << CFileDetails::Shared()->GetObjectTypeAsString(nType) << "</td>" << endl;
-    sResult << "<td>" << CContentDatabase::Shared()->GetResult()->GetValue("VALUE") << "</td>" << endl;
-    CContentDatabase::Shared()->Next();
+    sResult << "<td>" << pDb->GetResult()->GetValue("VALUE") << "</td>" << endl;
+    pDb->Next();
     
     sResult << "</tr>" << endl;
   }
@@ -489,8 +489,8 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
       "</tbody>" << endl <<   
     "</table>" << endl;
   
-  CContentDatabase::Shared()->ClearResult();
-  CContentDatabase::Shared()->Unlock();
+  pDb->ClearResult();
+  delete pDb;
   // end Database status
   
   

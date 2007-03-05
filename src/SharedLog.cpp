@@ -55,7 +55,7 @@ CSharedLog* CSharedLog::Shared()
 CSharedLog::CSharedLog()
 {
   m_bUseSyslog = false;
-  m_bGUILog    = CGUIWrapper::Shared()->HasGUI();
+  m_bGUILog    = false; //CGUIWrapper::Shared()->HasGUI();
 
   SetLogLevel(0, false);
   #ifndef DISABLELOG

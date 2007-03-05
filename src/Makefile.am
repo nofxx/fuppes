@@ -48,6 +48,7 @@ h_sources = \
   Transcoding/MpcWrapper.h\
   Transcoding/FlacWrapper.h\
   GUI/NotificationMgr.h\
+  GUI/GUIWrapper.h\
 	Configuration/DeviceSettings.h\
 	Configuration/DeviceIdentificationMgr.h\
 	XMSMediaReceiverRegistrar.h\
@@ -103,6 +104,7 @@ cpp_sources = \
   Transcoding/MpcWrapper.cpp\
   Transcoding/FlacWrapper.cpp\
   GUI/NotificationMgr.cpp\
+  GUI/GUIWrapper.cpp\
 	Configuration/DeviceSettings.cpp\
 	Configuration/DeviceIdentificationMgr.cpp\
 	XMSMediaReceiverRegistrar.cpp\

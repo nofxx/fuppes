@@ -178,8 +178,15 @@ void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
   // no encoder available
   if(!m_bLameAvailable && !m_bTwoLameAvailable)
   {
-    if(p_sHTMLVersion) {      
-      *p_sHTMLVersion = "<p>Neither LAME nor TwoLame found. Transcoding disabled!</p>";
+    if(p_sHTMLVersion) {
+		  stringstream sTmp;
+			sTmp << "<p>Neither LAME nor TwoLame found. Transcoding disabled!";
+			#ifdef WIN32
+      sTmp << "Get a copy of the lame_enc.dll and" << endl;
+      sTmp << "put it in the application directory." << endl;
+      #endif
+			sTmp << "</p>" << endl;
+      *p_sHTMLVersion = sTmp.str();;
     }
     else {    
       cout << endl;
