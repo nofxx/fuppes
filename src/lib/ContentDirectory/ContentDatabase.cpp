@@ -104,6 +104,9 @@ CContentDatabase::CContentDatabase(bool p_bShared)
 	if(p_bShared) {            
     fuppesThreadInitMutex(&m_Mutex);
   }
+    
+  if(FileExists(m_sDbFileName))
+    Open();
 }
  
 CContentDatabase::~CContentDatabase()
@@ -227,16 +230,16 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 
 void CContentDatabase::Lock()
 {
-  cout << "LOCK" << endl; fflush(stdout);
+  //cout << "LOCK" << endl; fflush(stdout);
   fuppesThreadLockMutex(&CContentDatabase::Shared()->m_Mutex);
-	cout << "LOCKED" << endl; fflush(stdout);
+	//cout << "LOCKED" << endl; fflush(stdout);
 }
 
 void CContentDatabase::Unlock()
 {
-  cout << "UNLOCK" << endl; fflush(stdout);
+  //cout << "UNLOCK" << endl; fflush(stdout);
   fuppesThreadUnlockMutex(&CContentDatabase::Shared()->m_Mutex);
-  cout << "UNLOCKED" << endl; fflush(stdout);
+  //cout << "UNLOCKED" << endl; fflush(stdout);
 }
 
 void CContentDatabase::ClearResult()
@@ -261,29 +264,29 @@ void CContentDatabase::ClearResult()
 
 bool CContentDatabase::Open()
 {  
-  cout << "OPEN" << endl; fflush(stdout);
+  //cout << "OPEN" << endl; fflush(stdout);
   if(sqlite3_open(m_sDbFileName.c_str(), &m_pDbHandle)) {
     fprintf(stderr, "Can't create/open database: %s\n", sqlite3_errmsg(m_pDbHandle));
     sqlite3_close(m_pDbHandle);
     return false;
   }
-  cout << "OPENED" << endl; fflush(stdout);
+  //cout << "OPENED" << endl; fflush(stdout);
 	return true;
 }
 
 void CContentDatabase::Close()
 {
-  cout << "CLOSE" << endl; fflush(stdout);
+  //cout << "CLOSE" << endl; fflush(stdout);
   sqlite3_close(m_pDbHandle);
-  cout << "CLOSED" << endl; fflush(stdout);
+  //cout << "CLOSED" << endl; fflush(stdout);
 }
 
 unsigned int CContentDatabase::Insert(std::string p_sStatement)
 {
-  cout << "INSERT :: " << p_sStatement << endl; fflush(stdout);
+  //cout << "INSERT :: " << p_sStatement << endl; fflush(stdout);
 
   Lock();
-  Open();
+  //Open();
 
   char* szErr = 0;
   
@@ -304,10 +307,10 @@ unsigned int CContentDatabase::Insert(std::string p_sStatement)
   if(nTrans != SQLITE_OK)
     fprintf(stderr, "CContentDatabase::Insert - commit :: SQL error: %s\n", szErr);       */ 
 
-  Close();
+  //Close();
 	Unlock();
 	
-  cout << "INSERT DONE" << endl; fflush(stdout);
+  //cout << "INSERT DONE" << endl; fflush(stdout);
 	
   return nResult;  
 }
@@ -315,7 +318,7 @@ unsigned int CContentDatabase::Insert(std::string p_sStatement)
 bool CContentDatabase::Execute(std::string p_sStatement)
 {
   Lock();
-  Open();
+  //Open();
 	bool bResult = false;
   char* szErr = 0;
 	
@@ -328,18 +331,17 @@ bool CContentDatabase::Execute(std::string p_sStatement)
     bResult = true;
   }
 	
-	Close();
+	//Close();
 	Unlock();
 	return bResult;
 }
 
 bool CContentDatabase::Select(std::string p_sStatement)
 {  
-  cout << "SELECT :: " << p_sStatement << endl;
-  fflush(stdout);
+  //cout << "SELECT :: " << p_sStatement << endl; fflush(stdout);
    
   Lock();
-  Open();  
+  //Open();  
   ClearResult();    
   bool bResult = true;
   
@@ -364,11 +366,10 @@ bool CContentDatabase::Select(std::string p_sStatement)
     bResult = false;
   }
   
-  Close();
+  //Close();
 	Unlock();
 	
-  cout << "SELECT DONE" << endl << endl;
-  fflush(stdout);	
+  //cout << "SELECT DONE" << endl << endl; fflush(stdout);	
 	
   return bResult;
 }

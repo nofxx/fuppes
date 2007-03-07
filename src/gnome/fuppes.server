@@ -1,0 +1,26 @@
+<oaf_info>
+<oaf_server iid="OAFIID:FuppesApplet_Factory" type="exe" location="/usr/libexec/fuppes-applet">
+
+        <oaf_attribute name="repo_ids" type="stringv">
+                <item value="IDL:Bonobo/GenericFactory:1.0"/>
+                <item value="IDL:Bonobo/Unknown:1.0"/>
+        </oaf_attribute>
+        
+        <oaf_attribute name="name" type="string" value="Fuppes Applet Factory"/>
+        <oaf_attribute name="description" type="string" value="Factory to create the fuppes applet"/>
+</oaf_server>
+
+<oaf_server iid="OAFIID:FuppesApplet" type="factory" location="OAFIID:FuppesApplet_Factory">
+
+        <oaf_attribute name="repo_ids" type="stringv">
+                <item value="IDL:GNOME/Vertigo/PanelAppletShell:1.0"/>
+                <item value="IDL:Bonobo/Control:1.0"/>
+                <item value="IDL:Bonobo/Unknown:1.0"/>
+        </oaf_attribute>
+        
+        <oaf_attribute name="name" type="string" value="FUPPES UPnP Server"/>
+        <oaf_attribute name="description" type="string" value="the Free UPnP Entertainment Service Applet"/>
+        <oaf_attribute name="panel:category" type="string" value="Network"/>
+        <oaf_attribute name="panel:icon" type="string" value="/usr/share/pixmaps/fuppes.png"/>
+</oaf_server>
+</oaf_info>

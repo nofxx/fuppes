@@ -77,6 +77,8 @@ void SignalHandler(int p_nSignal)
 
 int main(int argc, char* argv[])
 {	
+  cout << "dahumm" << endl;
+    
   g_bExitApp = false;
 
   // install signal handler
@@ -117,9 +119,9 @@ int main(int argc, char* argv[])
         pFuppes->GetSSDPCtrl()->send_alive();
       else if (input == "b")
         pFuppes->GetSSDPCtrl()->send_byebye();
-      else if (input == "l")
-        CSharedLog::Shared()->ToggleLog();
-      else if (input == "h")
+      else */if (input == "l")
+        fuppes_inc_loglevel();
+     /* else if (input == "h")
         PrintHelp();
       else if (input == "i")
       {

@@ -66,6 +66,9 @@ int fuppes_stop();
 int fuppes_cleanup();
 
 
+void fuppes_set_loglevel(int n_log_level);
+void fuppes_inc_loglevel();
+
 #ifdef __cplusplus
 }
 #endif

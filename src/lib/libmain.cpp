@@ -194,13 +194,13 @@ int libmain(int argc, char* argv[])
   }
 
   // Setup winsockets	
-  #ifdef WIN32
+  /*#ifdef WIN32
   WSADATA wsa;
   WSAStartup(MAKEWORD(2,2), &wsa);
-  #endif
+  #endif*/
 
   // daemon process 
-  #ifndef WIN32
+  /*#ifndef WIN32
   if(bDaemonMode)
   {
     CSharedLog::Shared()->SetUseSyslog(true);
@@ -234,7 +234,7 @@ int libmain(int argc, char* argv[])
       close(STDERR_FILENO);
     }
   }
-  #endif
+  #endif*/
 
   /*#ifndef WIN32
   signal(SIGINT, SignalHandler);  // ctrl-c
@@ -268,11 +268,11 @@ int libmain(int argc, char* argv[])
   } */
 
   // init remaining stuff
-	#ifdef HAVE_IMAGEMAGICK
+	/*#ifdef HAVE_IMAGEMAGICK
 	cout << "wand genesis" << endl; fflush(stdout);
 	MagickWandGenesis();
 	cout << "wand done" << endl; fflush(stdout);
-  #endif
+  #endif*/
 
   //cout << "Webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
   cout << endl;
@@ -365,11 +365,11 @@ int libmain(int argc, char* argv[])
   delete CSharedLog::Shared();
 
   // uninit other stuff
-	#ifdef HAVE_IMAGEMAGICK
+	/*#ifdef HAVE_IMAGEMAGICK
 	cout << "wand terminus" << endl; fflush(stdout);
 	MagickWandTerminus();
 	cout << "wand terminus done" << endl; fflush(stdout);
-  #endif
+  #endif*/
 
   // cleanup winsockets
   /*#ifdef WIN32
@@ -382,7 +382,7 @@ int libmain(int argc, char* argv[])
 }
 
 
-static CFuppes* pFuppes = 0;
+CFuppes* pFuppes = 0;
 
 int fuppes_init()
 {
@@ -404,6 +404,10 @@ int fuppes_init()
   if(!CSharedConfig::Shared()->SetupConfig())
     return FUPPES_FALSE;
 
+	#ifdef HAVE_IMAGEMAGICK
+	MagickWandGenesis();
+  #endif    
+    
   return FUPPES_OK;
 }
 
@@ -411,6 +415,8 @@ int fuppes_start()
 {
   if(pFuppes)
     return FUPPES_FALSE;
+  
+    
     
   // create fuppes instance
   try {
@@ -436,10 +442,24 @@ int fuppes_stop()
 
 int fuppes_cleanup()
 {
+  #ifdef HAVE_IMAGEMAGICK	
+	MagickWandTerminus();
+  #endif
+    
   // cleanup winsockets
   #ifdef WIN32
   WSACleanup();
   #endif
   
   return FUPPES_OK;
+}
+
+void fuppes_set_loglevel(int n_log_level)
+{
+  CSharedLog::Shared()->SetLogLevel(n_log_level, false);
+}
+
+void fuppes_inc_loglevel()
+{
+  CSharedLog::Shared()->ToggleLog();
 }

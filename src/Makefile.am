@@ -9,7 +9,7 @@ bin_PROGRAMS = fuppes fuppesd
 fuppes_SOURCES = \
   console_main.cpp
 
-fuppes_LDADD = ./libfuppes.la
+fuppes_LDADD = ./libfuppes.a
 fuppes_LDFLAGS = \
   $(LIBNOTIFY_LIBS)\
   $(FUPPES_LIBS)\
@@ -24,7 +24,7 @@ fuppes_LDFLAGS = \
 fuppesd_SOURCES = \
   daemon_main.cpp
   
-fuppesd_LDADD = ./libfuppes.la
+fuppesd_LDADD = ./libfuppes.a
 fuppesd_LDFLAGS = \
   $(LIBNOTIFY_LIBS)\
   $(FUPPES_LIBS)\
@@ -35,10 +35,10 @@ fuppesd_LDFLAGS = \
   ${SQLITE3_LIBS}\
   ${TAGLIB_LIBS}
 
-#noinst_LTLIBRARIES = libfuppes.la
-lib_LTLIBRARIES = libfuppes.la
+noinst_LIBRARIES = libfuppes.a
+#lib_LTLIBRARIES = libfuppes.la
 
-libfuppes_la_SOURCES = \
+libfuppes_a_SOURCES = \
   lib/Common/Common.h\
   lib/Common/md5.h\
   lib/Common/UUID.h\
@@ -148,7 +148,7 @@ libfuppes_la_SOURCES = \
 
 
 #LDFLAGS
-libfuppes_la_LDFLAGS = \
+libfuppes_a_LDFLAGS = \
   $(LIBNOTIFY_LIBS)\
   $(FUPPES_LIBS)\
   ${PTHREAD_LIBS}\
