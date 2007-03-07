@@ -25,6 +25,8 @@
 #include "../../config.h"
 #endif
  
+#undef HAVE_FLAC
+
 #ifndef DISABLE_TRANSCODING
 #ifdef  HAVE_FLAC
  

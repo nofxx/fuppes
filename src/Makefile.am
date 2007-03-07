@@ -4,11 +4,12 @@
 INCLUDES = ${FUPPES_CFLAGS} ${LIBXML_CFLAGS} ${PCRE_CFLAGS} ${VORBISFILE_CFLAGS} ${TAGLIB_CFLAGS}
 
 
-bin_PROGRAMS = fuppes
+bin_PROGRAMS = fuppes fuppesd
+
 fuppes_SOURCES = \
   main.cpp
 
-fuppes_LDADD = ./libfuppes.a
+fuppes_LDADD = ./libfuppes.la
 fuppes_LDFLAGS = \
   $(LIBNOTIFY_LIBS)\
   $(FUPPES_LIBS)\
@@ -19,10 +20,25 @@ fuppes_LDFLAGS = \
   ${SQLITE3_LIBS}\
   ${TAGLIB_LIBS}
 
-noinst_LIBRARIES = libfuppes.a
-#lib_LTLIBRARIES = libfuppes.la
+#bin_PROGRAMS = fuppesd
+fuppesd_SOURCES = \
+  daemon_main.cpp
+  
+fuppesd_LDADD = ./libfuppes.la
+fuppesd_LDFLAGS = \
+  $(LIBNOTIFY_LIBS)\
+  $(FUPPES_LIBS)\
+  ${PTHREAD_LIBS}\
+  ${UUID_LIBS}\
+  ${LIBXML_LIBS}\
+	${PCRE_LIBS}\
+  ${SQLITE3_LIBS}\
+  ${TAGLIB_LIBS}
 
-h_sources = \
+#noinst_LTLIBRARIES = libfuppes.la
+lib_LTLIBRARIES = libfuppes.la
+
+libfuppes_la_SOURCES = \
   lib/Common/Common.h\
   lib/Common/md5.h\
   lib/Common/UUID.h\
@@ -72,9 +88,7 @@ h_sources = \
 	lib/SharedConfig.h\
   lib/SharedLog.h\
 	lib/Fuppes.h\
-	lib/Common/RegEx.h	
-
-cpp_sources = \
+	lib/Common/RegEx.h\
   lib/Common/Common.cpp\
   lib/Common/md5.c\
   lib/Common/UUID.cpp\
@@ -130,11 +144,11 @@ cpp_sources = \
 	lib/Fuppes.cpp\
 	lib/libmain.cpp
 
-libfuppes_a_SOURCES = ${h_sources} ${cpp_sources}
-#libfuppes_la_SOURCES = ${h_sources} ${cpp_sources}
+#libfuppes_a_SOURCES = ${h_sources} ${cpp_sources}
+
 
 #LDFLAGS
-libfuppes_a_LDFLAGS = \
+libfuppes_la_LDFLAGS = \
   $(LIBNOTIFY_LIBS)\
   $(FUPPES_LIBS)\
   ${PTHREAD_LIBS}\

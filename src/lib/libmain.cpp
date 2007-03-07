@@ -35,11 +35,11 @@
 #include "Fuppes.h"
 #include "ContentDirectory/ContentDatabase.h"
 
-#ifndef WIN32
+/*#ifndef WIN32
 #include <fcntl.h>
 #include <signal.h>
 #include <termios.h>
-#endif
+#endif*/
 
 #ifdef WIN32
 #include <shellapi.h>
@@ -58,10 +58,10 @@
 
 using namespace std;
 
-bool g_bExitApp;
+//static bool g_bExitApp;
 
+/*
 #ifndef WIN32
-/* non-blocking getchar() */
 struct termios savetty;
 
 void unsetcbreak (void)
@@ -93,12 +93,12 @@ int fuppesGetch (void)
 	return -1;
 }
 #endif
+*/
 
-
-void SignalHandler(int p_nSignal)
+/*void SignalHandler(int p_nSignal)
 {  
   g_bExitApp = true;
-}
+}*/
 
 void PrintHelp()
 {
@@ -161,7 +161,7 @@ bool CreateTrayIcon()
 int libmain(int argc, char* argv[])
 {
   bool bDaemonMode = false;
-  g_bExitApp = false;
+  //g_bExitApp = false;
 
   if(argc > 1)
   {
@@ -236,7 +236,7 @@ int libmain(int argc, char* argv[])
   }
   #endif
 
-  #ifndef WIN32
+  /*#ifndef WIN32
   signal(SIGINT, SignalHandler);  // ctrl-c
   signal(SIGTERM, SignalHandler); // start-stop-daemon -v --stop -nfuppes
   #endif
@@ -265,7 +265,7 @@ int libmain(int argc, char* argv[])
     cout << ex.What() << endl;
     cout << "[exiting]" << endl;
     return 1;
-  }
+  } */
 
   // init remaining stuff
 	#ifdef HAVE_IMAGEMAGICK
@@ -274,7 +274,7 @@ int libmain(int argc, char* argv[])
 	cout << "wand done" << endl; fflush(stdout);
   #endif
 
-  cout << "Webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
+  //cout << "Webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
   cout << endl;
   cout << "r = rebuild database" << endl;
   cout << "i = print system info" << endl;
@@ -290,7 +290,7 @@ int libmain(int argc, char* argv[])
   // handle input
   if(!bDaemonMode)
   {
-    string input = "";
+    /*string input = "";
     #ifdef WIN32
     while(input != "q")
     #else
@@ -349,16 +349,16 @@ int libmain(int argc, char* argv[])
       else if (input == "c")
         CSharedConfig::Shared()->Refresh();
 
-    }
+    } */
   }
   else
   {
-    while(!g_bExitApp)
-      fuppesSleep(1000);
+    /*while(!g_bExitApp)
+      fuppesSleep(1000);*/
   }
 
   // destroy objects
-  delete pFuppes;
+  //delete pFuppes;
   //delete pPresentationHandler;
 
   delete CSharedConfig::Shared();
@@ -372,9 +372,9 @@ int libmain(int argc, char* argv[])
   #endif
 
   // cleanup winsockets
-  #ifdef WIN32
+  /*#ifdef WIN32
   WSACleanup();
-  #endif
+  #endif*/
 
   cout << "[FUPPES] exit" << endl;
   return 0;
@@ -386,23 +386,25 @@ static CFuppes* pFuppes = 0;
 
 int fuppes_init()
 {
-  // Setup winsockets	
+  // already initialized
+  if(pFuppes)
+    return FUPPES_FALSE;
+
+  cout << "            FUPPES - " << CSharedConfig::Shared()->GetAppVersion() << endl;
+  cout << "    the Free UPnP Entertainment Service" << endl;
+  cout << "       http://fuppes.sourceforge.net" << endl << endl;
+
+  // setup winsockets	
   #ifdef WIN32
   WSADATA wsa;
   WSAStartup(MAKEWORD(2,2), &wsa);
   #endif    
     
-  //cout << "FUPPES INIT" << endl;
-    
-  // already initialized
-  if(pFuppes)
-    return FUPPES_FALSE;
-    
   // init config
   if(!CSharedConfig::Shared()->SetupConfig())
     return FUPPES_FALSE;
 
-  return FUPPES_TRUE;
+  return FUPPES_OK;
 }
 
 int fuppes_start()
@@ -414,7 +416,7 @@ int fuppes_start()
   try {
     pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUUID());
     CSharedConfig::Shared()->AddFuppesInstance(pFuppes);
-    return FUPPES_TRUE;
+    return FUPPES_OK;
   }
   catch(EException ex) {
     cout << ex.What() << endl;
@@ -429,7 +431,7 @@ int fuppes_stop()
     return FUPPES_FALSE;
     
   delete pFuppes;
-  return FUPPES_TRUE;
+  return FUPPES_OK;
 }
 
 int fuppes_cleanup()
@@ -438,4 +440,6 @@ int fuppes_cleanup()
   #ifdef WIN32
   WSACleanup();
   #endif
+  
+  return FUPPES_OK;
 }

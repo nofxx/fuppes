@@ -453,7 +453,7 @@ echo ""
 echo "  SUMMARY"
 echo ""
 
-echo $host
+#echo $host
 
 if test "x$transcoding" = "xyes"; then
 
