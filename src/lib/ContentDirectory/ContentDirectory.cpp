@@ -684,10 +684,10 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter, CSelectRe
     switch(p_nObjectType)
     {
       case ITEM_AUDIO_ITEM_MUSIC_TRACK:
-           cout << "BUILD ITEM_AUDIO_ITEM_MUSIC_TRACK DESCRIPT" << endl;
+           //cout << "BUILD ITEM_AUDIO_ITEM_MUSIC_TRACK DESCRIPT" << endl;
   fflush(stdout);
         BuildAudioItemDescription(pWriter, pSQLResult, pUPnPBrowse, szObjId);
-        cout << "BUILD ITEM_AUDIO_ITEM_MUSIC_TRACK DESCRIPT DONE" << endl;
+        //cout << "BUILD ITEM_AUDIO_ITEM_MUSIC_TRACK DESCRIPT DONE" << endl;
   fflush(stdout);
         break;
       case ITEM_AUDIO_ITEM_AUDIO_BROADCAST:
@@ -710,7 +710,7 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter, CSelectRe
   /* end item */
   xmlTextWriterEndElement(pWriter);
   
-  cout << "BUILD ITEM DESCRIPT DONE" << endl;
+  //cout << "BUILD ITEM DESCRIPT DONE" << endl;
   fflush(stdout);
 }
   
@@ -719,11 +719,7 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
                                                   CSelectResult* pSQLResult,
                                                   CUPnPAction*  pUPnPBrowse,
                                                   std::string p_sObjectID)
-{
-  cout << "1" << endl; fflush(stdout);                                                  
-     
-  cout << "1a" << pSQLResult->GetValue("TITLE") << "a" << endl; fflush(stdout);       
-                                                  
+{                                              
   // title
   xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
     // trim filename

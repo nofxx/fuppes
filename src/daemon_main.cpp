@@ -60,9 +60,9 @@ int main(int argc, char* argv[])
   // child process
   else if(pid == 0) {
     //cout << "child process" << endl;
-    //close(STDIN_FILENO);
-    //close(STDOUT_FILENO);
-    //close(STDERR_FILENO);
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
   }
     
   // install signal handler
