@@ -7,7 +7,7 @@ INCLUDES = ${FUPPES_CFLAGS} ${LIBXML_CFLAGS} ${PCRE_CFLAGS} ${VORBISFILE_CFLAGS}
 bin_PROGRAMS = fuppes fuppesd
 
 fuppes_SOURCES = \
-  main.cpp
+  console_main.cpp
 
 fuppes_LDADD = ./libfuppes.la
 fuppes_LDFLAGS = \
