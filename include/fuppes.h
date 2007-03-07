@@ -5,7 +5,14 @@
 extern "C" {
 #endif
 
-int libmain(int argc, char* argv[]);
+#define FUPPES_TRUE  0
+#define FUPPES_FALSE 1
+
+int fuppes_init();
+int fuppes_start();
+int fuppes_stop();
+int fuppes_cleanup();
+
 
 #ifdef __cplusplus
 }

@@ -381,3 +381,61 @@ int libmain(int argc, char* argv[])
 
 }
 
+
+static CFuppes* pFuppes = 0;
+
+int fuppes_init()
+{
+  // Setup winsockets	
+  #ifdef WIN32
+  WSADATA wsa;
+  WSAStartup(MAKEWORD(2,2), &wsa);
+  #endif    
+    
+  //cout << "FUPPES INIT" << endl;
+    
+  // already initialized
+  if(pFuppes)
+    return FUPPES_FALSE;
+    
+  // init config
+  if(!CSharedConfig::Shared()->SetupConfig())
+    return FUPPES_FALSE;
+
+  return FUPPES_TRUE;
+}
+
+int fuppes_start()
+{
+  if(pFuppes)
+    return FUPPES_FALSE;
+    
+  // create fuppes instance
+  try {
+    pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUUID());
+    CSharedConfig::Shared()->AddFuppesInstance(pFuppes);
+    return FUPPES_TRUE;
+  }
+  catch(EException ex) {
+    cout << ex.What() << endl;
+    cout << "[exiting]" << endl;
+    return FUPPES_FALSE;
+  }  
+}
+
+int fuppes_stop()
+{
+  if(!pFuppes)
+    return FUPPES_FALSE;
+    
+  delete pFuppes;
+  return FUPPES_TRUE;
+}
+
+int fuppes_cleanup()
+{
+  // cleanup winsockets
+  #ifdef WIN32
+  WSACleanup();
+  #endif
+}

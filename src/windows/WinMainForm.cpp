@@ -22,9 +22,6 @@
  */
 
 #include "WinMainForm.h"
-#include "../Common/Common.h"
-#include "../SharedConfig.h"
-#include "../Fuppes.h"
 
 #include <sstream>
 
@@ -58,8 +55,9 @@ CMainForm::CMainForm(HINSTANCE hInstance)
   wincl.hbrBackground = (HBRUSH) COLOR_BACKGROUND;
 
   // Register the window class, and if it fails quit the program 
-  if (!RegisterClassEx (&wincl))
-      throw EException("RegisterClassEx()", __FILE__, __LINE__);                      
+  RegisterClassEx(&wincl);
+  /*if(!RegisterClassEx(&wincl))
+    throw EException("RegisterClassEx()", __FILE__, __LINE__);                      */
         
   /* The class is registered, let's create the program*/
   hWnd = CreateWindowEx (
@@ -194,18 +192,18 @@ void CMainForm::OnTrayIconLButtonUp()
       break;
     case 2:
       if(MessageBox(hWnd, "Rebuild database?", "FUPPES 0.7.2-dev", MB_ICONQUESTION | MB_YESNO) == IDYES) {
-        RaiseEvent(EVT_REBUILD_DB);
+        //RaiseEvent(EVT_REBUILD_DB);
       }               
       break;
     case 3:
-      sTmp << "http://" << CSharedConfig::Shared()->GetFuppesInstance(0)->GetHTTPServerURL();
+      //sTmp << "http://" << CSharedConfig::Shared()->GetFuppesInstance(0)->GetHTTPServerURL();
       ShellExecute(hWnd, "open", sTmp.str().c_str(), NULL, NULL, SW_NORMAL);
       sTmp.str("");
       break;
   }
 }
 
-void CMainForm::AddLogMsg(std::string p_sMessage)
+/*void CMainForm::AddLogMsg(std::string p_sMessage)
 {
  // MessageBox(hWnd, p_sMessage.c_str(), "log", MB_ICONQUESTION | MB_OK);
-}
+}*/

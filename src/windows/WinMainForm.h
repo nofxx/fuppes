@@ -22,9 +22,9 @@
  */
 
 #include <windows.h>
-#include "GUIWrapper.h"
+//#include "GUIWrapper.h"
 
-class CMainForm: public IGUI
+class CMainForm //: public IGUI
 {
   public:
     CMainForm(HINSTANCE hInstance);
@@ -44,7 +44,7 @@ class CMainForm: public IGUI
       
     // virtual interface functions
     
-    void AddLogMsg(std::string p_sMessage);
+    //void AddLogMsg(std::string p_sMessage);
     
       
   private:    

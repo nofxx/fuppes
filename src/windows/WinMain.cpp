@@ -22,47 +22,33 @@
  */
  
 #include <windows.h>
+#include <iostream>
 
-#include "Common/Common.h"
-#include "SharedConfig.h"
-#include "Fuppes.h"
+#include "../../include/fuppes.h"
+#include "WinMainForm.h"
 
-#include "GUI/GUIWrapper.h"
-#include "GUI/WinMainForm.h"
+using namespace std;
 
 void ShowTrayIcon(bool b_Visible, HICON pIcon, HWND pForm);
 
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgument, int nWindowStyle)
-{
+{  
   MSG messages;
-
   CMainForm* pForm = new CMainForm(hInstance);
-  CGUIWrapper::Shared()->SetGUI(pForm);
 
-  // init wsock
-  WSADATA wsa;
-  WSAStartup(MAKEWORD(2,2), &wsa);
-
-  // init config
-  CSharedConfig::Shared()->SetupConfig();
-    
-  // create main fuppes object
-  CFuppes* pFuppes = NULL;
-  try {
-    pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUUID());
-    CSharedConfig::Shared()->AddFuppesInstance(pFuppes);
-  }
-  catch(EException ex) {
-    MessageBox(NULL, "error", ex.What().c_str(), MB_OK);
-    cout << ex.What() << endl;
-    cout << "[exiting]" << endl;
-    return 1;
-  }
-
-  // everything up and running
-  // let's display the tray icon
   pForm->ShowTrayIcon();
 
+  if(fuppes_init() == FUPPES_FALSE) {
+    MessageBox(NULL, "Error 0", "FUPPES 0.7.2-dev", MB_OK);
+    return 1;    
+  }
+    
+  //fuppes_start();
+  if(fuppes_start() == FUPPES_FALSE) {
+    MessageBox(NULL, "Error 1", "FUPPES 0.7.2-dev", MB_OK);
+    return 1;
+  }
+  
   // Run the message loop. It will run until GetMessage() returns 0
   while (GetMessage (&messages, NULL, 0, 0)) {
    // Translate virtual-key messages into character messages
@@ -72,14 +58,11 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgu
   }
 
   // cleanup
-  delete pFuppes;
-  delete CSharedConfig::Shared();
+  fuppes_stop();
+  fuppes_cleanup();
       
   pForm->HideTrayIcon();
   delete pForm;
-
-  // uninit wsock
-  WSACleanup();
 
   return messages.wParam;
 }

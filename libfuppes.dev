@@ -1,8 +1,8 @@
 [Project]
-FileName=fuppes.dev
-Name=fuppes
-UnitCount=3
-Type=0
+FileName=libfuppes.dev
+Name=libfuppes
+UnitCount=104
+Type=3
 Ver=1
 ObjFiles=
 Includes=C:\src\flac-1.1.2\include;C:\src\sqlite-source-3_3_7;C:\src\libmpcdec-1.2.2\include;C:\src\pcre-6.4-1\include;C:\src\include;C:\src\include\libtwolame
@@ -12,28 +12,28 @@ ResourceIncludes=
 MakeIncludes=
 Compiler=_@@_
 CppCompiler=_@@_
-Linker=../../lib/libxml2.a_@@_../../pcre-6.4-1/lib/libpcre.dll.a_@@_../../lib/iconv.lib_@@_../../lib/libole32.a_@@_../../../Dev-Cpp/lib/libws2_32.a_@@_../../sqlite-source-3_3_13/libsqlite3.a_@@__@@_win32/liblibfuppes.a_@@_
+Linker=../../lib/libxml2.a_@@_../../pcre-6.4-1/lib/libpcre.dll.a_@@_../../lib/iconv.lib_@@_../../lib/libole32.a_@@_../../../Dev-Cpp/lib/libws2_32.a_@@_../../sqlite-source-3_3_13/libsqlite3.a_@@_--export-all-symbols_@@_
 IsCpp=1
-Icon=fuppes.ico
+Icon=
 ExeOutput=win32
 ObjectOutput=
 OverrideBuildCmd=0
-OverrideOutputName=fuppes.exe
+OverrideOutputName=libfuppes.dll
 HostApplication=
-Folders=
+Folders=Common,Configuration,ConnectionManager,ContentDirectory,GENA,GUI,HTTP,Presentation,Presentation/Images,SSDP,Transcoding,UPnPActions
 CommandLine=
 UseCustomMakefile=0
 CustomMakefile=
 IncludeVersionInfo=1
-SupportXPThemes=1
+SupportXPThemes=0
 CompilerSet=0
 CompilerSettings=00000000001000000000c0
 OverrideOutput=0
 
 [Unit6]
-FileName=src\MessageBase.h
+FileName=src\lib\MediaServer.h
 CompileCpp=1
-Folder=fuppes
+Folder=libfuppes
 Compile=1
 Link=1
 Priority=1000
@@ -41,9 +41,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit8]
-FileName=src\SharedConfig.h
+FileName=src\lib\MessageBase.h
 CompileCpp=1
-Folder=fuppes
+Folder=libfuppes
 Compile=1
 Link=1
 Priority=1000
@@ -54,7 +54,7 @@ BuildCmd=
 Major=0
 Minor=7
 Release=2
-Build=266
+Build=251
 LanguageID=1033
 CharsetID=1252
 CompanyName=Ulrich Völkel
@@ -63,15 +63,15 @@ FileDescription=A Free Universal Plug and Play Media Server
 InternalName=fuppes
 LegalCopyright=Ulrich Völkel
 LegalTrademarks=
-OriginalFilename=fuppes.exe
+OriginalFilename=
 ProductName=Free UPnP Entertainment Service
 ProductVersion=0.7.2
 AutoIncBuildNr=1
 
 [Unit10]
-FileName=src\SharedLog.h
+FileName=src\lib\SharedConfig.h
 CompileCpp=1
-Folder=fuppes
+Folder=libfuppes
 Compile=1
 Link=1
 Priority=1000
@@ -79,9 +79,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit11]
-FileName=src\UPnPBase.cpp
+FileName=src\lib\SharedLog.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=libfuppes
 Compile=1
 Link=1
 Priority=1000
@@ -89,9 +89,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit12]
-FileName=src\UPnPBase.h
+FileName=src\lib\SharedLog.h
 CompileCpp=1
-Folder=fuppes
+Folder=libfuppes
 Compile=1
 Link=1
 Priority=1000
@@ -99,9 +99,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit13]
-FileName=src\UPnPDevice.cpp
+FileName=src\lib\UPnPBase.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=libfuppes
 Compile=1
 Link=1
 Priority=1000
@@ -109,9 +109,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit17]
-FileName=src\ContentDirectory\ContentDirectory.h
+FileName=src\lib\UPnPService.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=libfuppes
 Compile=1
 Link=1
 Priority=1000
@@ -119,9 +119,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit20]
-FileName=src\Presentation\PresentationHandler.cpp
+FileName=src\lib\Common\UUID.h
 CompileCpp=1
-Folder=fuppes
+Folder=Common
 Compile=1
 Link=1
 Priority=1000
@@ -129,9 +129,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit21]
-FileName=src\Presentation\Images\fuppes_small_png.cpp
+FileName=src\lib\Common\Common.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=Common
 Compile=1
 Link=1
 Priority=1000
@@ -139,9 +139,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit23]
-FileName=src\Transcoding\FlacWrapper.h
+FileName=src\lib\Common\md5.c
 CompileCpp=1
-Folder=fuppes
+Folder=Common
 Compile=1
 Link=1
 Priority=1000
@@ -149,9 +149,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit24]
-FileName=src\Transcoding\LameWrapper.cpp
+FileName=src\lib\Common\md5.h
 CompileCpp=1
-Folder=fuppes
+Folder=Common
 Compile=1
 Link=1
 Priority=1000
@@ -159,9 +159,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit27]
-FileName=src\Transcoding\MpcWrapper.h
+FileName=src\lib\Common\Timer.h
 CompileCpp=1
-Folder=fuppes
+Folder=Common
 Compile=1
 Link=1
 Priority=1000
@@ -169,9 +169,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit28]
-FileName=src\Transcoding\VorbisWrapper.cpp
+FileName=src\lib\Common\UUID.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=Common
 Compile=1
 Link=1
 Priority=1000
@@ -179,9 +179,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit29]
-FileName=src\Transcoding\FlacWrapper.cpp
+FileName=src\lib\HTTP\HTTPServer.h
 CompileCpp=1
-Folder=fuppes
+Folder=HTTP
 Compile=1
 Link=1
 Priority=1000
@@ -189,9 +189,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit30]
-FileName=src\UPnPActions\UPnPBrowse.h
+FileName=src\lib\HTTP\CommonFunctions.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=HTTP
 Compile=1
 Link=1
 Priority=1000
@@ -199,9 +199,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit31]
-FileName=src\Transcoding\WrapperBase.h
+FileName=src\lib\HTTP\CommonFunctions.h
 CompileCpp=1
-Folder=fuppes
+Folder=HTTP
 Compile=1
 Link=1
 Priority=1000
@@ -209,9 +209,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit32]
-FileName=src\ContentDirectory\ContentDatabase.cpp
+FileName=src\lib\HTTP\HTTPClient.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=HTTP
 Compile=1
 Link=1
 Priority=1000
@@ -219,9 +219,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit33]
-FileName=src\ContentDirectory\ContentDatabase.h
+FileName=src\lib\HTTP\HTTPClient.h
 CompileCpp=1
-Folder=fuppes
+Folder=HTTP
 Compile=1
 Link=1
 Priority=1000
@@ -229,9 +229,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit34]
-FileName=src\ContentDirectory\FileDetails.cpp
+FileName=src\lib\HTTP\HTTPMessage.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=HTTP
 Compile=1
 Link=1
 Priority=1000
@@ -239,9 +239,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit36]
-FileName=src\UPnPActions\UPnPBrowse.cpp
+FileName=src\lib\HTTP\HTTPParser.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=HTTP
 Compile=1
 Link=1
 Priority=1000
@@ -249,9 +249,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit37]
-FileName=src\ConnectionManager\ConnectionManager.h
+FileName=src\lib\HTTP\HTTPParser.h
 CompileCpp=1
-Folder=fuppes
+Folder=HTTP
 Compile=1
 Link=1
 Priority=1000
@@ -259,9 +259,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit39]
-FileName=src\UPnPService.cpp
+FileName=src\lib\HTTP\HTTPRequestHandler.h
 CompileCpp=1
-Folder=fuppes
+Folder=HTTP
 Compile=1
 Link=1
 Priority=1000
@@ -269,9 +269,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit42]
-FileName=src\HTTP\HTTPServer.h
+FileName=src\lib\Configuration\DeviceIdentificationMgr.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=Configuration
 Compile=1
 Link=1
 Priority=1000
@@ -279,9 +279,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit44]
-FileName=src\HTTP\HTTPMessage.cpp
+FileName=src\lib\Configuration\DeviceSettings.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=Configuration
 Compile=1
 Link=1
 Priority=1000
@@ -289,9 +289,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit45]
-FileName=src\HTTP\HTTPMessage.h
+FileName=src\lib\ConnectionManager\ConnectionManagerDescription.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=ConnectionManager
 Compile=1
 Link=1
 Priority=1000
@@ -299,9 +299,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit47]
-FileName=src\HTTP\HTTPRequestHandler.h
+FileName=src\lib\ConnectionManager\ConnectionManager.h
 CompileCpp=1
-Folder=fuppes
+Folder=ConnectionManager
 Compile=1
 Link=1
 Priority=1000
@@ -309,9 +309,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit49]
-FileName=src\HTTP\HTTPClient.cpp
+FileName=src\lib\ContentDirectory\ContentDatabase.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=ContentDirectory
 Compile=1
 Link=1
 Priority=1000
@@ -319,9 +319,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit50]
-FileName=src\Presentation\Images\header_gradient_small_png.cpp
+FileName=src\lib\ContentDirectory\ContentDatabase.h
 CompileCpp=1
-Folder=fuppes
+Folder=ContentDirectory
 Compile=1
 Link=1
 Priority=1000
@@ -329,9 +329,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit51]
-FileName=src\Presentation\Images\header_gradient_png.cpp
+FileName=src\lib\ContentDirectory\ContentDirectory.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=ContentDirectory
 Compile=1
 Link=1
 Priority=1000
@@ -339,9 +339,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit52]
-FileName=src\SSDP\UDPSocket.h
+FileName=src\lib\ContentDirectory\ContentDirectory.h
 CompileCpp=1
-Folder=fuppes
+Folder=ContentDirectory
 Compile=1
 Link=1
 Priority=1000
@@ -349,9 +349,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit53]
-FileName=src\SSDP\MSearchSession.h
+FileName=src\lib\ContentDirectory\ContentDirectoryDescription.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=ContentDirectory
 Compile=1
 Link=1
 Priority=1000
@@ -359,9 +359,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit54]
-FileName=src\SSDP\NotifyMsgFactory.cpp
+FileName=src\lib\ContentDirectory\FileDetails.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=ContentDirectory
 Compile=1
 Link=1
 Priority=1000
@@ -369,9 +369,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit55]
-FileName=src\SSDP\NotifyMsgFactory.h
+FileName=src\lib\ContentDirectory\FileDetails.h
 CompileCpp=1
-Folder=fuppes
+Folder=ContentDirectory
 Compile=1
 Link=1
 Priority=1000
@@ -379,9 +379,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit56]
-FileName=src\SSDP\SSDPCtrl.cpp
+FileName=src\lib\ContentDirectory\PlaylistFactory.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=ContentDirectory
 Compile=1
 Link=1
 Priority=1000
@@ -389,9 +389,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit57]
-FileName=src\SSDP\SSDPCtrl.h
+FileName=src\lib\GENA\SubscriptionMgr.h
 CompileCpp=1
-Folder=fuppes
+Folder=GENA
 Compile=1
 Link=1
 Priority=1000
@@ -399,9 +399,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit2]
-FileName=src\windows\WinMainForm.h
+FileName=src\lib\Fuppes.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=libfuppes
 Compile=1
 Link=1
 Priority=1000
@@ -409,9 +409,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit4]
-FileName=src\MediaServer.h
+FileName=src\lib\libmain.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=libfuppes
 Compile=1
 Link=1
 Priority=1000
@@ -419,9 +419,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit5]
-FileName=src\MessageBase.cpp
+FileName=src\lib\MediaServer.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=libfuppes
 Compile=1
 Link=1
 Priority=1000
@@ -429,9 +429,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit7]
-FileName=src\SharedConfig.cpp
+FileName=src\lib\MessageBase.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=libfuppes
 Compile=1
 Link=1
 Priority=1000
@@ -439,9 +439,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit9]
-FileName=src\SharedLog.cpp
+FileName=src\lib\SharedConfig.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=libfuppes
 Compile=1
 Link=1
 Priority=1000
@@ -449,9 +449,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit14]
-FileName=src\UPnPDevice.h
+FileName=src\lib\UPnPBase.h
 CompileCpp=1
-Folder=fuppes
+Folder=libfuppes
 Compile=1
 Link=1
 Priority=1000
@@ -459,9 +459,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit15]
-FileName=src\UPnPService.h
+FileName=src\lib\UPnPDevice.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=libfuppes
 Compile=1
 Link=1
 Priority=1000
@@ -469,9 +469,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit16]
-FileName=src\ContentDirectory\ContentDirectory.cpp
+FileName=src\lib\UPnPDevice.h
 CompileCpp=1
-Folder=fuppes
+Folder=libfuppes
 Compile=1
 Link=1
 Priority=1000
@@ -479,19 +479,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit18]
-FileName=src\Presentation\Stylesheet.h
+FileName=src\lib\UPnPService.h
 CompileCpp=1
-Folder=fuppes
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit19]
-FileName=src\Presentation\PresentationHandler.h
-CompileCpp=1
-Folder=fuppes
+Folder=libfuppes
 Compile=1
 Link=1
 Priority=1000
@@ -499,9 +489,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit22]
-FileName=src\Transcoding\VorbisWrapper.h
+FileName=src\lib\Common\Common.h
 CompileCpp=1
-Folder=fuppes
+Folder=Common
 Compile=1
 Link=1
 Priority=1000
@@ -509,9 +499,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit25]
-FileName=src\Transcoding\LameWrapper.h
+FileName=src\lib\Common\RegEx.h
 CompileCpp=1
-Folder=fuppes
+Folder=Common
 Compile=1
 Link=1
 Priority=1000
@@ -519,9 +509,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit26]
-FileName=src\Transcoding\MpcWrapper.cpp
+FileName=src\lib\Common\Timer.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=Common
 Compile=1
 Link=1
 Priority=1000
@@ -529,9 +519,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit35]
-FileName=src\ContentDirectory\FileDetails.h
+FileName=src\lib\HTTP\HTTPMessage.h
 CompileCpp=1
-Folder=fuppes
+Folder=HTTP
 Compile=1
 Link=1
 Priority=1000
@@ -539,9 +529,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit38]
-FileName=src\ConnectionManager\ConnectionManager.cpp
+FileName=src\lib\HTTP\HTTPRequestHandler.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=HTTP
 Compile=1
 Link=1
 Priority=1000
@@ -549,9 +539,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit40]
-FileName=src\ContentDirectory\ContentDirectoryDescription.cpp
+FileName=src\lib\HTTP\HTTPServer.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=HTTP
 Compile=1
 Link=1
 Priority=1000
@@ -559,9 +549,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit43]
-FileName=src\HTTP\HTTPClient.h
+FileName=src\lib\Configuration\DeviceIdentificationMgr.h
 CompileCpp=1
-Folder=fuppes
+Folder=Configuration
 Compile=1
 Link=1
 Priority=1000
@@ -569,9 +559,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit46]
-FileName=src\HTTP\HTTPRequestHandler.cpp
+FileName=src\lib\ConnectionManager\ConnectionManager.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=ConnectionManager
 Compile=1
 Link=1
 Priority=1000
@@ -579,9 +569,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit48]
-FileName=src\HTTP\HTTPServer.cpp
+FileName=src\lib\ContentDirectory\PlaylistFactory.h
 CompileCpp=1
-Folder=fuppes
+Folder=ContentDirectory
 Compile=1
 Link=1
 Priority=1000
@@ -589,9 +579,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit58]
-FileName=src\SSDP\SSDPMessage.cpp
+FileName=src\lib\GENA\EventNotification.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=GENA
 Compile=1
 Link=1
 Priority=1000
@@ -599,9 +589,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit59]
-FileName=src\SSDP\SSDPMessage.h
+FileName=src\lib\GENA\EventNotification.h
 CompileCpp=1
-Folder=fuppes
+Folder=GENA
 Compile=1
 Link=1
 Priority=1000
@@ -609,9 +599,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit60]
-FileName=src\SSDP\UDPSocket.cpp
+FileName=src\lib\GENA\SubscriptionMgr.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=GENA
 Compile=1
 Link=1
 Priority=1000
@@ -619,9 +609,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit61]
-FileName=src\SSDP\MSearchSession.cpp
+FileName=src\lib\SSDP\UDPSocket.h
 CompileCpp=1
-Folder=fuppes
+Folder=SSDP
 Compile=1
 Link=1
 Priority=1000
@@ -629,9 +619,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit62]
-FileName=src\Transcoding\TranscodingCache.cpp
+FileName=src\lib\SSDP\MSearchSession.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=SSDP
 Compile=1
 Link=1
 Priority=1000
@@ -639,9 +629,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit63]
-FileName=src\Transcoding\TranscodingCache.h
+FileName=src\lib\SSDP\MSearchSession.h
 CompileCpp=1
-Folder=fuppes
+Folder=SSDP
 Compile=1
 Link=1
 Priority=1000
@@ -649,9 +639,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit64]
-FileName=src\HTTP\HTTPParser.h
+FileName=src\lib\SSDP\NotifyMsgFactory.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=SSDP
 Compile=1
 Link=1
 Priority=1000
@@ -659,9 +649,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit65]
-FileName=src\HTTP\HTTPParser.cpp
+FileName=src\lib\SSDP\NotifyMsgFactory.h
 CompileCpp=1
-Folder=fuppes
+Folder=SSDP
 Compile=1
 Link=1
 Priority=1000
@@ -669,9 +659,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit66]
-FileName=src\ContentDirectory\PlaylistFactory.cpp
+FileName=src\lib\SSDP\SSDPCtrl.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=SSDP
 Compile=1
 Link=1
 Priority=1000
@@ -679,9 +669,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit67]
-FileName=src\ContentDirectory\PlaylistFactory.h
+FileName=src\lib\SSDP\SSDPCtrl.h
 CompileCpp=1
-Folder=fuppes
+Folder=SSDP
 Compile=1
 Link=1
 Priority=1000
@@ -689,9 +679,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit68]
-FileName=src\GENA\SubscriptionMgr.h
+FileName=src\lib\SSDP\SSDPMessage.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=SSDP
 Compile=1
 Link=1
 Priority=1000
@@ -699,9 +689,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit69]
-FileName=src\GENA\SubscriptionMgr.cpp
+FileName=src\lib\SSDP\SSDPMessage.h
 CompileCpp=1
-Folder=fuppes
+Folder=SSDP
 Compile=1
 Link=1
 Priority=1000
@@ -709,9 +699,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit70]
-FileName=src\Common\UUID.h
+FileName=src\lib\SSDP\UDPSocket.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=SSDP
 Compile=1
 Link=1
 Priority=1000
@@ -719,9 +709,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit71]
-FileName=src\Common\Common.cpp
+FileName=src\lib\Transcoding\WrapperBase.h
 CompileCpp=1
-Folder=fuppes
+Folder=Transcoding
 Compile=1
 Link=1
 Priority=1000
@@ -729,9 +719,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit72]
-FileName=src\Common\Common.h
+FileName=src\lib\Transcoding\FlacWrapper.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=Transcoding
 Compile=1
 Link=1
 Priority=1000
@@ -739,9 +729,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit73]
-FileName=src\Common\md5.c
+FileName=src\lib\Transcoding\FlacWrapper.h
 CompileCpp=1
-Folder=fuppes
+Folder=Transcoding
 Compile=1
 Link=1
 Priority=1000
@@ -749,9 +739,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit74]
-FileName=src\Common\md5.h
+FileName=src\lib\Transcoding\LameWrapper.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=Transcoding
 Compile=1
 Link=1
 Priority=1000
@@ -759,9 +749,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit75]
-FileName=src\Common\RegEx.h
+FileName=src\lib\Transcoding\LameWrapper.h
 CompileCpp=1
-Folder=fuppes
+Folder=Transcoding
 Compile=1
 Link=1
 Priority=1000
@@ -769,9 +759,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit76]
-FileName=src\Common\Timer.cpp
+FileName=src\lib\Transcoding\MpcWrapper.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=Transcoding
 Compile=1
 Link=1
 Priority=1000
@@ -779,9 +769,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit77]
-FileName=src\Common\Timer.h
+FileName=src\lib\Transcoding\MpcWrapper.h
 CompileCpp=1
-Folder=fuppes
+Folder=Transcoding
 Compile=1
 Link=1
 Priority=1000
@@ -789,9 +779,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit78]
-FileName=src\Common\UUID.cpp
+FileName=src\lib\Transcoding\TranscodingCache.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=Transcoding
 Compile=1
 Link=1
 Priority=1000
@@ -799,9 +789,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit79]
-FileName=src\UPnPActions\UPnPAction.h
+FileName=src\lib\Transcoding\TranscodingCache.h
 CompileCpp=1
-Folder=fuppes
+Folder=Transcoding
 Compile=1
 Link=1
 Priority=1000
@@ -809,9 +799,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit80]
-FileName=src\UPnPActions\UPnPActionFactory.cpp
+FileName=src\lib\Transcoding\TranscodingMgr.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=Transcoding
 Compile=1
 Link=1
 Priority=1000
@@ -819,9 +809,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit81]
-FileName=src\UPnPActions\UPnPActionFactory.h
+FileName=src\lib\Transcoding\TranscodingMgr.h
 CompileCpp=1
-Folder=fuppes
+Folder=Transcoding
 Compile=1
 Link=1
 Priority=1000
@@ -829,9 +819,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit82]
-FileName=src\Transcoding\TwoLameEncoder.cpp
+FileName=src\lib\Transcoding\TwoLameEncoder.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=Transcoding
 Compile=1
 Link=1
 Priority=1000
@@ -839,9 +829,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit41]
-FileName=src\ConnectionManager\ConnectionManagerDescription.cpp
+FileName=src\lib\Configuration\DeviceSettings.h
 CompileCpp=1
-Folder=fuppes
+Folder=Configuration
 Compile=1
 Link=1
 Priority=1000
@@ -849,9 +839,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit83]
-FileName=src\Transcoding\TwoLameEncoder.h
+FileName=src\lib\Transcoding\TwoLameEncoder.h
 CompileCpp=1
-Folder=fuppes
+Folder=Transcoding
 Compile=1
 Link=1
 Priority=1000
@@ -859,9 +849,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit84]
-FileName=src\Presentation\Images\device_type_unknown_png.cpp
+FileName=src\lib\Transcoding\VorbisWrapper.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=Transcoding
 Compile=1
 Link=1
 Priority=1000
@@ -869,9 +859,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit85]
-FileName=src\Presentation\Images\device_type_media_server_png.cpp
+FileName=src\lib\Transcoding\VorbisWrapper.h
 CompileCpp=1
-Folder=fuppes
+Folder=Transcoding
 Compile=1
 Link=1
 Priority=1000
@@ -879,9 +869,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit86]
-FileName=src\GENA\EventNotification.h
+FileName=src\lib\Presentation\Images\header_gradient_small_png.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=Presentation/Images
 Compile=1
 Link=1
 Priority=1000
@@ -889,9 +879,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit87]
-FileName=src\GENA\EventNotification.cpp
+FileName=src\lib\Presentation\Images\device_type_media_server_png.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=Presentation/Images
 Compile=1
 Link=1
 Priority=1000
@@ -899,9 +889,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit88]
-FileName=src\Transcoding\TranscodingMgr.cpp
+FileName=src\lib\Presentation\Images\device_type_unknown_png.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=Presentation/Images
 Compile=1
 Link=1
 Priority=1000
@@ -909,9 +899,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit89]
-FileName=src\Transcoding\TranscodingMgr.h
+FileName=src\lib\Presentation\Images\fuppes_small_png.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=Presentation/Images
 Compile=1
 Link=1
 Priority=1000
@@ -919,9 +909,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit90]
-FileName=src\GUI\NotificationMgr.cpp
+FileName=src\lib\Presentation\Images\header_gradient_png.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=Presentation/Images
 Compile=1
 Link=1
 Priority=1000
@@ -929,9 +919,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit91]
-FileName=src\GUI\NotificationMgr.h
+FileName=src\lib\Presentation\Stylesheet.h
 CompileCpp=1
-Folder=fuppes
+Folder=Presentation
 Compile=1
 Link=1
 Priority=1000
@@ -939,9 +929,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit92]
-FileName=src\HTTP\CommonFunctions.cpp
+FileName=src\lib\Presentation\PresentationHandler.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=Presentation
 Compile=1
 Link=1
 Priority=1000
@@ -949,9 +939,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit93]
-FileName=src\HTTP\CommonFunctions.h
+FileName=src\lib\Presentation\PresentationHandler.h
 CompileCpp=1
-Folder=fuppes
+Folder=Presentation
 Compile=1
 Link=1
 Priority=1000
@@ -959,9 +949,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit94]
-FileName=src\Configuration\DeviceSettings.h
+FileName=src\lib\UPnPActions\UPnPSearch.h
 CompileCpp=1
-Folder=fuppes
+Folder=UPnPActions
 Compile=1
 Link=1
 Priority=1000
@@ -969,9 +959,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit96]
-FileName=src\Configuration\DeviceIdentificationMgr.h
+FileName=src\lib\UPnPActions\UPnPActionFactory.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=UPnPActions
 Compile=1
 Link=1
 Priority=1000
@@ -979,9 +969,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit97]
-FileName=src\Configuration\DeviceSettings.cpp
+FileName=src\lib\UPnPActions\UPnPActionFactory.h
 CompileCpp=1
-Folder=fuppes
+Folder=UPnPActions
 Compile=1
 Link=1
 Priority=1000
@@ -989,9 +979,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit98]
-FileName=src\UPnPActions\UPnPSearch.h
+FileName=src\lib\UPnPActions\UPnPBrowse.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=UPnPActions
 Compile=1
 Link=1
 Priority=1000
@@ -999,9 +989,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit99]
-FileName=src\UPnPActions\UPnPSearch.cpp
+FileName=src\lib\UPnPActions\UPnPBrowse.h
 CompileCpp=1
-Folder=fuppes
+Folder=UPnPActions
 Compile=1
 Link=1
 Priority=1000
@@ -1009,9 +999,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit100]
-FileName=src\XMSMediaReceiverRegistrar.h
+FileName=src\lib\UPnPActions\UPnPSearch.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=UPnPActions
 Compile=1
 Link=1
 Priority=1000
@@ -1019,9 +1009,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit101]
-FileName=src\XMSMediaReceiverRegistrar.cpp
+FileName=src\lib\GUI\NotificationMgr.h
 CompileCpp=1
-Folder=fuppes
+Folder=GUI
 Compile=1
 Link=1
 Priority=1000
@@ -1029,9 +1019,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit95]
-FileName=src\Configuration\DeviceIdentificationMgr.cpp
+FileName=src\lib\UPnPActions\UPnPAction.h
 CompileCpp=1
-Folder=fuppes
+Folder=UPnPActions
 Compile=1
 Link=1
 Priority=1000
@@ -1039,9 +1029,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit3]
-FileName=src\windows\WinMainForm.cpp
+FileName=src\lib\Fuppes.h
 CompileCpp=1
-Folder=fuppes
+Folder=libfuppes
 Compile=1
 Link=1
 Priority=1000
@@ -1049,24 +1039,24 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit102]
-FileName=src\WinMain.cpp
+FileName=src\lib\GUI\NotificationMgr.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=GUI
 Compile=1
 Link=1
 Priority=1000
 OverrideBuildCmd=0
-BuildCmd=$(CPP) -c WinMain.cpp -o WinMain.o $(CXXFLAGS)
+BuildCmd=
 
 [Unit103]
-FileName=src\main.cpp
+FileName=src\lib\GUI\GUIWrapper.cpp
 CompileCpp=1
-Folder=fuppes
-Compile=0
-Link=0
+Folder=GUI
+Compile=1
+Link=1
 Priority=1000
 OverrideBuildCmd=0
-BuildCmd=$(CPP) -c main.cpp -o main.o $(CXXFLAGS)
+BuildCmd=
 
 [Unit105]
 FileName=src\GUI\WinMainForm.cpp
@@ -1079,9 +1069,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit104]
-FileName=src\GUI\WinMainForm.h
+FileName=src\lib\GUI\GUIWrapper.h
 CompileCpp=1
-Folder=
+Folder=GUI
 Compile=1
 Link=1
 Priority=1000
@@ -1109,9 +1099,19 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit1]
-FileName=src\windows\WinMain.cpp
+FileName=src\lib\XMSMediaReceiverRegistrar.h
 CompileCpp=1
-Folder=fuppes
+Folder=libfuppes
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit19]
+FileName=src\lib\XMSMediaReceiverRegistrar.cpp
+CompileCpp=1
+Folder=libfuppes
 Compile=1
 Link=1
 Priority=1000
