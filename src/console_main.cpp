@@ -76,9 +76,7 @@ void SignalHandler(int p_nSignal)
 }
 
 int main(int argc, char* argv[])
-{	
-  cout << "dahumm" << endl;
-    
+{
   g_bExitApp = false;
 
   // install signal handler

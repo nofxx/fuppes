@@ -224,7 +224,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
     //Insert("delete from OBJECTS;");
   }  
   
-  sqlite3_close(m_pDbHandle);
+  //sqlite3_close(m_pDbHandle);
   return true;
 }
 
@@ -409,8 +409,6 @@ void CContentDatabase::BuildDB()
 	CContentDatabase::Shared()->Execute("delete from image_items");*/
 	CContentDatabase::Shared()->Execute("delete from object_details");
 
-  
-	cout << "deleted" << endl; fflush(stdout);
 	
   for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
   {
@@ -428,7 +426,7 @@ void CContentDatabase::BuildDB()
         sSql << "'" << CSharedConfig::Shared()->GetSharedDir(i) << "', ";
         sSql << "'" << sFileName << "');";
         
-				cout << sSql.str() << endl; fflush(stdout);
+				//cout << sSql.str() << endl; fflush(stdout);
 				
         //CContentDatabase::Shared()->Lock();
         long long int nRowId = Insert(sSql.str());
