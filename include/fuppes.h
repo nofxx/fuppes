@@ -35,7 +35,6 @@ typedef struct t_fuppes_info{
   char* szVersion;
 };
 
-
 /**
  *  initialize libfuppes
  *    - load and check config
@@ -44,7 +43,7 @@ typedef struct t_fuppes_info{
  *    - init external libs (e.g. imagemagick)
  *  @return returns FUPPES_OK on success otherwise FUPPES_FALSE
  */
-int fuppes_init();
+int fuppes_init(void(*p_log_callback)(const char* sz_log));
 
 /**
  *  start fuppes

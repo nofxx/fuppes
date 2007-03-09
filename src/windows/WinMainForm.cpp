@@ -27,15 +27,18 @@
 
 #define WM_TRAYICON WM_APP + 1
 
+#define ID_EDITCHILD 12
+
 using namespace std;
 
-LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK WindowProcedure(HWND p_hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 CMainForm* pForm = NULL;
 
 CMainForm::CMainForm(HINSTANCE hInstance)
 {
   m_bVisible = false;
+  hWnd = NULL;
                                
   // The Window structure 
   wincl.hInstance     = hInstance;
@@ -82,7 +85,9 @@ CMainForm::CMainForm(HINSTANCE hInstance)
   
   AppendMenu(hPopup, MF_SEPARATOR, 0, "" );    
   AppendMenu(hPopup, MF_STRING, 1, "Quit" );    
-  pForm = this;
+  pForm = this; 
+  
+  OnCreate(); 
 }
 
 CMainForm::~CMainForm()
@@ -90,15 +95,31 @@ CMainForm::~CMainForm()
   DestroyMenu(hPopup);
 }
 
-LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WindowProcedure(HWND p_hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-  return pForm->WindowProc(hWnd, message, wParam, lParam);
+  return pForm->WindowProc(p_hWnd, message, wParam, lParam);
 }
 
-LRESULT CALLBACK CMainForm::WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK CMainForm::WindowProc(HWND p_hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
   switch (message)                  /* handle the messages */
   {
+    /*case WM_CREATE:  
+      if(p_hWnd == hWnd)
+        OnCreate(); 
+      break;*/
+      
+    case WM_SIZE: 
+      // Make the edit control the size of the window's client area. 
+      MoveWindow(hWndMemo, 
+                 8, 8,                  // starting x- and y-coordinates 
+                 LOWORD(lParam) - 16,        // width of client area 
+                 HIWORD(lParam) - 16,        // height of client area 
+                 TRUE);                 // repaint window 
+      return 0;
+      break;
+      
+         
     case WM_TRAYICON:
       OnWmTrayicon(wParam, lParam);
       break;
@@ -112,12 +133,28 @@ LRESULT CALLBACK CMainForm::WindowProc(HWND hWnd, UINT message, WPARAM wParam, L
       break;
       
     default:                      /* for messages that we don't deal with */
-      return DefWindowProc (hWnd, message, wParam, lParam);
+      return DefWindowProc(p_hWnd, message, wParam, lParam);
   }
 
   return 0;        
 }
 
+
+void CMainForm::OnCreate()
+{
+  hWndMemo = CreateWindow("EDIT",      // predefined class 
+                          NULL,        // no window title 
+                          WS_CHILD | WS_VISIBLE | WS_VSCROLL | 
+                          ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL,
+//                           |  ES_READONLY ,
+                          0, 0, 0, 0,  // set size in WM_SIZE message 
+                          hWnd,        // parent window 
+                          (HMENU)ID_EDITCHILD,   // edit control ID 
+                          (HINSTANCE) GetWindowLong(hWnd, GWL_HINSTANCE), 
+                          NULL);       // pointer not needed
+                    
+   //SendMessage(hWndMemo, WM_SETTEXT, 0, (LPARAM) "dahummm");              
+}
 
 void CMainForm::Show()
 {
@@ -158,6 +195,17 @@ void CMainForm::HideTrayIcon()
 	Shell_NotifyIcon (NIM_DELETE, &tsym);     
 }
 
+
+void CMainForm::Log(std::string p_sLog)
+{
+  //MessageBox(hWnd, p_sLog.c_str(), "FUPPES 0.7.2-dev", MB_OK);
+  //SendMessage(hWndMemo, WM_SETSEL, (WPARAM), (LPARAM));
+  p_sLog.append("\r\n");
+  SendMessage(hWndMemo, EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)p_sLog.c_str());
+  
+
+  //SendMessage(hWndMemo, WM_SETTEXT, 0, (LPARAM) p_sLog.c_str()); 
+}
 
 void CMainForm::OnWmTrayicon(WPARAM wParam, LPARAM lParam)
 {

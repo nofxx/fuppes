@@ -384,11 +384,13 @@ int libmain(int argc, char* argv[])
 
 CFuppes* pFuppes = 0;
 
-int fuppes_init()
+int fuppes_init(void(*p_log_callback)(const char* sz_log))
 {
   // already initialized
   if(pFuppes)
     return FUPPES_FALSE;
+
+  CSharedLog::Shared()->SetCallback(p_log_callback);
 
   cout << "            FUPPES - " << CSharedConfig::Shared()->GetAppVersion() << endl;
   cout << "    the Free UPnP Entertainment Service" << endl;

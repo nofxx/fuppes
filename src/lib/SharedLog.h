@@ -65,6 +65,8 @@ public:
   static CSharedLog* Shared();
   void SetUseSyslog(bool p_bUseSyslog);
 
+  void SetCallback(void(*p_log_callback)(const char* sz_log));
+
 /*===============================================================================
  LOGGING
 ===============================================================================*/
@@ -107,6 +109,8 @@ private:
   int                m_nLogLevel;
   bool               m_bUseSyslog;
   bool               m_bGUILog;
+  
+  void(*m_log_callback)(const char* sz_log);
 
 /* <\PRIVATE> */
 

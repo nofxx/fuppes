@@ -29,16 +29,20 @@
 
 using namespace std;
 
-void ShowTrayIcon(bool b_Visible, HICON pIcon, HWND pForm);
+CMainForm* pMainForm = NULL;
+
+void LogCallback(const char* sz_log)
+{
+  pMainForm->Log(sz_log);
+}
 
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgument, int nWindowStyle)
 {  
   MSG messages;
-  CMainForm* pForm = new CMainForm(hInstance);
+  pMainForm = new CMainForm(hInstance);
+  pMainForm->ShowTrayIcon();
 
-  pForm->ShowTrayIcon();
-
-  if(fuppes_init() == FUPPES_FALSE) {
+  if(fuppes_init(LogCallback) == FUPPES_FALSE) {
     MessageBox(NULL, "Error 0", "FUPPES 0.7.2-dev", MB_OK);
     return 1;    
   }
@@ -61,8 +65,8 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgu
   fuppes_stop();
   fuppes_cleanup();
       
-  pForm->HideTrayIcon();
-  delete pForm;
+  pMainForm->HideTrayIcon();
+  delete pMainForm;
 
   return messages.wParam;
 }

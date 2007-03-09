@@ -22,15 +22,17 @@
  */
 
 #include <windows.h>
-//#include "GUIWrapper.h"
+#include <string>
 
-class CMainForm //: public IGUI
+class CMainForm
 {
   public:
     CMainForm(HINSTANCE hInstance);
     ~CMainForm();    
       
-    LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    LRESULT CALLBACK WindowProc(HWND p_hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    
+    void OnCreate();
       
     void Show();
     void Hide();
@@ -42,14 +44,13 @@ class CMainForm //: public IGUI
       
     void OnTrayIconLButtonUp();
       
-    // virtual interface functions
-    
-    //void AddLogMsg(std::string p_sMessage);
-    
+    void Log(std::string p_sLog);
       
   private:    
     HWND        hWnd;     // This is the handle for our window 
     WNDCLASSEX  wincl;    // Data structure for the windowclass 
     HMENU       hPopup;   // popup menu
     bool        m_bVisible;
+    
+    HWND        hWndMemo;
 };

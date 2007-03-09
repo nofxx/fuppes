@@ -89,6 +89,10 @@ void CSharedLog::SetUseSyslog(bool p_bUseSyslog)
   #endif
 }
 
+void CSharedLog::SetCallback(void(*p_log_callback)(const char* sz_log))
+{
+  m_log_callback = p_log_callback;
+}
 
 void CSharedLog::SetLogLevel(int p_nLogLevel, bool p_bPrintLogLevel)
 {
@@ -271,6 +275,12 @@ void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, 
   #ifdef DISABLELOG
   return;
   #endif
+  
+  if(m_log_callback) {
+    m_log_callback(p_sMessage.c_str());
+    return;
+  }
+      
   
   
   if(m_bGUILog) {
