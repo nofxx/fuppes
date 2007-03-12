@@ -131,7 +131,7 @@ static gboolean fuppes_applet_factory(PanelApplet *applet, const gchar *iid, gpo
   //gtk_window_set_default_size(applet, 22, 22);
 
 	// load image
-	image = gtk_image_new_from_file("/usr/share/pixmaps/fuppes.png");
+	image = gtk_image_new_from_file("/usr/share/pixmaps/fuppes.svg");
   
   /*box = gtk_vbox_new(FALSE, 0);
   allocation->width  = 22;

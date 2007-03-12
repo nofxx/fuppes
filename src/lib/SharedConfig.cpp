@@ -844,7 +844,7 @@ bool CSharedConfig::ResolveHostAndIP()
   
   int nRet = gethostname(name, MAXHOSTNAMELEN);
   if(0 == nRet)
-  {    
+  {   
     m_sHostname = name;
     
 		if((m_sIP == "") || (m_sIP.compare("127.0.0.1") == 0))
@@ -863,7 +863,7 @@ bool CSharedConfig::ResolveHostAndIP()
 			  m_sIP = sIface;
 			return true;
 			#else
-    	cout << "please enter the ip address or name of your lan adapter" << endl;			
+    	cout << "please enter the ip address or name (e.g. eth0, wlan1, ...) of your lan adapter" << endl;			
 			cin >> sIface;
 			RegEx rxIP("\\d+\\.\\d+\\.\\d+\\.\\d");
 			if(rxIP.Search(sIface.c_str())) {

@@ -67,6 +67,39 @@ int fuppes_getch (void)
 }
 #endif
 
+void PrintParams()
+{
+  cout << endl;
+  cout << "  --help" << endl;
+  cout << "  --loglevel [none|normal|extended|debug]" << endl;
+  cout << "  --daemon" << endl;
+  cout << endl;
+}
+
+void PrintHelp()
+{
+  cout << endl;
+  cout << "l = change log-level" << endl;
+  cout << "    (disabled, normal, extended, debug) default is \"normal\"" << endl;
+  cout << "i = print system info" << endl;
+  cout << "r = rebuild database" << endl;
+  //cout << "c = refresh configuration" << endl;
+  cout << "h = print this help" << endl;
+  cout << endl;
+  cout << "m = send m-search" << endl;
+  cout << "a = send notify-alive" << endl;
+  cout << "b = send notify-byebye" << endl;
+  cout << endl;
+
+  #ifdef WIN32
+  cout << "q = quit" << endl;
+  #else
+  cout << "ctrl-c or q = quit" << endl;
+  #endif
+
+  cout << endl;
+}
+
 
 bool g_bExitApp;
 
@@ -86,8 +119,25 @@ int main(int argc, char* argv[])
   #endif
 
   // initialize libfuppes
-	fuppes_init();
+	if(fuppes_init(argc, argv, NULL) != FUPPES_OK) {
+	  return -1;
+	}
   fuppes_start();
+
+  char szHTTP[100];
+  fuppes_get_http_server_address(szHTTP, 100);
+  cout << "webinterface: " << szHTTP << endl;
+  cout << endl;
+  cout << "r = rebuild database" << endl;
+  cout << "i = print system info" << endl;
+  cout << "h = print help" << endl;
+  cout << endl;
+  #ifdef WIN32
+  cout << "press \"q\" to quit" << endl;
+  #else
+  cout << "press \"ctrl-c\" or \"q\" to quit" << endl;
+  #endif
+  cout << endl;
 
   string input = "";
   #ifdef WIN32
@@ -111,45 +161,31 @@ int main(int argc, char* argv[])
     while ((nRes != 10) && (nRes != 13) && !g_bExitApp);
     #endif
 
-    /*if (input == "m")
-      pFuppes->GetSSDPCtrl()->send_msearch();
-    else if (input == "a")
-        pFuppes->GetSSDPCtrl()->send_alive();
-      else if (input == "b")
-        pFuppes->GetSSDPCtrl()->send_byebye();
-      else */if (input == "l")
-        fuppes_inc_loglevel();
-     /* else if (input == "h")
-        PrintHelp();
-      else if (input == "i")
-      {
-        cout << "general information:" << endl;
-        cout << "  version     : " << CSharedConfig::Shared()->GetAppVersion() << endl;
-        cout << "  hostname    : " << CSharedConfig::Shared()->GetHostname() << endl;
-        cout << "  OS          : " << CSharedConfig::Shared()->GetOSName() << " " << CSharedConfig::Shared()->GetOSVersion() << endl;
-        cout << "  build at    : " << __DATE__ << " " << __TIME__ << endl;
-        cout << "  build with  : " << __VERSION__ << endl;
-        cout << "  address     : " << CSharedConfig::Shared()->GetIPv4Address() << endl;
-        cout << "  sqlite      : " << CContentDatabase::Shared()->GetLibVersion() << endl;
-        cout << "  log-level   : " << CSharedLog::Shared()->GetLogLevel() << endl;
-        cout << "  webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
-        cout << endl;
-        CSharedConfig::Shared()->PrintTranscodingSettings();
-				cout << endl;
-				cout << "configuration file:" << endl;
-				cout << "  " << CSharedConfig::Shared()->GetConfigFileName() << endl;
-				cout << endl;
-      }
-      else if (input == "r")
-      {
-        CSharedConfig::Shared()->Refresh();
-        CContentDatabase::Shared()->BuildDB();
-      }
-      else if (input == "c")
-        CSharedConfig::Shared()->Refresh();*/
-
+    if (input == "m") {
+      fuppes_send_msearch();
+    }
+    else if (input == "a") {
+      fuppes_send_alive();
+    }
+    else if (input == "b") {
+      fuppes_send_byebye();
+    }
+    else if (input == "l") {
+      fuppes_inc_loglevel();
+    }
+    else if(input == "r") {
+      fuppes_rebuild_db();
+    }
+    else if (input == "h") {
+      PrintHelp();
+    }
+    else if (input == "i") {
+      fuppes_print_info();
+    }
   }  // while (!g_bExitApp)
   
+  cout << "[FUPPES] shutting down" << endl;
   fuppes_stop();
   fuppes_cleanup();
+  cout << "[FUPPES] exit" << endl;
 }

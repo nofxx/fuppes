@@ -1,5 +1,5 @@
 /***************************************************************************
- *            main.cpp
+ *            libmain.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -22,10 +22,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "../../include/fuppes.h"
 
 #include <iostream>
@@ -34,12 +30,6 @@
 #include "SharedLog.h"
 #include "Fuppes.h"
 #include "ContentDirectory/ContentDatabase.h"
-
-/*#ifndef WIN32
-#include <fcntl.h>
-#include <signal.h>
-#include <termios.h>
-#endif*/
 
 #ifdef WIN32
 #include <shellapi.h>
@@ -54,337 +44,11 @@
 #include <wand/MagickWand.h>
 #endif
 
-#include "Common/RegEx.h"
-
 using namespace std;
-
-//static bool g_bExitApp;
-
-/*
-#ifndef WIN32
-struct termios savetty;
-
-void unsetcbreak (void)
-{
-	tcsetattr(0, TCSADRAIN, &savetty);
-}
-
-void setcbreak (void)
-{
-  // set console to raw mode
-  struct termios tty;
-	tcgetattr(0, &savetty);
-	tcgetattr(0, &tty);
-	tty.c_lflag &= ~(ECHO|ECHONL|ICANON|IEXTEN);
-	tty.c_cc[VTIME] = 0;
-	tty.c_cc[VMIN] = 0;
-	tcsetattr(0, TCSADRAIN, &tty);
-}
-
-int fuppesGetch (void)
-{
-  setcbreak();  
-  static char line [2];
-	if (read (0, line, 1)) {    
-    unsetcbreak();    
-		return line[0];
-	}  
-  unsetcbreak();  
-	return -1;
-}
-#endif
-*/
-
-/*void SignalHandler(int p_nSignal)
-{  
-  g_bExitApp = true;
-}*/
-
-void PrintHelp()
-{
-  cout << endl;
-  cout << "l = change log-level" << endl;
-  cout << "    (disabled, normal, extended, debug) default is \"normal\"" << endl;
-  cout << "i = print system info" << endl;
-  cout << "r = rebuild database" << endl;
-  cout << "c = refresh configuration" << endl;
-  cout << "h = print this help" << endl;
-  cout << endl;
-  cout << "m = send m-search" << endl;
-  cout << "a = send notify-alive" << endl;
-  cout << "b = send notify-byebye" << endl;
-  cout << endl;
-
-  #ifdef WIN32
-  cout << "q = quit" << endl;
-  #else
-  cout << "ctrl-c or q = quit" << endl;
-  #endif
-
-  cout << endl;
-}
-
-void PrintParams()
-{
-  cout << endl;
-  cout << "  --help" << endl;
-  cout << "  --loglevel [none|normal|extended|debug]" << endl;
-  cout << "  --daemon" << endl;
-  cout << endl;
-}
-
-/*#ifdef WIN32
-bool CreateTrayIcon()
-{
-  NOTIFYICONDATA  m_tnd;
-  m_tnd.cbSize = sizeof(NOTIFYICONDATA);*/
-  /*m_tnd.hWnd   = void; //pParent->GetSafeHwnd()? pParent->GetSafeHwnd() : m_hWnd;
-  m_tnd.uID    = uID;
-  m_tnd.hIcon  = void; //icon;
-  m_tnd.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
-  m_tnd.uCallbackMessage = WM_ICON_NOTIFY; //uCallbackMessage;
-  _tcscpy(m_tnd.szTip, szToolTip); */
- /* m_tnd.uFlags = NIF_MESSAGE; // | NIF_ICON | NIF_TIP;
-  m_tnd.uCallbackMessage = WM_USER + 10;
-
-  return Shell_NotifyIcon(NIM_ADD, &m_tnd);
-}
-#endif*/
-
-/*===============================================================================
- MAIN
-===============================================================================*/
-
-/** main function
- *  @return int
- */
-int libmain(int argc, char* argv[])
-{
-  bool bDaemonMode = false;
-  //g_bExitApp = false;
-
-  if(argc > 1)
-  {
-    for(int i = 1; i < argc; i++)
-    {
-      // --daemon
-			if((strcmp(argv[i], "-d") == 0) || (strcmp(argv[i], "--daemon") == 0))
-        bDaemonMode = true;
-	  // --help 
-      else if(strcmp(argv[i], "--help") == 0) {
-        PrintParams();
-		return 0;
-	  }
-	  // --syslog 
-      else if(strcmp(argv[i], "--syslog") == 0)
-        CSharedLog::Shared()->SetUseSyslog(true);
-	  // --loglevel
-	  else if((strcmp(argv[i], "--loglevel") == 0) && (argc > i + 1)) {
-		if((strcmp(argv[i + 1], "none") == 0) || (strcmp(argv[i + 1], "0") == 0))
-		  CSharedLog::Shared()->SetLogLevel(0, false);
-		else if((strcmp(argv[i + 1], "normal") == 0) || (strcmp(argv[i + 1], "1") == 0))
-		  CSharedLog::Shared()->SetLogLevel(1, false);
-		else if((strcmp(argv[i + 1], "extended") == 0) || (strcmp(argv[i + 1], "2") == 0))
-		  CSharedLog::Shared()->SetLogLevel(2, false);
-		else if((strcmp(argv[i + 1], "debug") == 0) || (strcmp(argv[i + 1], "3") == 0))
-		  CSharedLog::Shared()->SetLogLevel(3, false);
-		} // end --loglevel
-			
-    }
-  }
-
-  // Setup winsockets	
-  /*#ifdef WIN32
-  WSADATA wsa;
-  WSAStartup(MAKEWORD(2,2), &wsa);
-  #endif*/
-
-  // daemon process 
-  /*#ifndef WIN32
-  if(bDaemonMode)
-  {
-    CSharedLog::Shared()->SetUseSyslog(true);
-
-    if(!CSharedConfig::Shared()->SetupConfig())
-    return 1;
-
-    cout << "daemon mode" << endl;
-
-    pid_t pid;
-    pid = fork();
-
-    // error
-    if (pid < 0)
-    {
-      CSharedLog::Shared()->Log(L_ERROR, "could not create child process", __FILE__, __LINE__);
-      return 1;
-    }
-    // parent process
-    else if (pid > 0)
-    {
-      cout << "[started]" << endl;
-      return 0;
-    }
-    // child process
-    else if(pid == 0)
-    {
-      //cout << "child process" << endl;
-      close(STDIN_FILENO);
-      close(STDOUT_FILENO);
-      close(STDERR_FILENO);
-    }
-  }
-  #endif*/
-
-  /*#ifndef WIN32
-  signal(SIGINT, SignalHandler);  // ctrl-c
-  signal(SIGTERM, SignalHandler); // start-stop-daemon -v --stop -nfuppes
-  #endif
-
-  //#ifdef WIN32
-  //CreateTrayIcon();
-  //#endif
-
-  cout << "            FUPPES - " << CSharedConfig::Shared()->GetAppVersion() << endl;
-  cout << "    the Free UPnP Entertainment Service" << endl;
-  cout << "       http://fuppes.sourceforge.net" << endl << endl;
-
-  if(!CSharedConfig::Shared()->SetupConfig())
-    return 1;
-
-  // create presentation handler
-  //CPresentationHandler* pPresentationHandler = new CPresentationHandler();
-
-  // create main fuppes object
-  CFuppes* pFuppes = NULL;
-	try {
-    pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUUID());
-    CSharedConfig::Shared()->AddFuppesInstance(pFuppes);
-  }
-  catch(EException ex) {
-    cout << ex.What() << endl;
-    cout << "[exiting]" << endl;
-    return 1;
-  } */
-
-  // init remaining stuff
-	/*#ifdef HAVE_IMAGEMAGICK
-	cout << "wand genesis" << endl; fflush(stdout);
-	MagickWandGenesis();
-	cout << "wand done" << endl; fflush(stdout);
-  #endif*/
-
-  //cout << "Webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
-  cout << endl;
-  cout << "r = rebuild database" << endl;
-  cout << "i = print system info" << endl;
-  cout << "h = print help" << endl;
-  cout << endl;
-  #ifdef WIN32
-  cout << "press \"q\" to quit" << endl;
-  #else
-  cout << "press \"ctrl-c\" or \"q\" to quit" << endl;
-  #endif
-  cout << endl;
-
-  // handle input
-  if(!bDaemonMode)
-  {
-    /*string input = "";
-    #ifdef WIN32
-    while(input != "q")
-    #else
-    while(!g_bExitApp && (input != "q"))
-    #endif
-    {
-      input = "";
-      #ifdef WIN32
-      getline(cin, input);
-      #else
-      int nRes = -1;
-      do {
-        fuppesSleep(100);
-        
-        nRes = fuppesGetch();
-        if ((nRes > -1) && (nRes != 10) && (nRes != 13))
-          input = nRes;        
-      }
-      while ((nRes != 10) && (nRes != 13) && !g_bExitApp);
-      #endif
-
-      if (input == "m")
-        pFuppes->GetSSDPCtrl()->send_msearch();
-      else if (input == "a")
-        pFuppes->GetSSDPCtrl()->send_alive();
-      else if (input == "b")
-        pFuppes->GetSSDPCtrl()->send_byebye();
-      else if (input == "l")
-        CSharedLog::Shared()->ToggleLog();
-      else if (input == "h")
-        PrintHelp();
-      else if (input == "i")
-      {
-        cout << "general information:" << endl;
-        cout << "  version     : " << CSharedConfig::Shared()->GetAppVersion() << endl;
-        cout << "  hostname    : " << CSharedConfig::Shared()->GetHostname() << endl;
-        cout << "  OS          : " << CSharedConfig::Shared()->GetOSName() << " " << CSharedConfig::Shared()->GetOSVersion() << endl;
-        cout << "  build at    : " << __DATE__ << " " << __TIME__ << endl;
-        cout << "  build with  : " << __VERSION__ << endl;
-        cout << "  address     : " << CSharedConfig::Shared()->GetIPv4Address() << endl;
-        cout << "  sqlite      : " << CContentDatabase::Shared()->GetLibVersion() << endl;
-        cout << "  log-level   : " << CSharedLog::Shared()->GetLogLevel() << endl;
-        cout << "  webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
-        cout << endl;
-        CSharedConfig::Shared()->PrintTranscodingSettings();
-				cout << endl;
-				cout << "configuration file:" << endl;
-				cout << "  " << CSharedConfig::Shared()->GetConfigFileName() << endl;
-				cout << endl;
-      }
-      else if (input == "r")
-      {
-        CSharedConfig::Shared()->Refresh();
-        CContentDatabase::Shared()->BuildDB();
-      }
-      else if (input == "c")
-        CSharedConfig::Shared()->Refresh();
-
-    } */
-  }
-  else
-  {
-    /*while(!g_bExitApp)
-      fuppesSleep(1000);*/
-  }
-
-  // destroy objects
-  //delete pFuppes;
-  //delete pPresentationHandler;
-
-  delete CSharedConfig::Shared();
-  delete CSharedLog::Shared();
-
-  // uninit other stuff
-	/*#ifdef HAVE_IMAGEMAGICK
-	cout << "wand terminus" << endl; fflush(stdout);
-	MagickWandTerminus();
-	cout << "wand terminus done" << endl; fflush(stdout);
-  #endif*/
-
-  // cleanup winsockets
-  /*#ifdef WIN32
-  WSACleanup();
-  #endif*/
-
-  cout << "[FUPPES] exit" << endl;
-  return 0;
-
-}
-
 
 CFuppes* pFuppes = 0;
 
-int fuppes_init(void(*p_log_callback)(const char* sz_log))
+int fuppes_init(int argc, char* argv[], void(*p_log_callback)(const char* sz_log))
 {
   // already initialized
   if(pFuppes)
@@ -417,8 +81,6 @@ int fuppes_start()
 {
   if(pFuppes)
     return FUPPES_FALSE;
-  
-    
     
   // create fuppes instance
   try {
@@ -453,6 +115,9 @@ int fuppes_cleanup()
   WSACleanup();
   #endif
   
+  delete CSharedConfig::Shared();
+  delete CSharedLog::Shared();
+  
   return FUPPES_OK;
 }
 
@@ -464,4 +129,51 @@ void fuppes_set_loglevel(int n_log_level)
 void fuppes_inc_loglevel()
 {
   CSharedLog::Shared()->ToggleLog();
+}
+
+void fuppes_rebuild_db()
+{
+  CContentDatabase::Shared()->BuildDB();
+}
+
+void fuppes_get_http_server_address(char* sz_addr, int n_buff_size)
+{
+  stringstream sAddr;
+  sAddr << "http://" << pFuppes->GetHTTPServerURL();
+  strcpy(sz_addr, sAddr.str().c_str());
+}
+
+void fuppes_send_alive()
+{
+  pFuppes->GetSSDPCtrl()->send_alive();
+}
+
+void fuppes_send_byebye()
+{
+  pFuppes->GetSSDPCtrl()->send_byebye();
+}
+
+void fuppes_send_msearch()
+{
+  pFuppes->GetSSDPCtrl()->send_msearch();
+}
+
+void fuppes_print_info()
+{
+  cout << "general information:" << endl;
+  cout << "  version     : " << CSharedConfig::Shared()->GetAppVersion() << endl;
+  cout << "  hostname    : " << CSharedConfig::Shared()->GetHostname() << endl;
+  cout << "  OS          : " << CSharedConfig::Shared()->GetOSName() << " " << CSharedConfig::Shared()->GetOSVersion() << endl;
+  cout << "  build at    : " << __DATE__ << " " << __TIME__ << endl;
+  cout << "  build with  : " << __VERSION__ << endl;
+  cout << "  address     : " << CSharedConfig::Shared()->GetIPv4Address() << endl;
+  cout << "  sqlite      : " << CContentDatabase::Shared()->GetLibVersion() << endl;
+  cout << "  log-level   : " << CSharedLog::Shared()->GetLogLevel() << endl;
+  cout << "  webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
+  cout << endl;
+  CSharedConfig::Shared()->PrintTranscodingSettings();
+	cout << endl;
+	cout << "configuration file:" << endl;
+	cout << "  " << CSharedConfig::Shared()->GetConfigFileName() << endl;
+	cout << endl;
 }

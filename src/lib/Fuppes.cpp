@@ -137,7 +137,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
  */
 CFuppes::~CFuppes()
 {  
-  CSharedLog::Shared()->Log(L_NORMAL, "shutting down", __FILE__, __LINE__);    
+  CSharedLog::Shared()->Log(L_EXTENDED, "deleting FUPPES instance", __FILE__, __LINE__);    
   
   /* multicast notify-byebye */
   CSharedLog::Shared()->Log(L_EXTENDED, "multicasting byebye messages", __FILE__, __LINE__);

@@ -43,7 +43,7 @@ typedef struct t_fuppes_info{
  *    - init external libs (e.g. imagemagick)
  *  @return returns FUPPES_OK on success otherwise FUPPES_FALSE
  */
-int fuppes_init(void(*p_log_callback)(const char* sz_log));
+int fuppes_init(int argc, char* argv[], void(*p_log_callback)(const char* sz_log));
 
 /**
  *  start fuppes
@@ -65,8 +65,16 @@ int fuppes_stop();
 int fuppes_cleanup();
 
 
+void fuppes_print_info();
 void fuppes_set_loglevel(int n_log_level);
 void fuppes_inc_loglevel();
+void fuppes_rebuild_db();
+
+void fuppes_get_http_server_address(char* sz_addr, int n_buff_size);
+
+void fuppes_send_alive();
+void fuppes_send_byebye();
+void fuppes_send_msearch();
 
 #ifdef __cplusplus
 }
