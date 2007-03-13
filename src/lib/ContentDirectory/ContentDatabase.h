@@ -29,6 +29,7 @@
 #include <map>
 #include <list>
 #include "../Common/Common.h"
+#include "FileSystemMonitor.h"
 
 typedef enum tagOBJECT_TYPE
 {
@@ -79,7 +80,7 @@ class CSelectResult
     std::map<std::string, std::string>::iterator m_FieldValuesIterator;  
 };
 
-class CContentDatabase
+class CContentDatabase: IFileSystemMonitor
 {
   public:
     static CContentDatabase* Shared();  
@@ -118,6 +119,7 @@ class CContentDatabase
 	
     //bool m_bIsRebuilding;
 		bool m_bShared;
+		CFileSystemMonitor* m_pFileSystemMonitor;
   
     static CContentDatabase* m_Instance;
 		sqlite3*                 m_pDbHandle;  

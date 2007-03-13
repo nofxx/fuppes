@@ -142,7 +142,9 @@ libfuppes_la_SOURCES = \
 	lib/SharedConfig.cpp\
   lib/SharedLog.cpp\
 	lib/Fuppes.cpp\
-	lib/libmain.cpp
+	lib/libmain.cpp                      \
+	lib/ContentDirectory/FileSystemMonitor.cpp                      \
+	lib/ContentDirectory/FileSystemMonitor.h 
 
 libfuppes_la_LDFLAGS = \
   $(LIBNOTIFY_LIBS)\

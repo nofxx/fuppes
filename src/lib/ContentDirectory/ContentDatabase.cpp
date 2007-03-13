@@ -104,10 +104,14 @@ CContentDatabase::CContentDatabase(bool p_bShared)
   //m_bIsRebuilding = false;
   m_RebuildThread = (fuppesThread)NULL;	
   m_bShared       = p_bShared;		
+	m_pFileSystemMonitor = NULL;
 		
 	if(m_bShared) {            
 	  g_bIsRebuilding = false;
     fuppesThreadInitMutex(&m_Mutex);
+    #ifdef HAVE_INOTIFY
+    m_pFileSystemMonitor = new CInotifyMonitor(this);
+    #endif
   }
     
   if(FileExists(m_sDbFileName))
@@ -124,6 +128,9 @@ CContentDatabase::~CContentDatabase()
 	  fuppesThreadClose(m_RebuildThread);
 		m_RebuildThread = (fuppesThread)NULL;
 	}
+	
+	if(m_pFileSystemMonitor != NULL)
+	  delete m_pFileSystemMonitor;
 
   ClearResult();
   Close();

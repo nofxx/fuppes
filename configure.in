@@ -363,7 +363,6 @@ if test "x$transcoding" = "xyes"; then
         FLAC_LIBS="-lFLAC"
         have_decoder=yes
 	    AC_DEFINE([HAVE_FLAC], [1], [])
-	    AC_DEFINE([HAVE_FLAC_FILEDECODER], [0], [])
       fi
 	fi
 		
@@ -401,6 +400,7 @@ AC_ARG_ENABLE(default-http-port,
  [  CXXFLAGS="$CXXFLAGS -DDEFAULT_HTTP_PORT=$enableval" ])
 # end HTTP Port
 
+
 # libnotify
 have_libnotify=no
 use_libnotify=no
@@ -410,7 +410,7 @@ AC_ARG_ENABLE(libnotify,
             [ use_libnotify=yes; ] )
             
 if test "x$use_libnotify" = "xyes"; then
-  PKG_CHECK_MODULES(LIBNOTIFY, libnotify >= 0.4.3, have_libnotify=yes, have_libnotify=no)
+  PKG_CHECK_MODULES(LIBNOTIFY, libnotify >= 0.4.2, have_libnotify=yes, have_libnotify=no)
   
   if test "x$have_libnotify" = "xyes"; then  
     FUPPES_LIBS="$FUPPES_LIBS $LIBNOTIFY_LIBS"
@@ -418,6 +418,21 @@ if test "x$use_libnotify" = "xyes"; then
   fi
 fi
 # end libnotify
+
+# inotify
+have_inotify=no
+use_inotify=yes
+AH_TEMPLATE([HAVE_INOTIFY], [inotify support])
+AC_ARG_ENABLE(inotify, 
+            [  --disable-inotify  Disable inotify support],
+            [ use_inotify=no; ] )
+
+if test "x$use_inotify" = "xyes"; then
+  AC_CHECK_HEADERS(sys/inotify.h, 
+      have_inotify=yes
+      AC_DEFINE([HAVE_INOTIFY], [1], []), 
+      have_inotify=no)
+fi
 
 
 AC_SUBST(LIBXML_LIBS)
@@ -533,6 +548,13 @@ if test "x$have_iconv" = "xyes"; then
   echo "  iconv      : enabled"
 else
   echo "  iconv      : disabled"
+fi
+
+# inotify
+if test "x$have_inotify" = "xyes"; then
+  echo "  inotify    : enabled"
+else
+  echo "  inotify    : disabled"
 fi
 
 # taglib
