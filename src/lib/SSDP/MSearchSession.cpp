@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -22,8 +22,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-/* todo: create expiration timer */
-
 /*===============================================================================
  INCLUDES
 ===============================================================================*/
@@ -38,12 +36,6 @@
 #include <time.h>
 
 using namespace std;
-
-/*===============================================================================
- CLASS CSSDPSession
-===============================================================================*/
-
-/* <PROTECTED> */
 
 /*===============================================================================
  CONSTRUCTOR / DESTRUCTOR
@@ -69,18 +61,14 @@ CMSearchSession::~CMSearchSession()
   m_UdpSocket.TeardownSocket();  
 }
 
-/* <\PROTECTED> */
-
-/* <PUBLIC> */
-
 /*===============================================================================
  MESSAGE HANDLING
 ===============================================================================*/
 
-void CMSearchSession::OnUDPSocketReceive(CUDPSocket* pSocket, CSSDPMessage* pSSDPMessage)
+void CMSearchSession::OnUDPSocketReceive(CSSDPMessage* pSSDPMessage)
 {
   if(m_pEventHandler != NULL)
-    m_pEventHandler->OnSessionReceive(this, pSSDPMessage);
+    m_pEventHandler->OnSessionReceive(pSSDPMessage);
 }
 
 void CMSearchSession::OnTimer()
@@ -209,6 +197,8 @@ fuppesThreadCallback HandleMSearchThread(void *arg)
     if((pSession->GetSSDPMessage()->GetMSearchST() == M_SEARCH_ST_ALL) && nSleepMS > 0)
       nSleepMS /= 6;
     
+		std::string sUUID = "";
+		
     if(pSession->GetSSDPMessage()->GetMSearchST() == M_SEARCH_ST_ALL)
     {
       fuppesSleep(nSleepMS);
@@ -226,10 +216,9 @@ fuppesThreadCallback HandleMSearchThread(void *arg)
     {
       //cout << "handling special search: " << pSession->GetSSDPMessage()->GetMSearchST() << endl;      
       fuppesSleep(nSleepMS);
-      switch(pSession->GetSSDPMessage()->GetMSearchST())      
+			switch(pSession->GetSSDPMessage()->GetMSearchST())      
       {
         case M_SEARCH_ST_ROOT:          
-          //cout << "send root" << endl;          
           Sock.SendUnicast(pSession->m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_ROOT_DEVICE), pSession->GetSSDPMessage()->GetRemoteEndPoint());          
           break;
         case M_SEARCH_ST_DEVICE_MEDIA_SERVER:
@@ -242,19 +231,13 @@ fuppesThreadCallback HandleMSearchThread(void *arg)
           Sock.SendUnicast(pSession->m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_CONNECTION_MANAGER), pSession->GetSSDPMessage()->GetRemoteEndPoint());             
           break;          
         case M_SEARCH_ST_UUID:
-          /*cout << "search uuid: " << pSession->GetSSDPMessage()->GetSTAsString() << endl;
-          fflush(stdout);          */
-          std::string sUUID = pSession->GetSSDPMessage()->GetSTAsString().substr(5);
-          /*cout << "SEARCH FOR: " << sUUID << endl;
-          fflush(stdout);
-          cout << "My: " << CSharedConfig::Shared()->GetUUID() << endl;
-          fflush(stdout);*/
-          if(sUUID.compare(ToLower(CSharedConfig::Shared()->GetUUID())) == 0)
-          {
-            //cout << "my uuid is searched" << endl;           
+          sUUID = pSession->GetSSDPMessage()->GetSTAsString().substr(5);
+          if(sUUID.compare(ToLower(CSharedConfig::Shared()->GetUUID())) == 0) {
             Sock.SendUnicast(pSession->m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_USN), pSession->GetSSDPMessage()->GetRemoteEndPoint());            
           }
           break;
+				default:
+				  break;
        }
     }
       

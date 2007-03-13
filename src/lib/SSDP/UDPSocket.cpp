@@ -247,7 +247,7 @@ void CUDPSocket::CallOnReceive(CSSDPMessage* pSSDPMessage)
 { 
   /* Call receive handler */  
   if(NULL != m_pReceiveHandler)
-	  m_pReceiveHandler->OnUDPSocketReceive(this, pSSDPMessage);
+	  m_pReceiveHandler->OnUDPSocketReceive(pSSDPMessage);
 }
 
 /*===============================================================================

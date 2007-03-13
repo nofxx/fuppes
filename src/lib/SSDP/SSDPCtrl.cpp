@@ -237,7 +237,7 @@ void CSSDPCtrl::SetReceiveHandler(ISSDPCtrl* pHandler)
   m_pReceiveHandler = pHandler;
 }
 
-void CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMessage)
+void CSSDPCtrl::OnUDPSocketReceive(CSSDPMessage* pSSDPMessage)
 {
   stringstream sLog;
   sLog << "OnUDPSocketReceive() :: " << inet_ntoa(pSSDPMessage->GetRemoteEndPoint().sin_addr) << ":" << ntohs(pSSDPMessage->GetRemoteEndPoint().sin_port) << endl;
@@ -268,7 +268,7 @@ void CSSDPCtrl::OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMe
   }
 }
 
-void CSSDPCtrl::OnSessionReceive(CMSearchSession* pSender, CSSDPMessage* pMessage)
+void CSSDPCtrl::OnSessionReceive(CSSDPMessage* pMessage)
 {
   /* lock receive mutex */
   fuppesThreadLockMutex(&m_SessionReceiveMutex);  

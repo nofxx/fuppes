@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -107,8 +107,8 @@ public:
 ===============================================================================*/
 
 	  void SetReceiveHandler(ISSDPCtrl* pHandler);
-	  void OnUDPSocketReceive(CUDPSocket* pUDPSocket, CSSDPMessage* pSSDPMessage);
-   	void OnSessionReceive(CMSearchSession* pSender, CSSDPMessage* pMessage);
+	  void OnUDPSocketReceive(CSSDPMessage* pSSDPMessage);
+   	void OnSessionReceive(CSSDPMessage* pMessage);
 	
     void OnSessionTimeOut(CMSearchSession* pSender);
   

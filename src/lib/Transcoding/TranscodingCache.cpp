@@ -150,6 +150,8 @@ unsigned int CTranscodingCacheObject::Transcode()
   /* object is already transcoded completely */  
   if(m_bIsComplete)    
     return m_nBufferSize;
+
+	return 0;
 }
 
 int CTranscodingCacheObject::Append(char** p_pszBinBuffer, unsigned int p_nBinBufferSize)

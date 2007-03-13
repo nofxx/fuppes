@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
@@ -54,17 +54,8 @@ class CUDPSocket;
 
 class IUDPSocket
 {
-
-/* <PUBLIC> */
-
-public:
-
-  virtual void OnUDPSocketReceive(
-    CUDPSocket*   pSocket,
-    CSSDPMessage* pMessage) = 0;
-
-/* <\PUBLIC> */
-
+  public:
+    virtual void OnUDPSocketReceive(CSSDPMessage* pMessage) = 0;
 };
 
 /*===============================================================================

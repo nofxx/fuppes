@@ -21,10 +21,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
 
 #include "SharedLog.h"
 #include <iostream>
@@ -33,7 +29,7 @@
 #ifdef WIN32
   #undef HAVE_SYSLOG_H
 #else
-  #include "../../config.h"
+  #include "../config.h"
   #ifdef HAVE_SYSLOG_H
   #include <syslog.h>
   #endif

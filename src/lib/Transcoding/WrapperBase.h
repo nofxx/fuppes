@@ -31,7 +31,8 @@
 class CAudioEncoderBase
 {
   public:
-    virtual bool LoadLib() = 0;
+    virtual ~CAudioEncoderBase() {};
+		virtual bool LoadLib() = 0;
   
     virtual void  Init() = 0;      
     virtual int   EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples) = 0;
@@ -42,6 +43,7 @@ class CAudioEncoderBase
 class CAudioDecoderBase
 {
   public:
+	  virtual ~CAudioDecoderBase() {};
     virtual bool LoadLib() = 0;
     virtual bool OpenFile(std::string p_sFileName) = 0;      
     virtual void CloseFile() = 0;    
@@ -51,6 +53,7 @@ class CAudioDecoderBase
 class CTranscoderBase
 {
   public:
+	  virtual ~CTranscoderBase() {};
     virtual bool Transcode(std::string p_sInFile, std::string p_sParams, std::string* p_psOutFile) = 0;
 };
 
