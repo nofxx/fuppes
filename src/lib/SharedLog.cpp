@@ -29,12 +29,11 @@
 #include "SharedLog.h"
 #include <iostream>
 #include <sstream>
-#include "GUI/GUIWrapper.h"
 
 #ifdef WIN32
   #undef HAVE_SYSLOG_H
 #else
-  #include "config.h"
+  #include "../../config.h"
   #ifdef HAVE_SYSLOG_H
   #include <syslog.h>
   #endif
@@ -55,7 +54,6 @@ CSharedLog* CSharedLog::Shared()
 CSharedLog::CSharedLog()
 {
   m_bUseSyslog = false;
-  m_bGUILog    = false; //CGUIWrapper::Shared()->HasGUI();
 
   SetLogLevel(0, false);
   #ifndef DISABLELOG
@@ -278,13 +276,6 @@ void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, 
   
   if(m_log_callback) {
     m_log_callback(p_sMessage.c_str());
-    return;
-  }
-      
-  
-  
-  if(m_bGUILog) {
-    CGUIWrapper::Shared()->AddLogMsg(p_sMessage); 
     return;
   }
   

@@ -83,7 +83,6 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/MpcWrapper.h\
   lib/Transcoding/FlacWrapper.h\
   lib/GUI/NotificationMgr.h\
-  lib/GUI/GUIWrapper.h\
 	lib/Configuration/DeviceSettings.h\
 	lib/Configuration/DeviceIdentificationMgr.h\
 	lib/XMSMediaReceiverRegistrar.h\
@@ -137,7 +136,6 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/MpcWrapper.cpp\
   lib/Transcoding/FlacWrapper.cpp\
   lib/GUI/NotificationMgr.cpp\
-  lib/GUI/GUIWrapper.cpp\
 	lib/Configuration/DeviceSettings.cpp\
 	lib/Configuration/DeviceIdentificationMgr.cpp\
 	lib/XMSMediaReceiverRegistrar.cpp\

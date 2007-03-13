@@ -107,20 +107,17 @@ class CContentDatabase
 
   
     void BuildDB();
-    bool IsRebuilding() { return m_bIsRebuilding; };
-  
+    bool IsRebuilding();// { return m_bIsRebuilding; };
+	
 		fuppesThreadMutex m_Mutex;
   private:    
 		void Lock();
     void Unlock();
-	
-    void DbScanDir(std::string p_sDirectory, long long int p_nParentId);
-    void BuildPlaylists();
-    void ParsePlaylist(CSelectResult* pResult);
-    void ParseM3UPlaylist(CSelectResult* pResult);
-    void ParsePLSPlaylist(CSelectResult* pResult);
   
-    bool m_bIsRebuilding;
+	  fuppesThread m_RebuildThread;
+	
+    //bool m_bIsRebuilding;
+		bool m_bShared;
   
     static CContentDatabase* m_Instance;
 		sqlite3*                 m_pDbHandle;  

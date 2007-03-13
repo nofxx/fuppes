@@ -108,7 +108,6 @@ private:
   bool               m_bShowDebugLog;
   int                m_nLogLevel;
   bool               m_bUseSyslog;
-  bool               m_bGUILog;
   
   void(*m_log_callback)(const char* sz_log);
 

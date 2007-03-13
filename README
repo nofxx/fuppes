@@ -1,9 +1,9 @@
   FUPPES - the Free UPnP Entertainment Service  
 
-  http://fuppes.sourceforge.net/
+  http://fuppes.ulrich-voelkel.de/
   http://sourceforge.net/projects/fuppes/
 
-  copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+  copyright (C) 2005 - 2007 Ulrich Völkel <fuppes@ulrich-voelkel.de>
 
 
 For information how to compile and install the software read the file INSTALL
@@ -33,8 +33,7 @@ optional (recommended) libs:
 	ImageMagick (GPL like)
 	http://imagemagick.org
 	
-	libextractor
-	libexif
+	ffmpeg
 	
 	libnotification
 

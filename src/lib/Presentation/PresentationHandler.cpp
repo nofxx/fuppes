@@ -118,7 +118,6 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
     sContent = this->GetOptionsHTML(sImgPath);
     sPageName = "Options";
   }
-  #warning todo: asynchronous handling
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html?rebuild=db") == 0)
   {
     CSharedConfig::Shared()->Refresh();

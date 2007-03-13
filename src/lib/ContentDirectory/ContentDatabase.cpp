@@ -41,6 +41,8 @@
 #include <sys/stat.h> 
  
 using namespace std;
+
+static bool g_bIsRebuilding;
  
 int SelectCallback(void *pDatabase, int argc, char **argv, char **azColName)
 {
@@ -99,9 +101,12 @@ CContentDatabase::CContentDatabase(bool p_bShared)
   m_sDbFileName = sDbFile.str();
   
   m_nRowsReturned = 0;
-  m_bIsRebuilding = false;
-  	
-	if(p_bShared) {            
+  //m_bIsRebuilding = false;
+  m_RebuildThread = (fuppesThread)NULL;	
+  m_bShared       = p_bShared;		
+		
+	if(m_bShared) {            
+	  g_bIsRebuilding = false;
     fuppesThreadInitMutex(&m_Mutex);
   }
     
@@ -114,6 +119,11 @@ CContentDatabase::~CContentDatabase()
 	/*if(m_Instance == this) {                 
     fuppesThreadDestroyMutex(&m_Mutex);
   }*/
+	
+	if(m_bShared && (m_RebuildThread != NULL)) {
+	  fuppesThreadClose(m_RebuildThread);
+		m_RebuildThread = (fuppesThread)NULL;
+	}
 
   ClearResult();
   Close();
@@ -391,68 +401,36 @@ void CContentDatabase::Next()
 
 
 
-
+fuppesThreadCallback BuildLoop(void *arg);
+void DbScanDir(std::string p_sDirectory, long long int p_nParentId);
+void BuildPlaylists();
+void ParsePlaylist(CSelectResult* pResult);
+void ParseM3UPlaylist(CSelectResult* pResult);
+void ParsePLSPlaylist(CSelectResult* pResult);
 
 void CContentDatabase::BuildDB()
 {     
   if(CContentDatabase::Shared()->IsRebuilding())
 	  return;
-
-  m_bIsRebuilding = true;
-  
-  CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] creating database. this may take a while.", __FILE__, __LINE__, false);
-  
-  CContentDatabase::Shared()->Execute("delete from objects");
-  CContentDatabase::Shared()->Execute("delete from playlist_items");
-	/*CContentDatabase::Shared()->Execute("delete from audio_items");
-	CContentDatabase::Shared()->Execute("delete from video_items");
-	CContentDatabase::Shared()->Execute("delete from image_items");*/
-	CContentDatabase::Shared()->Execute("delete from object_details");
-
 	
-  for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
-  {
-    if(DirectoryExists(CSharedConfig::Shared()->GetSharedDir(i)))
-    {  
-      //if(CSharedConfig::Shared()->GetDisplaySettings().bShowDirNamesInFirstLevel)
-      //{      
-        string sFileName;
-        ExtractFolderFromPath(CSharedConfig::Shared()->GetSharedDir(i), &sFileName);          
-        
-        stringstream sSql;
-        sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME) values ";
-        sSql << "(" << CONTAINER_STORAGE_FOLDER << ", ";
-        sSql << 0 << ", ";
-        sSql << "'" << CSharedConfig::Shared()->GetSharedDir(i) << "', ";
-        sSql << "'" << sFileName << "');";
-        
-				//cout << sSql.str() << endl; fflush(stdout);
-				
-        //CContentDatabase::Shared()->Lock();
-        long long int nRowId = Insert(sSql.str());
-        //CContentDatabase::Shared()->Unlock();
-        DbScanDir(CSharedConfig::Shared()->GetSharedDir(i), nRowId);
-      /*}
-      else
-      {
-        DbScanDir(CSharedConfig::Shared()->GetSharedDir(i), 0);        
-      }*/
-      
-    }
-    else {      
-      CSharedLog::Shared()->Log(L_WARNING, "shared directory: \"" + CSharedConfig::Shared()->GetSharedDir(i) + "\" not found", __FILE__, __LINE__, false);
-    }
-  } // for
-  
-  //cout << "parsing playlists" << endl;
-  BuildPlaylists();
-  //cout << "done parsing playlists" << endl;  
-    
-  CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] database created", __FILE__, __LINE__, false);
-  m_bIsRebuilding = false;
+	if(!m_bShared)
+	  return;
+		
+	if(m_RebuildThread != NULL) {
+	  fuppesThreadClose(m_RebuildThread);
+		m_RebuildThread = (fuppesThread)NULL;
+	}
+		
+	fuppesThreadStart(m_RebuildThread, BuildLoop);
+  g_bIsRebuilding = true;  
 }
 
-void CContentDatabase::DbScanDir(std::string p_sDirectory, long long int p_nParentId)
+bool CContentDatabase::IsRebuilding()
+{
+  return g_bIsRebuilding;
+}
+
+void DbScanDir(std::string p_sDirectory, long long int p_nParentId)
 {
   #ifdef WIN32  
   // append trailing backslash if neccessary
@@ -529,7 +507,7 @@ void CContentDatabase::DbScanDir(std::string p_sDirectory, long long int p_nPare
             
           
           //CContentDatabase::Shared()->Lock();
-          long long int nRowId = Insert(sSql.str());
+          long long int nRowId = CContentDatabase::Shared()->Insert(sSql.str());
           //CContentDatabase::Shared()->Unlock();
           if(nRowId == -1)
             cout << "ERROR: " << sSql.str() << endl;
@@ -734,9 +712,11 @@ unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL)
   return nRowId;
 }
 
-void CContentDatabase::BuildPlaylists()
+void BuildPlaylists()
 {
-  stringstream sGetPlaylists;
+  CContentDatabase* pDb = new CContentDatabase();
+	
+	stringstream sGetPlaylists;
     sGetPlaylists << 
     "select     " << 
     "  *        " <<
@@ -745,21 +725,23 @@ void CContentDatabase::BuildPlaylists()
     "where      " <<
     "  TYPE = 5 ";  
   
-  if(!this->Select(sGetPlaylists.str())) {
+  if(!pDb->Select(sGetPlaylists.str())) {
+	  delete pDb;
     return;
   }
   
   CSelectResult* pResult = NULL;
-  while(!this->Eof()) {
-    pResult = GetResult();    
+  while(!pDb->Eof()) {
+    pResult = pDb->GetResult();    
     ParsePlaylist(pResult);    
-    this->Next();
+    pDb->Next();
   }  
   
-  this->ClearResult();
+  pDb->ClearResult();
+  delete pDb;
 }
 
-void CContentDatabase::ParsePlaylist(CSelectResult* pResult)
+void ParsePlaylist(CSelectResult* pResult)
 {
   //cout << "PLAYLIST: " << pResult->GetValue("PATH") << endl;
   string sExt = ToLower(ExtractFileExt(pResult->GetValue("PATH")));
@@ -871,7 +853,7 @@ bool IsLocalFile(std::string p_sValue)
   return false;
 }
 
-void CContentDatabase::ParseM3UPlaylist(CSelectResult* pResult)
+void ParseM3UPlaylist(CSelectResult* pResult)
 {
   std::string  sContent = ReadFile(pResult->GetValue("PATH"));
   std::string  sFileName;
@@ -919,7 +901,7 @@ void CContentDatabase::ParseM3UPlaylist(CSelectResult* pResult)
   }
 }
 
-void CContentDatabase::ParsePLSPlaylist(CSelectResult* pResult)
+void ParsePLSPlaylist(CSelectResult* pResult)
 {
   std::string sContent = ReadFile(pResult->GetValue("PATH"));
   RegEx rxNumber("NumberOfEntries=(\\d+)", PCRE_CASELESS);
@@ -989,4 +971,60 @@ void CContentDatabase::ParsePLSPlaylist(CSelectResult* pResult)
     }
     
   } /* for(int i = 0; i < nEntryCount; i++) */
+}
+
+
+fuppesThreadCallback BuildLoop(void* arg)
+{
+  CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] creating database. this may take a while.", __FILE__, __LINE__, false);
+  
+  CContentDatabase::Shared()->Execute("delete from objects");
+  CContentDatabase::Shared()->Execute("delete from playlist_items");
+	/*CContentDatabase::Shared()->Execute("delete from audio_items");
+	CContentDatabase::Shared()->Execute("delete from video_items");
+	CContentDatabase::Shared()->Execute("delete from image_items");*/
+	CContentDatabase::Shared()->Execute("delete from object_details");
+
+	
+  for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
+  {
+    if(DirectoryExists(CSharedConfig::Shared()->GetSharedDir(i)))
+    {  
+      //if(CSharedConfig::Shared()->GetDisplaySettings().bShowDirNamesInFirstLevel)
+      //{      
+        string sFileName;
+        ExtractFolderFromPath(CSharedConfig::Shared()->GetSharedDir(i), &sFileName);          
+        
+        stringstream sSql;
+        sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME) values ";
+        sSql << "(" << CONTAINER_STORAGE_FOLDER << ", ";
+        sSql << 0 << ", ";
+        sSql << "'" << CSharedConfig::Shared()->GetSharedDir(i) << "', ";
+        sSql << "'" << sFileName << "');";
+        
+				//cout << sSql.str() << endl; fflush(stdout);
+				
+        //CContentDatabase::Shared()->Lock();
+        long long int nRowId = CContentDatabase::Shared()->Insert(sSql.str());
+        //CContentDatabase::Shared()->Unlock();
+        DbScanDir(CSharedConfig::Shared()->GetSharedDir(i), nRowId);
+      /*}
+      else
+      {
+        DbScanDir(CSharedConfig::Shared()->GetSharedDir(i), 0);        
+      }*/
+      
+    }
+    else {      
+      CSharedLog::Shared()->Log(L_WARNING, "shared directory: \"" + CSharedConfig::Shared()->GetSharedDir(i) + "\" not found", __FILE__, __LINE__, false);
+    }
+  } // for
+  
+  //cout << "parsing playlists" << endl;
+  BuildPlaylists();
+  //cout << "done parsing playlists" << endl;  
+    
+  CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] database created", __FILE__, __LINE__, false);
+  g_bIsRebuilding = false;
+  fuppesThreadExit();
 }

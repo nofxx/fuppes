@@ -1,26 +1,24 @@
 Version 0.7.2
-  - new functions
-	
-    * initial XBox 360 support
-    * initial UPnP Search support
-    * initial support for device specific settings
-		* initial support for ImageMagick
-	
-  - fixed bugs
-	
-    * fixed ip address detection
-    * fixed crash if config is malformed
-    * fixed urlencoded form value handling
-    * fixed compilation error
-      (implemented detection of second iconv param)
+  * initial XBox 360 support
+  * initial UPnP Search support
+  * initial support for device specific settings
+  * initial support for ImageMagick
+  * libiconv optional
 
-  - todo
-    * send utf-8 encoding in http header
-		* README
-		
-  * win32 (pcre from 3.3.7 to 3.3.13)
-  * initial windows gui
+  * fixed ip address detection
+  * fixed crash if fuppes config is malformed
+  * fixed urlencoded form value handling
+  * fixed compilation error
+	(implemented detection of second iconv param)
+  * HTTP client requests will no longer block
+	the main thread
 
+  * fixed bug #1669624
+	 (thanks to Jochen <jochen2 at users.sourceforge.net> and 
+	 Justin Maggard <jmaggard at users.sourceforge.net>)
+
+  * win32 (updated sqlite from 3.3.7 to 3.3.13)
+  * initial windows gui	
 
 Version 0.7.1 (2007-02-03)
   * fixed bug #1650930 (win32)
