@@ -72,6 +72,7 @@ struct FileType_t FileTypes[] =
   /* video types */
   {"mpeg", ITEM_VIDEO_ITEM_MOVIE, "video/mpeg"},
   {"mpg" , ITEM_VIDEO_ITEM_MOVIE, "video/mpeg"},
+  {"mp4" , ITEM_VIDEO_ITEM_MOVIE, "video/mpeg"},
   {"avi" , ITEM_VIDEO_ITEM_MOVIE, "video/x-msvideo"},
   {"wmv" , ITEM_VIDEO_ITEM_MOVIE, "video/x-ms-wmv"},
   {"vob" , ITEM_VIDEO_ITEM_MOVIE, "video/x-ms-vob"},
@@ -223,6 +224,24 @@ std::string CFileDetails::GetObjectTypeAsString(unsigned int p_nObjectType)
     default :
       return "CFileDetails::GetObjectTypeAsString() :: unhandled type (please send a bugreport)";
   }
+}
+
+bool CFileDetails::IsSupportedFileExtension(std::string p_sFileExtension)
+{
+  p_sFileExtension = ToLower(p_sFileExtension);
+  struct FileType_t* pType;   
+  
+  pType = FileTypes;
+  while(!pType->sExt.empty()) {
+	
+    if(pType->sExt.compare(p_sFileExtension) == 0) {
+      return true;
+    } 
+	
+    pType++;
+  }
+
+  return false;
 }
 
 bool CFileDetails::IsTranscodingExtension(std::string p_sExt)
@@ -388,7 +407,7 @@ bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoIt
 		
 	// duration
 	if(pFormatCtx->duration != AV_NOPTS_VALUE) {
-  	cout << pFormatCtx->duration << endl;
+  	//cout << pFormatCtx->duration << endl;
  
 	  int hours, mins, secs, us;
 		secs = pFormatCtx->duration / AV_TIME_BASE;

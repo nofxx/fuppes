@@ -450,58 +450,6 @@ std::string CSharedConfig::GetConfigDir()
   return sResult.str();
 }
 
-bool CSharedConfig::IsSupportedFileExtension(std::string p_sFileExtension)
-{  
-  /* TODO :: 
-    - bei Bedarf '.' abschneiden
-    - extensions + transcoding [ja|nein] aus der config lesen  */
-  
-  p_sFileExtension = ToLower(p_sFileExtension);
-  
-  /* Audio */
-  if((ToLower(p_sFileExtension).compare("mp3") == 0))
-    return true;
-  else if((ToLower(p_sFileExtension).compare("ogg") == 0))
-    return true;
-  else if((ToLower(p_sFileExtension).compare("mpc") == 0))
-    return true;
-  else if((ToLower(p_sFileExtension).compare("flac") == 0))
-    return true;
-    
-  /* Images */
-  else if((ToLower(p_sFileExtension).compare("jpeg") == 0) || (ToLower(p_sFileExtension).compare("jpg") == 0))
-    return true;
-  else if(ToLower(p_sFileExtension).compare("png") == 0)
-    return true;
-  else if(ToLower(p_sFileExtension).compare("bmp") == 0)
-    return true;
-  else if(ToLower(p_sFileExtension).compare("gif") == 0)
-    return true;
-    
-  /* Video */   
-  else if((ToLower(p_sFileExtension).compare("mpeg") == 0) || (ToLower(p_sFileExtension).compare("mpg") == 0))
-    return true;
-  else if((ToLower(p_sFileExtension).compare("avi") == 0))
-    return true;
-  else if((ToLower(p_sFileExtension).compare("wmv") == 0))
-    return true;
-  else if((ToLower(p_sFileExtension).compare("vdr") == 0))
-    return true;
-  else if((ToLower(p_sFileExtension).compare("vob") == 0))
-    return true;
-  /*else if((ToLower(p_sFileExtension).compare("rm") == 0))
-    return true;*/
-  
-  /* Playlists */
-  else if((p_sFileExtension.compare("m3u") == 0) || (p_sFileExtension.compare("pls") == 0))
-    return true;
-  
-  else
-    return false;
-}
-
-
-
 /*void CSharedConfig::SetMaxFileNameLength(unsigned int p_nMaxFileNameLenght)
 {
   if(!m_pContentDirNode)

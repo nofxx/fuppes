@@ -97,11 +97,7 @@ class CSharedConfig
   std::string GetConfigFileName() { return m_sConfigFileName; }
   
   std::string GetSharedDir(unsigned int p_nDirIdx);
-  unsigned int SharedDirCount();
-  
-  bool IsSupportedFileExtension(std::string p_sFileExtension);
-  
-  
+  unsigned int SharedDirCount();  
   
   unsigned int AllowedIPCount();
   std::string GetAllowedIP(unsigned int p_nIdx);

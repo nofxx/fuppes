@@ -498,10 +498,10 @@ void DbScanDir(std::string p_sDirectory, long long int p_nParentId)
         string sTmpFileName = pDirEnt->d_name;        
   #endif  
         string sExt = ExtractFileExt(sTmp.str());
-        
+
         /* directory */
         if(IsDirectory(sTmp.str()))
-        {
+        {				
           sTmpFileName = ToUTF8(sTmpFileName);
           sTmpFileName = SQLEscape(sTmpFileName);
           
@@ -522,7 +522,7 @@ void DbScanDir(std::string p_sDirectory, long long int p_nParentId)
           // recursively scan subdirectories
           DbScanDir(sTmp.str(), nRowId);          
         }
-        else if(IsFile(sTmp.str()) && CSharedConfig::Shared()->IsSupportedFileExtension(sExt))
+        else if(IsFile(sTmp.str()) && CFileDetails::Shared()->IsSupportedFileExtension(sExt))
         {
           InsertFile(p_nParentId, sTmp.str());
         }   
@@ -559,7 +559,7 @@ unsigned int InsertAudioFile(unsigned int p_nObjectId, std::string p_sFileName)
 		TrackInfo.mAudioItem.nBitrate << ", " <<
 		TrackInfo.mAudioItem.nSampleRate << ")";
 		
-	cout << sSql.str() << endl;
+	//cout << sSql.str() << endl;
 		
 	CContentDatabase* pDB = new CContentDatabase();          
   unsigned int nRowId = pDB->Insert(sSql.str());
@@ -593,7 +593,7 @@ unsigned int InsertImageFile(unsigned int p_nObjectId, std::string p_sFileName)
 		ImageItem.nWidth << ", " <<
 		ImageItem.nHeight << ")";
 	
-	cout << sSql.str() << endl;
+	//cout << sSql.str() << endl;
 		
 	CContentDatabase* pDB = new CContentDatabase();          
   unsigned int nRowId = pDB->Insert(sSql.str());
@@ -620,7 +620,7 @@ unsigned int InsertVideoFile(unsigned int p_nObjectId, std::string p_sFileName)
 		VideoItem.nSize << ", " <<
 		VideoItem.nBitrate << ");";
 	
-	cout << sSql.str() << endl;
+	//cout << sSql.str() << endl;
 		
 	CContentDatabase* pDB = new CContentDatabase();          
   unsigned int nRowId = pDB->Insert(sSql.str());

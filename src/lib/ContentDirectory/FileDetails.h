@@ -142,6 +142,7 @@ class CFileDetails
     bool GetImageDetails(std::string p_sFileName, SImageItem* pImageItem);
 	  bool GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoItem);
 	
+    bool IsSupportedFileExtension(std::string p_sFileExtension);
     static bool IsTranscodingExtension(std::string p_sExt);
     static std::string GetTargetExtension(std::string p_sExt);
   

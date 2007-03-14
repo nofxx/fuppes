@@ -1102,7 +1102,9 @@ std::string CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch)
 	pDb->ClearResult();
 
   // get items
-  string sItems = "select o.*, d.* from OBJECTS o left join OBJECT_DETAILS d on (d.OBJECT_ID = o.ID) " + pSearch->BuildSQL(true);
+  string sItems = "select o.*, d.* from OBJECTS o left join OBJECT_DETAILS d on (d.OBJECT_ID = o.ID) " + 
+									pSearch->BuildSQL(true) +
+									"order by o.TYPE, o.FILE_NAME; ";
 	int nNumberReturned = 0;
 
   cout << sItems << endl;
