@@ -491,6 +491,15 @@ bool fuppesSocketSetNonBlocking(upnpSocket p_SocketHandle)
   return true;
 }
 
+int fuppesSocketClose(fuppesSocket p_SocketHandle)
+{
+  #ifdef WIN32
+  return closesocket(p_SocketHandle);
+  #else
+  return close(p_SocketHandle);
+  #endif  
+}
+
 /*===============================================================================
  Thread functions
 ===============================================================================*/

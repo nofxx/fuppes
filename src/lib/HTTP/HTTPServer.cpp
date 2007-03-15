@@ -93,21 +93,33 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 	#endif
 	
 	#ifdef USE_SO_NOSIGPIPE
-  int flag = 1;
-  int nOpt = setsockopt(m_Socket, SOL_SOCKET, SO_NOSIGPIPE, &flag, sizeof(flag));	  
+  int use_sigpipe = 1;
+  int nOpt = setsockopt(m_Socket, SOL_SOCKET, SO_NOSIGPIPE, &use_sigpipe, sizeof(use_sigpipe));	  
 	if(nOpt < 0)
 	  throw EException("failed to setsockopt(SO_NOSIGPIPE)", __FILE__, __LINE__);
   #endif 
-	 
+
   // set local end point
 	local_ep.sin_family      = AF_INET;
 	local_ep.sin_addr.s_addr = inet_addr(p_sIPAddress.c_str());
 	local_ep.sin_port				 = htons(CSharedConfig::Shared()->GetHTTPPort());
 	memset(&(local_ep.sin_zero), '\0', 8);
 	
+  int nRet  = 0;
+  #ifdef WIN32  
+  bool bOptVal = true;
+  nRet = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, (char*)&bOptVal, sizeof(bool));
+  #else
+  int flag = 1;
+  nRet = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
+  #endif
+  if(nRet == -1) {
+    throw EException("failed to setsockopt: SO_REUSEADDR", __FILE__, __LINE__);
+  }
+
   // bind the socket
-	int nRet = bind(m_Socket, (struct sockaddr*)&local_ep, sizeof(local_ep));	
-  if(nRet == -1)   
+	nRet = bind(m_Socket, (struct sockaddr*)&local_ep, sizeof(local_ep));	
+  if(nRet == -1)
     throw EException("failed to bind socket", __FILE__, __LINE__);
   
   // fetch local end point to get port number on random ports
@@ -158,11 +170,12 @@ void CHTTPServer::Stop()
     fuppesThreadClose(accept_thread);
     accept_thread = (fuppesThread)NULL;    
   }
-    
+   
+  // kill all remaining connections
   CleanupSessions();
-  
+
   // close socket
-  upnpSocketClose(m_Socket);
+  fuppesSocketClose(m_Socket);
   m_bIsRunning = false;
   
   CSharedLog::Shared()->Log(L_EXTENDED, "HTTPServer stopped", __FILE__, __LINE__);
@@ -213,15 +226,15 @@ void CHTTPServer::CleanupSessions()
     // ... and close terminated threads
     CHTTPSessionInfo* pInfo = *m_ThreadListIterator;   
     if(pInfo && pInfo->m_bIsTerminated && fuppesThreadClose(pInfo->GetThreadHandle()))
-    {       
+    {           
       std::list<CHTTPSessionInfo*>::iterator tmpIt = m_ThreadListIterator;      
       ++tmpIt;                 
       m_ThreadList.erase(m_ThreadListIterator);
       m_ThreadListIterator = tmpIt;
       delete pInfo; 
       continue;
-    }    
-    
+    }        
+
     m_ThreadListIterator++;    
   }
 }
@@ -268,6 +281,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
   // loop	
 	while(!pHTTPServer->m_bBreakAccept)
 	{
+  
     // accept new connection
     nConnection = accept(nSocket, (struct sockaddr*)&remote_ep, &size);   
 		if(nConnection == -1) {
@@ -277,7 +291,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
 			#endif
 			continue;
 		}
-			
+
     // log
     stringstream sMsg;
     sMsg << "new connection from " << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port);
@@ -293,16 +307,16 @@ fuppesThreadCallback AcceptLoop(void *arg)
     // start session thread ...
     CHTTPSessionInfo* pSession = new CHTTPSessionInfo(pHTTPServer, nConnection, remote_ep);      
     fuppesThread SessionThread = (fuppesThread)NULL;
-    
     fuppesThreadStartArg(SessionThread, SessionLoop, *pSession);
     pSession->SetThreadHandle(SessionThread);
+
     // ... and store the thread in the session list
     pHTTPServer->m_ThreadList.push_back(pSession);
 		
     // cleanup closed sessions
     pHTTPServer->CleanupSessions();
 	}  
-	  
+
   CSharedLog::Shared()->Log(L_EXTENDED, "exiting accept loop", __FILE__, __LINE__);
   pHTTPServer->CleanupSessions();
 	fuppesThreadExit();
@@ -362,7 +376,7 @@ fuppesThreadCallback SessionLoop(void *arg)
   }  
   
   // close connection
-  upnpSocketClose(pSession->GetConnection());
+  fuppesSocketClose(pSession->GetConnection());
   
   // clean up
   delete pRequest;

@@ -128,7 +128,7 @@ void fuppesSleep(unsigned int p_nMilliseconds);
 #endif
 
 bool fuppesSocketSetNonBlocking(fuppesSocket p_SocketHandle);
-
+int  fuppesSocketClose(fuppesSocket p_SocketHandle);
 
 /*===============================================================================
  Thread definitions and functions
