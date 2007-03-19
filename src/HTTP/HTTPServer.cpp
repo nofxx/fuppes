@@ -93,11 +93,24 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 	#endif
 	
 	#ifdef USE_SO_NOSIGPIPE
-  int flag = 1;
-  int nOpt = setsockopt(m_Socket, SOL_SOCKET, SO_NOSIGPIPE, &flag, sizeof(flag));	  
+  int sigpipe = 1;
+  int nOpt = setsockopt(m_Socket, SOL_SOCKET, SO_NOSIGPIPE, &sigpipe, sizeof(sigpipe));	  
 	if(nOpt < 0)
 	  throw EException("failed to setsockopt(SO_NOSIGPIPE)", __FILE__, __LINE__);
   #endif 
+	
+	
+	int nRet  = 0;
+  #ifdef WIN32  
+  bool bOptVal = true;
+  nRet = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, (char*)&bOptVal, sizeof(bool));
+  #else
+  int flag = 1;
+  nRet = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
+  #endif
+  if(nRet == -1) {
+    throw EException("failed to setsockopt: SO_REUSEADDR", __FILE__, __LINE__);
+  }
 	 
   // set local end point
 	local_ep.sin_family      = AF_INET;
@@ -106,7 +119,7 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 	memset(&(local_ep.sin_zero), '\0', 8);
 	
   // bind the socket
-	int nRet = bind(m_Socket, (struct sockaddr*)&local_ep, sizeof(local_ep));	
+	nRet = bind(m_Socket, (struct sockaddr*)&local_ep, sizeof(local_ep));	
   if(nRet == -1)   
     throw EException("failed to bind socket", __FILE__, __LINE__);
   

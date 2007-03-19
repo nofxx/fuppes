@@ -409,18 +409,18 @@ bool CUPnPDevice::ParseDescription(std::string p_sDescription)
   
 	// friendlyName
 	pTmpNode = FindNode("friendlyName", pRootNode, true);
-	if(pTmpNode)
+	if(pTmpNode && pTmpNode->children)
 	  m_sFriendlyName = (char*)pTmpNode->children->content;
 
 	// UDN
-	pTmpNode = FindNode("UDN", pRootNode, true);
-	if(pTmpNode) {
+	/*pTmpNode = FindNode("UDN", pRootNode, true);
+	if(pTmpNode && pTmpNode->children) {
 	  //m_sUUID = 
-	}
+	}*/
 	
 	// deviceType
 	pTmpNode = FindNode("deviceType", pRootNode, true);
-	if(pTmpNode) {
+	if(pTmpNode && pTmpNode->children) {
 	  string sDevType = ToLower((char*)pTmpNode->children->content);
 		
     if(sDevType.compare("urn:schemas-upnp-org:device:mediarenderer:1") == 0)    
@@ -433,19 +433,19 @@ bool CUPnPDevice::ParseDescription(std::string p_sDescription)
 				
 	// presentationURL
 	pTmpNode = FindNode("presentationURL", pRootNode, true);
-	if(pTmpNode) {
+	if(pTmpNode && pTmpNode->children) {
 	  m_sPresentationURL = (char*)pTmpNode->children->content;
 	}
 				
 	// manufacturer
 	pTmpNode = FindNode("manufacturer", pRootNode, true);
-	if(pTmpNode) {
+	if(pTmpNode && pTmpNode->children) {
 	  m_sManufacturer = (char*)pTmpNode->children->content;
 	}			
 				
 	// manufacturerURL
 	pTmpNode = FindNode("manufacturerURL", pRootNode, true);
-	if(pTmpNode) {
+	if(pTmpNode && pTmpNode->children) {
 	  m_sManufacturerURL = (char*)pTmpNode->children->content;
 	}	
 				

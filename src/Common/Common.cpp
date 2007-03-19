@@ -40,7 +40,19 @@
 #include <algorithm>
 #include <cctype>
 #include <fcntl.h>
+
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
+#ifndef WIN32
+#ifdef HAVE_ICONV
 #include <iconv.h>
+#endif
+#else
+#define ICONV_SECOND_ARG const char**
+#endif
+
 
 using namespace std;
 
@@ -403,12 +415,13 @@ std::string SQLEscape(std::string p_sValue)
 
 std::string ToUTF8(std::string p_sValue)
 {
+  #ifdef HAVE_ICONV
   if(xmlCheckUTF8((const unsigned char*)p_sValue.c_str()))
     return p_sValue;
    
   if(CSharedConfig::Shared()->GetLocalCharset().compare("UTF-8") == 0)
     return p_sValue;
-  
+	
   iconv_t icv = iconv_open("UTF-8", CSharedConfig::Shared()->GetLocalCharset().c_str());  
   if(icv < 0)  
     return p_sValue;  
@@ -423,18 +436,16 @@ std::string ToUTF8(std::string p_sValue)
   char* pOutBuf    = szOutBuf;  
   memset(szOutBuf, 0, p_sValue.length() * 2 + 1);
   
-  #ifdef WIN32
-  iconv(icv, (const char**)&szInBuf, &nInbytes, &pOutBuf, &nOutbytes);
-  #else
-  iconv(icv, &szInBuf, &nInbytes, &pOutBuf, &nOutbytes);  
-  #endif
+	iconv(icv, (ICONV_SECOND_ARG)&szInBuf, &nInbytes, &pOutBuf, &nOutbytes); 
+	
   p_sValue = szOutBuf;  
     
   iconv_close(icv); 
   
   delete[] szOutBuf;
   //delete[] szInBuf;
-  
+  #endif
+	
   return p_sValue;
 }
 

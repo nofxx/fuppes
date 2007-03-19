@@ -223,7 +223,7 @@ int main(int argc, char* argv[])
   #endif*/
 
   cout << "FUPPES - Free UPnP Entertainment Service " << CSharedConfig::Shared()->GetAppVersion() << endl;
-  cout << "http://fuppes.sourceforge.net" << endl << endl;
+  cout << "http://fuppes.ulrich-voelkel.de" << endl << endl;
 
   if(!CSharedConfig::Shared()->SetupConfig())
     return 1;

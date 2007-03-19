@@ -79,7 +79,7 @@
 
 #endif
 
-const std::string FUPPES_VERSION = "0.7.1";
+const std::string FUPPES_VERSION = "0.7.2";
 
 const std::string NEEDED_CONFIGFILE_VERSION = "0.7";
 
@@ -607,8 +607,14 @@ bool CSharedConfig::ReadConfigFile(bool p_bIsInit)
     if(FileExists(m_sConfigFileName))
     { 
       m_pDoc = xmlReadFile(m_sConfigFileName.c_str(), NULL, XML_PARSE_NOBLANKS);
-      if(m_pDoc != NULL)  
+      if(m_pDoc != NULL) {  
         bResult = true;
+			}
+			else {
+			  cout << "[ERROR] parsing config file \"" << m_sConfigFileName << "\"." << endl;
+        fflush(stdout);
+				return false;
+			}
     }
     /* config does not exist 
        write default config, reload it and show

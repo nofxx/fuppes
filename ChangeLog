@@ -1,3 +1,10 @@
+Version 0.7.2 (2007-03-??)
+  * fixed bug #1671132 (win32) (root directory)               TESTEN !!!!
+  * fixed bug #1669624 (crash on empty description fields)
+  * fixed compile bug on Free BSD (wrong iconv parameter)     TESTEN !!!!
+  * fixed crash on malformed config
+	* fixed bind error when restarting with a fixed http port
+
 Version 0.7.1 (2007-02-03)
   * fixed bug #1650930 (win32)
   * Mac OS X fixes
