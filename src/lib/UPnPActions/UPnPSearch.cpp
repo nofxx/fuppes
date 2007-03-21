@@ -44,16 +44,27 @@ CUPnPSearch::~CUPnPSearch()
   return HexToInt(m_sObjectID);
 }*/
 
+std::string StringReplace(std::string p_sIn, std::string p_sSearch, std::string p_sReplace)
+{
+  std::string p_sResult;
+	if(p_sIn.find(p_sSearch) == std::string::npos)
+	  return p_sIn;
+	
+  while(p_sIn.find(p_sSearch) != std::string::npos)
+	{
+	  p_sResult += p_sIn.substr(0, p_sIn.find(p_sSearch)) + p_sReplace;
+		p_sIn      = p_sIn.substr(p_sIn.find(p_sSearch) + p_sSearch.length(), p_sIn.length());
+	}
+	p_sResult += p_sIn;
+	
+	return p_sResult;
+}
+
 std::string CUPnPSearch::BuildSQL(bool p_bLimit)
 {
-
-
   /*std::string sTest;
 	sTest = "(upnp:class contains \"object.item.imageItem\") and (dc:title = \"test \\\"dahhummm\\\" [xyz] §$%&(abc) titel\") or author exists true and (title exists false and (author = \"test\" or author = \"dings\"))";
 */
-
-//cout << sTest << endl;
-
 
   string sOpenBr;
 	string sProp;
@@ -62,12 +73,17 @@ std::string CUPnPSearch::BuildSQL(bool p_bLimit)
 	string sCloseBr;
 	string sLogOp = "where";
 	bool   bNumericProp = false;
-	bool   bLikeOp = false;
+	bool   bLikeOp  = false;
+  bool   bBuildOK = false;
 
   stringstream sSql;
 
 
-  //sSql << "select o.*, d.* from OBJECTS o left join OBJECT_DETAILS d on (d.ID = o.ID) " << endl;
+  // xbox 360 uses &quot; instead of "
+	if(GetDeviceSettings()->m_bXBox360Support) {
+	  m_sSearchCriteria = StringReplace(m_sSearchCriteria, "&quot;", "\"");
+	}
+
 
   cout << m_sSearchCriteria << endl;
 
@@ -91,6 +107,9 @@ std::string CUPnPSearch::BuildSQL(bool p_bLimit)
 			}
 			else {
 				
+				
+				bBuildOK = true;
+				
 				// replace property
 				if(sProp.compare("upnp:class") == 0) {
 				  sProp = "o.TYPE";
@@ -100,6 +119,10 @@ std::string CUPnPSearch::BuildSQL(bool p_bLimit)
 				  sProp = "o.TITLE";
 					bNumericProp = false;
 				}
+				else {
+				  bBuildOK = false;
+				}
+				
 				
 				// replace operator
 				bLikeOp = false;
@@ -111,6 +134,13 @@ std::string CUPnPSearch::BuildSQL(bool p_bLimit)
 						
 					bLikeOp = true;
 				}
+				else if (sOp.compare("derivedfrom") == 0) {
+				  sOp = "in";
+				} 
+				else {
+				  bBuildOK = false;
+				}
+				
 				
 				// trim value
 				cout << "Val: " << sVal << " => ";
@@ -125,6 +155,9 @@ std::string CUPnPSearch::BuildSQL(bool p_bLimit)
 					  sVal = "(2, 200, 201)";	
 					else if(sVal.compare("object.item.videoItem") == 0)
 					  sVal = "(3, 300, 301)";
+						
+					else
+					  bBuildOK = false;
 				} 
 				else if (!bNumericProp) {
 				  if(bLikeOp)
@@ -133,9 +166,14 @@ std::string CUPnPSearch::BuildSQL(bool p_bLimit)
 						sVal = "'" + sVal + "'";
 				}
 				
-			}
+			} // != exists
 		
-		  sSql << sOpenBr << sProp << " " << sOp << " " << sVal << sCloseBr << " ";
+		  if(bBuildOK)
+  			sSql << sOpenBr << sProp << " " << sOp << " " << sVal << sCloseBr << " ";
+			else
+			  cout << "error parsing search request (part): " << rxSearch.Match(0) << endl;
+			  
+			
 		}	while (rxSearch.SearchAgain());
 	}
 	else {

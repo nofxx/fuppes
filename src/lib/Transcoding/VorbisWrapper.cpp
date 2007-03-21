@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -60,8 +60,11 @@ bool CVorbisDecoder::LoadLib()
   CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening vorbisfile.dll");
   m_LibHandle = FuppesLoadLibrary("vorbisfile.dll");  
   #else
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libvorbis");
-  m_LibHandle = FuppesLoadLibrary("/opt/local/lib/libvorbisfile.dylib");
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libvorbisfile");
+  m_LibHandle = FuppesLoadLibrary("libvorbisfile.so");
+	if(!m_LibHandle) {
+    m_LibHandle = FuppesLoadLibrary("libvorbisfile.dylib");
+	}
   #endif
   if(!m_LibHandle)
   {

@@ -423,7 +423,7 @@ bool CUPnPDevice::ParseDescription(std::string p_sDescription)
   
   
 
-  
+  #warning todo: uuid
   RegEx rxUUID("<UDN>uuid:(.+)</UDN>", PCRE_CASELESS);
   if(rxUUID.Search(p_sDescription.c_str())) {
     m_sUUID = rxUUID.Match(1);

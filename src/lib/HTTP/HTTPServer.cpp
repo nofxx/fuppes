@@ -99,12 +99,9 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 	  throw EException("failed to setsockopt(SO_NOSIGPIPE)", __FILE__, __LINE__);
   #endif 
 
-  // set local end point
-	local_ep.sin_family      = AF_INET;
-	local_ep.sin_addr.s_addr = inet_addr(p_sIPAddress.c_str());
-	local_ep.sin_port				 = htons(CSharedConfig::Shared()->GetHTTPPort());
-	memset(&(local_ep.sin_zero), '\0', 8);
 	
+	// set socket option SO_REUSEADDR so restarting fuppes with
+	// a fixed http port will not lead to a bind error
   int nRet  = 0;
   #ifdef WIN32  
   bool bOptVal = true;
@@ -117,6 +114,12 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
     throw EException("failed to setsockopt: SO_REUSEADDR", __FILE__, __LINE__);
   }
 
+  // set local end point
+	local_ep.sin_family      = AF_INET;
+	local_ep.sin_addr.s_addr = inet_addr(p_sIPAddress.c_str());
+	local_ep.sin_port				 = htons(CSharedConfig::Shared()->GetHTTPPort());
+	memset(&(local_ep.sin_zero), '\0', 8);
+	
   // bind the socket
 	nRet = bind(m_Socket, (struct sockaddr*)&local_ep, sizeof(local_ep));	
   if(nRet == -1)
