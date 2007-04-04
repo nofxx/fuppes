@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,10 +21,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "UDPSocket.h"
 #include "../SharedLog.h"
 #include "../SharedConfig.h"
@@ -35,36 +30,13 @@
 
 using namespace std;
 
-/*===============================================================================
- CONSTANTS
-===============================================================================*/
-
 const string LOGNAME = "UDPSocket";
-
-/*===============================================================================
- DEFINITIONS
-===============================================================================*/
 
 #define MULTICAST_PORT 1900
 #define MULTICAST_IP   "239.255.255.250"
 
-/*===============================================================================
- THREAD
-===============================================================================*/
-
 fuppesThreadCallback ReceiveLoop(void *arg);
 
-/*===============================================================================
- CLASS CUDPSocket
-===============================================================================*/
-
-/* <PUBLIC> */
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-
-/* constructor */
 CUDPSocket::CUDPSocket()
 {	
 	/* Init members */
@@ -73,16 +45,11 @@ CUDPSocket::CUDPSocket()
   m_pReceiveHandler        = NULL;
 }	
 	
-/* destructor */
 CUDPSocket::~CUDPSocket()
 {
   /* Cleanup */
   //TeardownSocket();
 }
-
-/*===============================================================================
- CONTROL SOCKET
-===============================================================================*/
 
 /* SetupSocket */
 bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = "" */)
@@ -186,10 +153,6 @@ void CUDPSocket::TeardownSocket()
   upnpSocketClose(m_Socket);
 }
 
-/*===============================================================================
- SEND MESSAGES
-===============================================================================*/
-
 /* SendMulticast */
 void CUDPSocket::SendMulticast(std::string p_sMessage)
 {
@@ -210,10 +173,6 @@ void CUDPSocket::SendUnicast(std::string p_sMessage, sockaddr_in p_RemoteEndPoin
   /* Send message */
   sendto(m_Socket, p_sMessage.c_str(), (int)strlen(p_sMessage.c_str()), 0, (struct sockaddr*)&p_RemoteEndPoint, sizeof(p_RemoteEndPoint));  
 }
-
-/*===============================================================================
- RECEIVE MESSAGES
-===============================================================================*/
 
 /* BeginReceive */
 void CUDPSocket::BeginReceive()
@@ -250,10 +209,6 @@ void CUDPSocket::CallOnReceive(CSSDPMessage* pSSDPMessage)
 	  m_pReceiveHandler->OnUDPSocketReceive(pSSDPMessage);
 }
 
-/*===============================================================================
- GET
-===============================================================================*/
-
 /* GetSocketFd */
 upnpSocket CUDPSocket::GetSocketFd()
 {
@@ -277,10 +232,6 @@ sockaddr_in CUDPSocket::GetLocalEndPoint()
 {
 	return m_LocalEndpoint;
 }
-
-/*===============================================================================
- THREAD
-===============================================================================*/
 
 fuppesThreadCallback ReceiveLoop(void *arg)
 {

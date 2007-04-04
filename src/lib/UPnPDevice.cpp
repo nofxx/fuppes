@@ -361,7 +361,6 @@ xmlNode* FindNode(std::string p_sNodeName, xmlNode* pParentNode = NULL, bool p_b
 /* ParseDescription */
 bool CUPnPDevice::ParseDescription(std::string p_sDescription)
 {
-  #warning todo: parse complete description
   //cout << p_sDescription << endl;
 	
   xmlDocPtr pDoc = NULL;

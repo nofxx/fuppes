@@ -145,8 +145,8 @@ int  fuppesSocketClose(fuppesSocket p_SocketHandle);
 int  fuppesThreadCancel(fuppesThread p_ThreadHandle);
 bool fuppesThreadClose(fuppesThread p_ThreadHandle);
 
-bool fuppesThreadLockMutex(fuppesThreadMutex* p_ThreadMutex);
-bool fuppesThreadUnlockMutex(fuppesThreadMutex* p_ThreadMutex);
+void fuppesThreadLockMutex(fuppesThreadMutex* p_ThreadMutex);
+void fuppesThreadUnlockMutex(fuppesThreadMutex* p_ThreadMutex);
 
 
 /*===============================================================================

@@ -52,7 +52,8 @@ class IMSearchSession
 /* <PUBLIC> */
 
 public:
-    
+  virtual ~IMSearchSession() {};
+        
   virtual void OnSessionReceive(CSSDPMessage* pMessage) = 0;
   virtual void OnSessionTimeOut(CMSearchSession* pSender) = 0;
 
@@ -128,6 +129,7 @@ class CHandleMSearchSession;
 class IHandleMSearchSession
 {
   public:
+    virtual ~IHandleMSearchSession() {};
     virtual void OnSessionEnd(CHandleMSearchSession* pSender) = 0;
 };
   

@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -33,7 +32,7 @@
 
 using namespace std;
 
-CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent)
+CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent, CDeviceSettings* pDeviceSettings)
 {  
   xmlDocPtr pDoc = NULL;
   pDoc = xmlReadMemory(p_sContent.c_str(), p_sContent.length(), "", NULL, 0);
@@ -67,36 +66,45 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent)
 	{    
     if(sName.compare("Browse") == 0) {
       pAction = new CUPnPBrowse(p_sContent);
+      pAction->SetDeviceSettings(pDeviceSettings);
       ParseBrowseAction((CUPnPBrowse*)pAction);
     }
 	  else if(sName.compare("Search") == 0) {
 	    pAction = new CUPnPSearch(p_sContent);
+      pAction->SetDeviceSettings(pDeviceSettings);
 		  ParseSearchAction((CUPnPSearch*)pAction);
 	  }
     else if(sName.compare("GetSearchCapabilities") == 0) {
-      pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_SEARCH_CAPABILITIES, p_sContent);
+      pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_SEARCH_CAPABILITIES, p_sContent);      
+      pAction->SetDeviceSettings(pDeviceSettings);
     }
     else if(sName.compare("GetSortCapabilities") == 0) {
       pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_SORT_CAPABILITIES, p_sContent);
+      pAction->SetDeviceSettings(pDeviceSettings);
     }
     else if(sName.compare("GetSystemUpdateID") == 0) {
       pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_SYSTEM_UPDATE_ID, p_sContent);
+      pAction->SetDeviceSettings(pDeviceSettings);
     }  
     else if(sName.compare("GetProtocolInfo") == 0) {
-    pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_PROTOCOL_INFO, p_sContent);
+      pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_PROTOCOL_INFO, p_sContent);
+      pAction->SetDeviceSettings(pDeviceSettings);
     }
 	}
 	else if(sNs.compare("urn:schemas-upnp-org:service:ConnectionManager:1") == 0)
 	{
 	  pAction = new CUPnPAction(UPNP_SERVICE_CONNECTION_MANAGER, UPNP_UNKNOWN, p_sContent);
+    pAction->SetDeviceSettings(pDeviceSettings);
 	}
 	else if(sNs.compare("urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1") == 0)
 	{
 	  if(sName.compare("IsAuthorized") == 0) {
 	    pAction = new CUPnPAction(UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR, UPNP_IS_AUTHORIZED, p_sContent);
+      pAction->SetDeviceSettings(pDeviceSettings);
 	  }
 	  else if(sName.compare("IsValidated") == 0) {
 	    pAction = new CUPnPAction(UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR, UPNP_IS_VALIDATED, p_sContent);
+      pAction->SetDeviceSettings(pDeviceSettings);
 	  }
 	}
 	
@@ -135,7 +143,15 @@ bool CUPnPActionFactory::ParseBrowseAction(CUPnPBrowse* pAction)
   </s:Envelope>*/
   
   /* Object ID */
-  RegEx rxObjId("<ObjectID>(.+)</ObjectID>");
+  string sRxObjId;
+  if(!pAction->GetDeviceSettings()->m_bXBox360Support) {
+    sRxObjId = "<ObjectID>(.+)</ObjectID>";
+  }
+  else {
+    // Xbox 360 does a browse using ContainerID instead of ObjectID for Pictures
+    sRxObjId = "<ContainerID>(.+)</ContainerID>";
+  }    
+  RegEx rxObjId(sRxObjId.c_str());
   if (rxObjId.Search(pAction->GetContent().c_str()))
     pAction->m_sObjectID = rxObjId.Match(1);
   

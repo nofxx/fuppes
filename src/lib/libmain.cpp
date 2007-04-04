@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -30,6 +29,7 @@
 #include "SharedLog.h"
 #include "Fuppes.h"
 #include "ContentDirectory/ContentDatabase.h"
+#include "ContentDirectory/VirtualContainerMgr.h"
 
 #ifdef WIN32
 #include <shellapi.h>
@@ -134,6 +134,11 @@ void fuppes_inc_loglevel()
 void fuppes_rebuild_db()
 {
   CContentDatabase::Shared()->BuildDB();
+}
+
+void fuppes_rebuild_vcontainers()
+{
+  CVirtualContainerMgr::Shared()->RebuildContainerList();
 }
 
 void fuppes_get_http_server_address(char* sz_addr, int n_buff_size)

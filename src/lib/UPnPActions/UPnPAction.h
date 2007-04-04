@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -26,7 +25,7 @@
 #define _UPNPACTION_H
 
 #include "../UPnPBase.h"
-#include "../Configuration/DeviceSettings.h"
+#include "../DeviceSettings/DeviceSettings.h"
 #include <string>
 
 #define UPNP_UNKNOWN 0

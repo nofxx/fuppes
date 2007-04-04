@@ -83,8 +83,8 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/MpcWrapper.h\
   lib/Transcoding/FlacWrapper.h\
   lib/GUI/NotificationMgr.h\
-	lib/Configuration/DeviceSettings.h\
-	lib/Configuration/DeviceIdentificationMgr.h\
+	lib/DeviceSettings/DeviceSettings.h\
+	lib/DeviceSetting/DeviceIdentificationMgr.h\
 	lib/XMSMediaReceiverRegistrar.h\
 	lib/SharedConfig.h\
   lib/SharedLog.h\
@@ -136,15 +136,19 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/MpcWrapper.cpp\
   lib/Transcoding/FlacWrapper.cpp\
   lib/GUI/NotificationMgr.cpp\
-	lib/Configuration/DeviceSettings.cpp\
-	lib/Configuration/DeviceIdentificationMgr.cpp\
+	lib/DeviceSettings/DeviceSettings.cpp\
+	lib/DeviceSettings/DeviceIdentificationMgr.cpp\
 	lib/XMSMediaReceiverRegistrar.cpp\
 	lib/SharedConfig.cpp\
   lib/SharedLog.cpp\
 	lib/Fuppes.cpp\
-	lib/libmain.cpp                      \
-	lib/ContentDirectory/FileSystemMonitor.cpp                      \
-	lib/ContentDirectory/FileSystemMonitor.h 
+	lib/libmain.cpp\
+	lib/ContentDirectory/FileSystemMonitor.cpp\
+	lib/ContentDirectory/FileSystemMonitor.h\
+	lib/ContentDirectory/VirtualContainerMgr.cpp\
+	lib/ContentDirectory/VirtualContainerMgr.h                                                    \
+	lib/Common/XMLParser.cpp                                                    \
+	lib/Common/XMLParser.h 
 
 libfuppes_la_LDFLAGS = \
   $(LIBNOTIFY_LIBS)\
@@ -155,3 +159,5 @@ libfuppes_la_LDFLAGS = \
 	${PCRE_LIBS}\
   ${SQLITE3_LIBS}\
   ${TAGLIB_LIBS}
+
+

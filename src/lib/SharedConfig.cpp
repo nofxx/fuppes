@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -21,10 +20,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
 
 #include <iostream>
 
@@ -60,10 +55,8 @@
 #define MAXHOSTNAMELEN     64
 #endif
 
-/* transcoding */
 #ifndef DISABLE_TRANSCODING
 
-/* LAME is always needed */
 #include "Transcoding/LameWrapper.h"
 
 #ifndef DISABLE_VORBIS
@@ -203,10 +196,6 @@ unsigned int CSharedConfig::GetFuppesInstanceCount()
 {
   return m_vFuppesInstances.size();
 }
-
-/*===============================================================================
- GET
-===============================================================================*/
 
 string CSharedConfig::GetAppName()
 {
@@ -533,14 +522,6 @@ bool CSharedConfig::SetLocalCharset(std::string p_sCharset)
   xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);
   return this->Refresh();
 }
-
-/* <\PUBLIC> */
-	
-/* <PRIVATE> */
-
-/*===============================================================================
- HELPER
-===============================================================================*/
 
 bool CSharedConfig::ReadConfigFile()
 {  
@@ -1039,5 +1020,3 @@ void CSharedConfig::GetOSInfo()
   cout << sUtsName.machine << endl;*/
   #endif
 }
-
-/* <\PRIVATE> */

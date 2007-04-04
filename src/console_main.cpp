@@ -83,6 +83,7 @@ void PrintHelp()
   cout << "    (disabled, normal, extended, debug) default is \"normal\"" << endl;
   cout << "i = print system info" << endl;
   cout << "r = rebuild database" << endl;
+  cout << "v = rebuild virtual container layout" << endl;
   //cout << "c = refresh configuration" << endl;
   cout << "h = print this help" << endl;
   cout << endl;
@@ -175,6 +176,9 @@ int main(int argc, char* argv[])
     }
     else if(input == "r") {
       fuppes_rebuild_db();
+    }
+    else if(input == "v") {
+      fuppes_rebuild_vcontainers();
     }
     else if (input == "h") {
       PrintHelp();

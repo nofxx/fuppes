@@ -33,7 +33,8 @@ class CUPnPSearch: public CUPnPAction
 		~CUPnPSearch();
 		
 		std::string BuildSQL(bool p_bLimit = false);
-		
+	  unsigned int GetContainerIdAsUInt();	
+  
 		std::string      m_sContainerID;
     std::string      m_sSearchCriteria;
     //std::string      m_sFilter;

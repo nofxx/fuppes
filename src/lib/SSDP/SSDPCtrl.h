@@ -56,7 +56,7 @@ class ISSDPCtrl
 /* <PUBLIC> */
 
 public:
-	  
+	virtual ~ISSDPCtrl() {};
   virtual void OnSSDPCtrlReceiveMsg(CSSDPMessage*) = 0;
 
 /* <\PUBLIC> */

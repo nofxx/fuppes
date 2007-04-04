@@ -3,8 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -25,41 +24,23 @@
 #ifndef _UPNPBROWSE_H
 #define _UPNPBROWSE_H
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "UPnPAction.h"
 
-/*===============================================================================
- DEFINITIONS
-===============================================================================*/
-
-typedef enum tagUPNP_BROWSE_FLAG
+typedef enum UPNP_BROWSE_FLAG
 {
   UPNP_BROWSE_FLAG_UNKNOWN,        
   UPNP_BROWSE_FLAG_DIRECT_CHILDREN,
   UPNP_BROWSE_FLAG_METADATA
 }UPNP_BROWSE_FLAG;
 
-/*===============================================================================
- CLASS CUPnPBrowse
-===============================================================================*/
-
 class CUPnPBrowse: public CUPnPAction
 {
-
-/* <PUBLIC> */
-
   public:
     CUPnPBrowse(std::string p_sMessage);
     ~CUPnPBrowse();    
 
     unsigned int GetObjectIDAsInt();
   
-/*===============================================================================
- MEMBERS
-===============================================================================*/
 
     std::string      m_sObjectID;
     UPNP_BROWSE_FLAG m_nBrowseFlag;
@@ -67,9 +48,7 @@ class CUPnPBrowse: public CUPnPAction
     unsigned int     m_nStartingIndex;
     unsigned int     m_nRequestedCount;
     std::string      m_sSortCriteria;
-
-/* <\PUBLIC> */
-
+    bool             m_bVirtualContainer;
 };
 
-#endif /* _UPNPBROWSE_H */
+#endif // _UPNPBROWSE_H

@@ -143,8 +143,7 @@ CUPnPAction* CHTTPMessage::GetAction()
   if(!m_pUPnPAction) {                
     // Build UPnPAction 
     CUPnPActionFactory ActionFactory;
-    m_pUPnPAction = ActionFactory.BuildActionFromString(m_sContent);  
-		m_pUPnPAction->SetDeviceSettings(m_pDeviceSettings);
+    m_pUPnPAction = ActionFactory.BuildActionFromString(m_sContent, m_pDeviceSettings);
   }
   return m_pUPnPAction;
 }

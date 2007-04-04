@@ -39,6 +39,8 @@
 class IHTTPClient
 {
   public:
+    virtual ~IHTTPClient() {};
+  
 	  virtual void OnAsyncReceiveMsg(CHTTPMessage* pMessage) = 0;
 };
 

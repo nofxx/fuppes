@@ -3,8 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <fuppes@ulrich-voelkel.de>
  ****************************************************************************/
 
 /*
@@ -30,6 +29,7 @@
 #include "../Common/Common.h"
 #include "../Common/RegEx.h"
 #include "FileDetails.h"
+#include "VirtualContainerMgr.h"
  
 #include <iostream>
 #include <sstream>
@@ -39,30 +39,29 @@ using namespace std;
 
 const string LOGNAME = "ContentDir";
 
-
-/* constructor */
 CContentDirectory::CContentDirectory(std::string p_sHTTPServerURL):
 CUPnPService(UPNP_SERVICE_CONTENT_DIRECTORY, p_sHTTPServerURL)
 {
-  /* Init database */  
+  // init database 
   bool bIsNewDB = false;   
-  if(!CContentDatabase::Shared()->Init(&bIsNewDB))
-  {
-    if(bIsNewDB)
-    {
+  if(!CContentDatabase::Shared()->Init(&bIsNewDB)) {
+    
+    if(bIsNewDB) {
       stringstream sLog;
       sLog << "unable to create database file '" << CSharedConfig::Shared()->GetConfigDir() << "fuppes.db" << "'." << endl <<
               "make sure you have write permissions on that directory" << endl;      
       CSharedLog::Shared()->Log(L_ERROR, sLog.str(), __FILE__, __LINE__);
-    }    
+    }
     return;
   } 
   
   if(bIsNewDB)
     CContentDatabase::Shared()->BuildDB();
+		
+	// init virtual containers
+	CVirtualContainerMgr::Shared();
 }
 
-/* destructor */
 CContentDirectory::~CContentDirectory()
 {
 }
@@ -73,10 +72,6 @@ std::string CContentDirectory::GetServiceDescription()
 }
 
 
-/*===============================================================================
- UPNP ACTION HANDLING
-===============================================================================*/
- 
 /* HandleUPnPAction */
 void CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut)
 {
@@ -85,8 +80,9 @@ void CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
   switch((UPNP_CONTENT_DIRECTORY_ACTIONS)pUPnPAction->GetActionType())
   {
     // Browse
-    case UPNP_BROWSE:      
-      sContent = DbHandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);      
+    case UPNP_BROWSE:
+      sContent = DbHandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);     
+      cout << sContent << endl;
       break;
 		// Search
 		case UPNP_SEARCH:
@@ -103,16 +99,16 @@ void CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
     // GetSystemUpdateID  
     case UPNP_GET_SYSTEM_UPDATE_ID:
       sContent = HandleUPnPGetSystemUpdateID(pUPnPAction);
-      break;	
+      break;
+    default:
+      break;
   }
   
-  if(!sContent.empty())
-  {    
+  if(!sContent.empty()) {    
     pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml; charset=\"utf-8\"");
     pMessageOut->SetContent(sContent);
   }
-  else
-  {
+  else {
     pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_500_INTERNAL_SERVER_ERROR, "text/xml; charset=\"utf-8\"");            
 
     sContent = 
@@ -259,25 +255,39 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
                         unsigned int* p_pnNumberReturned,
                         CUPnPBrowse*  pUPnPBrowse)
 {
+  // total matches and
+  // number returned are always 1
+  // on metadata browse
   *p_pnTotalMatches   = 1;
   *p_pnNumberReturned = 1;
   
   stringstream sSql;
   CContentDatabase* pDb = new CContentDatabase();
+
+  pUPnPBrowse->m_bVirtualContainer = 
+        CVirtualContainerMgr::Shared()->IsVirtualContainer(pUPnPBrowse->GetObjectIDAsInt(),
+                                                           pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice);
   
-  /* get container type */
+  // get container type
   OBJECT_TYPE nContainerType = CONTAINER_STORAGE_FOLDER;
-  if(pUPnPBrowse->GetObjectIDAsInt() > 0)
-  {
-    sSql << "select TYPE from OBJECTS where ID = " << pUPnPBrowse->GetObjectIDAsInt() << ";";
+  if(pUPnPBrowse->GetObjectIDAsInt() > 0) {
     
+    if(!pUPnPBrowse->m_bVirtualContainer) {
+      sSql << "select TYPE from OBJECTS where ID = " << pUPnPBrowse->GetObjectIDAsInt() << ";";
+    }
+    else {
+      sSql << "select TYPE from VIRTUAL_CONTAINERS " <<
+        "where ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " <<
+        "DEVICE = '" << pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice << "';";
+    }
+
     pDb->Select(sSql.str());        
     nContainerType = (OBJECT_TYPE)atoi(pDb->GetResult()->GetValue("TYPE").c_str());
     pDb->ClearResult(); 
     sSql.str("");
   }
   
-  /* get child count */
+  // get child count
   bool bNeedCount = false;  
   if(nContainerType == CONTAINER_STORAGE_FOLDER) {
     sSql << "select count(*) as COUNT from OBJECTS where " <<
@@ -290,11 +300,16 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
     bNeedCount = true;
   }
   
+  if(pUPnPBrowse->m_bVirtualContainer) {
+    sSql << "select count(*) as COUNT from VIRTUAL_CONTAINERS where " <<
+            "PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << ";";
+    bNeedCount = true;
+  }
+  
   string sChildCount = "0";
   if(bNeedCount) {
     pDb->Select(sSql.str());        
     sChildCount = pDb->GetResult()->GetValue("COUNT").c_str();
-    cout << "child cont: " << sChildCount << endl;
     pDb->ClearResult();    
     sSql.str("");
   }
@@ -330,7 +345,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
      
       /* class */
       xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");     
-      xmlTextWriterWriteString(pWriter, BAD_CAST "object.container");  //"object.container.musicContainer"
+      xmlTextWriterWriteString(pWriter, BAD_CAST "object.container");
       xmlTextWriterEndElement(pWriter); 
      
     /* end container */
@@ -340,17 +355,25 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   // sub folders
   else
   {
-    sSql << "select ID, PARENT_ID, PATH, FILE_NAME, TYPE, MIME_TYPE from OBJECTS where ID = " << pUPnPBrowse->GetObjectIDAsInt();    
+    if(!pUPnPBrowse->m_bVirtualContainer) {
+      sSql << "select ID, PARENT_ID, PATH, FILE_NAME, TYPE, MIME_TYPE from OBJECTS where ID = " << pUPnPBrowse->GetObjectIDAsInt();    
+    }
+    else {
+      sSql << "select ID, PARENT_ID, TITLE as PATH, TITLE as FILE_NAME, TYPE, NULL as MIME_TYPE " <<
+        "from VIRTUAL_CONTAINERS " <<
+        "where ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " <<
+        "DEVICE = '" << pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice << "';";
+    }
+   
+    
     pDb->Select(sSql.str());
     sSql.str("");                
     
     CSelectResult* pRow = pDb->GetResult();        
     sTitle = pRow->GetValue("FILE_NAME").c_str();
-    
-    cout << "TITLE: " << sTitle << endl;
-      fflush(stdout);
+
     char szParentId[11];
-    unsigned int nParentId = atoi(pRow->GetValue("PARENT_ID").c_str());
+    unsigned int nParentId = pRow->GetValueAsUInt("PARENT_ID");
     if(nParentId > 0) {
       sprintf(szParentId, "%010X", nParentId);
       sParentId = szParentId;
@@ -361,9 +384,6 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
     
     BuildDescription(pWriter, pRow, pUPnPBrowse, sParentId);
     pDb->ClearResult();
-    
-    cout << "TITLE: " << sTitle << " DONE" << endl;
-    fflush(stdout);
   }
   
   delete pDb;
@@ -378,13 +398,21 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   std::stringstream sSql;
   CContentDatabase* pDb = new CContentDatabase();
   OBJECT_TYPE nContainerType = CONTAINER_STORAGE_FOLDER;
+
+  bool bContainerChildren = false;
+  bool bVirtualContainer = CVirtualContainerMgr::Shared()->HasVirtualChildren(pUPnPBrowse->GetObjectIDAsInt(), pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice, &bContainerChildren);	
+  pUPnPBrowse->m_bVirtualContainer = bVirtualContainer;
   
-  /* get container type */
-  if(pUPnPBrowse->GetObjectIDAsInt() > 0)
-  {    
-    sSql << "select TYPE from OBJECTS where ID = " << pUPnPBrowse->GetObjectIDAsInt() << ";";
-  
+  // get container type
+  if(pUPnPBrowse->GetObjectIDAsInt() > 0) {    
     
+		if(!bVirtualContainer)
+		  sSql << "select TYPE from OBJECTS where ID = " << pUPnPBrowse->GetObjectIDAsInt() << ";";
+		else
+		  sSql << "select TYPE from VIRTUAL_CONTAINERS where " <<
+        "ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " <<
+        "DEVICE = '" << pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice << "';";
+			  
     pDb->Select(sSql.str()); 
     if(!pDb->Eof()) {
       nContainerType = (OBJECT_TYPE)atoi(pDb->GetResult()->GetValue("TYPE").c_str());
@@ -396,7 +424,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
     sSql.str("");
   }
     
-  /* get total matches */
+  // get total matches
   if(nContainerType == CONTAINER_STORAGE_FOLDER) {
     sSql << "select count(*) as COUNT from OBJECTS where PARENT_ID = " <<
             pUPnPBrowse->GetObjectIDAsInt();
@@ -405,6 +433,20 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
     sSql << "select count(*) as COUNT from PLAYLIST_ITEMS where PLAYLIST_ID = " <<
             pUPnPBrowse->GetObjectIDAsInt();
   }
+
+  if(pUPnPBrowse->m_bVirtualContainer) {    
+    sSql.str("");
+    if(bContainerChildren) {
+      sSql << "select count(*) as COUNT from VIRTUAL_CONTAINERS where PARENT_ID = " <<
+            pUPnPBrowse->GetObjectIDAsInt() << " and " <<
+            "DEVICE = '" << pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice << "';";
+    }
+    else {
+      sSql << "select count(*) as COUNT from MAP_ITEMS2VC where VCONTAINER_ID = " <<
+            pUPnPBrowse->GetObjectIDAsInt() << " and " <<
+            "DEVICE = '" << pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice << "';";
+    }
+  } 
 
   
   pDb->Select(sSql.str()); 
@@ -417,7 +459,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   sSql.str("");
   
   /* get description */
-  if(nContainerType == CONTAINER_STORAGE_FOLDER)
+  if((nContainerType == CONTAINER_STORAGE_FOLDER) && !bVirtualContainer)
   {
     sSql << 
       "select " <<
@@ -436,7 +478,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
       
       cout << sSql.str() << endl;
   }
-  else if(nContainerType == CONTAINER_PLAYLIST_CONTAINER)
+  else if((nContainerType == CONTAINER_PLAYLIST_CONTAINER) && !bVirtualContainer)
   {
       sSql << "select " <<
               "  o.ID, o.TYPE, o.PATH, o.FILE_NAME, o.MIME_TYPE " <<
@@ -447,6 +489,34 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
               "  p.PLAYLIST_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " ";
   }
 
+  if(bVirtualContainer) {
+    if(bContainerChildren) {
+      sSql << "select " <<
+            "  *, TITLE as FILE_NAME  " <<
+            "from " <<
+            "  VIRTUAL_CONTAINERS " <<
+            "where " <<
+            "  PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() <<  " and " <<
+            "  DEVICE = '" << pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice << "' ";
+    }
+    else {
+      sSql << "select " <<
+            "  o.ID, o.TYPE, o.PATH, o.FILE_NAME, o.MIME_TYPE, " <<
+            "  d.IV_HEIGHT, d.IV_WIDTH, " <<
+            "  o.TITLE, d.AV_DURATION, d.A_ALBUM, d.A_ARTIST, d.A_GENRE, " <<
+            "  d.A_TRACK_NO, d.AV_BITRATE, d.A_SAMPLERATE, d.A_CHANNELS, " <<
+            "  d.AV_DURATION, d.SIZE " <<
+            "from " <<
+            "  OBJECTS o " <<
+            "  left join OBJECT_DETAILS d on (d.OBJECT_ID = o.id) " <<
+            "where " <<
+            "  o.ID in (select OBJECT_ID from MAP_ITEMS2VC where VCONTAINER_ID = " << pUPnPBrowse->GetObjectIDAsInt() << ") " <<
+            "order by "
+            "  o.TYPE, o.FILE_NAME";      
+    }
+  }
+  
+  
   
   if((pUPnPBrowse->m_nRequestedCount > 0) || (pUPnPBrowse->m_nStartingIndex > 0))
   {
@@ -458,6 +528,9 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   }
 
     
+  cout << __FILE__ << " " << __LINE__ << " " << sSql.str() << endl;
+  fflush(stdout);
+  
   
   
   unsigned int tmpInt = *p_pnNumberReturned;
@@ -490,7 +563,11 @@ void CContentDirectory::BuildDescription(xmlTextWriterPtr pWriter,
   {
     // CONTAINER_STORAGE_FOLDER
     case CONTAINER_STORAGE_FOLDER :
-      BuildContainerDescription(pWriter, pSQLResult, pUPnPBrowse, p_sParentId, CONTAINER_STORAGE_FOLDER);         
+    case CONTAINER_GENRE_MUSIC_GENRE:
+    case CONTAINER_PERSON_MUSIC_ARTIST:
+    case CONTAINER_ALBUM_PHOTO_ALBUM:      
+    case CONTAINER_ALBUM_MUSIC_ALBUM:
+      BuildContainerDescription(pWriter, pSQLResult, pUPnPBrowse, p_sParentId, nObjType);         
       break;
       
     // CONTAINER_PLAYLIST_CONTAINER
@@ -538,14 +615,30 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
   else if(p_nContainerType == CONTAINER_PLAYLIST_CONTAINER)
     sSql << "select count(*) as COUNT from PLAYLIST_ITEMS " <<
             "where PLAYLIST_ID = " << pSQLResult->GetValue("ID") << ";";
+ 
+  if(((CUPnPBrowse*)pUPnPBrowse)->m_bVirtualContainer) {
+    sSql.str("");
+    sSql << "select count(*) as COUNT from VIRTUAL_CONTAINERS " << 
+        "where PARENT_ID = " << pSQLResult->GetValue("ID") << " and " <<
+        "DEVICE = '" << pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice << "';";
+    
+    pDb->Select(sSql.str());
+    if(pDb->GetResult()->GetValue("COUNT").compare("0") == 0) {
+      sSql.str("");
+      sSql << "select count(*) as COUNT from MAP_ITEMS2VC where " <<
+          "VCONTAINER_ID = " << pSQLResult->GetValue("ID") << " and " <<
+          "DEVICE = '" << pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice << "';";   
+    }
+    pDb->ClearResult();
+  }
+
+  cout << __FILE__ << __LINE__ << " " << sSql.str() << endl;  
   
   pDb->Select(sSql.str());
-  if(!pDb->Eof())
-  {    
+  //if(!pDb->Eof()) {    
     sChildCount = pDb->GetResult()->GetValue("COUNT");    
-  }
-  
-  pDb->ClearResult();
+  //}  
+
   delete pDb;
   
   
@@ -577,10 +670,10 @@ dc:rights dc O */
   
      
     /* id */  
-    char szObjId[11];         
-    unsigned int nObjId = atoi(pSQLResult->GetValue("ID").c_str());
-    sprintf(szObjId, "%010X", nObjId);   
-    //cout << "CONTAINER ID: " << nObjId << endl;
+    char szObjId[11];    
+    unsigned int nObjId = pSQLResult->GetValueAsUInt("ID");
+    cout << "OBJ2: " << nObjId << endl;
+    sprintf(szObjId, "%010X", nObjId);
     
   
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "id", BAD_CAST szObjId); 
@@ -601,23 +694,23 @@ dc:rights dc O */
     /* class */
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");     
     
-    if(p_nContainerType == CONTAINER_STORAGE_FOLDER)
+    /*if(p_nContainerType == CONTAINER_STORAGE_FOLDER)
       xmlTextWriterWriteString(pWriter, BAD_CAST "object.container");
     else if(p_nContainerType == CONTAINER_PLAYLIST_CONTAINER)
-      xmlTextWriterWriteString(pWriter, BAD_CAST "object.container.playlistContainer");  
+      xmlTextWriterWriteString(pWriter, BAD_CAST "object.container.playlistContainer");  */
+  
+    xmlTextWriterWriteString(pWriter, BAD_CAST CFileDetails::Shared()->GetObjectTypeAsString(p_nContainerType).c_str());
   
     xmlTextWriterEndElement(pWriter); 
      
     /* writeStatus */
-    if(pUPnPBrowse->m_sFilter.find("upnp:writeStatus") != std::string::npos)
-    {    
+    if(pUPnPBrowse->m_sFilter.find("upnp:writeStatus") != std::string::npos) {    
       xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "writeStatus", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");     
       xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN"); 
       xmlTextWriterEndElement(pWriter);
     }
    
-    if(p_nContainerType == CONTAINER_PLAYLIST_CONTAINER)
-    {
+    if(p_nContainerType == CONTAINER_PLAYLIST_CONTAINER) {
       /* res */
       xmlTextWriterStartElement(pWriter, BAD_CAST "res");
       
@@ -627,9 +720,7 @@ dc:rights dc O */
       sTmp.str("");
         
       sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/Playlists/" << szObjId << "." << ExtractFileExt(pSQLResult->GetValue("PATH"));    
-      //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());
-   
-//cout << sTmp.str() << endl;      
+      //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());   
    
       xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
       xmlTextWriterEndElement(pWriter); 
@@ -648,7 +739,7 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter, CSelectRe
 
     /* id */  
     char szObjId[11];         
-    unsigned int nObjId = atoi(pSQLResult->GetValue("ID").c_str());
+    unsigned int nObjId = pSQLResult->GetValueAsUInt("ID");
     sprintf(szObjId, "%010X", nObjId);   
     //cout << "ITEM ID: " << nObjId << endl;    
   
@@ -684,11 +775,7 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter, CSelectRe
     switch(p_nObjectType)
     {
       case ITEM_AUDIO_ITEM_MUSIC_TRACK:
-           //cout << "BUILD ITEM_AUDIO_ITEM_MUSIC_TRACK DESCRIPT" << endl;
-  fflush(stdout);
         BuildAudioItemDescription(pWriter, pSQLResult, pUPnPBrowse, szObjId);
-        //cout << "BUILD ITEM_AUDIO_ITEM_MUSIC_TRACK DESCRIPT DONE" << endl;
-  fflush(stdout);
         break;
       case ITEM_AUDIO_ITEM_AUDIO_BROADCAST:
         BuildAudioItemAudioBroadcastDescription(pWriter, pSQLResult, pUPnPBrowse, szObjId);
@@ -732,14 +819,10 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);
 	
-  cout << "2" << endl; fflush(stdout);                                                  
-  
   /* class */
   xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
     xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.audioItem.musicTrack");
   xmlTextWriterEndElement(pWriter);
-
-  cout << "3" << endl; fflush(stdout);                                                  
 
   /* creator */
   if(pUPnPBrowse->m_sFilter.find("dc:creator") != std::string::npos) {
@@ -748,16 +831,12 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
     xmlTextWriterEndElement(pWriter);
   }
 
-  cout << "4" << endl; fflush(stdout);                                                  
-
   /* storageMedium */
   if(pUPnPBrowse->m_sFilter.find("upnp:storageMedium") != std::string::npos) {
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "storageMedium", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
     xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN");
     xmlTextWriterEndElement(pWriter);    
   }
-
-  cout << "5" << endl; fflush(stdout);                                                  
   
 	#warning todo: filter
 	if(!pSQLResult->IsNull("A_ARTIST")) {
@@ -766,15 +845,11 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   	xmlTextWriterEndElement(pWriter); 
   }
 	
-  cout << "6" << endl; fflush(stdout);                                                  	
-	
 	if(!pSQLResult->IsNull("A_ALBUM")) {
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "album", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
       xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("A_ALBUM").c_str());
     xmlTextWriterEndElement(pWriter);
   }
-
-  cout << "7" << endl; fflush(stdout);                                                  
 
   if(!pSQLResult->IsNull("A_GENRE")) {
   	xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "genre", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
@@ -782,16 +857,12 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   	xmlTextWriterEndElement(pWriter);
   }
   
-  cout << "8" << endl; fflush(stdout);                                                  	
-	
   if(!pSQLResult->IsNull("A_TRACK_NO")) {	
 	  xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "originalTrackNumber", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
       xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("A_TRACK_NO").c_str());
 	  xmlTextWriterEndElement(pWriter);
   }
 	
-  cout << "9" << endl; fflush(stdout);                                                    
-  
   /* res */
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
   
@@ -808,34 +879,21 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
   sTmp.str("");
 
-  cout << "10" << endl; fflush(stdout);                                                  
-
   // duration
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->GetValue("AV_DURATION").c_str());
 	
-  cout << "11" << endl; fflush(stdout);                                                  	
-	
 	// nrAudioChannels 
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "nrAudioChannels", BAD_CAST pSQLResult->GetValue("A_CHANNELS").c_str());
- 
-  cout << "12" << endl; fflush(stdout);                                                   
- 
+
   // sampleFrequency
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST pSQLResult->GetValue("A_SAMPLERATE").c_str());
-
-  cout << "13" << endl; fflush(stdout);                                                  
 
 	// bitrate
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("AV_BITRATE").c_str());
 
-  cout << "14" << endl; fflush(stdout);                                                  
-
   sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/AudioItems/" << p_sObjectID << "." << sExt;  
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
-  xmlTextWriterEndElement(pWriter); 
-  
-  cout << "15" << endl; fflush(stdout);                                                    
-  
+  xmlTextWriterEndElement(pWriter);  
 }
 
 void CContentDirectory::BuildAudioItemAudioBroadcastDescription(xmlTextWriterPtr pWriter,
@@ -1093,25 +1151,81 @@ std::string CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch)
 
 	CContentDatabase* pDb  = new CContentDatabase();
 	CSelectResult*    pRow = NULL;
+  stringstream      sSql;
+  int nTotalMatches = 0;
+  bool bVirtualContainer = CVirtualContainerMgr::Shared()->IsVirtualContainer(pSearch->GetContainerIdAsUInt(), 
+                                                                              pSearch->GetDeviceSettings()->m_sVirtualFolderDevice);
+  
+  // get total matches  
+  if(bVirtualContainer) {      
+    sSql << "select " <<
+            "  count(*) as COUNT " <<
+            "from " <<
+            "  MAP_ITEMS2VC m, " <<
+            "  OBJECTS o " <<
+            "  left join OBJECT_DETAILS d on (d.OBJECT_ID = o.ID) " <<
+            "where " <<
+            "  m.VCONTAINER_ID = " << pSearch->GetContainerIdAsUInt() << " and " <<
+            "  o.ID = m.OBJECT_ID ";
+  }  
+  else {
+    sSql << "select " <<
+            "  count(*) as COUNT " <<
+            "from " <<
+            "  OBJECTS o " <<
+            "  left join OBJECT_DETAILS d on (d.OBJECT_ID = o.ID) ";
+    
+    if(pSearch->GetContainerIdAsUInt() > 0) {
+      sSql << " where o.PARENT_ID = " << pSearch->GetContainerIdAsUInt() << " ";
+    }
+  }
+     
+  sSql << pSearch->BuildSQL(false);
 
-  // get total matches
-	string sCount = "select count(o.ID) as VALUE from OBJECTS o " + pSearch->BuildSQL(false);
-	int nTotalMatches = 0;
-	pDb->Select(sCount);
+  cout << "SEARCH GET TOTAL MATCHES: " << endl << sSql.str() << endl << endl;
+     
+  pDb->Select(sSql.str());
   nTotalMatches = atoi(pDb->GetResult()->GetValue("VALUE").c_str());
 	pDb->ClearResult();
-
-  // get items
-  string sItems = "select o.*, d.* from OBJECTS o left join OBJECT_DETAILS d on (d.OBJECT_ID = o.ID) " + 
-									pSearch->BuildSQL(true) +
-									"order by o.TYPE, o.FILE_NAME; ";
+  sSql.str("");
+                                                                              
+     
+  // get items  
+  if(bVirtualContainer) {
+    sSql << "select " <<
+            "  o.*, d.* " <<
+            "from " <<
+            "  MAP_ITEMS2VC m, " <<
+            "  OBJECTS o " <<
+            "  left join OBJECT_DETAILS d on (d.OBJECT_ID = o.ID) " <<
+            "where " <<
+            "  m.VCONTAINER_ID = " << pSearch->GetContainerIdAsUInt() << " and " <<
+            "  o.ID = m.OBJECT_ID and " <<
+            pSearch->BuildSQL(true) << " " <<
+            "order by " <<
+            "  o.TYPE, o.FILE_NAME ";
+  }
+  else {
+    sSql << "select " <<
+            "  o.*, d.* " <<
+            "from " <<
+            "  OBJECTS o " <<
+            "  left join OBJECT_DETAILS d on (d.OBJECT_ID = o.ID) " <<
+            pSearch->BuildSQL(true);
+      
+    if(pSearch->GetContainerIdAsUInt() > 0) {
+      sSql << " and o.PARENT_ID = " << pSearch->GetContainerIdAsUInt() << " ";
+    }      
+      
+    sSql << "order by " <<
+            "  o.TYPE, o.FILE_NAME ";    
+  }
+    
 	int nNumberReturned = 0;
 
-  cout << sItems << endl;
+  cout << "SEARCH GET ITEMS: " << endl << sSql.str() << endl << endl;
 
-	pDb->Select(sItems);
-
-	
+	pDb->Select(sSql.str());	
 
 	
 	

@@ -29,7 +29,8 @@
 class ITimer
 {
   public:
-    virtual void OnTimer() = 0; 
+    virtual ~ITimer() {};
+    virtual void OnTimer() = 0;
 };
 
 class CTimer
@@ -57,4 +58,4 @@ class CTimer
     void          Cleanup();
 };
 
-#endif /* _TIMER_H */
+#endif // _TIMER_H

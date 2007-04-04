@@ -39,10 +39,10 @@ CUPnPSearch::~CUPnPSearch()
 {
 }
 
-/*unsigned int CUPnPSearch::GetObjectIDAsInt()
+unsigned int CUPnPSearch::GetContainerIdAsUInt()
 {
-  return HexToInt(m_sObjectID);
-}*/
+  return HexToInt(m_sContainerID);
+}
 
 std::string StringReplace(std::string p_sIn, std::string p_sSearch, std::string p_sReplace)
 {
@@ -119,6 +119,14 @@ std::string CUPnPSearch::BuildSQL(bool p_bLimit)
 				  sProp = "o.TITLE";
 					bNumericProp = false;
 				}
+        else if(sProp.compare("upnp:artist") == 0) {
+				  sProp = "d.A_ARTIST";
+					bNumericProp = false;
+				}
+        else if(sProp.compare("protocolInfo") == 0) {
+				  sProp = "o.MIME_TYPE";
+					bNumericProp = false;
+				}        
 				else {
 				  bBuildOK = false;
 				}
@@ -149,12 +157,18 @@ std::string CUPnPSearch::BuildSQL(bool p_bLimit)
 				
 				// replace value
 				if(sProp.compare("o.TYPE") == 0) { 
+          sOp = "in";
+          
 				  if(sVal.compare("object.item.imageItem") == 0)
 					  sVal = "(1, 100)";
 					else if(sVal.compare("object.item.audioItem") == 0)
 					  sVal = "(2, 200, 201)";	
 					else if(sVal.compare("object.item.videoItem") == 0)
 					  sVal = "(3, 300, 301)";
+					else if(sVal.compare("object.container.album.musicAlbum") == 0)
+					  sVal = "(600)";
+					else if(sVal.compare("object.container.person.musicArtist") == 0)
+					  sVal = "(400)";
 						
 					else
 					  bBuildOK = false;
@@ -179,22 +193,7 @@ std::string CUPnPSearch::BuildSQL(bool p_bLimit)
 	else {
 	  //cout << "no match" << endl;
 	}
-	
-	
-	/* XBox 360
-	
-	Request type	ContainerID	SearchCriteria
-List all albums								7																	(upnp:class = "object.container.album.musicAlbum")
-List contents of an album			The id of the album container			(upnp:class derivedfrom "object.item.audioItem"
-List all artists							6																	(upnp:class = "object.container.person.musicArtist")
-List all albums by an artist	1																	(upnp:class = "object.container.album.musicAlbum") and (upnp:artist = "artistname")
-List all playlists						F																	(upnp:class = "object.container.playlistContainer")
-List contents of a playlist		The id of the playlist						(upnp:class derivedfrom "object.item.audioItem")
-List all songs								4																	(upnp:class derivedfrom "object.item.audioItem")
-List all genres								5																	(upnp:class = "object.container.genre.musicGenre")
-List contents of a genre			The id of the genre								(upnp:class derivedfrom "object.item.audioItem")
-*/
-	
+
 	
 	
 	if(p_bLimit) {
@@ -207,7 +206,7 @@ List contents of a genre			The id of the genre								(upnp:class derivedfrom "o
     }
 	}
 
-  sSql << ";";
+  //sSql << ";";
 
   //cout << sSql.str() << endl;	
 

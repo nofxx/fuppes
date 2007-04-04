@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -42,35 +41,19 @@
 class CSharedLog
 {
 
-/* <PRIVATE> */
-
 private:
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-
   CSharedLog();  
 
-/* <\PRIVATE> */
-
-/* <PUBLIC> */
 
 public:
   ~CSharedLog();
-/*===============================================================================
- INSTANCE
-===============================================================================*/
 
   static CSharedLog* Shared();
   void SetUseSyslog(bool p_bUseSyslog);
 
   void SetCallback(void(*p_log_callback)(const char* sz_log));
 
-/*===============================================================================
- LOGGING
-===============================================================================*/
-  
+
   void  Log(std::string p_sSender, std::string p_sMessage);
   void  ExtendedLog(std::string p_sSender, std::string p_sMessage);
   void  DebugLog(std::string p_sSender, std::string p_sMessage);
@@ -81,9 +64,7 @@ public:
 
   void  Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber, bool p_bPrintLine = true);
   void  Syslog(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber);
-/*===============================================================================
- SET
-===============================================================================*/  
+
   /** set the level of log verbosity
    *  @param  p_nLogLevel  0 = no log, 1 = std log, 2 = extended log, 3 = debug log
    */
@@ -92,15 +73,10 @@ public:
   
   void  ToggleLog();
   
-/* <\PUBLIC> */
-    
-/* <PRIVATE> */
+
 
 private:
-/*===============================================================================
- MEMBERS
-===============================================================================*/
-		
+	
   static CSharedLog* m_Instance;
   fuppesThreadMutex  m_Mutex;
   bool               m_bShowLog;
@@ -111,8 +87,6 @@ private:
   
   void(*m_log_callback)(const char* sz_log);
 
-/* <\PRIVATE> */
-
 };
 
-#endif /* _SHAREDLOG_H */
+#endif // _SHAREDLOG_H 

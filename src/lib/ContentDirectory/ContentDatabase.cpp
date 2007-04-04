@@ -80,6 +80,15 @@ bool CSelectResult::IsNull(std::string p_sFieldName)
     return false;
 }
 
+unsigned int CSelectResult::GetValueAsUInt(std::string p_sFieldName)
+{
+  unsigned int nResult = 0;
+  if(!IsNull(p_sFieldName)) {
+    nResult = strtoul(GetValue(p_sFieldName).c_str(), NULL, 0);
+  }
+  return nResult;
+}
+
 
 unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName);
 unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL);
@@ -105,7 +114,8 @@ CContentDatabase::CContentDatabase(bool p_bShared)
   m_RebuildThread = (fuppesThread)NULL;	
   m_bShared       = p_bShared;		
 	m_pFileSystemMonitor = NULL;
-		
+  m_bInTransaction = false;
+  
 	if(m_bShared) {            
 	  g_bIsRebuilding = false;
     fuppesThreadInitMutex(&m_Mutex);
@@ -124,7 +134,7 @@ CContentDatabase::~CContentDatabase()
     fuppesThreadDestroyMutex(&m_Mutex);
   }*/
 	
-	if(m_bShared && (m_RebuildThread != NULL)) {
+	if(m_bShared && (m_RebuildThread != (fuppesThread)NULL)) {
 	  fuppesThreadClose(m_RebuildThread);
 		m_RebuildThread = (fuppesThread)NULL;
 	}
@@ -143,6 +153,8 @@ std::string CContentDatabase::GetLibVersion()
 
 bool CContentDatabase::Init(bool* p_bIsNewDB)
 {
+  #warning TODO: set OBJECTS.ID to 30 after db creation
+  
   bool bIsNewDb = !FileExists(m_sDbFileName);
   *p_bIsNewDB = bIsNewDb;
   int nRes = sqlite3_open(m_sDbFileName.c_str(), &m_pDbHandle);   
@@ -235,6 +247,13 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
     
     if(!Execute(sTablePlaylistItems))
       return false;    
+    
+    if(!Execute("CREATE TABLE VIRTUAL_CONTAINERS (TYPE INTEGER, DEVICE TEXT, ID INTEGER PRIMARY KEY, PARENT_ID INTEGER, TITLE TEXT);"))
+      return false;
+    
+    if(!Execute("CREATE TABLE MAP_ITEMS2VC (ID INTEGER PRIMARY KEY, OBJECT_ID INTEGER, VCONTAINER_ID INTEGER, DEVICE TEXT);"))
+       return false;
+    
   }
   else
   {
@@ -296,6 +315,44 @@ void CContentDatabase::Close()
   //cout << "CLOSE" << endl; fflush(stdout);
   sqlite3_close(m_pDbHandle);
   //cout << "CLOSED" << endl; fflush(stdout);
+}
+
+void CContentDatabase::BeginTransaction()
+{
+  if(m_bInTransaction) {
+    return;
+  }
+  
+  Lock();  
+  char* szErr = 0;
+  
+  if(sqlite3_exec(m_pDbHandle, "BEGIN TRANSACTION;", NULL, NULL, &szErr) != SQLITE_OK) {
+    fprintf(stderr, "CContentDatabase::BeginTransaction() :: SQL error: %s\n", szErr);
+  }
+  else {
+    m_bInTransaction = true;
+  }
+
+  Unlock();
+}
+
+void CContentDatabase::Commit()
+{
+  if(!m_bInTransaction) {
+    return;
+  }
+  
+  Lock();
+  char* szErr = 0;  
+  
+  if(sqlite3_exec(m_pDbHandle, "COMMIT;", NULL, NULL, &szErr) != SQLITE_OK) {
+    fprintf(stderr, "CContentDatabase::Commit() :: SQL error: %s\n", szErr);
+  }
+  else {
+    m_bInTransaction = false;
+  }
+  
+  Unlock();  
 }
 
 unsigned int CContentDatabase::Insert(std::string p_sStatement)
@@ -423,7 +480,7 @@ void CContentDatabase::BuildDB()
 	if(!m_bShared)
 	  return;
 		
-	if(m_RebuildThread != NULL) {
+	if(m_RebuildThread != (fuppesThread)NULL) {
 	  fuppesThreadClose(m_RebuildThread);
 		m_RebuildThread = (fuppesThread)NULL;
 	}

@@ -29,7 +29,7 @@
  INCLUDES
 ===============================================================================*/
 
-#include "../Configuration/DeviceSettings.h"
+#include "../DeviceSettings/DeviceSettings.h"
 #include "../MessageBase.h"
 #include "../UPnPActions/UPnPAction.h"
 #include "../Transcoding/TranscodingCache.h"

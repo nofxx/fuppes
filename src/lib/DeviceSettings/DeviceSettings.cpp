@@ -30,6 +30,7 @@ using namespace std;
 CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
 {
   m_sDeviceName = p_sDeviceName;
+  m_sVirtualFolderDevice = "default"; //"Xbox 360"; //"default";
 	
   m_bShowPlaylistAsContainer = false;
 	m_bXBox360Support					 = false;

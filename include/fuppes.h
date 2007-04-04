@@ -69,6 +69,7 @@ void fuppes_print_info();
 void fuppes_set_loglevel(int n_log_level);
 void fuppes_inc_loglevel();
 void fuppes_rebuild_db();
+void fuppes_rebuild_vcontainers();
 
 void fuppes_get_http_server_address(char* sz_addr, int n_buff_size);
 

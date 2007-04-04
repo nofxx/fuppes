@@ -59,7 +59,8 @@ class IFuppes
 /* <PUBLIC> */
 
 public:
-
+  virtual ~IFuppes() {};
+        
   virtual void OnReceivePresentationRequest(
     CFuppes* pSender,
     CHTTPMessage* pMessage,

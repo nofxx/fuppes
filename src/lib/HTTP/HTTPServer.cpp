@@ -404,7 +404,7 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
   bool bDoReceive = true;
   bool bRecvErr   = false;
   
-  unsigned int nLoopCnt = 0;  
+  //unsigned int nLoopCnt = 0;  
   
   // receive loop
   int nTmpRecv = 0;

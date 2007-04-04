@@ -181,46 +181,52 @@ std::string CFileDetails::GetObjectTypeAsString(unsigned int p_nObjectType)
       return "unknown";
     
     case ITEM_IMAGE_ITEM :
-      return "imageItem";    
+      return "object.imageItem";    
     case ITEM_IMAGE_ITEM_PHOTO :
-      return "imageItem.photo";
+      return "object.imageItem.photo";
   
     case ITEM_AUDIO_ITEM :
-      return "audioItem";
+      return "object.audioItem";
     case ITEM_AUDIO_ITEM_MUSIC_TRACK :
-      return "audioItem.musicTrack";
+      return "object.audioItem.musicTrack";
     case ITEM_AUDIO_ITEM_AUDIO_BROADCAST :
-      return "audioItem.audioBroadcast";
+      return "object.audioItem.audioBroadcast";
     //ITEM_AUDIO_ITEM_AUDIO_BOOK      = 202,*/
   
     case ITEM_VIDEO_ITEM :
-      return "videoItem";
+      return "object.videoItem";
     case ITEM_VIDEO_ITEM_MOVIE :
-      return "videoItem.movie";
+      return "object.videoItem.movie";
     case ITEM_VIDEO_ITEM_VIDEO_BROADCAST :
-      return "videoItem.videoBroadcast";
+      return "object.videoItem.videoBroadcast";
     //ITEM_VIDEO_ITEM_MUSIC_VIDEO_CLIP = 302,  
   
-    /*CONTAINER_PERSON = 4,
-      CONTAINER_PERSON_MUSIC_ARTIST = 400,*/
+    /*CONTAINER_PERSON = 4,*/
+    case CONTAINER_PERSON_MUSIC_ARTIST :
+      return "object.container.person.musicArtist";
     
     case CONTAINER_PLAYLIST_CONTAINER :
-      return "container.playlistContainer";
+      return "object.container.playlistContainer";
     
-    /*CONTAINER_ALBUM = 6,
+    /*CONTAINER_ALBUM = 6, */
     
-      CONTAINER_ALBUM_MUSIC_ALBUM = 600,
-      CONTAINER_ALBUM_PHOTO_ALBUM = 601,
-      
-    CONTAINER_GENRE = 7,
-      CONTAINER_GENRE_MUSIC_GENRE = 700,
-      CONTAINER_GENRE_MOVIE_GENRE = 701,
+		case CONTAINER_ALBUM_MUSIC_ALBUM :
+		  return "object.container.album.musicAlbum";
+			
+    case CONTAINER_ALBUM_PHOTO_ALBUM :
+		  return "object.container.album.photoAlbum";
+    
+    case CONTAINER_GENRE :
+      return "object.container.genre";
+    case CONTAINER_GENRE_MUSIC_GENRE :
+      return "object.container.genre.musicGenre";    
+    /*  CONTAINER_GENRE_MOVIE_GENRE = 701,
       
     CONTAINER_STORAGE_SYSTEM = 8,
     CONTAINER_STORAGE_VOLUME = 9, */
     case CONTAINER_STORAGE_FOLDER :
-      return "container";
-    
+      return "object.container.storageFolder";
+  
     default :
       return "CFileDetails::GetObjectTypeAsString() :: unhandled type (please send a bugreport)";
   }
@@ -297,19 +303,20 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pM
 	//string duration = "H+:MM:SS(.00)";
 	//pFile.audioProperties()->ReadStyle = TagLib::Accurate;
 	long length = pFile.audioProperties()->length();
-  char s[4];
   stringstream sDuration;
-	sDuration << length/(60*60) << ":";
-  sprintf(s, "%02ld:", length/60);
-  s[3] = '\0';
-  sDuration << s;
-  sprintf(s, "%02ld", (length - length/60));
-  s[2] = '\0';
-  sDuration << s;
-	
-  cout << p_sFileName << endl << "DURATION:" << endl;
- 	cout << length << endl;
-	cout << length/(60*60) << ":" << length/60 << ":" << (length - length/60) << endl;
+  int hours, mins, secs;
+    
+  secs  = length % 60;
+  length /= 60;
+  mins  = length % 60;
+  hours = length / 60;  
+
+  char szDuration[11];
+	sprintf(szDuration, "%02d:%02d:%02d.00", hours, mins, secs);
+	szDuration[10] = '\0';
+  
+  sDuration << szDuration << endl;  
+ 
   cout << sDuration.str() << endl << endl;
   
   pMusicTrack->mAudioItem.sDuration = sDuration.str();

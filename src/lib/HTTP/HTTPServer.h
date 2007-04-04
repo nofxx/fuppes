@@ -47,6 +47,8 @@ class CHTTPMessage;
 class IHTTPServer
 {
   public:
+    virtual ~IHTTPServer() {};
+  
 	  virtual bool OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut) = 0;
 };
 

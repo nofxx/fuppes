@@ -41,6 +41,8 @@ class CUPnPDevice;
 class IUPnPDevice
 {
   public:
+    virtual ~IUPnPDevice() {};
+  
     virtual void OnTimer(CUPnPDevice* pSender) = 0;
 		virtual void OnNewDevice(CUPnPDevice* pSender) = 0;
 };

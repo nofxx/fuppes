@@ -1,5 +1,5 @@
 /***************************************************************************
- *            DeviceSettings.h
+ *            XMLParser.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -21,38 +21,41 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef _DEVICESETTINGS_H
-#define _DEVICESETTINGS_H
+#ifndef _XMLPARSER_H
+#define _XMLPARSER_H
 
+#include <libxml/parser.h>
+#include <libxml/tree.h>
 #include <string>
-#include <list>
 
-typedef struct {
-  bool bResize;
-	bool bResizeIfLarger;
-	int  nMaxWidth;
-	int  nMaxHeight;
-	enum { resize, scale } nResizeMethod; // resize = better quality (lower) | scale = lower quality (faster)
-} ImageSettings_t;
-
-class CDeviceSettings
+class CXMLNode
 {
   public:
-	  CDeviceSettings(std::string p_sDeviceName);
-		
-		bool HasUserAgent(std::string p_sUserAgent);
-		std::list<std::string> m_slUserAgents;
-		bool HasIP(std::string p_sIPAddress);
-		std::list<std::string> m_slIPAddresses;
-		
-		bool m_bShowPlaylistAsContainer;
-		bool m_bXBox360Support;
-		int  m_nMaxFileNameLength;
-		
-		ImageSettings_t m_ImageSettings;
-
- // private:
-	  std::string m_sDeviceName;
+    CXMLNode(xmlNode* p_NodePtr);
+    
+    int ChildCount();
+    CXMLNode* ChildNode(int p_nIdx);
+    std::string Attribute(std::string p_sName);
+    unsigned int AttributeAsUInt(std::string p_sName);
+  
+    std::string Name();
+    std::string Value();
+  
+  private:
+    xmlNode* m_pNode;
 };
 
-#endif // _DEVICESETTINGS_H
+class CXMLDocument
+{
+  public:
+    ~CXMLDocument();
+    bool Load(std::string p_sFileName);
+  
+    CXMLNode* RootNode();
+  
+  private:
+    xmlDocPtr m_pDoc;
+    CXMLNode* m_pRootNode;
+};
+
+#endif // _XMLPARSER_H

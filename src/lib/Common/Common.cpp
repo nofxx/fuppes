@@ -385,7 +385,7 @@ unsigned int HexToInt(std::string sHex)
      m--;   // adjust the position to set
      n++;   // next digit to process
   }
-  
+
   return intValue;
 }
 
@@ -564,12 +564,14 @@ int fuppesThreadCancel(fuppesThread p_ThreadHandle)
   #ifdef WIN32
 	int nExitCode;
 	TerminateThread(p_ThreadHandle, nExitCode);
+  return nExitCode;
 	#else
 	pthread_cancel(p_ThreadHandle);
+  return 0;
 	#endif
 }
 
-bool fuppesThreadLockMutex(fuppesThreadMutex* p_ThreadMutex)
+void fuppesThreadLockMutex(fuppesThreadMutex* p_ThreadMutex)
 {
   #ifdef WIN32
   #warning todo: check if mutex is initialized (uninitialized mutexes will crash on win32)
@@ -579,7 +581,7 @@ bool fuppesThreadLockMutex(fuppesThreadMutex* p_ThreadMutex)
   #endif  
 }
 
-bool fuppesThreadUnlockMutex(fuppesThreadMutex* p_ThreadMutex)
+void fuppesThreadUnlockMutex(fuppesThreadMutex* p_ThreadMutex)
 {
   #ifdef WIN32
   #warning todo: check if mutex is initialized (uninitialized mutexes will crash on win32)

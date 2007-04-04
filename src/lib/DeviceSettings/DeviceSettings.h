@@ -1,9 +1,9 @@
 /***************************************************************************
- *            UPnPActionFactory.h
- *
+ *            DeviceSettings.h
+ * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -20,33 +20,40 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
-#ifndef _UPNPACTIONFACTORY_H
-#define _UPNPACTIONFACTORY_H
+
+#ifndef _DEVICESETTINGS_H
+#define _DEVICESETTINGS_H
 
 #include <string>
-#include "UPnPAction.h"
-#include "UPnPBrowse.h"
-#include "UPnPSearch.h"
-#include "../DeviceSettings/DeviceSettings.h"
+#include <list>
 
-class CUPnPActionFactory
+typedef struct {
+  bool bResize;
+	bool bResizeIfLarger;
+	int  nMaxWidth;
+	int  nMaxHeight;
+	enum { resize, scale } nResizeMethod; // resize = better quality (lower) | scale = lower quality (faster)
+} ImageSettings_t;
+
+class CDeviceSettings
 {
-
   public:
-
-   /** builds an UPnP action from a string
-    *  @param  p_sContent  the string to build th message from
-    *  @return returns the action object on success otherwise NULL
-    */
-    CUPnPAction* BuildActionFromString(std::string p_sContent, CDeviceSettings* pDeviceSettings);
-
-  private:
-          
-    bool ParseBrowseAction(CUPnPBrowse* pAction);
+	  CDeviceSettings(std::string p_sDeviceName);
 		
-		bool ParseSearchAction(CUPnPSearch* pAction);
+		bool HasUserAgent(std::string p_sUserAgent);
+		std::list<std::string> m_slUserAgents;
+		bool HasIP(std::string p_sIPAddress);
+		std::list<std::string> m_slIPAddresses;
+		
+		bool m_bShowPlaylistAsContainer;
+		bool m_bXBox360Support;
+		int  m_nMaxFileNameLength;
+		
+		ImageSettings_t m_ImageSettings;
 
+ // private:
+	  std::string m_sDeviceName;
+    std::string m_sVirtualFolderDevice;
 };
 
-#endif // _UPNPACTIONFACTORY_H
+#endif // _DEVICESETTINGS_H

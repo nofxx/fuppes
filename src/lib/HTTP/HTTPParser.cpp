@@ -23,7 +23,7 @@
  
 #include "HTTPParser.h"
 #include "../Common/RegEx.h"
-#include "../Configuration/DeviceIdentificationMgr.h"
+#include "../DeviceSettings/DeviceIdentificationMgr.h"
 
 bool CHTTPParser::Parse(CHTTPMessage* pMessage)
 {

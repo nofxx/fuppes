@@ -49,7 +49,7 @@ typedef enum tagOBJECT_TYPE
     //ITEM_VIDEO_ITEM_MUSIC_VIDEO_CLIP = 302,  
   
   //CONTAINER_PERSON = 4,
-    //CONTAINER_PERSON_MUSIC_ARTIST = 400,
+    CONTAINER_PERSON_MUSIC_ARTIST = 400,
   
   /* "object.container.playlistContainer" and "object.item.playlistItem”
      have the same OBJECT_TYPE in the database though the type of representation
@@ -57,11 +57,11 @@ typedef enum tagOBJECT_TYPE
   CONTAINER_PLAYLIST_CONTAINER = 5,  
   
   //CONTAINER_ALBUM = 6,
-    //CONTAINER_ALBUM_MUSIC_ALBUM = 600,
-    //CONTAINER_ALBUM_PHOTO_ALBUM = 601,
+    CONTAINER_ALBUM_MUSIC_ALBUM = 600,
+    CONTAINER_ALBUM_PHOTO_ALBUM = 601,
     
-  //CONTAINER_GENRE = 7,
-    //CONTAINER_GENRE_MUSIC_GENRE = 700,
+  CONTAINER_GENRE = 7,
+    CONTAINER_GENRE_MUSIC_GENRE = 700,
     //CONTAINER_GENRE_MOVIE_GENRE = 701,
     
   //CONTAINER_STORAGE_SYSTEM = 8,
@@ -74,6 +74,7 @@ class CSelectResult
   public:
     std::string  GetValue(std::string p_sFieldName);
     bool         IsNull(std::string p_sFieldName);
+    unsigned int GetValueAsUInt(std::string p_sFieldName);
   
   //private:
     std::map<std::string, std::string> m_FieldValues;
@@ -91,6 +92,9 @@ class CContentDatabase: IFileSystemMonitor
     std::string GetLibVersion();
 
     bool Init(bool* p_bIsNewDB);
+  
+    void BeginTransaction();
+    void Commit();
   
     unsigned int Insert(std::string p_sStatement);
     bool Execute(std::string p_sStatement);
@@ -119,11 +123,12 @@ class CContentDatabase: IFileSystemMonitor
 	
     //bool m_bIsRebuilding;
 		bool m_bShared;
-		CFileSystemMonitor* m_pFileSystemMonitor;
-  
+		CFileSystemMonitor* m_pFileSystemMonitor;  
     static CContentDatabase* m_Instance;
-		sqlite3*                 m_pDbHandle;  
-    std::string              m_sDbFileName;    
+  
+		sqlite3*      m_pDbHandle;  
+    std::string   m_sDbFileName;
+    bool          m_bInTransaction;
     bool Open();
     void Close();
 };
