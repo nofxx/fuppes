@@ -90,13 +90,10 @@ CDeviceIdentificationMgr::~CDeviceIdentificationMgr()
 
 void CDeviceIdentificationMgr::IdentifyDevice(CHTTPMessage* pDeviceMessage)
 {
-  //cout << __FILE__ << " " << __LINE__ << endl << pDeviceMessage->GetHeader() << endl;
-	
 	CDeviceSettings* pSettings;
 	for(m_SettingsIt = m_Settings.begin(); m_SettingsIt != m_Settings.end(); m_SettingsIt++)
 	{
-	  pSettings = *m_SettingsIt;
-		//cout << pDeviceMessage->m_sUserAgent << endl;
+	  pSettings = *m_SettingsIt;		
 		
 		if(pSettings->HasIP(pDeviceMessage->GetRemoteIPAddress())) {
 		  pDeviceMessage->SetDeviceSettings(pSettings);
@@ -106,8 +103,7 @@ void CDeviceIdentificationMgr::IdentifyDevice(CHTTPMessage* pDeviceMessage)
 		if(pSettings->HasUserAgent(pDeviceMessage->m_sUserAgent)) {
 		  pDeviceMessage->SetDeviceSettings(pSettings);
 			break;
-		}
-		
+		}		
 	}
 	
 	if(!pDeviceMessage->GetDeviceSettings())

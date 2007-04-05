@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -25,10 +24,6 @@
 #ifndef __FUPPES_H
 #define __FUPPES_H
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include <map>
 #include <vector>
 #include <list>
@@ -39,114 +34,76 @@
 #include "ConnectionManager/ConnectionManager.h"
 #include "XMSMediaReceiverRegistrar.h"
 
-/*===============================================================================
- FORWARD DECLARATIONS
-===============================================================================*/
-
 class CFuppes;
 class CHTTPMessage;
 class CMediaServer;
 //class CContentDirectory;
 class CUPnPDevice;
 
-/*===============================================================================
- CLASS IFuppes
-===============================================================================*/
-
 class IFuppes
 {
 
-/* <PUBLIC> */
-
-public:
-  virtual ~IFuppes() {};
+  public:
+    virtual ~IFuppes() {};
         
-  virtual void OnReceivePresentationRequest(
-    CFuppes* pSender,
-    CHTTPMessage* pMessage,
-    CHTTPMessage* pResult) = 0;
-
-/* <\PUBLIC> */
-
+    virtual void OnReceivePresentationRequest(
+      CFuppes* pSender,
+      CHTTPMessage* pMessage,
+      CHTTPMessage* pResult) = 0;
 };
 
-/*===============================================================================
- CLASS CFuppes
-===============================================================================*/
+
 
 class CFuppes: public ISSDPCtrl, IHTTPServer, IUPnPDevice
 {
 
-/* <PUBLIC> */
-
-public:
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
+  public:
   
-  CFuppes(std::string p_sIPAddress, std::string p_sUUID);
-  virtual ~CFuppes();
+    CFuppes(std::string p_sIPAddress, std::string p_sUUID);
+    virtual ~CFuppes();
 
-  void OnTimer(CUPnPDevice* pSender);
-	void OnNewDevice(CUPnPDevice* pSender);
+    void OnTimer(CUPnPDevice* pSender);
+	  void OnNewDevice(CUPnPDevice* pSender);
 
-/*==============================================================================
- GET
-===============================================================================*/
 
-  CSSDPCtrl*                GetSSDPCtrl() { return m_pSSDPCtrl; }
-  CContentDirectory*        GetContentDirectory() { return m_pContentDirectory; }
-  std::string               GetHTTPServerURL();
-  std::string               GetIPAddress();
-  std::vector<CUPnPDevice*> GetRemoteDevices();
-  std::string               GetUUID() { return m_sUUID; }
+    CSSDPCtrl*                GetSSDPCtrl() { return m_pSSDPCtrl; }
+    CContentDirectory*        GetContentDirectory() { return m_pContentDirectory; }
+    std::string               GetHTTPServerURL();
+    std::string               GetIPAddress();
+    std::vector<CUPnPDevice*> GetRemoteDevices();
+    std::string               GetUUID() { return m_sUUID; }
 
-/* <\PUBLIC> */
+  private:
 
-/* <PRIVATE> */
+    CSSDPCtrl*            m_pSSDPCtrl;
+    CHTTPServer*          m_pHTTPServer;
+    CMediaServer*         m_pMediaServer;
+    CContentDirectory*    m_pContentDirectory;    
+    CConnectionManager*   m_pConnectionManager;
+	  CXMSMediaReceiverRegistrar* m_pXMSMediaReceiverRegistrar;
+    std::string           m_sIPAddress;
+    std::string           m_sUUID;
+    IFuppes*              m_pPresentationRequestHandler;
+    fuppesThreadMutex     m_OnTimerMutex;  
 
-private:
+    std::map<std::string, CUPnPDevice*>           m_RemoteDevices;
+    std::map<std::string, CUPnPDevice*>::iterator m_RemoteDeviceIterator;
+    fuppesThreadMutex     m_RemoteDevicesMutex;
 
-/*===============================================================================
- MEMBERS
-===============================================================================*/
-  
-  CSSDPCtrl*            m_pSSDPCtrl;
-  CHTTPServer*          m_pHTTPServer;
-  CMediaServer*         m_pMediaServer;
-  CContentDirectory*    m_pContentDirectory;    
-  CConnectionManager*   m_pConnectionManager;
-	CXMSMediaReceiverRegistrar* m_pXMSMediaReceiverRegistrar;
-  std::string           m_sIPAddress;
-  std::string           m_sUUID;
-  IFuppes*              m_pPresentationRequestHandler;
-  fuppesThreadMutex     m_OnTimerMutex;  
+    std::list<CUPnPDevice*>           m_TimedOutDevices;
+    std::list<CUPnPDevice*>::iterator m_TimedOutDevicesIterator;
 
-  std::map<std::string, CUPnPDevice*>           m_RemoteDevices;
-  std::map<std::string, CUPnPDevice*>::iterator m_RemoteDeviceIterator;
-  fuppesThreadMutex     m_RemoteDevicesMutex;
+    void CleanupTimedOutDevices();
 
-  std::list<CUPnPDevice*>           m_TimedOutDevices;
-  std::list<CUPnPDevice*>::iterator m_TimedOutDevicesIterator;
+    void OnSSDPCtrlReceiveMsg(CSSDPMessage*);
+    bool OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
 
-  void CleanupTimedOutDevices();
-
-/*===============================================================================
- MESSAGE HANDLING
-===============================================================================*/
-
-  void OnSSDPCtrlReceiveMsg(CSSDPMessage*);
-  bool OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
-
-  bool HandleHTTPRequest(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
-  bool HandleHTTPPostSOAPAction(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
+    bool HandleHTTPRequest(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
+    bool HandleHTTPPostSOAPAction(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
 	
-  void HandleSSDPAlive(CSSDPMessage* pMessage);
-  void HandleSSDPByeBye(CSSDPMessage* pMessage);
+    void HandleSSDPAlive(CSSDPMessage* pMessage);
+    void HandleSSDPByeBye(CSSDPMessage* pMessage);
   
-/* <\PRIVATE> */
-
 };
 
 #endif // __FUPPES_H

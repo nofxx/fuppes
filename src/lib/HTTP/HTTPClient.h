@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*

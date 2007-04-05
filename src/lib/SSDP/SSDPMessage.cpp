@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -21,10 +20,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
 
 #include "SSDPMessage.h"
 #include "../Common/RegEx.h"
@@ -34,21 +29,7 @@
 
 using namespace std;
 
-/*===============================================================================
- CONSTANTS
-===============================================================================*/
-
 const std::string LOGNAME = "SSDPMessage";
-
-/*===============================================================================
- CLASS CSSDPMessage
-===============================================================================*/
-
-/* <PUBLIC> */
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
 
 CSSDPMessage::CSSDPMessage()
 {
@@ -58,10 +39,6 @@ CSSDPMessage::CSSDPMessage()
 CSSDPMessage::~CSSDPMessage()
 {
 }
-
-/*===============================================================================
- MESSAGES
-===============================================================================*/
 
 bool CSSDPMessage::SetMessage(std::string p_sMessage)
 {
@@ -235,19 +212,3 @@ void CSSDPMessage::Assign(CSSDPMessage* pSSDPMessage)
   pSSDPMessage->SetLocalEndPoint(this->GetLocalEndPoint());
   pSSDPMessage->SetRemoteEndPoint(this->GetRemoteEndPoint());  
 }
-
-/*===============================================================================
- GET
-===============================================================================*/
-
-//~ std::string CSSDPMessage::GetDeviceID()
-//~ {
-  //~ /* Format string */
-  //~ std::stringstream sDeviceID;
-  //~ sDeviceID << GetRemoteIPAddress() << "::" << GetUUID();
-  
-  //~ /* Return device id */
-  //~ return sDeviceID.str();
-//~ }
-
-/* <\PUBLIC> */

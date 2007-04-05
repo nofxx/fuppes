@@ -53,6 +53,7 @@ class CVirtualContainerMgr
     void CreateVFoldersFromProperty(CXMLNode* pFoldersNode, std::string p_sDevice, unsigned int p_nParentId, std::string p_sFilter = "");
     void CreateItemMappings(CXMLNode* pNode, std::string p_sDevice, unsigned int p_nParentId, std::string p_sFilter = "");
     void CreateFolderMappings(CXMLNode* pNode, std::string p_sDevice, unsigned int p_nParentId, std::string p_sFilter = "");
+    void MapSharedDirsTo(CXMLNode* pNode, std::string p_sDevice, unsigned int p_nParentId);
   
 		unsigned int GetId() { m_nIdCounter--; return m_nIdCounter; }		
 };

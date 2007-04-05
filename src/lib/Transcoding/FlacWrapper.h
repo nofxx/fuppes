@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -35,15 +35,16 @@
 
 #include "WrapperBase.h"
 
-#ifdef HAVE_FILEDECODER
+#ifdef HAVE_FILEDECODER // <= 1.1.2
 #include <FLAC/file_decoder.h>
-#else
+#else // >= 1.1.3
 #include <FLAC/stream_decoder.h>
 #endif
 
 #ifdef __cplusplus
 extern "C"
 {
+  #ifdef HAVE_FILEDECODER
   /* FLAC__FileDecoder* FLAC__file_decoder_new() */  
   typedef FLAC__FileDecoder* (*FLACFileDecoderNew_t)();
   
@@ -79,11 +80,18 @@ extern "C"
   
   /* FLAC__bool	FLAC__file_decoder_finish(FLAC__FileDecoder *decoder) */
   typedef FLAC__bool (*FLACFileDecoderFinish_t)(FLAC__FileDecoder*);  
+  #else
+  
+  #endif
 }
 #endif
 
 typedef struct flac_data_s {
+  #ifdef HAVE_FILEDECODER
   FLAC__FileDecoder *decoder;
+  #else
+  FLAC__StreamDecoder *decode;
+  #endif
   
   FLAC__uint64  total_samples;
   unsigned int  channels;

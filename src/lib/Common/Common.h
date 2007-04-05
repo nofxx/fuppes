@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -25,10 +24,6 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include <string>
 #include <sstream>
 #include <assert.h>
@@ -38,7 +33,7 @@
 
 #ifdef WIN32
 
-/* T.S.NOTE: This must be defined to use InitializeCriticalSectionAndSpinCount() */
+/* This must be defined to use InitializeCriticalSectionAndSpinCount() */
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0410 /* Windows 98 or later */
 #endif
@@ -49,13 +44,10 @@
 
 #include <Winsock2.h>
 #include <Ws2tcpip.h>
-#include <shlwapi.h> /* For PathXXX functions */
+#include <shlwapi.h>
 
 #endif
 
-/*===============================================================================
- EXCEPTIONS
-===============================================================================*/
 class EException: public std::exception
 {
   public:
@@ -74,17 +66,10 @@ class EException: public std::exception
     std::string m_sException;
 };
 
-/*===============================================================================
- DEFINITIONS
-===============================================================================*/
 
 #define ASSERT assert
 
 const std::string MIME_TYPE_TEXT_HTML = "text/html";
-
-/*===============================================================================
- File Functions
-===============================================================================*/
 
 bool FileExists(std::string p_sFileName);
 bool IsFile(std::string p_sFileName);
@@ -98,9 +83,6 @@ std::string TrimFileName(std::string p_sFileName, unsigned int p_nMaxLength, boo
 
 std::string MD5Sum(std::string p_sFileName);
 
-/*===============================================================================
- String Functions
-===============================================================================*/
 
 std::string ToLower(std::string p_sInput);
 std::string ToUpper(std::string p_sInput);
@@ -112,14 +94,10 @@ std::string SQLEscape(std::string p_sValue);
 
 std::string ToUTF8(std::string p_sValue, std::string p_sEncoding = "");
 
-/*===============================================================================
- Common Functions
-===============================================================================*/
+
 void fuppesSleep(unsigned int p_nMilliseconds);
 
-/*===============================================================================
- Socket definitions and functions
-===============================================================================*/
+
 
 #ifdef WIN32
   typedef SOCKET fuppesSocket;  
@@ -130,9 +108,6 @@ void fuppesSleep(unsigned int p_nMilliseconds);
 bool fuppesSocketSetNonBlocking(fuppesSocket p_SocketHandle);
 int  fuppesSocketClose(fuppesSocket p_SocketHandle);
 
-/*===============================================================================
- Thread definitions and functions
-===============================================================================*/
 
 #ifdef WIN32
   typedef HANDLE            fuppesThread;
@@ -149,9 +124,6 @@ void fuppesThreadLockMutex(fuppesThreadMutex* p_ThreadMutex);
 void fuppesThreadUnlockMutex(fuppesThreadMutex* p_ThreadMutex);
 
 
-/*===============================================================================
- Library definitions and functions
-===============================================================================*/
 
 #ifdef WIN32
   typedef HINSTANCE  fuppesLibHandle;
@@ -168,9 +140,6 @@ fuppesProcHandle  FuppesGetProcAddress(fuppesLibHandle p_LibHandle, std::string 
 bool              FuppesCloseLibrary(fuppesLibHandle p_LibHandle);
 
 
-/*===============================================================================
- WIN32 specific definitions
-===============================================================================*/
 
 #ifdef WIN32
 
@@ -202,9 +171,7 @@ bool              FuppesCloseLibrary(fuppesLibHandle p_LibHandle);
 
 #else
 
-/*===============================================================================
- NOT WIN32 specific definitions
-===============================================================================*/
+
 
 #include <pthread.h>
 #include <unistd.h>
@@ -235,4 +202,4 @@ bool              FuppesCloseLibrary(fuppesLibHandle p_LibHandle);
 
 #endif
 
-#endif /* _COMMON_H */
+#endif // _COMMON_H

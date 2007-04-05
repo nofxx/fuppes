@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -25,10 +24,6 @@
 #ifndef _CONTENTDIRECTORY_H
 #define _CONTENTDIRECTORY_H
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "../UPnPService.h"
 #include "../HTTP/HTTPMessage.h"
 #include "ContentDatabase.h"
@@ -37,43 +32,29 @@
 
 #include <map>
 #include <string>
-/*===============================================================================
- CLASS CContentDirectory
-===============================================================================*/
 
 class CContentDirectory: public CUPnPService
 {
 	
-/* <PUBLIC> */
+  public:
 
-public:
+    /** constructor
+     *  @param  p_sHTTPServerURL  URL of the HTTP server
+     */
+    CContentDirectory(std::string p_sHTTPServerURL);
 
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-
-  /** constructor
-   *  @param  p_sHTTPServerURL  URL of the HTTP server
-   */
-  CContentDirectory(std::string p_sHTTPServerURL);
-
-  /** destructor
-   *  @todo  Delete all objects that were created with 'new'. 'm_Objectlist' has the pointers to these objects
-   */
-  ~CContentDirectory();
+    /** destructor     
+     */
+    ~CContentDirectory();
 
 
-  std::string GetServiceDescription();
+    std::string GetServiceDescription();
 
-/*===============================================================================
- UPNP ACTION HANDLING
-===============================================================================*/
-
-  /** handles a UPnP action and creates the corresponding message
-   *  @param  pUPnPAction  UPnP action to handle
-   *  @param  pMessageOut  the message, that was created for the action   
-   */
-  void HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut);
+    /** handles a UPnP action and creates the corresponding message
+     *  @param  pUPnPAction  UPnP action to handle
+     *  @param  pMessageOut  the message, that was created for the action   
+     */
+    void HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut);
 
 
 
@@ -152,8 +133,6 @@ public:
 		
     std::string HandleUPnPSearch(CUPnPSearch* pSearch);
 
-/* <\PRIVATE> */
-
 };
 
-#endif /* _CONTENTDIRECTORY_H */
+#endif // _CONTENTDIRECTORY_H

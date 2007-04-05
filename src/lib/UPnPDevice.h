@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -52,76 +51,66 @@ class CUPnPDevice: public CUPnPBase, ITimer, IHTTPClient
 {
   protected:
 
-  /** constructor
-   *  @param  nType  the device type
-   *  @param  p_sHTTPServerURL  URL of the HTTP server
-   */
-  CUPnPDevice(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL, IUPnPDevice* pEventHandler);		
+    /** constructor
+     *  @param  nType  the device type
+     *  @param  p_sHTTPServerURL  URL of the HTTP server
+     */
+    CUPnPDevice(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL, IUPnPDevice* pEventHandler);		
 
 
   public:
-  
-  /** constructor
-   */
-  CUPnPDevice(IUPnPDevice* pEventHandler, std::string p_sUUID);
 
-  /** destructor
-   */
-  virtual ~CUPnPDevice();
+    CUPnPDevice(IUPnPDevice* pEventHandler, std::string p_sUUID);
+    virtual ~CUPnPDevice();
 
+    void OnTimer();
 
-  /** OnTimer
-   */
-  void OnTimer();
+    CTimer* GetTimer() { return m_pTimer; }
 
-  /** GetTimer
-   */
-  CTimer* GetTimer() { return m_pTimer; }
-
-  CHTTPClient* GetHTTPClient() { return m_pHTTPClient; }
+    CHTTPClient* GetHTTPClient() { return m_pHTTPClient; }
 
 
-  /** gets a device description from a specific URL and builds the device
-   *  @param  p_sDescriptionURL URL where we can get the device description message
-   *  @return returns true on success otherwise false
-   */
-  void BuildFromDescriptionURL(std::string p_sDescriptionURL);
+    /** gets a device description from a specific URL and builds the device
+     *  @param  p_sDescriptionURL URL where we can get the device description message
+     *  @return returns true on success otherwise false
+     */
+    void BuildFromDescriptionURL(std::string p_sDescriptionURL);
 
-  void OnAsyncReceiveMsg(CHTTPMessage* pMessage);
+    void OnAsyncReceiveMsg(CHTTPMessage* pMessage);
 
-  /** adds a UPnP service to this device
-   *  @param  pService the service to add to the device
-   */
-  void AddUPnPService(CUPnPService* pService);
+    /** adds a UPnP service to this device
+     *  @param  pService the service to add to the device
+     */
+    void AddUPnPService(CUPnPService* pService);
 
 
-  /** returns the count of all services for this device
-   *  @return returns the count or 0
-   */
-  int GetUPnPServiceCount();
+    /** returns the count of all services for this device
+     *  @return returns the count or 0
+     */
+    int GetUPnPServiceCount();
 
-  /** returns a pointer to a UPnP service
-   *  @param  p_nIndex  index of the service to get
-   *  @return  pointer to the service or NULL
-   */
-  CUPnPService* GetUPnPService(int p_nIndex);  
+    /** returns a pointer to a UPnP service
+     *  @param  p_nIndex  index of the service to get
+     *  @return  pointer to the service or NULL
+     */
+    CUPnPService* GetUPnPService(int p_nIndex);  
 	
-  /** returns the whole device description
-   *  @return  the device descripition as string
-   */
-  std::string GetDeviceDescription(CHTTPMessage* pRequest);		
+    /** returns the whole device description
+     *  @return  the device descripition as string
+     */
+    std::string GetDeviceDescription(CHTTPMessage* pRequest);		
 
-  /** returns the friendly name of this device
-   *  @return  name of the device
-   */
-  std::string GetFriendlyName() { return m_sFriendlyName; }
+    /** returns the friendly name of this device
+     *  @return  name of the device
+     */
+    std::string GetFriendlyName() { return m_sFriendlyName; }
   
-  /** returns the device's UUID
-   *  @return the UUID
-   */  
-  std::string GetUUID() { return m_sUUID; }
+    /** returns the device's UUID
+     *  @return the UUID
+     */  
+    std::string GetUUID() { return m_sUUID; }
   
-  bool GetIsLocalDevice() { return m_bIsLocalDevice; }
+    bool GetIsLocalDevice() { return m_bIsLocalDevice; }
 
   protected:
     std::string   m_sFriendlyName;

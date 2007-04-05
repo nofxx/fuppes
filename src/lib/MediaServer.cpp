@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,10 +21,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "MediaServer.h"
 #include "SharedConfig.h"
 
@@ -34,21 +29,9 @@
 
 using namespace std;
 
-/*===============================================================================
- CLASS CMediaServer
-===============================================================================*/
-
-/* <PUBLIC> */
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-
 CMediaServer::CMediaServer(std::string p_sHTTPServerURL, IUPnPDevice* pOnTimerHandler):
   CUPnPDevice(UPNP_DEVICE_MEDIA_SERVER, p_sHTTPServerURL, pOnTimerHandler)
 {
-  /* Set common data for FUPPES */
-
   stringstream stream;
 
   //stream << "Free UPnP Entertainment Service (" << CSharedConfig::Shared()->GetHostname() << ")";	
@@ -83,5 +66,3 @@ CMediaServer::CMediaServer(std::string p_sHTTPServerURL, IUPnPDevice* pOnTimerHa
 CMediaServer::~CMediaServer()
 {
 }
-
-/* <\PUBLIC> */

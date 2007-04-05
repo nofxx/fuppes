@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,10 +21,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "MSearchSession.h"
 #include "NotifyMsgFactory.h"
 #include "../SharedLog.h"
@@ -36,10 +31,6 @@
 #include <time.h>
 
 using namespace std;
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
 
 CMSearchSession::CMSearchSession(std::string p_sIPAddress, IMSearchSession* pReceiveHandler, CNotifyMsgFactory* pNotifyMsgFactory)
   :m_Timer(this)
@@ -61,10 +52,6 @@ CMSearchSession::~CMSearchSession()
   m_UdpSocket.TeardownSocket();  
 }
 
-/*===============================================================================
- MESSAGE HANDLING
-===============================================================================*/
-
 void CMSearchSession::OnUDPSocketReceive(CSSDPMessage* pSSDPMessage)
 {
   if(m_pEventHandler != NULL)
@@ -80,10 +67,6 @@ void CMSearchSession::OnTimer()
   }  
 }
 
-/*===============================================================================
- CONTROL
-===============================================================================*/
-
 void CMSearchSession::Start()
 {
 	begin_receive_unicast();
@@ -97,10 +80,6 @@ void CMSearchSession::Stop()
   m_Timer.Stop();
 	end_receive_unicast();
 }
-
-/*===============================================================================
- SEND/RECEIVE
-===============================================================================*/
 
 void CMSearchSession::send_multicast(std::string a_message)
 {
@@ -131,8 +110,6 @@ sockaddr_in CMSearchSession:: GetLocalEndPoint()
 {
 	return m_UdpSocket.GetLocalEndPoint();
 }
-
-/* <\PUBLIC> */
 
 fuppesThreadCallback HandleMSearchThread(void *arg);
 

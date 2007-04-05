@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -25,57 +24,31 @@
 #ifndef _UPNPSERVICE_H
 #define _UPNPSERVICE_H
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "UPnPBase.h"
 #include "HTTP/HTTPMessage.h"
 
-/*===============================================================================
- CLASS CUPnPService
-===============================================================================*/
-
 class CUPnPService: public CUPnPBase
 {
+  protected:
 
-/* <PROTECTED> */
-
-protected:
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-  
-  /** constructor
-   *  @param  nType  the device type
-   *  @param  p_sHTTPServerURL  URL of the HTTP server
-   */
-  CUPnPService(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL);
+    /** constructor
+     *  @param  nType  the device type
+     *  @param  p_sHTTPServerURL  URL of the HTTP server
+     */
+    CUPnPService(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL);
 		
-  /** destructor
-   */
-  virtual ~CUPnPService();
+    /** destructor
+     */
+    virtual ~CUPnPService();
 	
-/* <\PROTECTED> */
+  public:
+    
+    /** returns the service description as string
+     *  @return  the service description
+     */
+    virtual std::string GetServiceDescription() = 0;
 
-/* <PUBLIC> */
-
-public:
-
-/*===============================================================================
- GET
-===============================================================================*/
-
-  /** returns the service description as string
-   *  @return  the service description
-   */
-  virtual std::string GetServiceDescription() = 0;
-
-  virtual void HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut) = 0;
-
-/* <\PUBLIC> */
-
+    virtual void HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut) = 0;
 };
 
-#endif /* _UPNPSERVICE_H */
+#endif // _UPNPSERVICE_H

@@ -4,14 +4,13 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2 as
  *  published by the Free Software Foundation.
- *fupp
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -49,10 +48,6 @@
 #endif
 
 using namespace std;
-
-/*===============================================================================
- File Functions
-===============================================================================*/
 
 bool FileExists(std::string p_sFileName)
 {
@@ -154,9 +149,6 @@ std::string MD5Sum(std::string p_sFileName)
   return hex_output;
 }
 
-/*===============================================================================
- String Functions
-===============================================================================*/
 
 std::string ExtractFileExt(std::string p_sFileName)
 {
@@ -214,19 +206,23 @@ std::string ToUpper(std::string p_sInput)
 bool ExtractFolderFromPath(std::string p_sPath, std::string* p_sFolder)
 {
   #ifdef WIN32
+  if(p_sPath[p_sPath.length() - 1] == '\\') {
+    p_sPath = p_sPath.substr(0, p_sPath.length() - 1);
+  }
   RegEx rxDirName("\\\\([^\\\\|\\.]*)$", PCRE_CASELESS);
   #else
+  if(p_sPath[p_sPath.length() - 1] == '/') {
+    p_sPath = p_sPath.substr(0, p_sPath.length() - 1);
+  }
   RegEx rxDirName("/([^/|\\.]*)$", PCRE_CASELESS);
   #endif
   
   const char* pszDir = p_sPath.c_str();
-  if(rxDirName.Search(pszDir))
-  {
+  if(rxDirName.Search(pszDir)) {
     *p_sFolder = rxDirName.Match(1);
     return true;
   }
-  else
-  {
+  else  {
     return false;
   }
 }
@@ -454,9 +450,6 @@ std::string ToUTF8(std::string p_sValue, std::string p_sEncoding)
 }
 
 
-/*===============================================================================
- Common Functions
-===============================================================================*/
 
 void fuppesSleep(unsigned int p_nMilliseconds)
 {
@@ -467,9 +460,6 @@ void fuppesSleep(unsigned int p_nMilliseconds)
   #endif
 }
 
-/*===============================================================================
- Socket functions
-===============================================================================*/
 
 bool fuppesSocketSetNonBlocking(upnpSocket p_SocketHandle)
 {
@@ -500,9 +490,6 @@ int fuppesSocketClose(fuppesSocket p_SocketHandle)
   #endif  
 }
 
-/*===============================================================================
- Thread functions
-===============================================================================*/
 
 bool fuppesThreadClose(fuppesThread p_ThreadHandle)
 {     
@@ -591,9 +578,6 @@ void fuppesThreadUnlockMutex(fuppesThreadMutex* p_ThreadMutex)
   #endif  
 }
 
-/*===============================================================================
- Library functions
-===============================================================================*/
 
 fuppesLibHandle FuppesLoadLibrary(std::string p_sLibName)
 {

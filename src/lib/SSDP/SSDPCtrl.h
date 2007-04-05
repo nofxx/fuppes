@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -25,10 +24,6 @@
 #ifndef _SSDPCTRL_H
 #define _SSDPCTRL_H
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "../Common/Common.h"
 
 #ifndef WIN32
@@ -46,89 +41,41 @@
 #include "MSearchSession.h"
 #include "NotifyMsgFactory.h"
 
-/*===============================================================================
- CLASS ISSDPCtrl
-===============================================================================*/
-
 class ISSDPCtrl
 {
-
-/* <PUBLIC> */
-
-public:
-	virtual ~ISSDPCtrl() {};
-  virtual void OnSSDPCtrlReceiveMsg(CSSDPMessage*) = 0;
-
-/* <\PUBLIC> */
-
+  public:
+	  virtual ~ISSDPCtrl() {};
+    virtual void OnSSDPCtrlReceiveMsg(CSSDPMessage*) = 0;
 };
-
-/*===============================================================================
- CLASS CSSDPCtrl
-===============================================================================*/
 
 class CSSDPCtrl: public IUDPSocket, IMSearchSession
 {
-
-/* <PUBLIC> */
-
-public:
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-
+  public:
 		CSSDPCtrl(std::string p_sIPAddress, std::string p_sHTTPServerURL);
 		virtual ~CSSDPCtrl();
-
-/*===============================================================================
- INIT
-===============================================================================*/
 
 		void Start();
     void Stop();
 
-/*===============================================================================
- GET
-===============================================================================*/
-
 		CUDPSocket* get_socket();
-
-/*===============================================================================
- SEND
-===============================================================================*/
 
 		void send_msearch();
 	  void send_alive();
 	  void send_byebye();
 
-/*===============================================================================
- MESSAGE HANDLING
-===============================================================================*/
 
 	  void SetReceiveHandler(ISSDPCtrl* pHandler);
 	  void OnUDPSocketReceive(CSSDPMessage* pSSDPMessage);
    	void OnSessionReceive(CSSDPMessage* pMessage);
 	
     void OnSessionTimeOut(CMSearchSession* pSender);
-  
-/* <\PUBLIC> */
-
-/* <PRIVATE> */
 
 	private:
-    
-/*===============================================================================
- MESSAGE HANDLING
-===============================================================================*/
+
     void HandleMSearch(CSSDPMessage* pSSDPMessage);  
   
     void CleanupSessions();
   
-/*===============================================================================
- MEMBERS
-===============================================================================*/
-
     CUDPSocket         m_Listener;	
     CNotifyMsgFactory* m_pNotifyMsgFactory;
     fuppesThread       msearch_thread;
@@ -144,9 +91,6 @@ public:
     
     std::list<CHandleMSearchSession*> m_HandleMSearchThreadList;
     std::list<CHandleMSearchSession*>::iterator m_HandleMSearchThreadListIterator;
-
-/* <\PRIVATE> */
-
 };
 
-#endif /* _SSDPCTRL_H */
+#endif // _SSDPCTRL_H

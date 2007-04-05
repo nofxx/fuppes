@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,10 +21,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-/*===============================================================================
- INCLUDES
-===============================================================================*/ 
-
 #include "SSDPCtrl.h"
 #include "../SharedLog.h"
 #include <iostream>
@@ -33,22 +28,8 @@
  
 using namespace std;
 
-/*===============================================================================
- CONSTANTS
-===============================================================================*/
-
 const std::string LOGNAME = "SSDPDCtrl";
  
-/*===============================================================================
- CLASS CSSDPCtrl
-===============================================================================*/
-
-/* <PUBLIC> */
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-
 CSSDPCtrl::CSSDPCtrl(std::string p_sIPAddress, std::string p_sHTTPServerURL)
 {
   m_sHTTPServerURL = p_sHTTPServerURL;
@@ -68,10 +49,6 @@ CSSDPCtrl::~CSSDPCtrl()
   
   delete m_pNotifyMsgFactory;
 }
-
-/*===============================================================================
- INIT
-===============================================================================*/
 
 void CSSDPCtrl::Start()
 {	
@@ -94,10 +71,6 @@ void CSSDPCtrl::Stop()
 	m_Listener.EndReceive();  
   CSharedLog::Shared()->Log(L_EXTENDED, "SSDPController stopped", __FILE__, __LINE__);
 }
-
-/*===============================================================================
- GET
-===============================================================================*/
 
 CUDPSocket* CSSDPCtrl::get_socket()
 {
@@ -153,10 +126,6 @@ void CSSDPCtrl::CleanupSessions()
   
   fuppesThreadUnlockMutex(&m_SessionTimedOutMutex); 
 }
-
-/*===============================================================================
- SEND
-===============================================================================*/
 
 void CSSDPCtrl::send_msearch()
 {
@@ -228,10 +197,6 @@ void CSSDPCtrl::send_byebye()
 	Sock.TeardownSocket();
 }
 
-/*===============================================================================
- MESSAGE HANDLING
-===============================================================================*/
-
 void CSSDPCtrl::SetReceiveHandler(ISSDPCtrl* pHandler)
 { 
   m_pReceiveHandler = pHandler;
@@ -299,10 +264,6 @@ void CSSDPCtrl::OnSessionTimeOut(CMSearchSession* pSender)
   fuppesThreadUnlockMutex(&m_SessionTimedOutMutex); 
 }
 
-/* <\PUBLIC> */
-
-
-/* <PRIVATE> */
 
 void CSSDPCtrl::HandleMSearch(CSSDPMessage* pSSDPMessage)
 {
@@ -326,4 +287,3 @@ void CSSDPCtrl::HandleMSearch(CSSDPMessage* pSSDPMessage)
   
   CleanupSessions();
 }
-/* <\PRIVATE> */

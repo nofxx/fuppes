@@ -3,8 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -25,10 +24,6 @@
 #ifndef _MESSAGEBASE_H
 #define _MESSAGEBASE_H
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "Common/Common.h"
 
 #ifndef WIN32
@@ -41,64 +36,29 @@
 
 using namespace std;
 
-/*===============================================================================
- CLASS CMessageBase
-===============================================================================*/
-
 class CMessageBase
 {
-
-/* <PROTECTED> */
-
-	protected:
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-
-		CMessageBase();
+  protected:
+  	CMessageBase();
 	  virtual ~CMessageBase();
 
-/* <\PROTECTED> */
+  public:
+    virtual bool SetMessage(std::string p_sMessage);
+    virtual bool SetHeader(std::string p_sHeader);
 
-/* <PUBLIC> */
+	  std::string GetContent()         { return m_sContent;                     }
+    std::string	GetMessage()         { return m_sMessage;                     }
+    std::string GetHeader()          { return m_sHeader;                      }
+    std::string GetRemoteIPAddress() { return inet_ntoa(m_RemoteEp.sin_addr); }
 
-public:
-
-/*===============================================================================
- INIT
-===============================================================================*/
-
-  virtual bool SetMessage(std::string p_sMessage);
-
-/*===============================================================================
- GET MESSAGE DATA
-===============================================================================*/
-
-	std::string GetContent()         { return m_sContent;                     }
-  std::string	GetMessage()         { return m_sMessage;                     }
-  std::string GetHeader()          { return m_sHeader;                      }
-  std::string GetRemoteIPAddress() { return inet_ntoa(m_RemoteEp.sin_addr); }
-
-/*===============================================================================
- ENDPOINT
-===============================================================================*/
-
-  sockaddr_in GetLocalEndPoint()	 { return m_LocalEp;                      }
-  sockaddr_in GetRemoteEndPoint()  { return m_RemoteEp;                     }
+    sockaddr_in GetLocalEndPoint()	 { return m_LocalEp;                      }
+    sockaddr_in GetRemoteEndPoint()  { return m_RemoteEp;                     }
 		
-	void        SetLocalEndPoint(sockaddr_in);
-	void        SetRemoteEndPoint(sockaddr_in);		
+	  void        SetLocalEndPoint(sockaddr_in);
+	  void        SetRemoteEndPoint(sockaddr_in);		
   
-/* <\PUBLIC> */
 
-/* <PROTECTED> */
-
-protected:
-
-/*===============================================================================
- MEMBERS
-===============================================================================*/
+  protected:
 
 	  sockaddr_in m_LocalEp;
 		sockaddr_in m_RemoteEp;
@@ -106,8 +66,6 @@ protected:
     std::string m_sHeader;
     std::string m_sMessage;
 
-/* <\PROTECTED> */
-
 };
 
-#endif /* _MESSAGEBASE_H */
+#endif // _MESSAGEBASE_H

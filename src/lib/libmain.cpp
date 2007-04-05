@@ -52,8 +52,8 @@ int fuppes_init(int argc, char* argv[], void(*p_log_callback)(const char* sz_log
 {
   // already initialized
   if(pFuppes)
-    return FUPPES_FALSE;
-
+    return FUPPES_FALSE;    
+  
   CSharedLog::Shared()->SetCallback(p_log_callback);
 
   cout << "            FUPPES - " << CSharedConfig::Shared()->GetAppVersion() << endl;

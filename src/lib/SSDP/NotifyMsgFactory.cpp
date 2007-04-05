@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,10 +21,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "NotifyMsgFactory.h"
 #include "../SharedConfig.h"
 
@@ -34,24 +29,10 @@
 
 using namespace std;
 
-/*===============================================================================
- CLASS CNotifyMsgFactory
-===============================================================================*/
-
-/* <PUBLIC> */
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-
 CNotifyMsgFactory::CNotifyMsgFactory(std::string p_sHTTPServerURL)
 {
   m_sHTTPServerURL = p_sHTTPServerURL;
 }
-
-/*===============================================================================
- NOTIFICATIONS
-===============================================================================*/
 
 std::string CNotifyMsgFactory::msearch()
 {
@@ -139,14 +120,6 @@ std::string CNotifyMsgFactory::GetMSearchResponse(MESSAGE_TYPE p_MessageType)
 	return result.str();
 }
 
-/* <\PUBLIC> */
-
-/*===============================================================================
- HELPER
-===============================================================================*/
-
-/* <PRIVATE> */
-
 std::string CNotifyMsgFactory::type_to_string(MESSAGE_TYPE a_type)
 {
 	/* Convert message type to string */
@@ -181,5 +154,3 @@ std::string CNotifyMsgFactory::type_to_string(MESSAGE_TYPE a_type)
 				
 	return result.str();
 }
-
-/* <\PRIVATE> */

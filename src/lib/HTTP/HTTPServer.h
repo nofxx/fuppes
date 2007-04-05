@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -55,25 +54,15 @@ class IHTTPServer
 class CHTTPSessionInfo
 {
 
-/* <PUBLIC> */
+  public:
 
-public:
-    
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-
-  CHTTPSessionInfo(CHTTPServer* pHTTPServer, upnpSocket p_Connection, struct sockaddr_in p_RemoteEndPoint)
-  {
-    m_pHTTPServer    = pHTTPServer;
-    m_Connection     = p_Connection;    
-    m_bIsTerminated  = false;
-    m_RemoteEndPoint = p_RemoteEndPoint;
-  }
-
-/*===============================================================================
- GET
-===============================================================================*/
+    CHTTPSessionInfo(CHTTPServer* pHTTPServer, upnpSocket p_Connection, struct sockaddr_in p_RemoteEndPoint)
+    {
+      m_pHTTPServer    = pHTTPServer;
+      m_Connection     = p_Connection;    
+      m_bIsTerminated  = false;
+      m_RemoteEndPoint = p_RemoteEndPoint;
+    }
 
     fuppesSocket GetConnection() { return m_Connection;  }
     CHTTPServer* GetHTTPServer() { return m_pHTTPServer; }
@@ -81,92 +70,53 @@ public:
     void         SetThreadHandle(fuppesThread p_ThreadHandle) { m_ThreadHandle = p_ThreadHandle; }
     struct sockaddr_in GetRemoteEndPoint() { return m_RemoteEndPoint; }
   
-/* <\PUBLIC> */
-
     bool m_bIsTerminated;
-    
-/* <PRIVATE> */    
-    
-private:
+       
+  private:
   
-  void CleanupSessions();
+    void CleanupSessions();
 
-/*===============================================================================
- MEMBERS
-===============================================================================*/
-  
-  CHTTPServer* m_pHTTPServer;
-  fuppesSocket m_Connection;
-  fuppesThread m_ThreadHandle;
-  struct sockaddr_in m_RemoteEndPoint;
-
-/* <\PRIVATE> */
+    CHTTPServer* m_pHTTPServer;
+    fuppesSocket m_Connection;
+    fuppesThread m_ThreadHandle;
+    struct sockaddr_in m_RemoteEndPoint;
 
 };
-
-/*===============================================================================
- CLASS CHTTPServer
-===============================================================================*/
 
 class CHTTPServer
 {
 
-/* <PUBLIC> */
+  public:     
+    CHTTPServer(std::string p_sIPAddress);	
+    ~CHTTPServer();
 
-public:
-    
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-	  
-  CHTTPServer(std::string p_sIPAddress);	
-  ~CHTTPServer();
+    void          Start();		
+    void          Stop();
+    fuppesSocket  GetSocket() { return m_Socket; }
+    std::string   GetURL();	
+    void          CleanupSessions();
 
-/*===============================================================================
- COMMON
-===============================================================================*/
-
-  void          Start();		
-  void          Stop();
-  fuppesSocket  GetSocket() { return m_Socket; }
-  std::string   GetURL();	
-  void          CleanupSessions();
-
-/*===============================================================================
- MESSAGE HANDLING
-===============================================================================*/
-
-  bool				  SetReceiveHandler(IHTTPServer* pHandler);
-  bool          CallOnReceive(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
+    bool				  SetReceiveHandler(IHTTPServer* pHandler);
+    bool          CallOnReceive(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
    
-/* <\PUBLIC> */
+    bool m_bBreakAccept;
 
-  bool m_bBreakAccept;
+  private: 
 
-/* <PRIVATE> */
+    // Eventhandler 
+    IHTTPServer* m_pReceiveHandler;
 
-private: 
+    sockaddr_in local_ep;
+    bool				do_break;
+    bool        m_bIsRunning;
 
-/*===============================================================================
- MEMBERS
-===============================================================================*/
+    fuppesSocket      m_Socket;					      
+    fuppesThread      accept_thread;
+    fuppesThreadMutex m_ReceiveMutex;
 
-  /* Eventhandler */
-  IHTTPServer* m_pReceiveHandler;
-
-  sockaddr_in local_ep;
-  bool				do_break;
-  bool        m_bIsRunning;
-
-  fuppesSocket      m_Socket;					      
-  fuppesThread      accept_thread;
-  fuppesThreadMutex m_ReceiveMutex;
-
-public:
-  std::list<CHTTPSessionInfo*> m_ThreadList;
-  std::list<CHTTPSessionInfo*>::iterator m_ThreadListIterator;
-
-/* <\PRIVATE> */
+  public:
+    std::list<CHTTPSessionInfo*> m_ThreadList;
+    std::list<CHTTPSessionInfo*>::iterator m_ThreadListIterator;
 
 };
 

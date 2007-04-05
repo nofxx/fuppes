@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -42,30 +41,27 @@ typedef enum {
 class CUPnPBase
 {
 
-protected:
+  protected:
 
-  /** constructor
-  *  @param  nType  the device type
-  *  @param  p_sHTTPServerURL  URL of the HTTP server
-  */
-  CUPnPBase(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL);  
+    /** constructor
+     *  @param  nType  the device type
+     *  @param  p_sHTTPServerURL  URL of the HTTP server
+     */
+    CUPnPBase(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL);  
 
 
-public:
+  public:
 
-  /** returns the device type
-  *  @return device type as string
-  */
-  std::string GetUPnPDeviceTypeAsString();
-	UPNP_DEVICE_TYPE GetUPnPDeviceType() { return m_nUPnPDeviceType; }
+    /** returns the device type
+     *  @return device type as string
+     */
+    std::string GetUPnPDeviceTypeAsString();
+	  UPNP_DEVICE_TYPE GetUPnPDeviceType() { return m_nUPnPDeviceType; }
 
   
-protected:
-
-  std::string m_sHTTPServerURL;
-
-  UPNP_DEVICE_TYPE m_nUPnPDeviceType;
-
+  protected:
+    std::string m_sHTTPServerURL;
+    UPNP_DEVICE_TYPE m_nUPnPDeviceType;
 
 };
 

@@ -53,7 +53,6 @@ using namespace std;
   bool bShowPlaylistsAsContainers;
 } DisplaySettings_t;*/
 
-
 class CFuppes;
 
 class CSharedConfig

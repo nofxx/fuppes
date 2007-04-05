@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -21,10 +20,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
 
 #include "HTTPMessage.h"
 #include "../Common/Common.h"
@@ -39,24 +34,12 @@
 #include "../Common/RegEx.h"
 #include "../UPnPActions/UPnPActionFactory.h"
 
-/*===============================================================================
- CONSTANTS
-===============================================================================*/
-
 const std::string LOGNAME = "HTTPMessage";
 
-/*===============================================================================
- CLASS CHTTPMessage
-===============================================================================*/
-
-/* <PUBLIC> */
 
 fuppesThreadCallback TranscodeLoop(void *arg);
 fuppesThreadMutex TranscodeMutex;
 
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
 
 CHTTPMessage::CHTTPMessage()
 {
@@ -90,8 +73,7 @@ CHTTPMessage::~CHTTPMessage()
   if(m_TranscodeThread)
     fuppesThreadClose(m_TranscodeThread);
 
-  if(m_pTranscodingSessionInfo)
-  {    
+  if(m_pTranscodingSessionInfo) {    
     m_pTranscodingSessionInfo->m_pszBinBuffer = NULL;
     delete m_pTranscodingSessionInfo;
   }
@@ -99,10 +81,6 @@ CHTTPMessage::~CHTTPMessage()
   if(m_fsFile.is_open())
     m_fsFile.close();
 }
-
-/*===============================================================================
- INIT
-===============================================================================*/
 
 void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, std::string p_sContentType)
 {
@@ -124,6 +102,18 @@ bool CHTTPMessage::SetMessage(std::string p_sMessage)
   return BuildFromString(p_sMessage);
 }
 
+bool CHTTPMessage::SetHeader(std::string p_sHeader)
+{
+  // header is already set
+  if(m_sHeader.length() > 0)
+    return true;
+  
+  CMessageBase::SetHeader(p_sHeader);  
+  
+  CHTTPParser Parser;
+  return Parser.Parse(this);
+}
+
 void CHTTPMessage::SetBinContent(char* p_szBinContent, unsigned int p_nBinContenLength)
 { 
   m_bIsBinary = true;
@@ -133,10 +123,6 @@ void CHTTPMessage::SetBinContent(char* p_szBinContent, unsigned int p_nBinConten
   memcpy(m_pszBinContent, p_szBinContent, m_nBinContentLength);
   m_pszBinContent[m_nBinContentLength] = '\0';   
 }
-
-/*===============================================================================
- GET MESSAGE DATA
-===============================================================================*/
 
 CUPnPAction* CHTTPMessage::GetAction()
 {
@@ -451,10 +437,6 @@ std::string CHTTPMessage::GetPostVar(std::string p_sPostVarName)
 }
 
 
-/*===============================================================================
- OTHER
-===============================================================================*/
-
 bool CHTTPMessage::BuildFromString(std::string p_sMessage)
 {
   m_nBinContentLength = 0;
@@ -701,14 +683,6 @@ fuppesThreadCallback TranscodeLoop(void *arg)
   fuppesThreadExit();*/
 }
 
-/* <\PUBLIC> */
-
-/* <PRIVATE> */
-
-/*===============================================================================
- HELPER
-===============================================================================*/
-
 bool CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
 {
   /*POST /UPnPServices/ContentDirectory/control HTTP/1.1
@@ -786,5 +760,3 @@ Content-Length: 0
   
   return true;     
 }
-
-/* <\PRIVATE> */

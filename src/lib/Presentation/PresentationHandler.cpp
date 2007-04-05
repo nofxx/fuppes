@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,10 +21,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "PresentationHandler.h"
 #include "Stylesheet.h"
 #include "../SharedConfig.h"
@@ -50,37 +45,15 @@
 
 const std::string LOGNAME = "PresentationHandler"; 
 
-/*===============================================================================
- CLASS CPresentationHandler
-===============================================================================*/
 
-/* <PUBLIC> */
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-
-/* constructor */
 CPresentationHandler::CPresentationHandler()
 {
 }
 
-/* destrcutor */
+
 CPresentationHandler::~CPresentationHandler()
 {
 }
-
-/*===============================================================================
- INSTANCE
-===============================================================================*/
-
-/* <\PUBLIC> */
-
-/* <PRIVATE> */
-
-/*===============================================================================
- REQUESTS
-===============================================================================*/
 
 
 
@@ -233,11 +206,6 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
 }
 
 
-
-
-/*===============================================================================
- GET
-===============================================================================*/
 std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentationPage, std::string p_sImgPath, std::string p_sPageName)
 {
   std::stringstream sResult; 
@@ -721,10 +689,6 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
   return sResult.str();  
 }
 
-/*===============================================================================
- HELPER
-===============================================================================*/
-
 /* BuildFuppesDeviceList */
 std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes, std::string p_sImgPath)
 {
@@ -776,5 +740,3 @@ std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes, std::s
   
   return sResult.str();
 }
-
-/* <\PRIVATE> */

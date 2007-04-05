@@ -3,8 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -25,10 +24,6 @@
 #ifndef _HTTPMESSAGE_H
 #define _HTTPMESSAGE_H
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "../DeviceSettings/DeviceSettings.h"
 #include "../MessageBase.h"
 #include "../UPnPActions/UPnPAction.h"
@@ -39,15 +34,7 @@
 
 using namespace std;
 
-/*===============================================================================
- FORWARD DECLARATIONS
-===============================================================================*/
-
 class CUPnPBrowse;
-
-/*===============================================================================
- DEFINITIONS
-===============================================================================*/
 
 typedef enum tagHTTP_VERSION
 {
@@ -116,152 +103,110 @@ TIMEOUT: Second-actual subscription duration
 
 class CHTTPMessage;
 
-/*===============================================================================
- CLASS CHTTPMessage
-===============================================================================*/
-
 class CHTTPMessage: public CMessageBase
 {
+  public:
+    CHTTPMessage();
+    virtual ~CHTTPMessage();
 
-/* <PUBLIC> */
-  
-public:
+    void         SetMessage(HTTP_MESSAGE_TYPE nMsgType, std::string p_sContentType);
+    virtual bool SetMessage(std::string p_sMessage);
+    virtual bool SetHeader(std::string p_sHeader);
 
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-
-  CHTTPMessage();
-  virtual ~CHTTPMessage();
-
-/*===============================================================================
- INIT
-===============================================================================*/
-
-  void         SetMessage(HTTP_MESSAGE_TYPE nMsgType, std::string p_sContentType);
-  virtual bool SetMessage(std::string p_sMessage);
-
-/*===============================================================================
- GET MESSAGE DATA
-===============================================================================*/
-
-  std::string			  GetRequest()          { return m_sRequest;          }  
-  std::string       GetContentType()      { return m_sHTTPContentType;  }
-  HTTP_MESSAGE_TYPE GetMessageType()      { return m_nHTTPMessageType;  }
-  HTTP_VERSION      GetVersion()          { return m_nHTTPVersion;      }
-  //std::string       GetContent()          { return m_sContent;          }
-  unsigned int      GetBinContentLength() { return m_nBinContentLength; }
-  char*             GetBinContent()       { return m_pszBinContent;     }
+    std::string			  GetRequest()          { return m_sRequest;          }  
+    std::string       GetContentType()      { return m_sHTTPContentType;  }
+    HTTP_MESSAGE_TYPE GetMessageType()      { return m_nHTTPMessageType;  }
+    HTTP_VERSION      GetVersion()          { return m_nHTTPVersion;      }
+    //std::string       GetContent()          { return m_sContent;          }
+    unsigned int      GetBinContentLength() { return m_nBinContentLength; }
+    char*             GetBinContent()       { return m_pszBinContent;     }
 	
-  bool              IsBinary()            { return m_bIsBinary;         }  
-  void              SetIsBinary(bool p_bIsBinary) { m_bIsBinary = p_bIsBinary; }
+    bool              IsBinary()            { return m_bIsBinary;         }  
+    void              SetIsBinary(bool p_bIsBinary) { m_bIsBinary = p_bIsBinary; }
   
 
-  CUPnPAction*      GetAction();
-  std::string 		  GetHeaderAsString();		  
-	std::string			  GetMessageAsString();
+    CUPnPAction*      GetAction();
+    std::string 		  GetHeaderAsString();		  
+	  std::string			  GetMessageAsString();
 
-  unsigned int      GetBinContentChunk(char* p_sContentChunk, unsigned int p_nSize, unsigned int p_nOffset = 200);
+    unsigned int      GetBinContentChunk(char* p_sContentChunk, unsigned int p_nSize, unsigned int p_nOffset = 200);
 
-  unsigned int      GetRangeStart() { return m_nRangeStart; }
-  unsigned int      GetRangeEnd() { return m_nRangeEnd; }
-  void              SetRangeStart(unsigned int p_nRangeStart) { m_nRangeStart = p_nRangeStart; }
-  void              SetRangeEnd(unsigned int p_nRangeEnd) { m_nRangeEnd = p_nRangeEnd; }
-  HTTP_CONNECTION   GetHTTPConnection() { return m_nHTTPConnection; }
+    unsigned int      GetRangeStart() { return m_nRangeStart; }
+    unsigned int      GetRangeEnd() { return m_nRangeEnd; }
+    void              SetRangeStart(unsigned int p_nRangeStart) { m_nRangeStart = p_nRangeStart; }
+    void              SetRangeEnd(unsigned int p_nRangeEnd) { m_nRangeEnd = p_nRangeEnd; }
+    HTTP_CONNECTION   GetHTTPConnection() { return m_nHTTPConnection; }
   
-  bool              PostVarExists(std::string p_sPostVarName);
-  std::string       GetPostVar(std::string p_sPostVarName);
+    bool              PostVarExists(std::string p_sPostVarName);
+    std::string       GetPostVar(std::string p_sPostVarName);
   
-/*===============================================================================
- SET MESSAGE DATA
-===============================================================================*/
 
-  void             SetMessageType(HTTP_MESSAGE_TYPE p_nHTTPMessageType) { m_nHTTPMessageType = p_nHTTPMessageType; }
-  void             SetVersion(HTTP_VERSION p_nHTTPVersion)              { m_nHTTPVersion     = p_nHTTPVersion;     }
-  void             SetContentType(std::string p_sContentType)           { m_sHTTPContentType = p_sContentType;     }
-	void						 SetContent(std::string p_sContent)                   { m_sContent         = p_sContent;         }
-  void             SetBinContent(char* p_szBinContent, unsigned int p_nBinContenLength);
-  //void             SetUPnPItem(CUPnPItem* pUPnPItem);
+    void             SetMessageType(HTTP_MESSAGE_TYPE p_nHTTPMessageType) { m_nHTTPMessageType = p_nHTTPMessageType; }
+    void             SetVersion(HTTP_VERSION p_nHTTPVersion)              { m_nHTTPVersion     = p_nHTTPVersion;     }
+    void             SetContentType(std::string p_sContentType)           { m_sHTTPContentType = p_sContentType;     }
+  	void						 SetContent(std::string p_sContent)                   { m_sContent         = p_sContent;         }
+    void             SetBinContent(char* p_szBinContent, unsigned int p_nBinContenLength);  
+    
+    std::string  GetGENASubscriptionID() { return m_sGENASubscriptionID; }
+    void         SetGENASubscriptionID(std::string p_sSubscriptionID) { m_sGENASubscriptionID = p_sSubscriptionID; }
   
-  
-  std::string  GetGENASubscriptionID() { return m_sGENASubscriptionID; }
-  void         SetGENASubscriptionID(std::string p_sSubscriptionID) { m_sGENASubscriptionID = p_sSubscriptionID; }
-  
-  
-/*===============================================================================
- OTHER
-===============================================================================*/
-
  
-  bool             LoadContentFromFile(std::string);
-  bool             TranscodeContentFromFile(std::string p_sFileName);
-  void             BreakTranscoding();  
-  bool             IsTranscoding();
+    bool             LoadContentFromFile(std::string);
+    bool             TranscodeContentFromFile(std::string p_sFileName);
+    void             BreakTranscoding();  
+    bool             IsTranscoding();
   
-	CDeviceSettings* GetDeviceSettings() { return m_pDeviceSettings; }
-	void SetDeviceSettings(CDeviceSettings* pSettings) { m_pDeviceSettings = pSettings; }
+	  CDeviceSettings* GetDeviceSettings() { return m_pDeviceSettings; }
+	  void SetDeviceSettings(CDeviceSettings* pSettings) { m_pDeviceSettings = pSettings; }
   
-/* <\PUBLIC> */
-
-public:
-  char*         m_pszBinContent;
-  unsigned int  m_nBinContentLength; 
-  bool          m_bIsBinary;
+  public:
+    char*         m_pszBinContent;
+    unsigned int  m_nBinContentLength; 
+    bool          m_bIsBinary;
   
-	std::string   m_sUserAgent;
+	  std::string   m_sUserAgent;
 	
-  CTranscodeSessionInfo* m_pTranscodingSessionInfo;  
-
-/* <PRIVATE> */
+    CTranscodeSessionInfo* m_pTranscodingSessionInfo;  
 
 private:
-     bool             BuildFromString(std::string p_sMessage);
-/*===============================================================================
- MEMBERS
-===============================================================================*/
-  
-  // Header information: [HTTP 1.0|HTTP 1.1]
-  HTTP_VERSION       m_nHTTPVersion;
-  // Message type
-  HTTP_MESSAGE_TYPE  m_nHTTPMessageType;
-  // Header information: Content type
-  std::string        m_sHTTPContentType;
-  // Header information: HTTP request line
-  std::string	       m_sRequest;
-  // Header information: content length
-  int                m_nContentLength;
-  // Header information: Connection [close|keep alive]
-  HTTP_CONNECTION    m_nHTTPConnection;
+    bool             BuildFromString(std::string p_sMessage);
+
+    // Header information: [HTTP 1.0|HTTP 1.1]
+    HTTP_VERSION       m_nHTTPVersion;
+    // Message type
+    HTTP_MESSAGE_TYPE  m_nHTTPMessageType;
+    // Header information: Content type
+    std::string        m_sHTTPContentType;
+    // Header information: HTTP request line
+    std::string	       m_sRequest;
+    // Header information: content length
+    int                m_nContentLength;
+    // Header information: Connection [close|keep alive]
+    HTTP_CONNECTION    m_nHTTPConnection;
    
-  // Header information: Call-Back (GENA - Request)
-  std::string        m_sGENACallBack;
-  // Header information: NT (notification type) (GENA - Request)
-  std::string        m_sGENANT;
-  // Header information: Timeout (GENA - Request)
-  std::string        m_sGENATimeout;  
-  // Header information: Subscription-ID (GENA - Request & Response)
-  std::string        m_sGENASubscriptionID;
+    // Header information: Call-Back (GENA - Request)
+    std::string        m_sGENACallBack;
+    // Header information: NT (notification type) (GENA - Request)
+    std::string        m_sGENANT;
+    // Header information: Timeout (GENA - Request)
+    std::string        m_sGENATimeout;  
+    // Header information: Subscription-ID (GENA - Request & Response)
+    std::string        m_sGENASubscriptionID;
   
 	
-	CUPnPAction*       m_pUPnPAction;
-  std::fstream       m_fsFile;
-  unsigned int       m_nRangeStart;
-  unsigned int       m_nRangeEnd;
+	  CUPnPAction*       m_pUPnPAction;
+    std::fstream       m_fsFile;
+    unsigned int       m_nRangeStart;
+    unsigned int       m_nRangeEnd;
 	
-	CDeviceSettings*   m_pDeviceSettings;
+	  CDeviceSettings*   m_pDeviceSettings;
 
-  unsigned int       m_nBinContentPosition;
-  fuppesThread       m_TranscodeThread;
+    unsigned int       m_nBinContentPosition;
+    fuppesThread       m_TranscodeThread;
 
-/*===============================================================================
- HELPER
-===============================================================================*/    
 
-  bool ParsePOSTMessage(std::string p_sMessage);
-  bool ParseSUBSCRIBEMessage(std::string p_sMessage);
-
-/* <\PRIVATE> */
-
+    bool ParsePOSTMessage(std::string p_sMessage);
+    bool ParseSUBSCRIBEMessage(std::string p_sMessage);
 };
 
-#endif /* _HTTPMESSAGE_H */
+#endif // _HTTPMESSAGE_H

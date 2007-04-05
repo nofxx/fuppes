@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -25,32 +24,13 @@
 #ifndef _MEDIASERVER_H
 #define _MEDIASERVER_H
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "UPnPDevice.h"
-
-/*===============================================================================
- CLASS CMediaServer
-===============================================================================*/
 
 class CMediaServer: public CUPnPDevice
 {
-
-/* <PUBLIC> */
-
-public:
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-
-  CMediaServer(std::string p_sHTTPServerURL, IUPnPDevice* pOnTimerHandler);
-  ~CMediaServer();
-
-/* <\PUBLIC> */
-
+  public:
+    CMediaServer(std::string p_sHTTPServerURL, IUPnPDevice* pOnTimerHandler);
+    ~CMediaServer();
 };
 
-#endif /* _MEDIASERVER_H */
+#endif // _MEDIASERVER_H

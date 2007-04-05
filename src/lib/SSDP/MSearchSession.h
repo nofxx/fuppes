@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -25,10 +24,6 @@
 #ifndef _MSEARCHSESSION_H
 #define _MSEARCHSESSION_H
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include <string>
 
 #include "UDPSocket.h"
@@ -36,81 +31,40 @@
 #include "SSDPMessage.h"
 #include "NotifyMsgFactory.h"
 
-/*===============================================================================
- FORWARD DECLARATIONS
-===============================================================================*/
-
 class CMSearchSession;
-
-/*===============================================================================
- CLASS ISSDPSession
-===============================================================================*/
 
 class IMSearchSession
 {
-
-/* <PUBLIC> */
-
-public:
-  virtual ~IMSearchSession() {};
+  public:
+    virtual ~IMSearchSession() {};
         
-  virtual void OnSessionReceive(CSSDPMessage* pMessage) = 0;
-  virtual void OnSessionTimeOut(CMSearchSession* pSender) = 0;
-
-/* <\PUBLIC> */
-
+    virtual void OnSessionReceive(CSSDPMessage* pMessage) = 0;
+    virtual void OnSessionTimeOut(CMSearchSession* pSender) = 0;
 };
 
-/*===============================================================================
- CLASS CSSDPSession
-===============================================================================*/
 
 class CMSearchSession: public IUDPSocket, ITimer
 {
 
-/* <PUBLIC> */
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
+  public:
+    CMSearchSession(std::string p_sIPAddress, IMSearchSession* pReceiveHandler, CNotifyMsgFactory* pNotifyMsgFactory);
+    virtual ~CMSearchSession();
 
-  //CSSDPSession(std::string p_sIPAddress, ISSDPSession* pEventHandler);
+    void OnUDPSocketReceive(CSSDPMessage* pMessage);
+    void OnTimer();
 
-public:
-  CMSearchSession(std::string p_sIPAddress, IMSearchSession* pReceiveHandler, CNotifyMsgFactory* pNotifyMsgFactory);
-  virtual ~CMSearchSession();
-
-
-/*===============================================================================
- MESSAGE HANDLING
-===============================================================================*/
+    void Start();	  
+    void Stop();
   
-  void OnUDPSocketReceive(CSSDPMessage* pMessage);
+    void send_multicast(std::string);
+    void send_unicast(std::string);
 
-  void OnTimer();
+    void begin_receive_unicast();
+    void end_receive_unicast();
 
-/* <\PUBLIC> */
-	
-/*===============================================================================
- CONTROL
-===============================================================================*/
+    sockaddr_in  GetLocalEndPoint();
 
-  void Start();	  
-  void Stop();
-
-/*===============================================================================
- SEND/RECEIVE
-===============================================================================*/
-
-  void send_multicast(std::string);
-  void send_unicast(std::string);
-
-  void begin_receive_unicast();
-  void end_receive_unicast();
-
-  sockaddr_in  GetLocalEndPoint();
-/*===============================================================================
- MEMBERS
-===============================================================================*/
+  
   private:
 		int                m_nTimeout;
 	  CUDPSocket         m_UdpSocket;
@@ -119,10 +73,6 @@ public:
     CTimer             m_Timer;    
     CNotifyMsgFactory* m_pNotifyMsgFactory;
 };
-
-/*===============================================================================
- CLASS CMSearchSession
-===============================================================================*/
 
 class CHandleMSearchSession;
 
@@ -152,4 +102,4 @@ class CHandleMSearchSession
     CSSDPMessage* m_pSSDPMessage;
 };
 
-#endif /* _MSEARCHSESSION_H */
+#endif // _MSEARCHSESSION_H

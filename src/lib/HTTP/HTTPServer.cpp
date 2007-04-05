@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -29,6 +28,7 @@
 #include "../SharedLog.h"
 #include "../SharedConfig.h"
 #include "../Common/RegEx.h"
+#include "../DeviceSettings/DeviceIdentificationMgr.h"
 
 #include <iostream>
 #include <sstream>
@@ -402,9 +402,10 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
   unsigned int nContentLength = 0;   
  
   bool bDoReceive = true;
-  bool bRecvErr   = false;
+  bool bRecvErr   = false; 
   
-  //unsigned int nLoopCnt = 0;  
+  unsigned int nLoopCnt = 0;
+  
   
   // receive loop
   int nTmpRecv = 0;
@@ -505,6 +506,8 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
       sHeader = sMsg.substr(0, nPos);
       nPos += string("\r\n\r\n").length();
       sContent = sMsg.substr(nPos, sMsg.length() - nPos);
+      
+      p_Request->SetHeader(sHeader);      
     }
     // header is incomplete (continue receiving)
     else {
@@ -522,8 +525,15 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
 
     // check if we received the full content
     if(sContent.length() < nContentLength) {
-      // content incomplete (continue receiving)
-      continue;
+      
+      // xbox 360: sends a content length of 3 but only 2 bytes of data
+      if((p_Request->GetDeviceSettings()->m_bXBox360Support) && (nContentLength == 3)) {
+        bDoReceive = false;
+      }
+      else {      
+        // content incomplete (continue receiving)
+        continue;
+      }
     }
     else {
       // full content. message is complete

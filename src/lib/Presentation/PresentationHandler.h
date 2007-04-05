@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -25,10 +24,6 @@
 #ifndef _PRESENTATIONHANDLER_H
 #define _PRESENTATIONHANDLER_H
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "../UPnPDevice.h"
 #include "../HTTP/HTTPMessage.h"
 #include "../Fuppes.h"
@@ -48,102 +43,55 @@ typedef enum tagPRESENTATION_PAGE
   PRESENTATION_PAGE_STATUS
 }PRESENTATION_PAGE;
 
-
-/*===============================================================================
- CLASS CPresentationHandler
-===============================================================================*/
-
 class CPresentationHandler
 {
+  public:
+    CPresentationHandler();
+    virtual ~CPresentationHandler();
 
-/* <PUBLIC> */
 
-public:
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-
-  /** constructor
-   */  
-  CPresentationHandler();
-
-  /** destructor
-   */
-  virtual ~CPresentationHandler();
-
-/*===============================================================================
- INSTANCE
-===============================================================================*/
-
+    /** handles HTTP messages add returns a corresponding message
+     *  @param pSender  sender of the incoming message
+     *  @param pMessage  the incoming message
+     *  @param pResult  the outgoing message
+     */
+    void OnReceivePresentationRequest(CHTTPMessage* pMessage, CHTTPMessage* pResult);
   
-/* <\PUBLIC> */
+  private:
 
-  /** handles HTTP messages add returns a corresponding message
-   *  @param pSender  sender of the incoming message
-   *  @param pMessage  the incoming message
-   *  @param pResult  the outgoing message
-   */
-  void OnReceivePresentationRequest(CHTTPMessage* pMessage, CHTTPMessage* pResult);
+    /** handles HTTP requests
+     *  @param p_sRequest  the message to handle
+     */
+    std::string HandleRequest(std::string p_sRequest);  
+
+    /** returns the HTML header
+     *  @return the HTML header as string
+     */
+    std::string GetXHTMLHeader();  
+
+    std::string GetPageHeader(PRESENTATION_PAGE p_nPresentationPage, std::string p_sImgPath, std::string p_sPageName);
+    std::string GetPageFooter(PRESENTATION_PAGE p_nPresentationPage);
+
+    /** returns the main HTML page
+     *  @return the content of the index.html
+     */
+    std::string GetIndexHTML(std::string p_sImgPath);
+
+    std::string GetAboutHTML(std::string p_sImgPath);
   
-
-/* <PRIVATE> */
-
-private:
-
-/*===============================================================================
- REQUESTS
-===============================================================================*/
+    std::string GetOptionsHTML(std::string p_sImgPath);
   
+    std::string GetStatusHTML(std::string p_sImgPath);
 
-  /** handles HTTP requests
-   *  @param p_sRequest  the message to handle
-   */
-  std::string HandleRequest(std::string p_sRequest);  
+    std::string GetConfigHTML(std::string p_sImgPath, CHTTPMessage* pRequest);
 
-/*===============================================================================
- GET
-===============================================================================*/
 
-  /** returns the HTML header
-   *  @return the HTML header as string
-   */
-  std::string GetXHTMLHeader();  
-
-  std::string GetPageHeader(PRESENTATION_PAGE p_nPresentationPage, std::string p_sImgPath, std::string p_sPageName);
-  std::string GetPageFooter(PRESENTATION_PAGE p_nPresentationPage);
-
-  /** returns the main HTML page
-   *  @return the content of the index.html
-   */
-  std::string GetIndexHTML(std::string p_sImgPath);
-
-  std::string GetAboutHTML(std::string p_sImgPath);
-  
-  std::string GetOptionsHTML(std::string p_sImgPath);
-  
-  std::string GetStatusHTML(std::string p_sImgPath);
-
-  std::string GetConfigHTML(std::string p_sImgPath, CHTTPMessage* pRequest);
-
-/*===============================================================================
- HELPER
-===============================================================================*/
-  
-  /** builds a stringlist for all devices connected to a FUPPES instance
-   *  @param pFuppes a pointer to a FUPPES instance
-   *  @return the device list as string
-   */
-  std::string BuildFuppesDeviceList(CFuppes* pFuppes, std::string p_sImgPath);
-    
-/*===============================================================================
- MEMBERS
-===============================================================================*/
-  
-  
-    
-/* <\PRIVATE> */
+    /** builds a stringlist for all devices connected to a FUPPES instance
+     *  @param pFuppes a pointer to a FUPPES instance
+     *  @return the device list as string
+     */
+    std::string BuildFuppesDeviceList(CFuppes* pFuppes, std::string p_sImgPath);
 
 };
 
-#endif /* _PRESENTATIONHANDLER_H */
+#endif // _PRESENTATIONHANDLER_H

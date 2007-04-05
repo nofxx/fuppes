@@ -4,7 +4,6 @@
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2005 Thomas Schnitzler <tschnitzler@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,10 +21,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-/*===============================================================================
- INCLUDES
-===============================================================================*/
-
 #include "UPnPService.h"
 //#include "xmlencode.h"
 
@@ -33,24 +28,13 @@
 #include <iostream>
 #include <libxml/xmlwriter.h>
 
-/*===============================================================================
- CLASS CUPnPService
-===============================================================================*/
 
-/* <PROTECTED> */
-
-/*===============================================================================
- CONSTRUCTOR / DESTRUCTOR
-===============================================================================*/
-
-/* constructor */
 CUPnPService::CUPnPService(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL):
   CUPnPBase(nType, p_sHTTPServerURL)
 {
 }
 
-/* destructor */
 CUPnPService::~CUPnPService()
 {
 }
-/* <\PROTECTED> */
+

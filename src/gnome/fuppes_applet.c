@@ -30,7 +30,7 @@ static const char Context_menu_xml [] =
    "          pixname=\"gtk-properties\"/>\n"
    */
 
-static void start_stop_fuppes(BonoboUIComponent *uic, PanelApplet *applet, const gchar       *verbname) {
+static void start_stop_fuppes(BonoboUIComponent *uic, PanelApplet *applet, const gchar *verbname) {
   //	
 }
 

@@ -106,6 +106,9 @@ void CVirtualContainerMgr::CreateChildItems(CXMLNode* pParentNode,
       cout << "create folder mappings for filter: " << pNode->Attribute("filter") << " :: " << p_sFilter << endl;
       CreateFolderMappings(pNode, p_sDevice, p_nParentId, p_sFilter);
     }
+    else if(pNode->Name().compare("shared_dirs") == 0) {
+      MapSharedDirsTo(pNode, p_sDevice, p_nParentId);
+    }
     
     delete pNode;
   }
@@ -127,7 +130,7 @@ void CVirtualContainerMgr::CreateSingleVFolder(CXMLNode* pFolderNode, std::strin
   
   sSql << "insert into VIRTUAL_CONTAINERS (ID, PARENT_ID, TYPE, TITLE, DEVICE) " <<
           "values(" << nId << ", " << p_nParentId << ", " << nObjType << ", '" <<
-          pFolderNode->Attribute("name") << "', '" << p_sDevice << "')";
+          SQLEscape(pFolderNode->Attribute("name")) << "', '" << p_sDevice << "')";
     
   pDb->Execute(sSql.str());    
   delete pDb;
@@ -174,21 +177,27 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
   CContentDatabase* pDb = new CContentDatabase();
   CContentDatabase* pTmpDb = new CContentDatabase();
   unsigned int nId;
+  string sTitle;
   pDb->Select(sSql.str());
   while(!pDb->Eof()) {
     
     nId = GetId();
     //cout << nId << ": " << pDb->GetResult()->GetValue(sField) << endl;
     
+    sTitle = SQLEscape(pDb->GetResult()->GetValue(sField));
+    if(sTitle.length() == 0) {
+      sTitle = "unknown";
+    }
+    
     sSql.str("");
     sSql << "insert into VIRTUAL_CONTAINERS (ID, PARENT_ID, TYPE, TITLE, DEVICE) values " <<
       "(" << nId << ", " << p_nParentId << ", " << nContainerType << ", '" <<
-      pDb->GetResult()->GetValue(sField) << "', '" << p_sDevice << "')";
+      sTitle << "', '" << p_sDevice << "')";
     
     pTmpDb->Execute(sSql.str());
     
     sSql.str("");
-    sSql << " d." << sField << " = '" << pDb->GetResult()->GetValue(sField) << "' ";
+    sSql << " d." << sField << " = '" << SQLEscape(pDb->GetResult()->GetValue(sField)) << "' ";
     
     if(p_sFilter.length() > 0) {
       sSql << " and " << p_sFilter;
@@ -220,6 +229,9 @@ void CVirtualContainerMgr::CreateItemMappings(CXMLNode* pNode,
   else if(pNode->Attribute("type").compare("imageItem") == 0) {
     nObjectType = ITEM_IMAGE_ITEM_PHOTO;
   }
+  else if(pNode->Attribute("type").compare("videoItem") == 0) {
+    nObjectType = ITEM_VIDEO_ITEM_MOVIE;
+  }                                             
     
   sSql.str("");
   sSql <<  "select * from OBJECTS o " <<
@@ -271,7 +283,10 @@ void CVirtualContainerMgr::CreateFolderMappings(CXMLNode* pNode,
     }
     else if(sFilter.compare("count(imageItem) > 0") == 0) {
       nObjectType = ITEM_IMAGE_ITEM_PHOTO;
-    }    
+    }
+    else if(sFilter.compare("contains(videoItem)") == 0) {
+      nObjectType = ITEM_VIDEO_ITEM_MOVIE;
+    }
   }
   else {
     cout << "unhandled folders attribute " << __FILE__ << " " << __LINE__ << endl;
@@ -301,6 +316,31 @@ void CVirtualContainerMgr::CreateFolderMappings(CXMLNode* pNode,
   delete pDb;
 }
 
+void CVirtualContainerMgr::MapSharedDirsTo(CXMLNode* pNode, std::string p_sDevice, unsigned int p_nParentId)
+{
+  stringstream sSql;
+  CContentDatabase* pSel = new CContentDatabase();
+  CContentDatabase* pIns = new CContentDatabase();
+  
+  sSql << "select ID from OBJECTS where PARENT_ID = 0";
+  pSel->Select(sSql.str());
+  
+  pIns->BeginTransaction();
+  while(!pSel->Eof()) {
+    
+    sSql.str("");
+    sSql << "insert into MAP_ITEMS2VC " <<
+            "(OBJECT_ID, VCONTAINER_ID, DEVICE) values " <<
+            "(" << pSel->GetResult()->GetValue("ID") << ", " << p_nParentId << ", '" << p_sDevice << "')";      
+    pIns->Execute(sSql.str());
+    
+    pSel->Next();
+  }
+  pIns->Commit();
+  
+  delete pIns;
+  delete pSel;  
+}
 
 bool CVirtualContainerMgr::IsVirtualContainer(unsigned int p_nContainerId, std::string p_sDevice)
 {
