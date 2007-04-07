@@ -50,30 +50,30 @@ void CVirtualContainerMgr::RebuildContainerList()
   #warning todo: threaded
   CXMLDocument* pDoc = new CXMLDocument();
   if(!pDoc->Load(CSharedConfig::Shared()->GetConfigDir() + "vfolder.cfg")) {
+    delete pDoc;
     return;
   }
-  
+
   CContentDatabase* pDb = new CContentDatabase();
   pDb->Execute("delete from  VIRTUAL_CONTAINERS;");
   pDb->Execute("delete from  MAP_ITEMS2VC;");	
   delete pDb;
-  
-  
+ 
   int i;
   CXMLNode* pChild;
   string sDevice;
   
   for(i = 0; i < pDoc->RootNode()->ChildCount(); i++) {
-    
     pChild = pDoc->RootNode()->ChildNode(i);
-    
+ 
     if(pChild->Name().compare("vfolder_layout") == 0) {
       sDevice = pChild->Attribute("device");
       CreateChildItems(pChild, sDevice, 0);
     }    
-    delete pChild;
+    //delete pChild;
   }
   
+  delete pDoc;
   cout << "done" << endl;
 }
 
@@ -88,14 +88,19 @@ void CVirtualContainerMgr::CreateChildItems(CXMLNode* pParentNode,
   for(i = 0; i < pParentNode->ChildCount(); i++) {
     pNode = pParentNode->ChildNode(i);
         
+    cout << pNode->Name() << endl; fflush(stdout);
+      
     if(pNode->Name().compare("vfolder") == 0) {
-      cout << "create single vfolder: " << pNode->Attribute("name") << " :: " << p_sFilter << endl;
+      cout << "create single vfolder: " << pNode->Attribute("name") << " :: " << p_sFilter << endl; fflush(stdout);
       CreateSingleVFolder(pNode, p_sDevice, p_nParentId);
     }
     else if(pNode->Name().compare("vfolders") == 0) {
-      cout << "create vfolders from property: " << pNode->Attribute("property") << " :: " << p_sFilter << endl;
+      cout << "create vfolders from property: " << pNode->Attribute("property") << " :: " << p_sFilter << endl;  fflush(stdout);
       if(pNode->Attribute("property").length() > 0) {
         CreateVFoldersFromProperty(pNode, p_sDevice, p_nParentId, p_sFilter);
+      }
+      else if(pNode->Attribute("split").length() > 0) {
+        CreateVFoldersSplit(pNode, p_sDevice, p_nParentId, p_sFilter);
       }
     }
     else if(pNode->Name().compare("items") == 0) {
@@ -110,7 +115,7 @@ void CVirtualContainerMgr::CreateChildItems(CXMLNode* pParentNode,
       MapSharedDirsTo(pNode, p_sDevice, p_nParentId);
     }
     
-    delete pNode;
+    //delete pNode;
   }
 }
 
@@ -150,15 +155,15 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
   OBJECT_TYPE nContainerType;
   
   if(sProp.compare("genre") == 0) {
-    sField = "A_GENRE"; 
+    sField = "d.A_GENRE"; 
     nContainerType = CONTAINER_GENRE_MUSIC_GENRE;
   }
   else if(sProp.compare("artist") == 0) {
-    sField = "A_ARTIST";
+    sField = "d.A_ARTIST";
     nContainerType = CONTAINER_PERSON_MUSIC_ARTIST;
   }
   else if(sProp.compare("album") == 0) {
-    sField = "A_ALBUM"; 
+    sField = "d.A_ALBUM"; 
     nContainerType = CONTAINER_ALBUM_MUSIC_ALBUM;
   } 
   else {
@@ -169,10 +174,17 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
 
   
   stringstream sSql;
-  sSql << "select distinct d." << sField << " from OBJECT_DETAILS d ";
+  sSql << "select distinct " << sField << " as VALUE from OBJECT_DETAILS d ";
+  string sTmp;
   if(p_sFilter.length() > 0) {
+    sTmp.resize(p_sFilter.length() + sField.length());
+    printf(p_sFilter.c_str(), sField.c_str());
+    sprintf(&sTmp[0], p_sFilter.c_str(), sField.c_str());
+    p_sFilter = sTmp;
     sSql << " where " << p_sFilter;
   }
+  cout << "FILTER: " << sSql.str() << endl;
+                                                          
   
   CContentDatabase* pDb = new CContentDatabase();
   CContentDatabase* pTmpDb = new CContentDatabase();
@@ -184,7 +196,7 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
     nId = GetId();
     //cout << nId << ": " << pDb->GetResult()->GetValue(sField) << endl;
     
-    sTitle = SQLEscape(pDb->GetResult()->GetValue(sField));
+    sTitle = SQLEscape(pDb->GetResult()->GetValue("VALUE"));
     if(sTitle.length() == 0) {
       sTitle = "unknown";
     }
@@ -197,7 +209,7 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
     pTmpDb->Execute(sSql.str());
     
     sSql.str("");
-    sSql << " d." << sField << " = '" << SQLEscape(pDb->GetResult()->GetValue(sField)) << "' ";
+    sSql << sField << " = '" << SQLEscape(pDb->GetResult()->GetValue("VALUE")) << "' ";
     
     if(p_sFilter.length() > 0) {
       sSql << " and " << p_sFilter;
@@ -211,6 +223,55 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
   }
   delete pDb;
      
+}
+
+void CVirtualContainerMgr::CreateVFoldersSplit(CXMLNode* pFoldersNode, 
+                                               std::string p_sDevice, 
+                                               unsigned int p_nParentId, 
+                                               std::string p_sFilter)
+{
+  string sFolders[] = {
+    "0-9", "ABC", "DEF", "GHI", "JKL",
+    "MNO" , "PQR", "STU", "VWX", "YZ",
+    ""
+  };
+                                                   
+  string sFilter[] = {
+    " substr(%s, 0, 1) in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9) ", 
+    " upper(substr(%s, 0, 1)) in ('A', 'B', 'C') ",
+    " upper(substr(%s, 0, 1)) in ('D', 'E', 'F') ",
+    " upper(substr(%s, 0, 1)) in ('G', 'H', 'I') ",
+    " upper(substr(%s, 0, 1)) in ('J', 'K', 'L') ",
+    " upper(substr(%s, 0, 1)) in ('M', 'N', 'O') ",
+    " upper(substr(%s, 0, 1)) in ('P', 'Q', 'R') ",
+    " upper(substr(%s, 0, 1)) in ('S', 'T', 'U') ",
+    " upper(substr(%s, 0, 1)) in ('V', 'W', 'X') ",
+    " upper(substr(%s, 0, 1)) in ('Y', 'Z') ",
+    ""
+  };
+                                                   
+  int i = 0;
+  unsigned int nId;
+  stringstream sSql;
+  CContentDatabase* pDb = new CContentDatabase();
+                                                   
+  while(sFolders[i].length() > 0) {
+    
+    nId = GetId();
+      
+    sSql.str("");
+    sSql << "insert into VIRTUAL_CONTAINERS (ID, PARENT_ID, TYPE, TITLE, DEVICE) values " <<
+      "(" << nId << ", " << p_nParentId << ", " << CONTAINER_STORAGE_FOLDER << ", '" <<
+      sFolders[i] << "', '" << p_sDevice << "')";
+    pDb->Execute(sSql.str());
+      
+    if(pFoldersNode->ChildCount() > 0) {
+      CreateChildItems(pFoldersNode, p_sDevice, nId, sFilter[i]);
+    }
+      
+    i++;
+  }
+  
 }
 
 void CVirtualContainerMgr::CreateItemMappings(CXMLNode* pNode, 

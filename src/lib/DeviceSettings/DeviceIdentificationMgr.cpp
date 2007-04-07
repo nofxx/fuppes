@@ -58,7 +58,8 @@ CDeviceIdentificationMgr::CDeviceIdentificationMgr()
   // Microsoft Xbox 360
   pSettings = new CDeviceSettings("Xbox 360");
 	pSettings->m_slUserAgents.push_back("Xbox/2.0.\\d+.\\d+ UPnP/1.0 Xbox/2.0.\\d+.\\d+");
-	pSettings->m_bXBox360Support = true;
+	pSettings->m_slUserAgents.push_back("Xenon");
+  pSettings->m_bXBox360Support = true;
   pSettings->m_sVirtualFolderDevice = "Xbox 360";
 	m_Settings.push_back(pSettings);
 

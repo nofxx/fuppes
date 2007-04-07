@@ -25,19 +25,36 @@
 
 using namespace std;
 
-CXMLNode::CXMLNode(xmlNode* p_NodePtr)
+CXMLNode::CXMLNode(xmlNode* p_NodePtr, int p_nIdx)
 {
   m_pNode = p_NodePtr;
+  m_nIdx  = p_nIdx;
+  m_nChildCount = 0;
+}
+
+CXMLNode::~CXMLNode()
+{
+  CXMLNode* pNode;
+  m_NodeListIter = m_NodeList.begin();
+  for(m_NodeListIter; m_NodeListIter != m_NodeList.end(); m_NodeListIter++) {
+    pNode = (*m_NodeListIter).second;
+    delete pNode;
+  }
 }
 
 int CXMLNode::ChildCount()
 {
-  int nCnt = 0;
   xmlNode* pTmpNode;
-  for(pTmpNode = m_pNode->children; pTmpNode; pTmpNode = pTmpNode->next) {
-    nCnt++;
+  
+  if(m_nChildCount > 0) {
+    return m_nChildCount;
   }
-  return nCnt;
+    
+  for(pTmpNode = m_pNode->children; pTmpNode; pTmpNode = pTmpNode->next) {
+    m_nChildCount++;
+  }
+
+  return m_nChildCount;
 }
 
 CXMLNode* CXMLNode::ChildNode(int p_nIdx)
@@ -45,12 +62,18 @@ CXMLNode* CXMLNode::ChildNode(int p_nIdx)
   CXMLNode* pResult = NULL;
   int nIdx = 0;
   xmlNode* pTmpNode;
+  
+  m_NodeListIter = m_NodeList.find(p_nIdx);
+  if(m_NodeListIter != m_NodeList.end()) {
+    pResult = m_NodeList[p_nIdx];
+    return pResult;
+  }
+
   for(pTmpNode = m_pNode->children; pTmpNode; pTmpNode = pTmpNode->next) {
     
     if(nIdx == p_nIdx) {
-      
-      pResult = new CXMLNode(pTmpNode);
-      
+      pResult = new CXMLNode(pTmpNode, nIdx);
+      m_NodeList[nIdx] = pResult;
       break;
     }
 
@@ -58,7 +81,61 @@ CXMLNode* CXMLNode::ChildNode(int p_nIdx)
   }
   return pResult;
 }
+
+CXMLNode* CXMLNode::FindNodeByName(std::string p_sName, 
+                             bool p_bRecursive)
+{
+  CXMLNode* pResult = NULL;
+  int i = 0;
+                                 
+  for(i = 0; i < ChildCount(); i++) {
     
+    if(ChildNode(i)->Name().compare(p_sName) == 0) {
+      pResult = ChildNode(i);
+      break;
+    }
+      
+    // recursively search children's child nodes
+    if(p_bRecursive && (ChildNode(i)->ChildCount() > 0)) {
+      pResult = ChildNode(i)->FindNodeByName(p_sName, p_bRecursive);
+      if(pResult) {
+        break;
+      }
+    }
+      
+  }
+                                 
+  return pResult;
+}
+
+CXMLNode* CXMLNode::FindNodeByValue(std::string p_sName, 
+                              std::string p_sValue, 
+                              bool p_bRecursive)
+{
+  CXMLNode* pResult = NULL;
+  int i = 0;
+                                 
+  for(i = 0; i < ChildCount(); i++) {
+    
+    if((ChildNode(i)->Name().compare(p_sName) == 0) &&
+       (ChildNode(i)->Value().compare(p_sValue) == 0)) {
+      pResult = ChildNode(i);
+      break;
+    }
+      
+    // recursively search children's child nodes
+    if(p_bRecursive && (ChildNode(i)->ChildCount() > 0)) {
+      pResult = ChildNode(i)->FindNodeByValue(p_sName, p_sValue, p_bRecursive);
+      if(pResult) {
+        break;
+      }
+    }
+      
+  }
+                                 
+  return pResult;
+}
+
 std::string CXMLNode::Attribute(std::string p_sName)
 {
   xmlAttr* attr = m_pNode->properties;
@@ -101,20 +178,26 @@ std::string CXMLNode::Value()
 
 CXMLDocument::~CXMLDocument()
 {
+  if(m_pRootNode != NULL) {
+    delete m_pRootNode;
+  }
+
   if(m_pDoc != NULL) {
     xmlCleanupParser();
+    xmlFreeDoc(m_pDoc);
   }
 }
 
 bool CXMLDocument::Load(std::string p_sFileName)
 {
-  m_pDoc  = xmlReadFile(p_sFileName.c_str(), "UTF-8", XML_PARSE_NOBLANKS);  
+  m_pDoc = xmlReadFile(p_sFileName.c_str(), "UTF-8", XML_PARSE_NOBLANKS);
   return (m_pDoc != NULL);
 }
 
 CXMLNode* CXMLDocument::RootNode()
 {
   if(!m_pRootNode) {
-    m_pRootNode = new CXMLNode(xmlDocGetRootElement(m_pDoc));
+    m_pRootNode = new CXMLNode(xmlDocGetRootElement(m_pDoc), 0);
   }
+  return m_pRootNode;
 }

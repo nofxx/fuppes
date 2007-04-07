@@ -84,7 +84,7 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/FlacWrapper.h\
   lib/GUI/NotificationMgr.h\
 	lib/DeviceSettings/DeviceSettings.h\
-	lib/DeviceSetting/DeviceIdentificationMgr.h\
+	lib/DeviceSettings/DeviceIdentificationMgr.h\
 	lib/XMSMediaReceiverRegistrar.h\
 	lib/SharedConfig.h\
   lib/SharedLog.h\
@@ -146,9 +146,11 @@ libfuppes_la_SOURCES = \
 	lib/ContentDirectory/FileSystemMonitor.cpp\
 	lib/ContentDirectory/FileSystemMonitor.h\
 	lib/ContentDirectory/VirtualContainerMgr.cpp\
-	lib/ContentDirectory/VirtualContainerMgr.h                                                    \
-	lib/Common/XMLParser.cpp                                                    \
-	lib/Common/XMLParser.h 
+	lib/ContentDirectory/VirtualContainerMgr.h\
+	lib/Common/XMLParser.cpp\
+	lib/Common/XMLParser.h\
+	lib/ContentDirectory/iTunesImporter.cpp\
+	lib/ContentDirectory/iTunesImporter.h
 
 libfuppes_la_LDFLAGS = \
   $(LIBNOTIFY_LIBS)\
@@ -159,5 +161,3 @@ libfuppes_la_LDFLAGS = \
 	${PCRE_LIBS}\
   ${SQLITE3_LIBS}\
   ${TAGLIB_LIBS}
-
-

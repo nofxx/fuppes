@@ -27,22 +27,35 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <string>
+#include <map>
 
 class CXMLNode
 {
   public:
-    CXMLNode(xmlNode* p_NodePtr);
+    CXMLNode(xmlNode* p_NodePtr, int p_nIdx);
+    ~CXMLNode();
     
     int ChildCount();
     CXMLNode* ChildNode(int p_nIdx);
+    CXMLNode* FindNodeByName(std::string p_sName, 
+                             bool p_bRecursive = false);
+    CXMLNode* FindNodeByValue(std::string p_sName, 
+                              std::string p_sValue, 
+                              bool p_bRecursive = false);
+    
     std::string Attribute(std::string p_sName);
     unsigned int AttributeAsUInt(std::string p_sName);
   
     std::string Name();
     std::string Value();
-  
+    int Index() { return m_nIdx; }
+    
   private:
     xmlNode* m_pNode;
+    int      m_nIdx;
+    int      m_nChildCount;
+    std::map<int, CXMLNode*> m_NodeList;
+    std::map<int, CXMLNode*>::iterator m_NodeListIter;
 };
 
 class CXMLDocument

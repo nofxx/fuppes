@@ -2,10 +2,13 @@ Version 0.7.2
   * initial support for virtual containers
   * initial UPnP Search support
   * initial support for device specific settings
-  * initial ImageMagick support 
-  * initial ffmpeg support
+  * initial ImageMagick support
+    * read image properties
+    * image rescaling 
+  * initial ffmpeg support (read video properties)
   * initial XBox 360 support
     (Big thanks to Justin Maggard <jmaggard at users.sourceforge.net>)
+  * initial iTunes.xml support
   * win32 gui (more or less ;))
   * split up fuppes (command line) and fuppesd (daemon)
 

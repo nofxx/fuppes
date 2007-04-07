@@ -115,9 +115,7 @@ class CTranscodingCache
   
     std::map<std::string, CTranscodingCacheObject*>           m_CachedObjects;
     std::map<std::string, CTranscodingCacheObject*>::iterator m_CachedObjectsIterator;  
-  
-  
-};
-#endif /* DISABLE_TRANSCODING */
 
-#endif /* _TRANSCODINGCACHE_H */
+};
+#endif // DISABLE_TRANSCODING
+#endif // _TRANSCODINGCACHE_H

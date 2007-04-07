@@ -174,12 +174,12 @@ AH_TEMPLATE([HAVE_IMAGEMAGICK], [])
 if test "x$use_imagemagick" = "xyes"; then
 
 if test -z "$MAGICK_CONFIG"; then
-  AC_PATH_PROG(MAGICK_CONFIG, Magick++-config, no)
+  AC_PATH_PROG(MAGICK_CONFIG, Magick-config, no)
 fi
 
 if test "$MAGICK_CONFIG" = "no" ; then   
    AC_MSG_NOTICE([*** ImageMagick support disabled ***]);
-   #echo "  the Magick++-config script could not be found."
+   #echo "  the Magick-config script could not be found."
    #echo "  ImageMagick support disabled"   
 else  
   AC_DEFINE([HAVE_IMAGEMAGICK], [1], [])

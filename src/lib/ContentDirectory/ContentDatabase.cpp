@@ -27,6 +27,7 @@
 #include "FileDetails.h"
 #include "../Common/RegEx.h"
 #include "../Common/Common.h"
+#include "iTunesImporter.h"
 
 #include <sstream>
 #include <string>
@@ -1048,8 +1049,9 @@ fuppesThreadCallback BuildLoop(void* arg)
 	CContentDatabase::Shared()->Execute("delete from video_items");
 	CContentDatabase::Shared()->Execute("delete from image_items");*/
 	CContentDatabase::Shared()->Execute("delete from object_details");
-
-	
+	CContentDatabase::Shared()->Execute("delete from VIRTUAL_CONTAINERS");
+	CContentDatabase::Shared()->Execute("delete from MAP_ITEMS2VC");
+    
   for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
   {
     if(DirectoryExists(CSharedConfig::Shared()->GetSharedDir(i)))
@@ -1087,6 +1089,11 @@ fuppesThreadCallback BuildLoop(void* arg)
   //cout << "parsing playlists" << endl;
   BuildPlaylists();
   //cout << "done parsing playlists" << endl;  
+    
+  // import iTunes db
+  CiTunesImporter* pITunes = new CiTunesImporter();
+  pITunes->Import("/home/ulrich/Desktop/iTunes.xml");
+  delete pITunes;
     
   CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] database created", __FILE__, __LINE__, false);
   g_bIsRebuilding = false;

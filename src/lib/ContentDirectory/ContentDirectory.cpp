@@ -943,7 +943,7 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
 
   /* class */
   xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
-  xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.imageItem");
+  xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.imageItem.photo");
   xmlTextWriterEndElement(pWriter);
 
   /* storageMedium */
