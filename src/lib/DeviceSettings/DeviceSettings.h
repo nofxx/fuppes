@@ -35,6 +35,10 @@ typedef struct {
 	enum { resize, scale } nResizeMethod; // resize = better quality (lower) | scale = lower quality (faster)
 } ImageSettings_t;
 
+typedef struct {
+  bool bShowChildCountInTitle;
+} DisplaySettings_t;
+
 class CDeviceSettings
 {
   public:
@@ -49,7 +53,8 @@ class CDeviceSettings
 		bool m_bXBox360Support;
 		int  m_nMaxFileNameLength;
 		
-		ImageSettings_t m_ImageSettings;
+		ImageSettings_t   m_ImageSettings;
+    DisplaySettings_t m_DisplaySettings;
 
  // private:
 	  std::string m_sDeviceName;

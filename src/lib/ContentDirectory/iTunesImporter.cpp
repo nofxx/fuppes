@@ -24,6 +24,7 @@
 #include "iTunesImporter.h"
 #include "FileDetails.h"
 #include <iostream>
+#include <sstream>
 using namespace std;
  
 void CiTunesImporter::Import(std::string p_sFileName)
@@ -69,14 +70,13 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
   int i;
   CXMLNode* pNode;
   SMusicTrack track;
-    
+  string sFileName;
+ 
   pNode = pDict->FindNodeByValue("key", "Track Type", false);
   if(!pNode) {
     return;
-  }
-    
+  }    
   pNode = pDict->ChildNode(pNode->Index() + 1);
-  cout << "Track type: " << pNode->Value() << endl;
   
   if(pNode->Value().compare("File") != 0) {
     return;
@@ -104,9 +104,10 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
     else if(pNode->Value().compare("Total Time") == 0) {
     }
     else if(pNode->Value().compare("Track Number") == 0) {
+      track.nOriginalTrackNumber = atoi(pDict->ChildNode(i + 1)->Value().c_str());
     }
-    else if(pNode->Value().compare("Track Count") == 0) {
-    }
+    /*else if(pNode->Value().compare("Track Count") == 0) {
+    } */
     else if(pNode->Value().compare("Year") == 0) {
       track.sDate = pDict->ChildNode(i + 1)->Value();
     }
@@ -116,13 +117,64 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
     else if(pNode->Value().compare("Sample Rate") == 0) {
       track.mAudioItem.nSampleRate = atoi(pDict->ChildNode(i + 1)->Value().c_str());
     }
-    else if(pNode->Value().compare("Track Type") == 0) {
-    }
     else if(pNode->Value().compare("Location") == 0) {
+      sFileName = pDict->ChildNode(i + 1)->Value();
+      //cout << "*" << sFileName << "*" << endl;
+      sFileName = sFileName.substr(string("file://localhost/").length(), sFileName.length());
+      //cout << "*" << sFileName << "*" << endl;
+      #ifdef WIN32
+      sFileName = StringReplace(sFileName, "/", "\\");
+      #endif
+      sFileName = StringReplace(sFileName, "%20", " ");
+      cout << "*" << sFileName << "*" << endl;
+        
     }
-
+      
+   
   }
- 
+     cout << endl;
+
+  stringstream sSql;
+  CContentDatabase* pDb = new CContentDatabase();
+  unsigned int nObjId;
+    
+  pDb->BeginTransaction();
+  sSql << "insert into objects " <<
+          "(TYPE, PARENT_ID, PATH, FILE_NAME, TITLE, MD5, MIME_TYPE) " <<
+          "values (" <<
+          ITEM_AUDIO_ITEM_MUSIC_TRACK << ", " <<
+          -1 << ", " <<
+          "'" << SQLEscape(sFileName) << "', " <<
+          "'" << SQLEscape(track.mAudioItem.sTitle) << "', " <<
+          "'" << SQLEscape(track.mAudioItem.sTitle) << "', " <<
+          "'n/a', " <<
+          "'" << CFileDetails::Shared()->GetMimeType(sFileName, false) << "') ";
+
+  nObjId = pDb->Insert(sSql.str());
+  sSql.str("");
+
+    
+  sSql << 
+	  "insert into OBJECT_DETAILS " <<
+		"(OBJECT_ID, A_ARTIST, A_ALBUM, A_TRACK_NO, A_GENRE, AV_DURATION, DATE, A_CHANNELS, AV_BITRATE, A_SAMPLERATE) " <<
+		"values (" <<
+		nObjId << ", " <<
+		//"'" << SQLEscape(TrackInfo.mAudioItem.sTitle) << "', " <<
+		"'" << SQLEscape(track.sArtist) << "', " <<
+		"'" << SQLEscape(track.sAlbum) << "', " <<
+		track.nOriginalTrackNumber << ", " <<
+		"'" << SQLEscape(track.mAudioItem.sGenre) << "', " <<
+		"'" << track.mAudioItem.sDuration << "', " <<
+		"'" << track.sDate << "', " <<
+		track.mAudioItem.nNrAudioChannels << ", " <<
+		track.mAudioItem.nBitrate << ", " <<
+		track.mAudioItem.nSampleRate << ")";
+    
+  pDb->Insert(sSql.str());
+  pDb->Commit();
+    
+  delete pDb;
+    
 }
 
 /*

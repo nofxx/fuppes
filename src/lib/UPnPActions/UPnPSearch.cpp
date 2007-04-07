@@ -44,22 +44,6 @@ unsigned int CUPnPSearch::GetContainerIdAsUInt()
   return HexToInt(m_sContainerID);
 }
 
-std::string StringReplace(std::string p_sIn, std::string p_sSearch, std::string p_sReplace)
-{
-  std::string p_sResult;
-	if(p_sIn.find(p_sSearch) == std::string::npos)
-	  return p_sIn;
-	
-  while(p_sIn.find(p_sSearch) != std::string::npos)
-	{
-	  p_sResult += p_sIn.substr(0, p_sIn.find(p_sSearch)) + p_sReplace;
-		p_sIn      = p_sIn.substr(p_sIn.find(p_sSearch) + p_sSearch.length(), p_sIn.length());
-	}
-	p_sResult += p_sIn;
-	
-	return p_sResult;
-}
-
 std::string CUPnPSearch::BuildSQL(bool p_bLimit)
 {
   /*std::string sTest;

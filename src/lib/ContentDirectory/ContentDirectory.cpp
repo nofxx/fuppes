@@ -497,7 +497,9 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
             "  VIRTUAL_CONTAINERS " <<
             "where " <<
             "  PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() <<  " and " <<
-            "  DEVICE = '" << pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice << "' ";
+            "  DEVICE = '" << pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice << "' " <<
+            "order by " <<
+            "  TITLE";
     }
     else {
       sSql << "select " <<
@@ -512,7 +514,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
             "where " <<
             "  o.ID in (select OBJECT_ID from MAP_ITEMS2VC where VCONTAINER_ID = " << pUPnPBrowse->GetObjectIDAsInt() << ") " <<
             "order by "
-            "  o.TYPE, o.FILE_NAME";      
+            "  o.TYPE, d.A_TRACK_NO, o.FILE_NAME";      
     }
   }
   
@@ -687,8 +689,18 @@ dc:rights dc O */
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "childCount", BAD_CAST sChildCount.c_str());   
      
     /* title */
+    string sTitle = pSQLResult->GetValue("FILE_NAME");
+    int nLen = pUPnPBrowse->GetDeviceSettings()->m_nMaxFileNameLength;
+    if(nLen > 0 && pUPnPBrowse->GetDeviceSettings()->m_DisplaySettings.bShowChildCountInTitle) {
+      nLen -= (sChildCount.length() + 3); // "_(n)"
+    }
+    sTitle = TrimFileName(sTitle, nLen);
+    if(pUPnPBrowse->GetDeviceSettings()->m_DisplaySettings.bShowChildCountInTitle) {
+      sTitle = sTitle + " (" + sChildCount + ")";
+    }
+                                                      
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");     
-      xmlTextWriterWriteString(pWriter, BAD_CAST TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->GetDeviceSettings()->m_nMaxFileNameLength).c_str());    
+      xmlTextWriterWriteString(pWriter, BAD_CAST sTitle.c_str());    
     xmlTextWriterEndElement(pWriter);
    
     /* class */

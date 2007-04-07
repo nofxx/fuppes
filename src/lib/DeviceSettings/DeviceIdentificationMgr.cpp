@@ -67,6 +67,7 @@ CDeviceIdentificationMgr::CDeviceIdentificationMgr()
   pSettings = new CDeviceSettings("Noxon audio");
 	pSettings->m_slIPAddresses.push_back("192.168.0.22");
 	pSettings->m_bShowPlaylistAsContainer = true;
+  pSettings->m_DisplaySettings.bShowChildCountInTitle = true;
 	m_Settings.push_back(pSettings);	
 	
 	// Telegent TG 100

@@ -40,6 +40,8 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
 	m_ImageSettings.bResizeIfLarger = false;
 	m_ImageSettings.nMaxWidth = 0;
 	m_ImageSettings.nMaxHeight = 0;
+    
+  m_DisplaySettings.bShowChildCountInTitle = false;
 }
 
 bool CDeviceSettings::HasUserAgent(std::string p_sUserAgent)

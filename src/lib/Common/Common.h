@@ -75,6 +75,8 @@ bool FileExists(std::string p_sFileName);
 bool IsFile(std::string p_sFileName);
 bool DirectoryExists(std::string p_sDirName);
 bool IsDirectory(std::string p_sDirName);
+
+std::string StringReplace(std::string p_sIn, std::string p_sSearch, std::string p_sReplace);
 std::string ExtractFileExt(std::string p_sFileName);
 std::string ExtractFilePath(std::string p_sFileName);
 std::string TruncateFileExt(std::string p_sFileName);
