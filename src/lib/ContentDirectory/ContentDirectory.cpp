@@ -1021,21 +1021,26 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
 
 
   // duration
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->GetValue("AV_DURATION").c_str());
-	
+  if(!pSQLResult->IsNull("AV_DURATION")) {
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->GetValue("AV_DURATION").c_str());
+  }
+      
 	// resolution 
-	if((pSQLResult->GetValue("IV_WIDTH").compare("NULL") != 0) && (pSQLResult->GetValue("IV_HEIGHT").compare("NULL") != 0)) {
+	if(!pSQLResult->IsNull("IV_WIDTH") && !pSQLResult->IsNull("IV_HEIGHT")) {
     sTmp << pSQLResult->GetValue("IV_WIDTH") << "x" << pSQLResult->GetValue("IV_HEIGHT");
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.str().c_str());
     sTmp.str("");
 	}
 
 	// bitrate
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("AV_BITRATE").c_str());
-
+  if(!pSQLResult->IsNull("AV_BITRATE")) {
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("AV_BITRATE").c_str());
+  }
+      
   // size
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->GetValue("SIZE").c_str());
-
+  if(!pSQLResult->IsNull("SIZE")) {
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->GetValue("SIZE").c_str());
+  }
 
   /* set transcoding target extension 
      as video transcoding is not yet supported
