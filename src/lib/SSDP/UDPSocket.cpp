@@ -30,12 +30,10 @@
 
 using namespace std;
 
-const string LOGNAME = "UDPSocket";
-
 #define MULTICAST_PORT 1900
 #define MULTICAST_IP   "239.255.255.250"
 
-fuppesThreadCallback ReceiveLoop(void *arg);
+fuppesThreadCallback UDPReceiveLoop(void *arg);
 
 CUDPSocket::CUDPSocket()
 {	
@@ -179,7 +177,7 @@ void CUDPSocket::BeginReceive()
 {
   /* Start thread */  
 	m_bBreakReceive = false;
-  fuppesThreadStart(m_ReceiveThread, ReceiveLoop);
+  fuppesThreadStart(m_ReceiveThread, UDPReceiveLoop);
 }
 
 /* EndReceive */
@@ -233,7 +231,7 @@ sockaddr_in CUDPSocket::GetLocalEndPoint()
 	return m_LocalEndpoint;
 }
 
-fuppesThreadCallback ReceiveLoop(void *arg)
+fuppesThreadCallback UDPReceiveLoop(void *arg)
 {
   #ifndef FUPPES_TARGET_WIN32                     
   //set thread cancel state
@@ -254,7 +252,7 @@ fuppesThreadCallback ReceiveLoop(void *arg)
   CUDPSocket* udp_sock = (CUDPSocket*)arg;
   stringstream sLog;
   sLog << "listening on " << udp_sock->GetIPAddress() << ":" << udp_sock->GetPort();
-	CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());
+	CSharedLog::Shared()->Log(L_EXTENDED, sLog.str(), __FILE__, __LINE__);
 	
 	char buffer[4096];	
 	int  bytes_received = 0;
@@ -284,25 +282,25 @@ fuppesThreadCallback ReceiveLoop(void *arg)
     /*cout << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port) << endl;
     cout << inet_ntoa(udp_sock->GetLocalEndPoint().sin_addr) << ":" << ntohs(udp_sock->GetLocalEndPoint().sin_port) << endl;*/
     
-    /* ensure we don't receive our own message */
+    // ensure we don't receive our own message
 		if((remote_ep.sin_addr.s_addr != udp_sock->GetLocalEndPoint().sin_addr.s_addr) || 
-			 (remote_ep.sin_port != udp_sock->GetLocalEndPoint().sin_port))		
-		{
+			 (remote_ep.sin_port != udp_sock->GetLocalEndPoint().sin_port))	
+    {
 			CSSDPMessage pSSDPMessage; // = new CSSDPMessage();
-      if(pSSDPMessage.SetMessage(msg.str()))
-      {
+      if(pSSDPMessage.SetMessage(msg.str())) {
   			pSSDPMessage.SetRemoteEndPoint(remote_ep);
 	  		pSSDPMessage.SetLocalEndPoint(udp_sock->GetLocalEndPoint());
 		  	udp_sock->CallOnReceive(&pSSDPMessage);
       }
-      else
-        CSharedLog::Shared()->Error(LOGNAME, "parsing UDP-message");
+      else {
+        CSharedLog::Shared()->Log(L_EXTENDED_ERR, "parsing UDP-message", __FILE__, __LINE__);
+      }
 		}
 		
 		msg.str("");
 		msg.clear();		
 	}
   
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "exiting ReceiveLoop()");
+  CSharedLog::Shared()->Log(L_EXTENDED, "exiting ReceiveLoop()", __FILE__, __LINE__);
   fuppesThreadExit();
 }

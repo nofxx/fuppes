@@ -32,7 +32,7 @@
 class CXMLNode
 {
   public:
-    CXMLNode(xmlNode* p_NodePtr, int p_nIdx);
+    CXMLNode(xmlNode* p_NodePtr, int p_nIdx, CXMLNode* pParent);
     ~CXMLNode();
     
     int ChildCount();
@@ -56,19 +56,24 @@ class CXMLNode
     int      m_nChildCount;
     std::map<int, CXMLNode*> m_NodeList;
     std::map<int, CXMLNode*>::iterator m_NodeListIter;
+  
+    CXMLNode* m_pParent;
 };
 
 class CXMLDocument
 {
   public:
+    CXMLDocument();
     ~CXMLDocument();
     bool Load(std::string p_sFileName);
+    bool Save();
   
     CXMLNode* RootNode();
   
   private:
-    xmlDocPtr m_pDoc;
-    CXMLNode* m_pRootNode;
+    xmlDocPtr   m_pDoc;
+    std::string m_sFileName;
+    CXMLNode*   m_pRootNode;
 };
 
 #endif // _XMLPARSER_H

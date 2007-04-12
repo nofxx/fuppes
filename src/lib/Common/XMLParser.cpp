@@ -22,14 +22,15 @@
  */
  
 #include "XMLParser.h"
-
+#include <iostream>
 using namespace std;
 
-CXMLNode::CXMLNode(xmlNode* p_NodePtr, int p_nIdx)
+CXMLNode::CXMLNode(xmlNode* p_NodePtr, int p_nIdx, CXMLNode* pParent)
 {
   m_pNode = p_NodePtr;
   m_nIdx  = p_nIdx;
   m_nChildCount = 0;
+  m_pParent = pParent;
 }
 
 CXMLNode::~CXMLNode()
@@ -72,7 +73,7 @@ CXMLNode* CXMLNode::ChildNode(int p_nIdx)
   for(pTmpNode = m_pNode->children; pTmpNode; pTmpNode = pTmpNode->next) {
     
     if(nIdx == p_nIdx) {
-      pResult = new CXMLNode(pTmpNode, nIdx);
+      pResult = new CXMLNode(pTmpNode, nIdx, this);
       m_NodeList[nIdx] = pResult;
       break;
     }
@@ -175,6 +176,11 @@ std::string CXMLNode::Value()
   }
 }
 
+CXMLDocument::CXMLDocument()
+{
+  m_pRootNode = NULL;
+  m_pDoc = NULL;
+}
 
 CXMLDocument::~CXMLDocument()
 {
@@ -190,14 +196,21 @@ CXMLDocument::~CXMLDocument()
 
 bool CXMLDocument::Load(std::string p_sFileName)
 {
-  m_pDoc = xmlReadFile(p_sFileName.c_str(), "UTF-8", XML_PARSE_NOBLANKS);
+  m_sFileName = p_sFileName;
+  m_pDoc = xmlReadFile(p_sFileName.c_str(), "UTF-8", XML_PARSE_NOBLANKS);  
   return (m_pDoc != NULL);
+}
+
+bool CXMLDocument::Save()
+{
+  xmlSaveFormatFileEnc(m_sFileName.c_str(), m_pDoc, "UTF-8", 1);
+  return true;
 }
 
 CXMLNode* CXMLDocument::RootNode()
 {
   if(!m_pRootNode) {
-    m_pRootNode = new CXMLNode(xmlDocGetRootElement(m_pDoc), 0);
+    m_pRootNode = new CXMLNode(xmlDocGetRootElement(m_pDoc), 0, NULL);
   }
   return m_pRootNode;
 }
