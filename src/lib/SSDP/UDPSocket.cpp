@@ -250,15 +250,21 @@ fuppesThreadCallback UDPReceiveLoop(void *arg)
   #endif // FUPPES_TARGET_WIN32
 
   CUDPSocket* udp_sock = (CUDPSocket*)arg;
-  stringstream sLog;
+  cout << __FILE__ << " " << __LINE__ << " :: " << "UDPReceiveLoop" << endl; fflush(stdout);
+  cout << "ip: " << udp_sock->GetIPAddress() << endl; fflush(stdout);
+  cout << "port: " << udp_sock->GetPort() << endl << endl; fflush(stdout);
+  /*stringstream sLog;
   sLog << "listening on " << udp_sock->GetIPAddress() << ":" << udp_sock->GetPort();
-	CSharedLog::Shared()->Log(L_EXTENDED, sLog.str(), __FILE__, __LINE__);
+	CSharedLog::Shared()->Log(L_EXTENDED, sLog.str(), __FILE__, __LINE__);*/
 	
 	char buffer[4096];	
 	int  bytes_received = 0;
 	
-	stringstream msg;
-	
+  cout << sizeof(buffer) << endl; fflush(stdout);
+  
+	//stringstream msg;
+	//string sMsg = "";
+  
 	sockaddr_in remote_ep;	
 	socklen_t   size = sizeof(remote_ep);	
 
@@ -276,7 +282,8 @@ fuppesThreadCallback UDPReceiveLoop(void *arg)
     }
     
 		buffer[bytes_received] = '\0';		
-		msg << buffer;
+		//msg << buffer;
+    //sMsg = buffer;
     
     //cout << msg.str() << endl;    
     /*cout << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port) << endl;
@@ -287,7 +294,7 @@ fuppesThreadCallback UDPReceiveLoop(void *arg)
 			 (remote_ep.sin_port != udp_sock->GetLocalEndPoint().sin_port))	
     {
 			CSSDPMessage pSSDPMessage; // = new CSSDPMessage();
-      if(pSSDPMessage.SetMessage(msg.str())) {
+      if(pSSDPMessage.SetMessage(buffer)) {
   			pSSDPMessage.SetRemoteEndPoint(remote_ep);
 	  		pSSDPMessage.SetLocalEndPoint(udp_sock->GetLocalEndPoint());
 		  	udp_sock->CallOnReceive(&pSSDPMessage);
@@ -297,8 +304,9 @@ fuppesThreadCallback UDPReceiveLoop(void *arg)
       }
 		}
 		
-		msg.str("");
-		msg.clear();		
+    //sMsg = "";
+		/*msg.str("");
+		msg.clear();*/		
 	}
   
   CSharedLog::Shared()->Log(L_EXTENDED, "exiting ReceiveLoop()", __FILE__, __LINE__);
