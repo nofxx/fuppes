@@ -24,8 +24,6 @@
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
- 
-#undef HAVE_FLAC
 
 #ifndef DISABLE_TRANSCODING
 #ifdef  HAVE_FLAC
@@ -35,7 +33,7 @@
 
 #include "WrapperBase.h"
 
-#ifdef HAVE_FILEDECODER // <= 1.1.2
+#ifdef HAVE_FLAC_FILEDECODER // <= 1.1.2
 #include <FLAC/file_decoder.h>
 #else // >= 1.1.3
 #include <FLAC/stream_decoder.h>
@@ -44,7 +42,7 @@
 #ifdef __cplusplus
 extern "C"
 {
-  #ifdef HAVE_FILEDECODER
+  #ifdef HAVE_FLAC_FILEDECODER
   /* FLAC__FileDecoder* FLAC__file_decoder_new() */  
   typedef FLAC__FileDecoder* (*FLACFileDecoderNew_t)();
   
@@ -82,12 +80,45 @@ extern "C"
   typedef FLAC__bool (*FLACFileDecoderFinish_t)(FLAC__FileDecoder*);  
   #else
   
+  // FLAC__StreamDecoder* FLAC__stream_decoder_new(void) 
+  typedef FLAC__StreamDecoder* (*FLAC_StreamDecoderNew_t)();
+  
+  /* FLAC__StreamDecoderInitStatus FLAC__stream_decoder_init_file(
+          FLAC__StreamDecoder* decoder,
+          const char *  	filename,
+          FLAC__StreamDecoderWriteCallback  	write_callback,
+          FLAC__StreamDecoderMetadataCallback  	metadata_callback,
+          FLAC__StreamDecoderErrorCallback  	error_callback,
+          void *  	client_data)   */
+  typedef FLAC__StreamDecoderInitStatus (*FLAC_StreamDecoderInitFile_t)
+          (FLAC__StreamDecoder* decoder,
+           const char* ilename,
+           FLAC__StreamDecoderWriteCallback    write_callback,
+           FLAC__StreamDecoderMetadataCallback metadata_callback,
+           FLAC__StreamDecoderErrorCallback    error_callback,
+           void* client_data);
+  
+  // FLAC__bool FLAC__stream_decoder_process_until_end_of_metadata(FLAC__StreamDecoder* decoder) 
+  typedef FLAC__bool (*FLAC_StreamDecoderProcessUntilEndOfMetadata_t)(FLAC__StreamDecoder* decoder);
+  
+  // FLAC__bool FLAC__stream_decoder_process_single(FLAC__StreamDecoder* decoder) 
+  typedef FLAC__bool (*FLAC_StreamDecoderProcessSingle_t)(FLAC__StreamDecoder* decoder);
+  
+  // FLAC__StreamDecoderState FLAC__stream_decoder_get_state(const FLAC__StreamDecoder* decoder) 
+  typedef FLAC__StreamDecoderState (*FLAC_StreamDecoderGetState_t)(const FLAC__StreamDecoder* decoder);
+    
+  // FLAC__bool FLAC__stream_decoder_finish(FLAC__StreamDecoder* decoder) 
+  typedef FLAC__bool (*FLAC_StreamDecoderFinish_t)(FLAC__StreamDecoder* decoder);
+  
+  // void FLAC__stream_decoder_delete(FLAC__StreamDecoder* decoder) 
+  typedef void (*FLAC_StreamDecoderDelete_t)(FLAC__StreamDecoder* decoder);
+  
   #endif
 }
 #endif
 
 typedef struct flac_data_s {
-  #ifdef HAVE_FILEDECODER
+  #ifdef HAVE_FLAC_FILEDECODER
   FLAC__FileDecoder *decoder;
   #else
   FLAC__StreamDecoder *decode;
@@ -120,13 +151,14 @@ class CFLACDecoder: public CAudioDecoderBase
 
     char* m_pPcmOut;
     long  m_nBytesReturned;
-  
-    flac_data_t* m_pFLACData;
+      
+    flac_data_t* m_pFLACData;    
   
   private:
     fuppesLibHandle  m_LibHandle;  
     bool             m_bEOF;
   
+    #ifdef HAVE_FLAC_FILEDECODER
     FLAC__FileDecoder*                    m_pFLACFileDecoder;  
     FLACFileDecoderNew_t                  m_FLACFileDecoderNew;
     FLACFileDecoderDelete_t               m_FLACFileDecoderDelete;
@@ -140,6 +172,16 @@ class CFLACDecoder: public CAudioDecoderBase
     FLACFileDecoderProcessSingle_t        m_FLACFileDecoderProcessSingle;
     FLACFileDecoderGetState_t             m_FLACFileDecoderGetState;
     FLACFileDecoderFinish_t               m_FLACFileDecoderFinish;
+    #else
+    FLAC__StreamDecoder*                  m_pFLAC_StreamDecoder;
+    FLAC_StreamDecoderNew_t               m_FLAC_StreamDecoderNew;
+    FLAC_StreamDecoderInitFile_t          m_FLAC_StreamDecoderInitFile;
+    FLAC_StreamDecoderProcessUntilEndOfMetadata_t m_FLAC_StreamDecoderProcessUntilEndOfMetadata;
+    FLAC_StreamDecoderProcessSingle_t     m_FLAC_StreamDecoderProcessSingle;
+    FLAC_StreamDecoderGetState_t          m_FLAC_StreamDecoderGetState;
+    FLAC_StreamDecoderFinish_t            m_FLAC_StreamDecoderFinish;
+    FLAC_StreamDecoderDelete_t            m_FLAC_StreamDecoderDelete;
+    #endif
 };
 
 #endif // _FLACWRAPPER_H
