@@ -20,12 +20,13 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #include <windows.h>
 #include <iostream>
 
 #include "../../include/fuppes.h"
 #include "WinMainForm.h"
+#include "Common.h"
 
 using namespace std;
 
@@ -37,22 +38,23 @@ void LogCallback(const char* sz_log)
 }
 
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgument, int nWindowStyle)
-{  
+{
   MSG messages;
   pMainForm = new CMainForm(hInstance);
-  pMainForm->ShowTrayIcon();
+  pMainForm->ShowTrayIcon();  
 
-  if(fuppes_init(LogCallback) == FUPPES_FALSE) {
-    MessageBox(NULL, "Error 0", "FUPPES 0.7.2-dev", MB_OK);
-    return 1;    
-  }
-    
-  //fuppes_start();
-  if(fuppes_start() == FUPPES_FALSE) {
-    MessageBox(NULL, "Error 1", "FUPPES 0.7.2-dev", MB_OK);
+  // fuppes_init()
+  if(fuppes_init(0, NULL, LogCallback) == FUPPES_FALSE) {
+    MessageBox(NULL, "Error 0", GetAppShortName(), MB_OK);
     return 1;
   }
-  
+
+  // fuppes_start()
+  if(fuppes_start() == FUPPES_FALSE) {
+    MessageBox(NULL, "Error 1", GetAppShortName(), MB_OK);
+    return 1;
+  }
+
   // Run the message loop. It will run until GetMessage() returns 0
   while (GetMessage (&messages, NULL, 0, 0)) {
    // Translate virtual-key messages into character messages
@@ -64,7 +66,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgu
   // cleanup
   fuppes_stop();
   fuppes_cleanup();
-      
+
   pMainForm->HideTrayIcon();
   delete pMainForm;
 

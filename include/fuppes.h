@@ -31,10 +31,6 @@ extern "C" {
 #define FUPPES_OK    0
 #define FUPPES_FALSE 1
 
-typedef struct t_fuppes_info{
-  char* szVersion;
-};
-
 /**
  *  initialize libfuppes
  *    - load and check config
@@ -64,6 +60,7 @@ int fuppes_stop();
  */
 int fuppes_cleanup();
 
+const char* fuppes_get_version();
 
 void fuppes_print_info();
 void fuppes_set_loglevel(int n_log_level);

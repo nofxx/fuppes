@@ -750,8 +750,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       break; 
     } 
     
-    if(!bChunkLoop)
-      break;
+    /*if(!bChunkLoop)
+      break;*/
       
   } // while
 

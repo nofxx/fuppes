@@ -121,6 +121,11 @@ int fuppes_cleanup()
   return FUPPES_OK;
 }
 
+const char* fuppes_get_version()
+{
+  return CSharedConfig::Shared()->GetAppVersion().c_str();
+}
+
 void fuppes_set_loglevel(int n_log_level)
 {
   CSharedLog::Shared()->SetLogLevel(n_log_level, false);
@@ -181,4 +186,12 @@ void fuppes_print_info()
 	cout << "configuration file:" << endl;
 	cout << "  " << CSharedConfig::Shared()->GetConfigFileName() << endl;
 	cout << endl;
+	cout << "ImageMagick: ";
+	#ifdef HAVE_IMAGEMAGICK
+	cout << " enabled" << endl;
+	#else
+	cout << " compiled without ImageMagick support" << endl;	
+	#endif
+	
+	
 }

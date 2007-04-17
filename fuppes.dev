@@ -1,7 +1,7 @@
 [Project]
 FileName=fuppes.dev
 Name=fuppes
-UnitCount=3
+UnitCount=5
 Type=0
 Ver=1
 ObjFiles=
@@ -54,7 +54,7 @@ BuildCmd=
 Major=0
 Minor=7
 Release=2
-Build=314
+Build=414
 LanguageID=1033
 CharsetID=1252
 CompanyName=Ulrich Völkel
@@ -409,9 +409,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit4]
-FileName=src\MediaServer.h
+FileName=src\windows\Common.h
 CompileCpp=1
-Folder=fuppes
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -419,9 +419,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit5]
-FileName=src\MessageBase.cpp
+FileName=src\windows\Common.cpp
 CompileCpp=1
-Folder=fuppes
+Folder=
 Compile=1
 Link=1
 Priority=1000

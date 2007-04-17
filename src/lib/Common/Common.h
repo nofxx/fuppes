@@ -34,9 +34,9 @@
 #ifdef WIN32
 
 /* This must be defined to use InitializeCriticalSectionAndSpinCount() */
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0410 /* Windows 98 or later */
-#endif
+/*#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0410 // Windows 98 or later
+#endif*/
 
 #pragma comment(lib,"Wsock32.lib") 
 #pragma comment(lib,"Ws2_32.lib")
@@ -166,10 +166,11 @@ bool              FuppesCloseLibrary(fuppesLibHandle p_LibHandle);
 #define fuppesThreadCallback                                DWORD WINAPI
 
 //#define fuppesThreadMutex                                   CRITICAL_SECTION
-#define fuppesThreadInitMutex(_mutex_)                      InitializeCriticalSectionAndSpinCount(_mutex_, 0x80000400)
+#define fuppesThreadInitMutex(_mutex_)                      InitializeCriticalSection(_mutex_)
+                                                             //AndSpinCount(_mutex_, 0x80000400)
 //#define fuppesThreadLockMutex(_mutex_)                      EnterCriticalSection(_mutex_)
 //#define fuppesThreadUnlockMutex(_mutex_)                    LeaveCriticalSection(_mutex_)
-#define fuppesThreadDestroyMutex(_mutex_) 
+#define fuppesThreadDestroyMutex(_mutex_)                   DeleteCriticalSection(_mutex_)
 
 #else
 

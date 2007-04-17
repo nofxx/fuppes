@@ -1,5 +1,5 @@
 /***************************************************************************
- *            WinMainForm.h
+ *            Common.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -21,44 +21,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <windows.h>
 #include <string>
 
-class CMainForm
-{
-  public:
-    CMainForm(HINSTANCE hInstance);
-    ~CMainForm();    
-      
-    LRESULT CALLBACK WindowProc(HWND p_hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-    
-    void OnCreate();
-      
-    void Show();
-    void Hide();
-      
-    void ShowTrayIcon();
-    void HideTrayIcon();
-      
-    void OnWmTrayicon(WPARAM wParam, LPARAM lParam);
-      
-    void OnTrayIconLButtonUp();
-      
-    void Log(std::string p_sLog);
-      
-  private:    
-    HWND        hWnd;     // This is the handle for our window 
-    WNDCLASSEX  wincl;    // Data structure for the windowclass 
-    HMENU       hPopup;   // popup menu
-    bool        m_bVisible;
-    unsigned int nLogLength;
-    
-    HWND        hWndMemo;    
-    
-    HWND        h_rbLog0;
-    HWND        h_rbLog1;
-    HWND        h_rbLog2;
-    HWND        h_rbLog3;
-    
-    std::string m_sTitle;
-};
+const char* GetAppFullName();
+const char* GetAppShortName();

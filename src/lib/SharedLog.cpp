@@ -266,7 +266,8 @@ void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, 
   #endif
   
   if(m_log_callback) {
-    m_log_callback(p_sMessage.c_str());
+    if(m_nLogLevel > 0)
+      m_log_callback(p_sMessage.c_str());
     return;
   }
   

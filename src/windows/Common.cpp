@@ -1,5 +1,5 @@
 /***************************************************************************
- *            WinMainForm.h
+ *            Common.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -20,45 +20,20 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
+ 
+#include "Common.h"
+#include "../../include/fuppes.h"
 
-#include <windows.h>
-#include <string>
+using namespace std;
 
-class CMainForm
+const char* GetAppFullName()
 {
-  public:
-    CMainForm(HINSTANCE hInstance);
-    ~CMainForm();    
-      
-    LRESULT CALLBACK WindowProc(HWND p_hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-    
-    void OnCreate();
-      
-    void Show();
-    void Hide();
-      
-    void ShowTrayIcon();
-    void HideTrayIcon();
-      
-    void OnWmTrayicon(WPARAM wParam, LPARAM lParam);
-      
-    void OnTrayIconLButtonUp();
-      
-    void Log(std::string p_sLog);
-      
-  private:    
-    HWND        hWnd;     // This is the handle for our window 
-    WNDCLASSEX  wincl;    // Data structure for the windowclass 
-    HMENU       hPopup;   // popup menu
-    bool        m_bVisible;
-    unsigned int nLogLength;
-    
-    HWND        hWndMemo;    
-    
-    HWND        h_rbLog0;
-    HWND        h_rbLog1;
-    HWND        h_rbLog2;
-    HWND        h_rbLog3;
-    
-    std::string m_sTitle;
-};
+  string sResult = string("FUPPES - Free UPnP Entertainment Service ") + fuppes_get_version();
+  return sResult.c_str();
+}
+
+const char* GetAppShortName()
+{
+  string sResult =  string("FUPPES ") + fuppes_get_version();
+  return sResult.c_str();
+}

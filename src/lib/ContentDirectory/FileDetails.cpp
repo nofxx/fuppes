@@ -34,8 +34,8 @@
 
 #ifdef HAVE_TAGLIB
 #include <fileref.h>
-#include <tstring.h>
-#include <tfile.h>
+//#include <tstring.h>
+//#include <tfile.h>
 #include <tag.h>
 #endif
 
@@ -294,7 +294,7 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pM
 	}
 	
 	TagLib::String sTmp;
-	uint nTmp;
+	unsigned int nTmp;
 	
 	// title
 	sTmp = pFile.tag()->title();

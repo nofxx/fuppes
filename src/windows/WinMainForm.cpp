@@ -24,10 +24,15 @@
 #include "WinMainForm.h"
 
 #include <sstream>
+#include "../../include/fuppes.h"
+#include "Common.h"
 
 #define WM_TRAYICON WM_APP + 1
 
 #define ID_EDITCHILD 12
+
+#define MAX_MEMO_LENGTH 4096
+
 
 using namespace std;
 
@@ -37,6 +42,7 @@ CMainForm* pForm = NULL;
 
 CMainForm::CMainForm(HINSTANCE hInstance)
 {
+  nLogLength = 0;
   m_bVisible = false;
   hWnd = NULL;
                                
@@ -66,7 +72,7 @@ CMainForm::CMainForm(HINSTANCE hInstance)
   hWnd = CreateWindowEx (
          0,                   /* Extended possibilites for variation */
          "CMainForm",         /* Classname */
-         "FUPPES - the Free UPnP Entertainment Service 0.7.2-dev",       /* Title Text */
+         GetAppFullName(),    /* Title Text */
          WS_OVERLAPPEDWINDOW, /* default window */
          CW_USEDEFAULT,       /* Windows decides the position */
          CW_USEDEFAULT,       /* where the window ends up on the screen */
@@ -80,18 +86,26 @@ CMainForm::CMainForm(HINSTANCE hInstance)
                       
   // create popup menu                
   hPopup = CreatePopupMenu();
-  AppendMenu(hPopup, MF_STRING, 3, "Show webinterface");    
+  AppendMenu(hPopup, MF_STRING, 4, "Show webinterface");    
+  AppendMenu(hPopup, MF_SEPARATOR, 0, "" ); 
   AppendMenu(hPopup, MF_STRING, 2, "Rebuild database");  
-  
+  AppendMenu(hPopup, MF_STRING, 3, "Rebuild virtual containers");  
+    
   AppendMenu(hPopup, MF_SEPARATOR, 0, "" );    
   AppendMenu(hPopup, MF_STRING, 1, "Quit" );    
   pForm = this; 
   
-  OnCreate(); 
+  OnCreate();
 }
 
 CMainForm::~CMainForm()
 {
+  DestroyWindow(h_rbLog0);
+  DestroyWindow(h_rbLog1);
+  DestroyWindow(h_rbLog2);
+  DestroyWindow(h_rbLog3);
+  DestroyWindow(hWndMemo);
+                       
   DestroyMenu(hPopup);
 }
 
@@ -110,13 +124,47 @@ LRESULT CALLBACK CMainForm::WindowProc(HWND p_hWnd, UINT message, WPARAM wParam,
       break;*/
       
     case WM_SIZE: 
-      // Make the edit control the size of the window's client area. 
-      MoveWindow(hWndMemo, 
+      /*MoveWindow(hWndRadioBox, 
                  8, 8,                  // starting x- and y-coordinates 
                  LOWORD(lParam) - 16,        // width of client area 
-                 HIWORD(lParam) - 16,        // height of client area 
+                 100 - 8,        // height of client area 
+                 TRUE);               // repaint window                   */
+         
+      // Make the edit control the size of the window's client area. 
+      MoveWindow(hWndMemo, 
+                 8, 38,                  // starting x- and y-coordinates 
+                 LOWORD(lParam) - 16,        // width of client area 
+                 HIWORD(lParam) - 16 - 30,        // height of client area 
                  TRUE);                 // repaint window 
       return 0;
+      break;
+      
+    case WM_COMMAND:
+    
+      if(HIWORD(wParam) == BN_CLICKED) {                        
+        
+        // disabled    
+        if((HWND)lParam == h_rbLog0) {
+          fuppes_set_loglevel(0);
+          return 0;
+        }
+        // normal
+        else if((HWND)lParam == h_rbLog1) {
+          fuppes_set_loglevel(1);
+          return 0;
+        }
+        // extended
+        else if((HWND)lParam == h_rbLog2) {
+          fuppes_set_loglevel(2);
+          return 0;
+        }
+        // debug
+        else if((HWND)lParam == h_rbLog3) {
+          fuppes_set_loglevel(3);
+          return 0;
+        }       
+         
+      }
       break;
       
          
@@ -142,18 +190,41 @@ LRESULT CALLBACK CMainForm::WindowProc(HWND p_hWnd, UINT message, WPARAM wParam,
 
 void CMainForm::OnCreate()
 {
-  hWndMemo = CreateWindow("EDIT",      // predefined class 
-                          NULL,        // no window title 
-                          WS_CHILD | WS_VISIBLE | WS_VSCROLL | 
-                          ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL,
-//                           |  ES_READONLY ,
-                          0, 0, 0, 0,  // set size in WM_SIZE message 
-                          hWnd,        // parent window 
-                          (HMENU)ID_EDITCHILD,   // edit control ID 
-                          (HINSTANCE) GetWindowLong(hWnd, GWL_HINSTANCE), 
-                          NULL);       // pointer not needed
-                    
-   //SendMessage(hWndMemo, WM_SETTEXT, 0, (LPARAM) "dahummm");              
+ /* hWndRadioBox = CreateWindow("STATIC", NULL,
+       WS_VISIBLE | WS_CHILD | SS_GRAYFRAME,
+       0, 0, 0, 0, hWnd, NULL, // set size in WM_SIZE message
+       (HINSTANCE) GetWindowLong(hWnd, GWL_HINSTANCE), NULL);*/
+     
+  // radio buttons
+  h_rbLog0 = CreateWindow("BUTTON", "disabled", 
+    WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
+    8, 8, 100, 16, hWnd,  NULL,
+    (HINSTANCE) GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+     
+  h_rbLog1 = CreateWindow("BUTTON", "normal", 
+    WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
+    108, 8, 100, 16, hWnd,  NULL,
+    (HINSTANCE) GetWindowLong(hWnd, GWL_HINSTANCE), NULL);     
+  
+  h_rbLog2 = CreateWindow("BUTTON", "extended", 
+    WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
+    216, 8, 100, 16, hWnd,  NULL,
+    (HINSTANCE) GetWindowLong(hWnd, GWL_HINSTANCE), NULL);  
+    
+  h_rbLog3 = CreateWindow("BUTTON", "debug", 
+    WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
+    324, 8, 100, 16, hWnd,  NULL,
+    (HINSTANCE) GetWindowLong(hWnd, GWL_HINSTANCE), NULL);       
+     
+     
+  // memo
+  hWndMemo = CreateWindow("EDIT", NULL,
+    WS_CHILD | WS_VISIBLE | WS_VSCROLL | 
+    ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY,
+    0, 0, 0, 0, hWnd,
+   (HMENU)ID_EDITCHILD, 
+   (HINSTANCE) GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+
 }
 
 void CMainForm::Show()
@@ -198,13 +269,19 @@ void CMainForm::HideTrayIcon()
 
 void CMainForm::Log(std::string p_sLog)
 {
-  //MessageBox(hWnd, p_sLog.c_str(), "FUPPES 0.7.2-dev", MB_OK);
-  //SendMessage(hWndMemo, WM_SETSEL, (WPARAM), (LPARAM));
-  p_sLog.append("\r\n");
-  SendMessage(hWndMemo, EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)p_sLog.c_str());
+  p_sLog.append("\r\n");  
+  nLogLength += p_sLog.length();
   
-
-  //SendMessage(hWndMemo, WM_SETTEXT, 0, (LPARAM) p_sLog.c_str()); 
+  // if the memo is full we remove some lines at the start
+  if(nLogLength > MAX_MEMO_LENGTH) {
+    SendMessage(hWndMemo, EM_SETSEL, 0, p_sLog.length());
+    SendMessage(hWndMemo, EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)"");
+    nLogLength -= p_sLog.length();   
+    SendMessage(hWndMemo, EM_SETSEL, nLogLength, nLogLength);
+  }
+  
+  // append message
+  SendMessage(hWndMemo, EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)p_sLog.c_str());  
 }
 
 void CMainForm::OnWmTrayicon(WPARAM wParam, LPARAM lParam)
@@ -234,18 +311,24 @@ void CMainForm::OnTrayIconLButtonUp()
 	switch(ret)
 	{
     case 1:
-      if(MessageBox(hWnd, "Shutdown FUPPES?", "FUPPES 0.7.2-dev", MB_ICONQUESTION | MB_YESNO) == IDYES) {
+      if(MessageBox(hWnd, "Shutdown FUPPES?", GetAppShortName(), MB_ICONQUESTION | MB_YESNO) == IDYES) {
          PostMessage(hWnd, WM_DESTROY, 0, 0);
       }
       break;
     case 2:
-      if(MessageBox(hWnd, "Rebuild database?", "FUPPES 0.7.2-dev", MB_ICONQUESTION | MB_YESNO) == IDYES) {
-        //RaiseEvent(EVT_REBUILD_DB);
-      }               
+      if(MessageBox(hWnd, "Rebuild database?", GetAppShortName(), MB_ICONQUESTION | MB_YESNO) == IDYES) {
+        fuppes_rebuild_db();
+      }
       break;
     case 3:
-      //sTmp << "http://" << CSharedConfig::Shared()->GetFuppesInstance(0)->GetHTTPServerURL();
-      ShellExecute(hWnd, "open", sTmp.str().c_str(), NULL, NULL, SW_NORMAL);
+      if(MessageBox(hWnd, "Rebuild virtual conatiners?", GetAppShortName(), MB_ICONQUESTION | MB_YESNO) == IDYES) {
+        fuppes_rebuild_vcontainers();
+      }
+      break;      
+    case 4:
+      char szAddr[128];
+      fuppes_get_http_server_address(szAddr, 127);
+      ShellExecute(hWnd, "open", szAddr, NULL, NULL, SW_NORMAL);
       sTmp.str("");
       break;
   }
