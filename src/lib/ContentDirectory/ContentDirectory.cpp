@@ -268,16 +268,17 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
         CVirtualContainerMgr::Shared()->IsVirtualContainer(pUPnPBrowse->GetObjectIDAsInt(),
                                                            pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice);
   
-  string sDevice = " and DEVICE is NULL ";
+  string sDevice = "DEVICE is NULL ";
   if(pUPnPBrowse->m_bVirtualContainer)
-    sDevice = " and DEVICE = '" + pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice + "' ";
+    sDevice = "DEVICE = '" + pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice + "' ";
                           
   // get container type
   OBJECT_TYPE nContainerType = CONTAINER_STORAGE_FOLDER;
   if(pUPnPBrowse->GetObjectIDAsInt() > 0) {
     
     if(!pUPnPBrowse->m_bVirtualContainer) {
-      sSql << "select TYPE from OBJECTS where ID = " << pUPnPBrowse->GetObjectIDAsInt() << sDevice;
+      sSql << "select TYPE from OBJECTS " <<
+        "where ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " << sDevice;
     }   
 
     pDb->Select(sSql.str());        
@@ -294,8 +295,11 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
     bNeedCount = true;
   }
   else if(nContainerType < ITEM) {
-    sSql << "select count(*) as COUNT from OBJECTS where " <<
-            "PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << sDevice;
+    sSql <<
+      "select count(*) as COUNT " <<
+      "from MAP_OBJECTS" <<
+      "where PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " << sDevice;
+    
     bNeedCount = true;
   }
 
@@ -348,11 +352,16 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   // sub folders
   else
   {
-    sSql << "select " << 
-      "  OBJECT_ID, PARENT_ID, PATH, FILE_NAME, TYPE, MIME_TYPE " <<
-      "from OBJECTS " <<
-      "where OBJECT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << sDevice;
-    
+    sSql <<
+      "select " <<
+      "  m.OBJECT_ID, m_PARENT_ID, " <<
+      "  o.PATH, o.FILE_NAME, o.TYPE, o.MIME_TYPE " <<
+      "from " <<
+      "  OBJECTS o, MAP_OBJECTS m " <<
+      "where " <<
+      "  m.OBJECT_ID = o.OBJECT_ID and " <<
+      "  o.OBJECT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " <<
+      "  m." << sDevice;
     
     pDb->Select(sSql.str());
     sSql.str("");                
@@ -390,14 +399,15 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
                             
   pUPnPBrowse->m_bVirtualContainer = CVirtualContainerMgr::Shared()->HasVirtualChildren(pUPnPBrowse->GetObjectIDAsInt(), pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice);	
  
-  string sDevice = " and DEVICE is NULL ";
+  string sDevice = "DEVICE is NULL ";
   if(pUPnPBrowse->m_bVirtualContainer)
-    sDevice = " and DEVICE = '" + pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice + "' ";
+    sDevice = "DEVICE = '" + pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice + "' ";
                             
   // get container type
   if(pUPnPBrowse->GetObjectIDAsInt() > 0) {
     
-		sSql << "select TYPE from OBJECTS where OBJECT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << sDevice;   
+		sSql << "select TYPE from OBJECTS " <<
+      "where OBJECT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " << sDevice;   
 
     pDb->Select(sSql.str()); 
     if(!pDb->Eof()) {
@@ -416,10 +426,9 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
             pUPnPBrowse->GetObjectIDAsInt();
   }
   else {
-    sSql << "select count(*) as COUNT from OBJECTS where PARENT_ID = " <<
-            pUPnPBrowse->GetObjectIDAsInt() << sDevice;
+    sSql << "select count(*) as COUNT from MAP_OBJECTS where PARENT_ID = " <<
+            pUPnPBrowse->GetObjectIDAsInt() << " and " << sDevice;
   }
-
 
                             
   
@@ -451,17 +460,17 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
 			"  d.A_TRACK_NO, d.AV_BITRATE, d.A_SAMPLERATE, d.A_CHANNELS, " <<
 			"  d.AV_DURATION, d.SIZE " <<
       "from " <<
-      "  OBJECTS o " <<
+      "  OBJECTS o, MAP_OBJECTS m" <<
       "  left join OBJECT_DETAILS d on (d.ID = o.DETAIL_ID) " <<
       "where " <<
-      "  o.PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " " << sDevice <<
+      "  o.OBJECT_ID = m.OBJECT_ID and " <<
+      "  m.PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " << 
+      "  m." << sDevice <<
       "order by " <<
       "  o.TYPE, o.FILE_NAME ";
       
       cout << sSql.str() << endl;
-  }                            
-                            
- 
+  } 
   
   
   if((pUPnPBrowse->m_nRequestedCount > 0) || (pUPnPBrowse->m_nStartingIndex > 0))
@@ -556,22 +565,20 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
   CContentDatabase* pDb = new CContentDatabase();
   stringstream sSql;
   
-  string sDevice = " and DEVICE is NULL ";
-  if(((CUPnPBrowse*)pUPnPBrowse)->m_bVirtualContainer)
-    sDevice = " and DEVICE = '" + pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice + "' ";
-                                                    
-                                                  
-  
+  string sDevice = "DEVICE is NULL ";
+  if(CVirtualContainerMgr::Shared()->HasVirtualChildren(pSQLResult->GetValueAsUInt("OBJECT_ID"), pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice))
+    sDevice = "DEVICE = '" + pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice + "' ";                                                    
+
   if(p_nContainerType == CONTAINER_PLAYLIST_CONTAINER) {
     sSql << "select count(*) as COUNT from PLAYLIST_ITEMS " <<
             "where PLAYLIST_ID = " << pSQLResult->GetValue("OBJECT_ID") << ";"; 
   }
   else {
-    sSql << "select count(*) as COUNT from OBJECTS " <<
-      "where PARENT_ID = " << pSQLResult->GetValue("OBJECT_ID") << sDevice;
+    sSql << "select count(*) as COUNT from MAP_OBJECTS " <<
+      "where PARENT_ID = " << pSQLResult->GetValue("OBJECT_ID") << " and " << sDevice;
   }
 
-  cout << __FILE__ << __LINE__ << " " << sSql.str() << endl;  
+  //cout << __FILE__ << __LINE__ << " " << sSql.str() << endl;  
   
   pDb->Select(sSql.str());
   sChildCount = pDb->GetResult()->GetValue("COUNT");
@@ -608,7 +615,6 @@ dc:rights dc O */
     /* id */  
     char szObjId[11];    
     unsigned int nObjId = pSQLResult->GetValueAsUInt("OBJECT_ID");
-    cout << "OBJ2: " << nObjId << endl;
     sprintf(szObjId, "%010X", nObjId);
     
   

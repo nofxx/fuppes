@@ -167,7 +167,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 				"  ID INTEGER PRIMARY KEY AUTOINCREMENT, "
 				"  OBJECT_ID INTEGER NOT NULL, "
         "  DETAIL_ID INTEGER DEFAULT NULL, "
-        "  PARENT_ID INTEGER NOT NULL, "
+        //"  PARENT_ID INTEGER NOT NULL, "
 				"  TYPE INTEGER NOT NULL, "
         "  DEVICE TEXT DEFAULT NULL, "  
 				"  PATH TEXT NOT NULL, "
@@ -193,9 +193,17 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 				"  DATE TEXT, "
 				"  IV_HEIGHT INTEGER, "
 				"  IV_WIDTH INTEGER, "
-        "  SIZE INTEGER DEFAULT 0 "                
+        "  SIZE INTEGER DEFAULT 0 "          
 				");"))   
 			return false;    
+    
+    if(!Execute("CREATE TABLE MAP_OBJECTS ( "
+        "  ID INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "  OBJECT_ID INTEGER NOT NULL, "
+        "  PARENT_ID INTEGER NOT NULL, "
+        "  DEVICE TEXT "
+        ");"))
+      return false;                
     
 		/*if(!Execute("CREATE TABLE OBJECTS ("
 				"  ID INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -503,7 +511,7 @@ void ParseM3UPlaylist(CSelectResult* pResult);
 void ParsePLSPlaylist(CSelectResult* pResult);
 
 
-unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName);
+unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::string p_sFileName);
 unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL);
 
 void CContentDatabase::BuildDB()
@@ -535,7 +543,7 @@ unsigned int GetObjId()
   return ++g_nObjId;
 }
 
-void DbScanDir(std::string p_sDirectory, long long int p_nParentId)
+void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_nParentId)
 {
   #ifdef WIN32  
   // append trailing backslash if neccessary
@@ -612,27 +620,34 @@ void DbScanDir(std::string p_sDirectory, long long int p_nParentId)
           
           unsigned int nObjId = GetObjId();
           
+          pDb->BeginTransaction();
+          
           sSql << "insert into objects ( " <<
-            "  OBJECT_ID, PARENT_ID, TYPE, " <<
+            "  OBJECT_ID, TYPE, " <<
             "  PATH, FILE_NAME, TITLE) " <<
             "values ( " << 
-               nObjId << ", " << p_nParentId << ", " << 
+               nObjId << ", " <<  
                CONTAINER_STORAGE_FOLDER << 
                ", '" << SQLEscape(sTmp.str()) << "', '" <<
                sTmpFileName << "', '" <<
                sTmpFileName <<
             "');";
 
-          if(CContentDatabase::Shared()->Insert(sSql.str()) == -1) {
-            cout << "ERROR: " << sSql.str() << endl;
-          }
+          pDb->Insert(sSql.str());          
+          
+          sSql.str("");
+          sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID) " <<
+                  "values (" << nObjId << ", " << p_nParentId << ")";          
+          pDb->Insert(sSql.str());
+          
+          pDb->Commit();
           
           // recursively scan subdirectories
-          DbScanDir(sTmp.str(), nObjId);          
+          DbScanDir(pDb, sTmp.str(), nObjId);          
         }
         else if(IsFile(sTmp.str()) && CFileDetails::Shared()->IsSupportedFileExtension(sExt))
         {
-          InsertFile(p_nParentId, sTmp.str());
+          InsertFile(pDb, p_nParentId, sTmp.str());
         }   
         
         sTmp.str("");
@@ -712,16 +727,14 @@ unsigned int InsertVideoFile(CContentDatabase* pDb, std::string p_sFileName)
   return pDb->Insert(sSql.str());
 } 
 
-unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
+unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::string p_sFileName)
 {
   OBJECT_TYPE nObjectType = CFileDetails::Shared()->GetObjectType(p_sFileName);  
   if(nObjectType == OBJECT_TYPE_UNKNOWN)
     return false;
   
-  CContentDatabase* pDb = new CContentDatabase(); 
   pDb->BeginTransaction();
-  
-    
+      
   // we insert file details first to get the details ID
   unsigned int nDetailId = 0;
   switch(nObjectType)
@@ -757,23 +770,29 @@ unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
   sTmpFileName = SQLEscape(sTmpFileName);  
   
   
+  unsigned int nObjId = GetObjId();
+  
   stringstream sSql;
   sSql << "insert into objects (" <<
     "  OBJECT_ID, DETAIL_ID, TYPE, " <<
-    "  PARENT_ID, PATH, FILE_NAME, " <<
+    "  PATH, FILE_NAME, " <<
     "  TITLE, MIME_TYPE) values (" <<
-       GetObjId() << ", " <<
+       nObjId << ", " <<
        nDetailId << ", " <<   
        nObjectType << ", " <<
-       p_nParentId << ", " <<
        "'" << SQLEscape(p_sFileName) << "', " << 
        "'" << sTmpFileName << "', " << 
        "'" << sTmpFileName << "', " << 
        "'" << CFileDetails::Shared()->GetMimeType(p_sFileName, false) << "');";
                
-  pDb->Insert(sSql.str());
-  pDb->Commit();
-  delete pDb;
+  pDb->Insert(sSql.str());  
+  sSql.str("");
+  
+  sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID) " <<
+            "values (" << nObjId << ", " << p_nParentId << ")";  
+  pDb->Insert(sSql.str());  
+  
+  pDb->Commit();  
 
 	return 0;         
 }
@@ -872,7 +891,7 @@ unsigned int GetObjectIDFromFileName(std::string p_sFileName)
   
   unsigned int nResult = 0;
   stringstream sSQL;
-  sSQL << "select ID from OBJECTS where PATH = \"" << p_sFileName << "\"";
+  sSQL << "select OBJECT_ID from OBJECTS where PATH = \"" << p_sFileName << "\" and DEVICE is NULL";
   
   pDB->Select(sSQL.str());
   if(!pDB->Eof())
@@ -952,6 +971,8 @@ void ParseM3UPlaylist(CSelectResult* pResult)
   bool bIsLocalFile;
   int nPlsPosi = 0;
   
+  CContentDatabase* pDb = new CContentDatabase();
+  
   RegEx rxLines("(.*)\n", PCRE_CASELESS);
   RegEx rxFile("^[#EXTM3U|#EXTINF]", PCRE_CASELESS);  
   if(rxLines.Search(sContent.c_str()))
@@ -973,7 +994,7 @@ void ParseM3UPlaylist(CSelectResult* pResult)
         if(nObjectID == 0)
         {
           //cout << "file does not exist in db" << endl;        
-          nObjectID = InsertFile(nPlaylistID, sFileName);       
+          nObjectID = InsertFile(pDb, nPlaylistID, sFileName);       
         }            
       } /* if(bIsLocalFile && FileExists(sFileName)) */
       else if(!bIsLocalFile)
@@ -989,6 +1010,8 @@ void ParseM3UPlaylist(CSelectResult* pResult)
       
     }while(rxLines.SearchAgain());
   }
+  
+  delete pDb;
 }
 
 void ParsePLSPlaylist(CSelectResult* pResult)
@@ -997,6 +1020,9 @@ void ParsePLSPlaylist(CSelectResult* pResult)
   RegEx rxNumber("NumberOfEntries=(\\d+)", PCRE_CASELESS);
   if(!rxNumber.Search(sContent.c_str()))
     return;
+  
+  CContentDatabase* pDb = new CContentDatabase();
+
   
   int nEntryCount = atoi(rxNumber.Match(1));  
   for(int i = 0; i < nEntryCount; i++)
@@ -1049,7 +1075,7 @@ void ParsePLSPlaylist(CSelectResult* pResult)
       if(nObjectID == 0)
       {
         //cout << "file does not exist in db" << endl;        
-        nObjectID = InsertFile(nPlaylistID, sFileName);       
+        nObjectID = InsertFile(pDb, nPlaylistID, sFileName);       
       }            
     } /* if(bIsLocalFile && FileExists(sFileName)) */    
     
@@ -1061,6 +1087,8 @@ void ParsePLSPlaylist(CSelectResult* pResult)
     }
     
   } /* for(int i = 0; i < nEntryCount; i++) */
+  
+  delete pDb;
 }
 
 
@@ -1068,43 +1096,49 @@ fuppesThreadCallback BuildLoop(void* arg)
 {
   CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] creating database. this may take a while.", __FILE__, __LINE__, false);
   
-  CContentDatabase::Shared()->Execute("delete from objects");
-  CContentDatabase::Shared()->Execute("delete from playlist_items");
+  CContentDatabase::Shared()->Execute("delete from OBJECTS");
+  CContentDatabase::Shared()->Execute("delete from OBJECT_DETAILS");
+  CContentDatabase::Shared()->Execute("delete from MAP_OBJECTS");  
+  //CContentDatabase::Shared()->Execute("delete from playlist_items");
 	/*CContentDatabase::Shared()->Execute("delete from audio_items");
 	CContentDatabase::Shared()->Execute("delete from video_items");
 	CContentDatabase::Shared()->Execute("delete from image_items");*/
-	CContentDatabase::Shared()->Execute("delete from object_details");
-	CContentDatabase::Shared()->Execute("delete from VIRTUAL_CONTAINERS");
-	CContentDatabase::Shared()->Execute("delete from MAP_ITEMS2VC");
+	
+	//CContentDatabase::Shared()->Execute("delete from VIRTUAL_CONTAINERS");
+	//CContentDatabase::Shared()->Execute("delete from MAP_ITEMS2VC");
     
+  CContentDatabase* pDb = new CContentDatabase();
+  
   for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
   {
     if(DirectoryExists(CSharedConfig::Shared()->GetSharedDir(i)))
     {  
-      //if(CSharedConfig::Shared()->GetDisplaySettings().bShowDirNamesInFirstLevel)
-      //{      
-        string sFileName;
-        ExtractFolderFromPath(CSharedConfig::Shared()->GetSharedDir(i), &sFileName);          
+      string sFileName;
+      ExtractFolderFromPath(CSharedConfig::Shared()->GetSharedDir(i), &sFileName);          
         
-        stringstream sSql;
-        sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME) values ";
-        sSql << "(" << CONTAINER_STORAGE_FOLDER << ", ";
-        sSql << 0 << ", ";
-        sSql << "'" << CSharedConfig::Shared()->GetSharedDir(i) << "', ";
-        sSql << "'" << sFileName << "');";
-        
-				//cout << sSql.str() << endl; fflush(stdout);
-				
-        //CContentDatabase::Shared()->Lock();
-        long long int nRowId = CContentDatabase::Shared()->Insert(sSql.str());
-        //CContentDatabase::Shared()->Unlock();
-        DbScanDir(CSharedConfig::Shared()->GetSharedDir(i), nRowId);
-      /*}
-      else
-      {
-        DbScanDir(CSharedConfig::Shared()->GetSharedDir(i), 0);        
-      }*/
+      pDb->BeginTransaction();
       
+      unsigned int nObjId = GetObjId();
+      
+      stringstream sSql;
+      sSql << 
+        "insert into OBJECTS (OBJECT_ID, TYPE, PATH, FILE_NAME) values " <<
+        "(" << nObjId << 
+        ", " << CONTAINER_STORAGE_FOLDER << 
+        ", '" << CSharedConfig::Shared()->GetSharedDir(i) << "'" <<
+        ", '" << sFileName << "');";
+        
+		  pDb->Insert(sSql.str());
+    
+      sSql.str("");
+      sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID) " <<
+        "values (" << nObjId << ", 0)";
+      
+      pDb->Insert(sSql.str());      
+      
+      pDb->Commit();
+      
+      DbScanDir(pDb, CSharedConfig::Shared()->GetSharedDir(i), nObjId);      
     }
     else {      
       CSharedLog::Shared()->Log(L_WARNING, "shared directory: \"" + CSharedConfig::Shared()->GetSharedDir(i) + "\" not found", __FILE__, __LINE__, false);
@@ -1115,6 +1149,8 @@ fuppesThreadCallback BuildLoop(void* arg)
   BuildPlaylists();
   //cout << "done parsing playlists" << endl;  
     
+  delete pDb;
+  
   // import iTunes db
   CiTunesImporter* pITunes = new CiTunesImporter();
   pITunes->Import("/home/ulrich/Desktop/iTunes.xml");
