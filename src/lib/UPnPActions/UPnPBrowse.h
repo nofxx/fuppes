@@ -33,7 +33,7 @@ typedef enum UPNP_BROWSE_FLAG
   UPNP_BROWSE_FLAG_METADATA
 }UPNP_BROWSE_FLAG;
 
-class CUPnPBrowse: public CUPnPAction
+class CUPnPBrowse: public CUPnPBrowseSearchBase
 {
   public:
     CUPnPBrowse(std::string p_sMessage);
@@ -44,10 +44,7 @@ class CUPnPBrowse: public CUPnPAction
 
     std::string      m_sObjectID;
     UPNP_BROWSE_FLAG m_nBrowseFlag;
-    //std::string      m_sFilter;
-    unsigned int     m_nStartingIndex;
-    unsigned int     m_nRequestedCount;
-    std::string      m_sSortCriteria;
+
     bool             m_bVirtualContainer;
 };
 

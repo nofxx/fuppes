@@ -1,5 +1,5 @@
 /***************************************************************************
- *            UPnPSearch.h
+ *            UPnPAction.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -20,24 +20,23 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
-#ifndef _UPNPSEARCH_H
-#define _UPNPSEARCH_H
 
 #include "UPnPAction.h"
 
-class CUPnPSearch: public CUPnPBrowseSearchBase
+CUPnPBrowseSearchBase::CUPnPBrowseSearchBase(UPNP_DEVICE_TYPE p_nTargetDeviceType, int p_nActionType, std::string p_sContent)
+  :CUPnPAction(p_nTargetDeviceType, p_nActionType, p_sContent)
 {
-  public:
-	  CUPnPSearch(std::string p_sMessage);
-		~CUPnPSearch();
-		
-		std::string BuildSQL(bool p_bLimit = false);
-	  unsigned int GetContainerIdAsUInt();
-  
-  
-    std::string      m_sContainerID;
-    std::string      m_sSearchCriteria;  
-};
+}
 
-#endif // _UPNPSEARCH_H
+bool CUPnPBrowseSearchBase::IncludeProperty(std::string p_sProperty)
+{
+  if(m_sFilter.compare("*") == 0) {
+    return true;
+  }
+  
+  if(m_sFilter.find(p_sProperty) == std::string::npos) {
+    return true;
+  }
+  
+  return false;
+}

@@ -37,7 +37,7 @@ class CVirtualContainerMgr
 	  static CVirtualContainerMgr* Shared();
 				
     bool IsVirtualContainer(unsigned int p_nContainerId, std::string p_sDevice);    
-    bool HasVirtualChildren(unsigned int p_nParentId, std::string p_sDevice, bool* p_bContainerChildren);
+    bool HasVirtualChildren(unsigned int p_nParentId, std::string p_sDevice);
 	  int  GetChildCount(unsigned int p_nParentId, std::string p_sDevice);
   
     void RebuildContainerList();

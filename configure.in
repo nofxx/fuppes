@@ -338,7 +338,7 @@ if test "x$transcoding" = "xyes"; then
 	  AH_TEMPLATE([HAVE_FLAC_FILEDECODER], [])
 	  AH_TEMPLATE([HAVE_FLAC], [])
     AC_ARG_WITH(flac-dir, AC_HELP_STRING([--with-flac-dir=path],
-            [include path of FLAC/file_decoder.h (flac <= 1.0.2) or FLAC/stream_decoder.h (flac >= 1.0.3)]),
+            [include path of FLAC/file_decoder.h (flac <= 1.1.2) or FLAC/stream_decoder.h (flac >= 1.1.3)]),
             [
                 if test "x$withval" != "x"; then
                   FLAC_H_DIR="$withval/"

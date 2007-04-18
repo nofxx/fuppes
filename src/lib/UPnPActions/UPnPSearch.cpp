@@ -31,7 +31,7 @@
 using namespace std;
 
 CUPnPSearch::CUPnPSearch(std::string p_sMessage):
-  CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_SEARCH, p_sMessage)
+  CUPnPBrowseSearchBase(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_SEARCH, p_sMessage)
 {
 }                                     
 

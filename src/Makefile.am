@@ -61,6 +61,7 @@ libfuppes_la_SOURCES = \
 	lib/UPnPDevice.h\
 	lib/UPnPService.h\
   lib/UPnPActions/UPnPAction.h\
+  lib/UPnPActions/UPnPAction.cpp\
   lib/UPnPActions/UPnPActionFactory.h\
   lib/UPnPActions/UPnPBrowse.h\
   lib/UPnPActions/UPnPSearch.h\

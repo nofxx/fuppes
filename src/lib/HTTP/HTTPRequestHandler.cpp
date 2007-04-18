@@ -28,6 +28,7 @@
 #include "../GENA/SubscriptionMgr.h"
 #include "../SharedLog.h"
 #include "../ContentDirectory/FileDetails.h"
+#include "../ContentDirectory/VirtualContainerMgr.h"
 
 #include <iostream>
 #include <sstream>
@@ -112,7 +113,7 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
            )))
   {
     string sObjectId = TruncateFileExt(sRequest.substr(24, sRequest.length()));
-    bResult = HandleItemRequest(sObjectId, pRequest->GetMessageType(), pResponse);    
+    bResult = HandleItemRequest(sObjectId, pRequest, pResponse);    
   }
   
   /* set remaining response values */
@@ -150,7 +151,7 @@ bool CHTTPRequestHandler::HandleGENAMessage(CHTTPMessage* pRequest, CHTTPMessage
   return true;
 }
 
-bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, HTTP_MESSAGE_TYPE p_nRequestType, CHTTPMessage* pResponse)
+bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {
   std::stringstream sSql;
   OBJECT_TYPE       nObjectType;
@@ -160,7 +161,12 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, HTTP_MESSAG
   CContentDatabase* pDb         = new CContentDatabase();  
   bool              bResult     = false;  
   
-  sSql << "select * from objects where ID = " << HexToInt(p_sObjectId) << ";";  
+  
+  string sDevice = " and DEVICE is NULL ";
+  if(CVirtualContainerMgr::Shared()->IsVirtualContainer(HexToInt(p_sObjectId), pRequest->GetDeviceSettings()->m_sVirtualFolderDevice))
+    sDevice = " and DEVICE = '" + pRequest->GetDeviceSettings()->m_sVirtualFolderDevice + "' ";
+  
+  sSql << "select * from OBJECTS where OBJECT_ID = " << HexToInt(p_sObjectId) << sDevice;  
   pDb->Select(sSql.str());
   
   if(!pDb->Eof())
@@ -181,10 +187,10 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, HTTP_MESSAG
         CSharedLog::Shared()->Log(L_EXTENDED, "transcode " + sPath, __FILE__, __LINE__);        
      
         sMimeType = CFileDetails::GetMimeType(sPath, true);
-        if(p_nRequestType == HTTP_MESSAGE_TYPE_GET) {          
+        if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {          
           pResponse->TranscodeContentFromFile(sPath);
         }
-        else if(p_nRequestType == HTTP_MESSAGE_TYPE_HEAD) {
+        else if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) {
           // mark the head response as chunked so
           // the correct header will be build
           pResponse->SetIsBinary(true);

@@ -2,16 +2,15 @@ Version 0.7.2
   * initial support for virtual containers
   * initial UPnP Search support
   * initial support for device specific settings
-  * initial ImageMagick support
-    * read image properties
-    * image rescaling 
+  * initial ImageMagick support (read image properties)
   * initial ffmpeg support (read video properties)
   * initial XBox 360 support
     (Big thanks to Justin Maggard <jmaggard at users.sourceforge.net>)
   * initial iTunes.xml support
   * win32 gui (more or less ;))
+  
   * split up fuppes (command line) and fuppesd (daemon)
-
+  * support for FLAC >= 1.1.3 (api changed)
   * libiconv optional
   * fixed ip address detection
   * fixed crash if fuppes config is malformed
@@ -20,8 +19,8 @@ Version 0.7.2
 	  (implemented detection of second iconv param)
   * HTTP client requests will no longer block	the main thread
   * fixed bug #1669624
-	 (thanks to Jochen <jochen2 at users.sourceforge.net> and 
-	 Justin Maggard <jmaggard at users.sourceforge.net>)
+	  (thanks to Jochen <jochen2 at users.sourceforge.net> and 
+    Justin Maggard <jmaggard at users.sourceforge.net>)
   * fixed extraction of folder name from shared directory
     when containing a trailing slash or backslash
 

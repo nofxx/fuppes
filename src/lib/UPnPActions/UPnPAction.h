@@ -73,15 +73,26 @@ class CUPnPAction
     CDeviceSettings* GetDeviceSettings() { return m_pDeviceSettings; }
 	  void SetDeviceSettings(CDeviceSettings* pSettings) { m_pDeviceSettings = pSettings; }
 
-  //protected:
-  	std::string      m_sFilter;
-
   private:
     UPNP_DEVICE_TYPE m_nTargetDeviceType;
     int              m_nActionType;
     std::string      m_sContent;
 		
 		CDeviceSettings*   m_pDeviceSettings;
+};
+
+class CUPnPBrowseSearchBase: public CUPnPAction
+{
+  protected:
+    CUPnPBrowseSearchBase(UPNP_DEVICE_TYPE p_nTargetDeviceType, int p_nActionType, std::string p_sContent);
+    
+  public:
+    bool IncludeProperty(std::string p_sProperty);  
+  
+    std::string      m_sFilter;
+    unsigned int     m_nStartingIndex;
+    unsigned int     m_nRequestedCount;
+    std::string      m_sSortCriteria;   
 };
 
 #endif // _UPNPACTION_H

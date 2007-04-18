@@ -41,7 +41,7 @@ class CHTTPRequestHandler
 
     bool HandleGENAMessage(CHTTPMessage* pRequest, CHTTPMessage* pResponse);
   
-    bool HandleItemRequest(std::string p_sObjectId, HTTP_MESSAGE_TYPE p_nRequestType, CHTTPMessage* pResponse);
+    bool HandleItemRequest(std::string p_sObjectId, CHTTPMessage* pRequest, CHTTPMessage* pResponse);
 };
 
 #endif // _HTTPREQUESTHANDLER_H

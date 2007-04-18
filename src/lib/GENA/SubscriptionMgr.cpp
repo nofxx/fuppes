@@ -165,6 +165,9 @@ CONTENT-TYPE: text/html
 */    
     
       break;
+    
+    default:
+      break;
   }
   
   this->GetHTTPClient()->AsyncNotify(pNotification);

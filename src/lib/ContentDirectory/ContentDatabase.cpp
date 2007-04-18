@@ -90,11 +90,6 @@ unsigned int CSelectResult::GetValueAsUInt(std::string p_sFieldName)
   return nResult;
 }
 
-
-unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName);
-unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL);
-
-
 CContentDatabase* CContentDatabase::m_Instance = 0;
 
 CContentDatabase* CContentDatabase::Shared()
@@ -168,7 +163,41 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
   
   if(bIsNewDb)
   {
-		if(!Execute("CREATE TABLE OBJECTS ("
+    if(!Execute("CREATE TABLE OBJECTS ( "
+				"  ID INTEGER PRIMARY KEY AUTOINCREMENT, "
+				"  OBJECT_ID INTEGER NOT NULL, "
+        "  DETAIL_ID INTEGER DEFAULT NULL, "
+        "  PARENT_ID INTEGER NOT NULL, "
+				"  TYPE INTEGER NOT NULL, "
+        "  DEVICE TEXT DEFAULT NULL, "  
+				"  PATH TEXT NOT NULL, "
+				"  FILE_NAME TEXT DEFAULT NULL, "
+				"  TITLE TEXT DEFAULT NULL, "
+				"  MD5 TEXT DEFAULT NULL, "
+				"  MIME_TYPE TEXT DEFAULT NULL "				
+				//"  UPDATE_ID INTEGER DEFAULT 0"
+				");"))   
+			return false;
+    
+    if(!Execute("CREATE TABLE OBJECT_DETAILS ( "
+        "  ID INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "  AV_BITRATE INTEGER, "
+				"  AV_DURATION TEXT, "
+				"  A_ALBUM TEXT, "
+				"  A_ARTIST TEXT, "
+				"  A_CHANNELS INTEGER, "
+				"  A_DESCRIPTION TEXT, "
+				"  A_GENRE TEXT, "
+				"  A_SAMPLERATE INTEGER, "
+				"  A_TRACK_NO INTEGER, "
+				"  DATE TEXT, "
+				"  IV_HEIGHT INTEGER, "
+				"  IV_WIDTH INTEGER, "
+        "  SIZE INTEGER DEFAULT 0 "                
+				");"))   
+			return false;    
+    
+		/*if(!Execute("CREATE TABLE OBJECTS ("
 				"  ID INTEGER PRIMARY KEY AUTOINCREMENT,"
 				"  PARENT_ID INTEGER NOT NULL DEFAULT 0,"
 				"  TYPE INTEGER NOT NULL,"
@@ -208,7 +237,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 			return false;
 		
 		if(!Execute("CREATE UNIQUE INDEX IDX_OBJECT_ID ON OBJECT_DETAILS(OBJECT_ID);"))
-      return false;
+      return false; */
 		
 		
 		/*if(!Execute("CREATE TABLE AUDIO_ITEMS ( "
@@ -238,7 +267,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 				"BITRATE INTEGER );"))
 		  return false; */
     
-    string sTablePlaylistItems =
+   /* string sTablePlaylistItems =
       "create table PLAYLIST_ITEMS ("
       "  ID INTEGER PRIMARY KEY AUTOINCREMENT, "
       "  PLAYLIST_ID INTEGER NOT NULL, " // id des playlist objektes OBJECTS.ID
@@ -254,7 +283,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
     
     if(!Execute("CREATE TABLE MAP_ITEMS2VC (ID INTEGER PRIMARY KEY, OBJECT_ID INTEGER, VCONTAINER_ID INTEGER, DEVICE TEXT);"))
        return false;
-    
+    */
   }
   else
   {
@@ -473,6 +502,10 @@ void ParsePlaylist(CSelectResult* pResult);
 void ParseM3UPlaylist(CSelectResult* pResult);
 void ParsePLSPlaylist(CSelectResult* pResult);
 
+
+unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName);
+unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL);
+
 void CContentDatabase::BuildDB()
 {     
   if(CContentDatabase::Shared()->IsRebuilding())
@@ -493,6 +526,13 @@ void CContentDatabase::BuildDB()
 bool CContentDatabase::IsRebuilding()
 {
   return g_bIsRebuilding;
+}
+
+unsigned int g_nObjId = 0;
+
+unsigned int GetObjId()
+{
+  return ++g_nObjId;
 }
 
 void DbScanDir(std::string p_sDirectory, long long int p_nParentId)
@@ -564,21 +604,31 @@ void DbScanDir(std::string p_sDirectory, long long int p_nParentId)
           sTmpFileName = SQLEscape(sTmpFileName);
           
           stringstream sSql;
-          sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME) values ";
+          /*sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME) values ";
           sSql << "(" << CONTAINER_STORAGE_FOLDER << ", ";
           sSql << p_nParentId << ", ";
           sSql << "'" << SQLEscape(sTmp.str()) << "', ";
-          sSql << "'" << sTmpFileName << "');";
-            
+          sSql << "'" << sTmpFileName << "');";*/
           
-          //CContentDatabase::Shared()->Lock();
-          long long int nRowId = CContentDatabase::Shared()->Insert(sSql.str());
-          //CContentDatabase::Shared()->Unlock();
-          if(nRowId == -1)
+          unsigned int nObjId = GetObjId();
+          
+          sSql << "insert into objects ( " <<
+            "  OBJECT_ID, PARENT_ID, TYPE, " <<
+            "  PATH, FILE_NAME, TITLE) " <<
+            "values ( " << 
+               nObjId << ", " << p_nParentId << ", " << 
+               CONTAINER_STORAGE_FOLDER << 
+               ", '" << SQLEscape(sTmp.str()) << "', '" <<
+               sTmpFileName << "', '" <<
+               sTmpFileName <<
+            "');";
+
+          if(CContentDatabase::Shared()->Insert(sSql.str()) == -1) {
             cout << "ERROR: " << sSql.str() << endl;
+          }
           
           // recursively scan subdirectories
-          DbScanDir(sTmp.str(), nRowId);          
+          DbScanDir(sTmp.str(), nObjId);          
         }
         else if(IsFile(sTmp.str()) && CFileDetails::Shared()->IsSupportedFileExtension(sExt))
         {
@@ -594,7 +644,7 @@ void DbScanDir(std::string p_sDirectory, long long int p_nParentId)
   #endif         
 }
 
-unsigned int InsertAudioFile(unsigned int p_nObjectId, std::string p_sFileName)
+unsigned int InsertAudioFile(CContentDatabase* pDb, std::string p_sFileName)
 {
 	struct SMusicTrack TrackInfo; 
 	if(!CFileDetails::Shared()->GetMusicTrackDetails(p_sFileName, &TrackInfo))
@@ -603,9 +653,8 @@ unsigned int InsertAudioFile(unsigned int p_nObjectId, std::string p_sFileName)
 	stringstream sSql;
 	sSql << 
 	  "insert into OBJECT_DETAILS " <<
-		"(OBJECT_ID, A_ARTIST, A_ALBUM, A_TRACK_NO, A_GENRE, AV_DURATION, DATE, A_CHANNELS, AV_BITRATE, A_SAMPLERATE) " <<
+		"(A_ARTIST, A_ALBUM, A_TRACK_NO, A_GENRE, AV_DURATION, DATE, A_CHANNELS, AV_BITRATE, A_SAMPLERATE) " <<
 		"values (" <<
-		p_nObjectId << ", " <<
 		//"'" << SQLEscape(TrackInfo.mAudioItem.sTitle) << "', " <<
 		"'" << SQLEscape(TrackInfo.sArtist) << "', " <<
 		"'" << SQLEscape(TrackInfo.sAlbum) << "', " <<
@@ -618,25 +667,11 @@ unsigned int InsertAudioFile(unsigned int p_nObjectId, std::string p_sFileName)
 		TrackInfo.mAudioItem.nSampleRate << ")";
 		
 	//cout << sSql.str() << endl;
-		
-	CContentDatabase* pDB = new CContentDatabase();          
-  unsigned int nRowId = pDB->Insert(sSql.str());
 	
-	if(nRowId > 0) {
-	  sSql.str("");
-		sSql << 
-		  "update OBJECTS " <<
-			"set TITLE = '" << SQLEscape(TrackInfo.mAudioItem.sTitle) << "' " <<
-			"where ID = " << p_nObjectId << ";";
-		pDB->Execute(sSql.str());
-	}
-	
-  delete pDB;
-
-	return nRowId;
+  return pDb->Insert(sSql.str());
 }
 
-unsigned int InsertImageFile(unsigned int p_nObjectId, std::string p_sFileName)
+unsigned int InsertImageFile(CContentDatabase* pDb, std::string p_sFileName)
 {
   struct SImageItem ImageItem;
 	if(!CFileDetails::Shared()->GetImageDetails(p_sFileName, &ImageItem))
@@ -645,22 +680,17 @@ unsigned int InsertImageFile(unsigned int p_nObjectId, std::string p_sFileName)
 	stringstream sSql;
 	sSql << 
 	  "insert into OBJECT_DETAILS " <<
-		"(OBJECT_ID, IV_WIDTH, IV_HEIGHT) " <<
+		"(IV_WIDTH, IV_HEIGHT) " <<
 		"values (" <<
-		p_nObjectId << ", " <<
 		ImageItem.nWidth << ", " <<
 		ImageItem.nHeight << ")";
 	
 	//cout << sSql.str() << endl;
-		
-	CContentDatabase* pDB = new CContentDatabase();          
-  unsigned int nRowId = pDB->Insert(sSql.str());
-  delete pDB;
-
-	return nRowId;
+	
+  return pDb->Insert(sSql.str());  
 } 
 
-unsigned int InsertVideoFile(unsigned int p_nObjectId, std::string p_sFileName)
+unsigned int InsertVideoFile(CContentDatabase* pDb, std::string p_sFileName)
 {
   struct SVideoItem VideoItem;
 	if(!CFileDetails::Shared()->GetVideoDetails(p_sFileName, &VideoItem))
@@ -669,9 +699,8 @@ unsigned int InsertVideoFile(unsigned int p_nObjectId, std::string p_sFileName)
 	stringstream sSql;
 	sSql << 
 	  "insert into OBJECT_DETAILS " <<
-		"(OBJECT_ID, IV_WIDTH, IV_HEIGHT, AV_DURATION, SIZE, AV_BITRATE) " <<
+		"(IV_WIDTH, IV_HEIGHT, AV_DURATION, SIZE, AV_BITRATE) " <<
 		"values (" <<
-		p_nObjectId << ", " <<
 		VideoItem.nWidth << ", " <<
 		VideoItem.nHeight << "," <<
 		"'" << VideoItem.sDuration << "', " <<
@@ -679,78 +708,74 @@ unsigned int InsertVideoFile(unsigned int p_nObjectId, std::string p_sFileName)
 		VideoItem.nBitrate << ");";
 	
 	//cout << sSql.str() << endl;
-		
-	CContentDatabase* pDB = new CContentDatabase();          
-  unsigned int nRowId = pDB->Insert(sSql.str());
-  delete pDB;
 
-	return nRowId;
+  return pDb->Insert(sSql.str());
 } 
 
 unsigned int InsertFile(unsigned int p_nParentId, std::string p_sFileName)
 {
-  OBJECT_TYPE nObjectType = CFileDetails::Shared()->GetObjectType(p_sFileName);         
-
-  
+  OBJECT_TYPE nObjectType = CFileDetails::Shared()->GetObjectType(p_sFileName);  
   if(nObjectType == OBJECT_TYPE_UNKNOWN)
-    return false;          
+    return false;
   
+  CContentDatabase* pDb = new CContentDatabase(); 
+  pDb->BeginTransaction();
+  
+    
+  // we insert file details first to get the details ID
+  unsigned int nDetailId = 0;
+  switch(nObjectType)
+  {
+    case ITEM_AUDIO_ITEM_MUSIC_TRACK:     
+		  nDetailId = InsertAudioFile(pDb, p_sFileName); 
+      break;
+		case ITEM_IMAGE_ITEM_PHOTO:
+		  nDetailId = InsertImageFile(pDb, p_sFileName);
+			break;
+		case ITEM_VIDEO_ITEM:
+		case ITEM_VIDEO_ITEM_MOVIE:
+		  nDetailId = InsertVideoFile(pDb, p_sFileName);
+		  break;
+
+    default:
+		  break;
+  }  
+              
+  
+  // insert object  
   string sTmpFileName =  p_sFileName;
+  
   // vdr -> vob
   if(ExtractFileExt(sTmpFileName) == "vdr") {
     sTmpFileName = TruncateFileExt(sTmpFileName) + ".vob";
   }
   
+  // format file name
   int nPathLen = ExtractFilePath(sTmpFileName).length();
-  sTmpFileName = sTmpFileName.substr(nPathLen, sTmpFileName.length() - nPathLen);
-  
-  string sDetails = "";
-
-  
+  sTmpFileName = sTmpFileName.substr(nPathLen, sTmpFileName.length() - nPathLen);  
   sTmpFileName = ToUTF8(sTmpFileName);
   sTmpFileName = SQLEscape(sTmpFileName);  
   
   
   stringstream sSql;
-  sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME, TITLE, MD5, MIME_TYPE) values ";
-  sSql << "(" << nObjectType << ", ";
-  sSql << p_nParentId << ", ";
-  sSql << "'" << SQLEscape(p_sFileName) << "', ";
-  sSql << "'" << sTmpFileName << "', ";
-  sSql << "'" << sTmpFileName << "', ";
-  sSql << "'" << "todo" << "', ";   //sSql << "'" << MD5Sum(p_sFileName) << "', ";  
-  sSql << "'" << CFileDetails::Shared()->GetMimeType(p_sFileName, false) << "');";
-  
-  //cout << sSql.str() << endl;         
-  
-  CContentDatabase* pDB = new CContentDatabase();          
-  unsigned int nRowId = pDB->Insert(sSql.str());
-  delete pDB;
-  
-  if(nRowId == 0) {
-    return 0;
-  }
-	
-	// build file description          
-  switch(nObjectType)
-  {
-    case ITEM_AUDIO_ITEM_MUSIC_TRACK:     
-		  InsertAudioFile(nRowId, p_sFileName); 
-      break;
-		case ITEM_IMAGE_ITEM_PHOTO:
-		  InsertImageFile(nRowId, p_sFileName);
-			break;
-		case ITEM_VIDEO_ITEM:
-		case ITEM_VIDEO_ITEM_MOVIE:
-		  InsertVideoFile(nRowId, p_sFileName);
-		  break;
+  sSql << "insert into objects (" <<
+    "  OBJECT_ID, DETAIL_ID, TYPE, " <<
+    "  PARENT_ID, PATH, FILE_NAME, " <<
+    "  TITLE, MIME_TYPE) values (" <<
+       GetObjId() << ", " <<
+       nDetailId << ", " <<   
+       nObjectType << ", " <<
+       p_nParentId << ", " <<
+       "'" << SQLEscape(p_sFileName) << "', " << 
+       "'" << sTmpFileName << "', " << 
+       "'" << sTmpFileName << "', " << 
+       "'" << CFileDetails::Shared()->GetMimeType(p_sFileName, false) << "');";
+               
+  pDb->Insert(sSql.str());
+  pDb->Commit();
+  delete pDb;
 
-    default:
-		  break;
-  }
-	
-	
-	return nRowId;         
+	return 0;         
 }
 
 unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL)
