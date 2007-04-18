@@ -680,7 +680,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   }
 
   // send loop
-  while((nErr != -1) && ((nRet = p_Response->GetBinContentChunk(szChunk, nReqChunkSize, nOffset)) > 0)) 
+  while((nErr != -1) && (p_Response->GetRangeEnd() > nOffset) && ((nRet = p_Response->GetBinContentChunk(szChunk, nReqChunkSize, nOffset)) > 0)) 
   { 
     // send HTTP header when the first package is ready
     if(nCnt == 0) {
@@ -749,10 +749,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       
       break; 
     } 
-    
-    /*if(!bChunkLoop)
-      break;*/
-      
+
   } // while
 
   delete [] szChunk;    
