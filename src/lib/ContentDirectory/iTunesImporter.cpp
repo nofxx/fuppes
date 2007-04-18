@@ -138,27 +138,14 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
   CContentDatabase* pDb = new CContentDatabase();
   unsigned int nObjId;
     
+  nObjId = pDb->GetObjId();
+  
   pDb->BeginTransaction();
-  sSql << "insert into objects " <<
-          "(TYPE, PARENT_ID, PATH, FILE_NAME, TITLE, MD5, MIME_TYPE) " <<
-          "values (" <<
-          ITEM_AUDIO_ITEM_MUSIC_TRACK << ", " <<
-          -1 << ", " <<
-          "'" << SQLEscape(sFileName) << "', " <<
-          "'" << SQLEscape(track.mAudioItem.sTitle) << "', " <<
-          "'" << SQLEscape(track.mAudioItem.sTitle) << "', " <<
-          "'n/a', " <<
-          "'" << CFileDetails::Shared()->GetMimeType(sFileName, false) << "') ";
-
-  nObjId = pDb->Insert(sSql.str());
-  sSql.str("");
-
     
   sSql << 
 	  "insert into OBJECT_DETAILS " <<
-		"(OBJECT_ID, A_ARTIST, A_ALBUM, A_TRACK_NO, A_GENRE, AV_DURATION, DATE, A_CHANNELS, AV_BITRATE, A_SAMPLERATE) " <<
+		"(A_ARTIST, A_ALBUM, A_TRACK_NO, A_GENRE, AV_DURATION, DATE, A_CHANNELS, AV_BITRATE, A_SAMPLERATE) " <<
 		"values (" <<
-		nObjId << ", " <<
 		//"'" << SQLEscape(TrackInfo.mAudioItem.sTitle) << "', " <<
 		"'" << SQLEscape(track.sArtist) << "', " <<
 		"'" << SQLEscape(track.sAlbum) << "', " <<
@@ -170,7 +157,24 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
 		track.mAudioItem.nBitrate << ", " <<
 		track.mAudioItem.nSampleRate << ")";
     
+  unsigned int nDetailId = pDb->Insert(sSql.str());
+  
+  sSql.str("");
+  sSql << "insert into objects " <<
+          "(OBJECT_ID, DETAIL_ID, TYPE, PATH, FILE_NAME, TITLE, MD5, MIME_TYPE) " <<
+          "values (" <<
+          nObjId << ", " <<
+          nDetailId << ", " <<
+          ITEM_AUDIO_ITEM_MUSIC_TRACK << ", " <<
+          "'" << SQLEscape(sFileName) << "', " <<
+          "'" << SQLEscape(sFileName) << "', " <<
+          "'" << SQLEscape(track.mAudioItem.sTitle) << "', " <<
+          "'n/a', " <<
+          "'" << CFileDetails::Shared()->GetMimeType(sFileName, false) << "') ";
+
   pDb->Insert(sSql.str());
+  
+  
   pDb->Commit();
     
   delete pDb;

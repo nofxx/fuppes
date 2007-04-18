@@ -136,6 +136,8 @@ class CContentDatabase: IFileSystemMonitor
     void BuildDB();
     bool IsRebuilding();// { return m_bIsRebuilding; };
 	
+    unsigned int GetObjId();
+  
 		fuppesThreadMutex m_Mutex;
   private:    
 		void Lock();

@@ -451,7 +451,7 @@ bool CContentDatabase::IsRebuilding()
 
 unsigned int g_nObjId = 0;
 
-unsigned int GetObjId()
+unsigned int CContentDatabase::GetObjId()
 {
   return ++g_nObjId;
 }
@@ -531,7 +531,7 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
           sSql << "'" << SQLEscape(sTmp.str()) << "', ";
           sSql << "'" << sTmpFileName << "');";*/
           
-          unsigned int nObjId = GetObjId();
+          unsigned int nObjId = pDb->GetObjId();
           
           pDb->BeginTransaction();
           
@@ -683,7 +683,7 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
   sTmpFileName = SQLEscape(sTmpFileName);  
   
   
-  unsigned int nObjId = GetObjId();
+  unsigned int nObjId = pDb->GetObjId();
   
   stringstream sSql;
   sSql << "insert into objects (" <<
@@ -1031,7 +1031,7 @@ fuppesThreadCallback BuildLoop(void* arg)
         
       pDb->BeginTransaction();
       
-      unsigned int nObjId = GetObjId();
+      unsigned int nObjId = pDb->GetObjId();
       
       stringstream sSql;
       sSql << 

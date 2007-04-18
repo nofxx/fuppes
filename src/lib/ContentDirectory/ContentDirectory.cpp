@@ -297,7 +297,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   else if(nContainerType < ITEM) {
     sSql <<
       "select count(*) as COUNT " <<
-      "from MAP_OBJECTS" <<
+      "from MAP_OBJECTS " <<
       "where PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " << sDevice;
     
     bNeedCount = true;
