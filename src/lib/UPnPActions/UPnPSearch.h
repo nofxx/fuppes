@@ -32,12 +32,15 @@ class CUPnPSearch: public CUPnPBrowseSearchBase
 	  CUPnPSearch(std::string p_sMessage);
 		~CUPnPSearch();
 		
-		std::string BuildSQL(bool p_bLimit = false);
+		std::string BuildSQL(bool p_bCount = false);
 	  unsigned int GetContainerIdAsUInt();
   
   
     std::string      m_sContainerID;
-    std::string      m_sSearchCriteria;  
+    std::string      m_sSearchCriteria; 
+  
+  private:
+    std::string      m_sParentIds;
 };
 
 #endif // _UPNPSEARCH_H

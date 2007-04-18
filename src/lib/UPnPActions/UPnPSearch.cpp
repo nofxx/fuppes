@@ -24,6 +24,8 @@
 #include "UPnPSearch.h"
 #include "../Common/Common.h"
 #include "../Common/RegEx.h"
+#include "../ContentDirectory/ContentDatabase.h"
+#include "../ContentDirectory/VirtualContainerMgr.h"
 
 #include <sstream>
 #include <iostream>
@@ -33,6 +35,7 @@ using namespace std;
 CUPnPSearch::CUPnPSearch(std::string p_sMessage):
   CUPnPBrowseSearchBase(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_SEARCH, p_sMessage)
 {
+  m_sParentIds = "";
 }                                     
 
 CUPnPSearch::~CUPnPSearch()
@@ -44,7 +47,45 @@ unsigned int CUPnPSearch::GetContainerIdAsUInt()
   return HexToInt(m_sContainerID);
 }
 
-std::string CUPnPSearch::BuildSQL(bool p_bLimit)
+
+std::string BuildParentIdList(CContentDatabase* pDb, std::string p_sIds, std::string p_sDevice)
+{
+  stringstream sSql;
+  sSql << 
+    "select OBJECT_ID from MAP_OBJECTS " <<
+    "where " <<
+    "  PARENT_ID in (" << p_sIds << ") and " <<
+    "  DEVICE " << p_sDevice;
+  
+  cout << sSql.str() << endl; fflush(stdout);
+  
+  pDb->ClearResult();
+  pDb->Select(sSql.str());
+  if(pDb->Eof()) {
+    return "";
+  }
+  
+  string sResult = "";
+  while(!pDb->Eof()) {    
+    sResult += pDb->GetResult()->GetValue("OBJECT_ID") + ", ";
+    pDb->Next();
+  }
+  
+  // remove trailing ", "
+  if(sResult.length() > 2) {
+    sResult = sResult.substr(0, sResult.length() - 2);
+  }
+  
+  string sSub = BuildParentIdList(pDb, sResult, p_sDevice);
+  if(sSub.length() > 0) {
+    sResult = sResult + ", " + sSub + ", " + p_sIds;
+  }
+  
+  return sResult;
+}
+
+
+std::string CUPnPSearch::BuildSQL(bool p_bCount)
 {
   /*std::string sTest;
 	sTest = "(upnp:class contains \"object.item.imageItem\") and (dc:title = \"test \\\"dahhummm\\\" [xyz] §$%&(abc) titel\") or author exists true and (title exists false and (author = \"test\" or author = \"dings\"))";
@@ -55,13 +96,64 @@ std::string CUPnPSearch::BuildSQL(bool p_bLimit)
 	string sOp;
 	string sVal;
 	string sCloseBr;
-	string sLogOp = "where";
+	string sLogOp = " and ";
 	bool   bNumericProp = false;
 	bool   bLikeOp  = false;
   bool   bBuildOK = false;
-
+  bool   bVirtualSearch = false;
+  
   stringstream sSql;
 
+  
+  string sDevice = " is NULL ";
+  
+  unsigned int nContainerId = GetContainerIdAsUInt();
+  if(nContainerId > 0) {
+    if(CVirtualContainerMgr::Shared()->IsVirtualContainer(nContainerId, GetDeviceSettings()->m_sVirtualFolderDevice)) {
+       bVirtualSearch = true;
+      sDevice = " = '" + GetDeviceSettings()->m_sVirtualFolderDevice + "' ";
+    }
+    
+    if(m_sParentIds.length() == 0) {
+      CContentDatabase* pDb = new CContentDatabase();       
+      stringstream sIds;
+      sIds << nContainerId;    
+      m_sParentIds = BuildParentIdList(pDb, sIds.str(), sDevice);
+      
+      if(m_sParentIds.length() > 0) {
+        m_sParentIds = m_sParentIds + ", " + sIds.str();
+      }
+      else {
+        m_sParentIds = sIds.str();
+      }
+      delete pDb;
+      
+      cout << "PARENT ID LIST: " << m_sParentIds << endl; fflush(stdout);
+    }
+  }
+  
+  
+  sSql <<
+    "select ";
+  if(p_bCount)
+    sSql << " count(*) as COUNT ";
+  else
+    sSql << " * ";  
+  
+  sSql <<
+    "from " <<
+    "  OBJECTS o, MAP_OBJECTS m " <<
+    "  left join OBJECT_DETAILS d on (d.ID = o.DETAIL_ID) " <<
+    "where " <<
+    "  o.DEVICE " << sDevice << " and " <<
+    "  m.DEVICE " << sDevice << " and " <<
+    "  o.OBJECT_ID = m.OBJECT_ID ";  
+  
+  if(m_sParentIds.length() > 0) {
+    sSql << " and " <<
+      "  m.PARENT_ID in (" << m_sParentIds << ") ";        
+  }
+  
 
   // xbox 360 uses &quot; instead of "
 	if(GetDeviceSettings()->m_bXBox360Support) {
@@ -76,7 +168,7 @@ std::string CUPnPSearch::BuildSQL(bool p_bLimit)
 	  do {
 		  cout <<  rxSearch.Match(1) << " X " << rxSearch.Match(2) << " X " << rxSearch.Match(3) << " X " << rxSearch.Match(4) << " X " << rxSearch.Match(5) << " X " << rxSearch.Match(6) << endl;
 		
-		  // contains "where" on first loop
+		  // contains "and" on first loop
 			// so we just append it when criterias can be found
 		  sSql << " " << sLogOp << endl;
 		
@@ -88,6 +180,7 @@ std::string CUPnPSearch::BuildSQL(bool p_bLimit)
 			sLogOp   = rxSearch.Match(6);
 			
 			if(sOp.compare("exists") == 0) {
+        bBuildOK = false;
 			}
 			else {
 				
@@ -144,16 +237,15 @@ std::string CUPnPSearch::BuildSQL(bool p_bLimit)
           sOp = "in";
           
 				  if(sVal.compare("object.item.imageItem") == 0)
-					  sVal = "(1, 100)";
+					  sVal = "(110, 111)";
 					else if(sVal.compare("object.item.audioItem") == 0)
-					  sVal = "(2, 200, 201)";	
+					  sVal = "(120, 121, 122)";	
 					else if(sVal.compare("object.item.videoItem") == 0)
-					  sVal = "(3, 300, 301)";
+					  sVal = "(133, 131, 132)";
 					else if(sVal.compare("object.container.album.musicAlbum") == 0)
-					  sVal = "(600)";
+					  sVal = "(31)";
 					else if(sVal.compare("object.container.person.musicArtist") == 0)
-					  sVal = "(400)";
-						
+					  sVal = "(11)";          
 					else
 					  bBuildOK = false;
 				} 
@@ -180,19 +272,22 @@ std::string CUPnPSearch::BuildSQL(bool p_bLimit)
 
 	
 	
-	if(p_bLimit) {
-		if((m_nRequestedCount > 0) || (m_nStartingIndex > 0)) {
+  if(!p_bCount) {  
+	  if((m_nRequestedCount > 0) || (m_nStartingIndex > 0)) {
       sSql << " limit " << m_nStartingIndex << ", ";
       if(m_nRequestedCount == 0)
         sSql << "-1";
       else
         sSql << m_nRequestedCount;
     }
-	}
-
+  }
+	
   //sSql << ";";
 
-  //cout << sSql.str() << endl;	
+  cout << "SEARCH QUERY: " << endl << sSql.str() << endl << endl;	
 
   return sSql.str();
 }
+
+
+

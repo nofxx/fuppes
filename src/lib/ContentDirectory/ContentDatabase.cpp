@@ -203,122 +203,35 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
         "  PARENT_ID INTEGER NOT NULL, "
         "  DEVICE TEXT "
         ");"))
-      return false;                
+      return false;               
     
-		/*if(!Execute("CREATE TABLE OBJECTS ("
-				"  ID INTEGER PRIMARY KEY AUTOINCREMENT,"
-				"  PARENT_ID INTEGER NOT NULL DEFAULT 0,"
-				"  TYPE INTEGER NOT NULL,"
-				"  PATH TEXT NOT NULL,"
-				"  FILE_NAME TEXT DEFAULT NULL,"
-				"  TITLE TEXT DEFAULT NULL, "
-				"  MD5 TEXT DEFAULT NULL,"
-				"  MIME_TYPE TEXT DEFAULT NULL,"
-				"  SIZE INTEGER DEFAULT 0, "
-				"  UPDATE_ID INTEGER DEFAULT 0"
-				");"))   
-			return false;
-    
-		if(!Execute("CREATE UNIQUE INDEX IDX_ID ON OBJECTS(ID);"))
-      return false;
-		if(!Execute("CREATE INDEX IDX_FILE_NAME ON OBJECTS (FILE_NAME);"))
-      return false;
-    if(!Execute("CREATE INDEX IDX_PARENT_ID ON OBJECTS (PARENT_ID);"))
+
+    if(!Execute("CREATE INDEX IDX_OBJECTS_OBJECT_ID ON OBJECTS(OBJECT_ID);"))
       return false;
     
-		if(!Execute("CREATE TABLE OBJECT_DETAILS ( "
-				"  OBJECT_ID INTEGER, "
-				"  AV_BITRATE INTEGER, "
-				"  AV_DURATION TEXT, "
-				"  A_ALBUM TEXT, "
-				"  A_ARTIST TEXT, "
-				"  A_CHANNELS INTEGER, "
-				"  A_DESCRIPTION TEXT, "
-				"  A_GENRE TEXT, "
-				"  A_SAMPLERATE INTEGER, "
-				"  A_TRACK_NO INTEGER, "
-				"  DATE TEXT, "
-				"  IV_HEIGHT INTEGER, "
-				"  IV_WIDTH INTEGER, "
-				"  SIZE INTEGER "
-				");"))
-			return false;
-		
-		if(!Execute("CREATE UNIQUE INDEX IDX_OBJECT_ID ON OBJECT_DETAILS(OBJECT_ID);"))
-      return false; */
-		
-		
-		/*if(!Execute("CREATE TABLE AUDIO_ITEMS ( "
-				"ID INTEGER PRIMARY KEY, "
-				"DATE TEXT, "
-				"TRACK_NO INTEGER, "
-				"DESCRIPTION TEXT, "
-				"DURATION TEXT, "
-				"GENRE TEXT, "
-				"ALBUM TEXT, "
-				"ARTIST TEXT, "
-				"TITLE TEXT, "
-				"CHANNELS INTEGER, "
-				"BITRATE INTEGER, "
-				"SAMPLERATE INTEGER);"))
-		  return false;
-		
-		if(!Execute("CREATE TABLE IMAGE_ITEMS (ID INTEGER PRIMARY KEY, WIDTH INTEGER, HEIGHT INTEGER);"))
-		  return false;
-			
-    if(!Execute("CREATE TABLE VIDEO_ITEMS ( "
-				"ID INTEGER PRIMARY KEY, "
-				"WIDTH INTEGER, " 
-				"HEIGHT INTEGER, "
-				"DURATION TEXT, "
-				"SIZE INTEGER, "
-				"BITRATE INTEGER );"))
-		  return false; */
-    
-   /* string sTablePlaylistItems =
-      "create table PLAYLIST_ITEMS ("
-      "  ID INTEGER PRIMARY KEY AUTOINCREMENT, "
-      "  PLAYLIST_ID INTEGER NOT NULL, " // id des playlist objektes OBJECTS.ID
-      "  OBJECT_ID INTEGER NOT NULL, " // id des zugehoerigen eintrags aus OBJECTS.ID
-      "  POSITION INTEGER NOT NULL " // position in der liste
-      ");";
-    
-    if(!Execute(sTablePlaylistItems))
-      return false;    
-    
-    if(!Execute("CREATE TABLE VIRTUAL_CONTAINERS (TYPE INTEGER, DEVICE TEXT, ID INTEGER PRIMARY KEY, PARENT_ID INTEGER, TITLE TEXT);"))
+    if(!Execute("CREATE INDEX IDX_MAP_OBJECTS_OBJECT_ID ON MAP_OBJECTS(OBJECT_ID);"))
       return false;
     
-    if(!Execute("CREATE TABLE MAP_ITEMS2VC (ID INTEGER PRIMARY KEY, OBJECT_ID INTEGER, VCONTAINER_ID INTEGER, DEVICE TEXT);"))
-       return false;
-    */
+    if(!Execute("CREATE INDEX IDX_MAP_OBJECTS_PARENT_ID ON MAP_OBJECTS(PARENT_ID);"))
+      return false;		
   }
-  else
-  {
-    //Insert("delete from OBJECTS;");
-  }  
-  
-  //sqlite3_close(m_pDbHandle);
+
   return true;
 }
 
 void CContentDatabase::Lock()
 {
-  //cout << "LOCK" << endl; fflush(stdout);
   fuppesThreadLockMutex(&CContentDatabase::Shared()->m_Mutex);
-	//cout << "LOCKED" << endl; fflush(stdout);
 }
 
 void CContentDatabase::Unlock()
 {
-  //cout << "UNLOCK" << endl; fflush(stdout);
   fuppesThreadUnlockMutex(&CContentDatabase::Shared()->m_Mutex);
-  //cout << "UNLOCKED" << endl; fflush(stdout);
 }
 
 void CContentDatabase::ClearResult()
 {
-  /* clear old results */ 
+  // clear old results
   for(m_ResultListIterator = m_ResultList.begin(); m_ResultListIterator != m_ResultList.end();)
   {
     if(m_ResultList.empty())

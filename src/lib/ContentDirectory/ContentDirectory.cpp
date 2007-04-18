@@ -1110,75 +1110,19 @@ std::string CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch)
   bool bVirtualContainer = CVirtualContainerMgr::Shared()->IsVirtualContainer(pSearch->GetContainerIdAsUInt(), 
                                                                               pSearch->GetDeviceSettings()->m_sVirtualFolderDevice);
   
-  // get total matches  
-  if(bVirtualContainer) {      
-    sSql << "select " <<
-            "  count(*) as COUNT " <<
-            "from " <<
-            "  MAP_ITEMS2VC m, " <<
-            "  OBJECTS o " <<
-            "  left join OBJECT_DETAILS d on (d.OBJECT_ID = o.ID) " <<
-            "where " <<
-            "  m.VCONTAINER_ID = " << pSearch->GetContainerIdAsUInt() << " and " <<
-            "  o.ID = m.OBJECT_ID ";
-  }  
-  else {
-    sSql << "select " <<
-            "  count(*) as COUNT " <<
-            "from " <<
-            "  OBJECTS o " <<
-            "  left join OBJECT_DETAILS d on (d.OBJECT_ID = o.ID) ";
-    
-    if(pSearch->GetContainerIdAsUInt() > 0) {
-      sSql << " where o.PARENT_ID = " << pSearch->GetContainerIdAsUInt() << " ";
-    }
-  }
-     
-  sSql << pSearch->BuildSQL(false);
-
+  // get total matches     
+  sSql << pSearch->BuildSQL(true);
   cout << "SEARCH GET TOTAL MATCHES: " << endl << sSql.str() << endl << endl;
-     
   pDb->Select(sSql.str());
-  nTotalMatches = atoi(pDb->GetResult()->GetValue("VALUE").c_str());
+  nTotalMatches = atoi(pDb->GetResult()->GetValue("COUNT").c_str());
 	pDb->ClearResult();
   sSql.str("");
                                                                               
      
-  // get items  
-  if(bVirtualContainer) {
-    sSql << "select " <<
-            "  o.*, d.* " <<
-            "from " <<
-            "  MAP_ITEMS2VC m, " <<
-            "  OBJECTS o " <<
-            "  left join OBJECT_DETAILS d on (d.OBJECT_ID = o.ID) " <<
-            "where " <<
-            "  m.VCONTAINER_ID = " << pSearch->GetContainerIdAsUInt() << " and " <<
-            "  o.ID = m.OBJECT_ID and " <<
-            pSearch->BuildSQL(true) << " " <<
-            "order by " <<
-            "  o.TYPE, o.FILE_NAME ";
-  }
-  else {
-    sSql << "select " <<
-            "  o.*, d.* " <<
-            "from " <<
-            "  OBJECTS o " <<
-            "  left join OBJECT_DETAILS d on (d.OBJECT_ID = o.ID) " <<
-            pSearch->BuildSQL(true);
-      
-    if(pSearch->GetContainerIdAsUInt() > 0) {
-      sSql << " and o.PARENT_ID = " << pSearch->GetContainerIdAsUInt() << " ";
-    }      
-      
-    sSql << "order by " <<
-            "  o.TYPE, o.FILE_NAME ";    
-  }
-    
+  // get items     
 	int nNumberReturned = 0;
-
+  sSql << pSearch->BuildSQL(false);
   cout << "SEARCH GET ITEMS: " << endl << sSql.str() << endl << endl;
-
 	pDb->Select(sSql.str());	
 
 	
