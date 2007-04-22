@@ -222,8 +222,6 @@ if test "x$use_libavformat" = "xyes"; then
 		AC_DEFINE([HAVE_LIBAVFORMAT], [1], [])
     FUPPES_CFLAGS="$FUPPES_CFLAGS $LIBAVFORMAT_CFLAGS"
 		FUPPES_LIBS="$FUPPES_LIBS $LIBAVFORMAT_LIBS"
-  else
-    AC_DEFINE([HAVE_LIBAVFORMAT], [0], [])
   fi
 fi
 # end libavformat
