@@ -149,8 +149,6 @@ std::string CContentDatabase::GetLibVersion()
 
 bool CContentDatabase::Init(bool* p_bIsNewDB)
 {
-  #warning TODO: set OBJECTS.ID to 30 after db creation
-  
   bool bIsNewDb = !FileExists(m_sDbFileName);
   *p_bIsNewDB = bIsNewDb;
   int nRes = sqlite3_open(m_sDbFileName.c_str(), &m_pDbHandle);   

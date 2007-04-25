@@ -268,10 +268,8 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   OBJECT_TYPE nContainerType = CONTAINER_STORAGE_FOLDER;
   if(pUPnPBrowse->GetObjectIDAsInt() > 0) {
     
-    if(!pUPnPBrowse->m_bVirtualContainer) {
-      sSql << "select TYPE from OBJECTS " <<
-        "where ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " << sDevice;
-    }   
+    sSql << "select TYPE from OBJECTS " <<
+      "where OBJECT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " << sDevice;
 
     pDb->Select(sSql.str());        
     nContainerType = (OBJECT_TYPE)atoi(pDb->GetResult()->GetValue("TYPE").c_str());
@@ -299,13 +297,11 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   }
   
   string sParentId;
-  string sTitle;
   
   // root folder
   if(pUPnPBrowse->GetObjectIDAsInt() == 0)
   {                                  
     sParentId = "-1";
-    sTitle    = "root";   
     
     /* build container  */
     xmlTextWriterStartElement(pWriter, BAD_CAST "container"); 
@@ -323,7 +319,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
        
       /* title */
       xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");     
-      xmlTextWriterWriteString(pWriter, BAD_CAST sTitle.c_str()); 
+      xmlTextWriterWriteString(pWriter, BAD_CAST "root"); 
       xmlTextWriterEndElement(pWriter);
      
       /* class */
@@ -350,22 +346,25 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
       "  m.OBJECT_ID = o.OBJECT_ID and " <<
       "  o.OBJECT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " <<
       "  m." << sDevice;
-    
+
     pDb->Select(sSql.str());
-    sSql.str("");                
+    sSql.str("");
     
     CSelectResult* pRow = pDb->GetResult();        
-    sTitle = pRow->GetValue("FILE_NAME").c_str();
+    //sTitle = pRow->GetValue("FILE_NAME");
+
+
 
     char szParentId[11];
     unsigned int nParentId = pRow->GetValueAsUInt("PARENT_ID");
+    
     if(nParentId > 0) {
       sprintf(szParentId, "%010X", nParentId);
       sParentId = szParentId;
     }
     else {
       sParentId = "0";
-    }   
+    } 
     
     BuildDescription(pWriter, pRow, pUPnPBrowse, sParentId);
   }
@@ -381,7 +380,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
 { 
   std::stringstream sSql;
   CContentDatabase* pDb = new CContentDatabase();
-  OBJECT_TYPE nContainerType = CONTAINER_STORAGE_FOLDER;
+  //OBJECT_TYPE nContainerType = CONTAINER_STORAGE_FOLDER;
  
                             
   pUPnPBrowse->m_bVirtualContainer = CVirtualContainerMgr::Shared()->HasVirtualChildren(pUPnPBrowse->GetObjectIDAsInt(), pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice);	
@@ -390,29 +389,9 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   if(pUPnPBrowse->m_bVirtualContainer)
     sDevice = "DEVICE = '" + pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice + "' ";
                             
-  // get container type
-  if(pUPnPBrowse->GetObjectIDAsInt() > 0) {
-    
-		sSql << "select TYPE from OBJECTS " <<
-      "where OBJECT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " << sDevice;   
-
-    pDb->Select(sSql.str()); 
-    if(!pDb->Eof()) {
-      nContainerType = (OBJECT_TYPE)atoi(pDb->GetResult()->GetValue("TYPE").c_str());
-    }
-    else {
-      nContainerType = OBJECT_TYPE_UNKNOWN;
-    }
-    pDb->ClearResult();
-    sSql.str("");
-  }
-    
   // get total matches
   sSql << "select count(*) as COUNT from MAP_OBJECTS where PARENT_ID = " <<
-          pUPnPBrowse->GetObjectIDAsInt() << " and " << sDevice;
-
-
-                            
+          pUPnPBrowse->GetObjectIDAsInt() << " and " << sDevice;                          
   
   pDb->Select(sSql.str()); 
   if(!pDb->Eof())
@@ -450,8 +429,6 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
     else
       sSql << pUPnPBrowse->m_nRequestedCount;
   }
-
- 
   
   unsigned int tmpInt = *p_pnNumberReturned;
   CSelectResult* pRow = NULL;

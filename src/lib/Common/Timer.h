@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -29,8 +29,8 @@
 class ITimer
 {
   public:
-    virtual ~ITimer() {};
     virtual void OnTimer() = 0;
+    virtual ~ITimer() {}; 
 };
 
 class CTimer
@@ -51,8 +51,14 @@ class CTimer
     unsigned int m_nTickCount;    
     bool         m_bDoBreak;    
     
+    void Lock();
+    void Unlock();
+    
   private:
-    fuppesThread  m_TimerThread;    
+    fuppesThread      m_TimerThread;
+    fuppesThreadMutex m_TimerMutex;
+    bool              bMutexInitialized;    
+        
     ITimer*       m_pOnTimerHandler;
     unsigned int  m_nInterval;        
     void          Cleanup();

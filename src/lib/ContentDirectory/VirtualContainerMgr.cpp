@@ -155,13 +155,13 @@ void CVirtualContainerMgr::CreateChildItems(CXMLNode* pParentNode,
       //cout << "create item mappings for type: " << pNode->Attribute("type") << " :: " << p_sFilter << endl;
       CreateItemMappings(pNode, p_sDevice, p_nParentId, p_sFilter);
     }
-    else if(pNode->Name().compare("folders") == 0) {
+    /*else if(pNode->Name().compare("folders") == 0) {
       //cout << "create folder mappings for filter: " << pNode->Attribute("filter") << " :: " << p_sFilter << endl;
       CreateFolderMappings(pNode, p_sDevice, p_nParentId, p_sFilter);
-    }
-    else if(pNode->Name().compare("shared_dirs") == 0) {
+    }*/
+    /*else if(pNode->Name().compare("shared_dirs") == 0) {
       MapSharedDirsTo(pNode, p_sDevice, p_nParentId);
-    }
+    }*/
     
     if(bDetails) {
       delete pDetails;
@@ -586,7 +586,7 @@ bool CVirtualContainerMgr::IsVirtualContainer(unsigned int p_nContainerId, std::
   
 	CContentDatabase* pDb = new CContentDatabase();
 	stringstream sSql;
-	sSql << "select count(*) as VALUE from MAP_OBJECTS where OBJECT_ID = " << p_nContainerId << " and DEVICE = '" << p_sDevice << "';";
+	sSql << "select count(*) as VALUE from OBJECTS where OBJECT_ID = " << p_nContainerId << " and DEVICE = '" << p_sDevice << "';";
 		
 	pDb->Select(sSql.str());
 	bResult = (pDb->GetResult()->GetValue("VALUE").compare("0") != 0);

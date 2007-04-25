@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -31,7 +31,6 @@
 using namespace std;
 
 fuppesThreadCallback TimerLoop(void *arg);
-fuppesThreadMutex TimerMutex;
 
 CTimer::CTimer(ITimer* p_OnTimerHandler)
 {
@@ -40,21 +39,19 @@ CTimer::CTimer(ITimer* p_OnTimerHandler)
   m_nTickCount      = 0;
   m_bDoBreak        = false;
   
-  fuppesThreadInitMutex(&TimerMutex);
+  fuppesThreadInitMutex(&m_TimerMutex);
 }
 
 CTimer::~CTimer()
-{
+{                
   Stop();
   Cleanup();  
-  
-  fuppesThreadDestroyMutex(&TimerMutex);
+  fuppesThreadDestroyMutex(&m_TimerMutex);
 }
   
 void CTimer::Cleanup()
 {
-  if(m_TimerThread)
-  {
+  if(m_TimerThread) {
     fuppesThreadClose(m_TimerThread);   
     m_TimerThread = (fuppesThread)NULL;
   }
@@ -85,18 +82,26 @@ void CTimer::Stop()
 
 void CTimer::Reset()
 {
-  fuppesThreadLockMutex(&TimerMutex);
+  fuppesThreadLockMutex(&m_TimerMutex);
   m_nTickCount = 0;
-  fuppesThreadUnlockMutex(&TimerMutex);
+  fuppesThreadUnlockMutex(&m_TimerMutex);
 }
 
 unsigned int CTimer::GetCount()
 {
   unsigned int nResult = 0;  
-  fuppesThreadLockMutex(&TimerMutex);
   nResult = m_nInterval - m_nTickCount;
-  fuppesThreadUnlockMutex(&TimerMutex);
   return nResult;
+}
+
+void CTimer::Lock()
+{
+  fuppesThreadLockMutex(&m_TimerMutex);     
+}
+
+void CTimer::Unlock()
+{
+  fuppesThreadUnlockMutex(&m_TimerMutex);
 }
 
 fuppesThreadCallback TimerLoop(void *arg)
@@ -108,20 +113,17 @@ fuppesThreadCallback TimerLoop(void *arg)
     if (pTimer->m_bDoBreak)
       break;
                           
-    fuppesThreadLockMutex(&TimerMutex);
+    pTimer->Lock();
     pTimer->m_nTickCount++;
-    fuppesThreadUnlockMutex(&TimerMutex);
+    pTimer->Unlock();
     fuppesSleep(1000);    
     
     if(!pTimer->m_bDoBreak && (pTimer->m_nTickCount >= (pTimer->GetInterval() - 1)))
     {
       pTimer->CallOnTimer();
-      fuppesThreadLockMutex(&TimerMutex);
-      pTimer->m_nTickCount = 0;
-      fuppesThreadUnlockMutex(&TimerMutex);
+      pTimer->Reset();
     }
   }  
-  
-  /* exit thread */
+
   fuppesThreadExit();
 }
