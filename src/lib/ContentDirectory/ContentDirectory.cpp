@@ -252,7 +252,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   // on metadata browse
   *p_pnTotalMatches   = 1;
   *p_pnNumberReturned = 1;
-  
+
   stringstream sSql;
   CContentDatabase* pDb = new CContentDatabase();
 
@@ -263,7 +263,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   string sDevice = "DEVICE is NULL ";
   if(pUPnPBrowse->m_bVirtualContainer)
     sDevice = "DEVICE = '" + pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice + "' ";
-                          
+                        
   // get container type
   OBJECT_TYPE nContainerType = CONTAINER_STORAGE_FOLDER;
   if(pUPnPBrowse->GetObjectIDAsInt() > 0) {
@@ -278,7 +278,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
     pDb->ClearResult(); 
     sSql.str("");
   }
-  
+
   // get child count
   bool bNeedCount = false;
   if(nContainerType < ITEM) {
@@ -298,13 +298,12 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
     sSql.str("");
   }
   
-
   string sParentId;
   string sTitle;
   
   // root folder
   if(pUPnPBrowse->GetObjectIDAsInt() == 0)
-  {
+  {                                  
     sParentId = "-1";
     sTitle    = "root";   
     
@@ -338,13 +337,15 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   
   // sub folders
   else
-  {
+  {  
     sSql <<
       "select " <<
-      "  m.OBJECT_ID, m_PARENT_ID, " <<
-      "  o.PATH, o.FILE_NAME, o.TYPE, o.MIME_TYPE " <<
+      "  m.OBJECT_ID, m.PARENT_ID, " <<
+      "  o.PATH, o.FILE_NAME, o.TYPE, o.MIME_TYPE, " <<
+      "  d.* " <<
       "from " <<
       "  OBJECTS o, MAP_OBJECTS m " <<
+      "  left join OBJECT_DETAILS d on (d.ID = o.DETAIL_ID) " <<
       "where " <<
       "  m.OBJECT_ID = o.OBJECT_ID and " <<
       "  o.OBJECT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " <<
@@ -367,7 +368,6 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
     }   
     
     BuildDescription(pWriter, pRow, pUPnPBrowse, sParentId);
-    pDb->ClearResult();
   }
   
   delete pDb;
@@ -594,7 +594,7 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter,
                                              CUPnPBrowseSearchBase* pUPnPBrowse, 
                                              OBJECT_TYPE p_nObjectType, 
                                              std::string p_sParentId)
-{
+{                                            
   /* item */
   xmlTextWriterStartElement(pWriter, BAD_CAST "item");
 
@@ -743,16 +743,24 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   sTmp.str("");
 
   // duration
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->GetValue("AV_DURATION").c_str());
+  if(pUPnPBrowse->IncludeProperty("res@duration") && !pSQLResult->IsNull("AV_DURATION")) {	
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->GetValue("AV_DURATION").c_str());
+  }
 	
 	// nrAudioChannels 
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "nrAudioChannels", BAD_CAST pSQLResult->GetValue("A_CHANNELS").c_str());
+  if(pUPnPBrowse->IncludeProperty("res@nrAudioChannels") && !pSQLResult->IsNull("A_CHANNELS")) {		
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "nrAudioChannels", BAD_CAST pSQLResult->GetValue("A_CHANNELS").c_str());
+  }
 
   // sampleFrequency
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST pSQLResult->GetValue("A_SAMPLERATE").c_str());
+  if(pUPnPBrowse->IncludeProperty("res@sampleFrequency") && !pSQLResult->IsNull("A_SAMPLERATE")) {		  
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST pSQLResult->GetValue("A_SAMPLERATE").c_str());
+  }
 
 	// bitrate
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("AV_BITRATE").c_str());
+  if(pUPnPBrowse->IncludeProperty("res@bitrate") && !pSQLResult->IsNull("AV_BITRATE")) {
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("AV_BITRATE").c_str());
+  }
 
   sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/AudioItems/" << p_sObjectID << "." << sExt;  
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
@@ -832,7 +840,9 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
   sTmp.str("");
   
   // resolution
-	if((pSQLResult->GetValue("IV_WIDTH").compare("NULL") != 0) && (pSQLResult->GetValue("IV_HEIGHT").compare("NULL") != 0)) {
+	if(pUPnPBrowse->IncludeProperty("res@resolution") &&
+     (pSQLResult->GetValue("IV_WIDTH").compare("NULL") != 0) && 
+     (pSQLResult->GetValue("IV_HEIGHT").compare("NULL") != 0)) {
     sTmp << pSQLResult->GetValue("IV_WIDTH") << "x" << pSQLResult->GetValue("IV_HEIGHT");
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.str().c_str());
     sTmp.str("");
@@ -872,24 +882,24 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
 
 
   // duration
-  if(!pSQLResult->IsNull("AV_DURATION")) {
+  if(pUPnPBrowse->IncludeProperty("res@duration") && !pSQLResult->IsNull("AV_DURATION")) {
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->GetValue("AV_DURATION").c_str());
   }
       
 	// resolution 
-	if(!pSQLResult->IsNull("IV_WIDTH") && !pSQLResult->IsNull("IV_HEIGHT")) {
+	if(pUPnPBrowse->IncludeProperty("res@resolution") && !pSQLResult->IsNull("IV_WIDTH") && !pSQLResult->IsNull("IV_HEIGHT")) {
     sTmp << pSQLResult->GetValue("IV_WIDTH") << "x" << pSQLResult->GetValue("IV_HEIGHT");
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.str().c_str());
     sTmp.str("");
 	}
 
 	// bitrate
-  if(!pSQLResult->IsNull("AV_BITRATE")) {
+  if(pUPnPBrowse->IncludeProperty("res@bitrate") && !pSQLResult->IsNull("AV_BITRATE")) {
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("AV_BITRATE").c_str());
   }
       
   // size
-  if(!pSQLResult->IsNull("SIZE")) {
+  if(pUPnPBrowse->IncludeProperty("res@size") && !pSQLResult->IsNull("SIZE")) {
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->GetValue("SIZE").c_str());
   }
 

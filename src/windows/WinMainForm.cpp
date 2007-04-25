@@ -31,7 +31,7 @@
 
 #define ID_EDITCHILD 12
 
-#define MAX_MEMO_LENGTH 4096
+#define MAX_MEMO_LENGTH 29996
 
 
 using namespace std;
@@ -268,10 +268,10 @@ void CMainForm::HideTrayIcon()
 
 
 void CMainForm::Log(std::string p_sLog)
-{
-  p_sLog.append("\r\n");  
+{    
+  p_sLog.append("\r\n");
   nLogLength += p_sLog.length();
-  
+
   // if the memo is full we remove some lines at the start
   if(nLogLength > MAX_MEMO_LENGTH) {
     SendMessage(hWndMemo, EM_SETSEL, 0, p_sLog.length());
@@ -303,8 +303,10 @@ void CMainForm::OnTrayIconLButtonUp()
 {
   POINT pt;
   unsigned int ret;
+  SetForegroundWindow(hWnd);
 	GetCursorPos(&pt);
 	ret = TrackPopupMenu(hPopup, TPM_RETURNCMD|TPM_LEFTBUTTON, pt.x, pt.y, 0, hWnd, NULL);  
+	PostMessage(hWnd, WM_NULL, 0, 0);
 	
 	stringstream sTmp;
 	
@@ -321,7 +323,7 @@ void CMainForm::OnTrayIconLButtonUp()
       }
       break;
     case 3:
-      if(MessageBox(hWnd, "Rebuild virtual conatiners?", GetAppShortName(), MB_ICONQUESTION | MB_YESNO) == IDYES) {
+      if(MessageBox(hWnd, "Rebuild virtual containers?", GetAppShortName(), MB_ICONQUESTION | MB_YESNO) == IDYES) {
         fuppes_rebuild_vcontainers();
       }
       break;      

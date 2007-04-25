@@ -33,10 +33,10 @@ bool CUPnPBrowseSearchBase::IncludeProperty(std::string p_sProperty)
   if(m_sFilter.compare("*") == 0) {
     return true;
   }
-  
-  if(m_sFilter.find(p_sProperty) == std::string::npos) {
+
+  if(m_sFilter.find(p_sProperty) != std::string::npos) {
     return true;
   }
-  
+ 
   return false;
 }

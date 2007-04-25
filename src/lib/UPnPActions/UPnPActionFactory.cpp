@@ -172,7 +172,7 @@ bool CUPnPActionFactory::ParseBrowseAction(CUPnPBrowse* pAction)
   if(rxFilter.Search(pAction->GetContent().c_str()))  
     pAction->m_sFilter = rxFilter.Match(1);  
   else
-    pAction->m_sFilter = "*";
+    pAction->m_sFilter = "";
 
   /* Starting index */
   RegEx rxStartIdx("<StartingIndex>(.+)</StartingIndex>");
@@ -222,7 +222,7 @@ bool CUPnPActionFactory::ParseSearchAction(CUPnPSearch* pAction)
   if(rxFilter.Search(pAction->GetContent().c_str()))  
     pAction->m_sFilter = rxFilter.Match(1);  
   else
-    pAction->m_sFilter = "*";
+    pAction->m_sFilter = "";
 
   // Starting index
   RegEx rxStartIdx("<StartingIndex>(.+)</StartingIndex>");

@@ -357,9 +357,7 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pM
 
 bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageItem)
 {
-  #ifdef HAVE_IMAGEMAGICK
-	return false;
-	
+  #ifdef HAVE_IMAGEMAGICK	
 	MagickWand* pWand;
 	MagickBooleanType bStatus;
 	unsigned long nHeight;
