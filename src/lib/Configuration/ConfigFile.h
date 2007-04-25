@@ -53,7 +53,9 @@ class CConfigFile
   
     // network
     std::string IpAddress() { return m_sIpAddress; }
+    void        IpAddress(std::string p_sIpAddress);
     int         HttpPort() { return m_nHttpPort; }
+    void        HttpPort(int p_nHttpPort);
   
     int         AllowedIpsCount() { return m_lAllowedIps.size(); }
     std::string AllowedIp(int p_nIdx) { return m_lAllowedIps[p_nIdx]; }

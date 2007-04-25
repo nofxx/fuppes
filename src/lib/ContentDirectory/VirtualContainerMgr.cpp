@@ -26,11 +26,14 @@
 #include "../Common/Common.h"
 #include "ContentDatabase.h"
 #include "../SharedConfig.h"
+#include "../SharedLog.h"
 #include <iostream>
 using namespace std;
 		
 CVirtualContainerMgr* CVirtualContainerMgr::m_pInstance = 0;
-		
+
+static bool g_bIsRebuilding;
+
 CVirtualContainerMgr* CVirtualContainerMgr::Shared()
 {
   if(m_pInstance == 0)
@@ -40,17 +43,36 @@ CVirtualContainerMgr* CVirtualContainerMgr::Shared()
 
 CVirtualContainerMgr::CVirtualContainerMgr()
 {
-	m_nIdCounter = 0;
+	m_nIdCounter    = 0;
+  m_RebuildThread = (fuppesThread)NULL;
 }
 
 
-void CVirtualContainerMgr::RebuildContainerList()
+CVirtualContainerMgr::~CVirtualContainerMgr()
 {
-  #warning todo: threaded
+	if(m_RebuildThread != (fuppesThread)NULL) {
+    fuppesThreadClose(m_RebuildThread);  
+  }
+}
+
+
+bool CVirtualContainerMgr::IsRebuilding()
+{
+  return g_bIsRebuilding;
+}    
+
+fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
+{
+  CVirtualContainerMgr* pMgr = (CVirtualContainerMgr*)arg;
+    
+  CSharedLog::Shared()->Log(L_NORMAL, "[VirtualContainer] create virtual container layout", __FILE__, __LINE__);
+  
   CXMLDocument* pDoc = new CXMLDocument();
-  if(!pDoc->Load(CSharedConfig::Shared()->GetConfigDir() + "vfolder.cfg")) {
+  if(!pDoc->Load(CSharedConfig::Shared()->GetConfigDir() + "vfolder.cfg")) {    
+    CSharedLog::Shared()->Log(L_ERROR, "[VirtualContainer] error loading vfolder.cfg", __FILE__, __LINE__);
     delete pDoc;
-    return;
+    g_bIsRebuilding = false;
+    fuppesThreadExit();
   }
 
   CContentDatabase* pDb = new CContentDatabase();  
@@ -67,13 +89,35 @@ void CVirtualContainerMgr::RebuildContainerList()
  
     if(pChild->Name().compare("vfolder_layout") == 0) {
       sDevice = pChild->Attribute("device");
-      CreateChildItems(pChild, sDevice, 0, NULL);
+      pMgr->CreateChildItems(pChild, sDevice, 0, NULL);
     }    
-    //delete pChild;
   }
   
-  delete pDoc;
-  cout << "done" << endl;
+  delete pDoc;    
+  
+  CSharedLog::Shared()->Log(L_NORMAL, "[VirtualContainer] virtual container layout created", __FILE__, __LINE__);
+  
+  g_bIsRebuilding = false;
+  fuppesThreadExit();
+}
+
+void CVirtualContainerMgr::RebuildContainerList()
+{
+  if(CContentDatabase::Shared()->IsRebuilding()) {
+    CSharedLog::Shared()->Log(L_NORMAL, "database rebuild in progress", __FILE__, __LINE__);
+    return;
+  }
+  
+  if(!g_bIsRebuilding) {
+    g_bIsRebuilding = true;
+    
+    if(m_RebuildThread != (fuppesThread)NULL) {
+      fuppesThreadClose(m_RebuildThread);
+      m_RebuildThread = (fuppesThread)NULL;
+    }
+		
+    fuppesThreadStart(m_RebuildThread, VirtualContainerBuildLoop);    
+  }  
 }
 
 void CVirtualContainerMgr::CreateChildItems(CXMLNode* pParentNode, 
@@ -84,8 +128,7 @@ void CVirtualContainerMgr::CreateChildItems(CXMLNode* pParentNode,
 {
   CXMLNode* pNode;
   int i;
-  bool bDetails = false;
-                                              
+  bool bDetails = false;                                              
                                               
   for(i = 0; i < pParentNode->ChildCount(); i++) {
     pNode = pParentNode->ChildNode(i);
@@ -93,17 +136,14 @@ void CVirtualContainerMgr::CreateChildItems(CXMLNode* pParentNode,
     if(pDetails == NULL) {
       pDetails = new CObjectDetails();
       bDetails = true;
-    }
-      
-    
-    cout << pNode->Name() << endl; fflush(stdout);
+    }      
       
     if(pNode->Name().compare("vfolder") == 0) {
-      cout << "create single vfolder: " << pNode->Attribute("name") << " :: " << p_sFilter << endl; fflush(stdout);
+      //cout << "create single vfolder: " << pNode->Attribute("name") << " :: " << p_sFilter << endl; fflush(stdout);
       CreateSingleVFolder(pNode, p_sDevice, p_nParentId, pDetails);
     }
     else if(pNode->Name().compare("vfolders") == 0) {
-      cout << "create vfolders from property: " << pNode->Attribute("property") << " :: " << p_sFilter << endl;  fflush(stdout);
+      //cout << "create vfolders from property: " << pNode->Attribute("property") << " :: " << p_sFilter << endl;  fflush(stdout);
       if(pNode->Attribute("property").length() > 0) {
         CreateVFoldersFromProperty(pNode, p_sDevice, p_nParentId, pDetails, p_sFilter);
       }
@@ -112,11 +152,11 @@ void CVirtualContainerMgr::CreateChildItems(CXMLNode* pParentNode,
       }
     }
     else if(pNode->Name().compare("items") == 0) {
-      cout << "create item mappings for type: " << pNode->Attribute("type") << " :: " << p_sFilter << endl;
+      //cout << "create item mappings for type: " << pNode->Attribute("type") << " :: " << p_sFilter << endl;
       CreateItemMappings(pNode, p_sDevice, p_nParentId, p_sFilter);
     }
     else if(pNode->Name().compare("folders") == 0) {
-      cout << "create folder mappings for filter: " << pNode->Attribute("filter") << " :: " << p_sFilter << endl;
+      //cout << "create folder mappings for filter: " << pNode->Attribute("filter") << " :: " << p_sFilter << endl;
       CreateFolderMappings(pNode, p_sDevice, p_nParentId, p_sFilter);
     }
     else if(pNode->Name().compare("shared_dirs") == 0) {
@@ -203,16 +243,24 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
   }
   
   stringstream sSql;
-  sSql << "select distinct " << sField << " as VALUE from OBJECT_DETAILS d ";
+  sSql << 
+    "select distinct " <<
+      sField << " as VALUE " <<
+    "from " <<
+    "  OBJECT_DETAILS d, " <<
+    "  OBJECTS o " <<
+    "where " <<
+    "  o.DETAIL_ID = d.ID and " <<
+    "  o.TYPE > " << ITEM;
+
   string sTmp;
   if(p_sFilter.length() > 0) {
-    sTmp.resize(p_sFilter.length() + sField.length());
-    printf(p_sFilter.c_str(), sField.c_str());
+    sTmp.resize(p_sFilter.length() + sField.length());    
     sprintf(&sTmp[0], p_sFilter.c_str(), sField.c_str());
     p_sFilter = sTmp;
-    sSql << " where " << p_sFilter;
+    sSql << " and " << p_sFilter;
   }
-  cout << "CreateVFoldersFromProperty: " << sSql.str() << endl;
+  //cout << "CreateVFoldersFromProperty: " << sSql.str() << endl;
                                                           
   
   CContentDatabase* pDb    = new CContentDatabase();
@@ -399,7 +447,7 @@ void CVirtualContainerMgr::CreateItemMappings(CXMLNode* pNode,
     sSql << " and " << p_sFilter;
   }
         
-  cout << "CreateItemMappings: " << sSql.str() << endl;
+  //cout << "CreateItemMappings: " << sSql.str() << endl;
     
   pDb->Select(sSql.str());
   pIns->BeginTransaction();
@@ -483,7 +531,7 @@ void CVirtualContainerMgr::CreateFolderMappings(CXMLNode* pNode,
     "  o.DEVICE is NULL and " <<
     "  m.DEVICE is NULL";
                 
-  cout << sSql.str() << endl; fflush(stdout);
+  //cout << sSql.str() << endl; fflush(stdout);
                                                   
   pDb->Select(sSql.str());
   while(!pDb->Eof()) {

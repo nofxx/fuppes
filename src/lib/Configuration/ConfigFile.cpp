@@ -178,7 +178,11 @@ void CConfigFile::SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode)
   
   for(i = 0; i < pDeviceSettingsNode->ChildCount(); i++) {
     
-    pDevice   = pDeviceSettingsNode->ChildNode(i);        
+    pDevice = pDeviceSettingsNode->ChildNode(i);
+    if(pDevice->Attribute("name").compare("default") != 0 && pDevice->Attribute("enabled").compare("true") != 0) {
+      continue;
+    }    
+    
     pSettings = CDeviceIdentificationMgr::Shared()->GetSettingsForInitialization(pDevice->Attribute("name"));
     
     // virtual device
@@ -220,9 +224,34 @@ void CConfigFile::SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode)
 }
 
 
+void CConfigFile::IpAddress(std::string p_sIpAddress)
+{
+  CXMLNode* pTmp = m_pDoc->RootNode()->FindNodeByName("ip_address", true);
+  if(pTmp) {
+    pTmp->Value(p_sIpAddress);
+    m_pDoc->Save();
+    m_sIpAddress = p_sIpAddress;
+  }  
+}
+
+void CConfigFile::HttpPort(int p_nHttpPort)
+{
+  CXMLNode* pTmp = m_pDoc->RootNode()->FindNodeByName("http_port", true);
+  if(pTmp) {
+    pTmp->Value(p_nHttpPort);
+    m_pDoc->Save();  
+    m_nHttpPort = p_nHttpPort;
+  }  
+}
+
 void CConfigFile::LocalCharset(std::string p_sLocalCharset)
 {
-  CSharedLog::Shared()->Log(L_NORMAL, "todo :: set LocalCharset", __FILE__, __LINE__);
+  CXMLNode* pTmp = m_pDoc->RootNode()->FindNodeByName("local_charset", true);
+  if(pTmp) {
+    pTmp->Value(p_sLocalCharset);
+    m_pDoc->Save();  
+    m_sLocalCharset = p_sLocalCharset;
+  } 
 }
 
 bool CConfigFile::WriteDefaultConfig(std::string p_sFileName)
@@ -358,10 +387,9 @@ bool CConfigFile::WriteDefaultConfig(std::string p_sFileName)
         xmlTextWriterWriteString(pWriter, BAD_CAST "file"); // [file|container]
         xmlTextWriterEndElement(pWriter);
   
-  
-        xmlTextWriterWriteComment(pWriter, BAD_CAST "<user_agent></user_agent>");
-        xmlTextWriterWriteComment(pWriter, BAD_CAST "<ip></ip>");
-        xmlTextWriterWriteComment(pWriter, BAD_CAST "<xbox360></xbox360>");
+        xmlTextWriterStartElement(pWriter, BAD_CAST "show_childcount_in_title");
+        xmlTextWriterWriteString(pWriter, BAD_CAST "false");
+        xmlTextWriterEndElement(pWriter);  
   
       // end device (default)
       xmlTextWriterEndElement(pWriter);
@@ -371,7 +399,7 @@ bool CConfigFile::WriteDefaultConfig(std::string p_sFileName)
       xmlTextWriterStartElement(pWriter, BAD_CAST "device");
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "name", BAD_CAST "Xbox 360");
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "virtual", BAD_CAST "Xbox 360");
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "true");
+      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "false");
   
         // user_agent
         xmlTextWriterStartElement(pWriter, BAD_CAST "user_agent");
@@ -394,7 +422,7 @@ bool CConfigFile::WriteDefaultConfig(std::string p_sFileName)
       xmlTextWriterStartElement(pWriter, BAD_CAST "device");
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "name", BAD_CAST "Noxon audio");
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "virtual", BAD_CAST "default");
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "true");
+      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "false");
   
         xmlTextWriterWriteComment(pWriter, BAD_CAST "<ip></ip>");
   
@@ -413,7 +441,7 @@ bool CConfigFile::WriteDefaultConfig(std::string p_sFileName)
       xmlTextWriterStartElement(pWriter, BAD_CAST "device");
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "name", BAD_CAST "Telegent TG 100");
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "virtual", BAD_CAST "default");
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "true");
+      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "false");
   
         xmlTextWriterWriteComment(pWriter, BAD_CAST "<ip></ip>");
   
@@ -438,5 +466,11 @@ bool CConfigFile::WriteDefaultConfig(std::string p_sFileName)
 	xmlFreeTextWriter(pWriter);
 	
   xmlCleanupParser(); 
+  
+  CXMLDocument* pDoc = new CXMLDocument();
+  pDoc->Load(p_sFileName);
+  pDoc->Save();
+  delete pDoc;
+  
   return true;
 }

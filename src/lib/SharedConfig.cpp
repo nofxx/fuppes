@@ -204,51 +204,14 @@ string CSharedConfig::GetUUID()
 
 bool CSharedConfig::SetIPv4Address(std::string p_sIPAddress)
 {
-  // find ip_address nodes
-  /*xmlNode* pTmpNode = m_pNetSettingsNode  ->children;
-  string sName;
-  while(pTmpNode)
-  {
-    sName = (char*)pTmpNode->name;
-    if(sName.compare("ip_address") == 0)
-      break;    
-    
-    pTmpNode = pTmpNode->next;
-  }
-  
-  if(!pTmpNode->children)
-    xmlNodeAddContent(pTmpNode, BAD_CAST p_sIPAddress.c_str());
-  else
-    xmlNodeSetContent(pTmpNode->children, BAD_CAST p_sIPAddress.c_str());   
-  
-  //xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);    
-  return this->Refresh();*/
+  m_pConfigFile->IpAddress(p_sIPAddress);
+  m_sIP = p_sIPAddress;
 }
 	
 bool CSharedConfig::SetHTTPPort(unsigned int p_nHTTPPort)
 {
-  // find http_port nodes
-  /*xmlNode* pTmpNode = m_pNetSettingsNode  ->children;
-  string sName;
-  while(pTmpNode)
-  {
-    sName = (char*)pTmpNode->name;
-    if(sName.compare("http_port") == 0)
-      break;
-    
-    pTmpNode = pTmpNode->next;
-  }  
-  
-  stringstream sHTTPPort;
-  sHTTPPort << p_nHTTPPort;
-  
-  if(!pTmpNode->children)
-    xmlNodeAddContent(pTmpNode, BAD_CAST sHTTPPort.str().c_str());
-  else
-    xmlNodeSetContent(pTmpNode->children, BAD_CAST sHTTPPort.str().c_str());  
-  
-  //xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);    
-  return this->Refresh();*/
+  m_pConfigFile->HttpPort(p_nHTTPPort);
+  m_nHTTPPort = p_nHTTPPort;
 }
 
 
@@ -483,32 +446,12 @@ std::string CSharedConfig::GetConfigDir()
 
 std::string CSharedConfig::GetLocalCharset()
 {  
-  return m_pConfigFile->LocalCharset(); //m_sLocalCharset;
+  return m_pConfigFile->LocalCharset();
 }
 
 bool CSharedConfig::SetLocalCharset(std::string p_sCharset)
 {
-  /*if(!m_pContentDirNode)
-    return false;
-  
-  xmlNode* pTmp = m_pContentDirNode->children;
-  string sTmp;
-  while(pTmp)
-  {
-    sTmp = (char*)pTmp->name;
-    if(sTmp.compare("local_charset") == 0)
-    {
-      if(!pTmp->children)
-        xmlNodeAddContent(pTmp, BAD_CAST p_sCharset.c_str());
-      else
-        xmlNodeSetContent(pTmp->children, BAD_CAST p_sCharset.c_str());      
-      break;
-    }    
-    pTmp = pTmp->next;
-  }
-  
-  //xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);
-  return this->Refresh();*/
+  m_pConfigFile->LocalCharset(p_sCharset);
 }
 
 bool CSharedConfig::ReadConfigFile()

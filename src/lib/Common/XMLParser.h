@@ -47,7 +47,11 @@ class CXMLNode
     unsigned int AttributeAsUInt(std::string p_sName);
   
     std::string Name();
+  
     std::string Value();
+    void Value(std::string p_sValue);
+    void Value(int p_nValue);
+  
     int Index() { return m_nIdx; }
     
   private:

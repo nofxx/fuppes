@@ -312,9 +312,7 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pM
   char szDuration[11];
 	sprintf(szDuration, "%02d:%02d:%02d.00", hours, mins, secs);
 	szDuration[10] = '\0';  
-  pMusicTrack->mAudioItem.sDuration = szDuration;
-  
-  cout << pMusicTrack->mAudioItem.sDuration << endl;
+  pMusicTrack->mAudioItem.sDuration = szDuration;  
 	
 	// channels
 	pMusicTrack->mAudioItem.nNrAudioChannels = pFile.audioProperties()->channels();

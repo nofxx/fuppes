@@ -826,7 +826,7 @@ bool MapPlaylistItem(unsigned int p_nPlaylistID, unsigned int p_nItemID, int p_n
     "( " << p_nItemID <<
     ", " << p_nPlaylistID << ")";                         
          
-  cout << sSql.str() << endl;
+  //cout << sSql.str() << endl;
   
   pDB->Insert(sSql.str());
   
@@ -883,7 +883,7 @@ void ParseM3UPlaylist(CSelectResult* pResult)
   bool bIsLocalFile;
   int nPlsPosi = 0;
   
-  cout << "parse m3u" << endl;
+  //cout << "parse m3u" << endl;
   
   CContentDatabase* pDb = new CContentDatabase();
   
@@ -899,7 +899,7 @@ void ParseM3UPlaylist(CSelectResult* pResult)
       sFileName    = rxLines.Match(1);      
       bIsLocalFile = IsLocalFile(sFileName);
       
-      cout << sFileName << endl;
+      //cout << sFileName << endl;
       
       if(bIsLocalFile && FileExists(sFileName))
       {
@@ -909,7 +909,7 @@ void ParseM3UPlaylist(CSelectResult* pResult)
         nObjectID = GetObjectIDFromFileName(sFileName);      
         
         if(nObjectID == 0) {
-          cout << "file does not exist in db" << endl;        
+          //cout << "file does not exist in db" << endl;        
           nObjectID = InsertFile(pDb, nPlaylistID, sFileName);       
         }            
         else {
@@ -938,7 +938,7 @@ void ParsePLSPlaylist(CSelectResult* pResult)
   
   CContentDatabase* pDb = new CContentDatabase();
 
-  cout << "parse pls" << endl;
+  //cout << "parse pls" << endl;
   
   int nEntryCount = atoi(rxNumber.Match(1));  
   for(int i = 0; i < nEntryCount; i++)
@@ -954,7 +954,7 @@ void ParsePLSPlaylist(CSelectResult* pResult)
     if(sFileName.length() == 0)
       continue;
     
-    cout << sFileName << endl;
+    //cout << sFileName << endl;
         
     // relative or absolute file name 
     bool bIsLocalFile = true;
@@ -982,7 +982,7 @@ void ParsePLSPlaylist(CSelectResult* pResult)
         //cout << "relative" << endl;
         
         sFileName = ExtractFilePath(pResult->GetValue("PATH")) + sFileName;
-        cout << sFileName << endl;        
+        //cout << sFileName << endl;        
       }
     
     }
@@ -991,11 +991,11 @@ void ParsePLSPlaylist(CSelectResult* pResult)
     {
       nObjectID = GetObjectIDFromFileName(sFileName);      
       if(nObjectID == 0) {
-        cout << "file does not exist in db" << endl;        
+        //cout << "file does not exist in db" << endl;        
         InsertFile(pDb, nPlaylistID, sFileName);       
       }         
       else {
-        cout << "file exists: " << nObjectID << endl;
+        //cout << "file exists: " << nObjectID << endl;
         MapPlaylistItem(nPlaylistID, nObjectID, i + 1);
       }
     } /* if(bIsLocalFile && FileExists(sFileName)) */        

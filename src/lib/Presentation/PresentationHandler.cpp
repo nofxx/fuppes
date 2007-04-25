@@ -559,7 +559,7 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
 std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMessage* pRequest)
 {
   std::stringstream sResult;  
-  
+    
   //cout << pRequest->GetMessage() << endl;
   
   /* handle config changes */
@@ -588,8 +588,7 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
     }
 
     /* local_charset */
-    if(pRequest->PostVarExists("local_charset"))
-    {
+    if(pRequest->PostVarExists("local_charset")) {
       CSharedConfig::Shared()->SetLocalCharset(pRequest->GetPostVar("local_charset"));
     }    
     
@@ -607,14 +606,12 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
     }*/
     
     /* ip address */
-    if(pRequest->PostVarExists("ip_address") && (pRequest->GetPostVar("ip_address").length() > 0))
-    {
+    if(pRequest->PostVarExists("ip_address") && (pRequest->GetPostVar("ip_address").length() > 0)) {
       CSharedConfig::Shared()->SetIPv4Address(pRequest->GetPostVar("ip_address"));
     }
     
     /* http port */
-    if(pRequest->PostVarExists("http_port") && (pRequest->GetPostVar("http_port").length() > 0))
-    {
+    if(pRequest->PostVarExists("http_port") && (pRequest->GetPostVar("http_port").length() > 0)) {
       int nHTTPPort = atoi(pRequest->GetPostVar("http_port").c_str());      
       CSharedConfig::Shared()->SetHTTPPort(nHTTPPort);
     }
@@ -638,9 +635,11 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
   
   /* show config page */
   sResult << "<h1>ContentDirectory settings</h1>" << endl;
-  // shared dirs
-  sResult << "<h2>shared directories</h2>" << endl;
   sResult << "<form method=\"POST\" action=\"/presentation/config.html\" enctype=\"text/plain\">" << endl;  //  accept-charset=\"UTF-8\"
+  
+  /*// shared dirs
+  sResult << "<h2>shared directories</h2>" << endl;
+  
   
   // directory list
   sResult << "<p>" << endl <<  
@@ -670,7 +669,7 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
                "<br />" << endl <<
                "<input type=\"submit\" />" << endl <<             
              "</p>" << endl;  
-  
+  */
   // playlist representation
   /*sResult << "<h2>playlist representation</h2>" << endl;
   sResult << "<p>Choose how playlist items are represented. <br />\"file\" sends playlists as real playlist files (m3u or pls)<br />" <<
@@ -727,7 +726,7 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
                "<input type=\"submit\" />" << endl <<             
              "</p>" << endl;  
   
-  sResult << "<h2>Allowed IP-addresses</h2>" << endl;
+  /*sResult << "<h2>Allowed IP-addresses</h2>" << endl;
   
   // allowed ip list
   sResult << "<p>" << endl <<  
@@ -758,7 +757,7 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
                "<input name=\"new_allowed_ip\" />" << endl <<
                "<br />" << endl <<
                "<input type=\"submit\" />" << endl <<             
-             "</p>" << endl;    
+             "</p>" << endl;    */
   
   sResult << "</form>";
   

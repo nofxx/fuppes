@@ -176,6 +176,22 @@ std::string CXMLNode::Value()
   }
 }
 
+void CXMLNode::Value(std::string p_sValue)
+{
+  if(m_pNode->children)
+    xmlNodeSetContent(m_pNode->children, BAD_CAST p_sValue.c_str());       
+  else
+    xmlNodeAddContent(m_pNode, BAD_CAST p_sValue.c_str());
+}
+
+void CXMLNode::Value(int p_nValue)
+{
+  char szValue[10];
+  sprintf(szValue, "%d", p_nValue);
+  Value(szValue);
+}
+
+
 CXMLDocument::CXMLDocument()
 {
   m_pRootNode = NULL;

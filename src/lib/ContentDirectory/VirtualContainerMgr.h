@@ -28,6 +28,7 @@
 #include "../../config.h"
 #endif
 
+#include "../Common/Common.h"
 #include "../Common/XMLParser.h"
 #include "../UPnPActions/UPnPBrowse.h"
 
@@ -44,19 +45,25 @@ class CVirtualContainerMgr
 {
   public:
 	  static CVirtualContainerMgr* Shared();
+    ~CVirtualContainerMgr();
 				
     bool IsVirtualContainer(unsigned int p_nContainerId, std::string p_sDevice);    
     bool HasVirtualChildren(unsigned int p_nParentId, std::string p_sDevice);
 	  int  GetChildCount(unsigned int p_nParentId, std::string p_sDevice);
   
     void RebuildContainerList();
+    bool IsRebuilding();
+  
+    void CreateChildItems(CXMLNode* pParentNode, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, std::string p_sFilter = "");
   
 	private:
 	  CVirtualContainerMgr();
-	  static CVirtualContainerMgr* m_pInstance;
-    unsigned int m_nIdCounter;
-     
-    void CreateChildItems(CXMLNode* pParentNode, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, std::string p_sFilter = "");
+    
+	  static CVirtualContainerMgr* m_pInstance;  
+    
+    fuppesThread m_RebuildThread;
+  
+    unsigned int m_nIdCounter;   
   
     void CreateSingleVFolder(CXMLNode* pFolderNode, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails);
     void CreateVFoldersFromProperty(CXMLNode* pFoldersNode, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, std::string p_sFilter = "");
