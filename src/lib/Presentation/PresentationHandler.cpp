@@ -467,6 +467,82 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
   sResult << sTranscoding;
   
   
+  sResult << 
+  "<table>" <<    
+    "<tr>" <<
+      "<td>iconv</td>" <<
+      #ifdef HAVE_ICONV
+      "<td>true</td>" <<
+      #else
+      "<td>false</td>" <<
+      #endif
+    "</tr>" <<    
+    "<tr>" <<
+      "<td>taglib</td>" <<
+      #ifdef HAVE_TAGLIB
+      "<td>true</td>" <<
+      #else
+      "<td>false</td>" <<
+      #endif     
+    "</tr>" <<
+    "<tr>" <<
+      "<td>imageMagick</td>" <<
+      #ifdef HAVE_IMAGEMAGICK
+      "<td>true</td>" <<
+      #else
+      "<td>false</td>" <<
+      #endif      
+    "</tr>" <<
+    "<tr>" <<
+      "<td>libavformat (ffmpeg)</td>" <<
+      #ifdef HAVE_LIBAVFORMAT
+      "<td>true</td>" <<
+      #else
+      "<td>false</td>" <<
+      #endif    
+    "</tr>" <<   
+    "<tr>" <<
+      "<td>lame</td>" <<
+      #ifdef HAVE_LAME
+      "<td>true</td>" <<
+      #else
+      "<td>false</td>" <<
+      #endif      
+    "</tr>" << 
+    "<tr>" <<
+      "<td>twolame</td>" <<
+      #ifdef HAVE_TWOLAME
+      "<td>true</td>" <<
+      #else
+      "<td>false</td>" <<
+      #endif     
+    "</tr>" <<  
+    "<tr>" <<
+      "<td>ogg/vorbis</td>" <<
+      #ifdef HAVE_VORBIS
+      "<td>true</td>" <<
+      #else
+      "<td>false</td>" <<
+      #endif     
+    "</tr>" << 
+    "<tr>" <<
+      "<td>musepack</td>" <<
+      #ifdef HAVE_MUSEPACK
+      "<td>true</td>" <<
+      #else
+      "<td>false</td>" <<
+      #endif     
+    "</tr>" <<
+    "<tr>" <<
+      "<td>flac</td>" <<
+      #ifdef HAVE_FLAC
+      "<td>true</td>" <<
+      #else
+      "<td>false</td>" <<
+      #endif     
+    "</tr>" <<    
+  "</table>";    
+  
   // system status
   sResult << "<h1>system status</h1>" << endl;  
   

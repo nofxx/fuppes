@@ -39,19 +39,8 @@
 #include <string>
 #include <vector>
 
-#include <libxml/parser.h>
-#include <libxml/tree.h>
-#include <libxml/xmlwriter.h>
-
 #include "Transcoding/TranscodingMgr.h"
-
-using namespace std;
-
-/*typedef struct {
-  bool bShowTranscodingTypeInItemNames;
-  bool bShowDirNamesInFirstLevel;
-  bool bShowPlaylistsAsContainers;
-} DisplaySettings_t;*/
+#include "Configuration/ConfigFile.h"
 
 class CFuppes;
 
@@ -62,113 +51,79 @@ class CSharedConfig
 
 	public:
     ~CSharedConfig();
-    static CSharedConfig* Shared();		
+    static CSharedConfig* Shared();
 
+    bool SetupConfig(std::string p_sConfigFileName = "");
+    bool Refresh();
 
+    void PrintTranscodingSettings();  
 
-  bool SetupConfig();
-  bool Refresh();
-
-  void PrintTranscodingSettings();
-  
-
-  std::string GetAppName();
-	std::string GetAppFullname();
-	std::string GetAppVersion();
+    std::string GetAppName();
+    std::string GetAppFullname();
+    std::string GetAppVersion();
 	
-	std::string GetHostname();
-	std::string GetUUID();
+    std::string GetHostname();
+    std::string GetUUID();
   
-  std::string GetOSName();
-  std::string GetOSVersion();
+    std::string GetOSName();
+    std::string GetOSVersion();
   
-  std::string GetLocalCharset();
-  bool SetLocalCharset(std::string p_sCharset);
+    std::string GetLocalCharset();
+    bool SetLocalCharset(std::string p_sCharset);
 	
-	std::string GetIPv4Address() { return m_sIP; }
-  bool SetIPv4Address(std::string p_sIPAddress);
+    std::string GetIPv4Address() { return m_sIP; }
+    bool SetIPv4Address(std::string p_sIPAddress);
   
-	unsigned int GetHTTPPort() { return m_nHTTPPort; }
-  bool SetHTTPPort(unsigned int p_nHTTPPort);
+    unsigned int GetHTTPPort() { return m_nHTTPPort; }
+    bool SetHTTPPort(unsigned int p_nHTTPPort);
   
-	std::string GetConfigDir();
-  std::string GetConfigFileName() { return m_sConfigFileName; }
+    std::string GetConfigDir();
+    std::string GetConfigFileName() { return m_sConfigFileName; }
   
-  std::string GetSharedDir(unsigned int p_nDirIdx);
-  unsigned int SharedDirCount();  
+    int SharedDirCount();
+    std::string GetSharedDir(int p_nIdx);  
+    bool AddSharedDirectory(std::string p_sDirectory);
+    bool RemoveSharedDirectory(unsigned int p_nIndex);
   
-  unsigned int AllowedIPCount();
-  std::string GetAllowedIP(unsigned int p_nIdx);
-  bool IsAllowedIP(std::string p_sIPAddress);
+    int SharedITunesCount();
+    std::string GetSharedITunes(int p_nIdx);  
   
-  bool AddAllowedIP(std::string p_sIPAddress);
-  bool RemoveAllowedIP(unsigned int p_nIndex);
+    unsigned int AllowedIPCount();
+    std::string GetAllowedIP(unsigned int p_nIdx);
+    bool IsAllowedIP(std::string p_sIPAddress);  
+    bool AddAllowedIP(std::string p_sIPAddress);
+    bool RemoveAllowedIP(unsigned int p_nIndex);  
   
-    
-  //DisplaySettings_t GetDisplaySettings() { return m_DisplaySettings; }
+    unsigned int GetFuppesInstanceCount();
+    CFuppes* GetFuppesInstance(unsigned int p_nIndex);
+    void AddFuppesInstance(CFuppes* pFuppes);
   
-  /*unsigned int GetMaxFileNameLength() { return m_nMaxFileNameLength; }
-  void SetMaxFileNameLength(unsigned int p_nMaxFileNameLenght); */
-  
-  bool AddSharedDirectory(std::string p_sDirectory);
-  bool RemoveSharedDirectory(unsigned int p_nIndex);
-  
-  //bool SetPlaylistRepresentation(std::string p_sRepresentation);  
+  	
+    bool UseImageMagick() { return m_pConfigFile->UseImageMagick(); }
+    bool UseTaglib()      { return m_pConfigFile->UseTaglib(); }
+    bool UseLibAvFormat() { return m_pConfigFile->UseLibAvFormat(); }
 
-  void AddFuppesInstance(CFuppes* pFuppes);
-	
-  CFuppes* GetFuppesInstance(unsigned int p_nIndex);
-  unsigned int GetFuppesInstanceCount();
-  
-	//bool IsXBox360SupportEnabled() { return m_bXBox360Support; }
-  bool UseImageMagick() { return m_bUseImageMagick; }
+  private:
+    static CSharedConfig* m_Instance;    
+      
+    CConfigFile*  m_pConfigFile;
+    std::string   m_sConfigFileName;
 
+    std::string   m_sHostname;
+    std::string   m_sIP;
+    std::string   m_sUUID;
+    std::string   m_sOSName;
+    std::string   m_sOSVersion;  
+    std::string   m_sTempDir;
+    unsigned int  m_nHTTPPort;
 
-private:
+    std::vector<CFuppes*> m_vFuppesInstances;
 
-  static CSharedConfig* m_Instance;
-
-  // xml config nodes
-  xmlDocPtr   m_pDoc;
-  xmlNode*    m_pSharedDirNode;
-  xmlNode*    m_pContentDirNode;
-  xmlNode*    m_pNetSettingsNode;
-  xmlNode*    m_pTranscodingSettingsNode;
-
-  // member vars
-  std::string m_sConfigVersion;  
-  std::string m_sConfigFileName;
-
-  std::string m_sHostname;
-	std::string m_sIP;
-  std::string m_sUUID;
-  std::string m_sOSName;
-  std::string m_sOSVersion;
-  std::string m_sLocalCharset;
-	std::string m_sTempDir;
-
-
-  //unsigned int m_nMaxFileNameLength;
-
-  std::vector<std::string> m_vSharedDirectories;
-  std::vector<std::string> m_vAllowedIPs;
-  unsigned int m_nHTTPPort;
-  
-	bool m_bUseImageMagick;
-
-  //DisplaySettings_t m_DisplaySettings;
-
-
-  std::vector<CFuppes*> m_vFuppesInstances;
-
-
-  bool ReadConfigFile();
-  bool ResolveHostAndIP();
-  bool ResolveIPByHostname();
-  bool ResolveIPByInterface(std::string p_sInterfaceName);  
-  bool WriteDefaultConfig(std::string p_sFileName);  
-  void GetOSInfo();
-  
+    bool ReadConfigFile();
+    bool ResolveHostAndIP();
+    bool ResolveIPByHostname();
+    bool ResolveIPByInterface(std::string p_sInterfaceName);
+    void GetOSInfo();  
 };
 
 #endif // _SHAREDCONFIG_H

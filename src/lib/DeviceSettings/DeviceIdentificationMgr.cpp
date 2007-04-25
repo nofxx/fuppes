@@ -56,7 +56,7 @@ CDeviceIdentificationMgr::CDeviceIdentificationMgr()
 	*/
 
   // Microsoft Xbox 360
-  pSettings = new CDeviceSettings("Xbox 360");
+  /*pSettings = new CDeviceSettings("Xbox 360");
 	pSettings->m_slUserAgents.push_back("Xbox/2.0.\\d+.\\d+ UPnP/1.0 Xbox/2.0.\\d+.\\d+");
 	pSettings->m_slUserAgents.push_back("Xenon");
   pSettings->m_bXBox360Support = true;
@@ -78,7 +78,7 @@ CDeviceIdentificationMgr::CDeviceIdentificationMgr()
 	pSettings->m_ImageSettings.bResize    = true;
 	pSettings->m_ImageSettings.nMaxWidth  = 20;
 	pSettings->m_ImageSettings.nMaxHeight = 40;
-	m_Settings.push_back(pSettings);
+	m_Settings.push_back(pSettings); */
 
   // default settings
   m_pDefaultSettings = new CDeviceSettings("default");
@@ -112,4 +112,27 @@ void CDeviceIdentificationMgr::IdentifyDevice(CHTTPMessage* pDeviceMessage)
   	pDeviceMessage->SetDeviceSettings(m_pDefaultSettings);
 
   CSharedLog::Shared()->Log(L_EXTENDED, pDeviceMessage->GetDeviceSettings()->m_sDeviceName, __FILE__, __LINE__);
+}
+
+
+CDeviceSettings* CDeviceIdentificationMgr::GetSettingsForInitialization(std::string p_sDeviceName)
+{
+  // check if device exists
+  CDeviceSettings* pSettings = NULL;
+  
+	for(m_SettingsIt = m_Settings.begin(); m_SettingsIt != m_Settings.end(); m_SettingsIt++)	{    
+    
+    if((*m_SettingsIt)->m_sDeviceName.compare(p_sDeviceName) == 0) {
+      pSettings = *m_SettingsIt;
+      break;
+    }
+  }
+  
+  // create new setting
+  if(pSettings == NULL) {
+    pSettings = new CDeviceSettings(p_sDeviceName);
+    m_Settings.push_back(pSettings);
+  } 
+    
+  return pSettings;
 }

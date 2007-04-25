@@ -30,16 +30,16 @@ using namespace std;
 CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
 {
   m_sDeviceName = p_sDeviceName;
-  m_sVirtualFolderDevice = "default"; //"Xbox 360"; //"default";
+  m_sVirtualFolderDevice = "default";
 	
   m_bShowPlaylistAsContainer = false;
 	m_bXBox360Support					 = false;
 	m_nMaxFileNameLength			 = 0;
 	
-	m_ImageSettings.bResize = false;
+	m_ImageSettings.bResize         = false;
 	m_ImageSettings.bResizeIfLarger = false;
-	m_ImageSettings.nMaxWidth = 0;
-	m_ImageSettings.nMaxHeight = 0;
+	m_ImageSettings.nMaxWidth       = 0;
+	m_ImageSettings.nMaxHeight      = 0;
     
   m_DisplaySettings.bShowChildCountInTitle = false;
 }
@@ -51,8 +51,7 @@ bool CDeviceSettings::HasUserAgent(std::string p_sUserAgent)
 	RegEx* pRxUserAgent;
 	std::list<std::string>::const_iterator it;
 	
-	for(it = m_slUserAgents.begin(); it != m_slUserAgents.end(); it++)
-	{
+	for(it = m_slUserAgents.begin(); it != m_slUserAgents.end(); it++) {
 		sUserAgent = *it;
 	
 		pRxUserAgent = new RegEx(sUserAgent.c_str(), PCRE_CASELESS);
@@ -72,10 +71,7 @@ bool CDeviceSettings::HasIP(std::string p_sIPAddress)
 {
   string sIP;
 	std::list<std::string>::const_iterator it;
-	for(it = m_slIPAddresses.begin(); it != m_slIPAddresses.end(); it++)
-	{
-	  //cout << p_sIPAddress << endl;
-	
+	for(it = m_slIPAddresses.begin(); it != m_slIPAddresses.end(); it++) {
 	  sIP = *it;
 		if(sIP.compare(p_sIPAddress) == 0)
 		  return true;

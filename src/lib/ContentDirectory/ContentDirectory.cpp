@@ -81,8 +81,8 @@ void CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
   {
     // Browse
     case UPNP_BROWSE:
-      sContent = DbHandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);     
-      cout << sContent << endl;
+      sContent = DbHandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);      
+      cout << ((CUPnPBrowse*)pUPnPAction)->GetContent() << endl;
       break;
 		// Search
 		case UPNP_SEARCH:
@@ -188,6 +188,8 @@ std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
           CSharedLog::Shared()->DebugLog(LOGNAME, "CContentDirectory::DbHandleUPnPBrowse - BrowseDirectChildren");
           BrowseDirectChildren(resWriter, &nTotalMatches, &nNumberReturned, pUPnPBrowse);
           break;
+        default:
+          break;
       }   
   
       /*cout << "start idx: " << pUPnPBrowse->m_nStartingIndex << endl;
@@ -289,12 +291,13 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   
   // get child count
   bool bNeedCount = false;    
-  if(nContainerType == CONTAINER_PLAYLIST_CONTAINER) {
+  /*if(nContainerType == CONTAINER_PLAYLIST_CONTAINER) {
     sSql << "select count(*) as COUNT from PLAYLIST_ITEMS where " <<
             "PLAYLIST_ID = " << pUPnPBrowse->GetObjectIDAsInt() << ";";          
     bNeedCount = true;
   }
-  else if(nContainerType < ITEM) {
+  else */
+  if(nContainerType < ITEM) {
     sSql <<
       "select count(*) as COUNT " <<
       "from MAP_OBJECTS " <<
@@ -421,14 +424,14 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   }
     
   // get total matches
-  if(nContainerType == CONTAINER_PLAYLIST_CONTAINER) {
+  /*if(nContainerType == CONTAINER_PLAYLIST_CONTAINER) {
     sSql << "select count(*) as COUNT from PLAYLIST_ITEMS where PLAYLIST_ID = " <<
             pUPnPBrowse->GetObjectIDAsInt();
   }
-  else {
+  else { */
     sSql << "select count(*) as COUNT from MAP_OBJECTS where PARENT_ID = " <<
             pUPnPBrowse->GetObjectIDAsInt() << " and " << sDevice;
-  }
+  //}
 
                             
   
@@ -442,7 +445,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   sSql.str("");
   
   /* get description */
-  if(nContainerType == CONTAINER_PLAYLIST_CONTAINER) {
+  /*if(nContainerType == CONTAINER_PLAYLIST_CONTAINER) {
       sSql << "select " <<
               "  o.OBJECT_ID, o.TYPE, o.PATH, o.FILE_NAME, o.MIME_TYPE " <<
               "from " <<
@@ -451,7 +454,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
               "  o.OBJECT_ID = p.OBJECT_ID and " <<
               "  p.PLAYLIST_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " ";
   }
-  else {
+  else { */
     sSql << 
       "select " <<
       "  o.OBJECT_ID, o.TYPE, o.PATH, o.FILE_NAME, o.MIME_TYPE, " <<
@@ -470,7 +473,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
       "  o.TYPE, o.FILE_NAME ";
       
       cout << sSql.str() << endl;
-  } 
+ // } 
   
   
   if((pUPnPBrowse->m_nRequestedCount > 0) || (pUPnPBrowse->m_nStartingIndex > 0))
@@ -514,41 +517,20 @@ void CContentDirectory::BuildDescription(xmlTextWriterPtr pWriter,
 {
   OBJECT_TYPE nObjType = (OBJECT_TYPE)atoi(pSQLResult->GetValue("TYPE").c_str());
   
-  switch(nObjType)
-  {
-    // CONTAINER_STORAGE_FOLDER
-    case CONTAINER_STORAGE_FOLDER :
-    case CONTAINER_GENRE_MUSIC_GENRE:
-    case CONTAINER_PERSON_MUSIC_ARTIST:
-    case CONTAINER_ALBUM_PHOTO_ALBUM:      
-    case CONTAINER_ALBUM_MUSIC_ALBUM:
-      BuildContainerDescription(pWriter, pSQLResult, pUPnPBrowse, p_sParentId, nObjType);         
-      break;
-      
-    // CONTAINER_PLAYLIST_CONTAINER
-    case CONTAINER_PLAYLIST_CONTAINER :
-		  
-      if(pUPnPBrowse->GetDeviceSettings()->m_bShowPlaylistAsContainer)
-        BuildContainerDescription(pWriter, pSQLResult, pUPnPBrowse, p_sParentId, CONTAINER_PLAYLIST_CONTAINER);
-      else
-        BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, CONTAINER_PLAYLIST_CONTAINER, p_sParentId);
-      break;      
+  // some kind of container
+  if(nObjType < ITEM) {
     
-    // ITEM_IMAGE_ITEM_PHOTO
-    // ITEM_AUDIO_ITEM_MUSIC_TRACK    
-    // ITEM_AUDIO_ITEM_AUDIO_BROADCAST
-    // ITEM_VIDEO_ITEM_MOVIE    
-    // ITEM_VIDEO_ITEM_VIDEO_BROADCAST
-    case ITEM_IMAGE_ITEM_PHOTO :
-    case ITEM_AUDIO_ITEM_MUSIC_TRACK :
-    case ITEM_AUDIO_ITEM_AUDIO_BROADCAST :
-    case ITEM_VIDEO_ITEM_MOVIE :  
-    case ITEM_VIDEO_ITEM_VIDEO_BROADCAST :
-      BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, nObjType, p_sParentId);
-      break;
+    if((nObjType == CONTAINER_PLAYLIST_CONTAINER) && !pUPnPBrowse->GetDeviceSettings()->m_bShowPlaylistAsContainer) {
+      BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, CONTAINER_PLAYLIST_CONTAINER, p_sParentId);
+    }
+    else {
+      BuildContainerDescription(pWriter, pSQLResult, pUPnPBrowse, p_sParentId, nObjType);
+    }
       
-    default :
-      throw EException("unhandled object type", __FILE__, __LINE__);
+  }
+  // an item
+  else {
+    BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, nObjType, p_sParentId);
   }
 }
 
@@ -569,14 +551,14 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
   if(CVirtualContainerMgr::Shared()->HasVirtualChildren(pSQLResult->GetValueAsUInt("OBJECT_ID"), pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice))
     sDevice = "DEVICE = '" + pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice + "' ";                                                    
 
-  if(p_nContainerType == CONTAINER_PLAYLIST_CONTAINER) {
+  /*if(p_nContainerType == CONTAINER_PLAYLIST_CONTAINER) {
     sSql << "select count(*) as COUNT from PLAYLIST_ITEMS " <<
             "where PLAYLIST_ID = " << pSQLResult->GetValue("OBJECT_ID") << ";"; 
   }
-  else {
+  else { */
     sSql << "select count(*) as COUNT from MAP_OBJECTS " <<
       "where PARENT_ID = " << pSQLResult->GetValue("OBJECT_ID") << " and " << sDevice;
-  }
+  //}
 
   //cout << __FILE__ << __LINE__ << " " << sSql.str() << endl;  
   
@@ -648,13 +630,14 @@ dc:rights dc O */
     xmlTextWriterWriteString(pWriter, BAD_CAST CFileDetails::Shared()->GetObjectTypeAsString(p_nContainerType).c_str());  
     xmlTextWriterEndElement(pWriter); 
      
-    /* writeStatus */
-    if(pUPnPBrowse->IncludeProperty("upnp:writeStatus")) {    
+    // writeStatus (optional)
+    /*if(pUPnPBrowse->IncludeProperty("upnp:writeStatus")) {    
       xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "writeStatus", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");     
       xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN"); 
       xmlTextWriterEndElement(pWriter);
-    }
+    }*/
    
+    #warning todo: create playlist for other folder types
     if(p_nContainerType == CONTAINER_PLAYLIST_CONTAINER) {
       /* res */
       xmlTextWriterStartElement(pWriter, BAD_CAST "res");
@@ -698,19 +681,19 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter,
     /* restricted */
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "restricted", BAD_CAST "0");    
   
-    /* date */
-    if(pUPnPBrowse->IncludeProperty("dc:date")) {
+    // date
+    /*if(pUPnPBrowse->IncludeProperty("dc:date")) {
       xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "date", BAD_CAST "http://purl.org/dc/elements/1.1/");    
       xmlTextWriterWriteString(pWriter, BAD_CAST "2005-10-15");
       xmlTextWriterEndElement(pWriter);
-    }
+    }*/
     
-    /* writeStatus */
-    if(pUPnPBrowse->IncludeProperty("upnp:writeStatus")) {
+    // writeStatus (optional)
+    /*if(pUPnPBrowse->IncludeProperty("upnp:writeStatus")) {
       xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "writeStatus", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
       xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN");
       xmlTextWriterEndElement(pWriter);
-    }
+    }*/
     
     // title
     /*xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
@@ -740,6 +723,9 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter,
         break;      
       case CONTAINER_PLAYLIST_CONTAINER:
         BuildPlaylistItemDescription(pWriter, pSQLResult, pUPnPBrowse, szObjId);
+        break;
+      
+      default:
         break;
     }           
   
@@ -773,40 +759,39 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
     xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.audioItem.musicTrack");
   xmlTextWriterEndElement(pWriter);
 
-  /* creator */
-  if(pUPnPBrowse->IncludeProperty("dc:creator")) {
+  // creator
+  /*if(pUPnPBrowse->IncludeProperty("dc:creator")) {
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "creator", BAD_CAST "http://purl.org/dc/elements/1.1/");    
     xmlTextWriterWriteString(pWriter, BAD_CAST "-Unknown-");
     xmlTextWriterEndElement(pWriter);
-  }
+  }*/
 
-  /* storageMedium */
-  if(pUPnPBrowse->IncludeProperty("upnp:storageMedium")) {
+  // storageMedium
+  /*if(pUPnPBrowse->IncludeProperty("upnp:storageMedium")) {
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "storageMedium", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
     xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN");
     xmlTextWriterEndElement(pWriter);    
-  }
+  }*/
   
-	#warning todo: filter
-	if(!pSQLResult->IsNull("A_ARTIST")) {
+	if(pUPnPBrowse->IncludeProperty("upnp:artist") && !pSQLResult->IsNull("A_ARTIST")) {
   	xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "artist", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
       xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("A_ARTIST").c_str());
   	xmlTextWriterEndElement(pWriter); 
   }
 	
-	if(!pSQLResult->IsNull("A_ALBUM")) {
+	if(pUPnPBrowse->IncludeProperty("upnp:album") && !pSQLResult->IsNull("A_ALBUM")) {
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "album", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
       xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("A_ALBUM").c_str());
     xmlTextWriterEndElement(pWriter);
   }
 
-  if(!pSQLResult->IsNull("A_GENRE")) {
+  if(pUPnPBrowse->IncludeProperty("upnp:genre") && !pSQLResult->IsNull("A_GENRE")) {
   	xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "genre", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
       xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("A_GENRE").c_str());
   	xmlTextWriterEndElement(pWriter);
   }
   
-  if(!pSQLResult->IsNull("A_TRACK_NO")) {	
+  if(pUPnPBrowse->IncludeProperty("upnp:originalTrackNumber") && !pSQLResult->IsNull("A_TRACK_NO")) {	
 	  xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "originalTrackNumber", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
       xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("A_TRACK_NO").c_str());
 	  xmlTextWriterEndElement(pWriter);
@@ -896,11 +881,11 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterEndElement(pWriter);
 
   /* storageMedium */
-  if(pUPnPBrowse->IncludeProperty("upnp:storageMedium")) {  
+  /*if(pUPnPBrowse->IncludeProperty("upnp:storageMedium")) {  
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "storageMedium", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
     xmlTextWriterWriteString(pWriter, BAD_CAST "UNKNOWN");
     xmlTextWriterEndElement(pWriter);
-  }
+  }*/
 
 /* longDescription upnp No 
    rating upnp No
@@ -1062,7 +1047,7 @@ std::string CContentDirectory::HandleUPnPGetSearchCapabilities(CUPnPAction* pAct
     "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
     "  <s:Body>"
     "    <u:GetSearchCapabilitiesResponse xmlns:u=\"urn:schemas-upnp-org:service:ContentDirectory:1\">"
-    "      <SearchCaps>dc:title,upnp:class</SearchCaps>"
+    "      <SearchCaps>dc:title,upnp:class,upnp:artist</SearchCaps>"
     "    </u:GetSearchCapabilitiesResponse>"
     "  </s:Body>"
     "</s:Envelope>";
@@ -1107,17 +1092,15 @@ std::string CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch)
 	CSelectResult*    pRow = NULL;
   stringstream      sSql;
   int nTotalMatches = 0;
-  bool bVirtualContainer = CVirtualContainerMgr::Shared()->IsVirtualContainer(pSearch->GetContainerIdAsUInt(), 
-                                                                              pSearch->GetDeviceSettings()->m_sVirtualFolderDevice);
   
   // get total matches     
   sSql << pSearch->BuildSQL(true);
   cout << "SEARCH GET TOTAL MATCHES: " << endl << sSql.str() << endl << endl;
   pDb->Select(sSql.str());
-  nTotalMatches = atoi(pDb->GetResult()->GetValue("COUNT").c_str());
-	pDb->ClearResult();
-  sSql.str("");
-                                                                              
+  if(!pDb->Eof()) {
+    nTotalMatches = atoi(pDb->GetResult()->GetValue("COUNT").c_str());
+  }
+  sSql.str("");                                                                              
      
   // get items     
 	int nNumberReturned = 0;

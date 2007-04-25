@@ -169,7 +169,7 @@ std::string CFileDetails::GetMimeType(std::string p_sFileName, bool p_bTranscodi
   } // while !sExt.empty
   
   
-  CSharedLog::Shared()->Log(L_EXTENDED_WARN, "unhandled file extension: " + sExt, __FILE__, __LINE__);  
+  CSharedLog::Shared()->Log(L_EXTENDED_WARN, string("unhandled file extension: ") + sExt + " :: " + p_sFileName, __FILE__, __LINE__);  
   return "";
 }
 
@@ -300,10 +300,8 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pM
 	sTmp = pFile.tag()->title();
   pMusicTrack->mAudioItem.sTitle = sTmp.to8Bit(true);  
   
-	//string duration = "H+:MM:SS(.00)";
-	//pFile.audioProperties()->ReadStyle = TagLib::Accurate;
-	long length = pFile.audioProperties()->length();
-  stringstream sDuration;
+	// duration	
+	long length = pFile.audioProperties()->length();  
   int hours, mins, secs;
     
   secs  = length % 60;
@@ -313,13 +311,10 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pM
 
   char szDuration[11];
 	sprintf(szDuration, "%02d:%02d:%02d.00", hours, mins, secs);
-	szDuration[10] = '\0';
+	szDuration[10] = '\0';  
+  pMusicTrack->mAudioItem.sDuration = szDuration;
   
-  sDuration << szDuration << endl;  
- 
-  cout << sDuration.str() << endl << endl;
-  
-  pMusicTrack->mAudioItem.sDuration = sDuration.str();
+  cout << pMusicTrack->mAudioItem.sDuration << endl;
 	
 	// channels
 	pMusicTrack->mAudioItem.nNrAudioChannels = pFile.audioProperties()->channels();

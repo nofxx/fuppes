@@ -156,9 +156,9 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
   
 
   // xbox 360 uses &quot; instead of "
-	if(GetDeviceSettings()->m_bXBox360Support) {
+	//if(GetDeviceSettings()->m_bXBox360Support) {
 	  m_sSearchCriteria = StringReplace(m_sSearchCriteria, "&quot;", "\"");
-	}
+	//}
 
 
   cout << m_sSearchCriteria << endl;
@@ -219,9 +219,11 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 						
 					bLikeOp = true;
 				}
-				else if (sOp.compare("derivedfrom") == 0) {
+				else if(sOp.compare("derivedfrom") == 0) {
 				  sOp = "in";
-				} 
+				}
+        else if(sOp.compare("=") == 0) {          
+        }
 				else {
 				  bBuildOK = false;
 				}
@@ -242,10 +244,12 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 					  sVal = "(120, 121, 122)";	
 					else if(sVal.compare("object.item.videoItem") == 0)
 					  sVal = "(133, 131, 132)";
-					else if(sVal.compare("object.container.album.musicAlbum") == 0)
-					  sVal = "(31)";
 					else if(sVal.compare("object.container.person.musicArtist") == 0)
 					  sVal = "(11)";          
+					else if(sVal.compare("object.container.album.musicAlbum") == 0)
+					  sVal = "(31)";
+          else if(sVal.compare("object.container.genre.musicGenre") == 0)
+            sVal = "(41)";
 					else
 					  bBuildOK = false;
 				} 
@@ -271,8 +275,17 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 	}
 
 	
-	
+  
+  // order by and limit are not needed
+  // in a count request  
   if(!p_bCount) {  
+    
+    // order by
+    #warning: todo 'sort'
+    sSql << " order by o.TITLE ";
+    
+    
+    // limit
 	  if((m_nRequestedCount > 0) || (m_nStartingIndex > 0)) {
       sSql << " limit " << m_nStartingIndex << ", ";
       if(m_nRequestedCount == 0)
@@ -282,9 +295,7 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
     }
   }
 	
-  //sSql << ";";
-
-  cout << "SEARCH QUERY: " << endl << sSql.str() << endl << endl;	
+  //cout << "SEARCH QUERY: " << endl << sSql.str() << endl << endl;	
 
   return sSql.str();
 }

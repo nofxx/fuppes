@@ -31,6 +31,15 @@
 #include "../Common/XMLParser.h"
 #include "../UPnPActions/UPnPBrowse.h"
 
+class CObjectDetails {
+  public:
+    bool Empty() { return sAlbum.length() == 0 && sArtist.length() == 0 && sGenre.length() == 0; }
+    
+    std::string sAlbum;
+    std::string sArtist;
+    std::string sGenre;
+};
+
 class CVirtualContainerMgr
 {
   public:
@@ -47,11 +56,11 @@ class CVirtualContainerMgr
 	  static CVirtualContainerMgr* m_pInstance;
     unsigned int m_nIdCounter;
      
-    void CreateChildItems(CXMLNode* pParentNode, std::string p_sDevice, unsigned int p_nParentId, std::string p_sFilter = "");
+    void CreateChildItems(CXMLNode* pParentNode, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, std::string p_sFilter = "");
   
-    void CreateSingleVFolder(CXMLNode* pFolderNode, std::string p_sDevice, unsigned int p_nParentId);
-    void CreateVFoldersFromProperty(CXMLNode* pFoldersNode, std::string p_sDevice, unsigned int p_nParentId, std::string p_sFilter = "");
-    void CreateVFoldersSplit(CXMLNode* pFoldersNode, std::string p_sDevice, unsigned int p_nParentId, std::string p_sFilter = "");
+    void CreateSingleVFolder(CXMLNode* pFolderNode, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails);
+    void CreateVFoldersFromProperty(CXMLNode* pFoldersNode, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, std::string p_sFilter = "");
+    void CreateVFoldersSplit(CXMLNode* pFoldersNode, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, std::string p_sFilter = "");
     void CreateItemMappings(CXMLNode* pNode, std::string p_sDevice, unsigned int p_nParentId, std::string p_sFilter = "");
     void CreateFolderMappings(CXMLNode* pNode, std::string p_sDevice, unsigned int p_nParentId, std::string p_sFilter = "");
     void MapSharedDirsTo(CXMLNode* pNode, std::string p_sDevice, unsigned int p_nParentId);

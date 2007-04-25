@@ -151,7 +151,9 @@ libfuppes_la_SOURCES = \
 	lib/Common/XMLParser.cpp\
 	lib/Common/XMLParser.h\
 	lib/ContentDirectory/iTunesImporter.cpp\
-	lib/ContentDirectory/iTunesImporter.h
+	lib/ContentDirectory/iTunesImporter.h                                               \
+	lib/Configuration/ConfigFile.cpp                                               \
+	lib/Configuration/ConfigFile.h 
 
 libfuppes_la_LDFLAGS = \
   $(LIBNOTIFY_LIBS)\
@@ -162,3 +164,9 @@ libfuppes_la_LDFLAGS = \
 	${PCRE_LIBS}\
   ${SQLITE3_LIBS}\
   ${TAGLIB_LIBS}
+
+
+
+
+
+

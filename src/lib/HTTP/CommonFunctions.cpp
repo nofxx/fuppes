@@ -73,7 +73,7 @@ int fuppesSocketSend(fuppesSocket p_Socket, const char* pBuffer, int p_nLength)
 
     // would block
     if(bWouldBlock)
-      fuppesSleep(100);      
+      fuppesSleep(10);      
 
   } while ((nLastSend < 0) || (nFullSend < p_nLength) || bWouldBlock);    
   

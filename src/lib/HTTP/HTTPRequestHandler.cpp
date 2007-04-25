@@ -92,11 +92,8 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
     string sObjectId = sRequest.substr(23, sRequest.length());
     CPlaylistFactory* pFact = new CPlaylistFactory();    
     string sPlaylist = pFact->BuildPlaylist(sObjectId);
-    pResponse->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
-    if(ExtractFileExt(sObjectId).compare("pls") == 0)      
-      pResponse->SetContentType(CFileDetails::GetMimeType("pls", false));
-    else if(ExtractFileExt(sObjectId).compare("m3u") == 0)
-      pResponse->SetContentType(CFileDetails::GetMimeType("m3u", false));      
+    pResponse->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    
+    pResponse->SetContentType(CFileDetails::GetMimeType(sObjectId, false));    
     pResponse->SetContent(sPlaylist);    
 
     delete pFact;

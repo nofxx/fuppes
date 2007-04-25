@@ -57,10 +57,21 @@ std::string CPlaylistFactory::BuildPLS(std::string p_sObjectId)
   CContentDatabase* pDb       = new CContentDatabase();
   OBJECT_TYPE       nObjectType = OBJECT_TYPE_UNKNOWN;
   
-  sSql << "select o.* from OBJECTS o, PLAYLIST_ITEMS p where o.ID = p.OBJECT_ID and p.PLAYLIST_ID = " << nObjectId << ";";
+  sSql << 
+    "select " <<
+    "  * " <<
+    "from " <<
+    "  OBJECTS o, " <<
+    "  MAP_OBJECTS m " <<
+    "  left join OBJECT_DETAILS d on (d.ID = o.DETAIL_ID) " <<
+    "where " <<
+    "  m.PARENT_ID = " << nObjectId << " and " <<
+    "  o.OBJECT_ID = m.OBJECT_ID";
+    
+ // "select o.* from OBJECTS o, PLAYLIST_ITEMS p where o.ID = p.OBJECT_ID and p.PLAYLIST_ID = " << nObjectId << ";";
   pDb->Select(sSql.str());
   
-  //cout << sSql.str() << endl;
+  cout << sSql.str() << endl;
   
   int nNumber = 0;
   sResult << "[playlist]\r\n";
@@ -70,7 +81,7 @@ std::string CPlaylistFactory::BuildPLS(std::string p_sObjectId)
     pRes = pDb->GetResult();
     
     char szItemId[11];         
-    unsigned int nItemId = atoi(pRes->GetValue("ID").c_str());
+    unsigned int nItemId = atoi(pRes->GetValue("OBJECT_ID").c_str());
     sprintf(szItemId, "%010X", nItemId);
     
     nObjectType = (OBJECT_TYPE)atoi(pRes->GetValue("TYPE").c_str());
@@ -118,21 +129,23 @@ std::string CPlaylistFactory::BuildM3U(std::string p_sObjectId)
   CContentDatabase* pDb       = new CContentDatabase();
   OBJECT_TYPE       nObjectType = OBJECT_TYPE_UNKNOWN;
   
-  sSql << "select o.* from OBJECTS o, PLAYLIST_ITEMS p where o.ID = p.OBJECT_ID and p.PLAYLIST_ID = " << nObjectId << ";";
+  
+  sSql << 
+    "select " <<
+    "  * " <<
+    "from " <<
+    "  OBJECTS o, " <<
+    "  MAP_OBJECTS m " <<
+    "  left join OBJECT_DETAILS d on (d.ID = o.DETAIL_ID) " <<
+    "where " <<
+    "  m.PARENT_ID = " << nObjectId << " and " <<
+    "  o.OBJECT_ID = m.OBJECT_ID";
+  
+  //"select o.* from OBJECTS o, PLAYLIST_ITEMS p where o.ID = p.OBJECT_ID and p.PLAYLIST_ID = " << nObjectId << ";";
   pDb->Select(sSql.str());
   
     
-  //sResult << "#EXTM3U\r\n"; 
-/*  
-#EXTM3U
-#EXTINF:221,Queen - Bohemian Rhapsody
-Titel 1.mp3
-#EXTINF:473,Dire Straits - Walk Of Life
-Pop\Meine Auswahl\Titel 2.mp3
-#EXTINF:264,Keep The Faith
-C:\Dokumente und Einstellungen\All Users\Dokumente\Eigene Musik\Titel 3.mp3
-#EXTINF:504,Bob Marley - Buffalo Soldier
-http://www.seite.de/musik/titel4.mp3 */
+  cout << sSql.str() << endl;
   
   
   while(!pDb->Eof())
@@ -140,7 +153,7 @@ http://www.seite.de/musik/titel4.mp3 */
     pRes = pDb->GetResult();
     
     char szItemId[11];         
-    unsigned int nItemId = atoi(pRes->GetValue("ID").c_str());
+    unsigned int nItemId = atoi(pRes->GetValue("OBJECT_ID").c_str());
     sprintf(szItemId, "%010X", nItemId);
     
     nObjectType = (OBJECT_TYPE)atoi(pRes->GetValue("TYPE").c_str());
