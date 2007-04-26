@@ -137,7 +137,7 @@ bool CSharedConfig::SetupConfig(std::string p_sConfigFileName)
 	
 	
   // Network settings
-  if(!ResolveHostAndIP()) {
+  if(!ResolveHostAndIP()) {  
     return false;
   }
   
@@ -528,19 +528,31 @@ bool CSharedConfig::ResolveHostAndIP()
 		  #ifdef WIN32
 			cout << "please enter the ip address of your lan adapter" << endl;
 			cin >> sIface;
-			if(sIface.length() > 0)
+			if(sIface.length() > 0) {
 			  m_sIP = sIface;
-			return true;
+        m_pConfigFile->IpAddress(m_sIP);
+        m_pConfigFile->Save();
+			  return true;
+      }
 			#else
     	cout << "please enter the ip address or name (e.g. eth0, wlan1, ...) of your lan adapter" << endl;			
 			cin >> sIface;
 			RegEx rxIP("\\d+\\.\\d+\\.\\d+\\.\\d");
 			if(rxIP.Search(sIface.c_str())) {
 			  m_sIP = rxIP.Match(0);
+        m_pConfigFile->IpAddress(m_sIP);
+        m_pConfigFile->Save();
 				return true;
 			}
 			else {
-		    return ResolveIPByInterface(sIface);
+		    if(ResolveIPByInterface(sIface)) {
+          m_pConfigFile->IpAddress(m_sIP);
+          m_pConfigFile->Save();
+          return true;
+        }
+        else {
+          return false;
+        }
 			}
 			#endif
     }
