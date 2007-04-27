@@ -14,7 +14,7 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
@@ -89,7 +89,7 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
       // <key>Kind</key><string>MPEG-Audiodatei</string>
     }
     else if(pNode->Value().compare("Name") == 0) {
-      cout << "Name: " << pDict->ChildNode(i + 1)->Value() << endl;
+      //cout << "Name: " << pDict->ChildNode(i + 1)->Value() << endl;
       track.mAudioItem.sTitle = pDict->ChildNode(i + 1)->Value();
     }
     else if(pNode->Value().compare("Artist") == 0) {
@@ -126,13 +126,13 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
       sFileName = StringReplace(sFileName, "/", "\\");
       #endif
       sFileName = StringReplace(sFileName, "%20", " ");
-      cout << "*" << sFileName << "*" << endl;
+      //cout << "*" << sFileName << "*" << endl;
         
     }
       
    
   }
-     cout << endl;
+     //cout << endl;
 
   stringstream sSql;
   CContentDatabase* pDb = new CContentDatabase();

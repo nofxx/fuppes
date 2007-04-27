@@ -14,7 +14,7 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
@@ -30,6 +30,7 @@
 #include "../ContentDirectory/FileDetails.h"
 #include "../Transcoding/TranscodingMgr.h"
 #include "../HTTP/HTTPParser.h"
+#include "../DeviceSettings/DeviceIdentificationMgr.h"
 
 //#include "Images/fuppes_png.cpp"
 #include "Images/fuppes_small_png.cpp"
@@ -467,8 +468,13 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
   sResult << sTranscoding;
   
   
-  sResult << 
+  
+  sResult << "<h1>build options</h1>" <<
   "<table>" <<    
+    "<tr>" <<
+      "<th>option</th>" <<
+      "<th>enabled</th>" <<
+    "</tr>" <<
     "<tr>" <<
       "<td>iconv</td>" <<
       #ifdef HAVE_ICONV
@@ -559,35 +565,44 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
 std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMessage* pRequest)
 {
   std::stringstream sResult;  
-    
-  //cout << pRequest->GetMessage() << endl;
-  
-  /* handle config changes */
+
+  // handle config changes
   if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_POST)
   {
-  	cout << pRequest->GetMessage() << endl;
+  	//cout << pRequest->GetMessage() << endl;
 	
 		CHTTPParser* pParser = new CHTTPParser();
 		pParser->ConvertURLEncodeContentToPlain(pRequest);
 		delete pParser;	
 	
-    /* remove shared dir(s) */    
+    // remove shared objects(s)
     stringstream sVar;
-    for(int i = CSharedConfig::Shared()->SharedDirCount() - 1; i >= 0; i--)
-    {
+    for(int i = CSharedConfig::Shared()->SharedDirCount() - 1; i >= 0; i--) {
       sVar << "shared_dir_" << i;      
       if(pRequest->PostVarExists(sVar.str()))      
         CSharedConfig::Shared()->RemoveSharedDirectory(i);      
       sVar.str("");
     }    
     
-    /* add shared dir */
-    if(pRequest->PostVarExists("new_dir") && (pRequest->GetPostVar("new_dir").length() > 0))
+    for(int i = CSharedConfig::Shared()->SharedITunesCount() - 1; i >= 0; i--) {
+      sVar << "shared_itunes_" << i;      
+      if(pRequest->PostVarExists(sVar.str()))      
+        CSharedConfig::Shared()->RemoveSharedITunes(i);      
+      sVar.str("");
+    }    
+    
+    // add shared object
+    if(pRequest->PostVarExists("new_obj") && (pRequest->GetPostVar("new_obj").length() > 0))
     {     
-      CSharedConfig::Shared()->AddSharedDirectory(pRequest->GetPostVar("new_dir"));
+      if(pRequest->GetPostVar("new_obj_type").compare("dir") == 0) {
+        CSharedConfig::Shared()->AddSharedDirectory(pRequest->GetPostVar("new_obj"));
+      }
+      else if(pRequest->GetPostVar("new_obj_type").compare("itunes") == 0) {
+        CSharedConfig::Shared()->AddSharedITunes(pRequest->GetPostVar("new_obj"));
+      }
     }
 
-    /* local_charset */
+    // local_charset
     if(pRequest->PostVarExists("local_charset")) {
       CSharedConfig::Shared()->SetLocalCharset(pRequest->GetPostVar("local_charset"));
     }    
@@ -605,26 +620,24 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
       CSharedConfig::Shared()->SetMaxFileNameLength(nMaxFileNameLength);
     }*/
     
-    /* ip address */
+    // ip address
     if(pRequest->PostVarExists("ip_address") && (pRequest->GetPostVar("ip_address").length() > 0)) {
       CSharedConfig::Shared()->SetIPv4Address(pRequest->GetPostVar("ip_address"));
     }
     
-    /* http port */
+    // http port
     if(pRequest->PostVarExists("http_port") && (pRequest->GetPostVar("http_port").length() > 0)) {
       int nHTTPPort = atoi(pRequest->GetPostVar("http_port").c_str());      
       CSharedConfig::Shared()->SetHTTPPort(nHTTPPort);
     }
     
-    /* add allowed ip */
-    if(pRequest->PostVarExists("new_allowed_ip") && (pRequest->GetPostVar("new_allowed_ip").length() > 0))
-    {     
+    // add allowed ip
+    if(pRequest->PostVarExists("new_allowed_ip") && (pRequest->GetPostVar("new_allowed_ip").length() > 0)) {     
       CSharedConfig::Shared()->AddAllowedIP(pRequest->GetPostVar("new_allowed_ip"));
     }
     
-    /* remove allowed ip */
-    for(int i = CSharedConfig::Shared()->AllowedIPCount() - 1; i >= 0; i--)
-    {
+    // remove allowed ip
+    for(int i = CSharedConfig::Shared()->AllowedIPCount() - 1; i >= 0; i--) {
       sVar << "allowed_ip_" << i;      
       if(pRequest->PostVarExists(sVar.str()))      
         CSharedConfig::Shared()->RemoveAllowedIP(i);      
@@ -635,29 +648,41 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
   
   /* show config page */
   sResult << "<h1>ContentDirectory settings</h1>" << endl;
-  sResult << "<form method=\"POST\" action=\"/presentation/config.html\" enctype=\"text/plain\">" << endl;  //  accept-charset=\"UTF-8\"
+  sResult << "<form method=\"POST\" action=\"/presentation/config.html\" enctype=\"text/plain\" accept-charset=\"UTF-8\">" << endl;  //  
   
-  /*// shared dirs
-  sResult << "<h2>shared directories</h2>" << endl;
+  // shared objects
+  sResult << "<h2>shared objects</h2>" << endl;
   
-  
-  // directory list
+  // object list
   sResult << "<p>" << endl <<  
              "<table>" << endl <<
                "<thead>" << endl <<
                  "<tr>" <<
-                   "<th>Del</th>" <<
-                   "<th>Directory</th>" <<
+                   "<th>del</th>" <<
+                   "<th>type</th>" <<
+                   "<th>object</th>" <<
                  "</tr>" <<
                "</thead>" << endl <<
                "<tbody>" << endl;
-  for(unsigned int i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
-  {
+  
+  // dirs
+  int i;
+  for(i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++) {
     sResult << "<tr>" << endl;    
-    sResult << "<td><input type=\"checkbox\" name=\"shared_dir_" << i << "\" value=\"remove\"></td>" << endl;   
+    sResult << "<td><input type=\"checkbox\" name=\"shared_dir_" << i << "\" value=\"remove\"></td>" << endl;
+    sResult << "<td>dir</td>" << endl;
     sResult << "<td>" << CSharedConfig::Shared()->GetSharedDir(i) << "</td>" << endl;
     sResult << "</tr>" << endl;
   }
+  
+  // itunes
+  for(i = 0; i < CSharedConfig::Shared()->SharedITunesCount(); i++) {
+    sResult << "<tr>" << endl;    
+    sResult << "<td><input type=\"checkbox\" name=\"shared_itunes_" << i << "\" value=\"remove\"></td>" << endl;   
+    sResult << "<td>iTunes</td>" << endl;    
+    sResult << "<td>" << CSharedConfig::Shared()->GetSharedITunes(i) << "</td>" << endl;
+    sResult << "</tr>" << endl;
+  }  
   
   sResult <<   "</tbody>" << endl <<
              "</table>" << endl <<  
@@ -665,11 +690,12 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
   
   // "add new form" controls
   sResult << "<p>" <<  
-               "Add directory: <input name=\"new_dir\" />" << endl <<
-               "<br />" << endl <<
+               "Add objects: <input name=\"new_obj\" /><br />" << endl <<
+               "<input type=\"radio\" name=\"new_obj_type\" value=\"dir\" checked=\"checked\" />directory " <<
+               "<input type=\"radio\" name=\"new_obj_type\" value=\"itunes\" />iTunes db<br />" <<    
                "<input type=\"submit\" />" << endl <<             
-             "</p>" << endl;  
-  */
+             "</p>" << endl;
+  
   // playlist representation
   /*sResult << "<h2>playlist representation</h2>" << endl;
   sResult << "<p>Choose how playlist items are represented. <br />\"file\" sends playlists as real playlist files (m3u or pls)<br />" <<
@@ -726,7 +752,7 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
                "<input type=\"submit\" />" << endl <<             
              "</p>" << endl;  
   
-  /*sResult << "<h2>Allowed IP-addresses</h2>" << endl;
+  sResult << "<h2>Allowed IP-addresses</h2>" << endl;
   
   // allowed ip list
   sResult << "<p>" << endl <<  
@@ -741,8 +767,7 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
                  "</tr>" <<
                "</thead>" << endl <<
                "<tbody>" << endl;
-  for(unsigned int i = 0; i < CSharedConfig::Shared()->AllowedIPCount(); i++)
-  {
+  for(unsigned int i = 0; i < CSharedConfig::Shared()->AllowedIPCount(); i++) {
     sResult << "<tr>" << endl;    
     sResult << "<td><input type=\"checkbox\" name=\"allowed_ip_" << i << "\" value=\"remove\"></td>" << endl;   
     sResult << "<td>" << CSharedConfig::Shared()->GetAllowedIP(i) << "</td>" << endl;
@@ -757,7 +782,7 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
                "<input name=\"new_allowed_ip\" />" << endl <<
                "<br />" << endl <<
                "<input type=\"submit\" />" << endl <<             
-             "</p>" << endl;    */
+             "</p>" << endl;
   
   sResult << "</form>";
   

@@ -14,7 +14,7 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
@@ -41,6 +41,8 @@
 #include "Common/RegEx.h"
 #include "SharedLog.h"
 
+#include "Transcoding/TranscodingMgr.h"
+
 #include <sys/types.h>
 #include <fcntl.h>
 #include <fstream>
@@ -55,27 +57,9 @@
 #define MAXHOSTNAMELEN     64
 #endif
 
-#ifndef DISABLE_TRANSCODING
-
-#include "Transcoding/LameWrapper.h"
-
-#ifndef DISABLE_VORBIS
-#include "Transcoding/VorbisWrapper.h"
-#endif
-
-#ifndef DISABLE_MUSEPACK
-#include "Transcoding/MpcWrapper.h"
-#endif
-
-#ifndef DISABLE_FLAC
-#include "Transcoding/FlacWrapper.h"
-#endif
-
-#endif
-
 using namespace std;
 
-const std::string FUPPES_VERSION = "0.7.2-dev";
+const std::string FUPPES_VERSION = "0.7.2";
 
 CSharedConfig* CSharedConfig::m_Instance = 0;
 
@@ -216,6 +200,7 @@ bool CSharedConfig::SetHTTPPort(unsigned int p_nHTTPPort)
 
 
 
+// shared dirs
 int CSharedConfig::SharedDirCount()
 {
   return m_pConfigFile->SharedDirCount();
@@ -226,6 +211,18 @@ std::string CSharedConfig::GetSharedDir(int p_nIdx)
   return m_pConfigFile->SharedDir(p_nIdx);
 }
 
+void CSharedConfig::AddSharedDirectory(std::string p_sDirectory)
+{  
+  m_pConfigFile->AddSharedDir(ToUTF8(p_sDirectory));
+}
+
+void CSharedConfig::RemoveSharedDirectory(int p_nIdx)
+{
+  m_pConfigFile->RemoveSharedDir(p_nIdx);
+}
+
+
+// shared iTunes
 int CSharedConfig::SharedITunesCount()
 {
   return m_pConfigFile->SharedITunesCount();
@@ -236,51 +233,19 @@ std::string CSharedConfig::GetSharedITunes(int p_nIdx)
   return m_pConfigFile->SharedITunes(p_nIdx);  
 }
 
-
-/** AddSharedDirectory
- */
-bool CSharedConfig::AddSharedDirectory(std::string p_sDirectory)
-{  
-  /*unsigned char* szBuf = new unsigned char[4096];  
-  int nSize = 4096;
-  int nLength = p_sDirectory.length();
-  isolat1ToUTF8(szBuf, &nSize, (const unsigned char*)p_sDirectory.c_str(), &nLength);
-  szBuf[nSize] = '\0';  */
-    
-  /*if(m_pSharedDirNode)
-    xmlNewTextChild(m_pSharedDirNode, NULL, BAD_CAST "dir", BAD_CAST p_sDirectory.c_str());
-  
-  //delete[] szBuf;
-  
-  //xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);    
-  return this->Refresh();*/
-}
-
-/** RemoveSharedDirectory
- */
-bool CSharedConfig::RemoveSharedDirectory(unsigned int p_nIndex)
+void CSharedConfig::AddSharedITunes(std::string p_sITunes)
 {
-  //cout << "CSharedConfig::RemoveSharedDirectory " << p_nIndex << endl;
-  /*if(m_pSharedDirNode)
-  {
-    xmlNode* tmpNode = m_pSharedDirNode->children;
-    unsigned int i = 0;
-    while(tmpNode)
-    {
-      if(i == p_nIndex) {
-        xmlUnlinkNode(tmpNode);
-        xmlFreeNode(tmpNode);
-        break;
-      }      
-      
-      i++;
-      tmpNode = tmpNode->next;
-    }    
-  }
-  
-  //xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1); 
-  return this->Refresh();*/
+  m_pConfigFile->AddSharedITunes(ToUTF8(p_sITunes));
 }
+
+void CSharedConfig::RemoveSharedITunes(int p_nIdx)
+{
+  m_pConfigFile->RemoveSharedITunes(p_nIdx);
+}
+
+
+
+
 
 
 bool CSharedConfig::IsAllowedIP(std::string p_sIPAddress)
@@ -299,8 +264,7 @@ bool CSharedConfig::IsAllowedIP(std::string p_sIPAddress)
     }
   }
   
-  return bResult;
-  return true;
+  return bResult;  
 }
 
 unsigned int CSharedConfig::AllowedIPCount()
@@ -315,66 +279,12 @@ std::string CSharedConfig::GetAllowedIP(unsigned int p_nIdx)
 
 bool CSharedConfig::AddAllowedIP(std::string p_sIPAddress)
 {
-  // search the allowed ips node
-  /*xmlNode* pTmpNode = m_pNetSettingsNode->children;
-  string sName;  
-  
-  while(pTmpNode)
-  { 
-    sName = (char*)pTmpNode->name;
-    if(sName.compare("allowed_ips") == 0)   
-      break;    
-    
-    pTmpNode = pTmpNode->next;
-  }
-  
-  // allowed ips node not found -> create one
-  if(!pTmpNode)
-    pTmpNode = xmlNewChild(m_pNetSettingsNode, NULL, BAD_CAST "allowed_ips", NULL);    
-  
-  // add new allowed ip child
-  xmlNewTextChild(pTmpNode, NULL, BAD_CAST "allowed_ip", BAD_CAST p_sIPAddress.c_str());  
-    
-  //xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1); 
-  return this->Refresh();*/
+  m_pConfigFile->AddAllowedIp(p_sIPAddress);
 }
 
 bool CSharedConfig::RemoveAllowedIP(unsigned int p_nIndex)
 {
-  // find allowed_ips node
-  /*xmlNode* pAllowedIPs = m_pNetSettingsNode->children;
-  string sName;
-  while(pAllowedIPs)
-  {
-    sName = (char*)pAllowedIPs->name;
-    if(sName.compare("allowed_ips") == 0)
-      break;
-    
-    pAllowedIPs = pAllowedIPs->next;
-  }
-  
-  // walk ip nodes
-  pAllowedIPs = pAllowedIPs->children;
-  string sIP;
-  while(pAllowedIPs)
-  {
-    if(pAllowedIPs->children)
-    {
-      sIP = (char*)pAllowedIPs->children->content;
-      if(sIP.compare(GetAllowedIP(p_nIndex)) == 0)
-      {
-        xmlUnlinkNode(pAllowedIPs);
-        xmlFreeNode(pAllowedIPs);
-        break;        
-      }
-    }
-        
-    pAllowedIPs = pAllowedIPs->next;
-  }  
-  
-  // save and refresh
-  //xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1); 
-  return this->Refresh();  */
+  m_pConfigFile->RemoveAllowedIp(p_nIndex);
 }
 
 
@@ -389,60 +299,6 @@ std::string CSharedConfig::GetConfigDir()
   #endif
   return sResult.str();
 }
-
-/*void CSharedConfig::SetMaxFileNameLength(unsigned int p_nMaxFileNameLenght)
-{
-  if(!m_pContentDirNode)
-    return;
-  
-  xmlNode* pTmp = m_pContentDirNode->children;
-  string sTmp;
-  while(pTmp)
-  {
-    sTmp = (char*)pTmp->name;
-    if(sTmp.compare("max_file_name_length") == 0)
-    {      
-      stringstream sMaxLen;
-      sMaxLen << p_nMaxFileNameLenght;
-      if(!pTmp->children)
-        xmlNodeAddContent(pTmp, BAD_CAST sMaxLen.str().c_str());
-      else
-        xmlNodeSetContent(pTmp->children, BAD_CAST sMaxLen.str().c_str());
-      //cout << pTmp->children->content << endl;
-      //pTmp->children->content = BAD_CAST sMaxLen.str().c_str();
-      break;
-    }    
-    pTmp = pTmp->next;
-  }
-  
-  xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);    
-  this->Refresh();
-}*/
-
-/*bool CSharedConfig::SetPlaylistRepresentation(std::string p_sRepresentation)
-{
-  if(!m_pContentDirNode)
-    return false;
-  
-  xmlNode* pTmp = m_pContentDirNode->children;
-  string sTmp;
-  while(pTmp)
-  {
-    sTmp = (char*)pTmp->name;
-    if(sTmp.compare("playlist_representation") == 0)
-    {
-      if(!pTmp->children)
-        xmlNodeAddContent(pTmp, BAD_CAST p_sRepresentation.c_str());
-      else
-        xmlNodeSetContent(pTmp->children, BAD_CAST p_sRepresentation.c_str());      
-      break;
-    }    
-    pTmp = pTmp->next;
-  }
-  
-  xmlSaveFormatFileEnc(m_sConfigFileName.c_str(), m_pDoc, "UTF-8", 1);    
-  return this->Refresh();  
-}*/
 
 std::string CSharedConfig::GetLocalCharset()
 {  
@@ -531,7 +387,6 @@ bool CSharedConfig::ResolveHostAndIP()
 			if(sIface.length() > 0) {
 			  m_sIP = sIface;
         m_pConfigFile->IpAddress(m_sIP);
-        m_pConfigFile->Save();
 			  return true;
       }
 			#else
@@ -541,13 +396,11 @@ bool CSharedConfig::ResolveHostAndIP()
 			if(rxIP.Search(sIface.c_str())) {
 			  m_sIP = rxIP.Match(0);
         m_pConfigFile->IpAddress(m_sIP);
-        m_pConfigFile->Save();
 				return true;
 			}
 			else {
 		    if(ResolveIPByInterface(sIface)) {
           m_pConfigFile->IpAddress(m_sIP);
-          m_pConfigFile->Save();
           return true;
         }
         else {

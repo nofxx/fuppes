@@ -14,7 +14,7 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
@@ -35,13 +35,27 @@ CXMLNode::CXMLNode(xmlNode* p_NodePtr, int p_nIdx, CXMLNode* pParent)
 
 CXMLNode::~CXMLNode()
 {
+  ClearChildren();
+}
+
+void CXMLNode::ClearChildren()
+{
   CXMLNode* pNode;
   m_NodeListIter = m_NodeList.begin();
   for(m_NodeListIter; m_NodeListIter != m_NodeList.end(); m_NodeListIter++) {
+    
+    if(m_NodeList.empty()) {
+      break;
+    }
+    
     pNode = (*m_NodeListIter).second;
     delete pNode;
+    m_NodeList.erase(m_NodeListIter);
   }
+  
+  m_nChildCount = 0;
 }
+
 
 int CXMLNode::ChildCount()
 {
@@ -191,6 +205,28 @@ void CXMLNode::Value(int p_nValue)
   Value(szValue);
 }
 
+CXMLNode* CXMLNode::AddChild(std::string p_sName, std::string p_sValue)
+{
+  xmlNewTextChild(m_pNode, NULL, BAD_CAST p_sName.c_str(), BAD_CAST p_sValue.c_str());    
+  ClearChildren();  
+}
+
+void CXMLNode::RemoveChild(int p_nIdx)
+{
+  xmlNode* pTmpNode;
+  int nIdx = 0;
+
+  for(pTmpNode = m_pNode->children; pTmpNode; pTmpNode = pTmpNode->next) {
+    
+    if(nIdx == p_nIdx) {      
+      xmlUnlinkNode(pTmpNode);
+      xmlFreeNode(pTmpNode);      
+      ClearChildren();
+      break;
+    }
+    nIdx++;
+  }  
+}
 
 CXMLDocument::CXMLDocument()
 {

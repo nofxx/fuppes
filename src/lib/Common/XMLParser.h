@@ -14,7 +14,7 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
@@ -53,6 +53,9 @@ class CXMLNode
     void Value(int p_nValue);
   
     int Index() { return m_nIdx; }
+  
+    CXMLNode* AddChild(std::string p_sName, std::string p_sValue);  
+    void RemoveChild(int p_nIdx);
     
   private:
     xmlNode* m_pNode;
@@ -62,6 +65,8 @@ class CXMLNode
     std::map<int, CXMLNode*>::iterator m_NodeListIter;
   
     CXMLNode* m_pParent;
+  
+    void ClearChildren();
 };
 
 class CXMLDocument

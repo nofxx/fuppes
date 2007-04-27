@@ -14,7 +14,7 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
@@ -87,10 +87,13 @@ fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
   for(i = 0; i < pDoc->RootNode()->ChildCount(); i++) {
     pChild = pDoc->RootNode()->ChildNode(i);
  
-    if(pChild->Name().compare("vfolder_layout") == 0) {
+    if((pChild->Name().compare("vfolder_layout") == 0) && 
+       (pChild->Attribute("enabled").compare("true") == 0)) {
+         
       sDevice = pChild->Attribute("device");
-      pMgr->CreateChildItems(pChild, sDevice, 0, NULL);
-    }    
+      pMgr->CreateChildItems(pChild, sDevice, 0, NULL);      
+    }
+    
   }
   
   delete pDoc;    
@@ -155,13 +158,13 @@ void CVirtualContainerMgr::CreateChildItems(CXMLNode* pParentNode,
       //cout << "create item mappings for type: " << pNode->Attribute("type") << " :: " << p_sFilter << endl;
       CreateItemMappings(pNode, p_sDevice, p_nParentId, p_sFilter);
     }
-    /*else if(pNode->Name().compare("folders") == 0) {
+    else if(pNode->Name().compare("folders") == 0) {
       //cout << "create folder mappings for filter: " << pNode->Attribute("filter") << " :: " << p_sFilter << endl;
       CreateFolderMappings(pNode, p_sDevice, p_nParentId, p_sFilter);
-    }*/
-    /*else if(pNode->Name().compare("shared_dirs") == 0) {
+    }
+    else if(pNode->Name().compare("shared_dirs") == 0) {
       MapSharedDirsTo(pNode, p_sDevice, p_nParentId);
-    }*/
+    }
     
     if(bDetails) {
       delete pDetails;

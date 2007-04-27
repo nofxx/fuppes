@@ -14,7 +14,7 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
@@ -39,7 +39,6 @@
 #include <string>
 #include <vector>
 
-#include "Transcoding/TranscodingMgr.h"
 #include "Configuration/ConfigFile.h"
 
 class CFuppes;
@@ -80,19 +79,25 @@ class CSharedConfig
     std::string GetConfigDir();
     std::string GetConfigFileName() { return m_sConfigFileName; }
   
+    // shared dir
     int SharedDirCount();
     std::string GetSharedDir(int p_nIdx);  
-    bool AddSharedDirectory(std::string p_sDirectory);
-    bool RemoveSharedDirectory(unsigned int p_nIndex);
+    void AddSharedDirectory(std::string p_sDirectory);
+    void RemoveSharedDirectory(int p_nIdx);
   
+    // shared iTunes
     int SharedITunesCount();
     std::string GetSharedITunes(int p_nIdx);  
+    void AddSharedITunes(std::string p_sITunes);
+    void RemoveSharedITunes(int p_nIdx);
   
+    // allowed ip
     unsigned int AllowedIPCount();
     std::string GetAllowedIP(unsigned int p_nIdx);
     bool IsAllowedIP(std::string p_sIPAddress);  
     bool AddAllowedIP(std::string p_sIPAddress);
     bool RemoveAllowedIP(unsigned int p_nIndex);  
+  
   
     unsigned int GetFuppesInstanceCount();
     CFuppes* GetFuppesInstance(unsigned int p_nIndex);

@@ -14,7 +14,7 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
@@ -57,7 +57,7 @@ std::string BuildParentIdList(CContentDatabase* pDb, std::string p_sIds, std::st
     "  PARENT_ID in (" << p_sIds << ") and " <<
     "  DEVICE " << p_sDevice;
   
-  cout << sSql.str() << endl; fflush(stdout);
+  //cout << sSql.str() << endl; fflush(stdout);
   
   pDb->ClearResult();
   pDb->Select(sSql.str());
@@ -110,7 +110,7 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
   unsigned int nContainerId = GetContainerIdAsUInt();
   if(nContainerId > 0) {
     if(CVirtualContainerMgr::Shared()->IsVirtualContainer(nContainerId, GetDeviceSettings()->m_sVirtualFolderDevice)) {
-       bVirtualSearch = true;
+      bVirtualSearch = true;
       sDevice = " = '" + GetDeviceSettings()->m_sVirtualFolderDevice + "' ";
     }
     
@@ -128,7 +128,7 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
       }
       delete pDb;
       
-      cout << "PARENT ID LIST: " << m_sParentIds << endl; fflush(stdout);
+      //cout << "PARENT ID LIST: " << m_sParentIds << endl; fflush(stdout);
     }
   }
   
@@ -161,12 +161,12 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 	//}
 
 
-  cout << m_sSearchCriteria << endl;
+  //cout << m_sSearchCriteria << endl;
 
   RegEx rxSearch("(\\(*) *([\\w+:*\\w*]+) ([=|!=|<|<=|>|>=|contains|doesNotContain|derivedfrom|exists]+) (\".*?[^\\\\]\"|true|false) *(\\)*) *([and|or]*)");
 	if(rxSearch.Search(m_sSearchCriteria.c_str())) {
 	  do {
-		  cout <<  rxSearch.Match(1) << " X " << rxSearch.Match(2) << " X " << rxSearch.Match(3) << " X " << rxSearch.Match(4) << " X " << rxSearch.Match(5) << " X " << rxSearch.Match(6) << endl;
+		  //cout <<  rxSearch.Match(1) << " X " << rxSearch.Match(2) << " X " << rxSearch.Match(3) << " X " << rxSearch.Match(4) << " X " << rxSearch.Match(5) << " X " << rxSearch.Match(6) << endl;
 		
 		  // contains "and" on first loop
 			// so we just append it when criterias can be found
@@ -230,14 +230,15 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 				
 				
 				// trim value
-				cout << "Val: " << sVal << " => ";
+				//cout << "Val: " << sVal << " => ";
 			  sVal = sVal.substr(1, sVal.length() - 2);
-				cout << sVal << endl;
+				//cout << sVal << endl;
 				
 				// replace value
 				if(sProp.compare("o.TYPE") == 0) { 
           sOp = "in";
           
+          #warning todo: use values from ContentDatabase.h
 				  if(sVal.compare("object.item.imageItem") == 0)
 					  sVal = "(110, 111)";
 					else if(sVal.compare("object.item.audioItem") == 0)
@@ -264,8 +265,13 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 		
 		  if(bBuildOK)
   			sSql << sOpenBr << sProp << " " << sOp << " " << sVal << sCloseBr << " ";
-			else
-			  cout << "error parsing search request (part): " << rxSearch.Match(0) << endl;
+			else {
+			  cout << "error parsing search request!" << endl <<
+          "please file a bugreport containing the following lines: " << endl << endl <<
+          "=== CUT ===" << endl <<
+          m_sSearchCriteria << endl <<
+          "=== CUT ===" << endl;
+      }
 			  
 			
 		}	while (rxSearch.SearchAgain());

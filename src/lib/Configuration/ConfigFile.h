@@ -14,7 +14,7 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
@@ -44,12 +44,17 @@ class CConfigFile
 
     int Load(std::string p_sFileName, std::string* p_psErrorMsg);
   
-    // shared objects
+    // shared dir
     int SharedDirCount() { return m_lSharedDirs.size(); }
     std::string SharedDir(int p_nIdx) { return m_lSharedDirs[p_nIdx]; }
+    void AddSharedDir(std::string p_sDirName);
+    void RemoveSharedDir(int p_nIdx);
   
+    // shared iTunes
     int SharedITunesCount() { return m_lSharedITunes.size(); }
     std::string SharedITunes(int p_nIdx) { return m_lSharedITunes[p_nIdx]; }
+    void AddSharedITunes(std::string p_sITunesName);
+    void RemoveSharedITunes(int p_nIdx);
   
     // network
     std::string IpAddress() { return m_sIpAddress; }
@@ -57,8 +62,11 @@ class CConfigFile
     int         HttpPort() { return m_nHttpPort; }
     void        HttpPort(int p_nHttpPort);
   
+    // allowed ip
     int         AllowedIpsCount() { return m_lAllowedIps.size(); }
     std::string AllowedIp(int p_nIdx) { return m_lAllowedIps[p_nIdx]; }
+    void AddAllowedIp(std::string p_sIpAddress);
+    void RemoveAllowedIp(int p_nIdx);
     
     // content_directory
     std::string LocalCharset() { return m_sLocalCharset; }
@@ -78,6 +86,8 @@ class CConfigFile
   private:
     CXMLDocument* m_pDoc;
   
+    void ReadSharedObjects();
+    void ReadNetworkSettings();
     void SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode);
   
     // shared objects

@@ -14,7 +14,7 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
@@ -74,47 +74,13 @@ int CConfigFile::Load(std::string p_sFileName, std::string* p_psErrorMsg)
   
   CXMLNode* pTmpNode;
   int i;
-  int j;
   
-  // shared_objects
-  pTmpNode = m_pDoc->RootNode()->FindNodeByName("shared_objects", false);
-  if(pTmpNode != NULL) {
-    for(i = 0; i < pTmpNode->ChildCount(); i++) {
-      if(pTmpNode->ChildNode(i)->Name().compare("dir") == 0) {
-        m_lSharedDirs.push_back(pTmpNode->ChildNode(i)->Value());
-      }
-      else if(pTmpNode->ChildNode(i)->Name().compare("itunes") == 0) {
-        m_lSharedITunes.push_back(pTmpNode->ChildNode(i)->Value());
-      }
-    }
-  }
-  // end shared_objects
+  // shared objects
+  ReadSharedObjects();
   
   // network
-  pTmpNode = m_pDoc->RootNode()->FindNodeByName("network", false);
-  if(pTmpNode != NULL) {
-    for(i = 0; i < pTmpNode->ChildCount(); i++) {
-      
-      if(pTmpNode->ChildNode(i)->Name().compare("ip_address") == 0) {
-        if(pTmpNode->ChildNode(i)->Value().length() > 0) {
-          m_sIpAddress = pTmpNode->ChildNode(i)->Value();
-        }        
-      }
-      else if(pTmpNode->ChildNode(i)->Name().compare("http_port") == 0) {
-        if(pTmpNode->ChildNode(i)->Value().length() > 0) {
-          m_nHttpPort = atoi(pTmpNode->ChildNode(i)->Value().c_str());
-        } 
-      }
-      else if(pTmpNode->ChildNode(i)->Name().compare("allowed_ips") == 0) {
-        for(j = 0; j < pTmpNode->ChildNode(i)->ChildCount(); j++) {
-          if(pTmpNode->ChildNode(i)->ChildNode(j)->Name().compare("ip") == 0) {
-            m_lAllowedIps.push_back(pTmpNode->ChildNode(i)->ChildNode(j)->Value());
-          }
-        }          
-      }      
-    }
-  }
-  // end network
+  ReadNetworkSettings();
+
 
   // content_directory
   pTmpNode = m_pDoc->RootNode()->FindNodeByName("content_directory", false);
@@ -166,6 +132,63 @@ int CConfigFile::Load(std::string p_sFileName, std::string* p_psErrorMsg)
   // end device_settings
   
   return CF_OK;
+}
+
+void CConfigFile::ReadSharedObjects()
+{
+  CXMLNode* pTmpNode;
+  int i;  
+  
+  m_lSharedDirs.clear();    
+  m_lSharedITunes.clear();
+  
+  pTmpNode = m_pDoc->RootNode()->FindNodeByName("shared_objects", false);
+  if(pTmpNode != NULL) {
+    for(i = 0; i < pTmpNode->ChildCount(); i++) {
+      if(pTmpNode->ChildNode(i)->Name().compare("dir") == 0) {
+        m_lSharedDirs.push_back(pTmpNode->ChildNode(i)->Value());
+      }
+      else if(pTmpNode->ChildNode(i)->Name().compare("itunes") == 0) {
+        m_lSharedITunes.push_back(pTmpNode->ChildNode(i)->Value());
+      }
+    }
+  } 
+}
+
+void CConfigFile::ReadNetworkSettings()
+{
+  CXMLNode* pTmpNode;
+  int i;
+  int j;  
+  
+  m_lAllowedIps.clear();
+  
+  pTmpNode = m_pDoc->RootNode()->FindNodeByName("network", false);
+  if(pTmpNode == NULL) {
+    return;
+  }
+  
+  for(i = 0; i < pTmpNode->ChildCount(); i++) {
+      
+    if(pTmpNode->ChildNode(i)->Name().compare("ip_address") == 0) {
+      if(pTmpNode->ChildNode(i)->Value().length() > 0) {
+        m_sIpAddress = pTmpNode->ChildNode(i)->Value();
+      }        
+    }
+    else if(pTmpNode->ChildNode(i)->Name().compare("http_port") == 0) {
+      if(pTmpNode->ChildNode(i)->Value().length() > 0) {
+        m_nHttpPort = atoi(pTmpNode->ChildNode(i)->Value().c_str());
+      } 
+    }
+    else if(pTmpNode->ChildNode(i)->Name().compare("allowed_ips") == 0) {
+      for(j = 0; j < pTmpNode->ChildNode(i)->ChildCount(); j++) {
+        if(pTmpNode->ChildNode(i)->ChildNode(j)->Name().compare("ip") == 0) {
+          m_lAllowedIps.push_back(pTmpNode->ChildNode(i)->ChildNode(j)->Value());
+        }
+      }          
+    }     
+    
+  }  
 }
 
 void CConfigFile::SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode)
@@ -223,6 +246,76 @@ void CConfigFile::SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode)
   }
 }
 
+void CConfigFile::AddSharedDir(std::string p_sDirName)
+{
+  CXMLNode* pTmp = m_pDoc->RootNode()->FindNodeByName("shared_objects");
+  if(pTmp != NULL) {
+    pTmp->AddChild("dir", p_sDirName);
+    ReadSharedObjects();
+    m_pDoc->Save();
+  }
+}
+
+void CConfigFile::RemoveSharedDir(int p_nIdx)
+{
+  int i;
+  int nIdx = 0;
+  
+  CXMLNode* pObj = m_pDoc->RootNode()->FindNodeByName("shared_objects");
+  CXMLNode* pTmp;
+  if(pObj == NULL) {
+    return;    
+  }
+  
+  for(i = 0; i < pObj->ChildCount(); i++) {
+    pTmp = pObj->ChildNode(i);
+    if(pTmp->Name().compare("dir") == 0) {
+      if(nIdx == p_nIdx) {
+        pObj->RemoveChild(i);
+        ReadSharedObjects();
+        m_pDoc->Save();
+        break;
+      }      
+      nIdx++;
+    }    
+  }
+}
+
+void CConfigFile::AddSharedITunes(std::string p_sITunesName)
+{
+  CXMLNode* pTmp = m_pDoc->RootNode()->FindNodeByName("shared_objects");
+  if(pTmp != NULL) {
+    pTmp->AddChild("itunes", p_sITunesName); 
+    ReadSharedObjects();
+    m_pDoc->Save();
+  }  
+}
+
+void CConfigFile::RemoveSharedITunes(int p_nIdx)
+{
+  int i;
+  int nIdx = 0;
+  
+  CXMLNode* pObj = m_pDoc->RootNode()->FindNodeByName("shared_objects");
+  CXMLNode* pTmp;
+  if(pObj == NULL) {
+    return;    
+  }
+  
+  for(i = 0; i < pObj->ChildCount(); i++) {
+    pTmp = pObj->ChildNode(i);
+    if(pTmp->Name().compare("itunes") == 0) {
+      if(nIdx == p_nIdx) {
+        pObj->RemoveChild(i);
+        ReadSharedObjects();
+        m_pDoc->Save();
+        break;
+      }      
+      nIdx++;
+    }    
+  }  
+}
+
 
 void CConfigFile::IpAddress(std::string p_sIpAddress)
 {
@@ -253,6 +346,43 @@ void CConfigFile::LocalCharset(std::string p_sLocalCharset)
     m_sLocalCharset = p_sLocalCharset;
   } 
 }
+
+
+void CConfigFile::AddAllowedIp(std::string p_sIpAddress)
+{
+  CXMLNode* pTmp = m_pDoc->RootNode()->FindNodeByName("allowed_ips", true);
+  if(pTmp != NULL) {
+    pTmp->AddChild("ip", p_sIpAddress);
+    ReadNetworkSettings();
+    m_pDoc->Save();
+  }  
+}
+
+void CConfigFile::RemoveAllowedIp(int p_nIdx)
+{
+  int i;  
+  int nIdx = 0;
+  
+  CXMLNode* pObj = m_pDoc->RootNode()->FindNodeByName("allowed_ips", true);
+  CXMLNode* pTmp;
+  if(pObj == NULL) {
+    return;    
+  }
+  
+  for(i = 0; i < pObj->ChildCount(); i++) {
+    pTmp = pObj->ChildNode(i);
+    
+    if(pTmp->Name().compare("ip") == 0) {    
+      if(nIdx == p_nIdx) {
+        pObj->RemoveChild(i);
+        ReadNetworkSettings();
+        m_pDoc->Save();
+        break;
+      }        
+    }
+  }  
+}
+
 
 bool CConfigFile::WriteDefaultConfig(std::string p_sFileName)
 {

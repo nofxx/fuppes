@@ -15,4 +15,5 @@ EXTRA_DIST = \
 	configure.in\
 	Makefile.am\
 	src/Makefile.am\
-	include/fuppes.h
+	include/fuppes.h\
+  vfolder.cfg
