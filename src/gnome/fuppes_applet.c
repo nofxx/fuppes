@@ -104,53 +104,98 @@ static gboolean on_button_press (GtkWidget      *event_box,
 	return TRUE;
 }
 
-int nSize = 0;
+int nImgSize = 0;
+GtkWidget   *image;
 
-static void size_allocate_cb(PanelApplet *w, GtkAllocation *allocation, gpointer data)
+static void change_orient_cb (PanelApplet *w, PanelAppletOrient o, gpointer data)
 {
-  nSize = allocation->width;
+  printf("change orient");
+}
+
+static void size_allocate_cb(PanelApplet *widget, GtkAllocation *allocation, gpointer data)
+//static void fuppes_applet_size_allocate (GtkWidget *widget, GdkRectangle *allocation)
+{
+  GdkPixbuf   *pixbuf;
+  
+ 
+  //printf("height: %d, width: %d\n", allocation->height, allocation->width);
+  printf("height: %d, width: %d\n", GTK_WIDGET(widget)->allocation.height, GTK_WIDGET(widget)->allocation.width);
+  fflush(stdout);
+  
+  /*int nSize = allocation->width;
   if(allocation->width > allocation->height)
     nSize = allocation->height;
+  
+  if(nImgSize == nSize)
+    return;
+  
+  nImgSize = nSize;
+  
+  // rescale image
+  pixbuf = gtk_image_get_pixbuf (GTK_IMAGE (image));
+  pixbuf = gdk_pixbuf_scale_simple (pixbuf,
+					nSize - 2,
+					nSize - 2,
+					GDK_INTERP_BILINEAR);
+  gtk_image_set_from_pixbuf (GTK_IMAGE (image), pixbuf);*/
+}
+
+static void fuppes_applet_class_init (PanelAppletClass *class)
+{
+  printf("init\n");
+ 	//GTK_WIDGET_CLASS (class)->size_allocate = fuppes_applet_size_allocate;
 }
 
 static gboolean fuppes_applet_factory(PanelApplet *applet, const gchar *iid, gpointer data)
 {
-	GtkWidget   *image, *box;
+	//GtkWidget   *box, *event_box;
   GtkTooltips *tooltips;
-  GtkAllocation* allocation;
+  GdkPixbuf   *pixbuf;
+
+  printf("factory height: %d\n", GTK_WIDGET (applet)->allocation.width);
+  
 
 	if (strcmp (iid, "OAFIID:FuppesApplet") != 0)
-		return FALSE;
-
+		return FALSE;  
   
-  //panel_applet_get_size(applet)
-
-  panel_applet_set_flags(applet, PANEL_APPLET_EXPAND_MINOR);
-  //panel_applet_set_size_hints(applet, NULL, 1, 22);
-
-  //gtk_window_set_default_size(applet, 22, 22);
-
-	// load image
-	image = gtk_image_new_from_file("/usr/share/pixmaps/fuppes.svg");
+  g_signal_connect (G_OBJECT (applet), 
+                    "button_press_event",
+                    G_CALLBACK (on_button_press),
+                    applet);
   
-  /*box = gtk_vbox_new(FALSE, 0);
-  allocation->width  = 22;
-  allocation->height = 22;
-  gtk_widget_size_allocate(image, allocation);
-  
-  gtk_container_add(GTK_CONTAINER(box), image);*/
-  
-  gtk_container_add(GTK_CONTAINER(applet), image);
-
   // connect signal handler
-  g_signal_connect(G_OBJECT(applet), 
+  /*g_signal_connect(G_OBJECT(applet), 
                    "button_press_event",
                    G_CALLBACK(on_button_press),
-                   applet);                  
+                   applet);          */        
+
+ 
+	// load image
+	image  = gtk_image_new_from_file("/usr/share/pixmaps/fuppes.svg");
+  /*pixbuf = gtk_image_get_pixbuf (GTK_IMAGE (image));
+  pixbuf = gdk_pixbuf_scale_simple (pixbuf,
+					,
+					1,
+					GDK_INTERP_BILINEAR);
+  gtk_image_set_from_pixbuf (GTK_IMAGE (image), pixbuf);*/
+  
+  //event_box = gtk_event_box_new ();
+  //gtk_container_add (GTK_CONTAINER (event_box), image);
+  gtk_container_add (GTK_CONTAINER (applet), image);
+  gtk_widget_show(image);
+
+ 
+  g_signal_connect(G_OBJECT(applet),
+                   "change_orient",
+                   G_CALLBACK(change_orient_cb),
+                   applet); 
+
   g_signal_connect(G_OBJECT(applet),
                    "size_allocate",
                    G_CALLBACK(size_allocate_cb),
-                   applet);                  
+                   applet);
+ 
+  //((GtkWidgetClass *)image)->size_allocate = size_allocate_cb;
 
   // create tooltips
   tooltips = gtk_tooltips_new();
@@ -166,7 +211,7 @@ static gboolean fuppes_applet_factory(PanelApplet *applet, const gchar *iid, gpo
                           NULL);
 
 	gtk_widget_show_all(GTK_WIDGET(applet));
-
+  
 	return TRUE;
 }
 
