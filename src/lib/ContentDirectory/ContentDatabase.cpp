@@ -94,8 +94,9 @@ CContentDatabase* CContentDatabase::m_Instance = 0;
 
 CContentDatabase* CContentDatabase::Shared()
 {
-	if (m_Instance == 0)
+	if(m_Instance == 0) {
 		m_Instance = new CContentDatabase(true);
+  }
 	return m_Instance;
 }
 
@@ -109,7 +110,7 @@ CContentDatabase::CContentDatabase(bool p_bShared)
   //m_bIsRebuilding = false;
   m_RebuildThread = (fuppesThread)NULL;	
   m_bShared       = p_bShared;		
-	m_pFileSystemMonitor = NULL;
+	//m_pFileSystemMonitor = NULL;
   m_bInTransaction = false;
   
 	if(m_bShared) {            
@@ -125,20 +126,20 @@ CContentDatabase::CContentDatabase(bool p_bShared)
 }
  
 CContentDatabase::~CContentDatabase()
-{
-	/*if(m_Instance == this) {                 
+{                            
+	if(m_bShared) {                  
     fuppesThreadDestroyMutex(&m_Mutex);
-  }*/
+  }
 	
 	if(m_bShared && (m_RebuildThread != (fuppesThread)NULL)) {
 	  fuppesThreadClose(m_RebuildThread);
 		m_RebuildThread = (fuppesThread)NULL;
 	}
 	
-	if(m_pFileSystemMonitor != NULL)
-	  delete m_pFileSystemMonitor;
+	/*if(m_pFileSystemMonitor != NULL)
+	  delete m_pFileSystemMonitor;*/
 
-  ClearResult();
+  ClearResult();  
   Close();
 }
 
@@ -219,12 +220,18 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 
 void CContentDatabase::Lock()
 {
-  fuppesThreadLockMutex(&CContentDatabase::Shared()->m_Mutex);
+  if(m_bShared)
+    fuppesThreadLockMutex(&m_Mutex);
+  else
+    CContentDatabase::Shared()->Lock();
 }
 
 void CContentDatabase::Unlock()
 {
-  fuppesThreadUnlockMutex(&CContentDatabase::Shared()->m_Mutex);
+  if(m_bShared)
+    fuppesThreadUnlockMutex(&m_Mutex);
+  else
+    CContentDatabase::Shared()->Unlock();
 }
 
 void CContentDatabase::ClearResult()

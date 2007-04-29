@@ -14,7 +14,7 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
@@ -39,6 +39,7 @@ CTranscodingCacheObject::CTranscodingCacheObject()
 {
   m_nRefCount       = 0;    
   m_szBuffer        = NULL;
+  m_pPcmOut         = NULL;
   m_nBufferSize     = 0;  
   m_bIsTranscoding  = false;  
   m_TranscodeThread = (fuppesThread)NULL; 
@@ -52,18 +53,24 @@ CTranscodingCacheObject::CTranscodingCacheObject()
 }
 
 CTranscodingCacheObject::~CTranscodingCacheObject()
-{  
+{
   // break transcoding
-  if(m_bIsTranscoding) {
+  if(m_bIsTranscoding) {                    
     m_bBreakTranscoding = true;
-    fuppesThreadClose(m_TranscodeThread);
   }
   
+  if(m_TranscodeThread) {
+    fuppesThreadClose(m_TranscodeThread);                        
+  }
+    
   fuppesThreadDestroyMutex(&m_Mutex);  
   free(m_szBuffer);
   
   if(m_pPcmOut)
     delete[] m_pPcmOut;
+    
+  delete m_pAudioEncoder;
+  delete m_pDecoder;
 }
 
 bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
@@ -156,8 +163,10 @@ unsigned int CTranscodingCacheObject::Transcode()
 
 int CTranscodingCacheObject::Append(char** p_pszBinBuffer, unsigned int p_nBinBufferSize)
 {
-  *p_pszBinBuffer = (char*)realloc(*p_pszBinBuffer, sizeof(char)*(m_nBufferSize));
-  memcpy(*p_pszBinBuffer, m_szBuffer, m_nBufferSize);
+  Lock();   
+  *p_pszBinBuffer = (char*)realloc(*p_pszBinBuffer, sizeof(char)*(m_nBufferSize));  
+  memcpy(*p_pszBinBuffer, m_szBuffer, m_nBufferSize);    
+  Unlock();
     
   return m_nBufferSize;  
 }
@@ -209,8 +218,10 @@ fuppesThreadCallback TranscodeThread(void *arg)
       
       memcpy(&pCacheObj->m_szBuffer[pCacheObj->m_nBufferSize], szTmpBuff, nTmpSize);
       
+      //cout << "buffer size: " << pCacheObj->m_nBufferSize << " + " << nTmpSize << " = "; fflush(stdout);
       pCacheObj->m_nBufferSize += nTmpSize;
-      
+      //cout << pCacheObj->m_nBufferSize << endl; fflush(stdout);
+            
       pCacheObj->Unlock();
 
       free(szTmpBuff);
@@ -219,7 +230,7 @@ fuppesThreadCallback TranscodeThread(void *arg)
       //nAppendCount = 0;
     }
     
-  }
+  }  
     
   /* transcoding loop exited */
   if(!pCacheObj->m_bBreakTranscoding)
@@ -252,11 +263,14 @@ fuppesThreadCallback TranscodeThread(void *arg)
     memcpy(&pCacheObj->m_szBuffer[pCacheObj->m_nBufferSize], pCacheObj->m_pAudioEncoder->GetMp3Buffer(), nTmpSize);
     pCacheObj->m_nBufferSize += nTmpSize;
     
-    pCacheObj->m_bIsComplete    = true;
-    pCacheObj->m_bIsTranscoding = false;
-      
+    pCacheObj->m_bIsComplete = true;          
     pCacheObj->Unlock();    
   }
+
+  pCacheObj->Lock();
+  pCacheObj->m_bIsTranscoding = false;
+  pCacheObj->m_pSessionInfo->m_bIsTranscoding = false;
+  pCacheObj->Unlock();
   
   /* delete temporary buffer */
   if(szTmpBuff)
@@ -321,8 +335,7 @@ void CTranscodingCache::ReleaseCacheObject(CTranscodingCacheObject* pCacheObj)
   if(pCacheObj->m_nRefCount == 0)
   {  
     m_CachedObjectsIterator = m_CachedObjects.find(pCacheObj->m_sInFileName);
-    if(m_CachedObjectsIterator != m_CachedObjects.end())
-    {
+    if(m_CachedObjectsIterator != m_CachedObjects.end()) {
       CSharedLog::Shared()->Log(L_DEBUG, "delete cache object: " + pCacheObj->m_sInFileName, __FILE__, __LINE__);
       m_CachedObjects.erase(m_CachedObjectsIterator);
       delete pCacheObj;

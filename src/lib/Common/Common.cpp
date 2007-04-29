@@ -14,7 +14,7 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
@@ -71,15 +71,20 @@ bool DirectoryExists(std::string p_sDirName)
   /* Convert string */
   const char* pszDirName = p_sDirName.c_str();
   
+  cout << "DirectoryExists: " << pszDirName;
+  
   /* Get file information */
   struct _stat info;
   memset(&info, 0, sizeof(info));
 
   /* Check directory exists */
   _stat(pszDirName, &info);
-  if(0 == (info.st_mode & _S_IFDIR))
+  if(0 == (info.st_mode & _S_IFDIR)) {
+    cout << "false" << endl;
     return false;
+  }
 
+    cout << "true" << endl;
   return true;
 }
 #else
@@ -571,6 +576,25 @@ int fuppesThreadCancel(fuppesThread p_ThreadHandle)
 	pthread_cancel(p_ThreadHandle);
   return 0;
 	#endif
+}
+
+void fuppesThreadInitMutex(fuppesThreadMutex* p_ThreadMutex)
+{
+  #ifdef WIN32
+  InitializeCriticalSection(p_ThreadMutex);
+  //InitializeCriticalSectionAndSpinCount(p_ThreadMutex, 0x80000400);
+  #else
+  pthread_mutex_init(p_ThreadMutex, NULL)
+  #endif  
+}
+
+void fuppesThreadDestroyMutex(fuppesThreadMutex* p_ThreadMutex)
+{
+  #ifdef WIN32
+  DeleteCriticalSection(p_ThreadMutex);
+  #else
+  pthread_mutex_destroy(p_ThreadMutex);
+  #endif
 }
 
 void fuppesThreadLockMutex(fuppesThreadMutex* p_ThreadMutex)

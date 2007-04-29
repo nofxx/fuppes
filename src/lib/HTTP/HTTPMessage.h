@@ -14,7 +14,7 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
@@ -167,7 +167,9 @@ class CHTTPMessage: public CMessageBase
 	  std::string   m_sUserAgent;
 	
     CTranscodeSessionInfo* m_pTranscodingSessionInfo;  
-
+    CTranscodingCacheObject* m_pTranscodingCacheObj;
+    //fuppesThreadMutex TranscodeMutex;
+    
 private:
     bool             BuildFromString(std::string p_sMessage);
 
@@ -202,7 +204,6 @@ private:
 	  CDeviceSettings*   m_pDeviceSettings;
 
     unsigned int       m_nBinContentPosition;
-    fuppesThread       m_TranscodeThread;
 
 
     bool ParsePOSTMessage(std::string p_sMessage);

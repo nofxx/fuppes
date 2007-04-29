@@ -14,7 +14,7 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
@@ -34,7 +34,7 @@
 #ifdef WIN32
 
 /* This must be defined to use InitializeCriticalSectionAndSpinCount() */
-#define _WIN32_WINNT 0x0410 // Windows 98 or later
+//#define _WIN32_WINNT 0x0410 // Windows 98 or later
 
 #pragma comment(lib,"Wsock32.lib") 
 #pragma comment(lib,"Ws2_32.lib")
@@ -120,6 +120,9 @@ int  fuppesSocketClose(fuppesSocket p_SocketHandle);
 int  fuppesThreadCancel(fuppesThread p_ThreadHandle);
 bool fuppesThreadClose(fuppesThread p_ThreadHandle);
 
+void fuppesThreadInitMutex(fuppesThreadMutex* p_ThreadMutex);
+void fuppesThreadDestroyMutex(fuppesThreadMutex* p_ThreadMutex);
+
 void fuppesThreadLockMutex(fuppesThreadMutex* p_ThreadMutex);
 void fuppesThreadUnlockMutex(fuppesThreadMutex* p_ThreadMutex);
 
@@ -164,10 +167,10 @@ bool              FuppesCloseLibrary(fuppesLibHandle p_LibHandle);
 #define fuppesThreadCallback                                DWORD WINAPI
 
 //#define fuppesThreadMutex                                   CRITICAL_SECTION
-#define fuppesThreadInitMutex(_mutex_)                      InitializeCriticalSectionAndSpinCount(_mutex_, 0x80000400)
+//#define fuppesThreadInitMutex(_mutex_)                      InitializeCriticalSection(_mutex_) //AndSpinCount(_mutex_, 0x80000400)
 //#define fuppesThreadLockMutex(_mutex_)                      EnterCriticalSection(_mutex_)
 //#define fuppesThreadUnlockMutex(_mutex_)                    LeaveCriticalSection(_mutex_)
-#define fuppesThreadDestroyMutex(_mutex_)                   DeleteCriticalSection(_mutex_)
+//#define fuppesThreadDestroyMutex(_mutex_)                   DeleteCriticalSection(_mutex_)
 
 #else
 
@@ -195,10 +198,10 @@ bool              FuppesCloseLibrary(fuppesLibHandle p_LibHandle);
 #define fuppesThreadCallback                                void*
 
 //#define fuppesThreadMutex                                   pthread_mutex_t
-#define fuppesThreadInitMutex(_mutex_)                      pthread_mutex_init(_mutex_, NULL)
+//#define fuppesThreadInitMutex(_mutex_)                      pthread_mutex_init(_mutex_, NULL)
 //#define fuppesThreadLockMutex(_mutex_)                      pthread_mutex_lock(_mutex_)
 //#define fuppesThreadUnlockMutex(_mutex_)                    pthread_mutex_unlock(_mutex_)
-#define fuppesThreadDestroyMutex(_mutex_)                   pthread_mutex_destroy(_mutex_)
+//#define fuppesThreadDestroyMutex(_mutex_)                   pthread_mutex_destroy(_mutex_)
 
 #endif
 

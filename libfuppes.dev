@@ -18,7 +18,7 @@ Icon=
 ExeOutput=win32
 ObjectOutput=
 OverrideBuildCmd=0
-OverrideOutputName=libfuppes.dll
+OverrideOutputName=fuppes.dll
 HostApplication=C:\src\fuppes\trunk\win32\fuppescmd.exe
 Folders=Common,Configuration,ConnectionManager,ContentDirectory,DeviceSettings,GENA,GUI,HTTP,Presentation,Presentation/Images,SSDP,Transcoding,UPnPActions
 CommandLine=
@@ -27,8 +27,8 @@ CustomMakefile=
 IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=0
-CompilerSettings=00000000001000010000c0
-OverrideOutput=0
+CompilerSettings=00000000001000000000c0
+OverrideOutput=1
 
 [Unit6]
 FileName=src\lib\MediaServer.h
@@ -54,7 +54,7 @@ BuildCmd=
 Major=0
 Minor=7
 Release=2
-Build=393
+Build=500
 LanguageID=1033
 CharsetID=1252
 CompanyName=Ulrich Völkel
@@ -1152,6 +1152,16 @@ BuildCmd=
 FileName=src\lib\Configuration\ConfigFile.cpp
 CompileCpp=1
 Folder=Configuration
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit113]
+FileName=src\lib\ContentDirectory\FileSystemMonitor.h
+CompileCpp=1
+Folder=ContentDirectory
 Compile=1
 Link=1
 Priority=1000

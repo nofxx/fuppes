@@ -14,7 +14,7 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
@@ -36,11 +36,6 @@
 
 const std::string LOGNAME = "HTTPMessage";
 
-
-fuppesThreadCallback TranscodeLoop(void *arg);
-fuppesThreadMutex TranscodeMutex;
-
-
 CHTTPMessage::CHTTPMessage()
 {
   // Init
@@ -51,7 +46,7 @@ CHTTPMessage::CHTTPMessage()
   m_nBinContentPosition = 0;
   m_nContentLength      = 0;
   m_pszBinContent       = NULL;
-  m_TranscodeThread     = (fuppesThread)NULL;  
+ // m_TranscodeThread     = (fuppesThread)NULL;  
   m_bIsBinary           = false;
   m_nRangeStart         = 0;
   m_nRangeEnd           = 0;
@@ -59,6 +54,9 @@ CHTTPMessage::CHTTPMessage()
   m_pUPnPAction         = NULL;
 	m_pDeviceSettings			= NULL;
   m_pTranscodingSessionInfo = NULL;
+  m_pTranscodingCacheObj = NULL;
+  
+  //fuppesThreadInitMutex(&TranscodeMutex);
 }
 
 CHTTPMessage::~CHTTPMessage()
@@ -70,8 +68,16 @@ CHTTPMessage::~CHTTPMessage()
   if(m_pszBinContent)
     free(m_pszBinContent);
     
-  if(m_TranscodeThread)
+  /*if(m_TranscodeThread) {
+    cout << "~CHTTPMessage :: close transcode thread" << endl; fflush(stdout);
     fuppesThreadClose(m_TranscodeThread);
+  }*/
+
+  //fuppesThreadDestroyMutex(&TranscodeMutex);
+
+  if(m_pTranscodingCacheObj) {
+    CTranscodingCache::Shared()->ReleaseCacheObject(m_pTranscodingCacheObj);
+  }  
 
   if(m_pTranscodingSessionInfo) {    
     m_pTranscodingSessionInfo->m_pszBinBuffer = NULL;
@@ -219,8 +225,10 @@ std::string CHTTPMessage::GetHeaderAsString()
     } // if(m_bIsBinary)
     /* end Content length */        
     
-    /* Accept-Ranges */
-    sResult << "Accept-Ranges: bytes\r\n";
+    // Accept-Ranges
+    if(!this->IsTranscoding()) {
+      sResult << "Accept-Ranges: bytes\r\n";
+    }
     
     /* Connection */
     sResult << "Connection: close\r\n";    
@@ -300,29 +308,27 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
   /* read (transcoded) data from memory */
   else
   {    
-    /*cout << "get transcode chunk" << endl;
-    cout << "length: " << m_nBinContentLength << endl;
-    if(IsTranscoding())
-      cout << "is transcoding: true" << endl;
-    else
-      cout << "is transcoding: false" << endl;
-    fflush(stdout);*/
-    
-    if(IsTranscoding())
-      fuppesThreadLockMutex(&TranscodeMutex);      
-    
-    unsigned int nRest       = m_nBinContentLength - m_nBinContentPosition;
-    
-    //cout << "REST 1   : " << nRest << endl;
-    
+    unsigned int nRest = 0;
     unsigned int nDelayCount = 0;  
+    bool bTranscode = false;
+    
+    if(m_pTranscodingSessionInfo)
+      bTranscode = true;
+    
+    
+    if(bTranscode)
+      nRest = m_pTranscodingCacheObj->m_nBufferSize - m_nBinContentPosition; 
+    else
+      nRest = m_nBinContentLength - m_nBinContentPosition;    
+    
+    
     while(this->IsTranscoding() && (nRest < p_nSize) && !m_pTranscodingSessionInfo->m_bBreakTranscoding)
     { 
-      nRest = m_nBinContentLength - m_nBinContentPosition;
+      nRest = m_pTranscodingCacheObj->m_nBufferSize - m_nBinContentPosition;
 
       stringstream sLog;
       sLog << "we are sending faster then we can transcode!" << endl;
-      sLog << "  try     : " << (nDelayCount + 1) << "/50" << endl;
+      sLog << "  try     : " << (nDelayCount + 1) << "/20" << endl;
       sLog << "  length  : " << m_nBinContentLength << endl;
       sLog << "  position: " << m_nBinContentPosition << endl;
       sLog << "  size    : " << p_nSize << endl;
@@ -331,69 +337,44 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
 
       //cout << sLog.str() << endl;
       
-      CSharedLog::Shared()->Critical(LOGNAME, sLog.str());    
-      fuppesThreadUnlockMutex(&TranscodeMutex);
-      fuppesSleep(200);
-      fuppesThreadLockMutex(&TranscodeMutex);    
+      CSharedLog::Shared()->Critical(LOGNAME, sLog.str()); 
+                                   
+      fuppesSleep(500);
+                              
       nDelayCount++;
       
       /* if bufer is still empty after n tries
          the machine seems to be too slow. so
          we give up */
-      if (nDelayCount == 50) /* 50 * 200ms = 10sec */
-      {        
-        m_pTranscodingSessionInfo->m_bBreakTranscoding = true;
-        fuppesThreadUnlockMutex(&TranscodeMutex);
+      if (nDelayCount == 20) /* 20 * 500ms = 10sec */
+      {       
+        BreakTranscoding();                                  
         return 0;
       }
     }
     
-    nRest = m_nBinContentLength - m_nBinContentPosition;
-
-    //cout << "REST 2   : " << nRest << endl;
-    
-    if(nRest > p_nSize)
-    {
-      //cout << "copy content 1" << endl;
-      /*cout << "addr: " << &m_pszBinContent << endl;
-      fflush(stdout);*/
-      
+    if(bTranscode) {
+      nRest = m_pTranscodingCacheObj->m_nBufferSize - m_nBinContentPosition;
+      m_pTranscodingCacheObj->Append(&m_pszBinContent, 0);
+    }
+    else {
+      nRest = m_nBinContentLength - m_nBinContentPosition;         
+    }
+  
+    if(nRest > p_nSize) {
+             
       memcpy(p_sContentChunk, &m_pszBinContent[m_nBinContentPosition], p_nSize);    
       m_nBinContentPosition += p_nSize;
-      if(IsTranscoding())
-        fuppesThreadUnlockMutex(&TranscodeMutex);
-      
-      /*cout << "copy content end 1" << endl;
-      fflush(stdout);*/
-      
-      
       return p_nSize;
     }
-    else if((nRest < p_nSize) && !this->IsTranscoding())
-    {
-      /*cout << "copy content 2" << endl;
-      cout << "  Lenght  : " << m_nBinContentLength << endl;
-      cout << "  Position: " << m_nBinContentPosition << endl;
-      cout << "  Size    : " << p_nSize << endl;
-      cout << "  Rest    : " << nRest << endl;      */
-      /*fflush(stdout);*/
-      
+    else if((nRest < p_nSize) && !this->IsTranscoding()) {
+         
       memcpy(p_sContentChunk, &m_pszBinContent[m_nBinContentPosition], nRest);
-      m_nBinContentPosition += nRest;
-      if(IsTranscoding())
-        fuppesThreadUnlockMutex(&TranscodeMutex);
-      
-      /*cout << "copy content end 2" << endl;
-      fflush(stdout);*/
-      
+      m_nBinContentPosition += nRest;      
       return nRest;
     }
-     
-    if(IsTranscoding())
-      fuppesThreadUnlockMutex(&TranscodeMutex);
   
-  }
-  
+  }  
   return 0;
 }
 
@@ -600,13 +581,12 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName)
   //m_bIsChunked = true;
   m_bIsBinary  = true;  
     
-  m_TranscodeThread = (fuppesThread)NULL;
-  fuppesThreadInitMutex(&TranscodeMutex);
-      
-  if(m_pTranscodingSessionInfo)
-  {
+  if(m_pTranscodingSessionInfo) {
     m_pTranscodingSessionInfo->m_pszBinBuffer = NULL;
     delete m_pTranscodingSessionInfo;
+    
+    CTranscodingCache::Shared()->ReleaseCacheObject(m_pTranscodingCacheObj);
+    m_pTranscodingCacheObj = NULL;
   }  
   
   m_pTranscodingSessionInfo = new CTranscodeSessionInfo();
@@ -616,72 +596,29 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName)
   m_pTranscodingSessionInfo->m_pnBinContentLength  = &m_nBinContentLength;
   m_pTranscodingSessionInfo->m_pszBinBuffer        = &m_pszBinContent;
   
-  fuppesThreadStartArg(m_TranscodeThread, TranscodeLoop, *m_pTranscodingSessionInfo);
-  
+  m_pTranscodingCacheObj = CTranscodingCache::Shared()->GetCacheObject(m_pTranscodingSessionInfo->m_sInFileName);
+  m_pTranscodingCacheObj->Init(m_pTranscodingSessionInfo);
+  m_pTranscodingCacheObj->Transcode();
+
   return true;
 }
 
 bool CHTTPMessage::IsTranscoding()
 {  
-  if(m_pTranscodingSessionInfo)
-    return m_pTranscodingSessionInfo->m_bIsTranscoding;
+  if(m_pTranscodingCacheObj)
+    return m_pTranscodingCacheObj->m_bIsTranscoding;
   else
     return false;
 }
 
 void CHTTPMessage::BreakTranscoding()
 {
-  if(m_pTranscodingSessionInfo)
-  {
+  if(m_pTranscodingSessionInfo) {                            
     m_pTranscodingSessionInfo->m_bBreakTranscoding = true;   
-    if (fuppesThreadClose(m_TranscodeThread))
-      m_TranscodeThread = (fuppesThread)NULL;
   }
 }
 
-fuppesThreadCallback TranscodeLoop(void *arg)
-{
-  #ifndef DISABLE_TRANSCODING
-  CTranscodeSessionInfo* pSession = (CTranscodeSessionInfo*)arg;
-  
-  CSharedLog::Shared()->Log(L_EXTENDED, "transcode loop :: " + pSession->m_sInFileName, __FILE__, __LINE__);
-  
-  CTranscodingCacheObject* pCacheObj = CTranscodingCache::Shared()->GetCacheObject(pSession->m_sInFileName);
-  pCacheObj->Init(pSession);
-  /* todo: error handling */
-  
-  unsigned int nTranscodeLenght = 0;
-  unsigned int nLength = *pSession->m_pnBinContentLength;  
-  
-  while((((nTranscodeLenght = pCacheObj->Transcode()) - nLength) > 0) && (!pSession->m_bBreakTranscoding))
-  {
-    /* append encoded audio to bin content buffer */
-    fuppesThreadLockMutex(&TranscodeMutex);
-            
-    nLength = pCacheObj->Append(pSession->m_pszBinBuffer, nLength);
-    *pSession->m_pnBinContentLength = nLength;
-    
-    fuppesThreadUnlockMutex(&TranscodeMutex);
-  }
-  
-  CTranscodingCache::Shared()->ReleaseCacheObject(pCacheObj);
-  pSession->m_bIsTranscoding = false;
-  fuppesThreadExit(); 
-  #endif /* ifndef DISABLE_TRANSCODING */
-  
-  
-  /* test transcode to temp file
-  while(pCacheObj->Transcode() && (!pSession->m_bBreakTranscoding))
-  {
-    fuppesSleep(2000);
-  }
-  
-  CSharedLog::Shared()->Log(L_EXTENDED, "exit transcode loop :: " + pSession->m_sInFileName, __FILE__, __LINE__);
-  
-  CTranscodingCache::Shared()->ReleaseCacheObject(pCacheObj);
-  pSession->m_bIsTranscoding = false;
-  fuppesThreadExit();*/
-}
+
 
 bool CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
 {

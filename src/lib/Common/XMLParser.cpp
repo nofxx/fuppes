@@ -41,16 +41,22 @@ CXMLNode::~CXMLNode()
 void CXMLNode::ClearChildren()
 {
   CXMLNode* pNode;
-  m_NodeListIter = m_NodeList.begin();
-  for(m_NodeListIter; m_NodeListIter != m_NodeList.end(); m_NodeListIter++) {
+  std::map<int, CXMLNode*>::iterator pTmpIt = NULL;
+ 
+  for(m_NodeListIter = m_NodeList.begin(); m_NodeListIter != m_NodeList.end();) {
     
     if(m_NodeList.empty()) {
       break;
     }
     
+    pTmpIt = m_NodeListIter;
+    ++pTmpIt;
+    
     pNode = (*m_NodeListIter).second;
     delete pNode;
+    
     m_NodeList.erase(m_NodeListIter);
+    m_NodeListIter = pTmpIt;
   }
   
   m_nChildCount = 0;
@@ -235,13 +241,13 @@ CXMLDocument::CXMLDocument()
 }
 
 CXMLDocument::~CXMLDocument()
-{
+{              
   if(m_pRootNode != NULL) {
     delete m_pRootNode;
   }
-
+  
   if(m_pDoc != NULL) {
-    xmlCleanupParser();
+    xmlCleanupParser();      
     xmlFreeDoc(m_pDoc);
   }
 }

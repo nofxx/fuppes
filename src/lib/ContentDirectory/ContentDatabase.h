@@ -14,7 +14,7 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
@@ -29,7 +29,6 @@
 #include <map>
 #include <list>
 #include "../Common/Common.h"
-#include "FileSystemMonitor.h"
 
 typedef enum tagOBJECT_TYPE
 {
@@ -103,7 +102,7 @@ class CSelectResult
     std::map<std::string, std::string>::iterator m_FieldValuesIterator;  
 };
 
-class CContentDatabase: IFileSystemMonitor
+class CContentDatabase
 {
   public:
     static CContentDatabase* Shared();  
@@ -147,7 +146,6 @@ class CContentDatabase: IFileSystemMonitor
 	
     //bool m_bIsRebuilding;
 		bool m_bShared;
-		CFileSystemMonitor* m_pFileSystemMonitor;  
     static CContentDatabase* m_Instance;
   
 		sqlite3*      m_pDbHandle;  

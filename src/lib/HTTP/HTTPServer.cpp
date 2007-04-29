@@ -14,7 +14,7 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
@@ -680,35 +680,28 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   }
 
   // send loop
-  while((nErr != -1) && (p_Response->GetRangeEnd() > nOffset) && ((nRet = p_Response->GetBinContentChunk(szChunk, nReqChunkSize, nOffset)) > 0)) 
-  { 
+  while((nErr != -1) && 
+        ((nRet = p_Response->GetBinContentChunk(szChunk, nReqChunkSize, nOffset)) > 0)
+        )
+  {
     // send HTTP header when the first package is ready
-    if(nCnt == 0) {
-      // log
-			sLog << p_Response->GetHeaderAsString() << "partial binary (" << nOffset << " - " << nOffset + nRet << ")";
-      CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__);
-      sLog.str("");
-      
+    if(nCnt == 0) {      
       // send
-      nErr = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()));
-      
-      if(nErr < 0)
-        return false;
+      nErr = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()));   
     }
-		else {
-			sLog << "partial binary (" << nOffset << " - " << nOffset + nRet << ")";
+
+    if(nErr > 0) {
+      sLog << "partial binary (" << nOffset << " - " << nOffset + nRet << ")";
       CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__);
-      sLog.str("");		  
-		}
-    
-    
-    // send chunk
-    nErr = fuppesSocketSend(p_Session->GetConnection(), szChunk, nRet);
-    
+      sLog.str("");          
+      
+      // send chunk
+      nErr = fuppesSocketSend(p_Session->GetConnection(), szChunk, nRet);    
+    }
+        
     nSend += nRet; 
     nCnt++;
     nOffset += nRet;
-
 
     // calc next chunk size
     if(bChunkLoop && nErr >= 0) {      

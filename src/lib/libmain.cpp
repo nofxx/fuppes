@@ -114,10 +114,9 @@ int fuppes_cleanup()
   #ifdef WIN32
   WSACleanup();
   #endif
-  
+
   delete CSharedConfig::Shared();
   delete CSharedLog::Shared();
-  
   return FUPPES_OK;
 }
 
