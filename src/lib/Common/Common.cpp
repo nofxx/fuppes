@@ -584,7 +584,7 @@ void fuppesThreadInitMutex(fuppesThreadMutex* p_ThreadMutex)
   InitializeCriticalSection(p_ThreadMutex);
   //InitializeCriticalSectionAndSpinCount(p_ThreadMutex, 0x80000400);
   #else
-  pthread_mutex_init(p_ThreadMutex, NULL)
+  pthread_mutex_init(p_ThreadMutex, NULL);
   #endif  
 }
 

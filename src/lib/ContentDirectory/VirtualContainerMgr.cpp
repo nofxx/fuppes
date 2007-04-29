@@ -241,6 +241,7 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
     nContainerType = CONTAINER_ALBUM_MUSIC_ALBUM;
   } 
   else {
+    #warning: todo properties
     cout << "unhandled property '" << sProp << "'" << endl;
     return;
   }
@@ -289,6 +290,11 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
         break;
       case CONTAINER_ALBUM_MUSIC_ALBUM:
         pDetails->sAlbum = SQLEscape(pDb->GetResult()->GetValue("VALUE"));
+        break;      
+      default:
+        cout << "unhandled property '" << sProp << "'" << endl;
+        pDb->Next();
+        continue;
         break;
     }    
     

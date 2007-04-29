@@ -41,7 +41,7 @@ CXMLNode::~CXMLNode()
 void CXMLNode::ClearChildren()
 {
   CXMLNode* pNode;
-  std::map<int, CXMLNode*>::iterator pTmpIt = NULL;
+  std::map<int, CXMLNode*>::iterator pTmpIt;
  
   for(m_NodeListIter = m_NodeList.begin(); m_NodeListIter != m_NodeList.end();) {
     
@@ -214,7 +214,9 @@ void CXMLNode::Value(int p_nValue)
 CXMLNode* CXMLNode::AddChild(std::string p_sName, std::string p_sValue)
 {
   xmlNewTextChild(m_pNode, NULL, BAD_CAST p_sName.c_str(), BAD_CAST p_sValue.c_str());    
-  ClearChildren();  
+  ClearChildren();
+  #warning todo
+  return NULL;
 }
 
 void CXMLNode::RemoveChild(int p_nIdx)

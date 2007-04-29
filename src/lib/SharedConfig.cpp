@@ -311,8 +311,7 @@ bool CSharedConfig::SetLocalCharset(std::string p_sCharset)
 }
 
 bool CSharedConfig::ReadConfigFile()
-{  
-  bool bResult = true;
+{
   std::string sErrorMsg;
   if(m_pConfigFile == NULL) {
     m_pConfigFile = new CConfigFile();
@@ -378,7 +377,7 @@ bool CSharedConfig::ResolveHostAndIP()
     if((m_sIP == "") || (m_sIP.compare("127.0.0.1") == 0))
     {
 			if(m_sIP.compare("127.0.0.1") == 0)
-			  cout << "detected ip 127.0.0.1. it's possible but sensless." << endl;
+			  cout << "detected ip 127.0.0.1. it's possible but senseless." << endl;
 		
 		  string sIface;
 		  #ifdef WIN32

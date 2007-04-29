@@ -191,8 +191,8 @@ printf("size: %d\n", new_size);
 
   pixbuf = gtk_image_get_pixbuf (GTK_IMAGE (svg_image));
   pixbuf = gdk_pixbuf_scale_simple (pixbuf,
-					new_size,
-					new_size,
+					new_size - 1,
+					new_size - 1,
 					GDK_INTERP_BILINEAR);
   gtk_image_set_from_pixbuf (GTK_IMAGE (applet->image), pixbuf);
 
