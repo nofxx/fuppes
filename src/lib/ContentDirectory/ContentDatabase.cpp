@@ -463,17 +463,18 @@ unsigned int CContentDatabase::GetObjId()
 
 void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_nParentId)
 {
-  #ifdef WIN32  
-  // append trailing backslash if neccessary
+  #ifdef WIN32
   char szTemp[MAX_PATH];
+  strcpy(szTemp, p_sDirectory.c_str());
+ 
+  // append trailing backslash if neccessary
   if(p_sDirectory.substr(p_sDirectory.length()-1).compare(upnpPathDelim) != 0) {
-    strcpy(szTemp, p_sDirectory.c_str());
     strcat(szTemp, upnpPathDelim);
   }
   
-  /* Add search criteria */
+  // Add search criteria
   strcat(szTemp, "*");
-  
+
   /* Find first file */
   WIN32_FIND_DATA data;
   HANDLE hFile = FindFirstFile(szTemp, &data);
@@ -1022,20 +1023,23 @@ fuppesThreadCallback BuildLoop(void* arg)
     
   CContentDatabase* pDb = new CContentDatabase();
   int i;
+  unsigned int nObjId;
+  stringstream sSql;
+  string sFileName;
   
   CSharedLog::Shared()->Log(L_NORMAL, "read shared directories", __FILE__, __LINE__, false);
+
   for(i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
   {
     if(DirectoryExists(CSharedConfig::Shared()->GetSharedDir(i)))
     {  
-      string sFileName;
-      ExtractFolderFromPath(CSharedConfig::Shared()->GetSharedDir(i), &sFileName);          
-        
-      pDb->BeginTransaction();
+      sSql.str("");
       
-      unsigned int nObjId = pDb->GetObjId();
+      ExtractFolderFromPath(CSharedConfig::Shared()->GetSharedDir(i), &sFileName);
+
+      pDb->BeginTransaction();      
+      nObjId = pDb->GetObjId();      
       
-      stringstream sSql;
       sSql << 
         "insert into OBJECTS (OBJECT_ID, TYPE, PATH, FILE_NAME) values " <<
         "(" << nObjId << 
@@ -1050,7 +1054,6 @@ fuppesThreadCallback BuildLoop(void* arg)
         "values (" << nObjId << ", 0)";
       
       pDb->Insert(sSql.str());      
-      
       pDb->Commit();
       
       DbScanDir(pDb, CSharedConfig::Shared()->GetSharedDir(i), nObjId);      

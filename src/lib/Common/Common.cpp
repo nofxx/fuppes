@@ -68,23 +68,24 @@ bool IsFile(std::string p_sFileName)
 #ifdef WIN32
 bool DirectoryExists(std::string p_sDirName)
 {
-  /* Convert string */
-  const char* pszDirName = p_sDirName.c_str();
+  // remove trailing backslash
+  if((p_sDirName.length() > 2) &&
+     (p_sDirName.substr(p_sDirName.length() - 1).compare(upnpPathDelim) == 0) &&
+     (p_sDirName.substr(p_sDirName.length() - 2, 1).compare(":") != 0)
+    ) {
+    p_sDirName = p_sDirName.substr(0, p_sDirName.length() - 1);                                           
+  }
   
-  cout << "DirectoryExists: " << pszDirName;
-  
-  /* Get file information */
+  // Get file information
   struct _stat info;
   memset(&info, 0, sizeof(info));
 
-  /* Check directory exists */
-  _stat(pszDirName, &info);
+  // Check directory exists
+  _stat(p_sDirName.c_str(), &info);
   if(0 == (info.st_mode & _S_IFDIR)) {
-    cout << "false" << endl;
     return false;
   }
-
-    cout << "true" << endl;
+  
   return true;
 }
 #else

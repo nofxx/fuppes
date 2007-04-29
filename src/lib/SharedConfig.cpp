@@ -208,7 +208,11 @@ int CSharedConfig::SharedDirCount()
 
 std::string CSharedConfig::GetSharedDir(int p_nIdx)
 {
-  return m_pConfigFile->SharedDir(p_nIdx);
+  string sDir = m_pConfigFile->SharedDir(p_nIdx);
+  if(sDir.length() > 1 && sDir.substr(sDir.length() - 1).compare(upnpPathDelim) != 0) {
+    sDir += upnpPathDelim;
+  }
+  return sDir;
 }
 
 void CSharedConfig::AddSharedDirectory(std::string p_sDirectory)
