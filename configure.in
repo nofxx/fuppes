@@ -446,16 +446,9 @@ AC_ARG_ENABLE(gnome-panel-applet,
             
 if test "x$use_gnome_applet" = "xyes"; then
   PKG_CHECK_MODULES(LIBPANELAPPLET, libpanelapplet-2.0, have_libpanelapplet=yes, have_libpanelapplet=no)
-  
-  AM_CONDITIONAL(GNOMEAPPLET, test "x$have_libpanelapplet" = "xyes")
-
-  #if test "x$have_libpanelapplet" = "xyes"; then  
-    #FUPPES_LIBS="$FUPPES_LIBS $LIBNOTIFY_LIBS"
-    #AC_DEFINE([HAVE_LIBNOTIFY], [1], []) 
-    #CXXFLAGS="$CXXFLAGS $LIBNOTIFY_CFLAGS -DHAVE_LIBNOTIFY"
-  #fi
 fi
-AC_SUBST(have_libpanelapplet)
+
+AM_CONDITIONAL(GNOMEAPPLET, test "x$have_libpanelapplet" = "xyes")
 # end GNOME panel applet
 
 
