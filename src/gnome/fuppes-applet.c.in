@@ -10,11 +10,15 @@
 
 #include <libgnome/gnome-help.h>
 #include "fuppes-applet.h"
+#include "../../include/fuppes.h"
+
+
+#define PIXMAPSDIR @PIXMAPSDIR@
 
 
 G_DEFINE_TYPE(FuppesApplet, fuppes_applet, PANEL_TYPE_APPLET)
 
-//static void     trash_applet_destroy            (GtkObject         *object);
+static void     fuppes_applet_destroy            (GtkObject         *object);
 
 static void     fuppes_applet_size_allocate      (GtkWidget         *widget,
 						 GdkRectangle     *allocation);
@@ -91,7 +95,7 @@ static void item_count_changed        (TrashMonitor *monitor,
 static void
 fuppes_applet_class_init (FuppesAppletClass *class)
 {
-	//GTK_OBJECT_CLASS (class)->destroy = trash_applet_destroy;
+	GTK_OBJECT_CLASS (class)->destroy = fuppes_applet_destroy;
 	GTK_WIDGET_CLASS (class)->size_allocate = fuppes_applet_size_allocate;
 	//GTK_WIDGET_CLASS (class)->button_release_event = trash_applet_button_release;
 	//GTK_WIDGET_CLASS (class)->key_press_event = trash_applet_key_press;
@@ -146,27 +150,18 @@ fuppes_applet_init (FuppesApplet *applet)
       
 }
 
-/*static void
-trash_applet_destroy (GtkObject *object)
+static void
+fuppes_applet_destroy (GtkObject *object)
 {
-	TrashApplet *applet = TRASH_APPLET (object);
+	FuppesApplet *applet = FUPPES_APPLET (object);
 	
 	applet->image = NULL;
 	if (applet->tooltips)
 		g_object_unref (applet->tooltips);
 	applet->tooltips = NULL;
-
-	if (applet->monitor_signal_id)
-		g_signal_handler_disconnect (applet->monitor,
-					     applet->monitor_signal_id);
-	applet->monitor_signal_id = 0;
-
-	if (applet->update_id)
-		g_source_remove (applet->update_id);
-	applet->update_id = 0;
-
-	(* GTK_OBJECT_CLASS (trash_applet_parent_class)->destroy) (object);
-}*/
+  
+	(* GTK_OBJECT_CLASS (fuppes_applet_parent_class)->destroy) (object);
+}
 
 static void
 fuppes_applet_size_allocate (GtkWidget    *widget,

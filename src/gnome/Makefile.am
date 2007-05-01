@@ -11,13 +11,19 @@ fuppes_applet_SOURCES = \
   fuppes-applet.c\
   fuppes-applet.h
 
+EXTRA_DIST = fuppes-applet.c.in
+pixmapsdir = $(datadir)/pixmaps
+dist_pixmaps_DATA = ./../../fuppes.svg
+
+fuppes-applet.c: fuppes-applet.c.in
+	sed \
+  -e "s|\@PIXMAPSDIR\@|$(pixmapsdir)|" \
+  $< > $@
+
 fuppes_applet_LDADD = ./../libfuppes.la
 
 fuppes_applet_LDFLAGS = \
   $(LIBPANELAPPLET_LIBS)
-
-pixmapsdir = $(datadir)/pixmaps
-dist_pixmaps_DATA = ./../../fuppes.svg
 
 
 serverdir = $(libdir)/bonobo/servers
