@@ -419,19 +419,45 @@ fi
 # end libnotify
 
 # inotify
-have_inotify=no
-use_inotify=yes
-AH_TEMPLATE([HAVE_INOTIFY], [inotify support])
-AC_ARG_ENABLE(inotify, 
-            [  --disable-inotify  Disable inotify support],
-            [ use_inotify=no; ] )
+#have_inotify=no
+#use_inotify=yes
+#AH_TEMPLATE([HAVE_INOTIFY], [inotify support])
+#AC_ARG_ENABLE(inotify, 
+#            [  --disable-inotify  Disable inotify support],
+#            [ use_inotify=no; ] )
+#
+#if test "x$use_inotify" = "xyes"; then
+#  AC_CHECK_HEADERS(sys/inotify.h, 
+#      have_inotify=yes
+#      AC_DEFINE([HAVE_INOTIFY], [1], []), 
+#      have_inotify=no)
+#fi
+# end inotify
 
-if test "x$use_inotify" = "xyes"; then
-  AC_CHECK_HEADERS(sys/inotify.h, 
-      have_inotify=yes
-      AC_DEFINE([HAVE_INOTIFY], [1], []), 
-      have_inotify=no)
+
+
+# GNOME panel applet
+have_libpanelapplet=no
+use_gnome_applet=no
+#AH_TEMPLATE([HAVE_LIBNOTIFY], [libnotify support])
+AC_ARG_ENABLE(gnome-panel-applet, 
+            [  --enable-gnome-panel-applet  build a panel applet for GNOME desktop],
+            [ use_gnome_applet=yes; ] )
+            
+if test "x$use_gnome_applet" = "xyes"; then
+  PKG_CHECK_MODULES(LIBPANELAPPLET, libpanelapplet-2.0, have_libpanelapplet=yes, have_libpanelapplet=no)
+  
+  AM_CONDITIONAL(GNOMEAPPLET, test "x$have_libpanelapplet" = "xyes")
+
+  #if test "x$have_libpanelapplet" = "xyes"; then  
+    #FUPPES_LIBS="$FUPPES_LIBS $LIBNOTIFY_LIBS"
+    #AC_DEFINE([HAVE_LIBNOTIFY], [1], []) 
+    #CXXFLAGS="$CXXFLAGS $LIBNOTIFY_CFLAGS -DHAVE_LIBNOTIFY"
+  #fi
 fi
+AC_SUBST(have_libpanelapplet)
+# end GNOME panel applet
+
 
 
 AC_SUBST(LIBXML_LIBS)
@@ -456,9 +482,8 @@ AC_SUBST(UUID_LIBS)
 AC_OUTPUT([
 Makefile
 src/Makefile
+src/gnome/Makefile
 ])
-#include/Makefile
-
 
 
 dnl summary
@@ -550,11 +575,11 @@ else
 fi
 
 # inotify
-if test "x$have_inotify" = "xyes"; then
-  echo "  inotify    : enabled"
-else
-  echo "  inotify    : disabled"
-fi
+#if test "x$have_inotify" = "xyes"; then
+#  echo "  inotify    : enabled"
+#else
+#  echo "  inotify    : disabled"
+#fi
 
 # taglib
 if test "x$have_taglib" = "xyes"; then
@@ -582,6 +607,14 @@ if test "x$have_libnotify" = "xyes"; then
   echo "  libnotify  : enabled"
 else
   echo "  libnotify  : disabled"
+fi
+
+# have_libpanelapplet
+echo ""
+if test "x$have_libpanelapplet" = "xyes"; then
+  echo "  gnome applet: enabled"
+else
+  echo "  gnome applet: disabled"
 fi
 
 echo ""

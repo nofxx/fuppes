@@ -23,6 +23,8 @@
 
 #include "FileSystemMonitor.h"
 
+#include <sys/ioctl.h>
+
 #include <iostream>
 using namespace std;
 
@@ -34,5 +36,47 @@ CInotifyMonitor::CInotifyMonitor(IFileSystemMonitor* pEventHandler):
 	if (inotify_fd < 0)	{
 		cout << "error inotify_init()" << endl;
 	}
+	
+	int wd = inotify_add_watch(inotify_fd, "/home/ulrich/Desktop/test/", IN_CREATE);
+	cout << "wd: " << wd << endl;	
+	
+	usleep(1000 * 100);
+	
+	int rc = 0;
+	struct timeval  timeout;
+	timeout.tv_sec  = 10;
+	timeout.tv_usec = 0;
+	struct timeval* timeout_ptr = &timeout;
+	
+	fd_set read_fd;
+	FD_ZERO(&read_fd);
+	FD_SET(inotify_fd, &read_fd);
+	
+	struct inotify_event event;
+	
+	int bytes_to_read = 0;
+	
+	while (true)
+	{
+	  rc = select(inotify_fd + 1, &read_fd, NULL, NULL, timeout_ptr); 
+	  if(rc > 0) {
+  	  cout << "select: " << rc << endl;
+  	  
+	    do {
+		    rc = ioctl(inotify_fd, FIONREAD, &bytes_to_read);
+	    } while (!rc && bytes_to_read < sizeof(struct inotify_event));
+  	  
+  	  cout << "bytes to read: " << bytes_to_read << endl;
+  	  
+	    rc = read(inotify_fd, &event, bytes_to_read); // sizeof(struct inotify_event));
+	    if(rc > 0) {
+	      cout << "read: " << rc << endl;
+	      cout << event.name << " :: " << event.mask << endl;
+	    }
+	  }
+	}
+	
+	inotify_rm_watch(inotify_fd, wd);
+	
 }
 #endif // HAVE_INOTIFY

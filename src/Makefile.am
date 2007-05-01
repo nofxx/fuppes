@@ -4,8 +4,8 @@
 INCLUDES = ${FUPPES_CFLAGS} ${LIBXML_CFLAGS} ${PCRE_CFLAGS} ${VORBISFILE_CFLAGS} ${TAGLIB_CFLAGS}
 
 
-noinst_LTLIBRARIES = libfuppes.la
-#lib_LTLIBRARIES = libfuppes.la
+#noinst_LTLIBRARIES = libfuppes.la
+lib_LTLIBRARIES = libfuppes.la
 
 bin_PROGRAMS = fuppes fuppesd
 

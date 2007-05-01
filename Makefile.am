@@ -2,7 +2,10 @@
 ## $Id: $
 
 SUBDIRS = \
-  src
+  src\
+  src/gnome
+
+noinst_HEADERS = include/fuppes.h
 
 EXTRA_DIST = \
   README\
@@ -12,8 +15,9 @@ EXTRA_DIST = \
 	INSTALL\
 	NEWS\
 	TODO\
+  THANKS\
 	configure.in\
 	Makefile.am\
 	src/Makefile.am\
-	include/fuppes.h\
+  src/gnome/Makefile.am\
   vfolder.cfg
