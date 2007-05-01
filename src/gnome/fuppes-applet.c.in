@@ -13,7 +13,8 @@
 #include "../../include/fuppes.h"
 
 
-#define PIXMAPSDIR @PIXMAPSDIR@
+#define PIXMAPSDIR "@PIXMAPSDIR@/"
+#define FUPPES_SVG "@PIXMAPSDIR@/fuppes.svg"
 
 
 G_DEFINE_TYPE(FuppesApplet, fuppes_applet, PANEL_TYPE_APPLET)
@@ -142,7 +143,9 @@ fuppes_applet_init (FuppesApplet *applet)
 	g_object_ref (applet->tooltips);
 	gtk_object_sink (GTK_OBJECT (applet->tooltips));
 
-  svg_image     = gtk_image_new_from_file("/usr/share/pixmaps/fuppes.svg");
+  //char* szDir = PIXMAPSDIR "/fuppes.svg";
+  printf("load image %s\n", FUPPES_SVG);
+  svg_image = GTK_IMAGE(gtk_image_new_from_file(FUPPES_SVG));
 	applet->image = gtk_image_new();
 	gtk_container_add (GTK_CONTAINER (applet), applet->image);
 	gtk_widget_show (applet->image);
