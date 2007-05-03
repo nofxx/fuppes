@@ -457,7 +457,7 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
       "</tbody>" << endl <<   
     "</table>" << endl;
   
-  pDb->ClearResult();
+  //pDb->ClearResult();
   delete pDb;
   // end Database status
   

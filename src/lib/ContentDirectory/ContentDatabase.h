@@ -129,7 +129,7 @@ class CContentDatabase
     std::list<CSelectResult*>::iterator m_ResultListIterator;
     unsigned int  m_nRowsReturned;  
   
-    void ClearResult();
+    
 
   
     void BuildDB();
@@ -141,12 +141,14 @@ class CContentDatabase
   private:    
 		void Lock();
     void Unlock();
+    void ClearResult();
   
 	  fuppesThread m_RebuildThread;
 	
     //bool m_bIsRebuilding;
 		bool m_bShared;
     static CContentDatabase* m_Instance;
+    int m_nLockCount;
   
 		sqlite3*      m_pDbHandle;  
     std::string   m_sDbFileName;

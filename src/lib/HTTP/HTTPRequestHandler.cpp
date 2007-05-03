@@ -8,17 +8,17 @@
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as
+ *  it under the terms of the GNU General Public License version 2 as 
  *  published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include "HTTPRequestHandler.h"
@@ -35,8 +35,9 @@
 
 using namespace std;
 
-CHTTPRequestHandler::CHTTPRequestHandler()
+CHTTPRequestHandler::CHTTPRequestHandler(std::string p_sHTTPServerURL)
 {
+  m_sHTTPServerURL = p_sHTTPServerURL;
 }
 
 bool CHTTPRequestHandler::HandleRequest(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
@@ -46,14 +47,17 @@ bool CHTTPRequestHandler::HandleRequest(CHTTPMessage* pRequest, CHTTPMessage* pR
   
   switch(pRequest->GetMessageType())
   {
-    
-    /* HTTP request */
+    // HTTP request
     case HTTP_MESSAGE_TYPE_GET:
     case HTTP_MESSAGE_TYPE_HEAD:
     case HTTP_MESSAGE_TYPE_POST:
       return this->HandleHTTPRequest(pRequest, pResponse);
+    
+    // SOAP
+    case HTTP_MESSAGE_TYPE_POST_SOAP_ACTION:
+      return this->HandleSOAPAction(pRequest, pResponse);
       
-    /* GENA */
+    // GENA
     case HTTP_MESSAGE_TYPE_SUBSCRIBE:
       return this->HandleGENAMessage(pRequest, pResponse);
     
@@ -71,6 +75,28 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
   
   // set version
   pResponse->SetVersion(pRequest->GetVersion());
+  
+  
+  // ContentDirectory description
+  if(sRequest.compare("/UPnPServices/ContentDirectory/description.xml") == 0) {
+    pResponse->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml");
+    
+    CContentDirectory* pDir = new CContentDirectory(m_sHTTPServerURL);
+    pResponse->SetContent(pDir->GetServiceDescription());
+    delete pDir;
+    return true;
+  }
+
+  //ConnectionManager description
+  if(sRequest.compare("/UPnPServices/ConnectionManager/description.xml") == 0) {
+    pResponse->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml");
+      
+    CConnectionManager* pMgr = new CConnectionManager(m_sHTTPServerURL);
+    pResponse->SetContent(pMgr->GetServiceDescription());
+    delete pMgr;
+    return true;
+  }
+  
   
   // Presentation
   if(
@@ -113,7 +139,7 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
     bResult = HandleItemRequest(sObjectId, pRequest, pResponse);    
   }
   
-  /* set remaining response values */
+  /* set 404 */
   if(!bResult)
   {
     pResponse->SetMessageType(HTTP_MESSAGE_TYPE_404_NOT_FOUND);
@@ -125,8 +151,47 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
 }
     
 bool CHTTPRequestHandler::HandleSOAPAction(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
-{
-  return false;
+{  
+  // get UPnP action
+  CUPnPAction* pAction;
+  pAction = pRequest->GetAction();  
+  if(!pAction) {
+    return false;
+  }
+  
+  // set version
+  pResponse->SetVersion(pRequest->GetVersion());
+  
+  // handle UPnP action
+  bool bRet = true;
+  CContentDirectory* pDir;
+  CConnectionManager* pMgr;
+  CXMSMediaReceiverRegistrar* pXMS;
+  
+  switch(pAction->GetTargetDeviceType())
+  {
+    case UPNP_SERVICE_CONTENT_DIRECTORY:
+      pDir = new CContentDirectory(m_sHTTPServerURL);
+      pDir->HandleUPnPAction(pAction, pResponse);
+      //cout << "HTTPREQHND: delete CDIR" << endl; fflush(stdout);
+      delete pDir;
+      //cout << "HTTPREQHND: CDIR DELETED" << endl; fflush(stdout);      
+      break;
+    case UPNP_SERVICE_CONNECTION_MANAGER:
+      pMgr = new CConnectionManager(m_sHTTPServerURL);
+      pMgr->HandleUPnPAction(pAction, pResponse);
+      delete pMgr;
+      break;    
+		case UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR:
+      pXMS = new CXMSMediaReceiverRegistrar();
+      pXMS->HandleUPnPAction(pAction, pResponse);
+      delete pXMS;
+      break;
+    default:
+      bRet = false;
+      break;
+  }
+  return bRet;
 }
 
 bool CHTTPRequestHandler::HandleGENAMessage(CHTTPMessage* pRequest, CHTTPMessage* pResponse)

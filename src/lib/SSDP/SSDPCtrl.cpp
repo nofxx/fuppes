@@ -79,10 +79,9 @@ CUDPSocket* CSSDPCtrl::get_socket()
 
 void CSSDPCtrl::CleanupSessions()
 {
- CSharedLog::Shared()->ExtendedLog(LOGNAME, "CleanupSessions");
- 
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "CleanupSessions");
   fuppesThreadLockMutex(&m_SessionTimedOutMutex); 
-     
+      
   if(m_HandleMSearchThreadList.size() > 0)
   {    
     for(m_HandleMSearchThreadListIterator = m_HandleMSearchThreadList.begin();
@@ -107,7 +106,7 @@ void CSSDPCtrl::CleanupSessions()
     }
   }
      
-  if(m_SessionList.size() == 0)
+  if(m_SessionList.size() > 0)
   {  
     for(m_SessionListIterator = m_SessionList.begin();
         m_SessionListIterator != m_SessionList.end(); )
@@ -123,7 +122,7 @@ void CSSDPCtrl::CleanupSessions()
       delete pSession;
     }  
   }
-  
+
   fuppesThreadUnlockMutex(&m_SessionTimedOutMutex); 
 }
 
@@ -216,7 +215,7 @@ void CSSDPCtrl::OnUDPSocketReceive(CSSDPMessage* pSSDPMessage)
     switch(pSSDPMessage->GetMessageType())
     {
       case SSDP_MESSAGE_TYPE_M_SEARCH:
-        CSharedLog::Shared()->ExtendedLog(LOGNAME, "SSDP_MESSAGE_TYPE_M_SEARCH");
+        //CSharedLog::Shared()->ExtendedLog(LOGNAME, "SSDP_MESSAGE_TYPE_M_SEARCH");
         HandleMSearch(pSSDPMessage);
         break;
       

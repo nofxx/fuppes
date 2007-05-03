@@ -1,7 +1,7 @@
 [Project]
 FileName=sqlite3.dev
 Name=sqlite3
-UnitCount=65
+UnitCount=2
 Type=3
 Ver=1
 ObjFiles=
@@ -27,10 +27,10 @@ CustomMakefile=
 IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=0
-CompilerSettings=0000000000000000000000
+CompilerSettings=00000000001000000000b0
 
 [Unit2]
-FileName=attach.c
+FileName=sqlite3.c
 CompileCpp=0
 Folder=sqlite3
 Compile=1
@@ -552,7 +552,7 @@ BuildCmd=
 [VersionInfo]
 Major=3
 Minor=3
-Release=13
+Release=17
 Build=1
 LanguageID=1033
 CharsetID=1252
@@ -564,7 +564,7 @@ LegalCopyright=http://sqlite.org
 LegalTrademarks=
 OriginalFilename=
 ProductName=SQLite
-ProductVersion=3.3.13
+ProductVersion=3.3.17
 AutoIncBuildNr=1
 
 [Unit24]
@@ -598,7 +598,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit1]
-FileName=analyze.c
+FileName=sqlite3.h
 CompileCpp=0
 Folder=sqlite3
 Compile=1

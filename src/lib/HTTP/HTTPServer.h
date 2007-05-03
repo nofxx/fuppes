@@ -3,22 +3,22 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as
+ *  it under the terms of the GNU General Public License version 2 as 
  *  published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
  
 #ifndef _HTTPSERVER_H
@@ -56,16 +56,18 @@ class CHTTPSessionInfo
 
   public:
 
-    CHTTPSessionInfo(CHTTPServer* pHTTPServer, upnpSocket p_Connection, struct sockaddr_in p_RemoteEndPoint)
+    CHTTPSessionInfo(CHTTPServer* pHTTPServer, upnpSocket p_Connection, struct sockaddr_in p_RemoteEndPoint, std::string p_sHTTPServerURL)
     {
       m_pHTTPServer    = pHTTPServer;
       m_Connection     = p_Connection;    
       m_bIsTerminated  = false;
       m_RemoteEndPoint = p_RemoteEndPoint;
+      m_sServerURL     = p_sHTTPServerURL;
     }
 
     fuppesSocket GetConnection() { return m_Connection;  }
     CHTTPServer* GetHTTPServer() { return m_pHTTPServer; }
+    std::string  GetHTTPServerURL() { return m_sServerURL; }    
     fuppesThread GetThreadHandle() { return m_ThreadHandle; }
     void         SetThreadHandle(fuppesThread p_ThreadHandle) { m_ThreadHandle = p_ThreadHandle; }
     struct sockaddr_in GetRemoteEndPoint() { return m_RemoteEndPoint; }
@@ -76,10 +78,11 @@ class CHTTPSessionInfo
   
     void CleanupSessions();
 
-    CHTTPServer* m_pHTTPServer;
-    fuppesSocket m_Connection;
-    fuppesThread m_ThreadHandle;
-    struct sockaddr_in m_RemoteEndPoint;
+    CHTTPServer*        m_pHTTPServer;
+    fuppesSocket        m_Connection;
+    fuppesThread        m_ThreadHandle;
+    struct sockaddr_in  m_RemoteEndPoint;
+    std::string         m_sServerURL;
 
 };
 

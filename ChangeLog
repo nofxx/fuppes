@@ -25,7 +25,7 @@ Version 0.7.2
   * fixed extraction of folder name from shared directory
     when containing a trailing slash or backslash
 
-  * win32 (updated sqlite from 3.3.7 to 3.3.13)
+  * win32 (updated sqlite from 3.3.7 to 3.3.17)
 
 Version 0.7.1 (2007-02-03)
   * fixed bug #1650930 (win32)

@@ -112,17 +112,22 @@ CContentDatabase::CContentDatabase(bool p_bShared)
   m_bShared       = p_bShared;		
 	//m_pFileSystemMonitor = NULL;
   m_bInTransaction = false;
+  m_nLockCount = -1;
   
 	if(m_bShared) {            
 	  g_bIsRebuilding = false;
     fuppesThreadInitMutex(&m_Mutex);
+    m_nLockCount = 0;
     #ifdef HAVE_INOTIFY
     m_pFileSystemMonitor = new CInotifyMonitor(this);
     #endif
   }
     
-  if(FileExists(m_sDbFileName))
-    Open();
+  if(FileExists(m_sDbFileName)) {
+    if(!Open()) {
+      cout << "FAILD OPENING DB FILE" << endl;
+    }
+  }
 }
  
 CContentDatabase::~CContentDatabase()
@@ -220,16 +225,22 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 
 void CContentDatabase::Lock()
 {
-  if(m_bShared)
+  if(m_bShared) {
     fuppesThreadLockMutex(&m_Mutex);
+    //m_nLockCount++;
+    //cout << "CDB LOCK: " << m_nLockCount << endl; fflush(stdout);    
+  }
   else
     CContentDatabase::Shared()->Lock();
 }
 
 void CContentDatabase::Unlock()
 {
-  if(m_bShared)
-    fuppesThreadUnlockMutex(&m_Mutex);
+  if(m_bShared) {
+    //cout << "CDB UNLOCK: " << m_nLockCount << endl; fflush(stdout);
+    //m_nLockCount--;    
+    fuppesThreadUnlockMutex(&m_Mutex);    
+  }
   else
     CContentDatabase::Shared()->Unlock();
 }
@@ -368,8 +379,13 @@ bool CContentDatabase::Execute(std::string p_sStatement)
 
 bool CContentDatabase::Select(std::string p_sStatement)
 {  
-  //cout << "SELECT :: " << p_sStatement << endl; fflush(stdout);
-   
+  if(m_bShared) {
+    cout << "SHARED SELECT :: " << p_sStatement << endl; fflush(stdout);
+}
+  /*else  {
+    cout << "SINGLE SELECT :: " << p_sStatement << endl; fflush(stdout);
+}*/
+       
   Lock();
   //Open();  
   ClearResult();    
@@ -765,7 +781,7 @@ void BuildPlaylists()
     pDb->Next();
   }  
   
-  pDb->ClearResult();
+  //pDb->ClearResult();
   delete pDb;
 }
 
@@ -816,7 +832,7 @@ unsigned int GetObjectIDFromFileName(std::string p_sFileName)
   if(!pDB->Eof())
     nResult = atoi(pDB->GetResult()->GetValue("ID").c_str());   
   
-  pDB->ClearResult();  
+  //pDB->ClearResult();  
   delete pDB;
   
   return nResult;

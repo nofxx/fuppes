@@ -8,7 +8,7 @@
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as
+ *  it under the terms of the GNU General Public License version 2 as 
  *  published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -16,9 +16,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include "HTTPServer.h"
@@ -308,7 +308,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
 		#endif
 			
     // start session thread ...
-    CHTTPSessionInfo* pSession = new CHTTPSessionInfo(pHTTPServer, nConnection, remote_ep);      
+    CHTTPSessionInfo* pSession = new CHTTPSessionInfo(pHTTPServer, nConnection, remote_ep, pHTTPServer->GetURL());      
     fuppesThread SessionThread = (fuppesThread)NULL;
     fuppesThreadStartArg(SessionThread, SessionLoop, *pSession);
     pSession->SetThreadHandle(SessionThread);
@@ -332,7 +332,7 @@ fuppesThreadCallback SessionLoop(void *arg)
   CHTTPSessionInfo*    pSession  = (CHTTPSessionInfo*)arg;    
   CHTTPMessage*        pRequest  = new CHTTPMessage();   
   CHTTPMessage*        pResponse = new CHTTPMessage();
-  CHTTPRequestHandler* pHandler  = new CHTTPRequestHandler();
+  CHTTPRequestHandler* pHandler  = new CHTTPRequestHandler(pSession->GetHTTPServerURL());
   
   bool bKeepAlive = true;
   bool bResult    = false;
@@ -356,7 +356,8 @@ fuppesThreadCallback SessionLoop(void *arg)
     std::string sIP = inet_ntoa(pSession->GetRemoteEndPoint().sin_addr);    
     if(CSharedConfig::Shared()->IsAllowedIP(sIP)) {
       // build response
-      bResult = pHandler->HandleRequest(pRequest, pResponse);      
+      bResult = pHandler->HandleRequest(pRequest, pResponse);
+//      cout << "HTTPSERV: resonpse
       if(!bResult)
         bResult = pSession->GetHTTPServer()->CallOnReceive(pRequest, pResponse);      
     }

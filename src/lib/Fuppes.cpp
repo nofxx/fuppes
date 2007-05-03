@@ -8,17 +8,17 @@
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as
+ *  it under the terms of the GNU General Public License version 2 as 
  *  published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include "Fuppes.h"
@@ -35,6 +35,8 @@
 #include "GENA/SubscriptionMgr.h"
 
 #include "GUI/NotificationMgr.h"
+#include "ContentDirectory/ContentDatabase.h"
+#include "ContentDirectory/VirtualContainerMgr.h"
 
 using namespace std;
 
@@ -83,6 +85,23 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
   catch(EException ex) {
     throw;
   }
+  
+  // init database 
+  bool bIsNewDB = false;   
+  if(!CContentDatabase::Shared()->Init(&bIsNewDB)) {    
+    if(bIsNewDB) {
+      CSharedLog::Shared()->Log(L_ERROR, "unable to create database file", __FILE__, __LINE__);
+    }
+    throw EException("unable to create database file", __FILE__, __LINE__);
+  } 
+  
+  if(bIsNewDB) {
+    CContentDatabase::Shared()->BuildDB();
+  }
+		
+	// init virtual containers
+	CVirtualContainerMgr::Shared();  
+  
   
   /* Create MediaServer */
   m_pMediaServer = new CMediaServer(m_pHTTPServer->GetURL(), this);	  
@@ -166,7 +185,9 @@ void CFuppes::CleanupTimedOutDevices()
     // ... and delete timed out devices
     CUPnPDevice* pTimedOutDevice = *m_TimedOutDevicesIterator;      
     m_TimedOutDevicesIterator = m_TimedOutDevices.erase(m_TimedOutDevicesIterator);
+    cout << "fuppes:  delete timed out dev" << endl; fflush(stdout);
     delete pTimedOutDevice;
+    cout << "fuppes:  timed out dev DELETED" << endl; fflush(stdout);
   }  
 }
 
@@ -180,6 +201,8 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
   // local device must send alive message
   if(pSender->GetIsLocalDevice())
   {
+    cout << "SEND alive" << endl;                                 
+                                 
     stringstream sLog;
     sLog << "device: " << pSender->GetUUID() << " send timed alive";
     CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());    
@@ -188,6 +211,9 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
   // remote device timed out
   else
   {
+    cout << "FUPPES:  device time out:"; fflush(stdout);
+    cout << pSender->GetFriendlyName() << endl; fflush(stdout);
+      
 	  if(!pSender->GetFriendlyName().empty()) {
       stringstream sLog;
       sLog << "device: " << pSender->GetFriendlyName() << " timed out";
@@ -278,104 +304,6 @@ void CFuppes::OnSSDPCtrlReceiveMsg(CSSDPMessage* pMessage)
   }
 }
 
-bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
-{
-  bool fRet = true;
-
-  // set HTTP version
-  pMessageOut->SetVersion(pMessageIn->GetVersion());
-
-  // handle message
-  HTTP_MESSAGE_TYPE nMsgType = pMessageIn->GetMessageType();
-  switch(nMsgType)
-  {
-    // HTTP request
-    case HTTP_MESSAGE_TYPE_GET:
-      fRet = HandleHTTPRequest(pMessageIn, pMessageOut);
-      break;
-    case HTTP_MESSAGE_TYPE_HEAD:
-      fRet = HandleHTTPRequest(pMessageIn, pMessageOut);
-      break;
-    case HTTP_MESSAGE_TYPE_POST:
-      fRet = HandleHTTPRequest(pMessageIn, pMessageOut);
-      break;
-
-    // SOAP
-    case HTTP_MESSAGE_TYPE_POST_SOAP_ACTION:
-      fRet = HandleHTTPPostSOAPAction(pMessageIn, pMessageOut);
-      break;
-
-		// HTTP response
-    case HTTP_MESSAGE_TYPE_200_OK:
-      break;
-    case HTTP_MESSAGE_TYPE_404_NOT_FOUND:
-      break;
-
-    default:    
-        fRet = false;
-      break;
-  }
-
-  return fRet;
-}
-
-bool CFuppes::HandleHTTPRequest(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
-{
-  // Get request
-  std::string strRequest = pMessageIn->GetRequest();
-
-  // Root description
-  if(ToLower(strRequest).compare("/description.xml") == 0) {
-    pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml"); // HTTP_CONTENT_TYPE_TEXT_XML
-    pMessageOut->SetContent(m_pMediaServer->GetDeviceDescription(pMessageIn));
-    return true;
-  }
-
-  // ContentDirectory description
-  else if(strRequest.compare("/UPnPServices/ContentDirectory/description.xml") == 0) {
-    pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml");
-    pMessageOut->SetContent(m_pContentDirectory->GetServiceDescription());
-    return true;
-  }
-
-  // ConnectionManager description
-  else if(strRequest.compare("/UPnPServices/ConnectionManager/description.xml") == 0) {
-    pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml");    
-    pMessageOut->SetContent(m_pConnectionManager->GetServiceDescription());
-    return true;
-  }
-
-  return false;
-}
-
-bool CFuppes::HandleHTTPPostSOAPAction(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
-{     
-  // get UPnP action
-  CUPnPAction* pAction;
-  pAction = pMessageIn->GetAction();  
-  if(!pAction)
-    return false;
-  
-  // handle UPnP action
-  bool bRet = true;
-  switch(pAction->GetTargetDeviceType())
-  {
-    case UPNP_SERVICE_CONTENT_DIRECTORY:
-      m_pContentDirectory->HandleUPnPAction(pAction, pMessageOut);      
-      break;
-    case UPNP_SERVICE_CONNECTION_MANAGER:
-      m_pConnectionManager->HandleUPnPAction(pAction, pMessageOut);
-      break;    
-		case UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR:
-      m_pXMSMediaReceiverRegistrar->HandleUPnPAction(pAction, pMessageOut);
-      break;
-    default:
-      bRet = false;
-      break;
-  }
-  return bRet;
-}
-
 void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
 {
   fuppesThreadLockMutex(&m_RemoteDevicesMutex);
@@ -459,4 +387,25 @@ void CFuppes::HandleSSDPByeBye(CSSDPMessage* pMessage)
   }
   
   fuppesThreadUnlockMutex(&m_RemoteDevicesMutex);
+}
+
+bool CFuppes::OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
+{
+  pMessageOut->SetVersion(pMessageIn->GetVersion());
+  return HandleHTTPRequest(pMessageIn, pMessageOut);
+}
+
+bool CFuppes::HandleHTTPRequest(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut)
+{
+  // Get request
+  std::string strRequest = pMessageIn->GetRequest();
+
+  // Root description
+  if(ToLower(strRequest).compare("/description.xml") == 0) {
+    pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml"); // HTTP_CONTENT_TYPE_TEXT_XML
+    pMessageOut->SetContent(m_pMediaServer->GetDeviceDescription(pMessageIn));
+    return true;
+  }
+
+  return false;
 }

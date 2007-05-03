@@ -58,8 +58,7 @@ std::string BuildParentIdList(CContentDatabase* pDb, std::string p_sIds, std::st
     "  DEVICE " << p_sDevice;
   
   //cout << sSql.str() << endl; fflush(stdout);
-  
-  pDb->ClearResult();
+    
   pDb->Select(sSql.str());
   if(pDb->Eof()) {
     return "";

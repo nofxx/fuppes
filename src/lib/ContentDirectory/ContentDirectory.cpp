@@ -42,24 +42,7 @@ const string LOGNAME = "ContentDir";
 CContentDirectory::CContentDirectory(std::string p_sHTTPServerURL):
 CUPnPService(UPNP_SERVICE_CONTENT_DIRECTORY, p_sHTTPServerURL)
 {
-  // init database 
-  bool bIsNewDB = false;   
-  if(!CContentDatabase::Shared()->Init(&bIsNewDB)) {
-    
-    if(bIsNewDB) {
-      stringstream sLog;
-      sLog << "unable to create database file '" << CSharedConfig::Shared()->GetConfigDir() << "fuppes.db" << "'." << endl <<
-              "make sure you have write permissions on that directory" << endl;      
-      CSharedLog::Shared()->Log(L_ERROR, sLog.str(), __FILE__, __LINE__);
-    }
-    return;
-  } 
-  
-  if(bIsNewDB)
-    CContentDatabase::Shared()->BuildDB();
-		
-	// init virtual containers
-	CVirtualContainerMgr::Shared();
+
 }
 
 CContentDirectory::~CContentDirectory()
@@ -76,6 +59,8 @@ std::string CContentDirectory::GetServiceDescription()
 void CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut)
 {
   string sContent = "";
+  
+  //cout << "CDIR HANDLE ACTION " << endl; fflush(stdout);
   
   switch((UPNP_CONTENT_DIRECTORY_ACTIONS)pUPnPAction->GetActionType())
   {
@@ -127,8 +112,10 @@ void CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
     "  </s:Body>"
     "</s:Envelope>";
     
-    pMessageOut->SetContent(sContent);    
+    pMessageOut->SetContent(sContent);        
   }
+  
+  //cout << "CDIR ACTION HANDLED" << endl; fflush(stdout);
 }
 
   
@@ -273,7 +260,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
 
     pDb->Select(sSql.str());        
     nContainerType = (OBJECT_TYPE)atoi(pDb->GetResult()->GetValue("TYPE").c_str());
-    pDb->ClearResult(); 
+    //pDb->ClearResult(); 
     sSql.str("");
   }
 
@@ -292,7 +279,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   if(bNeedCount) {
     pDb->Select(sSql.str());        
     sChildCount = pDb->GetResult()->GetValue("COUNT").c_str();
-    pDb->ClearResult();    
+    //pDb->ClearResult();    
     sSql.str("");
   }
   
@@ -354,7 +341,6 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
     //sTitle = pRow->GetValue("FILE_NAME");
 
 
-
     char szParentId[11];
     unsigned int nParentId = pRow->GetValueAsUInt("PARENT_ID");
     
@@ -390,17 +376,22 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
     sDevice = "DEVICE = '" + pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice + "' ";
                             
   // get total matches
+  //cout << "get total matches" << endl; fflush(stdout);
   sSql << "select count(*) as COUNT from MAP_OBJECTS where PARENT_ID = " <<
           pUPnPBrowse->GetObjectIDAsInt() << " and " << sDevice;                          
   
   pDb->Select(sSql.str()); 
-  if(!pDb->Eof())
+  if(!pDb->Eof()) {
+    //cout << "COUNT: " << pDb->GetResult()->GetValue("COUNT") << endl; fflush(stdout);
     *p_pnTotalMatches = atoi(pDb->GetResult()->GetValue("COUNT").c_str());
+  }
   else
     *p_pnTotalMatches = 0;
 
-  pDb->ClearResult();
+  //pDb->ClearResult();
+  
   sSql.str("");
+  //cout << "DONE get total matches " << *p_pnTotalMatches << endl; fflush(stdout);  
   
   // get description
   sSql << 
@@ -443,7 +434,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
     tmpInt++;
   }        
   
-  pDb->ClearResult();                    
+  //pDb->ClearResult();                    
   *p_pnNumberReturned = tmpInt;
   
   delete pDb;

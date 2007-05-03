@@ -114,7 +114,7 @@ std::string CPlaylistFactory::BuildPLS(std::string p_sObjectId)
   sResult << "NumberOfEntries=" << nNumber << "\r\n" <<
              "Version=2\r\n";
   
-  pDb->ClearResult();
+  //pDb->ClearResult();
   delete pDb;
   //cout << sResult.str() << endl;
   return sResult.str();  
@@ -172,7 +172,7 @@ std::string CPlaylistFactory::BuildM3U(std::string p_sObjectId)
     pDb->Next();
   }
   
-  pDb->ClearResult();
+  //pDb->ClearResult();
   delete pDb;
   return sResult.str();  
 }
