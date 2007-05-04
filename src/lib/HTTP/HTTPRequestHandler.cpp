@@ -44,6 +44,7 @@ bool CHTTPRequestHandler::HandleRequest(CHTTPMessage* pRequest, CHTTPMessage* pR
 {
   /*cout << "CHTTPRequestHandler::HandleRequest()" << endl;    
   cout << "Type: " << pRequest->GetMessageType() << endl;  */
+  bool bResult;
   
   switch(pRequest->GetMessageType())
   {
@@ -51,19 +52,25 @@ bool CHTTPRequestHandler::HandleRequest(CHTTPMessage* pRequest, CHTTPMessage* pR
     case HTTP_MESSAGE_TYPE_GET:
     case HTTP_MESSAGE_TYPE_HEAD:
     case HTTP_MESSAGE_TYPE_POST:
-      return this->HandleHTTPRequest(pRequest, pResponse);
-    
+      bResult = this->HandleHTTPRequest(pRequest, pResponse);
+      break;
+      
     // SOAP
     case HTTP_MESSAGE_TYPE_POST_SOAP_ACTION:
-      return this->HandleSOAPAction(pRequest, pResponse);
+      bResult = this->HandleSOAPAction(pRequest, pResponse);
+      break;
       
     // GENA
     case HTTP_MESSAGE_TYPE_SUBSCRIBE:
-      return this->HandleGENAMessage(pRequest, pResponse);
+      bResult = this->HandleGENAMessage(pRequest, pResponse);
+      break;
     
     default :
-      return false;    
+      bResult = false;    
+      break;
   }
+  
+  return bResult;  
 }
 
 bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
@@ -153,20 +160,20 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
 bool CHTTPRequestHandler::HandleSOAPAction(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {  
   // get UPnP action
-  CUPnPAction* pAction;
-  pAction = pRequest->GetAction();  
+  CUPnPAction* pAction = NULL;
+  pAction = pRequest->GetAction();
   if(!pAction) {
     return false;
   }
-  
+
   // set version
   pResponse->SetVersion(pRequest->GetVersion());
   
   // handle UPnP action
   bool bRet = true;
-  CContentDirectory* pDir;
-  CConnectionManager* pMgr;
-  CXMSMediaReceiverRegistrar* pXMS;
+  CContentDirectory* pDir = NULL; //new CContentDirectory(m_sHTTPServerURL);
+  CConnectionManager* pMgr = NULL; //new CConnectionManager(m_sHTTPServerURL);;
+  CXMSMediaReceiverRegistrar* pXMS = NULL; //new CXMSMediaReceiverRegistrar();
   
   switch(pAction->GetTargetDeviceType())
   {
@@ -191,6 +198,7 @@ bool CHTTPRequestHandler::HandleSOAPAction(CHTTPMessage* pRequest, CHTTPMessage*
       bRet = false;
       break;
   }
+  
   return bRet;
 }
 

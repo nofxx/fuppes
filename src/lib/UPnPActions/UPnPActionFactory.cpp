@@ -33,7 +33,7 @@
 using namespace std;
 
 CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent, CDeviceSettings* pDeviceSettings)
-{  
+{
   xmlDocPtr pDoc = NULL;
   pDoc = xmlReadMemory(p_sContent.c_str(), p_sContent.length(), "", NULL, 0);
   if(!pDoc)
@@ -120,7 +120,7 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent, C
   cout << "\tRequestedCount: " << ((CUPnPBrowse*)pResult)->m_nRequestedCount << endl;*/  
   
   xmlFreeDoc(pDoc);
-  xmlCleanupParser();  
+  //xmlCleanupParser();  
   
   return pAction;
 }

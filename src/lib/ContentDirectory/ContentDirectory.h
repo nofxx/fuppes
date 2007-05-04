@@ -72,7 +72,7 @@ class CContentDirectory: public CUPnPService
      *  @param  pBrowse  the browse action to handle
      *  @return string with the message content to send for the browse action
      */  
-    std::string DbHandleUPnPBrowse(CUPnPBrowse* pBrowse);
+    void DbHandleUPnPBrowse(CUPnPBrowse* pBrowse, std::string* p_psResult);
 
     void BrowseMetadata(xmlTextWriterPtr pWriter, 
                         unsigned int* p_pnTotalMatches,
@@ -125,14 +125,13 @@ class CContentDirectory: public CUPnPService
                                    std::string p_sObjectID);                                    
 
 
-    std::string HandleUPnPGetSearchCapabilities(CUPnPAction* pAction);
+    void HandleUPnPGetSearchCapabilities(CUPnPAction* pAction, std::string* p_psResult);
 
-    std::string HandleUPnPGetSortCapabilities(CUPnPAction* pAction);
+    void HandleUPnPGetSortCapabilities(CUPnPAction* pAction, std::string* p_psResult);
     
-    std::string HandleUPnPGetSystemUpdateID(CUPnPAction* pAction);    
+    void HandleUPnPGetSystemUpdateID(CUPnPAction* pAction, std::string* p_psResult);    
 		
-    std::string HandleUPnPSearch(CUPnPSearch* pSearch);
-
+    void HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_psResult);
 };
 
 #endif // _CONTENTDIRECTORY_H

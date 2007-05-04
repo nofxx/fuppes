@@ -595,7 +595,7 @@ bool CConfigFile::WriteDefaultConfig(std::string p_sFileName)
 	xmlTextWriterEndDocument(pWriter);
 	xmlFreeTextWriter(pWriter);
 	
-  xmlCleanupParser(); 
+  //xmlCleanupParser(); 
   
   CXMLDocument* pDoc = new CXMLDocument();
   pDoc->Load(p_sFileName);

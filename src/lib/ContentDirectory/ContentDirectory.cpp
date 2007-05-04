@@ -66,23 +66,23 @@ void CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
   {
     // Browse
     case UPNP_BROWSE:
-      sContent = DbHandleUPnPBrowse((CUPnPBrowse*)pUPnPAction);
+      DbHandleUPnPBrowse((CUPnPBrowse*)pUPnPAction, &sContent);      
       break;
 		// Search
 		case UPNP_SEARCH:
-		  sContent = HandleUPnPSearch((CUPnPSearch*)pUPnPAction);
+		  HandleUPnPSearch((CUPnPSearch*)pUPnPAction, &sContent);
 			break;
     // GetSearchCapabilities
     case UPNP_GET_SEARCH_CAPABILITIES:
-      sContent = HandleUPnPGetSearchCapabilities(pUPnPAction);
+      HandleUPnPGetSearchCapabilities(pUPnPAction, &sContent);
       break;      
     // GetSortCapabilities
     case UPNP_GET_SORT_CAPABILITIES:
-      sContent = HandleUPnPGetSortCapabilities(pUPnPAction);
+      HandleUPnPGetSortCapabilities(pUPnPAction, &sContent);
       break;
     // GetSystemUpdateID  
     case UPNP_GET_SYSTEM_UPDATE_ID:
-      sContent = HandleUPnPGetSystemUpdateID(pUPnPAction);
+      HandleUPnPGetSystemUpdateID(pUPnPAction, &sContent);
       break;
     default:
       break;
@@ -121,11 +121,11 @@ void CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
   
 
 /* HandleUPnPBrowse */
-std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
+void CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse, std::string* p_psResult)
 { 
   xmlTextWriterPtr writer;
 	xmlBufferPtr buf;
-	std::stringstream sTmp;	
+	//std::stringstream sTmp;	
 	
 	buf    = xmlBufferCreate();   
 	writer = xmlNewTextWriterMemory(buf, 0);    
@@ -165,12 +165,14 @@ std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
       switch(pUPnPBrowse->m_nBrowseFlag)
       {
         case UPNP_BROWSE_FLAG_METADATA:
-          CSharedLog::Shared()->DebugLog(LOGNAME, "CContentDirectory::DbHandleUPnPBrowse - BrowseMetadata");  
+          //cout << "metadata" << endl;
           BrowseMetadata(resWriter, &nTotalMatches, &nNumberReturned, pUPnPBrowse);
+          //cout << "DONE metadata" << endl;
           break;
-        case UPNP_BROWSE_FLAG_DIRECT_CHILDREN:
-          CSharedLog::Shared()->DebugLog(LOGNAME, "CContentDirectory::DbHandleUPnPBrowse - BrowseDirectChildren");
+        case UPNP_BROWSE_FLAG_DIRECT_CHILDREN:          
+          //cout << "children" << endl;
           BrowseDirectChildren(resWriter, &nTotalMatches, &nNumberReturned, pUPnPBrowse);
+          //cout << "DONE children" << endl;
           break;
         default:
           break;
@@ -181,28 +183,28 @@ std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
       xmlTextWriterEndDocument(resWriter);
       xmlFreeTextWriter(resWriter);
 
-      std::stringstream sResOutput;
-      sResOutput << (const char*)resBuf->content;
+      std::string sResOutput;
+      sResOutput = (const char*)resBuf->content;
 
       xmlBufferFree(resBuf);        
-      string sTmpRes = sResOutput.str().substr(strlen("<?xml version=\"1.0\" encoding=\"UTF-8\"?> "));
-      xmlTextWriterWriteString(writer, BAD_CAST sTmpRes.c_str());
+      sResOutput = sResOutput.substr(strlen("<?xml version=\"1.0\" encoding=\"UTF-8\"?> "));
+      xmlTextWriterWriteString(writer, BAD_CAST sResOutput.c_str());
       
       // end result
       xmlTextWriterEndElement(writer);
         
       // number returned
       xmlTextWriterStartElement(writer, BAD_CAST "NumberReturned");
-      sTmp << nNumberReturned;
-      xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
-      sTmp.str("");
+      //sTmp << nNumberReturned;
+      xmlTextWriterWriteFormatString(writer, "%u", nNumberReturned);
+      //sTmp.str("");
       xmlTextWriterEndElement(writer);
       
       // total matches
       xmlTextWriterStartElement(writer, BAD_CAST "TotalMatches");
-      sTmp << nTotalMatches;
-      xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
-      sTmp.str("");
+      //sTmp << nTotalMatches;
+      xmlTextWriterWriteFormatString(writer, "%u", nTotalMatches);
+      //sTmp.str("");
       xmlTextWriterEndElement(writer);
       
       // update id
@@ -221,12 +223,14 @@ std::string CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse)
   xmlTextWriterEndDocument(writer);
 	xmlFreeTextWriter(writer);
 	
-	std::stringstream output;
-	output << (const char*)buf->content;  
+	//std::stringstream output;
+	//string sResult
+  *p_psResult = (const char*)buf->content;
+	//output << (const char*)buf->content;  
 	xmlBufferFree(buf);  
   
-  CSharedLog::Shared()->Log(L_DEBUG, output.str(), __FILE__, __LINE__);
-	return output.str();  
+  /**p_psResult = sResult;  
+  CSharedLog::Shared()->Log(L_DEBUG, sResult, __FILE__, __LINE__);*/
 }
 
 void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter, 
@@ -243,8 +247,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   stringstream sSql;
   CContentDatabase* pDb = new CContentDatabase();
 
-  pUPnPBrowse->m_bVirtualContainer = 
-        CVirtualContainerMgr::Shared()->IsVirtualContainer(pUPnPBrowse->GetObjectIDAsInt(),
+  pUPnPBrowse->m_bVirtualContainer = CVirtualContainerMgr::Shared()->IsVirtualContainer(pUPnPBrowse->GetObjectIDAsInt(),
                                                            pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice);
   
   string sDevice = "DEVICE is NULL ";
@@ -262,6 +265,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
     nContainerType = (OBJECT_TYPE)atoi(pDb->GetResult()->GetValue("TYPE").c_str());
     //pDb->ClearResult(); 
     sSql.str("");
+    sSql.clear();
   }
 
   // get child count
@@ -281,6 +285,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
     sChildCount = pDb->GetResult()->GetValue("COUNT").c_str();
     //pDb->ClearResult();    
     sSql.str("");
+    sSql.clear();    
   }
   
   string sParentId;
@@ -336,6 +341,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
 
     pDb->Select(sSql.str());
     sSql.str("");
+    sSql.clear();    
     
     CSelectResult* pRow = pDb->GetResult();        
     //sTitle = pRow->GetValue("FILE_NAME");
@@ -380,17 +386,20 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   sSql << "select count(*) as COUNT from MAP_OBJECTS where PARENT_ID = " <<
           pUPnPBrowse->GetObjectIDAsInt() << " and " << sDevice;                          
   
+  
   pDb->Select(sSql.str()); 
   if(!pDb->Eof()) {
     //cout << "COUNT: " << pDb->GetResult()->GetValue("COUNT") << endl; fflush(stdout);
     *p_pnTotalMatches = atoi(pDb->GetResult()->GetValue("COUNT").c_str());
   }
-  else
+  else {
     *p_pnTotalMatches = 0;
+  }
 
   //pDb->ClearResult();
   
   sSql.str("");
+  sSql.clear();  
   //cout << "DONE get total matches " << *p_pnTotalMatches << endl; fflush(stdout);  
   
   // get description
@@ -414,7 +423,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   
   if((pUPnPBrowse->m_nRequestedCount > 0) || (pUPnPBrowse->m_nStartingIndex > 0))  {
     
-    sSql << " limit " << pUPnPBrowse->m_nStartingIndex << ", ";
+    sSql << " limit " << pUPnPBrowse->m_nStartingIndex << ", ";    
     if(pUPnPBrowse->m_nRequestedCount == 0)
       sSql << "-1";
     else
@@ -425,6 +434,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   CSelectResult* pRow = NULL;
                             
   pDb->Select(sSql.str());
+
   while(!pDb->Eof()) {
     
     pRow = pDb->GetResult();    
@@ -434,10 +444,10 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
     tmpInt++;
   }        
   
-  //pDb->ClearResult();                    
+   //pDb->ClearResult();                    
   *p_pnNumberReturned = tmpInt;
-  
-  delete pDb;
+
+  delete pDb;     
 }
 
 void CContentDirectory::BuildDescription(xmlTextWriterPtr pWriter,
@@ -475,16 +485,16 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
   // get child count
   string sChildCount = "0";
   CContentDatabase* pDb = new CContentDatabase();
-  stringstream sSql;
+  string sSql;
   
   string sDevice = "DEVICE is NULL ";
   if(CVirtualContainerMgr::Shared()->HasVirtualChildren(pSQLResult->GetValueAsUInt("OBJECT_ID"), pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice))
     sDevice = "DEVICE = '" + pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice + "' ";                                                    
 
-  sSql << "select count(*) as COUNT from MAP_OBJECTS " <<
-    "where PARENT_ID = " << pSQLResult->GetValue("OBJECT_ID") << " and " << sDevice;
-  
-  pDb->Select(sSql.str());
+  sSql = string("select count(*) as COUNT from MAP_OBJECTS ") +
+    "where PARENT_ID = " + pSQLResult->GetValue("OBJECT_ID") + " and " + sDevice;
+    
+  pDb->Select(sSql);
   sChildCount = pDb->GetResult()->GetValue("COUNT");
   delete pDb;
   
@@ -539,15 +549,16 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
       // res
       xmlTextWriterStartElement(pWriter, BAD_CAST "res");
       
-      std::stringstream sTmp;
-      sTmp << "http-get:*:" << pSQLResult->GetValue("MIME_TYPE") << ":*";
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
-      sTmp.str("");
+      string sTmp;
+      sTmp = "http-get:*:" + pSQLResult->GetValue("MIME_TYPE") + ":*";
+      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
+      
         
-      sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/Playlists/" << szObjId << "." << ExtractFileExt(pSQLResult->GetValue("PATH"));    
+      sTmp = "http://" + m_sHTTPServerURL + "/MediaServer/Playlists/" + szObjId + 
+             "." + ExtractFileExt(pSQLResult->GetValue("PATH"));    
       //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());   
    
-      xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
+      xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.c_str());
       xmlTextWriterEndElement(pWriter); 
     }      
     
@@ -705,10 +716,11 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   }
   
   // protocol info
-  std::stringstream sTmp;
-  sTmp << "http-get:*:" << sMimeType << ":*";
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
-  sTmp.str("");
+  //std::stringstream sTmp;
+  string sTmp;
+  sTmp = "http-get:*:" + sMimeType + ":*";
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
+  //sTmp.str("");
 
   // duration
   if(pUPnPBrowse->IncludeProperty("res@duration") && !pSQLResult->IsNull("AV_DURATION")) {	
@@ -730,8 +742,8 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("AV_BITRATE").c_str());
   }
 
-  sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/AudioItems/" << p_sObjectID << "." << sExt;  
-  xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
+  sTmp = "http://" + m_sHTTPServerURL + "/MediaServer/AudioItems/" + p_sObjectID + "." + sExt;  
+  xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.c_str());
   xmlTextWriterEndElement(pWriter);  
 }
 
@@ -947,9 +959,9 @@ void CContentDirectory::BuildPlaylistItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterEndElement(pWriter);  
 }
 
-std::string CContentDirectory::HandleUPnPGetSearchCapabilities(CUPnPAction* pAction)
+void CContentDirectory::HandleUPnPGetSearchCapabilities(CUPnPAction* pAction, std::string* p_psResult)
 {
-  return 
+  *p_psResult =  
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
     "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
     "  <s:Body>"
@@ -962,9 +974,9 @@ std::string CContentDirectory::HandleUPnPGetSearchCapabilities(CUPnPAction* pAct
   //<SearchCaps>dc:title,dc:creator,upnp:artist,upnp:genre,upnp:album,dc:date,upnp:originalTrackNumber,upnp:class,@id,@refID,upnp:albumArtURI</SearchCaps>    
 } 
 
-std::string CContentDirectory::HandleUPnPGetSortCapabilities(CUPnPAction* pAction)
+void CContentDirectory::HandleUPnPGetSortCapabilities(CUPnPAction* pAction, std::string* p_psResult)
 {
-  return 
+  *p_psResult = 
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
     "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
     "  <s:Body>"
@@ -977,9 +989,9 @@ std::string CContentDirectory::HandleUPnPGetSortCapabilities(CUPnPAction* pActio
   // <SortCaps>dc:title,dc:creator,upnp:artist,upnp:genre,upnp:album,dc:date,upnp:originalTrackNumber,Philips:shuffle</SortCaps>
 }
 
-std::string CContentDirectory::HandleUPnPGetSystemUpdateID(CUPnPAction* pAction)
+void CContentDirectory::HandleUPnPGetSystemUpdateID(CUPnPAction* pAction, std::string* p_psResult)
 {
-  return 
+  *p_psResult =  
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
     "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
     "  <s:Body>"
@@ -991,7 +1003,7 @@ std::string CContentDirectory::HandleUPnPGetSystemUpdateID(CUPnPAction* pAction)
 }
 
 
-std::string CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch)
+void CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_psResult)
 {
 	CContentDatabase* pDb  = new CContentDatabase();
 	CSelectResult*    pRow = NULL;
@@ -1115,7 +1127,6 @@ std::string CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch)
 	delete pDb;
 	
   //cout << output.str() << endl;
-  
-	return output.str();
+  *p_psResult = output.str();
 }
 

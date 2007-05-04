@@ -74,6 +74,8 @@ int fuppes_init(int argc, char* argv[], void(*p_log_callback)(const char* sz_log
 	MagickWandGenesis();
   #endif    
     
+  xmlInitParser();
+    
   return FUPPES_OK;
 }
 
@@ -106,6 +108,8 @@ int fuppes_stop()
 
 int fuppes_cleanup()
 {
+  xmlCleanupParser();
+    
   #ifdef HAVE_IMAGEMAGICK	
 	MagickWandTerminus();
   #endif

@@ -39,12 +39,15 @@
 #include <algorithm>
 #include <cctype>
 #include <fcntl.h>
-#include <iconv.h>
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #else
 #define ICONV_SECOND_ARG const char**
+#endif
+
+#ifdef HAVE_ICONV
+#include <iconv.h>
 #endif
 
 using namespace std;

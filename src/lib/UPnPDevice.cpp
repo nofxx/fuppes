@@ -74,9 +74,10 @@ void CUPnPDevice::OnTimer()
 
 void CUPnPDevice::OnAsyncReceiveMsg(CHTTPMessage* pMessage)
 {
-	if(ParseDescription(pMessage->GetContent())) {
-		if(m_pEventHandler)
+ 	if(ParseDescription(pMessage->GetContent())) {
+		if(m_pEventHandler) {
 		  m_pEventHandler->OnNewDevice(this);
+    }
 	}
 	
 	/*delete m_pHTTPClient;
@@ -220,7 +221,8 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 			
 			/* UDN */
 			xmlTextWriterStartElement(writer, BAD_CAST "UDN");
-			sTmp << "uuid:" << m_sUUID;
+
+      sTmp << "uuid:" << m_sUUID;
       xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
       sTmp.str("");
 			xmlTextWriterEndElement(writer);
@@ -314,13 +316,13 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 	xmlTextWriterEndDocument(writer);
 	xmlFreeTextWriter(writer);
 	
-	std::stringstream output;
-	output << (const char*)buf->content;
+	string output;
+	output = (const char*)buf->content;
 	
 	xmlBufferFree(buf);
 	
 	//cout << "upnp description: " << output.str() << endl;
-	return output.str();
+	return output;
 }
 
 
@@ -359,7 +361,7 @@ xmlNode* FindNode(std::string p_sNodeName, xmlNode* pParentNode = NULL, bool p_b
 /* ParseDescription */
 bool CUPnPDevice::ParseDescription(std::string p_sDescription)
 {
-  //cout << p_sDescription << endl;
+  //cout << __FILE__ << " parse: " << p_sDescription << endl;
 	
   xmlDocPtr pDoc = NULL;
   pDoc = xmlReadMemory(p_sDescription.c_str(), p_sDescription.length(), "", NULL, 0);
@@ -412,72 +414,15 @@ bool CUPnPDevice::ParseDescription(std::string p_sDescription)
 	pTmpNode = FindNode("manufacturerURL", pRootNode, true);
 	if(pTmpNode && pTmpNode->children) {
 	  m_sManufacturerURL = (char*)pTmpNode->children->content;
-	}	
-				
+	}
 								
-  xmlFreeDoc(pDoc);
-  xmlCleanupParser(); 
-  
-  
+  xmlFreeDoc(pDoc);  
 
-  #warning todo: uuid
+  /*#warning todo: uuid
   RegEx rxUUID("<UDN>uuid:(.+)</UDN>", PCRE_CASELESS);
   if(rxUUID.Search(p_sDescription.c_str())) {
-    m_sUUID = rxUUID.Match(1);
-  }
-  
-  
-  /*<?xml version="1.0"?>
-<root
-  xmlns="urn:schemas-upnp-org:device-1-0">
-        <specVersion>
-                <major>1</major>
-                <minor>0</minor>
-        </specVersion>
-        <INMPR03>1.0</INMPR03>
-        <device>
-                <deviceType>urn:schemas-upnp-org:device:MediaRenderer:1</deviceType>
-                <friendlyName>NOXON audio</friendlyName>
-                <manufacturer>TerraTec GmbH</manufacturer>
-                <manufacturerURL>www.TerraTec.de</manufacturerURL>
-                <modelDescription>NOXON audio</modelDescription>
-                <modelName>NOXON 1.0</modelName>
-                <modelNumber>1.0</modelNumber>
-                <modelURL>http://www.TerraTec.de</modelURL>
-                <serialNumber>0010C64ABF59</serialNumber>
-                <UDN>uuid:00000000-0000-0000-0000-08000E200000</UDN>
-                <UPC>123810928305556upc</UPC>
-                <serviceList>
-                        <service>
-                                <serviceType>urn:schemas-upnp-org:service:RenderingControl:1</serviceType>
-                                <serviceId>urn:upnp-org:serviceId:RenderingControlServiceID</serviceId>
-                                <SCPDURL>/RenderingControl/desc.xml</SCPDURL>
-                                <controlURL>/RenderingControl/ctrl</controlURL>
-                                <eventSubURL>/RenderingControl/evt</eventSubURL>                        </service>
-                        <service>
-                                <serviceType>urn:schemas-upnp-org:service:ConnectionManager:1</serviceType>
-                                <serviceId>urn:upnp-org:serviceId:ConnectionManagerServiceID</serviceId>
-                                <SCPDURL>/ConnectionManager/desc.xml</SCPDURL>
-                                <controlURL>/ConnectionManager/ctrl</controlURL>                                <eventSubURL>/ConnectionManager/evt</eventSubURL>
-                        </service>
-                        <service>
-                                <serviceType>urn:schemas-upnp-org:service:AVTransport:1</serviceType>
-                                <serviceId>urn:upnp-org:serviceId:AVTransportServiceID</serviceId>
-                                <SCPDURL>/AVTransport/desc.xml</SCPDURL>
-                                <controlURL>/AVTransport/ctrl</controlURL>
-                                <eventSubURL>/AVTransport/evt</eventSubURL>
-                        </service>
-                        <service>
-                                <serviceType>urn:schemas-upnp-org:service:HtmlPageHandler:1</serviceType>
-                                <serviceId>urn:upnp-org:serviceId:HtmlPageServiceID</serviceId>
-                                <SCPDURL>/HtmlPageHandler/desc.xml</SCPDURL>
-                                <controlURL>/HtmlPageHandler/ctrl</controlURL>
-                                <eventSubURL>/HtmlPageHandler/evt</eventSubURL>
-                        </service>
-                </serviceList>
-                <presentationURL>/index.html</presentationURL>
-        </device>
-</root>*/
+    //m_sUUID = rxUUID.Match(1);
+  }*/
 
   return true;
 }

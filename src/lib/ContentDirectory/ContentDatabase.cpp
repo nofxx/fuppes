@@ -45,11 +45,13 @@ using namespace std;
 
 static bool g_bIsRebuilding;
  
-int SelectCallback(void *pDatabase, int argc, char **argv, char **azColName)
+/*int SelectCallback(void *pDatabase, int argc, char **argv, char **azColName)
 {
-  /*for(int i = 0; i<argc; i++){
-    printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-  }*/
+  //for(int i = 0; i<argc; i++){
+   // printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+  //}
+    
+  CContentDatabase::Shared()->Lock();
     
   // build new result set
   CSelectResult* pResult = new CSelectResult();
@@ -61,10 +63,14 @@ int SelectCallback(void *pDatabase, int argc, char **argv, char **azColName)
   ((CContentDatabase*)pDatabase)->m_nRowsReturned++;
 		  
   // select first entry
-  ((CContentDatabase*)pDatabase)->m_ResultListIterator = ((CContentDatabase*)pDatabase)->m_ResultList.begin();
+  if(((CContentDatabase*)pDatabase)->m_nRowsReturned == 1) {
+    ((CContentDatabase*)pDatabase)->m_ResultListIterator = ((CContentDatabase*)pDatabase)->m_ResultList.begin();
+  }
+
+  CContentDatabase::Shared()->Unlock();
 
   return 0;
-}
+}*/
 
 
 std::string CSelectResult::GetValue(std::string p_sFieldName)
@@ -102,9 +108,7 @@ CContentDatabase* CContentDatabase::Shared()
 
 CContentDatabase::CContentDatabase(bool p_bShared)
 { 
-  stringstream sDbFile;
-  sDbFile << CSharedConfig::Shared()->GetConfigDir() << "fuppes.db";  
-  m_sDbFileName = sDbFile.str();
+  m_sDbFileName = CSharedConfig::Shared()->GetConfigDir() + "fuppes.db";
   
   m_nRowsReturned = 0;
   //m_bIsRebuilding = false;
@@ -154,15 +158,17 @@ std::string CContentDatabase::GetLibVersion()
 }
 
 bool CContentDatabase::Init(bool* p_bIsNewDB)
-{
+{   
   bool bIsNewDb = !FileExists(m_sDbFileName);
   *p_bIsNewDB = bIsNewDb;
-  int nRes = sqlite3_open(m_sDbFileName.c_str(), &m_pDbHandle);   
-  if(nRes)
-  {
-    fprintf(stderr, "Can't create/open database: %s\n", sqlite3_errmsg(m_pDbHandle));
-    sqlite3_close(m_pDbHandle);
-    return false;
+  
+  if(bIsNewDb) {
+    int nRes = sqlite3_open(m_sDbFileName.c_str(), &m_pDbHandle);   
+    if(nRes) {
+      fprintf(stderr, "Can't create/open database: %s\n", sqlite3_errmsg(m_pDbHandle));
+      sqlite3_close(m_pDbHandle);
+      return false;
+    }
   }
   
   if(bIsNewDb)
@@ -329,7 +335,7 @@ unsigned int CContentDatabase::Insert(std::string p_sStatement)
   Lock();
   //Open();
 
-  char* szErr = 0;
+  char* szErr = NULL;
   
   /*int nTrans = sqlite3_exec(m_pDbHandle, "BEGIN TRANSACTION;", NULL, NULL, &szErr);
   if(nTrans != SQLITE_OK)
@@ -338,6 +344,7 @@ unsigned int CContentDatabase::Insert(std::string p_sStatement)
   int nResult = sqlite3_exec(m_pDbHandle, p_sStatement.c_str(), NULL, NULL, &szErr);  
   if(nResult != SQLITE_OK) {
     fprintf(stderr, "CContentDatabase::Insert - insert :: SQL error: %s\n", szErr);    
+    sqlite3_free(szErr);
     nResult = 0;
   }
   else {
@@ -361,11 +368,12 @@ bool CContentDatabase::Execute(std::string p_sStatement)
   Lock();
   //Open();
 	bool bResult = false;
-  char* szErr = 0;
+  char* szErr  = NULL;
 	
   int nStat = sqlite3_exec(m_pDbHandle, p_sStatement.c_str(), NULL, NULL, &szErr);  
   if(nStat != SQLITE_OK) {
-    fprintf(stderr, "CContentDatabase::Execute :: SQL error: %s\n", szErr);    
+    fprintf(stderr, "CContentDatabase::Execute :: SQL error: %s\n", szErr);  
+    sqlite3_free(szErr);  
     bResult = false;
   }
   else {
@@ -379,26 +387,24 @@ bool CContentDatabase::Execute(std::string p_sStatement)
 
 bool CContentDatabase::Select(std::string p_sStatement)
 {  
-  if(m_bShared) {
-    cout << "SHARED SELECT :: " << p_sStatement << endl; fflush(stdout);
-}
-  /*else  {
-    cout << "SINGLE SELECT :: " << p_sStatement << endl; fflush(stdout);
-}*/
-       
   Lock();
   //Open();  
   ClearResult();    
   bool bResult = true;
   
-  char* szErr = 0;
+  char* szErr = NULL;
+  char** szResult;
+  int nRows = 0;
+  int nCols = 0;
   
   int nResult = SQLITE_OK;  
   int nTry = 0;
   do    
   {
-    nResult = sqlite3_exec(m_pDbHandle, p_sStatement.c_str(), SelectCallback, this, &szErr);
+    //nResult = sqlite3_exec(m_pDbHandle, p_sStatement.c_str(), SelectCallback, this, &szErr);
+    nResult = sqlite3_get_table(m_pDbHandle, p_sStatement.c_str(), &szResult, &nRows, &nCols, &szErr);   
     if(nTry > 0) {
+      cout << "SQLITE_BUSY" << endl;
       CSharedLog::Shared()->Log(L_EXTENDED_WARN, "SQLITE_BUSY", __FILE__, __LINE__);
       fuppesSleep(100);
     }
@@ -408,8 +414,35 @@ bool CContentDatabase::Select(std::string p_sStatement)
   if(nResult != SQLITE_OK) {
     cout << "RESULT: " << nResult << endl;    
     fprintf(stderr, "CContentDatabase::Select :: SQL error: %s, Statement: %s\n", szErr, p_sStatement.c_str());
-    sqlite3_close(m_pDbHandle);    
+    sqlite3_free(szErr);
+    //sqlite3_close(m_pDbHandle);    
     bResult = false;
+  }
+  else {
+       
+/*  cout << p_sStatement << endl;
+    printf("rows: %d, cols: %d\n", nRows, nCols);
+    cout << szResult[0] << endl;*/
+
+   CSelectResult* pResult;
+       
+    for(int i = 1; i < nRows + 1; i++) {
+      pResult = new CSelectResult();
+            
+      for(int j = 0; j < nCols; j++) {
+        /*printf("fieldname col %d, %s\n", j, szResult[j]);
+        printf("row num %d\n", i);
+        printf("value %d, %s\n\n", (i * nCols) + j, szResult[(i * nCols) + j]);*/
+        
+        pResult->m_FieldValues[szResult[j]] =  szResult[(i * nCols) + j] ? szResult[(i * nCols) + j] : "NULL";
+      }
+      
+      m_ResultList.push_back(pResult);
+      m_nRowsReturned++;
+    }
+    m_ResultListIterator = m_ResultList.begin();       
+       
+    sqlite3_free_table(szResult);
   }
   
   //Close();
@@ -427,12 +460,14 @@ bool CContentDatabase::Eof()
     
 CSelectResult* CContentDatabase::GetResult()
 {
-  return *m_ResultListIterator;  
+  return *m_ResultListIterator;
 }
 
 void CContentDatabase::Next()
 {
-  m_ResultListIterator++;
+  if(m_ResultListIterator != m_ResultList.end()) {
+    m_ResultListIterator++;
+  } 
 }
 
 

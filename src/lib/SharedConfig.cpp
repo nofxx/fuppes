@@ -54,7 +54,7 @@
 #endif
 
 #ifndef MAXHOSTNAMELEN
-#define MAXHOSTNAMELEN     64
+#define MAXHOSTNAMELEN     256
 #endif
 
 using namespace std;
@@ -295,13 +295,13 @@ bool CSharedConfig::RemoveAllowedIP(unsigned int p_nIndex)
 
 std::string CSharedConfig::GetConfigDir()
 {
-  stringstream sResult;
+  string sResult;
   #ifdef WIN32
-  sResult << getenv("APPDATA") << "\\Free UPnP Entertainment Service\\";
+  sResult = string(getenv("APPDATA")) + "\\Free UPnP Entertainment Service\\";
   #else
-  sResult << getenv("HOME") << "/.fuppes/";
+  sResult = string(getenv("HOME")) + "/.fuppes/";
   #endif
-  return sResult.str();
+  return sResult;
 }
 
 std::string CSharedConfig::GetLocalCharset()
@@ -368,12 +368,11 @@ bool CSharedConfig::ReadConfigFile()
 
 bool CSharedConfig::ResolveHostAndIP()
 {
-  char name[MAXHOSTNAMELEN];
-  
-  int nRet = gethostname(name, MAXHOSTNAMELEN);
+  char szName[MAXHOSTNAMELEN];  
+  int nRet = gethostname(szName, MAXHOSTNAMELEN);
   if(0 == nRet)
   {   
-    m_sHostname = name;
+    m_sHostname = szName;
     
 		if((m_sIP == "") || (m_sIP.compare("127.0.0.1") == 0))
 		  ResolveIPByHostname();
@@ -425,7 +424,7 @@ bool CSharedConfig::ResolveIPByHostname()
 {
     in_addr* addr;
     struct hostent* host;
-      
+     
     host = gethostbyname(m_sHostname.c_str());
     if(host != NULL)
     {

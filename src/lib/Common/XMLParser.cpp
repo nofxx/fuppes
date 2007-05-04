@@ -249,7 +249,6 @@ CXMLDocument::~CXMLDocument()
   }
   
   if(m_pDoc != NULL) {
-    xmlCleanupParser();      
     xmlFreeDoc(m_pDoc);
   }
 }
