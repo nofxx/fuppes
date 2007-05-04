@@ -24,8 +24,11 @@ Version 0.7.2
     Justin Maggard <jmaggard at users.sourceforge.net>)
   * fixed extraction of folder name from shared directory
     when containing a trailing slash or backslash
+  * fixed crash on timed out subscriptions (win32)
 
-  * win32 (updated sqlite from 3.3.7 to 3.3.17)
+  * win32 
+    * sqlite from 3.3.7 to 3.3.17
+    * libxml2 from 2.6.19 to 2.6.28    
 
 Version 0.7.1 (2007-02-03)
   * fixed bug #1650930 (win32)

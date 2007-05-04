@@ -244,13 +244,16 @@ bool CSubscriptionCache::DeleteSubscription(std::string pSID)
   CSharedLog::Shared()->Log(L_EXTENDED, "delete subscription \"" + pSID + "\"", __FILE__, __LINE__);  
     
   bool bResult = false;
+  CSubscription* pSubscription;
   
   fuppesThreadLockMutex(&m_Mutex);    
   m_SubscriptionsIterator = m_Subscriptions.find(pSID);  
   if(m_SubscriptionsIterator != m_Subscriptions.end())
   { 
     CSharedLog::Shared()->Log(L_EXTENDED, "delete subscription \"" + pSID + "\" done", __FILE__, __LINE__, false);    
+    pSubscription = (*m_SubscriptionsIterator).second;
     m_Subscriptions.erase(pSID);
+    delete pSubscription;
     bResult = true;
   }
   else
@@ -300,7 +303,7 @@ CSubscriptionMgr::~CSubscriptionMgr()
 
 bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {
-  CSharedLog::Shared()->Log(L_DEBUG, pRequest->GetHeader(), __FILE__, __LINE__);
+  CSharedLog::Shared()->Log(L_DEBUG, pRequest->GetHeader(), __FILE__, __LINE__); 
   
   CSubscription* pSubscription = new CSubscription();
   try {    
@@ -412,6 +415,7 @@ fuppesThreadCallback MainLoop(void *arg)
 {
   CSubscriptionMgr* pMgr = (CSubscriptionMgr*)arg;
   CSubscription* pSubscr = NULL;
+  std::map<std::string, CSubscription*>::iterator tmpIt;    
   
   while(pMgr->m_bDoLoop)
   {
@@ -421,9 +425,12 @@ fuppesThreadCallback MainLoop(void *arg)
     
     // walk subscriptions and decrement timeout
     for(CSubscriptionCache::Shared()->m_SubscriptionsIterator  = CSubscriptionCache::Shared()->m_Subscriptions.begin();
-        CSubscriptionCache::Shared()->m_SubscriptionsIterator != CSubscriptionCache::Shared()->m_Subscriptions.end();
-        CSubscriptionCache::Shared()->m_SubscriptionsIterator++)
+        CSubscriptionCache::Shared()->m_SubscriptionsIterator != CSubscriptionCache::Shared()->m_Subscriptions.end();)
     {
+      if(CSubscriptionCache::Shared()->m_Subscriptions.size() == 0) {
+        break;
+      }        
+        
       pSubscr = (*CSubscriptionCache::Shared()->m_SubscriptionsIterator).second;
       
       //cout << "  subscr: " << pSubscr->GetSID() << endl;
@@ -439,11 +446,16 @@ fuppesThreadCallback MainLoop(void *arg)
         pSubscr->AsyncReply();
       }
       
-      if(pSubscr->GetTimeLeft() == 0)
-      {
+      if(pSubscr->GetTimeLeft() == 0) {        
+        tmpIt = CSubscriptionCache::Shared()->m_SubscriptionsIterator;
+        ++tmpIt;
         CSubscriptionCache::Shared()->m_Subscriptions.erase(pSubscr->GetSID());        
+        CSubscriptionCache::Shared()->m_SubscriptionsIterator = tmpIt;
         delete pSubscr;
-      }      
+      }
+      else {
+        CSubscriptionCache::Shared()->m_SubscriptionsIterator++;
+      }
     }
     
     CSubscriptionCache::Shared()->Unlock();    
