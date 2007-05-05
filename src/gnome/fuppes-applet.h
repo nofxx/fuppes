@@ -42,6 +42,7 @@ struct _FuppesApplet
 	GtkWidget   *image;
 	//TrashState icon_state;
 
+  gboolean is_started;
 	//gint item_count;
 	//gboolean is_empty;
 	//gboolean drag_hover;

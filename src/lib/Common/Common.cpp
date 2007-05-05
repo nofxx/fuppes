@@ -547,7 +547,7 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle)
   return bResult;
   #else    
   bool bResult = true;
-  int  nErrNo  = pthread_join(p_ThreadHandle, NULL);
+  int  nErrNo  = pthread_join(p_ThreadHandle, NULL);  
   if (nErrNo != 0)
   {
     bResult = false;
@@ -577,8 +577,7 @@ int fuppesThreadCancel(fuppesThread p_ThreadHandle)
 	TerminateThread(p_ThreadHandle, nExitCode);
   return nExitCode;
 	#else
-	pthread_cancel(p_ThreadHandle);
-  return 0;
+	return pthread_cancel(p_ThreadHandle);  
 	#endif
 }
 

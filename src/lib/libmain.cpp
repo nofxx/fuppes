@@ -48,13 +48,13 @@ using namespace std;
 
 CFuppes* pFuppes = 0;
 
-int fuppes_init(int argc, char* argv[], void(*p_log_callback)(const char* sz_log))
+int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
 {
   // already initialized
   if(pFuppes)
     return FUPPES_FALSE;    
   
-  CSharedLog::Shared()->SetCallback(p_log_callback);
+  CSharedLog::Shared()->SetCallback(p_log_cb);
 
   cout << "            FUPPES - " << CSharedConfig::Shared()->GetAppVersion() << endl;
   cout << "    the Free UPnP Entertainment Service" << endl;
@@ -79,6 +79,17 @@ int fuppes_init(int argc, char* argv[], void(*p_log_callback)(const char* sz_log
   return FUPPES_OK;
 }
 
+void fuppes_set_error_callback(void(*p_err_cb)(const char* sz_err))
+{
+  CSharedLog::Shared()->SetErrorCallback(p_err_cb);
+}
+
+void fuppes_set_notify_callback(void(*p_notify_cb)(const char* sz_title, const char* sz_msg))
+{
+  CSharedLog::Shared()->SetNotifyCallback(p_notify_cb);
+}
+
+
 int fuppes_start()
 {
   if(pFuppes)
@@ -91,7 +102,7 @@ int fuppes_start()
     return FUPPES_OK;
   }
   catch(EException ex) {
-    cout << ex.What() << endl;
+    CSharedLog::Shared()->UserError(ex.What());    
     cout << "[exiting]" << endl;
     return FUPPES_FALSE;
   }  
@@ -103,6 +114,7 @@ int fuppes_stop()
     return FUPPES_FALSE;
     
   delete pFuppes;
+  pFuppes = 0;
   return FUPPES_OK;
 }
 
@@ -119,9 +131,15 @@ int fuppes_cleanup()
   WSACleanup();
   #endif
 
-  delete CSharedConfig::Shared();
-  delete CSharedLog::Shared();
   return FUPPES_OK;
+}
+
+int fuppes_is_started()
+{
+  if(pFuppes != 0)
+    return FUPPES_OK;
+  else
+    return FUPPES_FALSE;
 }
 
 const char* fuppes_get_version()

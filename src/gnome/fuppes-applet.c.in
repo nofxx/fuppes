@@ -8,6 +8,12 @@
 #include <string.h>
 #include <time.h>
 
+#ifdef HAVE_LIBNOTIFY
+#include <libnotify/notify.h>
+#include <libnotify/notification.h>
+#include <libnotify/notify-enum-types.h>
+#endif
+
 #include <libgnome/gnome-help.h>
 #include "fuppes-applet.h"
 #include "../../include/fuppes.h"
@@ -51,12 +57,14 @@ static void     fuppes_applet_change_orient      (PanelApplet     *panel_applet,
 						 GdkPixmap       *pixmap);
 static void trash_applet_theme_change (GtkIconTheme *icon_theme, gpointer data);
 
-static void trash_applet_do_empty    (BonoboUIComponent *component,
-				      TrashApplet       *applet,
-				      const gchar       *cname); */
+*/
+static void fuppes_applet_do_start_stop    (BonoboUIComponent *component,
+				      FuppesApplet       *applet,
+				      const gchar       *cname);
 static void fuppes_applet_show_about  (BonoboUIComponent *component,
 				      FuppesApplet       *applet,
 				      const gchar       *cname);
+
 /*static void trash_applet_open_folder (BonoboUIComponent *component,
 				      TrashApplet       *applet,
 				      const gchar       *cname); */
@@ -73,7 +81,7 @@ static const char fuppes_applet_menu_xml [] =
    "<popup name=\"button3\">\n"
    "   <menuitem name=\"StartStop Item\" "
    "             verb=\"FuppesStartStop\" "
-   "           _label=\"_Start\"\n"
+   "           _label=\"_Start/_Stop\"\n"
    "          pixtype=\"stock\" "
    "          pixname=\"gtk-refresh\"/>\n"
    "   <separator/>\n"
@@ -82,7 +90,7 @@ static const char fuppes_applet_menu_xml [] =
    "</popup>\n";
 
 static const BonoboUIVerb fuppes_applet_menu_verbs [] = {
-	//BONOBO_UI_UNSAFE_VERB ("EmptyTrash", trash_applet_do_empty),
+	BONOBO_UI_UNSAFE_VERB ("FuppesStartStop", fuppes_applet_do_start_stop),
 	//BONOBO_UI_UNSAFE_VERB ("OpenTrash", trash_applet_open_folder),
 	BONOBO_UI_UNSAFE_VERB ("AboutFuppes", fuppes_applet_show_about),
 	BONOBO_UI_UNSAFE_VERB ("HelpFuppes", fuppes_applet_show_help),
@@ -108,14 +116,13 @@ fuppes_applet_class_init (FuppesAppletClass *class)
 }
 
 static GtkImage* svg_image;
+static FuppesApplet* g_applet;
 
 static void
 fuppes_applet_init (FuppesApplet *applet)
 {
 	/*GnomeVFSResult res;
 	GnomeVFSURI *trash_uri;*/
-
-  printf("init()\n");
 
 	//gtk_window_set_default_icon_name (TRASH_ICON_FULL);
 
@@ -126,6 +133,8 @@ fuppes_applet_init (FuppesApplet *applet)
 		client = gconf_client_get_default ();*/
 
 	applet->size = 0;
+  applet->is_started = FALSE;
+  g_applet = applet;
 //	applet->new_size = 0;
 
 	switch (panel_applet_get_orient (PANEL_APPLET (applet))) {
@@ -139,23 +148,36 @@ fuppes_applet_init (FuppesApplet *applet)
 		break;
 	}
 	applet->tooltips = gtk_tooltips_new ();
-  gtk_tooltips_set_tip(applet->tooltips, GTK_WIDGET(applet), _("FUPPES UPnP Server"), NULL);
+  gtk_tooltips_set_tip(applet->tooltips, GTK_WIDGET(applet), _("FUPPES UPnP Server (stopped)"), NULL);
 	g_object_ref (applet->tooltips);
 	gtk_object_sink (GTK_OBJECT (applet->tooltips));
 
   //char* szDir = PIXMAPSDIR "/fuppes.svg";
-  printf("load image %s\n", FUPPES_SVG);
   svg_image = GTK_IMAGE(gtk_image_new_from_file(FUPPES_SVG));
 	applet->image = gtk_image_new();
 	gtk_container_add (GTK_CONTAINER (applet), applet->image);
 	gtk_widget_show (applet->image);
 	//applet->icon_state = TRASH_STATE_UNKNOWN;
-      
+  
+  #ifdef HAVE_LIBNOTIFY
+  if(!notify_init("fuppes"))
+    printf("notify_init() failed\n");
+  #endif        
 }
 
 static void
 fuppes_applet_destroy (GtkObject *object)
 {
+  // stop fuppes
+  if(fuppes_is_started() == 0) {    
+    fuppes_stop();
+    fuppes_cleanup();    
+  }    
+  
+  #ifdef HAVE_LIBNOTIFY
+  notify_uninit();
+  #endif
+  
 	FuppesApplet *applet = FUPPES_APPLET (object);
 	
 	applet->image = NULL;
@@ -170,8 +192,6 @@ static void
 fuppes_applet_size_allocate (GtkWidget    *widget,
 			    GdkRectangle *allocation)
 {
-printf("size_allocate()\n");
-
   GdkPixbuf   *pixbuf;
 	FuppesApplet *applet = FUPPES_APPLET (widget);
 	gint new_size;
@@ -181,8 +201,6 @@ printf("size_allocate()\n");
 		new_size = allocation->height;
 	else
 		new_size = allocation->width;
-
-printf("size: %d\n", new_size);
 
 	if (new_size != applet->size) {
     applet->size = new_size;
@@ -570,13 +588,63 @@ on_empty_trash_cancel (GtkWidget *widget, GnomeVFSAsyncHandle **handle)
 		
 	gtk_widget_hide (widget);
 }
+*/
+
+
+void log_callback(const char* sz_log)
+{
+  printf("panel applet: %s\n", sz_log);
+}
+
+void fuppes_notify_callback(const char* sz_title, const char* sz_msg)
+{  
+  printf("fuppes_notify_callback(): %s, %s\n", sz_title, sz_msg);
+  
+  #ifdef HAVE_LIBNOTIFY
+  NotifyNotification* pNotification; 
+  pNotification = notify_notification_new(sz_title, sz_msg, NULL, NULL);
+  
+  //char* g_strdup_printf
+  //NOTIFY_URGENCY_LOW 	 Low urgency. Used for unimportant notifications.
+  //NOTIFY_URGENCY_NORMAL 	Normal urgency. Used for most standard notifications.
+  //NOTIFY_URGENCY_CRITICAL 	Critical urgency. Used for very important notifications.  
+  //notify_notification_set_urgency(pNotification, NOTIFY_URGENCY_LOW);
+  
+  GError* pError = NULL;
+  if(!notify_notification_show(pNotification,  &pError)) {
+    //
+  }
+  
+  #else
+  printf("fuppes_notify_callback(): %s\n", sz_msg);
+  #endif 
+}
 
 static void
-trash_applet_do_empty (BonoboUIComponent *component,
-		       TrashApplet       *applet,
+fuppes_applet_do_start_stop (BonoboUIComponent *component,
+		       FuppesApplet       *applet,
 		       const gchar       *cname)
 {
-	GtkWidget *dialog;
+	//g_return_if_fail (FUPPES_IS_APPLET (applet));
+
+	if(fuppes_is_started() != 0) {
+	  fuppes_init(0, NULL, log_callback);
+    fuppes_set_notify_callback(fuppes_notify_callback);
+	  fuppes_start();
+    gtk_tooltips_set_tip (g_applet->tooltips, GTK_WIDGET (g_applet), _("FUPPES UPnP Server (started)"), NULL);
+  }
+  else {
+    // stop fuppes
+    fuppes_stop();
+    fuppes_cleanup();
+    //applet->is_started = FALSE;
+    gtk_tooltips_set_tip (g_applet->tooltips, GTK_WIDGET (g_applet), _("FUPPES UPnP Server (stopped)"), NULL);
+  }
+  
+
+
+
+/*GtkWidget *dialog;
 
 	GnomeVFSAsyncHandle *hnd;
 
@@ -600,10 +668,11 @@ trash_applet_do_empty (BonoboUIComponent *component,
 	trash_monitor_empty_trash (applet->monitor,
 				   &hnd, update_transfer_callback, applet);
 
-	gtk_widget_hide(dialog);
+	gtk_widget_hide(dialog);*/
 
 }
 
+/*
 
 static void
 trash_applet_open_folder (BonoboUIComponent *component,

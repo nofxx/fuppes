@@ -429,7 +429,7 @@ fuppesThreadCallback MainLoop(void *arg)
     {
       if(CSubscriptionCache::Shared()->m_Subscriptions.size() == 0) {
         break;
-      }        
+      }      
         
       pSubscr = (*CSubscriptionCache::Shared()->m_SubscriptionsIterator).second;
       

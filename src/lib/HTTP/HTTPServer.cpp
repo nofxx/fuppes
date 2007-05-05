@@ -276,10 +276,8 @@ fuppesThreadCallback AcceptLoop(void *arg)
 	struct sockaddr_in remote_ep;
 	socklen_t size = sizeof(remote_ep);
   
-  // log
-  stringstream sLog;
-  sLog << "listening on" << pHTTPServer->GetURL();  
-	CSharedLog::Shared()->Log(L_EXTENDED, sLog.str(), __FILE__, __LINE__);
+  // log  
+	CSharedLog::Shared()->Log(L_EXTENDED, "listening on" + pHTTPServer->GetURL(), __FILE__, __LINE__);
   
   // loop	
 	while(!pHTTPServer->m_bBreakAccept)
@@ -294,12 +292,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
 			#endif
 			continue;
 		}
-
-    // log
-    stringstream sMsg;
-    sMsg << "new connection from " << inet_ntoa(remote_ep.sin_addr) << ":" << ntohs(remote_ep.sin_port);
-		CSharedLog::Shared()->Log(L_EXTENDED, sMsg.str(), __FILE__, __LINE__);
-      
+  
 		#ifdef USE_SO_NOSIGPIPE	
 		int flag = 1;
     int nOpt = setsockopt(nConnection, SOL_SOCKET, SO_NOSIGPIPE, &flag, sizeof(flag));	  

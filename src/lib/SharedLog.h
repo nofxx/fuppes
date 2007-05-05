@@ -51,9 +51,19 @@ public:
   static CSharedLog* Shared();
   void SetUseSyslog(bool p_bUseSyslog);
 
-  void SetCallback(void(*p_log_callback)(const char* sz_log));
+  // set callback functions
+  void SetCallback(void(*p_log_cb)(const char* sz_log)) { m_log_cb = p_log_cb; }
+  void SetErrorCallback(void(*p_err_cb)(const char* sz_err)) { m_err_cb = p_err_cb; }
+  void SetNotifyCallback(void(*p_notify_cb)(const char* sz_title, const char* sz_msg)) { m_notify_cb = p_notify_cb; }
+  
 
-
+  /**
+   *  use this for error messages that MUST be shown to the user
+   */
+  void UserError(std::string p_sErrMsg);
+  void UserNotify(std::string p_sTitle, std::string p_sNotifyMsg);
+  
+  // deprecated
   void  Log(std::string p_sSender, std::string p_sMessage);
   void  ExtendedLog(std::string p_sSender, std::string p_sMessage);
   void  DebugLog(std::string p_sSender, std::string p_sMessage);
@@ -62,6 +72,7 @@ public:
   void  Critical(std::string p_sSender, std::string p_sMessage);
   void  Error(std::string p_sSender, std::string p_sMessage);
 
+  
   void  Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber, bool p_bPrintLine = true);
   void  Syslog(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber);
 
@@ -85,7 +96,11 @@ private:
   int                m_nLogLevel;
   bool               m_bUseSyslog;
   
-  void(*m_log_callback)(const char* sz_log);
+  void(*m_log_cb)(const char* sz_log);
+  void(*m_err_cb)(const char* sz_err);
+  void(*m_notify_cb)(const char* sz_title, const char* sz_msg);
+  
+  
 
 };
 

@@ -398,26 +398,6 @@ AC_ARG_ENABLE(default-http-port,
  [  CXXFLAGS="$CXXFLAGS -DDEFAULT_HTTP_PORT=$enableval" ])
 # end HTTP Port
 
-
-# libnotify
-have_libnotify=no
-use_libnotify=no
-AH_TEMPLATE([HAVE_LIBNOTIFY], [libnotify support])
-AC_ARG_ENABLE(libnotify, 
-            [  --enable-libnotify  Use libnotify if availabe],
-            [ use_libnotify=yes; ] )
-            
-if test "x$use_libnotify" = "xyes"; then
-  PKG_CHECK_MODULES(LIBNOTIFY, libnotify >= 0.4.2, have_libnotify=yes, have_libnotify=no)
-  
-  if test "x$have_libnotify" = "xyes"; then  
-    FUPPES_LIBS="$FUPPES_LIBS $LIBNOTIFY_LIBS"
-    AC_DEFINE([HAVE_LIBNOTIFY], [1], []) 
-    #CXXFLAGS="$CXXFLAGS $LIBNOTIFY_CFLAGS -DHAVE_LIBNOTIFY"
-  fi
-fi
-# end libnotify
-
 # inotify
 #have_inotify=no
 #use_inotify=yes
@@ -436,29 +416,26 @@ fi
 
 
 
-# GNOME panel applet
-have_libpanelapplet=no
+# GNOME panel applet incl. libnotify
 use_gnome_applet=no
+have_libpanelapplet=no
+have_libnotify=no
 AC_ARG_ENABLE(gnome-panel-applet, 
             [  --enable-gnome-panel-applet  build a panel applet for GNOME desktop],
             [ use_gnome_applet=yes; ] )
             
 if test "x$use_gnome_applet" = "xyes"; then
   PKG_CHECK_MODULES(LIBPANELAPPLET, libpanelapplet-2.0, have_libpanelapplet=yes, have_libpanelapplet=no)
+  PKG_CHECK_MODULES(LIBNOTIFY, libnotify >= 0.4.2, have_libnotify=yes, have_libnotify=no)
+  if test "x$have_libnotify" = "xyes"; then
+    LIBNOTIFY_CFLAGS="-DHAVE_LIBNOTIFY $LIBNOTIFY_CFLAGS"
+  fi
 fi
 AM_CONDITIONAL(GNOMEAPPLET, test "x$have_libpanelapplet" = "xyes")
 
-
-# we need datadir and libdir for gnome applet
-#AH_TEMPLATE([DATADIR], [datadir]) 
-#AC_DEFINE_UNQUOTED([DATADIR], ["${datadir}"])
-
-## libdir
-#AH_TEMPLATE([LIBDIR], [libdir])
-#abs_libdir=${libdir}
-#AC_DEFINE_UNQUOTED([LIBDIR], ["${abs_libdir}"])
-
 # end GNOME panel applet
+
+
 
 
 
@@ -604,20 +581,26 @@ else
   echo "  libavformat: disabled"
 fi
 
-# libnotify
-if test "x$have_libnotify" = "xyes"; then
-  echo "  libnotify  : enabled"
-else
-  echo "  libnotify  : disabled"
-fi
+#
+# GNOME
+#
 
 # have_libpanelapplet
 echo ""
+echo "GNOME"
 if test "x$have_libpanelapplet" = "xyes"; then
-  echo "  gnome applet: enabled"
+  echo "  panel applet : enabled"
 else
-  echo "  gnome applet: disabled"
+  echo "  panel applet : disabled"
 fi
+
+# libnotify
+if test "x$have_libnotify" = "xyes"; then
+  echo "  libnotify    : enabled"
+else
+  echo "  libnotify    : disabled"
+fi
+
 
 echo ""
 echo "Thanks for using fuppes"

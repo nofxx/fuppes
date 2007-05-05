@@ -3,7 +3,7 @@
 
 if GNOMEAPPLET
 
-INCLUDES = ${LIBPANELAPPLET_CFLAGS}
+INCLUDES = ${LIBPANELAPPLET_CFLAGS} ${LIBNOTIFY_CFLAGS}
 
 libexec_PROGRAMS = fuppes-applet
 
@@ -11,26 +11,31 @@ fuppes_applet_SOURCES = \
   fuppes-applet.c\
   fuppes-applet.h
 
-EXTRA_DIST = fuppes-applet.c.in
+fuppes_applet_LDADD = ./../libfuppes.la
+
+fuppes_applet_LDFLAGS = \
+  $(LIBPANELAPPLET_LIBS) \
+  ${LIBNOTIFY_LIBS}
+
+EXTRA_DIST = fuppes-applet.c.in \
+  fuppes.server.in
+
+# directories
 pixmapsdir = $(datadir)/pixmaps
 dist_pixmaps_DATA = ./../../fuppes.svg
 
+serverdir = $(libdir)/bonobo/servers
+server_SCRIPTS = fuppes.server
+CLEANFILES = $(server_SCRIPTS) fuppes-applet.c
+
+
+# create fuppes-applet.c
 fuppes-applet.c: fuppes-applet.c.in
 	sed \
   -e "s|\@PIXMAPSDIR\@|$(pixmapsdir)|" \
   $< > $@
 
-fuppes_applet_LDADD = ./../libfuppes.la
-
-fuppes_applet_LDFLAGS = \
-  $(LIBPANELAPPLET_LIBS)
-
-
-serverdir = $(libdir)/bonobo/servers
-server_SCRIPTS = fuppes.server
-CLEANFILES = $(server_SCRIPTS)
-EXTRA_DIST = fuppes.server.in
-
+# create fuppes.server
 fuppes.server: fuppes.server.in
 	sed \
   -e "s|\@LIBEXECDIR\@|$(libexecdir)|" \
