@@ -160,11 +160,11 @@ fi
 # END TAGLIB
 
 #
-# ImageMagick
+# ImageMagick (MagickWand)
 #
 use_imagemagick=yes
 AC_ARG_ENABLE(imagemagick, 
-            [  --disable-imagemagick  Do not use ImageMagick],
+            [  --disable-imagemagick  Do not use ImageMagick (MagickWand)],
             [ use_imagemagick=no; ] )
 
 have_imagemagick=no
@@ -174,12 +174,12 @@ AH_TEMPLATE([HAVE_IMAGEMAGICK], [])
 if test "x$use_imagemagick" = "xyes"; then
 
 if test -z "$MAGICK_CONFIG"; then
-  AC_PATH_PROG(MAGICK_CONFIG, Magick-config, no)
+  AC_PATH_PROG(MAGICK_CONFIG, Wand-config, no)
 fi
 
 if test "$MAGICK_CONFIG" = "no" ; then   
-   AC_MSG_NOTICE([*** ImageMagick support disabled ***]);
-   #echo "  the Magick-config script could not be found."
+   AC_MSG_NOTICE([*** ImageMagick (MagickWand) support disabled ***]);
+   #echo "  the Wand-config script could not be found."
    #echo "  ImageMagick support disabled"   
 else  
   AC_DEFINE([HAVE_IMAGEMAGICK], [1], [])
