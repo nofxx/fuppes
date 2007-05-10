@@ -335,7 +335,7 @@ bool CSharedConfig::ReadConfigFile()
     sFileName = sDir + "fuppes.cfg";
     if(!DirectoryExists(sDir)) {
       #ifdef WIN32
-      CreateDirectory(sDir.str().c_str(), NULL);
+      CreateDirectory(sDir.c_str(), NULL);
       #else
       mkdir(sDir.c_str(), S_IRWXU | S_IRWXG);
       #endif
