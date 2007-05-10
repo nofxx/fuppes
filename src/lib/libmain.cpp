@@ -60,7 +60,15 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   cout << "    the Free UPnP Entertainment Service" << endl;
   cout << "       http://fuppes.sourceforge.net" << endl << endl;
 
-  // setup winsockets	
+  
+  // arguments  
+  for(int i = 0; i < argc; i++) {
+    if((strcmp(argv[i], "--config-dir") == 0) && (argc > i + 1)) {
+      
+    }
+  }  
+  
+  // setup winsockets
   #ifdef WIN32
   WSADATA wsa;
   WSAStartup(MAKEWORD(2,2), &wsa);

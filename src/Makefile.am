@@ -23,7 +23,7 @@ fuppes_LDFLAGS = \
   ${SQLITE3_LIBS}\
   ${TAGLIB_LIBS}
 
-#bin_PROGRAMS = fuppesd
+
 fuppesd_SOURCES = \
   daemon_main.cpp
   
@@ -37,6 +37,7 @@ fuppesd_LDFLAGS = \
 	${PCRE_LIBS}\
   ${SQLITE3_LIBS}\
   ${TAGLIB_LIBS}
+
 
 
 
@@ -154,7 +155,6 @@ libfuppes_la_SOURCES = \
 	lib/Configuration/ConfigFile.h 
 
 libfuppes_la_LDFLAGS = \
-  $(LIBNOTIFY_LIBS)\
   $(FUPPES_LIBS)\
   ${PTHREAD_LIBS}\
   ${UUID_LIBS}\
@@ -162,9 +162,3 @@ libfuppes_la_LDFLAGS = \
 	${PCRE_LIBS}\
   ${SQLITE3_LIBS}\
   ${TAGLIB_LIBS}
-
-
-
-
-
-

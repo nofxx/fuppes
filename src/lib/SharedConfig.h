@@ -8,7 +8,7 @@
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as
+ *  it under the terms of the GNU General Public License version 2 as 
  *  published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -16,9 +16,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
  
 #ifndef _SHAREDCONFIG_H
@@ -52,7 +52,7 @@ class CSharedConfig
     ~CSharedConfig();
     static CSharedConfig* Shared();
 
-    bool SetupConfig(std::string p_sConfigFileName = "");
+    bool SetupConfig(std::string p_sConfigDir = "");
     bool Refresh();
 
     void PrintTranscodingSettings();  
@@ -112,6 +112,7 @@ class CSharedConfig
     static CSharedConfig* m_Instance;    
       
     CConfigFile*  m_pConfigFile;
+    std::string   m_sConfigDir;
     std::string   m_sConfigFileName;
 
     std::string   m_sHostname;

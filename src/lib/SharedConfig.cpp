@@ -8,7 +8,7 @@
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as
+ *  it under the terms of the GNU General Public License version 2 as 
  *  published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -16,9 +16,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include <iostream>
@@ -90,11 +90,14 @@ CSharedConfig::~CSharedConfig()
   }
 }
 
-bool CSharedConfig::SetupConfig(std::string p_sConfigFileName)
+bool CSharedConfig::SetupConfig(std::string p_sConfigDir)
 {  
-  m_sConfigFileName = p_sConfigFileName;
+  m_sConfigDir = p_sConfigDir;
+  if((m_sConfigDir.length() > 1) && (m_sConfigDir.substr(m_sConfigDir.length() - 1).compare(upnpPathDelim) != 0)) {
+    m_sConfigDir += upnpPathDelim;
+  }  
   
-  // read config file
+  // read the config file
   if(!ReadConfigFile()) {
     return false;
 	}
@@ -295,13 +298,14 @@ bool CSharedConfig::RemoveAllowedIP(unsigned int p_nIndex)
 
 std::string CSharedConfig::GetConfigDir()
 {
-  string sResult;
-  #ifdef WIN32
-  sResult = string(getenv("APPDATA")) + "\\Free UPnP Entertainment Service\\";
-  #else
-  sResult = string(getenv("HOME")) + "/.fuppes/";
-  #endif
-  return sResult;
+  if(!m_sConfigDir.empty()) {
+    #ifdef WIN32
+    m_sConfigDir = string(getenv("APPDATA")) + "\\Free UPnP Entertainment Service\\";
+    #else
+    m_sConfigDir = string(getenv("HOME")) + "/.fuppes/";
+    #endif  
+  }  
+  return m_sConfigDir;
 }
 
 std::string CSharedConfig::GetLocalCharset()
@@ -321,24 +325,23 @@ bool CSharedConfig::ReadConfigFile()
     m_pConfigFile = new CConfigFile();
   }
   
-  // get config file name
+  // build config file name
   if(m_sConfigFileName.length() == 0) {
-    stringstream sFileName;
-    stringstream sDir;
-    
-    #ifdef WIN32
-    sDir << getenv("APPDATA") << "\\Free UPnP Entertainment Service\\";
-    sFileName << sDir.str() << "fuppes.cfg";
-    if(!DirectoryExists(sDir.str())) 
+
+    string sFileName;
+    string sDir;
+
+    sDir      = GetConfigDir();
+    sFileName = sDir + "fuppes.cfg";
+    if(!DirectoryExists(sDir)) {
+      #ifdef WIN32
       CreateDirectory(sDir.str().c_str(), NULL);
-    #else
-    sDir << getenv("HOME") << "/.fuppes/";
-    sFileName << sDir.str() << "fuppes.cfg";
-    if(!DirectoryExists(sDir.str())) 
-      mkdir(sDir.str().c_str(), S_IRWXU | S_IRWXG);
-    #endif
+      #else
+      mkdir(sDir.c_str(), S_IRWXU | S_IRWXG);
+      #endif
+    }    
     
-    m_sConfigFileName = sFileName.str();     
+    m_sConfigFileName = sFileName;     
   }
   
   // write default config

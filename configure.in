@@ -173,31 +173,18 @@ AH_TEMPLATE([HAVE_IMAGEMAGICK], [])
 
 if test "x$use_imagemagick" = "xyes"; then
 
-if test -z "$MAGICK_CONFIG"; then
-  AC_PATH_PROG(MAGICK_CONFIG, Wand-config, no)
-fi
 
-if test "$MAGICK_CONFIG" = "no" ; then   
-   AC_MSG_NOTICE([*** ImageMagick (MagickWand) support disabled ***]);
-   #echo "  the Wand-config script could not be found."
-   #echo "  ImageMagick support disabled"   
-else  
-  AC_DEFINE([HAVE_IMAGEMAGICK], [1], [])
+  IMAGEMAGICK_CFLAGS=""
+  IMAGEMAGICK_LIBS=""
+  PKG_CHECK_MODULES(IMAGEMAGICK, Wand >= 6.3.0, have_imagemagick=yes, have_imagemagick=no)
 
-  AC_MSG_CHECKING(IMAGEMAGICK_CFLAGS)
-  IMAGEMAGICK_CFLAGS=`$MAGICK_CONFIG --cflags`
-  IMAGEMAGICK_CPPFLAGS=`$MAGICK_CONFIG --cppflags`
-  FUPPES_CFLAGS="$FUPPES_CFLAGS $IMAGEMAGICK_CFLAGS $IMAGEMAGICK_CPPFLAGS"
-  AC_MSG_RESULT($IMAGEMAGICK_CFLAGS)
-  
-  AC_MSG_CHECKING(IMAGEMAGICK_LIBS)
-  IMAGEMAGICK_LIBS=`$MAGICK_CONFIG --libs`
-  IMAGEMAGICK_LDFLAGS=`$MAGICK_CONFIG --ldflags`
-  FUPPES_LIBS="$FUPPES_LIBS $IMAGEMAGICK_LIBS $IMAGEMAGICK_LDFLAGS"
-  AC_MSG_RESULT($IMAGEMAGICK_LIBS)
-  
-  have_imagemagick=yes
-fi
+  if test "x$have_imagemagick" = "xyes"; then
+		AC_DEFINE([HAVE_IMAGEMAGICK], [1], [])
+    FUPPES_CFLAGS="$FUPPES_CFLAGS $IMAGEMAGICK_CFLAGS"
+		FUPPES_LIBS="$FUPPES_LIBS $IMAGEMAGICK_LIBS"
+  else
+    AC_MSG_NOTICE([*** ImageMagick (MagickWand) support disabled ***]);
+  fi
 
 fi
 #end ImageMagick
@@ -222,7 +209,9 @@ if test "x$use_libavformat" = "xyes"; then
 		AC_DEFINE([HAVE_LIBAVFORMAT], [1], [])
     FUPPES_CFLAGS="$FUPPES_CFLAGS $LIBAVFORMAT_CFLAGS"
 		FUPPES_LIBS="$FUPPES_LIBS $LIBAVFORMAT_LIBS"
-  fi
+  else
+    AC_MSG_NOTICE([*** libavformat (FFmpeg) support disabled ***]);
+  fi 
 fi
 # end libavformat
 

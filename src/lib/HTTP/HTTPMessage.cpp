@@ -8,7 +8,7 @@
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as
+ *  it under the terms of the GNU General Public License version 2 as 
  *  published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -16,9 +16,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include "HTTPMessage.h"
@@ -277,13 +277,13 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
   /* read from file */
   if(m_fsFile.is_open())
   {
-    /*cout << "size: " << p_nSize << " offset: " << p_nOffset << " filesize: " << m_nBinContentLength << " position: " << m_nBinContentPosition << endl;
-    fflush(stdout);*/
+    //cout << "size: " << p_nSize << " offset: " << p_nOffset << " filesize: " << m_nBinContentLength << " position: " << m_nBinContentPosition << endl;
+    /*fflush(stdout);*/
     
     if((p_nOffset > 0) && (p_nOffset != m_nBinContentPosition))
       m_fsFile.seekg(p_nOffset, ios::beg);
-    else
-      p_nOffset = m_nBinContentPosition;
+    /*else
+      p_nOffset = m_nBinContentPosition;*/
     
     /*unsigned int nRest = 0;
     if((p_nOffset + p_nSize) > m_nBinContentLength)    
@@ -297,8 +297,8 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     else
       nRead = p_nSize;
     
-    /*cout << "read " << nRead << " bytes from file. offset: " << p_nOffset << endl;
-    fflush(stdout);*/
+    //cout << "read " << nRead << " bytes from file. offset: " << p_nOffset << endl;
+    /*fflush(stdout);*/
     
     m_fsFile.read(p_sContentChunk, nRead);      
     m_nBinContentPosition += nRead;
@@ -343,11 +343,10 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
                               
       nDelayCount++;
       
-      /* if bufer is still empty after n tries
+      /* if bufer is still empty after 10 seconds
          the machine seems to be too slow. so
          we give up */
-      if (nDelayCount == 20) /* 20 * 500ms = 10sec */
-      {       
+      if (nDelayCount == 20) { // 20 * 500ms = 10sec
         BreakTranscoding();                                  
         return 0;
       }

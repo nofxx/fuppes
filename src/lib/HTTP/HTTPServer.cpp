@@ -691,8 +691,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       
       // send chunk
       nErr = fuppesSocketSend(p_Session->GetConnection(), szChunk, nRet);    
-    }
-        
+    }        
+   
     nSend += nRet; 
     nCnt++;
     nOffset += nRet;
