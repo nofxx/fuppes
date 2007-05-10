@@ -62,9 +62,10 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
 
   
   // arguments  
+  string sConfigDir;
   for(int i = 0; i < argc; i++) {
     if((strcmp(argv[i], "--config-dir") == 0) && (argc > i + 1)) {
-      
+      sConfigDir = argv[i +1];
     }
   }  
   
@@ -75,7 +76,7 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   #endif    
     
   // init config
-  if(!CSharedConfig::Shared()->SetupConfig())
+  if(!CSharedConfig::Shared()->SetupConfig(sConfigDir))
     return FUPPES_FALSE;
 
 	#ifdef HAVE_IMAGEMAGICK

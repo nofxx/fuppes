@@ -298,7 +298,7 @@ bool CSharedConfig::RemoveAllowedIP(unsigned int p_nIndex)
 
 std::string CSharedConfig::GetConfigDir()
 {
-  if(!m_sConfigDir.empty()) {
+  if(m_sConfigDir.empty()) {
     #ifdef WIN32
     m_sConfigDir = string(getenv("APPDATA")) + "\\Free UPnP Entertainment Service\\";
     #else
