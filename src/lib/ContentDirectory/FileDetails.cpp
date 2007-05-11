@@ -40,7 +40,7 @@
 #endif
 
 #ifdef HAVE_IMAGEMAGICK
-#include <wand/MagickWand.h>
+#include <Magick++.h>
 #endif
 
 #ifdef HAVE_LIBAVFORMAT
@@ -358,7 +358,13 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pM
 bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageItem)
 {
   #ifdef HAVE_IMAGEMAGICK	
-	MagickWand* pWand;
+	Magick::Image image;
+  image.read(p_sFileName);
+  
+  pImageItem->nWidth  = image.baseColumns();
+  pImageItem->nHeight = image.baseRows();
+  
+  /*MagickWand* pWand;
 	MagickBooleanType bStatus;
 	unsigned long nHeight;
 	unsigned long nWidth;
@@ -379,7 +385,7 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
 	pImageItem->nHeight = nHeight;
 	
 	DestroyMagickWand(pWand);
-	//MagickWandTerminus();
+	//MagickWandTerminus();*/
 	return true;
 	#else
 	return false;

@@ -41,7 +41,7 @@
 #endif
 
 #ifdef HAVE_IMAGEMAGICK
-#include <wand/MagickWand.h>
+#include <Magick++.h>
 #endif
 
 using namespace std;
@@ -80,7 +80,8 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
     return FUPPES_FALSE;
 
 	#ifdef HAVE_IMAGEMAGICK
-	MagickWandGenesis();
+  InitializeMagick(*argv);
+	//MagickWandGenesis();
   #endif    
     
   xmlInitParser();
@@ -132,7 +133,8 @@ int fuppes_cleanup()
   xmlCleanupParser();
     
   #ifdef HAVE_IMAGEMAGICK	
-	MagickWandTerminus();
+  #warning todo
+	//MagickWandTerminus();
   #endif
     
   // cleanup winsockets
