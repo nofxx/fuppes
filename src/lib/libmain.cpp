@@ -80,7 +80,7 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
     return FUPPES_FALSE;
 
 	#ifdef HAVE_IMAGEMAGICK
-  InitializeMagick(*argv);
+  //InitializeMagick(*argv);
 	//MagickWandGenesis();
   #endif    
     
@@ -132,8 +132,7 @@ int fuppes_cleanup()
 {
   xmlCleanupParser();
     
-  #ifdef HAVE_IMAGEMAGICK	
-  #warning todo
+  #ifdef HAVE_IMAGEMAGICK	  
 	//MagickWandTerminus();
   #endif
     
