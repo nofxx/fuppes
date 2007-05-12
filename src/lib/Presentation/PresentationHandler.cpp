@@ -39,6 +39,10 @@
 #include "Images/device_type_unknown_png.cpp"
 #include "Images/device_type_media_server_png.cpp"
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <sstream>
 
 #include <fstream>
