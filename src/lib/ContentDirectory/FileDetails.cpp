@@ -359,7 +359,17 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
 {
   #ifdef HAVE_IMAGEMAGICK	
 	Magick::Image image;
-  image.read(p_sFileName);
+  try {
+    image.read(p_sFileName);
+  }
+  catch(Magick::WarningCorruptImage ex) {
+    cout << "WARNING: image \"" << p_sFileName << "\" corrupt" << endl;
+    return false;
+  }
+  catch(exception ex) {
+    cout << __FILE__ << " " << __LINE__ << " :: " << ex.what() << endl;
+    return false;
+  }
   
   pImageItem->nWidth  = image.baseColumns();
   pImageItem->nHeight = image.baseRows();
