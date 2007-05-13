@@ -90,12 +90,32 @@ CSharedConfig::~CSharedConfig()
   }
 }
 
-bool CSharedConfig::SetupConfig(std::string p_sConfigDir)
-{  
-  m_sConfigDir = p_sConfigDir;
-  if((m_sConfigDir.length() > 1) && (m_sConfigDir.substr(m_sConfigDir.length() - 1).compare(upnpPathDelim) != 0)) {
+bool CSharedConfig::SetupConfig()
+{   
+  // set config dir
+  if(m_sConfigDir.empty()) {
+    #ifdef WIN32
+    m_sConfigDir = string(getenv("APPDATA")) + "\\Free UPnP Entertainment Service\\";
+    #else
+    m_sConfigDir = string(getenv("HOME")) + "/.fuppes/";
+    #endif  
+  } 
+  else if((m_sConfigDir.length() > 1) && (m_sConfigDir.substr(m_sConfigDir.length() - 1).compare(upnpPathDelim) != 0)) {
     m_sConfigDir += upnpPathDelim;
-  }  
+  }
+  
+  // build file names
+  if(m_sConfigFileName.empty()) {
+    m_sConfigFileName = m_sConfigDir + "fuppes.cfg";
+  }
+  
+  if(m_sDbFileName.empty()) {
+    m_sDbFileName = m_sConfigDir + "fuppes.db";
+  }
+  
+  if(m_sVFolderFileName.empty()) {
+    m_sVFolderFileName = m_sConfigDir + "vfolder.cfg";
+  }
   
   // read the config file
   if(!ReadConfigFile()) {
@@ -189,10 +209,10 @@ string CSharedConfig::GetUUID()
   return m_sUUID; 
 }
 
-bool CSharedConfig::SetIPv4Address(std::string p_sIPAddress)
+bool CSharedConfig::SetNetInterface(std::string p_sNetInterface)
 {
-  m_pConfigFile->IpAddress(p_sIPAddress);
-  m_sIP = p_sIPAddress;
+  m_pConfigFile->NetInterface(p_sNetInterface);
+  m_sNetInterface = p_sNetInterface;
 }
 	
 bool CSharedConfig::SetHTTPPort(unsigned int p_nHTTPPort)
@@ -296,18 +316,6 @@ bool CSharedConfig::RemoveAllowedIP(unsigned int p_nIndex)
 
 
 
-std::string CSharedConfig::GetConfigDir()
-{
-  if(m_sConfigDir.empty()) {
-    #ifdef WIN32
-    m_sConfigDir = string(getenv("APPDATA")) + "\\Free UPnP Entertainment Service\\";
-    #else
-    m_sConfigDir = string(getenv("HOME")) + "/.fuppes/";
-    #endif  
-  }  
-  return m_sConfigDir;
-}
-
 std::string CSharedConfig::GetLocalCharset()
 {  
   return m_pConfigFile->LocalCharset();
@@ -320,28 +328,20 @@ bool CSharedConfig::SetLocalCharset(std::string p_sCharset)
 
 bool CSharedConfig::ReadConfigFile()
 {
-  std::string sErrorMsg;
+  string sErrorMsg;
+  
   if(m_pConfigFile == NULL) {
     m_pConfigFile = new CConfigFile();
   }
   
-  // build config file name
-  if(m_sConfigFileName.length() == 0) {
-
-    string sFileName;
-    string sDir;
-
-    sDir      = GetConfigDir();
-    sFileName = sDir + "fuppes.cfg";
-    if(!DirectoryExists(sDir)) {
-      #ifdef WIN32
-      CreateDirectory(sDir.c_str(), NULL);
-      #else
-      mkdir(sDir.c_str(), S_IRWXU | S_IRWXG);
-      #endif
-    }    
-    
-    m_sConfigFileName = sFileName;     
+  // create config dir
+  string sConfigDir = ExtractFilePath(m_sConfigFileName);
+  if(!DirectoryExists(sConfigDir)) {
+    #ifdef WIN32
+    CreateDirectory(sConfigDir.c_str(), NULL);
+    #else
+    mkdir(sConfigDir.c_str(), S_IRWXU | S_IRWXG);
+    #endif
   }
   
   // write default config
@@ -361,7 +361,7 @@ bool CSharedConfig::ReadConfigFile()
   }
   
   // get values from config
-  m_sIP       = m_pConfigFile->IpAddress();
+  //m_sIP       = m_pConfigFile->IpAddress();
   if(m_pConfigFile->HttpPort() > 0) {
     m_nHTTPPort = m_pConfigFile->HttpPort();
   }
@@ -371,56 +371,61 @@ bool CSharedConfig::ReadConfigFile()
 
 bool CSharedConfig::ResolveHostAndIP()
 {
-  char szName[MAXHOSTNAMELEN];  
-  int nRet = gethostname(szName, MAXHOSTNAMELEN);
-  if(0 == nRet)
-  {   
-    m_sHostname = szName;
-    
-		if((m_sIP == "") || (m_sIP.compare("127.0.0.1") == 0))
-		  ResolveIPByHostname();
-		
-    if((m_sIP == "") || (m_sIP.compare("127.0.0.1") == 0))
-    {
-			if(m_sIP.compare("127.0.0.1") == 0)
-			  cout << "detected ip 127.0.0.1. it's possible but senseless." << endl;
-		
-		  string sIface;
-		  #ifdef WIN32
-			cout << "please enter the ip address of your lan adapter" << endl;
-			cin >> sIface;
-			if(sIface.length() > 0) {
-			  m_sIP = sIface;
-        m_pConfigFile->IpAddress(m_sIP);
-			  return true;
-      }
-			#else
-    	cout << "please enter the ip address or name (e.g. eth0, wlan1, ...) of your lan adapter" << endl;			
-			cin >> sIface;
-			RegEx rxIP("\\d+\\.\\d+\\.\\d+\\.\\d");
-			if(rxIP.Search(sIface.c_str())) {
-			  m_sIP = rxIP.Match(0);
-        m_pConfigFile->IpAddress(m_sIP);
-				return true;
-			}
-			else {
-		    if(ResolveIPByInterface(sIface)) {
-          m_pConfigFile->IpAddress(m_sIP);
-          return true;
-        }
-        else {
-          return false;
-        }
-			}
-			#endif
-    }
-    else    
-      return true;
+  bool bNew = false;
+  
+  // get hostname
+  char szName[MAXHOSTNAMELEN]; 
+  int  nRet = gethostname(szName, MAXHOSTNAMELEN);  
+  if(nRet != 0) {
+    throw EException("can't resolve hostname", __FILE__, __LINE__);
   }
-  else {
-    cout << "[ERROR] can't resolve hostname" << endl;
-		return false;
-	}
+  
+  // get interface
+  m_sNetInterface = m_pConfigFile->NetInterface();
+  if(m_sNetInterface.empty()) {
+    ResolveIPByHostname();    
+  }
+  
+  // empty or localhost
+  if(m_sNetInterface.empty() && (m_sIP.empty() || (m_sIP.compare("127.0.0.1") == 0))) {
+        
+    string sMsg;
+    
+    if(m_sIP.compare("127.0.0.1") == 0) {
+      sMsg = string("detected ip 127.0.0.1. it's possible but senseless.\n");
+    }
+        
+		#ifdef WIN32
+		sMsg += string("please enter the ip address of your lan adapter:\n");
+		#else
+    sMsg += string("please enter the ip address or name (e.g. eth0, wlan1, ...) of your lan adapter:\n");
+    #endif    
+    m_sNetInterface = CSharedLog::Shared()->UserInput(sMsg);
+    bNew = true;
+  }
+    
+  if(m_sNetInterface.empty()) {
+    return false;
+  }
+  
+  
+  // ip or iface name   
+  RegEx rxIP("\\d+\\.\\d+\\.\\d+\\.\\d");
+	if(rxIP.Search(m_sNetInterface.c_str())) {
+    m_sIP = m_sNetInterface;
+    if(bNew) {
+      m_pConfigFile->NetInterface(m_sNetInterface);
+    }
+    return true;
+  }
+  else {    
+    if(ResolveIPByInterface(m_sNetInterface)) {
+      if(bNew) {
+        m_pConfigFile->NetInterface(m_sNetInterface);
+      }
+      return true;
+    }
+  } 
 }
 
 bool CSharedConfig::ResolveIPByHostname()

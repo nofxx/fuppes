@@ -52,6 +52,11 @@ void fuppes_set_error_callback(void(*p_err_cb)(const char* sz_err));
 void fuppes_set_notify_callback(void(*p_notify_cb)(const char* sz_title, const char* sz_msg));
   
 /**
+ *  set callback for user input messages
+ */
+void fuppes_set_user_input_callback(void(*p_user_input_cb)(const char* sz_msg, char* sz_result, unsigned int n_buffer_size));
+  
+/**
  *  start fuppes
  *  @return returns FUPPES_OK on success otherwise FUPPES_FALSE
  */

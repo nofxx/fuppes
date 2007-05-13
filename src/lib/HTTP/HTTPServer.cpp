@@ -123,7 +123,7 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
   // bind the socket
 	nRet = bind(m_Socket, (struct sockaddr*)&local_ep, sizeof(local_ep));	
   if(nRet == -1)
-    throw EException("failed to bind socket", __FILE__, __LINE__);
+    throw EException("failed to bind socket to : " + p_sIPAddress, __FILE__, __LINE__);
   
   // fetch local end point to get port number on random ports
 	socklen_t size = sizeof(local_ep);

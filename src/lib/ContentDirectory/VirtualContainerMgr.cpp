@@ -45,6 +45,9 @@ CVirtualContainerMgr::CVirtualContainerMgr()
 {
 	m_nIdCounter    = 0;
   m_RebuildThread = (fuppesThread)NULL;
+  if(!FileExists(CSharedConfig::Shared()->GetVFolderConfigFileName())) {
+    CSharedLog::Shared()->Log(L_NORMAL, "no vfolder.cfg file availabe", __FILE__, __LINE__);
+  }
 }
 
 
@@ -68,8 +71,8 @@ fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
   CSharedLog::Shared()->Log(L_NORMAL, "[VirtualContainer] create virtual container layout", __FILE__, __LINE__);
   
   CXMLDocument* pDoc = new CXMLDocument();
-  if(!pDoc->Load(CSharedConfig::Shared()->GetConfigDir() + "vfolder.cfg")) {    
-    CSharedLog::Shared()->Log(L_ERROR, "[VirtualContainer] error loading vfolder.cfg", __FILE__, __LINE__);
+  if(!pDoc->Load(CSharedConfig::Shared()->GetVFolderConfigFileName())) {    
+    CSharedLog::Shared()->Log(L_ERROR, "[VirtualContainer] error loading " + CSharedConfig::Shared()->GetVFolderConfigFileName(), __FILE__, __LINE__);
     delete pDoc;
     g_bIsRebuilding = false;
     fuppesThreadExit();

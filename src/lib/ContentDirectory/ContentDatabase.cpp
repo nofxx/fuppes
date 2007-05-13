@@ -108,7 +108,7 @@ CContentDatabase* CContentDatabase::Shared()
 
 CContentDatabase::CContentDatabase(bool p_bShared)
 { 
-  m_sDbFileName = CSharedConfig::Shared()->GetConfigDir() + "fuppes.db";
+  m_sDbFileName = CSharedConfig::Shared()->GetDbFileName();
   
   m_nRowsReturned = 0;
   //m_bIsRebuilding = false;
@@ -129,7 +129,7 @@ CContentDatabase::CContentDatabase(bool p_bShared)
     
   if(FileExists(m_sDbFileName)) {
     if(!Open()) {
-      cout << "FAILD OPENING DB FILE" << endl;
+      cout << "FAILED OPENING DB FILE" << endl;
     }
   }
 }
@@ -590,7 +590,7 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
           
           unsigned int nObjId = pDb->GetObjId();
           
-          pDb->BeginTransaction();
+          //pDb->BeginTransaction();
           
           sSql << "insert into objects ( " <<
             "  OBJECT_ID, TYPE, " <<
@@ -610,7 +610,7 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
                   "values (" << nObjId << ", " << p_nParentId << ")";          
           pDb->Insert(sSql.str());
           
-          pDb->Commit();
+          //pDb->Commit();
           
           // recursively scan subdirectories
           DbScanDir(pDb, sTmp.str(), nObjId);          
@@ -703,7 +703,7 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
   if(nObjectType == OBJECT_TYPE_UNKNOWN)
     return false;
   
-  pDb->BeginTransaction();
+  //pDb->BeginTransaction();
       
   // we insert file details first to get the details ID
   unsigned int nDetailId = 0;
@@ -762,7 +762,7 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
             "values (" << nObjId << ", " << p_nParentId << ")";  
   pDb->Insert(sSql.str());  
   
-  pDb->Commit();  
+  //pDb->Commit();  
 
 	return nObjId;         
 }
@@ -1088,7 +1088,7 @@ fuppesThreadCallback BuildLoop(void* arg)
       
       ExtractFolderFromPath(CSharedConfig::Shared()->GetSharedDir(i), &sFileName);
 
-      pDb->BeginTransaction();      
+      //pDb->BeginTransaction();      
       nObjId = pDb->GetObjId();      
       
       sSql << 
@@ -1105,7 +1105,7 @@ fuppesThreadCallback BuildLoop(void* arg)
         "values (" << nObjId << ", 0)";
       
       pDb->Insert(sSql.str());      
-      pDb->Commit();
+      //pDb->Commit();
       
       DbScanDir(pDb, CSharedConfig::Shared()->GetSharedDir(i), nObjId);      
     }

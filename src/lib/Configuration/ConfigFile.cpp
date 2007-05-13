@@ -34,7 +34,7 @@ CConfigFile::CConfigFile()
 {
   m_pDoc = new CXMLDocument();
   
-  m_sIpAddress = "";
+  m_sNetInterface = "";  
   m_nHttpPort  = 0;
 
   m_sLocalCharset   = "UTF-8";
@@ -170,9 +170,9 @@ void CConfigFile::ReadNetworkSettings()
   
   for(i = 0; i < pTmpNode->ChildCount(); i++) {
       
-    if(pTmpNode->ChildNode(i)->Name().compare("ip_address") == 0) {
+    if(pTmpNode->ChildNode(i)->Name().compare("interface") == 0) {
       if(pTmpNode->ChildNode(i)->Value().length() > 0) {
-        m_sIpAddress = pTmpNode->ChildNode(i)->Value();
+        m_sNetInterface = pTmpNode->ChildNode(i)->Value();
       }        
     }
     else if(pTmpNode->ChildNode(i)->Name().compare("http_port") == 0) {
@@ -317,13 +317,13 @@ void CConfigFile::RemoveSharedITunes(int p_nIdx)
 }
 
 
-void CConfigFile::IpAddress(std::string p_sIpAddress)
+void CConfigFile::NetInterface(std::string p_sNetInterface)
 {
-  CXMLNode* pTmp = m_pDoc->RootNode()->FindNodeByName("ip_address", true);
+  CXMLNode* pTmp = m_pDoc->RootNode()->FindNodeByName("interface", true);
   if(pTmp) {
-    pTmp->Value(p_sIpAddress);
+    pTmp->Value(p_sNetInterface);
     m_pDoc->Save();
-    m_sIpAddress = p_sIpAddress;
+    m_sNetInterface = p_sNetInterface;
   }  
 }
 
@@ -417,8 +417,8 @@ bool CConfigFile::WriteDefaultConfig(std::string p_sFileName)
     // network
     xmlTextWriterStartElement(pWriter, BAD_CAST "network");
         
-      xmlTextWriterWriteComment(pWriter, BAD_CAST "empty or 0 = automatic detection");
-      xmlTextWriterStartElement(pWriter, BAD_CAST "ip_address");
+      xmlTextWriterWriteComment(pWriter, BAD_CAST "empty = automatic detection");
+      xmlTextWriterStartElement(pWriter, BAD_CAST "interface");
       xmlTextWriterEndElement(pWriter); 
       
       xmlTextWriterWriteComment(pWriter, BAD_CAST "empty or 0 = random port");

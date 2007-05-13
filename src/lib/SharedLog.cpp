@@ -50,10 +50,15 @@ CSharedLog::CSharedLog()
 {
   m_bUseSyslog = false;
 
-  SetLogLevel(0, false);
+  SetLogLevel(1, false);
   #ifndef DISABLELOG
   fuppesThreadInitMutex(&m_Mutex);  
   #endif
+  
+  m_log_cb = NULL;
+  m_err_cb = NULL;
+  m_notify_cb = NULL;
+  m_user_input_cb = NULL;
 }
 
 CSharedLog::~CSharedLog()
@@ -177,7 +182,7 @@ void CSharedLog::Log(std::string p_sSender, std::string p_sMessage)
 
 void CSharedLog::UserError(std::string p_sErrMsg)
 {
-  if(m_err_cb) {
+  if(m_err_cb) {    
     m_err_cb(p_sErrMsg.c_str());
   }
   else {
@@ -193,6 +198,23 @@ void CSharedLog::UserNotify(std::string p_sTitle, std::string p_sNotifyMsg)
   else {
     cout << p_sNotifyMsg << endl;
   }  
+}
+
+std::string CSharedLog::UserInput(std::string p_sMessage)
+{
+  string sResult;
+  
+  if(m_user_input_cb) {
+    char szResult[200];
+    m_user_input_cb(p_sMessage.c_str(), szResult, 200);
+    sResult = szResult;
+  }
+  else {    
+    cout << p_sMessage << endl;
+    cin >> sResult;    
+  }    
+  
+  return sResult;
 }
 
 
@@ -213,7 +235,7 @@ void CSharedLog::Log(std::string p_sSender, std::string p_asMessages[], unsigned
   #ifndef DISABLELOG  
   if(m_bShowLog)
   {
-    fuppesThreadLockMutex(&m_Mutex);
+    //fuppesThreadLockMutex(&m_Mutex);
     
     std::cout << "[" << p_sSender << "] ";
     for(unsigned int i = 0; i < p_nCount; i++)
@@ -223,7 +245,7 @@ void CSharedLog::Log(std::string p_sSender, std::string p_asMessages[], unsigned
     std::cout  << std::endl;
     fflush(stdout);
     
-    fuppesThreadUnlockMutex(&m_Mutex);
+    //fuppesThreadUnlockMutex(&m_Mutex);
   }
   #endif
 }
@@ -256,10 +278,10 @@ void CSharedLog::Critical(std::string p_sSender, std::string p_sMessage)
   #ifndef DISABLELOG  
   if(m_bShowExtendedLog)
   {
-    fuppesThreadLockMutex(&m_Mutex);    
+    //fuppesThreadLockMutex(&m_Mutex);    
     std::cout << "[CRITICAL :: " << p_sSender << "] " << p_sMessage << std::endl;  
     fflush(stdout);  
-    fuppesThreadUnlockMutex(&m_Mutex);
+    //fuppesThreadUnlockMutex(&m_Mutex);
   }
   #endif
 }
@@ -269,10 +291,10 @@ void CSharedLog::Error(std::string p_sSender, std::string p_sMessage)
   #ifndef DISABLELOG  
   if (m_bShowExtendedLog)
   {
-    fuppesThreadLockMutex(&m_Mutex);    
+    //fuppesThreadLockMutex(&m_Mutex);    
     std::cout << "[ERROR :: " << p_sSender << "] " << p_sMessage << std::endl;  
     fflush(stdout);  
-    fuppesThreadUnlockMutex(&m_Mutex);
+    //fuppesThreadUnlockMutex(&m_Mutex);
   }
   #endif
 }

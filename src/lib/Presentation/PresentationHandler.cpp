@@ -359,7 +359,7 @@ std::string CPresentationHandler::GetIndexHTML(std::string p_sImgPath)
   sResult << "</p>" << endl;
   
   sResult << "<p>" << endl;
-  sResult << "build at: " << __DATE__ << "" << __TIME__ "<br />" << endl;
+  sResult << "build at: " << __DATE__ << " - " << __TIME__ "<br />" << endl;
   sResult << "build with: " << __VERSION__ << endl;
   sResult << "</p>" << endl;
   
@@ -487,6 +487,14 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
       "<td>false</td>" <<
       #endif
     "</tr>" <<    
+    "<tr>" <<
+      "<td>uuid</td>" <<
+      #ifdef HAVE_UUID
+      "<td>true</td>" <<
+      #else
+      "<td>false</td>" <<
+      #endif
+    "</tr>" <<       
     "<tr>" <<
       "<td>taglib</td>" <<
       #ifdef HAVE_TAGLIB
@@ -625,8 +633,8 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
     }*/
     
     // ip address
-    if(pRequest->PostVarExists("ip_address") && (pRequest->GetPostVar("ip_address").length() > 0)) {
-      CSharedConfig::Shared()->SetIPv4Address(pRequest->GetPostVar("ip_address"));
+    if(pRequest->PostVarExists("net_interface") && (pRequest->GetPostVar("net_interface").length() > 0)) {
+      CSharedConfig::Shared()->SetNetInterface(pRequest->GetPostVar("net_interface"));
     }
     
     // http port
@@ -748,9 +756,9 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
   
   sResult << "<h1>Network settings</h1>" << endl;
   
-  sResult << "<h2>IP address/HTTP port</h2>" << endl;  
+  sResult << "<h2>IP address or network interface name (e.g. eth0, wlan1, ...)/HTTP port</h2>" << endl;  
   sResult << "<p>" <<  
-               "<input name=\"ip_address\" value=\"" << CSharedConfig::Shared()->GetIPv4Address() << "\" />" << endl <<  
+               "<input name=\"net_interface\" value=\"" << CSharedConfig::Shared()->GetNetInterface() << "\" />" << endl <<  
                "<input name=\"http_port\" value=\"" << CSharedConfig::Shared()->GetHTTPPort() << "\" />" << endl <<
                "<br />" << endl <<
                "<input type=\"submit\" />" << endl <<             

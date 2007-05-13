@@ -54,29 +54,48 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   if(pFuppes)
     return FUPPES_FALSE;    
   
+  // setup winsockets
+  #ifdef WIN32
+  WSADATA wsa;
+  WSAStartup(MAKEWORD(2,2), &wsa);
+  #endif  
+  
+  // setup config
   CSharedLog::Shared()->SetCallback(p_log_cb);
 
   cout << "            FUPPES - " << CSharedConfig::Shared()->GetAppVersion() << endl;
   cout << "    the Free UPnP Entertainment Service" << endl;
   cout << "       http://fuppes.sourceforge.net" << endl << endl;
-
   
   // arguments  
   string sConfigDir;
+  string sDbFile;
+  string sConfigFile;
+  string sVFolderFile;
+  
   for(int i = 0; i < argc; i++) {
     if((strcmp(argv[i], "--config-dir") == 0) && (argc > i + 1)) {
-      sConfigDir = argv[i +1];
+      sConfigDir = argv[i + 1];
     }
-  }  
+    else if((strcmp(argv[i], "--config-file") == 0) && (argc > i + 1)) {
+      sConfigFile = argv[i + 1];
+    }
+    else if((strcmp(argv[i], "--database-file") == 0) && (argc > i + 1)) {
+      sDbFile = argv[i + 1];
+    }    
+    else if((strcmp(argv[i], "--vfolder-config-file") == 0) && (argc > i + 1)) {
+      sVFolderFile = argv[i + 1];
+    }     
+  }
   
-  // setup winsockets
-  #ifdef WIN32
-  WSADATA wsa;
-  WSAStartup(MAKEWORD(2,2), &wsa);
-  #endif    
+  CSharedConfig::Shared()->SetConfigDir(sConfigDir);
+  CSharedConfig::Shared()->SetConfigFileName(sConfigFile);
+  CSharedConfig::Shared()->SetDbFileName(sDbFile);
+  CSharedConfig::Shared()->SetVFolderConfigFileName(sVFolderFile);  
+  
     
   // init config
-  if(!CSharedConfig::Shared()->SetupConfig(sConfigDir))
+  if(!CSharedConfig::Shared()->SetupConfig())
     return FUPPES_FALSE;
 
 	#ifdef HAVE_IMAGEMAGICK
@@ -99,6 +118,10 @@ void fuppes_set_notify_callback(void(*p_notify_cb)(const char* sz_title, const c
   CSharedLog::Shared()->SetNotifyCallback(p_notify_cb);
 }
 
+void fuppes_set_user_input_callback(void(*p_user_input_cb)(const char* sz_msg, char* sz_result, unsigned int n_buffer_size))
+{
+  CSharedLog::Shared()->SetUserInputCallback(p_user_input_cb);
+}
 
 int fuppes_start()
 {

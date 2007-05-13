@@ -57,8 +57,8 @@ class CConfigFile
     void RemoveSharedITunes(int p_nIdx);
   
     // network
-    std::string IpAddress() { return m_sIpAddress; }
-    void        IpAddress(std::string p_sIpAddress);
+    std::string NetInterface() { return m_sNetInterface; }
+    void        NetInterface(std::string p_sNetInterface);
     int         HttpPort() { return m_nHttpPort; }
     void        HttpPort(int p_nHttpPort);
   
@@ -95,7 +95,7 @@ class CConfigFile
     std::vector<std::string>  m_lSharedITunes;
   
     // network
-    std::string               m_sIpAddress;    
+    std::string               m_sNetInterface;    
     int                       m_nHttpPort;
     std::vector<std::string>  m_lAllowedIps;
   

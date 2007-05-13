@@ -55,6 +55,7 @@ public:
   void SetCallback(void(*p_log_cb)(const char* sz_log)) { m_log_cb = p_log_cb; }
   void SetErrorCallback(void(*p_err_cb)(const char* sz_err)) { m_err_cb = p_err_cb; }
   void SetNotifyCallback(void(*p_notify_cb)(const char* sz_title, const char* sz_msg)) { m_notify_cb = p_notify_cb; }
+  void SetUserInputCallback(void(p_user_input_cb)(const char* sz_msg, char* sz_result, unsigned int n_buffer_size)) { m_user_input_cb = p_user_input_cb; }
   
 
   /**
@@ -62,6 +63,8 @@ public:
    */
   void UserError(std::string p_sErrMsg);
   void UserNotify(std::string p_sTitle, std::string p_sNotifyMsg);
+  
+  std::string UserInput(std::string p_sMessage);
   
   // deprecated
   void  Log(std::string p_sSender, std::string p_sMessage);
@@ -99,7 +102,7 @@ private:
   void(*m_log_cb)(const char* sz_log);
   void(*m_err_cb)(const char* sz_err);
   void(*m_notify_cb)(const char* sz_title, const char* sz_msg);
-  
+  void(*m_user_input_cb)(const char* sz_msg, char* sz_result, unsigned int n_buffer_size);
   
 
 };

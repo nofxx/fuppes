@@ -94,11 +94,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
   if(bIsNewDB) {
     CContentDatabase::Shared()->BuildDB();
   }
-		
-	// init virtual containers
-	CVirtualContainerMgr::Shared();  
-  
-  
+	  
   /* Create MediaServer */
   m_pMediaServer = new CMediaServer(m_pHTTPServer->GetURL(), this);	  
   
@@ -128,8 +124,11 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
 	catch(EException ex) {
 	  throw;
 	}
-	
+  
   CSharedLog::Shared()->Log(L_EXTENDED, "UPnP subsystem started", __FILE__, __LINE__);  
+
+  // init virtual containers
+	CVirtualContainerMgr::Shared();
   
   /* if everything is up and running, multicast alive messages
      and search for other devices */       

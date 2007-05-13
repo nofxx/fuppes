@@ -31,10 +31,10 @@
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #else
-#undef HAVE_UUID_UUID_H
+#undef HAVE_UUID
 #endif
 
-#ifdef HAVE_UUID_UUID_H
+#ifdef HAVE_UUID
 #include <uuid/uuid.h>
 #endif
 #endif
@@ -74,7 +74,7 @@ std::string GenerateUUID()
   #else  
   
   
-  #ifdef HAVE_UUID_UUID_H
+  #ifdef HAVE_UUID
   uuid_t uuid;
   char*  szUUID = new char[64];
   
@@ -97,22 +97,9 @@ std::string GenerateUUID()
 
   sResult << sRandom.str().substr(0, 8) << "-aabb-dead-beef-1234eeff0000";  
   
-  #endif // HAVE_UUID_UUID_H
+  #endif // HAVE_UUID
   
   #endif
   
   return sResult.str();
 }
-
-
-/* srand(time(0));
-
-  int nRandom;
-  stringstream sRandom;
-
-  do {
-    nRandom = (rand() % 10000) + 1;
-    sRandom << nRandom;
-  } while (sRandom.str().length() < 8);
-
-  sResult << sRandom.str().substr(0, 8) << "-aabb-dead-beef-1234eeff0000";*/

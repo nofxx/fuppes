@@ -3,8 +3,6 @@
 
 INCLUDES = ${FUPPES_CFLAGS} ${LIBXML_CFLAGS} ${PCRE_CFLAGS} ${VORBISFILE_CFLAGS} ${TAGLIB_CFLAGS}
 
-
-#noinst_LTLIBRARIES = libfuppes.la
 lib_LTLIBRARIES = libfuppes.la
 
 bin_PROGRAMS = fuppes fuppesd
@@ -14,7 +12,6 @@ fuppes_SOURCES = \
 
 fuppes_LDADD = ./libfuppes.la
 fuppes_LDFLAGS = \
-  $(LIBNOTIFY_LIBS)\
   $(FUPPES_LIBS)\
   ${PTHREAD_LIBS}\
   ${UUID_LIBS}\
@@ -29,7 +26,6 @@ fuppesd_SOURCES = \
   
 fuppesd_LDADD = ./libfuppes.la
 fuppesd_LDFLAGS = \
-  $(LIBNOTIFY_LIBS)\
   $(FUPPES_LIBS)\
   ${PTHREAD_LIBS}\
   ${UUID_LIBS}\
@@ -150,8 +146,8 @@ libfuppes_la_SOURCES = \
 	lib/Common/XMLParser.cpp\
 	lib/Common/XMLParser.h\
 	lib/ContentDirectory/iTunesImporter.cpp\
-	lib/ContentDirectory/iTunesImporter.h                                               \
-	lib/Configuration/ConfigFile.cpp                                               \
+	lib/ContentDirectory/iTunesImporter.h\
+	lib/Configuration/ConfigFile.cpp\
 	lib/Configuration/ConfigFile.h 
 
 libfuppes_la_LDFLAGS = \

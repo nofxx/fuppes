@@ -52,7 +52,7 @@ class CSharedConfig
     ~CSharedConfig();
     static CSharedConfig* Shared();
 
-    bool SetupConfig(std::string p_sConfigDir = "");
+    bool SetupConfig();
     bool Refresh();
 
     void PrintTranscodingSettings();  
@@ -71,13 +71,24 @@ class CSharedConfig
     bool SetLocalCharset(std::string p_sCharset);
 	
     std::string GetIPv4Address() { return m_sIP; }
-    bool SetIPv4Address(std::string p_sIPAddress);
+    std::string GetNetInterface() { return m_sNetInterface; }
+    bool SetNetInterface(std::string p_sNetInterface);
   
     unsigned int GetHTTPPort() { return m_nHTTPPort; }
     bool SetHTTPPort(unsigned int p_nHTTPPort);
   
-    std::string GetConfigDir();
+    //std::string GetConfigDir();
+  
+    void SetConfigDir(std::string p_sConfigDir) { m_sConfigDir = p_sConfigDir; }
+  
+    void SetConfigFileName(std::string p_sConfigFileName) { m_sConfigFileName = p_sConfigFileName; }  
     std::string GetConfigFileName() { return m_sConfigFileName; }
+  
+    void SetDbFileName(std::string p_sDbFileName) { m_sDbFileName = p_sDbFileName; }
+    std::string GetDbFileName() { return m_sDbFileName; }
+  
+    void SetVFolderConfigFileName(std::string p_sVFolderFileName) { m_sVFolderFileName = p_sVFolderFileName; }
+    std::string GetVFolderConfigFileName() { return m_sVFolderFileName; }
   
     // shared dir
     int SharedDirCount();
@@ -114,9 +125,12 @@ class CSharedConfig
     CConfigFile*  m_pConfigFile;
     std::string   m_sConfigDir;
     std::string   m_sConfigFileName;
+    std::string   m_sDbFileName;
+    std::string   m_sVFolderFileName;
 
     std::string   m_sHostname;
     std::string   m_sIP;
+    std::string   m_sNetInterface;
     std::string   m_sUUID;
     std::string   m_sOSName;
     std::string   m_sOSVersion;  
