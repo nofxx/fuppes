@@ -379,6 +379,7 @@ bool CSharedConfig::ResolveHostAndIP()
   if(nRet != 0) {
     throw EException("can't resolve hostname", __FILE__, __LINE__);
   }
+  m_sHostname = szName;
   
   // get interface
   m_sNetInterface = m_pConfigFile->NetInterface();
