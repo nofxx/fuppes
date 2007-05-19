@@ -1,5 +1,5 @@
 /***************************************************************************
- *            FileSystemMonitor.h
+ *            FileAlterationMonitor.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -21,36 +21,69 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _FILESYSTEMMONITOR_H
-#define _FILESYSTEMMONITOR_H
+#ifndef _FILEALTERATIONMONITOR_H
+#define _FILEALTERATIONMONITOR_H
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
 
-#ifdef HAVE_INOTIFY
-#include <sys/inotify.h>
+#undef HAVE_GAMIN
+#ifdef HAVE_GAMIN
+#include <fam.h>
 #endif
 
-class IFileSystemMonitor
+#include <string>
+
+class IFileAlterationMonitor
 {
 };
 
-class CFileSystemMonitor
-{
-  protected:
-    CFileSystemMonitor(IFileSystemMonitor* pEventHandler) 
-      { m_pEventHandler = pEventHandler; }
-    
-    IFileSystemMonitor* m_pEventHandler;
-};
-
-#ifdef HAVE_INOTIFY
-class CInotifyMonitor: public CFileSystemMonitor
+class CFileAlterationMonitor
 {
   public:
-    CInotifyMonitor(IFileSystemMonitor* pEventHandler);
+    virtual bool AddDirectory(std::string p_sDirectory) = 0;
+  
+  protected:
+    CFileAlterationMonitor(IFileAlterationMonitor* pEventHandler) 
+      { m_pEventHandler = pEventHandler; }
+    
+    IFileAlterationMonitor* m_pEventHandler;
+};
+
+
+class CFileAlterationMgr
+{
+  public:
+    static CFileAlterationMgr* Shared();
+  
+    CFileAlterationMonitor* CreateMonitor(IFileAlterationMonitor* pEventHandler);
+  
+  private:
+    static CFileAlterationMgr* m_Instance;
+};
+
+#ifdef HAVE_INOTIFY
+class CInotifyMonitor: public CFileAlterationMonitor
+{
+  public:
+    CInotifyMonitor(IFileAlterationMonitor* pEventHandler);
 };
 #endif
 
-#endif // _FILESYSTEMMONITOR_H
+#ifdef HAVE_GAMIN
+class CGaminMonitor: public CFileAlterationMonitor
+{
+  public:
+    CGaminMonitor(IFileAlterationMonitor* pEventHandler);
+    ~CGaminMonitor();
+  
+    bool AddDirectory(std::string p_sDirectory);
+  
+  private:
+    FAMConnection m_FAMConnection;
+    FAMRequest    m_FAMRequest;
+};
+#endif
+
+#endif // _FILEALTERATIONMONITOR_H

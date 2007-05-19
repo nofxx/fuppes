@@ -122,9 +122,8 @@ CContentDatabase::CContentDatabase(bool p_bShared)
 	  g_bIsRebuilding = false;
     fuppesThreadInitMutex(&m_Mutex);
     m_nLockCount = 0;
-    #ifdef HAVE_INOTIFY
-    m_pFileSystemMonitor = new CInotifyMonitor(this);
-    #endif
+    
+    //m_pFileAlterationMonitor = CFileAlterationMgr::Shared()->CreateMonitor(this);    
   }
     
   if(FileExists(m_sDbFileName)) {
@@ -145,8 +144,8 @@ CContentDatabase::~CContentDatabase()
 		m_RebuildThread = (fuppesThread)NULL;
 	}
 	
-	/*if(m_pFileSystemMonitor != NULL)
-	  delete m_pFileSystemMonitor;*/
+	/*if(m_pFileAlterationMonitor != NULL)
+	  delete m_pFileAlterationMonitor;*/
 
   ClearResult();  
   Close();

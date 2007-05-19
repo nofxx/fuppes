@@ -85,6 +85,16 @@ if test "x$have_uuid" = "xyes"; then
   FUPPES_LIBS="$FUPPES_LIBS -luuid"
 fi
 
+# gamin
+#have_gamin=no
+#AH_TEMPLATE([HAVE_GAMIN], [])
+#PKG_CHECK_MODULES(GAMIN, gamin, have_gamin=yes, have_gamin=no)
+#if test "x$have_gamin" = "xyes"; then
+#  FUPPES_CFLAGS="$FUPPES_CFLAGS $GAMIN_CFLAGS"
+#  FUPPES_LIBS="$FUPPES_LIBS $GAMIN_LIBS"
+#  AC_DEFINE([HAVE_GAMIN], [1], [])
+#fi
+
 # iconv()
 use_iconv=yes
 AC_ARG_ENABLE(iconv, 
@@ -560,6 +570,13 @@ if test "x$have_uuid" = "xyes"; then
 else
   echo "  uuid       : disabled"
 fi
+
+# gamin
+#if test "x$have_gamin" = "xyes"; then
+#  echo "  gamin      : enabled"
+#else
+#  echo "  gamin      : disabled"
+#fi
 
 # inotify
 #if test "x$have_inotify" = "xyes"; then

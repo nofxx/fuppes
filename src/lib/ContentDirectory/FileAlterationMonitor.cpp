@@ -1,5 +1,5 @@
 /***************************************************************************
- *            FileSystemMonitor.cpp
+ *            FileAlterationMonitor.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -21,12 +21,31 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "FileSystemMonitor.h"
+#include "FileAlterationMonitor.h"
 
 #include <sys/ioctl.h>
 
 #include <iostream>
 using namespace std;
+
+CFileAlterationMgr* CFileAlterationMgr::m_Instance = 0;
+
+CFileAlterationMgr* CFileAlterationMgr::Shared()
+{
+  if(m_Instance == 0) {
+    m_Instance = new CFileAlterationMgr();
+  }
+  return m_Instance;  
+}
+
+CFileAlterationMonitor* CFileAlterationMgr::CreateMonitor(IFileAlterationMonitor* pEventHandler)
+{
+  #ifdef HAVE_GAMIN
+  return new CGaminMonitor(pEventHandler);
+  #else
+  return NULL;
+  #endif
+}
 
 #ifdef HAVE_INOTIFY
 CInotifyMonitor::CInotifyMonitor(IFileSystemMonitor* pEventHandler):
@@ -80,3 +99,31 @@ CInotifyMonitor::CInotifyMonitor(IFileSystemMonitor* pEventHandler):
 	
 }
 #endif // HAVE_INOTIFY
+
+
+#ifdef HAVE_GAMIN
+CGaminMonitor::CGaminMonitor(IFileAlterationMonitor* pEventHandler):
+  CFileAlterationMonitor(pEventHandler)
+{
+  FAMOpen(&m_FAMConnection);    
+  FAMMonitorDirectory(&m_FAMConnection, "/home/ulrich/Desktop/famtest", &m_FAMRequest, NULL);  
+    
+  FAMEvent event;
+
+  while(true) {
+    FAMNextEvent(&m_FAMConnection, &event);    
+    cout << "file/dir: " << event.filename << " changed: " << event.code << "." << endl;
+  }
+}
+
+CGaminMonitor::~CGaminMonitor()
+{
+  FAMCancelMonitor(&m_FAMConnection, &m_FAMRequest);
+  FAMClose(&m_FAMConnection);
+}
+
+bool CGaminMonitor::AddDirectory(std::string p_sDirectory)
+{
+  FAMMonitorDirectory(&m_FAMConnection, p_sDirectory, &m_FAMRequest, NULL);  
+}
+#endif // HAVE_GAMIN

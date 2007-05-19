@@ -139,8 +139,8 @@ libfuppes_la_SOURCES = \
   lib/SharedLog.cpp\
 	lib/Fuppes.cpp\
 	lib/libmain.cpp\
-	lib/ContentDirectory/FileSystemMonitor.cpp\
-	lib/ContentDirectory/FileSystemMonitor.h\
+	lib/ContentDirectory/FileAlterationMonitor.cpp\
+	lib/ContentDirectory/FileAlterationMonitor.h\
 	lib/ContentDirectory/VirtualContainerMgr.cpp\
 	lib/ContentDirectory/VirtualContainerMgr.h\
 	lib/Common/XMLParser.cpp\
@@ -148,7 +148,8 @@ libfuppes_la_SOURCES = \
 	lib/ContentDirectory/iTunesImporter.cpp\
 	lib/ContentDirectory/iTunesImporter.h\
 	lib/Configuration/ConfigFile.cpp\
-	lib/Configuration/ConfigFile.h 
+	lib/Configuration/ConfigFile.h
+	
 
 libfuppes_la_LDFLAGS = \
   $(FUPPES_LIBS)\
@@ -158,3 +159,5 @@ libfuppes_la_LDFLAGS = \
 	${PCRE_LIBS}\
   ${SQLITE3_LIBS}\
   ${TAGLIB_LIBS}
+
+

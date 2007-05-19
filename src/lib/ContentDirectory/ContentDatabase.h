@@ -28,6 +28,7 @@
 #include <map>
 #include <list>
 #include "../Common/Common.h"
+#include "FileAlterationMonitor.h"
 
 typedef enum tagOBJECT_TYPE
 {
@@ -101,7 +102,7 @@ class CSelectResult
     std::map<std::string, std::string>::iterator m_FieldValuesIterator;  
 };
 
-class CContentDatabase
+class CContentDatabase: public IFileAlterationMonitor
 {
   public:
     static CContentDatabase* Shared();  
@@ -126,9 +127,7 @@ class CContentDatabase
   
     std::list<CSelectResult*> m_ResultList;
     std::list<CSelectResult*>::iterator m_ResultListIterator;
-    unsigned int  m_nRowsReturned;  
-  
-    
+    unsigned int  m_nRowsReturned;    
 
   
     void BuildDB();
@@ -148,6 +147,8 @@ class CContentDatabase
 		bool m_bShared;
     static CContentDatabase* m_Instance;
     int m_nLockCount;
+  
+    CFileAlterationMonitor* m_pFileAlterationMonitor;
   
 		sqlite3*      m_pDbHandle;  
     std::string   m_sDbFileName;
