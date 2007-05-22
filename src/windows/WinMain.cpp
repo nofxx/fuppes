@@ -8,7 +8,7 @@
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as
+ *  it under the terms of the GNU General Public License version 2 as 
  *  published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -16,9 +16,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include <windows.h>
@@ -37,6 +37,16 @@ void LogCallback(const char* sz_log)
   pMainForm->Log(sz_log);
 }
 
+void NotifyCallback(const char* sz_title, const char* sz_msg)
+{
+  pMainForm->Notify(sz_title, sz_msg);
+}
+
+void ErrorCallback(const char* sz_err)
+{
+  pMainForm->Error(sz_err);
+}
+
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgument, int nWindowStyle)
 {
   MSG messages;
@@ -44,14 +54,22 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgu
   pMainForm->ShowTrayIcon();  
 
   // fuppes_init()
-  if(fuppes_init(0, NULL, LogCallback) == FUPPES_FALSE) {
-    MessageBox(NULL, "Error 0", GetAppShortName(), MB_OK);
+  if(fuppes_init(0, NULL, LogCallback) == FUPPES_FALSE) {    
+    pMainForm->HideTrayIcon();
+    delete pMainForm;
     return 1;
   }
 
+  fuppes_set_loglevel(0);
+
+  
+  fuppes_set_notify_callback(NotifyCallback);
+  fuppes_set_error_callback(ErrorCallback);
+
   // fuppes_start()
   if(fuppes_start() == FUPPES_FALSE) {
-    MessageBox(NULL, "Error 1", GetAppShortName(), MB_OK);
+    pMainForm->HideTrayIcon();
+    delete pMainForm;
     return 1;
   }
 

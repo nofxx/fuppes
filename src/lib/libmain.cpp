@@ -99,8 +99,7 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
     return FUPPES_FALSE;
 
 	#ifdef HAVE_IMAGEMAGICK
-  //InitializeMagick(*argv);
-	//MagickWandGenesis();
+  Magick::InitializeMagick(*argv);
   #endif    
     
   xmlInitParser();

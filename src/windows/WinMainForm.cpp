@@ -8,7 +8,7 @@
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as
+ *  it under the terms of the GNU General Public License version 2 as 
  *  published by the Free Software Foundation.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -16,9 +16,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include "WinMainForm.h"
@@ -250,8 +250,8 @@ void CMainForm::ShowTrayIcon()
   tsym.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
   tsym.uCallbackMessage = WM_TRAYICON;
   tsym.hIcon  = wincl.hIcon;
-  strcpy (tsym.szTip, "FUPPES 0.7.2");
-  Shell_NotifyIcon (NIM_ADD, &tsym);     
+  strcpy (tsym.szTip, GetAppShortName());
+  Shell_NotifyIcon (NIM_ADD, &tsym);  
 }
 
 void CMainForm::HideTrayIcon()
@@ -282,6 +282,27 @@ void CMainForm::Log(std::string p_sLog)
   
   // append message
   SendMessage(hWndMemo, EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)p_sLog.c_str());  
+}
+
+void CMainForm::Notify(std::string p_sTitle, std::string p_sMsg)
+{
+  NOTIFYICONDATA tsym;
+  ZeroMemory (&tsym, sizeof (NOTIFYICONDATA));
+  
+  tsym.cbSize = sizeof(NOTIFYICONDATA);
+  tsym.hWnd   = hWnd;
+  tsym.uID    = 1;
+  tsym.uFlags = NIF_INFO;
+  tsym.uTimeout = 5000; //uTimeout;
+  tsym.dwInfoFlags = NIIF_INFO; //dwInfoFlags;
+  strcpy(tsym.szInfo,!p_sMsg.empty() ? p_sMsg.c_str() : "");
+  strcpy(tsym.szInfoTitle,p_sTitle.empty() ? p_sTitle.c_str() : "");
+  Shell_NotifyIcon(NIM_MODIFY, &tsym);     
+}
+
+void CMainForm::Error(std::string p_sError)
+{
+  MessageBox(hWnd, p_sError.c_str(), GetAppShortName(), MB_ICONERROR | MB_OK);
 }
 
 void CMainForm::OnWmTrayicon(WPARAM wParam, LPARAM lParam)

@@ -362,40 +362,19 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
   try {
     image.read(p_sFileName);
   }
-  catch(Magick::WarningCorruptImage ex) {
+  catch(Magick::WarningCorruptImage &ex) {
     cout << "WARNING: image \"" << p_sFileName << "\" corrupt" << endl;
+    cout << ex.what() << endl << endl;
     return false;
   }
-  catch(exception ex) {
-    cout << __FILE__ << " " << __LINE__ << " :: " << ex.what() << endl;
+  catch(exception &ex) {
+    cout << __FILE__ << " " << __LINE__ << " :: " << ex.what() << endl << endl;
     return false;
   }
   
   pImageItem->nWidth  = image.baseColumns();
   pImageItem->nHeight = image.baseRows();
-  
-  /*MagickWand* pWand;
-	MagickBooleanType bStatus;
-	unsigned long nHeight;
-	unsigned long nWidth;
-	
-	//MagickWandGenesis();
-	pWand = NewMagickWand();
-	bStatus = MagickReadImage(pWand, p_sFileName.c_str());
-	if (bStatus == MagickFalse) {
-    DestroyMagickWand(pWand);
-		return false;
-	}
-	
-	// width/height
-	nWidth  = MagickGetImageWidth(pWand);
-	nHeight = MagickGetImageHeight(pWand);
-		
-	pImageItem->nWidth  = nWidth;
-	pImageItem->nHeight = nHeight;
-	
-	DestroyMagickWand(pWand);
-	//MagickWandTerminus();*/
+
 	return true;
 	#else
 	return false;

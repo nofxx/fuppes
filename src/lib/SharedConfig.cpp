@@ -95,7 +95,7 @@ bool CSharedConfig::SetupConfig()
   // set config dir
   if(m_sConfigDir.empty()) {
     #ifdef WIN32
-    m_sConfigDir = string(getenv("APPDATA")) + "\\Free UPnP Entertainment Service\\";
+    m_sConfigDir = string(getenv("APPDATA")) + "\\FUPPES\\";
     #else
     m_sConfigDir = string(getenv("HOME")) + "/.fuppes/";
     #endif  
@@ -380,15 +380,17 @@ bool CSharedConfig::ResolveHostAndIP()
     throw EException("can't resolve hostname", __FILE__, __LINE__);
   }
   m_sHostname = szName;
-  
+
   // get interface
   m_sNetInterface = m_pConfigFile->NetInterface();
   if(m_sNetInterface.empty()) {
     ResolveIPByHostname();    
   }
-  
+
   // empty or localhost
-  if(m_sNetInterface.empty() && (m_sIP.empty() || (m_sIP.compare("127.0.0.1") == 0))) {
+  if(m_sNetInterface.empty()) {
+        
+    if(m_sIP.empty() || (m_sIP.compare("127.0.0.1") == 0)) {
         
     string sMsg;
     
@@ -403,6 +405,11 @@ bool CSharedConfig::ResolveHostAndIP()
     #endif    
     m_sNetInterface = CSharedLog::Shared()->UserInput(sMsg);
     bNew = true;
+    
+    }
+    else {
+      m_sNetInterface = m_sIP;
+    }    
   }
     
   if(m_sNetInterface.empty()) {

@@ -513,14 +513,14 @@ unsigned int CContentDatabase::GetObjId()
 
 void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_nParentId)
 {
+  // append trailing slash if neccessary
+  if(p_sDirectory.substr(p_sDirectory.length()-1).compare(upnpPathDelim) != 0) {
+    p_sDirectory += upnpPathDelim;
+  }    
+     
   #ifdef WIN32
   char szTemp[MAX_PATH];
   strcpy(szTemp, p_sDirectory.c_str());
- 
-  // append trailing backslash if neccessary
-  if(p_sDirectory.substr(p_sDirectory.length()-1).compare(upnpPathDelim) != 0) {
-    strcat(szTemp, upnpPathDelim);
-  }
   
   // Add search criteria
   strcat(szTemp, "*");
@@ -540,7 +540,7 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
       
       /* Save current filename */
       strcpy(szTemp, p_sDirectory.c_str());
-      strcat(szTemp, upnpPathDelim);
+      //strcat(szTemp, upnpPathDelim);
       strcat(szTemp, data.cFileName);
       
       stringstream sTmp;
@@ -552,13 +552,6 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
   DIR*    pDir;
   dirent* pDirEnt;
   stringstream sTmp;
-   
-  // append trailing slash if neccessary
-  if(p_sDirectory.substr(p_sDirectory.length()-1).compare(upnpPathDelim) != 0) {
-    sTmp << p_sDirectory << upnpPathDelim;
-    p_sDirectory = sTmp.str();
-    sTmp.str("");
-  }
   
   if((pDir = opendir(p_sDirectory.c_str())) != NULL)
   {    
