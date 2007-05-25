@@ -543,15 +543,15 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
       //strcat(szTemp, upnpPathDelim);
       strcat(szTemp, data.cFileName);
       
-      stringstream sTmp;
-      sTmp << szTemp;
+      string sTmp;
+      sTmp = szTemp;
       
       string sTmpFileName = data.cFileName;
   #else
       
   DIR*    pDir;
   dirent* pDirEnt;
-  stringstream sTmp;
+  string  sTmp;
   
   if((pDir = opendir(p_sDirectory.c_str())) != NULL)
   {    
@@ -562,13 +562,13 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
       if(((string(".").compare(pDirEnt->d_name) != 0) && 
          (string("..").compare(pDirEnt->d_name) != 0)))
       {        
-        sTmp << p_sDirectory << pDirEnt->d_name;        
+        sTmp = p_sDirectory + pDirEnt->d_name;        
         string sTmpFileName = pDirEnt->d_name;        
   #endif  
-        string sExt = ExtractFileExt(sTmp.str());
+        string sExt = ExtractFileExt(sTmp);
 
         /* directory */
-        if(IsDirectory(sTmp.str()))
+        if(IsDirectory(sTmp))
         {				
           sTmpFileName = ToUTF8(sTmpFileName);
           sTmpFileName = SQLEscape(sTmpFileName);
@@ -590,7 +590,7 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
             "values ( " << 
                nObjId << ", " <<  
                CONTAINER_STORAGE_FOLDER << 
-               ", '" << SQLEscape(sTmp.str()) << "', '" <<
+               ", '" << SQLEscape(sTmp) << "', '" <<
                sTmpFileName << "', '" <<
                sTmpFileName <<
             "');";
@@ -605,14 +605,13 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
           //pDb->Commit();
           
           // recursively scan subdirectories
-          DbScanDir(pDb, sTmp.str(), nObjId);          
+          DbScanDir(pDb, sTmp, nObjId);          
         }
-        else if(IsFile(sTmp.str()) && CFileDetails::Shared()->IsSupportedFileExtension(sExt))
+        else if(IsFile(sTmp) && CFileDetails::Shared()->IsSupportedFileExtension(sExt))
         {
-          InsertFile(pDb, p_nParentId, sTmp.str());
-        }   
-        
-        sTmp.str("");
+          InsertFile(pDb, p_nParentId, sTmp);
+        }           
+       
       }
     }  /* while */  
   #ifndef WIN32

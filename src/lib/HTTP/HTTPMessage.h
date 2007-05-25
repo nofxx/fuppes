@@ -167,7 +167,9 @@ class CHTTPMessage: public CMessageBase
 	  std::string   m_sUserAgent;
 	
     CTranscodeSessionInfo* m_pTranscodingSessionInfo;  
+    #ifndef DISABLE_TRANSCODING
     CTranscodingCacheObject* m_pTranscodingCacheObj;
+    #endif
     //fuppesThreadMutex TranscodeMutex;
     
 private:

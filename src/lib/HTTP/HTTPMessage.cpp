@@ -54,7 +54,9 @@ CHTTPMessage::CHTTPMessage()
   m_pUPnPAction         = NULL;
 	m_pDeviceSettings			= NULL;
   m_pTranscodingSessionInfo = NULL;
+  #ifndef DISABLE_TRANSCODING
   m_pTranscodingCacheObj = NULL;
+  #endif
   
   //fuppesThreadInitMutex(&TranscodeMutex);
 }
@@ -75,9 +77,11 @@ CHTTPMessage::~CHTTPMessage()
 
   //fuppesThreadDestroyMutex(&TranscodeMutex);
 
+  #ifndef DISABLE_TRANSCODING
   if(m_pTranscodingCacheObj) {
     CTranscodingCache::Shared()->ReleaseCacheObject(m_pTranscodingCacheObj);
   }  
+  #endif
 
   if(m_pTranscodingSessionInfo) {    
     m_pTranscodingSessionInfo->m_pszBinBuffer = NULL;
@@ -315,13 +319,15 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     if(m_pTranscodingSessionInfo)
       bTranscode = true;
     
-    
+    #ifndef DISABLE_TRANSCODING
     if(bTranscode)
       nRest = m_pTranscodingCacheObj->m_nBufferSize - m_nBinContentPosition; 
     else
+    #endif
       nRest = m_nBinContentLength - m_nBinContentPosition;    
     
     
+    #ifndef DISABLE_TRANSCODING
     while(this->IsTranscoding() && (nRest < p_nSize) && !m_pTranscodingSessionInfo->m_bBreakTranscoding)
     { 
       nRest = m_pTranscodingCacheObj->m_nBufferSize - m_nBinContentPosition;
@@ -350,7 +356,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
         BreakTranscoding();                                  
         return 0;
       }
-    }
+    }    
     
     if(bTranscode) {
       nRest = m_pTranscodingCacheObj->m_nBufferSize - m_nBinContentPosition;
@@ -359,6 +365,10 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     else {
       nRest = m_nBinContentLength - m_nBinContentPosition;         
     }
+    #else
+    nRest = m_nBinContentLength - m_nBinContentPosition;         
+    #endif
+      
   
     if(nRest > p_nSize) {
              
@@ -573,7 +583,7 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName)
 { 
   #ifdef DISABLE_TRANSCODING
   return false;
-  #endif
+  #else
   
   CSharedLog::Shared()->Log(L_EXTENDED, "TranscodeContentFromFile :: " + p_sFileName, __FILE__, __LINE__);
   
@@ -600,13 +610,16 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName)
   m_pTranscodingCacheObj->Transcode();
 
   return true;
+  #endif
 }
 
 bool CHTTPMessage::IsTranscoding()
-{  
+{ 
+  #ifndef DISABLE_TRANSCODING
   if(m_pTranscodingCacheObj)
     return m_pTranscodingCacheObj->m_bIsTranscoding;
   else
+  #endif
     return false;
 }
 
