@@ -716,9 +716,11 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   }
   
   // protocol info
+  //="http-get:*:audio/mpeg:DLNA.ORG_PN=MP3;DLNA.ORG_OP=01;DLNA.ORG_CI=0"
   //std::stringstream sTmp;
   string sTmp;
-  sTmp = "http-get:*:" + sMimeType + ":*";
+  //sTmp = "http-get:*:" + sMimeType + ":*";
+  sTmp = "http-get:*:"sMimeType + ":DLNA.ORG_PN=MP3;DLNA.ORG_OP=01;DLNA.ORG_CI=0";
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
   //sTmp.str("");
 
