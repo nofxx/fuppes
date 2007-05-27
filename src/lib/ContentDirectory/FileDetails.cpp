@@ -72,7 +72,7 @@ struct FileType_t FileTypes[] =
   /* video types */
   {"mpeg", ITEM_VIDEO_ITEM_MOVIE, "video/mpeg"},
   {"mpg" , ITEM_VIDEO_ITEM_MOVIE, "video/mpeg"},
-  {"mp4" , ITEM_VIDEO_ITEM_MOVIE, "video/mpeg"},
+  {"mp4" , ITEM_VIDEO_ITEM_MOVIE, "video/mp4"}, // "video/mpeg"},
   {"avi" , ITEM_VIDEO_ITEM_MOVIE, "video/x-msvideo"},
   {"wmv" , ITEM_VIDEO_ITEM_MOVIE, "video/x-ms-wmv"},
   {"vob" , ITEM_VIDEO_ITEM_MOVIE, "video/x-ms-vob"},
