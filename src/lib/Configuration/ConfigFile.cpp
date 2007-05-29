@@ -533,7 +533,7 @@ bool CConfigFile::WriteDefaultConfig(std::string p_sFileName)
   
         // user_agent
         xmlTextWriterStartElement(pWriter, BAD_CAST "user_agent");
-        xmlTextWriterWriteString(pWriter, BAD_CAST "Xbox/2.0.\\\\d+.\\\\d+ UPnP/1.0 Xbox/2.0.\\\\d+.\\\\d+");
+        xmlTextWriterWriteString(pWriter, BAD_CAST "Xbox/2.0.\\d+.\\d+ UPnP/1.0 Xbox/2.0.\\d+.\\d+");
         xmlTextWriterEndElement(pWriter);
         xmlTextWriterStartElement(pWriter, BAD_CAST "user_agent");
         xmlTextWriterWriteString(pWriter, BAD_CAST "Xenon");

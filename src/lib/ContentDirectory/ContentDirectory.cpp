@@ -851,7 +851,7 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
 
   /* class */
   xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
-  xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.videoItem.movie");
+  xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.videoItem");
   xmlTextWriterEndElement(pWriter);      
   
   /* res */
@@ -1064,12 +1064,11 @@ void CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_ps
       xmlTextWriterStartElementNS(resWriter, NULL, BAD_CAST "DIDL-Lite", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite");
           
   
-      while(!pDb->Eof()) {
-        pRow = pDb->GetResult();
-        //cout << "result " << nNumberReturned++ << ": " << pRow->GetValue("TITLE") << endl;
-		
-        BuildDescription(resWriter, pRow, pSearch, "0");
-		
+      while(!pDb->Eof()) {        
+        pRow = pDb->GetResult();        
+        BuildDescription(resWriter, pRow, pSearch, "0");		
+        nNumberReturned++;
+        
         pDb->Next();
       }
 			

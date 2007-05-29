@@ -196,7 +196,7 @@ std::string CFileDetails::GetObjectTypeAsString(unsigned int p_nObjectType)
     case ITEM_VIDEO_ITEM :
       return "object.videoItem";
     case ITEM_VIDEO_ITEM_MOVIE :
-      return "object.videoItem.movie";
+      return "object.videoItem"; //.movie";
     case ITEM_VIDEO_ITEM_VIDEO_BROADCAST :
       return "object.videoItem.videoBroadcast";
     //ITEM_VIDEO_ITEM_MUSIC_VIDEO_CLIP = 302,  
@@ -309,9 +309,9 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pM
   mins  = length % 60;
   hours = length / 60;  
 
-  char szDuration[11];
+  char szDuration[12];
 	sprintf(szDuration, "%02d:%02d:%02d.00", hours, mins, secs);
-	szDuration[10] = '\0';  
+	szDuration[11] = '\0';  
   pMusicTrack->mAudioItem.sDuration = szDuration;  
 	
 	// channels
@@ -410,9 +410,9 @@ bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoIt
 		hours = mins / 60;
 		mins %= 60;
 	
-		char szDuration[11];
-	  sprintf(szDuration, "%02d:%02d:%02d.%01d", hours, mins, secs, (10 * us) / AV_TIME_BASE);
-	  szDuration[10] = '\0';
+		char szDuration[12];
+	  sprintf(szDuration, "%02d:%02d:%02d.%02d", hours, mins, secs, (10 * us) / AV_TIME_BASE);
+	  szDuration[11] = '\0';
 		
 	  pVideoItem->sDuration = szDuration;
 	}

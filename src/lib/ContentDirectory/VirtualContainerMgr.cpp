@@ -252,13 +252,16 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
   stringstream sSql;
   sSql << 
     "select distinct " <<
-      sField << " as VALUE " <<
+      sField << " as VALUE, " <<
+    "  d.A_ALBUM, d.A_ARTIST, d.A_GENRE " <<                           
     "from " <<
     "  OBJECT_DETAILS d, " <<
     "  OBJECTS o " <<
     "where " <<
     "  o.DETAIL_ID = d.ID and " <<
-    "  o.TYPE > " << ITEM;
+    "  o.TYPE > " << ITEM <<
+    "  group by " <<
+    "VALUE ";
 
   string sTmp;
   if(p_sFilter.length() > 0) {
@@ -286,13 +289,16 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
     switch(nContainerType)
     {
       case CONTAINER_GENRE_MUSIC_GENRE:
-        pDetails->sGenre = SQLEscape(pDb->GetResult()->GetValue("VALUE"));
+        pDetails->sGenre = SQLEscape(pDb->GetResult()->GetValue("VALUE"));        
         break;
       case CONTAINER_PERSON_MUSIC_ARTIST:
         pDetails->sArtist = SQLEscape(pDb->GetResult()->GetValue("VALUE"));
+        pDetails->sGenre  = SQLEscape(pDb->GetResult()->GetValue("A_GENRE"));
         break;
       case CONTAINER_ALBUM_MUSIC_ALBUM:
-        pDetails->sAlbum = SQLEscape(pDb->GetResult()->GetValue("VALUE"));
+        pDetails->sAlbum  = SQLEscape(pDb->GetResult()->GetValue("VALUE"));
+        pDetails->sArtist = SQLEscape(pDb->GetResult()->GetValue("A_ARTIST"));
+        pDetails->sGenre  = SQLEscape(pDb->GetResult()->GetValue("A_GENRE"));
         break;      
       default:
         cout << "unhandled property '" << sProp << "'" << endl;
