@@ -52,6 +52,7 @@ class CDeviceSettings
 		bool m_bShowPlaylistAsContainer;
 		bool m_bXBox360Support;
 		int  m_nMaxFileNameLength;
+    bool m_bDLNAEnabled;
 		
 		ImageSettings_t   m_ImageSettings;
     DisplaySettings_t m_DisplaySettings;

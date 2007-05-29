@@ -103,6 +103,10 @@ win32 binary package comes with:
   http://flac.sourceforge.net/
   see COPYING-FLAC for details
 
+
+  libavfromat (svn revision 9027)
+
+
 mpcdec.dll, vorbisfile.dll, libFLAC.dll and sqlite3.dll are compiled by myself.
 The DevC++ project files can be found under http://fuppes.ulrich-voelkel.de.
 

@@ -53,18 +53,24 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgu
   pMainForm = new CMainForm(hInstance);
   pMainForm->ShowTrayIcon();  
 
+  fuppes_set_notify_callback(NotifyCallback);
+  fuppes_set_error_callback(ErrorCallback);
+
+  
+   LPWSTR *szArglist;
+   int nArgs;
+
+   szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);  
+  
   // fuppes_init()
-  if(fuppes_init(0, NULL, LogCallback) == FUPPES_FALSE) {    
+  if(fuppes_init(0, (char**)szArglist, LogCallback) == FUPPES_FALSE) {    
     pMainForm->HideTrayIcon();
     delete pMainForm;
     return 1;
   }
 
-  fuppes_set_loglevel(0);
 
-  
-  fuppes_set_notify_callback(NotifyCallback);
-  fuppes_set_error_callback(ErrorCallback);
+  fuppes_set_loglevel(0);    
 
   // fuppes_start()
   if(fuppes_start() == FUPPES_FALSE) {

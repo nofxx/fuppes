@@ -326,14 +326,23 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pM
 	// artist
   sTmp = pFile.tag()->artist();
   pMusicTrack->sArtist = sTmp.to8Bit(true);  
+  if(pMusicTrack->sArtist.empty()) {
+    pMusicTrack->sArtist = "unknown";
+  }   
     
   // album
   sTmp = pFile.tag()->album();
   pMusicTrack->sAlbum = sTmp.to8Bit(true);  
+  if(pMusicTrack->sAlbum.empty()) {
+    pMusicTrack->sAlbum = "unknown";
+  }  
   
   // genre
 	sTmp = pFile.tag()->genre();
   pMusicTrack->mAudioItem.sGenre = sTmp.to8Bit(true);   
+  if(pMusicTrack->mAudioItem.sGenre.empty()) {
+    pMusicTrack->mAudioItem.sGenre = "unknown";
+  }
 
   // description/comment
 	sTmp = pFile.tag()->comment();

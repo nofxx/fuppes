@@ -1,6 +1,6 @@
 [Setup]
 AppName=Free UPnP Entertainment Service
-AppVerName=Free UPnP Entertainment Service 0.7.1
+AppVerName=Free UPnP Entertainment Service 0.7.2a-20070529
 AppPublisher=Ulrich Völkel
 AppPublisherURL=http://sourceforge.net/projects/fuppes
 AppSupportURL=http://sourceforge.net/projects/fuppes
@@ -9,7 +9,7 @@ DefaultDirName={pf}\Free UPnP Entertainment Service\
 DefaultGroupName=Free UPnP Entertainment Service
 LicenseFile=..\setup\license-eng.rtf
 OutputDir=..\setup
-OutputBaseFilename=fuppes-0.7.1-win32-setup
+OutputBaseFilename=fuppes-0.7.2a-20070529-win32-setup
 SolidCompression=true
 ShowTasksTreeLines=true
 SourceDir=..\win32
@@ -29,28 +29,43 @@ Name: quicklaunchicon; Description: {cm:CreateQuickLaunchIcon}; GroupDescription
 
 [Files]
 Source: ..\win32\fuppes.exe; DestDir: {app}; Flags: ignoreversion
-Source: ..\win32\iconv.dll; DestDir: {app}
-Source: ..\win32\pcre3.dll; DestDir: {app}
-Source: ..\AUTHORS; DestDir: {app}; Flags: ignoreversion
+Source: ..\win32\fuppescmd.exe; DestDir: {app}
+Source: ..\win32\fuppes.dll; DestDir: {app}
+Source: ..\win32\vorbisfile.dll; DestDir: {app}
+Source: ..\win32\avcodec-51.dll; DestDir: {app}
+Source: ..\win32\avformat-51.dll; DestDir: {app}
+Source: ..\win32\avutil-49.dll; DestDir: {app}
+Source: ..\win32\libFLAC.dll; DestDir: {app}
+Source: ..\win32\libiconv-2.dll; DestDir: {app}
+Source: ..\win32\libMagick-10.dll; DestDir: {app}
+Source: ..\win32\libMagick++-10.dll; DestDir: {app}
+Source: ..\win32\libpcre-0.dll; DestDir: {app}
+Source: ..\win32\libWand-10.dll; DestDir: {app}
+Source: ..\win32\libxml2-2.dll; DestDir: {app}
+Source: ..\win32\mpcdec.dll; DestDir: {app}
+Source: ..\win32\ogg.dll; DestDir: {app}
+Source: ..\win32\sqlite3.dll; DestDir: {app}
+Source: ..\win32\taglib.dll; DestDir: {app}
+Source: ..\win32\vorbis.dll; DestDir: {app}
+Source: ..\vfolder.cfg; DestDir: {app}
+Source: ..\setup\ImageMagick-License.txt; DestDir: {app}
+Source: ..\AUTHORS; DestDir: {app}; Flags: ignoreversion; DestName: AUTHORS.txt
 Source: ..\ChangeLog; DestDir: {app}; Flags: ignoreversion; DestName: ChangeLog.txt
-Source: ..\COPYING; DestDir: {app}; Flags: ignoreversion; DestName: COPYING.txt
 Source: ..\NEWS; DestDir: {app}; Flags: ignoreversion; DestName: NEWS.txt
 Source: ..\README; DestDir: {app}; Flags: ignoreversion isreadme; DestName: README.txt
-Source: ..\win32\vorbisfile.dll; DestDir: {app}
-Source: ..\win32\mpcdec.dll; DestDir: {app}
-Source: ..\win32\libFLAC.dll; DestDir: {app}
+Source: ..\COPYING; DestDir: {app}; Flags: ignoreversion; DestName: COPYING.txt
 Source: ..\COPYING-MUSEPACK; DestDir: {app}; Flags: ignoreversion; DestName: COPYING-MUSEPACK.txt
 Source: ..\COPYING-OGG; DestDir: {app}; Flags: ignoreversion; DestName: COPYING-OGG.txt
 Source: ..\COPYING-VORBIS; DestDir: {app}; Flags: ignoreversion; DestName: COPYING-VORBIS.txt
 Source: ..\COPYING-FLAC; DestDir: {app}; Flags: ignoreversion; DestName: COPYING-FLAC.txt
-Source: ..\win32\sqlite3.dll; DestDir: {app}
 
 [Icons]
-Name: {group}\Free UPnP Entertainment Service; Filename: {app}\fuppes.exe
-Name: {group}\{cm:UninstallProgram,Free UPnP Entertainment Service}; Filename: {uninstallexe}
-Name: {userdesktop}\Free UPnP Entertainment Service; Filename: {app}\fuppes.exe; Tasks: desktopicon
-Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Free UPnP Entertainment Service; Filename: {app}\fuppes.exe; Tasks: quicklaunchicon; Languages: 
-Name: {group}\Edit configuration; Filename: {userappdata}\Free UPnP Entertainment Service\fuppes.cfg; Tasks: ; Languages: 
+Name: {group}\FUPPES; Filename: {app}\fuppes.exe; IconIndex: 0
+Name: {group}\{cm:UninstallProgram,FUPPES}; Filename: {uninstallexe}
+Name: {userdesktop}\FUPPES; Filename: {app}\fuppes.exe; Tasks: desktopicon; IconIndex: 0
+Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\FUPPES; Filename: {app}\fuppes.exe; Tasks: quicklaunchicon; Languages: ; IconIndex: 0
+Name: {group}\Edit configuration; Filename: {userappdata}\FUPPES\fuppes.cfg; Tasks: ; Languages: 
+Name: {group}\FUPPES (command line); Filename: {app}\fuppescmd.exe; IconIndex: 0
 
 [Run]
 Filename: {app}\fuppes.exe; Description: {cm:LaunchProgram,Free UPnP Entertainment Service}; Flags: nowait postinstall skipifsilent unchecked; Tasks: ; Languages: 

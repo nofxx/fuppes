@@ -35,6 +35,7 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
   m_bShowPlaylistAsContainer = false;
 	m_bXBox360Support					 = false;
 	m_nMaxFileNameLength			 = 0;
+	m_bDLNAEnabled             = false;
 	
 	m_ImageSettings.bResize         = false;
 	m_ImageSettings.bResizeIfLarger = false;

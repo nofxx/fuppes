@@ -59,7 +59,7 @@
 
 using namespace std;
 
-const std::string FUPPES_VERSION = "0.7.2";
+const std::string FUPPES_VERSION = "0.7.2a-20070529";
 
 CSharedConfig* CSharedConfig::m_Instance = 0;
 

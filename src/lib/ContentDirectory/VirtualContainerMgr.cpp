@@ -46,7 +46,7 @@ CVirtualContainerMgr::CVirtualContainerMgr()
 	m_nIdCounter    = 0;
   m_RebuildThread = (fuppesThread)NULL;
   if(!FileExists(CSharedConfig::Shared()->GetVFolderConfigFileName())) {
-    CSharedLog::Shared()->Log(L_NORMAL, "no vfolder.cfg file availabe", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_NORMAL, "no vfolder.cfg file available", __FILE__, __LINE__);
   }
 }
 

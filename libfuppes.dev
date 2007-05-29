@@ -1,33 +1,33 @@
 [Project]
 FileName=libfuppes.dev
 Name=libfuppes
-UnitCount=111
+UnitCount=109
 Type=3
 Ver=1
 ObjFiles=
-Includes=C:\src\libxml2-2.6.28\include;C:\src\flac-1.1.2\include;C:\src\sqlite-source-3_3_17;C:\src\libmpcdec-1.2.2\include;C:\src\pcre-6.4-1\include;C:\src\include;C:\src\include\libtwolame;C:\src\taglib-1.4\taglib;C:\src\taglib-1.4\taglib\toolkit;C:\src\ImageMagick-6.3.3-Q16\include
+Includes=C:\src\root\include;C:\src\root\include\libxml2;C:\src\root\include\taglib;C:\src\root\include\ffmpeg;C:\src\libvorbis-1.1.2\include;C:\src\flac-1.1.4\include
 Libs=
 PrivateResource=fuppes_private.rc
 ResourceIncludes=
 MakeIncludes=
 Compiler=_@@_
-CppCompiler=-DHAVE_ICONVXX_@@_-DHAVE_LAMEXX_@@_-DHAVE_MUSEPACKXX_@@_-DHAVE_VORBISXX_@@_-DHAVE_FLACXX_@@_-DHAVE_FLAC_FILEDECODERXX_@@_-DHAVE_TAGLIBXX_@@_-DHAVE_IMAGEMAGICKXX_@@_
-Linker=../../../Dev-Cpp/lib/libole32.a_@@_../../../Dev-Cpp/lib/libws2_32.a_@@_../../../Dev-Cpp/lib/libkernel32.a_@@__@@_../../pcre-6.4-1/lib/libpcre.dll.a_@@_../../sqlite-source-3_3_17/libsqlite3.a_@@_../../libxml2-2.6.28/win32/bin.mingw/libxml2.lib_@@__@@_--export-all-symbols_@@_
+CppCompiler=-DHAVE_ICONV_@@_-DHAVE_UUID_@@__@@_-DHAVE_LAME_@@_-DHAVE_MUSEPACK_@@_-DHAVE_VORBIS_@@_-DHAVE_FLAC_@@__@@_-DHAVE_TAGLIB_@@_-DHAVE_IMAGEMAGICK_@@__@@_-DHAVE_LIBAVFORMAT_@@_-D__STDC_CONSTANT_MACROS_@@_
+Linker=--export-all-symbols_@@__@@_../../../Dev-Cpp/lib/libole32.a_@@_../../../Dev-Cpp/lib/libws2_32.a_@@_../../../Dev-Cpp/lib/libkernel32.a_@@__@@_../../libxml2-2.6.28/.libs/libxml2.dll.a_@@_../../sqlite-3.3.17/libsqlite3.a_@@_../../root/lib/libpcre.dll.a_@@_../../root/lib/libiconv.dll.a_@@__@@_../../ffmpeg-svn/libavformat/libavformat.dll.a_@@_../../ffmpeg-svn/libavcodec/libavcodec.dll.a_@@_../../taglib-1.4/libtaglib.a_@@_../../ImageMagick-6.3.4/Magick++/lib/.libs/libMagick++.dll.a_@@_
 IsCpp=1
-Icon=
+Icon=libfuppes.ico
 ExeOutput=win32
 ObjectOutput=
 OverrideBuildCmd=0
 OverrideOutputName=fuppes.dll
 HostApplication=C:\src\fuppes\trunk\win32\fuppescmd.exe
-Folders=Common,Configuration,ConnectionManager,ContentDirectory,DeviceSettings,GENA,GUI,HTTP,Presentation,Presentation/Images,SSDP,Transcoding,UPnPActions
+Folders=Common,Configuration,ConnectionManager,ContentDirectory,DeviceSettings,GENA,HTTP,Presentation,Presentation/Images,SSDP,Transcoding,UPnPActions
 CommandLine=
 UseCustomMakefile=0
 CustomMakefile=
 IncludeVersionInfo=1
 SupportXPThemes=0
 CompilerSet=0
-CompilerSettings=00000000001000000000c0
+CompilerSettings=00000000000100000000c0
 OverrideOutput=1
 
 [Unit6]
@@ -54,16 +54,16 @@ BuildCmd=
 Major=0
 Minor=7
 Release=2
-Build=698
+Build=794
 LanguageID=1033
 CharsetID=1252
-CompanyName=Ulrich Völkel
+CompanyName=Computertechnik Ulrich Völkel
 FileVersion=0.7.2
-FileDescription=A Free Universal Plug and Play Media Server
+FileDescription=A free UPnP A/V Media Server
 InternalName=fuppes
-LegalCopyright=Ulrich Völkel
+LegalCopyright=Computertechnik Ulrich Völkel
 LegalTrademarks=
-OriginalFilename=
+OriginalFilename=fuppes.dll
 ProductName=Free UPnP Entertainment Service
 ProductVersion=0.7.2
 AutoIncBuildNr=1
@@ -969,26 +969,6 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit97]
-FileName=src\lib\GUI\NotificationMgr.h
-CompileCpp=1
-Folder=GUI
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit98]
-FileName=src\lib\GUI\NotificationMgr.cpp
-CompileCpp=1
-Folder=GUI
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit99]
 FileName=src\lib\DeviceSettings\DeviceSettings.h
 CompileCpp=1
 Folder=DeviceSettings
@@ -998,7 +978,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit100]
+[Unit98]
 FileName=src\lib\DeviceSettings\DeviceIdentificationMgr.cpp
 CompileCpp=1
 Folder=DeviceSettings
@@ -1008,10 +988,30 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit101]
+[Unit99]
 FileName=src\lib\DeviceSettings\DeviceIdentificationMgr.h
 CompileCpp=1
 Folder=DeviceSettings
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit100]
+FileName=src\lib\DeviceSettings\DeviceSettings.cpp
+CompileCpp=1
+Folder=DeviceSettings
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit101]
+FileName=src\lib\ContentDirectory\iTunesImporter.cpp
+CompileCpp=1
+Folder=ContentDirectory
 Compile=1
 Link=1
 Priority=1000
@@ -1039,36 +1039,6 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit102]
-FileName=src\lib\DeviceSettings\DeviceSettings.cpp
-CompileCpp=1
-Folder=DeviceSettings
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit103]
-FileName=src\lib\ContentDirectory\iTunesImporter.cpp
-CompileCpp=1
-Folder=ContentDirectory
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit105]
-FileName=src\lib\ContentDirectory\VirtualContainerMgr.cpp
-CompileCpp=1
-Folder=ContentDirectory
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit104]
 FileName=src\lib\ContentDirectory\iTunesImporter.h
 CompileCpp=1
 Folder=ContentDirectory
@@ -1078,7 +1048,27 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit106]
+[Unit103]
+FileName=src\lib\ContentDirectory\VirtualContainerMgr.cpp
+CompileCpp=1
+Folder=ContentDirectory
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit105]
+FileName=src\lib\Common\XMLParser.cpp
+CompileCpp=1
+Folder=Common
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit104]
 FileName=src\lib\ContentDirectory\VirtualContainerMgr.h
 CompileCpp=1
 Folder=ContentDirectory
@@ -1088,10 +1078,20 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit107]
-FileName=src\lib\Common\XMLParser.cpp
+[Unit106]
+FileName=src\lib\Common\XMLParser.h
 CompileCpp=1
 Folder=Common
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit107]
+FileName=src\lib\UPnPActions\UPnPAction.cpp
+CompileCpp=1
+Folder=UPnPActions
 Compile=1
 Link=1
 Priority=1000
@@ -1119,9 +1119,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit108]
-FileName=src\lib\Common\XMLParser.h
+FileName=src\lib\Configuration\ConfigFile.h
 CompileCpp=1
-Folder=Common
+Folder=Configuration
 Compile=1
 Link=1
 Priority=1000
@@ -1129,9 +1129,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit109]
-FileName=src\lib\UPnPActions\UPnPAction.cpp
+FileName=src\lib\Configuration\ConfigFile.cpp
 CompileCpp=1
-Folder=UPnPActions
+Folder=Configuration
 Compile=1
 Link=1
 Priority=1000

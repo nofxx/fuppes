@@ -241,6 +241,10 @@ void CConfigFile::SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode)
       else if(pTmp->Name().compare("xbox360") == 0) {
         pSettings->m_bXBox360Support = (pTmp->Value().compare("true") == 0);
       }     
+      // xbox360
+      else if(pTmp->Name().compare("enable_dlna") == 0) {
+        pSettings->m_bDLNAEnabled = (pTmp->Value().compare("true") == 0);
+      }      
     }
     
   }
@@ -521,9 +525,33 @@ bool CConfigFile::WriteDefaultConfig(std::string p_sFileName)
         xmlTextWriterWriteString(pWriter, BAD_CAST "false");
         xmlTextWriterEndElement(pWriter);  
   
+        xmlTextWriterStartElement(pWriter, BAD_CAST "enable_dlna");
+        xmlTextWriterWriteString(pWriter, BAD_CAST "false");
+        xmlTextWriterEndElement(pWriter);  
+  
       // end device (default)
       xmlTextWriterEndElement(pWriter);
   
+  
+      // device (PS3)
+      xmlTextWriterStartElement(pWriter, BAD_CAST "device");
+      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "name", BAD_CAST "PS3");
+      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "false");
+        
+        // user_agent
+        xmlTextWriterStartElement(pWriter, BAD_CAST "user_agent");
+        xmlTextWriterWriteString(pWriter, BAD_CAST "UPnP/1.0 DLNADOC/1.00");
+        xmlTextWriterEndElement(pWriter);
+  
+        xmlTextWriterWriteComment(pWriter, BAD_CAST "<ip></ip>");  
+  
+        // enable_dlna
+        xmlTextWriterStartElement(pWriter, BAD_CAST "enable_dlna");
+        xmlTextWriterWriteString(pWriter, BAD_CAST "true");
+        xmlTextWriterEndElement(pWriter);
+  
+      // end device (Xbox 360)
+      xmlTextWriterEndElement(pWriter);      
   
       // device (Xbox 360)
       xmlTextWriterStartElement(pWriter, BAD_CAST "device");
