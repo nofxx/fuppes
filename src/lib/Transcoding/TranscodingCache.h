@@ -33,7 +33,7 @@
 #include <string>
 
 class CTranscodeSessionInfo
-{
+{  
   public:
     //CHTTPMessage* m_pHTTPMessage;
     bool          m_bBreakTranscoding;
@@ -41,6 +41,12 @@ class CTranscodeSessionInfo
     std::string   m_sInFileName;
     unsigned int* m_pnBinContentLength;
     char**        m_pszBinBuffer;
+  
+    //void SetTranscodeToTmpFile(std::string p_sTmpFileName);
+  
+  private:
+    std::string   m_sOutFileName;  
+    bool          m_bTranscodeToFile;
 };
 
 #ifndef DISABLE_TRANSCODING
@@ -80,10 +86,10 @@ class CTranscodingCacheObject
 
     CAudioEncoderBase* m_pAudioEncoder;
     CAudioDecoderBase* m_pDecoder;    
+    CAudioDetails      m_AudioDetails;
     
-    
-    CTranscodeSessionInfo* m_pSessionInfo;    
-    
+    CTranscodeSessionInfo* m_pSessionInfo;          
+  
     unsigned int nBufferLength;  
     short int* m_pPcmOut;
     

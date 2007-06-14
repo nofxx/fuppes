@@ -66,14 +66,14 @@ class CVorbisDecoder: public CAudioDecoderBase
   
     bool LoadLib();
   
-    bool OpenFile(std::string p_sFileName);
+    bool OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetails);
     void CloseFile();
   
     /**
      * @param   p_PcmOut[]
      * @return  number of decoded samples
      */
-    long DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize);
+    long DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead);
   
   private:
     fuppesLibHandle  m_LibHandle;      

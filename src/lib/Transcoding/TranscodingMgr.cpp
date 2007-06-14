@@ -29,6 +29,7 @@
 
 #ifndef DISABLE_TRANSCODING
 
+  // encoder
   #ifdef HAVE_LAME
   #include "LameWrapper.h"
   #endif
@@ -37,6 +38,10 @@
   #include "TwoLameEncoder.h"
   #endif
 
+  #include "PcmEncoder.h"
+  #include "WavEncoder.h"
+
+  // decoder
   #ifdef HAVE_VORBIS
   #include "VorbisWrapper.h"
   #endif
@@ -313,11 +318,13 @@ void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
 CAudioEncoderBase* CTranscodingMgr::CreateAudioEncoder(std::string p_sFileExt)
 {
   #ifndef DISABLE_TRANSCODING
-  if(p_sFileExt.compare("mp3") == 0) {
+  CAudioEncoderBase* pResult = NULL;
+  
+  if(p_sFileExt.compare("mp3") == 0) {    
 
-    CAudioEncoderBase* pResult = NULL;
-
-    if(m_bUseLame) {
+    pResult = (CAudioEncoderBase*)(new CWavEncoder());
+    
+    /*if(m_bUseLame) {
       #ifdef HAVE_LAME
       pResult = (CAudioEncoderBase*)(new CLameWrapper());
       #endif
@@ -326,7 +333,7 @@ CAudioEncoderBase* CTranscodingMgr::CreateAudioEncoder(std::string p_sFileExt)
       #ifdef HAVE_TWOLAME
       pResult = (CAudioEncoderBase*)(new CTwoLameEncoder());
       #endif
-    }
+    }*/
 
     return pResult;
   }

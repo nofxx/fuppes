@@ -192,7 +192,7 @@ bool CMpcDecoder::LoadLib()
   return true;
 }
 
-bool CMpcDecoder::OpenFile(std::string p_sFileName)
+bool CMpcDecoder::OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetails)
 {
   FILE *input = fopen(p_sFileName.c_str(), "rb");
   if(input == 0) 
@@ -237,11 +237,11 @@ void CMpcDecoder::CloseFile()
 {
 }
 
-long CMpcDecoder::DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize)
+long CMpcDecoder::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead)
 {
   MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
   
-  if(p_nSize < MPC_DECODER_BUFFER_LENGTH)
+  if(p_nBufferSize < MPC_DECODER_BUFFER_LENGTH)
   {
     CSharedLog::Shared()->Error(LOGNAME, "bufer size too small for mpc decoding");
     return -1;
@@ -260,6 +260,7 @@ long CMpcDecoder::DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize)
   }
   else                    // status>0
   {
+    #warning todo: bytes read
     convertLE32to16(sample_buffer, p_PcmOut, status);
     return status;
   }

@@ -296,7 +296,7 @@ bool CFLACDecoder::LoadLib()
   return true;
 }
 
-bool CFLACDecoder::OpenFile(std::string p_sFileName)
+bool CFLACDecoder::OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetails)
 {
   #ifdef HAVE_FLAC_FILEDECODER
   m_pFLACFileDecoder = m_FLACFileDecoderNew();
@@ -369,7 +369,7 @@ void CFLACDecoder::CloseFile()
   #endif
 }
 
-long CFLACDecoder::DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize)
+long CFLACDecoder::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead)
 {
   m_pPcmOut = p_PcmOut;
     
@@ -395,6 +395,9 @@ long CFLACDecoder::DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize)
   #else
   if(m_FLAC_StreamDecoderProcessSingle(m_pFLAC_StreamDecoder))
   #endif
+    
+  #warning todo: bytes read  
+    
     return m_nBytesReturned;
   else
     return -1;

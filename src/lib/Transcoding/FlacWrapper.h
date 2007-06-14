@@ -145,9 +145,9 @@ class CFLACDecoder: public CAudioDecoderBase
     virtual ~CFLACDecoder();
   
     bool LoadLib();
-    bool OpenFile(std::string p_sFileName);
+    bool OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetails);
     void CloseFile();
-    long DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize);
+    long DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead);
 
     char* m_pPcmOut;
     long  m_nBytesReturned;

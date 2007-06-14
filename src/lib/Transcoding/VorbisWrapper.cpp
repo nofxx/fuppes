@@ -122,7 +122,7 @@ bool CVorbisDecoder::LoadLib()
   return true;
 }
 
-bool CVorbisDecoder::OpenFile(std::string p_sFileName)
+bool CVorbisDecoder::OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetails)
 {
   if ((m_pVorbisFileHandle = fopen(p_sFileName.c_str(), "r")) == NULL)
   {
@@ -142,6 +142,11 @@ bool CVorbisDecoder::OpenFile(std::string p_sFileName)
 
   m_pVorbisInfo = m_OvInfo(&m_VorbisFile, -1);
      
+  pAudioDetails->nChannels = m_pVorbisInfo->channels;
+  pAudioDetails->nSamplerate = m_pVorbisInfo->rate;
+  
+#warning todo: ov_pcm_total();
+  
   /*char **ptr = m_OvComment(&m_VorbisFile,-1)->user_comments;
   while(*ptr)
   {
@@ -160,10 +165,10 @@ void CVorbisDecoder::CloseFile()
   m_OvClear(&m_VorbisFile);  
 }
 
-long CVorbisDecoder::DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize)
+long CVorbisDecoder::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead)
 { 
   int bitstream = 0; 
-  int bytesRead = m_OvRead(&m_VorbisFile, p_PcmOut, p_nSize, m_nEndianess, 2, 1, &bitstream);
+  int bytesRead = m_OvRead(&m_VorbisFile, p_PcmOut, p_nBufferSize, m_nEndianess, 2, 1, &bitstream);  
   
   // eof
   if(bytesRead == 0)
@@ -186,6 +191,8 @@ long CVorbisDecoder::DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize)
   {
     if(bitstream != 0)
       return -1;
+    
+    *p_nBytesRead = bytesRead;
     
     // calc samples and return
     long samplesRead = bytesRead / m_pVorbisInfo->channels / sizeof(short int);

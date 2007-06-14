@@ -175,7 +175,7 @@ void CLameWrapper::SetBitrate(LAME_BITRATE p_nBitrate)
     m_LameSetCompressionRatio(m_LameGlobalFlags, p_nBitrate);
 }
 
-int CLameWrapper::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples)
+int CLameWrapper::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead)
 {
   return m_LameEncodeBufferInterleaved(m_LameGlobalFlags, p_PcmIn, p_nNumSamples, (unsigned char*)m_sMp3Buffer, LAME_MAXMP3BUFFER);
 }

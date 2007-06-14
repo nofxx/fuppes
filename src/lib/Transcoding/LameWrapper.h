@@ -99,9 +99,9 @@ class CLameWrapper: public CAudioEncoderBase
     std::string GetVersion();
     void SetBitrate(LAME_BITRATE p_nBitrate);
   
-    int   EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples);
+    int   EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead);
     int   Flush();
-    unsigned char* GetMp3Buffer() { return m_sMp3Buffer; }
+    unsigned char* GetEncodedBuffer() { return m_sMp3Buffer; }
     
     
   private:

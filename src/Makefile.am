@@ -129,6 +129,10 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/TranscodingCache.cpp\
   lib/Transcoding/LameWrapper.cpp\
   lib/Transcoding/TwoLameEncoder.cpp\
+  lib/Transcoding/WavEncoder.h\
+  lib/Transcoding/WavEncoder.cpp\
+  lib/Transcoding/PcmEncoder.h\
+  lib/Transcoding/PcmEncoder.cpp\
   lib/Transcoding/VorbisWrapper.cpp\
   lib/Transcoding/MpcWrapper.cpp\
   lib/Transcoding/FlacWrapper.cpp\

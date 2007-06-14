@@ -28,16 +28,30 @@
 #include "../Common/Common.h"
 #include "../SharedLog.h"
 
+
+struct CAudioDetails
+{
+  int   nChannels;
+  int   nSamplerate;
+  int   nBitrate;
+  unsigned int nPcmSize;  
+};
+
 class CAudioEncoderBase
 {
-  public:
+  public:    
     virtual ~CAudioEncoderBase() {};
 		virtual bool LoadLib() = 0;
   
+    void SetAudioDetails(CAudioDetails* pAudioDetails) { m_pAudioDetails = pAudioDetails; }
+  
     virtual void  Init() = 0;      
-    virtual int   EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples) = 0;
+    virtual int   EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead) = 0;
     virtual int   Flush() = 0;
-    virtual unsigned char* GetMp3Buffer() = 0;
+    virtual unsigned char* GetEncodedBuffer() = 0;
+  
+  protected:
+    CAudioDetails* m_pAudioDetails;
 };
 
 class CAudioDecoderBase
@@ -45,9 +59,9 @@ class CAudioDecoderBase
   public:
 	  virtual ~CAudioDecoderBase() {};
     virtual bool LoadLib() = 0;
-    virtual bool OpenFile(std::string p_sFileName) = 0;      
+    virtual bool OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetails) = 0;      
     virtual void CloseFile() = 0;    
-    virtual long DecodeInterleaved(char* p_PcmOut, unsigned int p_nSize) = 0;  
+    virtual long DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead) = 0;  
 };
 
 class CTranscoderBase
@@ -57,4 +71,4 @@ class CTranscoderBase
     virtual bool Transcode(std::string p_sInFile, std::string p_sParams, std::string* p_psOutFile) = 0;
 };
 
-#endif /* _WRAPPERBASE_H */
+#endif // _WRAPPERBASE_H

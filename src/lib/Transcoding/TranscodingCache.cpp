@@ -78,6 +78,28 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
   CSharedLog::Shared()->Log(L_EXTENDED, "Init " + pSessionInfo->m_sInFileName, __FILE__, __LINE__);  
   m_pSessionInfo = pSessionInfo;  
   
+  
+  // init decoder
+  if(!m_pDecoder)
+  {  
+    // create decoder
+    nBufferLength = 32768;
+    std::string sExt = ToLower(ExtractFileExt(m_pSessionInfo->m_sInFileName));  
+    
+    m_pDecoder = CTranscodingMgr::Shared()->CreateAudioDecoder(sExt, &nBufferLength);
+    
+    // init decoder
+    if(!m_pDecoder || !m_pDecoder->LoadLib() || !m_pDecoder->OpenFile(m_pSessionInfo->m_sInFileName, &m_AudioDetails)) {
+      delete m_pDecoder;
+      m_pDecoder = NULL;      
+      return false;
+    }
+
+    // create pcm buffer
+    m_pPcmOut = new short int[nBufferLength];
+  }  
+  
+  
   // init encoder
   if(!m_pAudioEncoder) {
     
@@ -90,28 +112,11 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
     
     #warning todo: set encoder bitrate from config
     //m_pLameWrapper->SetBitrate(LAME_BITRATE_320);
+    m_pAudioEncoder->SetAudioDetails(&m_AudioDetails);
     m_pAudioEncoder->Init();
   }  
   
-  // init decoder
-  if(!m_pDecoder)
-  {  
-    // create decoder
-    nBufferLength = 32768;
-    std::string sExt = ToLower(ExtractFileExt(m_pSessionInfo->m_sInFileName));  
-    
-    m_pDecoder = CTranscodingMgr::Shared()->CreateAudioDecoder(sExt, &nBufferLength);
-    
-    // init decoder
-    if(!m_pDecoder || !m_pDecoder->LoadLib() || !m_pDecoder->OpenFile(m_pSessionInfo->m_sInFileName)) {
-      delete m_pDecoder;
-      m_pDecoder = NULL;      
-      return false;
-    }
-
-    // create pcm buffer
-    m_pPcmOut = new short int[nBufferLength];
-  }    
+ 
 
   return true;
 }
@@ -181,12 +186,13 @@ fuppesThreadCallback TranscodeThread(void *arg)
   unsigned int nAppendCount = 0;
   char* szTmpBuff = NULL;
   unsigned int nTmpSize = 0;
+  int   nBytesRead = 0;
   
   /* Transcoding loop */
-  while(((samplesRead = pCacheObj->m_pDecoder->DecodeInterleaved((char*)pCacheObj->m_pPcmOut, pCacheObj->nBufferLength)) >= 0) && !pCacheObj->m_bBreakTranscoding)
+  while(((samplesRead = pCacheObj->m_pDecoder->DecodeInterleaved((char*)pCacheObj->m_pPcmOut, pCacheObj->nBufferLength, &nBytesRead)) >= 0) && !pCacheObj->m_bBreakTranscoding)
   {    
     /* encode */
-    nLameRet = pCacheObj->m_pAudioEncoder->EncodeInterleaved(pCacheObj->m_pPcmOut, samplesRead);
+    nLameRet = pCacheObj->m_pAudioEncoder->EncodeInterleaved(pCacheObj->m_pPcmOut, samplesRead, nBytesRead);
     if(nLameRet == 0)
       continue;
     
@@ -197,7 +203,7 @@ fuppesThreadCallback TranscodeThread(void *arg)
       szTmpBuff = (char*)realloc(szTmpBuff, (nTmpSize + nLameRet) * sizeof(char));
     
     /* ... store encoded frames ... */
-    memcpy(&szTmpBuff[nTmpSize], pCacheObj->m_pAudioEncoder->GetMp3Buffer(), nLameRet);    
+    memcpy(&szTmpBuff[nTmpSize], pCacheObj->m_pAudioEncoder->GetEncodedBuffer(), nLameRet);    
     
     /* ... and set new temporary buffer size */
     nTmpSize += nLameRet;
@@ -260,7 +266,7 @@ fuppesThreadCallback TranscodeThread(void *arg)
       else
         pCacheObj->m_szBuffer = (char*)realloc(pCacheObj->m_szBuffer, (pCacheObj->m_nBufferSize + nTmpSize) * sizeof(char));
     
-    memcpy(&pCacheObj->m_szBuffer[pCacheObj->m_nBufferSize], pCacheObj->m_pAudioEncoder->GetMp3Buffer(), nTmpSize);
+    memcpy(&pCacheObj->m_szBuffer[pCacheObj->m_nBufferSize], pCacheObj->m_pAudioEncoder->GetEncodedBuffer(), nTmpSize);
     pCacheObj->m_nBufferSize += nTmpSize;
     
     pCacheObj->m_bIsComplete = true;          

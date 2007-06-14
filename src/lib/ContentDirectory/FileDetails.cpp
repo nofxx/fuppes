@@ -60,6 +60,8 @@ struct FileType_t FileTypes[] =
   {"mp3" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "audio/mpeg"},
   {"ogg" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "application/octet-stream"},
   {"mpc" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "application/octet-stream"},
+  {"raw" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "application/octet-stream"},
+  {"wav" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "audio/x-wav"},
   {"flac", ITEM_AUDIO_ITEM_MUSIC_TRACK, "audio/x-flac"},  
   
   /* image types */
@@ -90,7 +92,7 @@ struct FileType_t FileTypes[] =
 struct TranscodingSetting_t TranscodingSettings[] =
 {
   /* audio */
-  {"ogg" , "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK},
+  {"ogg" , "wav", "audio/x-wav", ITEM_AUDIO_ITEM_MUSIC_TRACK},
   {"mpc" , "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK},
   {"flac", "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK},
   
