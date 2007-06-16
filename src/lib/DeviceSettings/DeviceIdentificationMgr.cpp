@@ -99,6 +99,7 @@ CDeviceSettings* CDeviceIdentificationMgr::GetSettingsForInitialization(std::str
     pSettings->m_bXBox360Support          = m_pDefaultSettings->m_bXBox360Support;
     pSettings->m_nMaxFileNameLength       = m_pDefaultSettings->m_nMaxFileNameLength;
     pSettings->m_DisplaySettings.bShowChildCountInTitle = m_pDefaultSettings->m_DisplaySettings.bShowChildCountInTitle;
+    pSettings->m_bDLNAEnabled             = m_pDefaultSettings->m_bDLNAEnabled;
     
     m_Settings.push_back(pSettings);
   } 

@@ -57,50 +57,51 @@ using namespace std;
 struct FileType_t FileTypes[] = 
 {
   /* audio types */
-  {"mp3" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "audio/mpeg"},
-  {"ogg" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "application/octet-stream"},
-  {"mpc" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "application/octet-stream"},
-  {"raw" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "application/octet-stream"},
-  {"wav" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "audio/x-wav"},
-  {"flac", ITEM_AUDIO_ITEM_MUSIC_TRACK, "audio/x-flac"},  
+  {"mp3" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "audio/mpeg", "MP3"},
+  {"ogg" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "application/octet-stream", ""},
+  {"mpc" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "application/octet-stream", ""},
+  {"raw" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "application/octet-stream", ""},
+  {"wav" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "audio/x-wav", ""},
+  {"flac", ITEM_AUDIO_ITEM_MUSIC_TRACK, "audio/x-flac", ""},  
+  {"wma" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "x-ms-wma", "WMAFULL"},
   
   /* image types */
-  {"jpeg", ITEM_IMAGE_ITEM_PHOTO, "image/jpeg"},
-  {"jpg" , ITEM_IMAGE_ITEM_PHOTO, "image/jpeg"},
-  {"bmp" , ITEM_IMAGE_ITEM_PHOTO, "image/bmp"},
-  {"png" , ITEM_IMAGE_ITEM_PHOTO, "image/png"},
-  {"gif" , ITEM_IMAGE_ITEM_PHOTO, "image/gif"},
+  {"jpeg", ITEM_IMAGE_ITEM_PHOTO, "image/jpeg", ""},
+  {"jpg" , ITEM_IMAGE_ITEM_PHOTO, "image/jpeg", ""},
+  {"bmp" , ITEM_IMAGE_ITEM_PHOTO, "image/bmp", ""},
+  {"png" , ITEM_IMAGE_ITEM_PHOTO, "image/png", ""},
+  {"gif" , ITEM_IMAGE_ITEM_PHOTO, "image/gif", ""},
   
   /* video types */
-  {"mpeg", ITEM_VIDEO_ITEM_MOVIE, "video/mpeg"},
-  {"mpg" , ITEM_VIDEO_ITEM_MOVIE, "video/mpeg"},
-  {"mp4" , ITEM_VIDEO_ITEM_MOVIE, "video/mp4"}, // "video/mpeg"},
-  {"avi" , ITEM_VIDEO_ITEM_MOVIE, "video/x-msvideo"},
-  {"wmv" , ITEM_VIDEO_ITEM_MOVIE, "video/x-ms-wmv"},
-  {"vob" , ITEM_VIDEO_ITEM_MOVIE, "video/x-ms-vob"},
-  {"vdr" , ITEM_VIDEO_ITEM_MOVIE, "application/x-extension-vdr"},
+  {"mpeg", ITEM_VIDEO_ITEM_MOVIE, "video/mpeg", ""},
+  {"mpg" , ITEM_VIDEO_ITEM_MOVIE, "video/mpeg", ""},
+  {"mp4" , ITEM_VIDEO_ITEM_MOVIE, "video/mp4", ""}, // "video/mpeg"},
+  {"avi" , ITEM_VIDEO_ITEM_MOVIE, "video/x-msvideo", ""},
+  {"wmv" , ITEM_VIDEO_ITEM_MOVIE, "video/x-ms-wmv", ""},
+  {"vob" , ITEM_VIDEO_ITEM_MOVIE, "video/x-ms-vob", ""},
+  {"vdr" , ITEM_VIDEO_ITEM_MOVIE, "application/x-extension-vdr", ""},
   
   /* playlist types */
-  {"m3u", CONTAINER_PLAYLIST_CONTAINER, "audio/x-mpegurl"},
-  {"pls", CONTAINER_PLAYLIST_CONTAINER, "audio/x-scpls"},
+  {"m3u", CONTAINER_PLAYLIST_CONTAINER, "audio/x-mpegurl", ""},
+  {"pls", CONTAINER_PLAYLIST_CONTAINER, "audio/x-scpls", ""},
   
   /* empty entry to mark the list's end */
-  {"", OBJECT_TYPE_UNKNOWN, ""}
+  {"", OBJECT_TYPE_UNKNOWN, "", ""}
 };
 
 
 struct TranscodingSetting_t TranscodingSettings[] =
 {
   /* audio */
-  {"ogg" , "wav", "audio/x-wav", ITEM_AUDIO_ITEM_MUSIC_TRACK},
-  {"mpc" , "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK},
-  {"flac", "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK},
+  {"ogg" , "wav", "audio/x-wav", ITEM_AUDIO_ITEM_MUSIC_TRACK, 0, 44100},
+  {"mpc" , "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK, 128, 44100},
+  {"flac", "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK, 128, 44100},
   
   /* video */
-  {"vdr", "vob", "video/x-ms-vob", ITEM_VIDEO_ITEM_MOVIE},
+  {"vdr", "vob", "video/x-ms-vob", ITEM_VIDEO_ITEM_MOVIE, 0, 0},
   
   /* empty entry to mark the list's end */
-  {"", "", "", OBJECT_TYPE_UNKNOWN}
+  {"", "", "", OBJECT_TYPE_UNKNOWN, 0, 0}
 };
  
 
@@ -252,6 +253,24 @@ bool CFileDetails::IsSupportedFileExtension(std::string p_sFileExtension)
   return false;
 }
 
+std::string CFileDetails::GetDLNA(std::string p_sFileExtension)
+{
+  p_sFileExtension = ToLower(p_sFileExtension);
+  struct FileType_t* pType;   
+  
+  pType = FileTypes;
+  while(!pType->sExt.empty()) {
+	
+    if(pType->sExt.compare(p_sFileExtension) == 0) {
+      return pType->sDLNA;
+    } 
+	
+    pType++;
+  }
+
+  return "";
+}
+
 bool CFileDetails::IsTranscodingExtension(std::string p_sExt)
 {
   TranscodingSetting_t* pTranscoding;
@@ -284,6 +303,45 @@ std::string CFileDetails::GetTargetExtension(std::string p_sExt)
   
   return sResult;
 }
+
+int CFileDetails::GetTargetBitrate(std::string p_sExt)
+{
+  int nResult = 0;
+  
+  TranscodingSetting_t* pTranscoding;
+  pTranscoding = TranscodingSettings;
+  while(!pTranscoding->sExt.empty())
+  {
+    if(pTranscoding->sExt.compare(p_sExt) == 0)
+    {
+      nResult = pTranscoding->nBitrate;
+      break;
+    }    
+    pTranscoding++;
+  }
+  
+  return nResult;  
+}
+
+int CFileDetails::GetTargetSamplerate(std::string p_sExt)
+{
+  int nResult = 0;
+  
+  TranscodingSetting_t* pTranscoding;
+  pTranscoding = TranscodingSettings;
+  while(!pTranscoding->sExt.empty())
+  {
+    if(pTranscoding->sExt.compare(p_sExt) == 0)
+    {
+      nResult = pTranscoding->nSamplerate;
+      break;
+    }    
+    pTranscoding++;
+  }
+  
+  return nResult;  
+}
+
 
 bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pMusicTrack)
 {

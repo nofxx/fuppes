@@ -66,6 +66,28 @@ extern "C"
   
   // int  lame_close (lame_global_flags*);
   typedef int (*LameClose_t)(lame_global_flags*);
+  
+  // id3 functions
+  
+  typedef void (*Id3TagInit_t)(lame_global_flags*);
+
+  typedef void (*Id3TagV1Only_t)(lame_global_flags*);
+
+  /* pad version 1 tag with spaces instead of nulls */
+  //extern void id3tag_space_v1 (lame_global_flags *gfp);
+
+  typedef void (*Id3TagSetTitle_t)(lame_global_flags*, const char*);
+  
+  typedef void (*Id3TagSetArtist_t)(lame_global_flags*, const char*);
+  
+  typedef void (*Id3TagSetAlbum_t)(lame_global_flags*, const char*);
+  
+  typedef void (*Id3TagSetYear_t)(lame_global_flags*, const char*);
+  
+  typedef void (*Id3TagSetComment_t)(lame_global_flags*, const char*);
+  
+  typedef void (*Id3TagSetTrack_t)(lame_global_flags*, const char*);  
+  
 }
 
 typedef enum tagLAME_BITRATE

@@ -31,21 +31,21 @@ using namespace std;
 CWavEncoder::CWavEncoder()
 {
   
-    f.open("/home/ulrich/Desktop/test.wav", ios::out | ios::trunc | ios::binary);
+   // f.open("/home/ulrich/Desktop/test.wav", ios::out | ios::trunc | ios::binary);
     //f << "Dieser Text geht in die Datei" << endl;
     
 }
 
 CWavEncoder::~CWavEncoder()
 {
-  f.close();
+  //f.close();
 }
 
 
 int CWavEncoder::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead)
 {
-  cout << "CWavEncoder::EncodeInterleaved - " << p_nNumSamples << " - " << sizeof(p_PcmIn) << endl;
-  fflush(stdout);
+  /*cout << "CWavEncoder::EncodeInterleaved - " << p_nNumSamples << " - " << sizeof(p_PcmIn) << endl;
+  fflush(stdout);*/
   
   int nOffset = 0;
   
@@ -57,14 +57,14 @@ int CWavEncoder::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p
   else {
     // first call. let's write the wav header
     WriteFileHeader();
-    f.write((const char*)headbuf, 44);
+    //f.write((const char*)headbuf, 44);
     
     m_sBuffer = (unsigned char*)malloc(p_nBytesRead + 44);
     nOffset = 44;
     memcpy(m_sBuffer, headbuf, 44);
   }
 
-  f.write((const char*)p_PcmIn, p_nBytesRead);  
+  //f.write((const char*)p_PcmIn, p_nBytesRead);  
   memcpy(&m_sBuffer[nOffset], p_PcmIn, p_nBytesRead);
   
   return p_nBytesRead;

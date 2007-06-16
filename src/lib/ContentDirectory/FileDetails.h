@@ -32,6 +32,7 @@ struct FileType_t
   std::string sExt;
   OBJECT_TYPE nObjectType;
   std::string sMimeType;
+  std::string sDLNA;
 };
 
 struct TranscodingSetting_t
@@ -39,7 +40,9 @@ struct TranscodingSetting_t
   std::string sExt;  
   std::string sTargetExt;  
   std::string sTargetMimeType;
-  OBJECT_TYPE nTargetObjectType;  
+  OBJECT_TYPE nTargetObjectType;
+  int         nBitrate;
+  int         nSamplerate;
 };
 
 struct SAudioItem
@@ -143,8 +146,11 @@ class CFileDetails
 	  bool GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoItem);
 	
     bool IsSupportedFileExtension(std::string p_sFileExtension);
+    std::string GetDLNA(std::string p_sFileExtension);
     static bool IsTranscodingExtension(std::string p_sExt);
     static std::string GetTargetExtension(std::string p_sExt);
+    static int GetTargetBitrate(std::string p_sExt);
+    static int GetTargetSamplerate(std::string p_sExt);
   
   private:
     static CFileDetails* m_Instance; 

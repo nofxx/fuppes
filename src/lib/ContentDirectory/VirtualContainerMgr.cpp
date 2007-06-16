@@ -27,7 +27,9 @@
 #include "ContentDatabase.h"
 #include "../SharedConfig.h"
 #include "../SharedLog.h"
+#include <sys/time.h>
 #include <iostream>
+
 using namespace std;
 		
 CVirtualContainerMgr* CVirtualContainerMgr::m_pInstance = 0;
@@ -69,6 +71,8 @@ fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
   CVirtualContainerMgr* pMgr = (CVirtualContainerMgr*)arg;
     
   CSharedLog::Shared()->Log(L_NORMAL, "[VirtualContainer] create virtual container layout", __FILE__, __LINE__);
+  struct timeval startTime;
+  gettimeofday(&startTime, NULL);
   
   CXMLDocument* pDoc = new CXMLDocument();
   if(!pDoc->Load(CSharedConfig::Shared()->GetVFolderConfigFileName())) {    
@@ -102,6 +106,14 @@ fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
   delete pDoc;    
   
   CSharedLog::Shared()->Log(L_NORMAL, "[VirtualContainer] virtual container layout created", __FILE__, __LINE__);
+  struct timeval endTime;
+  gettimeofday(&endTime, NULL);
+  
+  suseconds_t durationMcr;
+  durationMcr = endTime.tv_usec - startTime.tv_usec;
+  cout << "creation took " << durationMcr << " microseconds :: ";
+  cout << durationMcr / 100000.0 << " seconds ";  
+  fflush(stdout);
   
   g_bIsRebuilding = false;
   fuppesThreadExit();
@@ -146,26 +158,32 @@ void CVirtualContainerMgr::CreateChildItems(CXMLNode* pParentNode,
       
     if(pNode->Name().compare("vfolder") == 0) {
       //cout << "create single vfolder: " << pNode->Attribute("name") << " :: " << p_sFilter << endl; fflush(stdout);
+      CSharedLog::Shared()->Log(L_EXTENDED, "create single vfolder: " + pNode->Attribute("name") + " :: " + p_sFilter, __FILE__, __LINE__);
       CreateSingleVFolder(pNode, p_sDevice, p_nParentId, pDetails);
     }
     else if(pNode->Name().compare("vfolders") == 0) {
-      //cout << "create vfolders from property: " << pNode->Attribute("property") << " :: " << p_sFilter << endl;  fflush(stdout);
+      //cout << "create vfolders from property: " << pNode->Attribute("property") << " :: " << p_sFilter << endl;  fflush(stdout);      
       if(pNode->Attribute("property").length() > 0) {
+        CSharedLog::Shared()->Log(L_EXTENDED, "create vfolders from property: " + pNode->Attribute("property") + " :: " + p_sFilter, __FILE__, __LINE__);
         CreateVFoldersFromProperty(pNode, p_sDevice, p_nParentId, pDetails, p_sFilter);
       }
       else if(pNode->Attribute("split").length() > 0) {
+        CSharedLog::Shared()->Log(L_EXTENDED, "create split vfolders :: " + p_sFilter, __FILE__, __LINE__);
         CreateVFoldersSplit(pNode, p_sDevice, p_nParentId, pDetails, p_sFilter);
       }
     }
     else if(pNode->Name().compare("items") == 0) {
       //cout << "create item mappings for type: " << pNode->Attribute("type") << " :: " << p_sFilter << endl;
+      CSharedLog::Shared()->Log(L_EXTENDED, "create item mappings for type: " + pNode->Attribute("type") + " :: " + p_sFilter, __FILE__, __LINE__);
       CreateItemMappings(pNode, p_sDevice, p_nParentId, p_sFilter);
     }
     else if(pNode->Name().compare("folders") == 0) {
       //cout << "create folder mappings for filter: " << pNode->Attribute("filter") << " :: " << p_sFilter << endl;
+      CSharedLog::Shared()->Log(L_EXTENDED, "create folder mappings - filter: " + pNode->Attribute("filter") + " :: " + p_sFilter, __FILE__, __LINE__);
       CreateFolderMappings(pNode, p_sDevice, p_nParentId, p_sFilter);
     }
     else if(pNode->Name().compare("shared_dirs") == 0) {
+      CSharedLog::Shared()->Log(L_EXTENDED, "create shared dir mappings :: " + p_sFilter, __FILE__, __LINE__);
       MapSharedDirsTo(pNode, p_sDevice, p_nParentId);
     }
     

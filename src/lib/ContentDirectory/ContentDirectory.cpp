@@ -710,22 +710,33 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   
   string sMimeType = pSQLResult->GetValue("MIME_TYPE");
   string sExt      = ExtractFileExt(pSQLResult->GetValue("PATH"));
+  string sOrigExt  = sExt;
+  bool bTranscode  = false;
+
   if(CFileDetails::Shared()->IsTranscodingExtension(sExt)) {
     sMimeType = CFileDetails::Shared()->GetMimeType(pSQLResult->GetValue("PATH"), true);
     sExt      = CFileDetails::Shared()->GetTargetExtension(sExt);
+    
+    bTranscode = true;
   }
   
   // protocol info
   string sTmp;
-  if(pUPnPBrowse->GetDeviceSettings()->m_bDLNAEnabled) {
-    sTmp = "http-get:*:" + sMimeType + ":DLNA.ORG_PN=MP3;DLNA.ORG_OP=01;DLNA.ORG_CI=0";
+  if(pUPnPBrowse->GetDeviceSettings()->m_bDLNAEnabled) {       
+    string sDLNA = CFileDetails::Shared()->GetDLNA(sExt);    
+    if(!sDLNA.empty()) {
+      sTmp = "http-get:*:" + sMimeType + ":DLNA.ORG_PN=" + sDLNA + ";DLNA.ORG_OP=01;DLNA.ORG_CI=0";
+    }
+    else {
+      sTmp = "http-get:*:" + sMimeType + ":*";
+    }
   }
   else {
     sTmp = "http-get:*:" + sMimeType + ":*";
-  }  
-
+  }
+                                                    
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
-  //sTmp.str("");
+  
 
   // duration
   if(pUPnPBrowse->IncludeProperty("res@duration") && !pSQLResult->IsNull("AV_DURATION")) {	
@@ -738,13 +749,27 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   }
 
   // sampleFrequency
-  if(pUPnPBrowse->IncludeProperty("res@sampleFrequency") && !pSQLResult->IsNull("A_SAMPLERATE")) {		  
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST pSQLResult->GetValue("A_SAMPLERATE").c_str());
+  if(pUPnPBrowse->IncludeProperty("res@sampleFrequency")) {
+    if(!bTranscode && !pSQLResult->IsNull("A_SAMPLERATE")) {		  
+      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST pSQLResult->GetValue("A_SAMPLERATE").c_str());
+    }
+    else if(bTranscode && CFileDetails::Shared()->GetTargetSamplerate(sOrigExt) > 0) {
+      char szSamplerate[20];
+      sprintf(szSamplerate, "%d", CFileDetails::Shared()->GetTargetSamplerate(sOrigExt));
+      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST szSamplerate);
+    }
   }
 
 	// bitrate
-  if(pUPnPBrowse->IncludeProperty("res@bitrate") && !pSQLResult->IsNull("AV_BITRATE")) {
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("AV_BITRATE").c_str());
+  if(pUPnPBrowse->IncludeProperty("res@bitrate")) {
+    if(!bTranscode && !pSQLResult->IsNull("AV_BITRATE")) {
+      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("AV_BITRATE").c_str());
+    }
+    else if(bTranscode && CFileDetails::Shared()->GetTargetBitrate(sOrigExt) > 0) {
+      char szBitrate[20];
+      sprintf(szBitrate, "%d", CFileDetails::Shared()->GetTargetBitrate(sOrigExt));
+      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST szBitrate);
+    }
   }
 
   sTmp = "http://" + m_sHTTPServerURL + "/MediaServer/AudioItems/" + p_sObjectID + "." + sExt;  

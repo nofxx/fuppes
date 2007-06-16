@@ -28,6 +28,7 @@
 
 #include "../Common/Common.h"
 #include "../SharedLog.h"
+#include "../ContentDirectory/FileDetails.h"
 
 #include <iostream>
 
@@ -78,13 +79,13 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
   CSharedLog::Shared()->Log(L_EXTENDED, "Init " + pSessionInfo->m_sInFileName, __FILE__, __LINE__);  
   m_pSessionInfo = pSessionInfo;  
   
+  std::string sExt = ToLower(ExtractFileExt(m_pSessionInfo->m_sInFileName));  
   
   // init decoder
   if(!m_pDecoder)
   {  
     // create decoder
-    nBufferLength = 32768;
-    std::string sExt = ToLower(ExtractFileExt(m_pSessionInfo->m_sInFileName));  
+    nBufferLength = 32768;    
     
     m_pDecoder = CTranscodingMgr::Shared()->CreateAudioDecoder(sExt, &nBufferLength);
     
@@ -103,7 +104,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
   // init encoder
   if(!m_pAudioEncoder) {
     
-    m_pAudioEncoder = CTranscodingMgr::Shared()->CreateAudioEncoder("mp3");
+    m_pAudioEncoder = CTranscodingMgr::Shared()->CreateAudioEncoder(CFileDetails::Shared()->GetTargetExtension(sExt));
     if(!m_pAudioEncoder->LoadLib()) {      
       delete m_pAudioEncoder;
       m_pAudioEncoder = NULL;
