@@ -276,5 +276,14 @@ int CLameWrapper::Flush()
   return m_LameEncodeFlush(m_LameGlobalFlags, m_sMp3Buffer, LAME_MAXMP3BUFFER);  
 }
 
+unsigned int CLameWrapper::GuessContentLength(unsigned int p_nNumPcmSamples)
+{
+  #warning todo
+  float bitrate = 128000.0;
+  float samplerate = 44100.0;
+
+  return (unsigned int)p_nNumPcmSamples * (bitrate/8.0)/samplerate + 4 * 1152 * (bitrate/8.0)/samplerate + 512;
+}
+
 #endif // HAVE_LAME
 #endif // DISABLE_TRANSCODING

@@ -242,9 +242,7 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
     "  OBJECTS o " <<
     "  left join OBJECT_DETAILS d on (d.ID = o.DETAIL_ID) " <<
     "where " <<
-    "  o.OBJECT_ID = " << HexToInt(p_sObjectId) << sDevice;  
-  
-  cout << sSql.str() << endl;
+    "  o.OBJECT_ID = " << HexToInt(p_sObjectId) << sDevice;
   
   pDb->Select(sSql.str());
   

@@ -240,6 +240,9 @@ std::string CHTTPMessage::GetHeaderAsString()
     if(!this->IsTranscoding()) {
       sResult << "Accept-Ranges: bytes\r\n";
     }
+    else {
+      sResult << "Accept-Ranges: none\r\n";
+    }
     
     /* Connection */
     sResult << "Connection: close\r\n";    
