@@ -50,6 +50,8 @@ class CAudioEncoderBase
     virtual int   Flush() = 0;
     virtual unsigned char* GetEncodedBuffer() = 0;
   
+    virtual unsigned int GuessContentLength(unsigned int p_nNumPcmSamples) = 0;
+  
   protected:
     CAudioDetails* m_pAudioDetails;
 };
@@ -62,6 +64,7 @@ class CAudioDecoderBase
     virtual bool OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetails) = 0;      
     virtual void CloseFile() = 0;    
     virtual long DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead) = 0;  
+    virtual unsigned int GuessPcmLength() = 0;
 };
 
 class CTranscoderBase

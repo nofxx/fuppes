@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -55,6 +55,8 @@ extern "C"
   /* int ov_clear(OggVorbis_File *vf); */
   typedef int (*OvClear_t)(OggVorbis_File*);
 
+  /* ogg_int64_t ov_pcm_total(OggVorbis_File *vf,int i); */
+  typedef ogg_int64_t (*OvPcmTotal_t)(OggVorbis_File*, int);
 }
 #endif
 
@@ -64,16 +66,21 @@ class CVorbisDecoder: public CAudioDecoderBase
     CVorbisDecoder();
     virtual ~CVorbisDecoder();
   
-    bool LoadLib();
+    bool LoadLib(); 
   
     bool OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetails);
-    void CloseFile();
+  
+    unsigned int GuessPcmLength();
   
     /**
      * @param   p_PcmOut[]
      * @return  number of decoded samples
      */
     long DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead);
+  
+    
+    void CloseFile();   
+    
   
   private:
     fuppesLibHandle  m_LibHandle;      
@@ -89,6 +96,7 @@ class CVorbisDecoder: public CAudioDecoderBase
     OvComment_t    m_OvComment;
     OvRead_t       m_OvRead;
     OvClear_t      m_OvClear;
+    OvPcmTotal_t   m_OvPcmTotal;
   
 };
 

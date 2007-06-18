@@ -150,7 +150,7 @@ std::string CHTTPMessage::GetHeaderAsString()
 	string sVersion;
 	string sType;
 	string sContentType;
-	
+	  
   /* Version */
 	switch(m_nHTTPVersion)
 	{
@@ -226,6 +226,13 @@ std::string CHTTPMessage::GetHeaderAsString()
           sResult << "Content-Length: " << m_nBinContentLength << "\r\n";
         } 
       }
+      // transcoding
+      else if(this->IsTranscoding()) {
+        if(m_pTranscodingSessionInfo->m_nGuessContentLength > 0) {
+          sResult << "Content-Length: " << m_pTranscodingSessionInfo->m_nGuessContentLength << "\r\n";
+        }
+      }
+      
     } // if(m_bIsBinary)
     /* end Content length */        
     
@@ -265,6 +272,11 @@ std::string CHTTPMessage::GetHeaderAsString()
     "UPnP/1.0, " << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << "\r\n";  
 	
 	sResult << "\r\n";
+  
+  if(this->IsTranscoding()) {
+    cout << sResult.str() << endl;
+  }
+  
 	return sResult.str();
 }
 

@@ -125,6 +125,8 @@ class CLameWrapper: public CAudioEncoderBase
     int   Flush();
     unsigned char* GetEncodedBuffer() { return m_sMp3Buffer; }
     
+    #warning todo
+    unsigned int GuessContentLength(unsigned int p_nNumPcmSamples) { return 0; }
     
   private:
     fuppesLibHandle  m_LibHandle;

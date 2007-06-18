@@ -119,6 +119,12 @@ bool CVorbisDecoder::LoadLib()
     return false;
   }
   
+  m_OvPcmTotal = (OvPcmTotal_t)FuppesGetProcAddress(m_LibHandle, "ov_pcm_total");
+  if(!m_OvPcmTotal) {
+    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'ov_pcm_total'", __FILE__, __LINE__);
+    return false;
+  }  
+  
   return true;
 }
 
@@ -142,11 +148,10 @@ bool CVorbisDecoder::OpenFile(std::string p_sFileName, CAudioDetails* pAudioDeta
 
   m_pVorbisInfo = m_OvInfo(&m_VorbisFile, -1);
      
-  pAudioDetails->nChannels = m_pVorbisInfo->channels;
+  pAudioDetails->nChannels   = m_pVorbisInfo->channels;
   pAudioDetails->nSamplerate = m_pVorbisInfo->rate;
-  
-#warning todo: ov_pcm_total();
-  
+  pAudioDetails->nPcmSize    = m_OvPcmTotal(&m_VorbisFile, -1);
+
   /*char **ptr = m_OvComment(&m_VorbisFile,-1)->user_comments;
   while(*ptr)
   {
@@ -198,6 +203,13 @@ long CVorbisDecoder::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p
     long samplesRead = bytesRead / m_pVorbisInfo->channels / sizeof(short int);
     return samplesRead;
   }  
+}
+
+unsigned int CVorbisDecoder::GuessPcmLength()
+{
+  //#warning todo: ov_pcm_total();
+  cout << __FILE__ << " guess: " << m_OvPcmTotal(&m_VorbisFile, -1) << endl;
+  return m_OvPcmTotal(&m_VorbisFile, -1);  
 }
 
 #endif // HAVE_VORBIS

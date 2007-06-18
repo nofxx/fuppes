@@ -88,6 +88,9 @@ void CWavEncoder::WriteFileHeader()
   int bits = 16;
   
   unsigned int size = 0x7fffffff;
+  if(m_pAudioDetails->nPcmSize > 0) {
+    size = m_pAudioDetails->nPcmSize;
+  }
   int channels = m_pAudioDetails->nChannels; //ov_info(vf,0)->channels;
   int samplerate = m_pAudioDetails->nSamplerate; //ov_info(vf,0)->rate;
   int bytespersec = channels*samplerate*bits/8;
@@ -120,6 +123,17 @@ void CWavEncoder::WriteFileHeader()
 
     //return 0;  
   
+}
+
+unsigned int CWavEncoder::GuessContentLength(unsigned int p_nNumPcmSamples)
+{
+  if(p_nNumPcmSamples == 0) {
+    return 0;
+  }
+  else {
+    #warning todo: (knownlength*bits/8*channels+44) ;
+    return (p_nNumPcmSamples * 4) + 44;
+  }
 }
 
 #endif // DISABLE_TRANSCODING

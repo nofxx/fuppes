@@ -115,6 +115,10 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
     //m_pLameWrapper->SetBitrate(LAME_BITRATE_320);
     m_pAudioEncoder->SetAudioDetails(&m_AudioDetails);
     m_pAudioEncoder->Init();
+    
+         
+    pSessionInfo->m_nGuessContentLength = m_pAudioEncoder->GuessContentLength(m_pDecoder->GuessPcmLength());
+    cout << "guess content: " << pSessionInfo->m_nGuessContentLength << endl;
   }  
   
  

@@ -82,6 +82,9 @@ class CMpcDecoder: public CAudioDecoderBase
     void CloseFile();
     long DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead);
   
+    #warning todo
+    unsigned int GuessPcmLength() { return 0; }
+  
   private:
     reader_data    m_ReaderData;   
     mpc_decoder    m_Decoder;

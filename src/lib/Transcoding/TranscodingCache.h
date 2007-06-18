@@ -42,6 +42,8 @@ class CTranscodeSessionInfo
     unsigned int* m_pnBinContentLength;
     char**        m_pszBinBuffer;
   
+    unsigned int  m_nGuessContentLength;
+  
     //void SetTranscodeToTmpFile(std::string p_sTmpFileName);
   
   private:

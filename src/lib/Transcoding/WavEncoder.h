@@ -47,6 +47,7 @@ class CWavEncoder: public CAudioEncoderBase
     int   Flush() { return 0; }
     unsigned char* GetEncodedBuffer() { return m_sBuffer; }
   
+    unsigned int GuessContentLength(unsigned int p_nNumPcmSamples);
   
   private:
     unsigned char*   m_sBuffer; //[1024 * 1024];
