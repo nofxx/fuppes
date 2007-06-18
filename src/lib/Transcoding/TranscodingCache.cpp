@@ -114,7 +114,8 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
     #warning todo: set encoder bitrate from config
     //m_pLameWrapper->SetBitrate(LAME_BITRATE_320);
     m_pAudioEncoder->SetAudioDetails(&m_AudioDetails);
-    m_pAudioEncoder->Init();
+    m_pAudioEncoder->SetSessionInfo(pSessionInfo);
+    //m_pAudioEncoder->Init();
     
          
     pSessionInfo->m_nGuessContentLength = m_pAudioEncoder->GuessContentLength(m_pDecoder->GuessPcmLength());
@@ -192,6 +193,8 @@ fuppesThreadCallback TranscodeThread(void *arg)
   char* szTmpBuff = NULL;
   unsigned int nTmpSize = 0;
   int   nBytesRead = 0;
+  
+  pCacheObj->m_pAudioEncoder->Init();
   
   /* Transcoding loop */
   while(((samplesRead = pCacheObj->m_pDecoder->DecodeInterleaved((char*)pCacheObj->m_pPcmOut, pCacheObj->nBufferLength, &nBytesRead)) >= 0) && !pCacheObj->m_bBreakTranscoding)

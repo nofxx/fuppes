@@ -620,7 +620,7 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
   #endif         
 }
 
-unsigned int InsertAudioFile(CContentDatabase* pDb, std::string p_sFileName)
+unsigned int InsertAudioFile(CContentDatabase* pDb, std::string p_sFileName, std::string* p_sTitle)
 {
 	struct SMusicTrack TrackInfo; 
 	if(!CFileDetails::Shared()->GetMusicTrackDetails(p_sFileName, &TrackInfo))
@@ -643,6 +643,7 @@ unsigned int InsertAudioFile(CContentDatabase* pDb, std::string p_sFileName)
 		TrackInfo.mAudioItem.nSampleRate << ")";
 		
 	//cout << sSql.str() << endl;
+  *p_sTitle = TrackInfo.mAudioItem.sTitle;
 	
   return pDb->Insert(sSql.str());
 }
@@ -698,10 +699,11 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
       
   // we insert file details first to get the details ID
   unsigned int nDetailId = 0;
+  string sTitle;
   switch(nObjectType)
   {
     case ITEM_AUDIO_ITEM_MUSIC_TRACK:     
-		  nDetailId = InsertAudioFile(pDb, p_sFileName); 
+		  nDetailId = InsertAudioFile(pDb, p_sFileName, &sTitle); 
       break;
 		case ITEM_IMAGE_ITEM_PHOTO:
 		  nDetailId = InsertImageFile(pDb, p_sFileName);
@@ -730,6 +732,13 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
   sTmpFileName = ToUTF8(sTmpFileName);
   sTmpFileName = SQLEscape(sTmpFileName);  
   
+  if(!sTitle.empty()) {
+    sTitle = SQLEscape(sTitle);
+  }
+  else {
+    sTitle = sTmpFileName;
+  }
+  
   
   unsigned int nObjId = pDb->GetObjId();
   
@@ -743,7 +752,7 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
        nObjectType << ", " <<
        "'" << SQLEscape(p_sFileName) << "', " << 
        "'" << sTmpFileName << "', " << 
-       "'" << sTmpFileName << "', " << 
+       "'" << sTitle << "', " << 
        "'" << CFileDetails::Shared()->GetMimeType(p_sFileName, false) << "');";
                
   pDb->Insert(sSql.str());  

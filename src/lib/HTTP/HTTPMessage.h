@@ -28,6 +28,7 @@
 #include "../MessageBase.h"
 #include "../UPnPActions/UPnPAction.h"
 #include "../Transcoding/TranscodingCache.h"
+#include "../ContentDirectory/FileDetails.h"
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -152,7 +153,7 @@ class CHTTPMessage: public CMessageBase
   
  
     bool             LoadContentFromFile(std::string);
-    bool             TranscodeContentFromFile(std::string p_sFileName);
+    bool             TranscodeContentFromFile(std::string p_sFileName, SMusicTrack p_sTrackDetails);
     void             BreakTranscoding();  
     bool             IsTranscoding();
   

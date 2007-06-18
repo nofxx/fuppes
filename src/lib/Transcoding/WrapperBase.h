@@ -28,13 +28,38 @@
 #include "../Common/Common.h"
 #include "../SharedLog.h"
 
-
 struct CAudioDetails
 {
   int   nChannels;
   int   nSamplerate;
   int   nBitrate;
   unsigned int nPcmSize;  
+};
+
+
+class CTranscodeSessionInfo
+{ 
+  public:
+    //CHTTPMessage* m_pHTTPMessage;
+    bool          m_bBreakTranscoding;
+    bool          m_bIsTranscoding;
+    std::string   m_sInFileName;
+    unsigned int* m_pnBinContentLength;
+    char**        m_pszBinBuffer;
+  
+    unsigned int  m_nGuessContentLength;
+  
+    std::string   m_sArtist;
+    std::string   m_sTitle;
+    std::string   m_sAlbum;
+    std::string   m_sGenre;
+    std::string   m_sOriginalTrackNumber;
+  
+    //void SetTranscodeToTmpFile(std::string p_sTmpFileName);
+  
+  private:
+    std::string   m_sOutFileName;  
+    bool          m_bTranscodeToFile;
 };
 
 class CAudioEncoderBase
@@ -44,6 +69,7 @@ class CAudioEncoderBase
 		virtual bool LoadLib() = 0;
   
     void SetAudioDetails(CAudioDetails* pAudioDetails) { m_pAudioDetails = pAudioDetails; }
+    void SetSessionInfo(CTranscodeSessionInfo* pSessionInfo) { m_pSessionInfo = pSessionInfo; }
   
     virtual void  Init() = 0;      
     virtual int   EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead) = 0;
@@ -54,6 +80,7 @@ class CAudioEncoderBase
   
   protected:
     CAudioDetails* m_pAudioDetails;
+    CTranscodeSessionInfo* m_pSessionInfo;
 };
 
 class CAudioDecoderBase

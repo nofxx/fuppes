@@ -32,24 +32,6 @@
 
 #include <string>
 
-class CTranscodeSessionInfo
-{  
-  public:
-    //CHTTPMessage* m_pHTTPMessage;
-    bool          m_bBreakTranscoding;
-    bool          m_bIsTranscoding;
-    std::string   m_sInFileName;
-    unsigned int* m_pnBinContentLength;
-    char**        m_pszBinBuffer;
-  
-    unsigned int  m_nGuessContentLength;
-  
-    //void SetTranscodeToTmpFile(std::string p_sTmpFileName);
-  
-  private:
-    std::string   m_sOutFileName;  
-    bool          m_bTranscodeToFile;
-};
 
 #ifndef DISABLE_TRANSCODING
 class CTranscodingCacheObject

@@ -144,7 +144,69 @@ bool CLameWrapper::LoadLib()
   if(!m_LameClose) {     
     CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot load symbol 'lame_close'", __FILE__, __LINE__);
     return false;
-  } 
+  }
+  
+  
+  // id3
+  m_Id3TagInit = (Id3TagInit_t)FuppesGetProcAddress(m_LibHandle, "id3tag_init");
+  if(!m_Id3TagInit) {
+    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_init'", __FILE__, __LINE__);
+    //return false;
+  }
+
+  m_Id3TagV1Only = (Id3TagV1Only_t)FuppesGetProcAddress(m_LibHandle, "id3tag_v1_only");
+  if(!m_Id3TagV1Only) {
+    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_v1_only'", __FILE__, __LINE__);
+    //return false;
+  }
+
+  m_Id3TagV2Only = (Id3TagV1Only_t)FuppesGetProcAddress(m_LibHandle, "id3tag_v2_only");
+  if(!m_Id3TagV2Only) {
+    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_v2_only'", __FILE__, __LINE__);
+    //return false;
+  }  
+  
+  m_Id3TagAddV2 = (Id3TagAddV2_t)FuppesGetProcAddress(m_LibHandle, "id3tag_add_v2");
+  if(!m_Id3TagAddV2) {
+    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_add_v2'", __FILE__, __LINE__);
+    //return false;
+  }
+  
+  m_Id3TagPadV2 = (Id3TagPadV2_t)FuppesGetProcAddress(m_LibHandle, "id3tag_pad_v2");
+  if(!m_Id3TagPadV2) {
+    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_pad_v2'", __FILE__, __LINE__);
+    //return false;
+  }
+  
+  m_Id3TagSetTitle = (Id3TagSetTitle_t)FuppesGetProcAddress(m_LibHandle, "id3tag_set_title");
+  if(!m_Id3TagSetTitle) {
+    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_set_title'", __FILE__, __LINE__);
+    //return false;
+  }
+  
+  m_Id3TagSetArtist = (Id3TagSetArtist_t)FuppesGetProcAddress(m_LibHandle, "id3tag_set_artist");
+  if(!m_Id3TagSetArtist) {
+    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_set_artist'", __FILE__, __LINE__);
+    //return false;
+  }
+  
+  m_Id3TagSetAlbum = (Id3TagSetAlbum_t)FuppesGetProcAddress(m_LibHandle, "id3tag_set_album");
+  if(!m_Id3TagSetAlbum) {
+    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_set_album'", __FILE__, __LINE__);
+    //return false;
+  }
+  
+  m_Id3TagSetTrack = (Id3TagSetAlbum_t)FuppesGetProcAddress(m_LibHandle, "id3tag_set_track");
+  if(!m_Id3TagSetTrack) {
+    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_set_track'", __FILE__, __LINE__);
+    //return false;
+  }  
+  
+  m_Id3TagSetGenre = (Id3TagSetGenre_t)FuppesGetProcAddress(m_LibHandle, "id3tag_set_genre");
+  if(!m_Id3TagSetGenre) {
+    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_set_genre'", __FILE__, __LINE__);
+    //return false;
+  }   
   
   m_LameGlobalFlags = m_LameInit();
   return true;
@@ -152,6 +214,35 @@ bool CLameWrapper::LoadLib()
 
 void CLameWrapper::Init()
 {
+
+  m_Id3TagInit(m_LameGlobalFlags);
+
+  
+
+  if(!m_pSessionInfo->m_sTitle.empty()) {
+    m_Id3TagSetTitle(m_LameGlobalFlags, m_pSessionInfo->m_sTitle.c_str());
+  }
+  
+  if(!m_pSessionInfo->m_sArtist.empty()) {
+    m_Id3TagSetArtist(m_LameGlobalFlags, m_pSessionInfo->m_sArtist.c_str());
+  }
+
+  if(!m_pSessionInfo->m_sAlbum.empty()) {
+    m_Id3TagSetAlbum(m_LameGlobalFlags, m_pSessionInfo->m_sAlbum.c_str());
+  }
+  
+  if(!m_pSessionInfo->m_sGenre.empty()) {
+    m_Id3TagSetGenre(m_LameGlobalFlags, m_pSessionInfo->m_sGenre.c_str());
+  }
+  
+  if(!m_pSessionInfo->m_sOriginalTrackNumber.empty()) {
+    m_Id3TagSetTrack(m_LameGlobalFlags, m_pSessionInfo->m_sOriginalTrackNumber.c_str());
+  }
+  
+  m_Id3TagV2Only(m_LameGlobalFlags);
+  //m_Id3TagAddV2(m_LameGlobalFlags);
+  //m_Id3TagPadV2(m_LameGlobalFlags); 
+  
   m_LameInitParams(m_LameGlobalFlags); 
 }
 

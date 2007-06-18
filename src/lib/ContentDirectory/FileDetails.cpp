@@ -93,7 +93,8 @@ struct FileType_t FileTypes[] =
 struct TranscodingSetting_t TranscodingSettings[] =
 {
   /* audio */
-  {"ogg" , "wav", "audio/x-wav", ITEM_AUDIO_ITEM_MUSIC_TRACK, 0, 44100},
+  //{"ogg" , "wav", "audio/x-wav", ITEM_AUDIO_ITEM_MUSIC_TRACK, 0, 44100},
+  {"ogg" , "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK, 128, 44100},
   {"mpc" , "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK, 128, 44100},
   {"flac", "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK, 128, 44100},
   

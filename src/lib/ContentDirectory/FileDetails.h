@@ -68,6 +68,7 @@ struct SAudioItem
     std::string sArtist;
     std::string sAlbum;
     int         nOriginalTrackNumber;
+    std::string sOriginalTrackNumber;
     /*std::string sPlaylist;
     std::string sStorageMedium;
     std::string sContributor;*/

@@ -147,8 +147,7 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
   }
   
   /* set 404 */
-  if(!bResult)
-  {
+  if(!bResult) {
     pResponse->SetMessageType(HTTP_MESSAGE_TYPE_404_NOT_FOUND);
     pResponse->SetContentType(MIME_TYPE_TEXT_HTML);    
     bResult = false;
@@ -232,11 +231,21 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
   bool              bResult     = false;  
   
   
-  string sDevice = " and DEVICE is NULL ";
+  string sDevice = " and o.DEVICE is NULL ";
   if(CVirtualContainerMgr::Shared()->IsVirtualContainer(HexToInt(p_sObjectId), pRequest->GetDeviceSettings()->m_sVirtualFolderDevice))
-    sDevice = " and DEVICE = '" + pRequest->GetDeviceSettings()->m_sVirtualFolderDevice + "' ";
+    sDevice = " and o.DEVICE = '" + pRequest->GetDeviceSettings()->m_sVirtualFolderDevice + "' ";
   
-  sSql << "select * from OBJECTS where OBJECT_ID = " << HexToInt(p_sObjectId) << sDevice;  
+  sSql << 
+    "select " <<
+    "  * " <<
+    "from " <<
+    "  OBJECTS o " <<
+    "  left join OBJECT_DETAILS d on (d.ID = o.DETAIL_ID) " <<
+    "where " <<
+    "  o.OBJECT_ID = " << HexToInt(p_sObjectId) << sDevice;  
+  
+  cout << sSql.str() << endl;
+  
   pDb->Select(sSql.str());
   
   if(!pDb->Eof())
@@ -258,7 +267,29 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
      
         sMimeType = CFileDetails::GetMimeType(sPath, true);
         if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {          
-          pResponse->TranscodeContentFromFile(sPath);
+          //
+          SMusicTrack trackDetails;
+          if(!pDb->GetResult()->IsNull("TITLE")) {
+            trackDetails.mAudioItem.sTitle = pDb->GetResult()->GetValue("TITLE");
+          }
+          
+          if(!pDb->GetResult()->IsNull("A_ARTIST")) {
+            trackDetails.sArtist = pDb->GetResult()->GetValue("A_ARTIST");
+          }
+          
+          if(!pDb->GetResult()->IsNull("A_ALBUM")) {
+            trackDetails.sAlbum  = pDb->GetResult()->GetValue("A_ALBUM");
+          }
+          
+          if(!pDb->GetResult()->IsNull("A_GENRE")) {
+            trackDetails.mAudioItem.sGenre = pDb->GetResult()->GetValue("A_GENRE");
+          }
+          
+          if(!pDb->GetResult()->IsNull("A_TRACK_NO")) {
+            trackDetails.sOriginalTrackNumber = pDb->GetResult()->GetValue("A_TRACK_NO");
+          }          
+          
+          pResponse->TranscodeContentFromFile(sPath, trackDetails);
         }
         else if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) {
           // mark the head response as chunked so

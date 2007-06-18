@@ -73,6 +73,12 @@ extern "C"
 
   typedef void (*Id3TagV1Only_t)(lame_global_flags*);
 
+  typedef void (*Id3TagV2Only_t)(lame_global_flags*);
+
+  typedef void (*Id3TagAddV2_t)(lame_global_flags*);
+  
+  typedef void(*Id3TagPadV2_t)(lame_global_flags*);
+  
   /* pad version 1 tag with spaces instead of nulls */
   //extern void id3tag_space_v1 (lame_global_flags *gfp);
 
@@ -87,6 +93,8 @@ extern "C"
   typedef void (*Id3TagSetComment_t)(lame_global_flags*, const char*);
   
   typedef void (*Id3TagSetTrack_t)(lame_global_flags*, const char*);  
+  
+  typedef int (*Id3TagSetGenre_t)(lame_global_flags*, const char*);
   
 }
 
@@ -144,6 +152,21 @@ class CLameWrapper: public CAudioEncoderBase
     LameEncodeFlush_t             m_LameEncodeFlush;
   
     LameClose_t   m_LameClose;
+  
+  
+    // id3
+    Id3TagInit_t        m_Id3TagInit;
+    Id3TagV1Only_t      m_Id3TagV1Only;
+    Id3TagV2Only_t      m_Id3TagV2Only;
+    Id3TagAddV2_t       m_Id3TagAddV2;
+    Id3TagPadV2_t       m_Id3TagPadV2;
+    Id3TagSetTitle_t    m_Id3TagSetTitle;
+    Id3TagSetArtist_t   m_Id3TagSetArtist;
+    Id3TagSetAlbum_t    m_Id3TagSetAlbum;
+    Id3TagSetYear_t     m_Id3TagSetYear;
+    Id3TagSetComment_t  m_Id3TagSetComment;
+    Id3TagSetTrack_t    m_Id3TagSetTrack;  
+    Id3TagSetGenre_t    m_Id3TagSetGenre;
 };
 
 #endif // _LAMEWRAPPER_H

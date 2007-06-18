@@ -11,14 +11,14 @@ fuppes_SOURCES = \
   console_main.cpp
 
 fuppes_LDADD = ./libfuppes.la
-fuppes_LDFLAGS = \
-  $(FUPPES_LIBS)\
-  ${PTHREAD_LIBS}\
-  ${UUID_LIBS}\
-  ${LIBXML_LIBS}\
-	${PCRE_LIBS}\
-  ${SQLITE3_LIBS}\
-  ${TAGLIB_LIBS}
+#fuppes_LDFLAGS = \
+#  $(FUPPES_LIBS)\
+#  ${PTHREAD_LIBS}\
+#  ${UUID_LIBS}\
+#  ${LIBXML_LIBS}\
+#	${PCRE_LIBS}\
+#  ${SQLITE3_LIBS}\
+#  ${TAGLIB_LIBS}
 
 
 fuppesd_SOURCES = \
