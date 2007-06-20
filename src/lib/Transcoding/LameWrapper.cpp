@@ -121,6 +121,11 @@ bool CLameWrapper::LoadLib()
     CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_set_compression_ratio'", __FILE__, __LINE__);   
   }  
   
+  m_LameSetMode = (LameSetMode_t)FuppesGetProcAddress(m_LibHandle, "lame_set_mode");
+  if(!m_LameSetMode) {
+    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_set_mode'", __FILE__, __LINE__);   
+  } 
+  
   m_LameEncodeBufferInterleaved = (LameEncodeBufferInterleaved_t)FuppesGetProcAddress(m_LibHandle, "lame_encode_buffer_interleaved");
   if(!m_LameEncodeBufferInterleaved)
   {
@@ -214,10 +219,7 @@ bool CLameWrapper::LoadLib()
 
 void CLameWrapper::Init()
 {
-
-  m_Id3TagInit(m_LameGlobalFlags);
-
-  
+  m_Id3TagInit(m_LameGlobalFlags);  
 
   if(!m_pSessionInfo->m_sTitle.empty()) {
     m_Id3TagSetTitle(m_LameGlobalFlags, m_pSessionInfo->m_sTitle.c_str());
@@ -239,11 +241,14 @@ void CLameWrapper::Init()
     m_Id3TagSetTrack(m_LameGlobalFlags, m_pSessionInfo->m_sOriginalTrackNumber.c_str());
   }
   
-  m_Id3TagV2Only(m_LameGlobalFlags);
-  //m_Id3TagAddV2(m_LameGlobalFlags);
+  //m_Id3TagV2Only(m_LameGlobalFlags);
+  m_Id3TagAddV2(m_LameGlobalFlags);
   //m_Id3TagPadV2(m_LameGlobalFlags); 
   
-  m_LameInitParams(m_LameGlobalFlags); 
+  
+  m_LameSetMode(m_LameGlobalFlags, STEREO);
+  
+  m_LameInitParams(m_LameGlobalFlags);  
 }
 
 void CLameWrapper::PrintConfig()
@@ -282,6 +287,16 @@ unsigned int CLameWrapper::GuessContentLength(unsigned int p_nNumPcmSamples)
   float bitrate = 128000.0;
   float samplerate = 44100.0;
 
+  float duration = p_nNumPcmSamples / samplerate;
+  cout << "duration: " << duration << " s" << endl;
+  
+  float size = bitrate * duration;
+  cout << "size: " << size << " bits - ";
+  size /= 8;
+  cout << size << " bytes" << endl;
+  
+  cout << "size + const: " << size + 1218 << endl;
+  
   return (unsigned int)p_nNumPcmSamples * (bitrate/8.0)/samplerate + 4 * 1152 * (bitrate/8.0)/samplerate + 512;
 }
 

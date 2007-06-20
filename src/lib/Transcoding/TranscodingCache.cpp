@@ -57,11 +57,11 @@ CTranscodingCacheObject::~CTranscodingCacheObject()
 {
   // break transcoding
   if(m_bIsTranscoding) {                    
-    m_bBreakTranscoding = true;
+    m_bBreakTranscoding = true;    
   }
   
-  if(m_TranscodeThread) {
-    fuppesThreadClose(m_TranscodeThread);                        
+  if(m_TranscodeThread) {    
+    fuppesThreadClose(m_TranscodeThread);        
   }
     
   fuppesThreadDestroyMutex(&m_Mutex);  
@@ -290,9 +290,9 @@ fuppesThreadCallback TranscodeThread(void *arg)
   if(szTmpBuff)
     free(szTmpBuff);
   
-  stringstream sLog;
+  /*stringstream sLog;
   sLog << "transcoding \"" << pCacheObj->m_pSessionInfo->m_sInFileName << "\" done. (" << pCacheObj->m_nBufferSize << " bytes)";  
-  CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__);  
+  CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__); */  
   
   fuppesThreadExit();  
 }

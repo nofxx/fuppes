@@ -52,6 +52,12 @@ extern "C"
   
   typedef void               (*LameSetCompressionRatio_t)(lame_global_flags*, float);
   
+  /* mode = 0,1,2,3 = stereo, jstereo, dual channel (not supported), mono
+  default: lame picks based on compression ration and input channels */
+  //int CDECL lame_set_mode(lame_global_flags *, MPEG_mode);
+  typedef int (*LameSetMode_t)(lame_global_flags*, MPEG_mode);
+  
+  
   /* int lame_encode_buffer(lame_global_flags* gf, 
                             short int leftpcm[],
                             short int rightpcm[],
@@ -147,6 +153,7 @@ class CLameWrapper: public CAudioEncoderBase
     LamePrintConfig_t m_LamePrintConfig;
   
     LameSetCompressionRatio_t     m_LameSetCompressionRatio;
+    LameSetMode_t                 m_LameSetMode;
   
     LameEncodeBufferInterleaved_t m_LameEncodeBufferInterleaved;
     LameEncodeFlush_t             m_LameEncodeFlush;
