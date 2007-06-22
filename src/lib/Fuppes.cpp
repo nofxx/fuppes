@@ -174,6 +174,10 @@ CFuppes::~CFuppes()
 
 void CFuppes::CleanupTimedOutDevices()
 {  
+  if(m_TimedOutDevices.size() == 0) {
+    return;
+  }
+  
   // iterate device list ...
   for(m_TimedOutDevicesIterator = m_TimedOutDevices.begin(); m_TimedOutDevicesIterator != m_TimedOutDevices.end(); m_TimedOutDevicesIterator++)
   {

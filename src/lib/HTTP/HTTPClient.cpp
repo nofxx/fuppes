@@ -59,7 +59,7 @@ CHTTPClient::~CHTTPClient()
 fuppesThreadCallback AsyncThread(void* arg)
 {
   CHTTPClient* pClient = (CHTTPClient*)arg;                  
-    
+  
   // connect socket
   if(connect(pClient->m_Socket, (struct sockaddr*)&pClient->m_RemoteEndpoint, sizeof(pClient->m_RemoteEndpoint)) == -1) {
     CSharedLog::Shared()->Log(L_ERROR, "connect()", __FILE__, __LINE__);

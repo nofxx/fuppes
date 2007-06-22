@@ -246,6 +246,8 @@ fuppesThreadCallback TranscodeThread(void *arg)
     
   }  
     
+  cout << "transcoding loop exited. now flushing" << endl;
+  
   /* transcoding loop exited */
   if(!pCacheObj->m_bBreakTranscoding)
   {
@@ -281,6 +283,8 @@ fuppesThreadCallback TranscodeThread(void *arg)
     pCacheObj->Unlock();    
   }
 
+  cout << "flushed" << endl;
+  
   pCacheObj->Lock();
   pCacheObj->m_bIsTranscoding = false;
   pCacheObj->m_pSessionInfo->m_bIsTranscoding = false;
@@ -293,6 +297,8 @@ fuppesThreadCallback TranscodeThread(void *arg)
   /*stringstream sLog;
   sLog << "transcoding \"" << pCacheObj->m_pSessionInfo->m_sInFileName << "\" done. (" << pCacheObj->m_nBufferSize << " bytes)";  
   CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__); */  
+  
+  cout << "transcoding \"" << pCacheObj->m_pSessionInfo->m_sInFileName << "\" done. (" << pCacheObj->m_nBufferSize << " bytes)" << endl;
   
   fuppesThreadExit();  
 }
