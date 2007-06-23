@@ -241,8 +241,8 @@ void CLameWrapper::Init()
     m_Id3TagSetTrack(m_LameGlobalFlags, m_pSessionInfo->m_sOriginalTrackNumber.c_str());
   }
   
-  //m_Id3TagV2Only(m_LameGlobalFlags);
-  m_Id3TagAddV2(m_LameGlobalFlags);
+  m_Id3TagV2Only(m_LameGlobalFlags);
+  //m_Id3TagAddV2(m_LameGlobalFlags);
   //m_Id3TagPadV2(m_LameGlobalFlags); 
   
   
