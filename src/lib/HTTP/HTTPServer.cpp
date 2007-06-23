@@ -611,8 +611,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   if((p_Request->GetRangeStart() > 0) || (p_Request->GetRangeEnd() > 0))
 	{
     // not eof	
-	  if(p_Request->GetRangeEnd() < p_Response->GetBinContentLength())
-		{
+	  if(!p_Response->IsTranscoding() && (p_Request->GetRangeEnd() < p_Response->GetBinContentLength())) {
 			// RANGE: BYTES=[n]-n+1
 		  // the request contains a range end value
       if(p_Request->GetRangeEnd() > p_Request->GetRangeStart())
@@ -622,7 +621,16 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
 			else
         nRequestSize = p_Response->GetBinContentLength() - p_Request->GetRangeStart() + 1;
 		}
-		
+		else if(p_Response->IsTranscoding()) {
+     
+      // partial id3v1 request
+      if((p_Request->GetRangeEnd() - p_Request->GetRangeStart()) == 127) {
+        cout << __FILE__ << " . " << __LINE__ << " 1. id3v1 request" << endl;
+        nRequestSize = 127;
+      }
+      
+    }    
+    
 		// set HTTP 206 partial content
     p_Response->SetMessageType(HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT);          
   }

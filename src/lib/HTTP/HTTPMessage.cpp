@@ -217,8 +217,8 @@ std::string CHTTPMessage::GetHeaderAsString()
             sResult << "Content-Range: bytes " << m_nRangeStart << "-" << m_nRangeEnd << "/" << m_nBinContentLength << "\r\n";
           }
           else {
-            sResult << "Content-Length: " << m_nBinContentLength - m_nRangeStart << "\r\n";            
-            sResult << "Content-Range: bytes " << m_nRangeStart << "-" << m_nBinContentLength - 1 << "/" << m_nBinContentLength << "\r\n";            
+            sResult << "Content-Length: " << m_nBinContentLength - m_nRangeStart << "\r\n";
+            sResult << "Content-Range: bytes " << m_nRangeStart << "-" << m_nBinContentLength - 1 << "/" << m_nBinContentLength << "\r\n";
           }
         }
         // complete
@@ -228,9 +228,26 @@ std::string CHTTPMessage::GetHeaderAsString()
       }
       // transcoding
       else if(this->IsTranscoding()) {
-        if(m_pTranscodingSessionInfo->m_nGuessContentLength > 0) {
-          sResult << "Content-Length: " << m_pTranscodingSessionInfo->m_nGuessContentLength << "\r\n";
+        
+        if((m_nRangeStart > 0) || (m_nRangeEnd > 0)) {
+          if(m_pTranscodingSessionInfo->m_nGuessContentLength > 0) {
+            sResult << "Content-Length: " << m_pTranscodingSessionInfo->m_nGuessContentLength << "\r\n";
+          }
         }
+        else {
+          
+          // id3 v1 request
+          if((m_nRangeEnd - m_nRangeStart) == 127) {
+            
+            cout << __FILE__ << " . " << __LINE__ << " 3. id3v1 request" << endl;
+            
+            sResult << "Content-Length: " << m_pTranscodingSessionInfo->m_nGuessContentLength - m_nRangeStart << "\r\n";
+            sResult << "Content-Range: bytes " << m_nRangeStart << "-" << m_nBinContentLength - 1 << "/" << m_pTranscodingSessionInfo->m_nGuessContentLength << "\r\n";
+          }
+          
+        }
+        
+        
       }
       
     } // if(m_bIsBinary)
@@ -327,6 +344,23 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
   /* read (transcoded) data from memory */
   else
   {    
+    
+    // id3v1 request
+    if((p_nSize == 127) && ((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 127)) {
+      cout << __FILE__ << " . " << __LINE__ << " 2. id3v1 request" << endl;
+      
+      const string sFakeMp3Tail = 
+        "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
+        "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
+        "qqqqqqqqqqqqqqqqqqo=";    
+    
+      string sBinFake = Base64Decode(sFakeMp3Tail);      
+      memcpy(p_sContentChunk, sBinFake.c_str(), p_nSize);      
+      return 127;      
+    }
+    
+    
+    
     unsigned int nRest = 0;
     unsigned int nDelayCount = 0;  
     bool bTranscode = false;

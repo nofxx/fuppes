@@ -241,8 +241,8 @@ void CLameWrapper::Init()
     m_Id3TagSetTrack(m_LameGlobalFlags, m_pSessionInfo->m_sOriginalTrackNumber.c_str());
   }
   
-  m_Id3TagV2Only(m_LameGlobalFlags);
-  //m_Id3TagAddV2(m_LameGlobalFlags);
+  //m_Id3TagV2Only(m_LameGlobalFlags);
+  m_Id3TagAddV2(m_LameGlobalFlags);
   //m_Id3TagPadV2(m_LameGlobalFlags); 
   
   
@@ -297,7 +297,7 @@ unsigned int CLameWrapper::GuessContentLength(unsigned int p_nNumPcmSamples)
   
   cout << "size + const: " << size + 1218 << endl;
   
-  return (unsigned int)p_nNumPcmSamples * (bitrate/8.0)/samplerate + 4 * 1152 * (bitrate/8.0)/samplerate + 512;
+  return 0; //(unsigned int)p_nNumPcmSamples * (bitrate/8.0)/samplerate + 4 * 1152 * (bitrate/8.0)/samplerate + 512;
 }
 
 #endif // HAVE_LAME
