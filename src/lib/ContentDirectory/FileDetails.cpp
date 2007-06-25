@@ -44,8 +44,11 @@
 #endif
 
 #ifdef HAVE_LIBAVFORMAT
-#include <avformat.h>
-#include <avcodec.h>
+extern "C"
+{ 
+  #include <avformat.h>
+  #include <avcodec.h>
+}
 #endif
 
 #include <sstream>
