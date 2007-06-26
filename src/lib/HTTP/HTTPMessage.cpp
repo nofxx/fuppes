@@ -237,7 +237,7 @@ std::string CHTTPMessage::GetHeaderAsString()
             cout << __FILE__ << " . " << __LINE__ << " 3. id3v1 request" << endl;
             
             sResult << "Content-Length: " << m_pTranscodingSessionInfo->m_nGuessContentLength - m_nRangeStart << "\r\n";
-            sResult << "Content-Range: bytes " << m_nRangeStart << "-" << m_nBinContentLength - 1 << "/" << m_pTranscodingSessionInfo->m_nGuessContentLength << "\r\n";
+            sResult << "Content-Range: bytes " << m_nRangeStart << "-" << m_pTranscodingSessionInfo->m_nGuessContentLength - 1 << "/" << m_pTranscodingSessionInfo->m_nGuessContentLength << "\r\n";
           }
           
         }
@@ -348,8 +348,10 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
   {    
     
     // id3v1 request
-    if((p_nSize == 127) && ((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 127)) {
-      cout << __FILE__ << " . " << __LINE__ << " 2. id3v1 request: " << p_nSize << endl;
+    cout << "offset: " << p_nOffset << " :: " << m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset << endl;
+    if(((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 127) ||
+       ((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 128)) {
+      cout << __FILE__ << " . " << __LINE__ << " 2. id3v1 request" << endl;
       
       const string sFakeMp3Tail = 
         "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
@@ -357,8 +359,8 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
         "qqqqqqqqqqqqqqqqqqo=";    
     
       string sBinFake = Base64Decode(sFakeMp3Tail);      
-      memcpy(p_sContentChunk, sBinFake.c_str(), p_nSize);      
-      return 127;      
+      memcpy(p_sContentChunk, sBinFake.c_str(), 128);      
+      return 128;      
     }
     
     
