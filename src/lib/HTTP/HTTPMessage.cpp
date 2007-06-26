@@ -348,21 +348,22 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
   {    
     
     // id3v1 request
-    cout << "offset: " << p_nOffset << " :: " << m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset << endl;
-    if(((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 127) ||
-       ((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 128)) {
-      cout << __FILE__ << " . " << __LINE__ << " 2. id3v1 request" << endl;
+    if(m_pTranscodingSessionInfo) {
+      cout << "offset: " << p_nOffset << " :: " << m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset << endl;
+      if(((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 127) ||
+         ((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 128)) {
+        cout << __FILE__ << " . " << __LINE__ << " 2. id3v1 request" << endl;
       
-      const string sFakeMp3Tail = 
-        "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
-        "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
-        "qqqqqqqqqqqqqqqqqqo=";    
+        const string sFakeMp3Tail = 
+          "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
+          "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
+          "qqqqqqqqqqqqqqqqqqo=";    
     
-      string sBinFake = Base64Decode(sFakeMp3Tail);      
-      memcpy(p_sContentChunk, sBinFake.c_str(), 127);      
-      return 127;      
+        string sBinFake = Base64Decode(sFakeMp3Tail);      
+        memcpy(p_sContentChunk, sBinFake.c_str(), 127);      
+        return 127;      
+      }
     }
-    
     
     
     unsigned int nRest = 0;
