@@ -49,6 +49,7 @@ CTranscodingCacheObject::CTranscodingCacheObject()
   m_bIsComplete     = false;
   m_pSessionInfo    = NULL;
   m_bBreakTranscoding = false;  
+  m_bInitialized    = false;
   
   fuppesThreadInitMutex(&m_Mutex);
 }
@@ -76,10 +77,20 @@ CTranscodingCacheObject::~CTranscodingCacheObject()
 
 bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
 {
+  if(m_bInitialized) {
+    cout << "already initialized" << endl;
+    m_pSessionInfo = pSessionInfo;
+    pSessionInfo->m_nGuessContentLength = m_pAudioEncoder->GuessContentLength(m_pDecoder->GuessPcmLength());
+    return true;
+  }
+  else {
+    cout << "initialize TranscodingCacheObject" << endl;
+  }
+  
   CSharedLog::Shared()->Log(L_EXTENDED, "Init " + pSessionInfo->m_sInFileName, __FILE__, __LINE__);  
   m_pSessionInfo = pSessionInfo;  
   
-  std::string sExt = ToLower(ExtractFileExt(m_pSessionInfo->m_sInFileName));  
+  std::string sExt = ToLower(ExtractFileExt(pSessionInfo->m_sInFileName));  
   
   // init decoder
   if(!m_pDecoder)
@@ -90,9 +101,11 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
     m_pDecoder = CTranscodingMgr::Shared()->CreateAudioDecoder(sExt, &nBufferLength);
     
     // init decoder
-    if(!m_pDecoder || !m_pDecoder->LoadLib() || !m_pDecoder->OpenFile(m_pSessionInfo->m_sInFileName, &m_AudioDetails)) {
+    if(!m_pDecoder || !m_pDecoder->LoadLib() || !m_pDecoder->OpenFile(pSessionInfo->m_sInFileName, &m_AudioDetails)) {
       delete m_pDecoder;
-      m_pDecoder = NULL;      
+      m_pDecoder = NULL;     
+      
+      cout << "error initializing audio decoder" << endl;
       return false;
     }
 
@@ -108,6 +121,8 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
     if(!m_pAudioEncoder->LoadLib()) {      
       delete m_pAudioEncoder;
       m_pAudioEncoder = NULL;
+      
+      cout << "error initializing audio encoder" << endl;      
       return false;
     }
     
@@ -122,7 +137,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
     cout << "guess content: " << pSessionInfo->m_nGuessContentLength << endl;
   }  
   
- 
+  m_bInitialized = true;
 
   return true;
 }
@@ -245,12 +260,14 @@ fuppesThreadCallback TranscodeThread(void *arg)
     }
     
   }  
-    
-  cout << "transcoding loop exited. now flushing" << endl;
   
   /* transcoding loop exited */
   if(!pCacheObj->m_bBreakTranscoding)
   {
+       
+  cout << "transcoding loop exited. now flushing" << endl;
+ 
+    
     /* append remaining frames */
     pCacheObj->Lock();
     

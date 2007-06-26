@@ -349,7 +349,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     
     // id3v1 request
     if((p_nSize == 127) && ((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 127)) {
-      cout << __FILE__ << " . " << __LINE__ << " 2. id3v1 request" << endl;
+      cout << __FILE__ << " . " << __LINE__ << " 2. id3v1 request: " << p_nSize << endl;
       
       const string sFakeMp3Tail = 
         "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
@@ -655,6 +655,7 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName, SMusicTrack
   m_pTranscodingSessionInfo->m_sInFileName         = p_sFileName;  
   m_pTranscodingSessionInfo->m_pnBinContentLength  = &m_nBinContentLength;
   m_pTranscodingSessionInfo->m_pszBinBuffer        = &m_pszBinContent;
+  m_pTranscodingSessionInfo->m_nGuessContentLength = 0;
   
   m_pTranscodingSessionInfo->m_sTitle = p_sTrackDetails.mAudioItem.sTitle;
   m_pTranscodingSessionInfo->m_sArtist = p_sTrackDetails.sArtist;
@@ -664,7 +665,9 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName, SMusicTrack
     
   
   m_pTranscodingCacheObj = CTranscodingCache::Shared()->GetCacheObject(m_pTranscodingSessionInfo->m_sInFileName);
+  cout << "init transcoding" << endl;
   m_pTranscodingCacheObj->Init(m_pTranscodingSessionInfo);
+  cout << "init done: " << m_pTranscodingSessionInfo->m_nGuessContentLength << endl;
   m_pTranscodingCacheObj->Transcode();
 
   return true;

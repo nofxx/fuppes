@@ -60,6 +60,7 @@ class CTranscodingCacheObject
     void* m_pTranscodingMgr;
   
     bool  m_bIsComplete;
+    bool  m_bInitialized;
   
     unsigned int Transcode();
     int Append(char** p_pszBinBuffer, unsigned int p_nBinBufferSize);
