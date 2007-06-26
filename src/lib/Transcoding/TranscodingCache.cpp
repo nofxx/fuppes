@@ -47,7 +47,7 @@ CTranscodingCacheObject::CTranscodingCacheObject()
   m_pAudioEncoder   = NULL;
   m_pDecoder        = NULL;  
   m_bIsComplete     = false;
-  m_pSessionInfo    = NULL;
+  //m_pSessionInfo    = NULL;
   m_bBreakTranscoding = false;  
   m_bInitialized    = false;
   
@@ -79,7 +79,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
 {
   if(m_bInitialized) {
     cout << "already initialized" << endl;
-    m_pSessionInfo = pSessionInfo;
+    //m_pSessionInfo = pSessionInfo;
     pSessionInfo->m_nGuessContentLength = m_pAudioEncoder->GuessContentLength(m_pDecoder->GuessPcmLength());
     return true;
   }
@@ -88,7 +88,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
   }
   
   CSharedLog::Shared()->Log(L_EXTENDED, "Init " + pSessionInfo->m_sInFileName, __FILE__, __LINE__);  
-  m_pSessionInfo = pSessionInfo;  
+  //mm_pSessionInfo = pSessionInfo;  
   
   std::string sExt = ToLower(ExtractFileExt(pSessionInfo->m_sInFileName));  
   
@@ -200,7 +200,7 @@ int CTranscodingCacheObject::Append(char** p_pszBinBuffer, unsigned int p_nBinBu
 fuppesThreadCallback TranscodeThread(void *arg)
 {  
   CTranscodingCacheObject* pCacheObj = (CTranscodingCacheObject*)arg;     
-  CSharedLog::Shared()->Log(L_EXTENDED, "TranscodeThread :: " + pCacheObj->m_pSessionInfo->m_sInFileName, __FILE__, __LINE__);   
+  //CSharedLog::Shared()->Log(L_EXTENDED, "TranscodeThread :: " + pCacheObj->m_pSessionInfo->m_sInFileName, __FILE__, __LINE__);   
   
   long  samplesRead  = 0;    
   int   nLameRet     = 0;  
@@ -304,7 +304,7 @@ fuppesThreadCallback TranscodeThread(void *arg)
   
   pCacheObj->Lock();
   pCacheObj->m_bIsTranscoding = false;
-  pCacheObj->m_pSessionInfo->m_bIsTranscoding = false;
+  //pCacheObj->m_pSessionInfo->m_bIsTranscoding = false;
   pCacheObj->Unlock();
   
   /* delete temporary buffer */
@@ -315,7 +315,7 @@ fuppesThreadCallback TranscodeThread(void *arg)
   sLog << "transcoding \"" << pCacheObj->m_pSessionInfo->m_sInFileName << "\" done. (" << pCacheObj->m_nBufferSize << " bytes)";  
   CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__); */  
   
-  cout << "transcoding \"" << pCacheObj->m_pSessionInfo->m_sInFileName << "\" done. (" << pCacheObj->m_nBufferSize << " bytes)" << endl;
+  cout << "transcoding done. (" << pCacheObj->m_nBufferSize << " bytes)" << endl;
   
   fuppesThreadExit();  
 }

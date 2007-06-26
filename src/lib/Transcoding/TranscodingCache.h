@@ -73,7 +73,7 @@ class CTranscodingCacheObject
     CAudioDecoderBase* m_pDecoder;    
     CAudioDetails      m_AudioDetails;
     
-    CTranscodeSessionInfo* m_pSessionInfo;          
+    //CTranscodeSessionInfo* m_pSessionInfo;          
   
     unsigned int nBufferLength;  
     short int* m_pPcmOut;

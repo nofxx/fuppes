@@ -359,8 +359,8 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
         "qqqqqqqqqqqqqqqqqqo=";    
     
       string sBinFake = Base64Decode(sFakeMp3Tail);      
-      memcpy(p_sContentChunk, sBinFake.c_str(), 128);      
-      return 128;      
+      memcpy(p_sContentChunk, sBinFake.c_str(), 127);      
+      return 127;      
     }
     
     

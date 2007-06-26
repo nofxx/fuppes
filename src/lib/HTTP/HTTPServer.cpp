@@ -644,10 +644,14 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   }
 
     
+  if(!p_Response->IsTranscoding()) {
   // send header if it is a HEAD response 
   // or the start range is greater than the content and return
-  if((nErr != -1) && ((p_Request->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) ||
-     ((p_Request->GetRangeStart() > 0) && (p_Request->GetRangeStart() >= p_Response->GetBinContentLength()))))
+  if((nErr != -1) && 
+     ((p_Request->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) ||
+      ((p_Request->GetRangeStart() > 0) && 
+       (p_Request->GetRangeStart() >= p_Response->GetBinContentLength())
+      ))) 
   {
 	  // log
 		CSharedLog::Shared()->Log(L_DEBUG, p_Response->GetHeaderAsString(), __FILE__, __LINE__);    
@@ -656,7 +660,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
            
     return (nErr > 0);
   }   
-        
+  }      
     
   int          nCnt          = 0;
   int          nSend         = 0;    
