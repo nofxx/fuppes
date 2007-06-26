@@ -230,11 +230,6 @@ std::string CHTTPMessage::GetHeaderAsString()
       else if(this->IsTranscoding()) {
         
         if((m_nRangeStart > 0) || (m_nRangeEnd > 0)) {
-          if(m_pTranscodingSessionInfo->m_nGuessContentLength > 0) {
-            sResult << "Content-Length: " << m_pTranscodingSessionInfo->m_nGuessContentLength << "\r\n";
-          }
-        }
-        else {
           
           // id3 v1 request
           if((m_nRangeEnd - m_nRangeStart) == 127) {
@@ -244,6 +239,13 @@ std::string CHTTPMessage::GetHeaderAsString()
             sResult << "Content-Length: " << m_pTranscodingSessionInfo->m_nGuessContentLength - m_nRangeStart << "\r\n";
             sResult << "Content-Range: bytes " << m_nRangeStart << "-" << m_nBinContentLength - 1 << "/" << m_pTranscodingSessionInfo->m_nGuessContentLength << "\r\n";
           }
+          
+        }
+        else {
+                    
+          if(m_pTranscodingSessionInfo->m_nGuessContentLength > 0) {
+            sResult << "Content-Length: " << m_pTranscodingSessionInfo->m_nGuessContentLength << "\r\n";
+          }         
           
         }
         
