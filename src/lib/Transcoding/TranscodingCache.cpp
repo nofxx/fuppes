@@ -134,7 +134,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
     
          
     pSessionInfo->m_nGuessContentLength = m_pAudioEncoder->GuessContentLength(m_pDecoder->GuessPcmLength());
-    cout << "guess content: " << pSessionInfo->m_nGuessContentLength << endl;
+    //cout << "guess content: " << pSessionInfo->m_nGuessContentLength << endl;
   }  
   
   m_bInitialized = true;
@@ -265,7 +265,7 @@ fuppesThreadCallback TranscodeThread(void *arg)
   if(!pCacheObj->m_bBreakTranscoding)
   {
        
-  cout << "transcoding loop exited. now flushing" << endl;
+  //cout << "transcoding loop exited. now flushing" << endl;
  
     
     /* append remaining frames */
@@ -300,7 +300,7 @@ fuppesThreadCallback TranscodeThread(void *arg)
     pCacheObj->Unlock();    
   }
 
-  cout << "flushed" << endl;
+  //cout << "flushed" << endl;
   
   pCacheObj->Lock();
   pCacheObj->m_bIsTranscoding = false;
@@ -315,7 +315,7 @@ fuppesThreadCallback TranscodeThread(void *arg)
   sLog << "transcoding \"" << pCacheObj->m_pSessionInfo->m_sInFileName << "\" done. (" << pCacheObj->m_nBufferSize << " bytes)";  
   CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__); */  
   
-  cout << "transcoding done. (" << pCacheObj->m_nBufferSize << " bytes)" << endl;
+  //cout << "transcoding done. (" << pCacheObj->m_nBufferSize << " bytes)" << endl;
   
   fuppesThreadExit();  
 }

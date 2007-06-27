@@ -283,11 +283,11 @@ int CLameWrapper::Flush()
 
 unsigned int CLameWrapper::GuessContentLength(unsigned int p_nNumPcmSamples)
 {
-  #warning todo
+  //#warning todo
   float bitrate = 128000.0;
   float samplerate = 44100.0;
 
-  float duration = p_nNumPcmSamples / samplerate;
+ /* float duration = p_nNumPcmSamples / samplerate;
   cout << "duration: " << duration << " s" << endl;
   
   float size = bitrate * duration;
@@ -295,7 +295,9 @@ unsigned int CLameWrapper::GuessContentLength(unsigned int p_nNumPcmSamples)
   size /= 8;
   cout << size << " bytes" << endl;
   
-  cout << "size + const: " << size + 1218 << endl;
+  cout << "size + const: " << size + 1218 << endl;*/
+  
+  cout << "lame: " << p_nNumPcmSamples << " :: " << (unsigned int)p_nNumPcmSamples * (bitrate/8.0)/samplerate + 4 * 1152 * (bitrate/8.0)/samplerate + 512 << endl;
   
   return (unsigned int)p_nNumPcmSamples * (bitrate/8.0)/samplerate + 4 * 1152 * (bitrate/8.0)/samplerate + 512;
 }

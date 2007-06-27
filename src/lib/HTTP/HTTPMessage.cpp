@@ -295,10 +295,6 @@ std::string CHTTPMessage::GetHeaderAsString()
 	
 	sResult << "\r\n";
   
-  if(this->IsTranscoding()) {
-    cout << sResult.str() << endl;
-  }
-  
 	return sResult.str();
 }
 
@@ -349,10 +345,9 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     
     // id3v1 request
     if(m_pTranscodingSessionInfo) {
-      cout << "offset: " << p_nOffset << " :: " << m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset << endl;
+
       if(((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 127) ||
          ((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 128)) {
-        cout << __FILE__ << " . " << __LINE__ << " 2. id3v1 request" << endl;
       
         const string sFakeMp3Tail = 
           "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    

@@ -149,8 +149,7 @@ class CFLACDecoder: public CAudioDecoderBase
     void CloseFile();
     long DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead);
 
-    #warning todo 
-    unsigned int GuessPcmLength() { return 0; }
+    unsigned int GuessPcmLength();
   
     char* m_pPcmOut;
     long  m_nBytesReturned;

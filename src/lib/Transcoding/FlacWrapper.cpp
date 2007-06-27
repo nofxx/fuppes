@@ -351,7 +351,7 @@ bool CFLACDecoder::OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetail
   if(!m_FLAC_StreamDecoderProcessUntilEndOfMetadata(m_pFLAC_StreamDecoder)) {
     cout << "[ERROR] CFLACDecoder::OpenFile() - FLAC_StreamDecoderProcessUntilEndOfMetadata" << endl;
     return false; 
-  }    
+  }  
   #endif // #ifndef HAVE_FLAC_FILEDECODER
   
   m_bEOF = false;
@@ -403,5 +403,11 @@ long CFLACDecoder::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_n
     return -1;
 }
 
+unsigned int CFLACDecoder::GuessPcmLength()
+{
+  cout << "FLAC :: guess pcm length" << m_pFLACData->total_samples << endl;
+  return m_pFLACData->total_samples;
+}
+  
 #endif // HAVE_FLAC
 #endif // DISABLE_TRANSCODING
