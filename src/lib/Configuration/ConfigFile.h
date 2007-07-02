@@ -27,8 +27,6 @@
 #include "../Common/XMLParser.h"
 #include <vector>
 
-const std::string NEEDED_CONFIGFILE_VERSION = "0.7.2";
-
 typedef enum CONFIG_FILE_ERROR {
   CF_OK,
   CF_FILE_NOT_FOUND,

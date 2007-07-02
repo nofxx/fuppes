@@ -232,13 +232,19 @@ std::string CHTTPMessage::GetHeaderAsString()
         if((m_nRangeStart > 0) || (m_nRangeEnd > 0)) {
           
           // id3 v1 request
-          if((m_nRangeEnd - m_nRangeStart) == 127) {
-            
-            cout << __FILE__ << " . " << __LINE__ << " 3. id3v1 request" << endl;
-            
+          if((m_nRangeEnd - m_nRangeStart) == 127) {            
             sResult << "Content-Length: " << m_pTranscodingSessionInfo->m_nGuessContentLength - m_nRangeStart << "\r\n";
             sResult << "Content-Range: bytes " << m_nRangeStart << "-" << m_pTranscodingSessionInfo->m_nGuessContentLength - 1 << "/" << m_pTranscodingSessionInfo->m_nGuessContentLength << "\r\n";
           }
+          else if(m_nRangeEnd < m_pTranscodingSessionInfo->m_nGuessContentLength) {
+            sResult << "Content-Length: " << m_nRangeEnd - m_nRangeStart + 1 << "\r\n";
+            sResult << "Content-Range: bytes " << m_nRangeStart << "-" << m_nRangeEnd << "/" << m_pTranscodingSessionInfo->m_nGuessContentLength << "\r\n";
+          }
+          else {
+            sResult << "Content-Length: " << m_pTranscodingSessionInfo->m_nGuessContentLength - m_nRangeStart << "\r\n";
+            sResult << "Content-Range: bytes " << m_nRangeStart << "-" << m_pTranscodingSessionInfo->m_nGuessContentLength - 1 << "/" << m_pTranscodingSessionInfo->m_nGuessContentLength << "\r\n";
+          }  
+          
           
         }
         else {
@@ -306,6 +312,16 @@ std::string CHTTPMessage::GetMessageAsString()
   return sResult.str();
 }
 
+unsigned int CHTTPMessage::GetBinContentLength()
+{
+  if(m_pTranscodingSessionInfo) {    
+    return m_pTranscodingSessionInfo->m_nGuessContentLength;      
+  }
+  else {
+    return m_nBinContentLength;
+  }
+}
+
 unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned int p_nSize, unsigned int p_nOffset)
 {
   /* read from file */
@@ -368,9 +384,24 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     if(m_pTranscodingSessionInfo)
       bTranscode = true;
     
+
+    
     #ifndef DISABLE_TRANSCODING
-    if(bTranscode)
+    if(bTranscode) {
+      
+      if(p_nOffset > 0 && p_nOffset != m_nBinContentPosition) {
+        
+        // offset groesser als verfuegbare daten
+        if(p_nOffset > m_pTranscodingCacheObj->m_nBufferSize && m_pTranscodingCacheObj->m_bIsComplete)  {          
+          return 0;
+        }
+        else {
+          m_nBinContentPosition = p_nOffset;
+        }        
+      }
+      
       nRest = m_pTranscodingCacheObj->m_nBufferSize - m_nBinContentPosition; 
+    }
     else
     #endif
       nRest = m_nBinContentLength - m_nBinContentPosition;    

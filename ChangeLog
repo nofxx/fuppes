@@ -1,4 +1,10 @@
-Version 0.7.2  
+Version 0.7.2a-200707??
+  * PS3 transcoding
+  * include metadata in lame encoded files (id3v2 tag)
+  * initial WAV-encoder
+  * initial PCM-encoder
+
+Version 0.7.2a-20070529
   * initial support for virtual containers
   * initial UPnP Search support
   * initial support for device specific settings
@@ -6,6 +12,7 @@ Version 0.7.2
   * initial ffmpeg support (read video properties)
   * initial XBox 360 support
     (Big thanks to Justin Maggard <jmaggard at users.sourceforge.net>)
+  * initial PS3 support
   * initial iTunes.xml support
   * win32 gui (more or less ;))
   

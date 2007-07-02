@@ -119,7 +119,7 @@ class CHTTPMessage: public CMessageBase
     HTTP_MESSAGE_TYPE GetMessageType()      { return m_nHTTPMessageType;  }
     HTTP_VERSION      GetVersion()          { return m_nHTTPVersion;      }
     //std::string       GetContent()          { return m_sContent;          }
-    unsigned int      GetBinContentLength() { return m_nBinContentLength; }
+    unsigned int      GetBinContentLength();
     char*             GetBinContent()       { return m_pszBinContent;     }
 	
     bool              IsBinary()            { return m_bIsBinary;         }  

@@ -30,6 +30,8 @@
 
 using namespace std;
 
+const std::string NEEDED_CONFIGFILE_VERSION = "0.7.2";
+
 CConfigFile::CConfigFile()
 {
   m_pDoc = new CXMLDocument();

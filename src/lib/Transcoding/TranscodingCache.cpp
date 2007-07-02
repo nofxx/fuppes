@@ -80,7 +80,12 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
   if(m_bInitialized) {
     cout << "already initialized" << endl;
     //m_pSessionInfo = pSessionInfo;
-    pSessionInfo->m_nGuessContentLength = m_pAudioEncoder->GuessContentLength(m_pDecoder->GuessPcmLength());
+    if(!m_bIsComplete) {
+      pSessionInfo->m_nGuessContentLength = m_pAudioEncoder->GuessContentLength(m_pDecoder->GuessPcmLength());
+    }
+    else {
+      pSessionInfo->m_nGuessContentLength = m_nBufferSize;
+    }
     return true;
   }
   else {
@@ -295,7 +300,7 @@ fuppesThreadCallback TranscodeThread(void *arg)
     
     memcpy(&pCacheObj->m_szBuffer[pCacheObj->m_nBufferSize], pCacheObj->m_pAudioEncoder->GetEncodedBuffer(), nTmpSize);
     pCacheObj->m_nBufferSize += nTmpSize;
-    
+
     pCacheObj->m_bIsComplete = true;          
     pCacheObj->Unlock();    
   }

@@ -629,6 +629,13 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
         nRequestSize = 127;
       }
       
+      else if(p_Request->GetRangeEnd() > p_Request->GetRangeStart())
+        nRequestSize = p_Request->GetRangeEnd() - p_Request->GetRangeStart() + 1;
+      // RANGE: BYTES=n-
+			// the request does NOT conatin a range and value
+			else
+        nRequestSize = p_Response->GetBinContentLength() - p_Request->GetRangeStart() + 1;
+      
     }    
     
 		// set HTTP 206 partial content
@@ -644,7 +651,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   }
 
     
-  if(!p_Response->IsTranscoding()) {
+    
   // send header if it is a HEAD response 
   // or the start range is greater than the content and return
   if((nErr != -1) && 
@@ -660,7 +667,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
            
     return (nErr > 0);
   }   
-  }      
+       
     
   int          nCnt          = 0;
   int          nSend         = 0;    
