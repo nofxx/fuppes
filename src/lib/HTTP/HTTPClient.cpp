@@ -48,9 +48,14 @@ CHTTPClient::CHTTPClient(IHTTPClient* pAsyncReceiveHandler)
 CHTTPClient::~CHTTPClient()
 {
   if(m_AsyncThread) {
-    if(!m_bAsyncDone)
+    if(!m_bAsyncDone) {
+      cout << "HTTPCLIENT :: CANCEL THREAD" << endl;
       fuppesThreadCancel(m_AsyncThread);
+      cout << "HTTPCLIENT :: CANCEL THREAD DONE" << endl;
+    }
+    cout << "HTTPCLIENT :: CLOSE THREAD" << endl;
     fuppesThreadClose(m_AsyncThread);
+    cout << "HTTPCLIENT :: CLOSE THREAD DONE" << endl;
   }
 
   upnpSocketClose(m_Socket);
@@ -59,34 +64,45 @@ CHTTPClient::~CHTTPClient()
 fuppesThreadCallback AsyncThread(void* arg)
 {
   CHTTPClient* pClient = (CHTTPClient*)arg;                  
+  char buffer[4096];  
+  int nBytesReceived = 0;
+  string sReceived;
   
   // connect socket
+  cout << "HTTPCLIENT :: connect()" << endl;
   if(connect(pClient->m_Socket, (struct sockaddr*)&pClient->m_RemoteEndpoint, sizeof(pClient->m_RemoteEndpoint)) == -1) {
     CSharedLog::Shared()->Log(L_ERROR, "connect()", __FILE__, __LINE__);
+  
+    cout << "HTTPCLIENT :: connect() FAILED" << endl;
     
     pClient->m_bAsyncDone = true;
     fuppesThreadExit();
   }
+  cout << "HTTPCLIENT :: connect() DONE" << endl;
   
   // send message
+  cout << "HTTPCLIENT :: send()" << endl;
 	if(fuppesSocketSend(pClient->m_Socket, pClient->m_sMessage.c_str(), (int)strlen(pClient->m_sMessage.c_str())) <= 0) {
     CSharedLog::Shared()->Log(L_ERROR, "send()", __FILE__, __LINE__);    
+    
+    cout << "HTTPCLIENT :: send() FAILED" << endl;
     
     upnpSocketClose(pClient->m_Socket);
     pClient->m_bAsyncDone = true;
     fuppesThreadExit();
   }
+  cout << "HTTPCLIENT :: send() DONE" << endl;
   
   // receive answer
-  char buffer[4096];  
-  int nBytesReceived = 0;
-  string sReceived = "";
-
+  cout << "HTTPCLIENT :: recv()" << endl;
+  
   while((nBytesReceived = recv(pClient->m_Socket, buffer, sizeof(buffer), 0)) > 0) { 
     buffer[nBytesReceived] = '\0';
     sReceived += buffer;
   }
 		
+  cout << "HTTPCLIENT :: recv() DONE :: "  << sReceived.length() << endl;
+  
 	pClient->m_sAsyncResult = sReceived;
 	CHTTPMessage Message;
 	if(!Message.SetMessage(sReceived)) {
@@ -102,6 +118,7 @@ fuppesThreadCallback AsyncThread(void* arg)
 	}
 					
   // clean up and exit
+  cout << "HTTPCLIENT :: EXIT THREAD" << endl;
   upnpSocketClose(pClient->m_Socket);  
   pClient->m_bAsyncDone = true;
   fuppesThreadExit();
