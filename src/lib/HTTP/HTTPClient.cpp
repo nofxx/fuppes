@@ -80,14 +80,14 @@ fuppesThreadCallback AsyncThread(void* arg)
   // receive answer
   char buffer[4096];  
   int nBytesReceived = 0;
-  stringstream sReceived;
+  string sReceived;
 
   while((nBytesReceived = recv(pClient->m_Socket, buffer, sizeof(buffer), 0)) > 0) { 
     buffer[nBytesReceived] = '\0';
-    sReceived << buffer;
+    sReceived += buffer;
   }
 		
-	pClient->m_sAsyncResult = sReceived.str();
+	pClient->m_sAsyncResult = sReceived;
 	CHTTPMessage Message;
 	if(!Message.SetMessage(sReceived.str())) {
 	  CSharedLog::Shared()->Log(L_EXTENDED_ERR, "error parsing response", __FILE__, __LINE__);
