@@ -66,7 +66,7 @@ fuppesThreadCallback AsyncThread(void* arg)
   CHTTPClient* pClient = (CHTTPClient*)arg;                  
   char buffer[4096];  
   int nBytesReceived = 0;
-  string sReceived;
+  //string sReceived;
   
   // connect socket
   cout << "HTTPCLIENT :: connect()" << endl;
@@ -81,7 +81,7 @@ fuppesThreadCallback AsyncThread(void* arg)
   cout << "HTTPCLIENT :: connect() DONE" << endl;
   
   // send message
-  cout << "HTTPCLIENT :: send()" << endl;
+  cout << "HTTPCLIENT :: send() " << endl << pClient->m_sMessage << endl;
 	if(fuppesSocketSend(pClient->m_Socket, pClient->m_sMessage.c_str(), (int)strlen(pClient->m_sMessage.c_str())) <= 0) {
     CSharedLog::Shared()->Log(L_ERROR, "send()", __FILE__, __LINE__);    
     
@@ -96,16 +96,17 @@ fuppesThreadCallback AsyncThread(void* arg)
   // receive answer
   cout << "HTTPCLIENT :: recv()" << endl;
   
-  while((nBytesReceived = recv(pClient->m_Socket, buffer, sizeof(buffer), 0)) > 0) { 
+  //while((nBytesReceived = recv(pClient->m_Socket, buffer, sizeof(buffer), 0)) > 0) { 
+  if((nBytesReceived = recv(pClient->m_Socket, buffer, sizeof(buffer), 0)) > 0) { 
     buffer[nBytesReceived] = '\0';
-    sReceived += buffer;
+    //sReceived += buffer;
   }
 		
-  cout << "HTTPCLIENT :: recv() DONE :: "  << sReceived.length() << endl;
+  cout << "HTTPCLIENT :: recv() DONE :: "  << nBytesReceived << endl;
   
-	pClient->m_sAsyncResult = sReceived;
+	pClient->m_sAsyncResult = buffer; //sReceived;
 	CHTTPMessage Message;
-	if(!Message.SetMessage(sReceived)) {
+	if(!Message.SetMessage(buffer)) {
 	  CSharedLog::Shared()->Log(L_EXTENDED_ERR, "error parsing response", __FILE__, __LINE__);
 		
     /*upnpSocketClose(pClient->m_Socket);  
