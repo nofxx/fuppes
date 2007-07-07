@@ -315,8 +315,11 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
     CSharedLog::Shared()->Log(L_EXTENDED, 
         "received \"Notify-Alive\" from unknown device id: " + pMessage->GetUUID(), __FILE__, __LINE__);
         
-    if((pMessage->GetLocation().compare("")) == 0)
+    if((pMessage->GetLocation().compare("") == 0) ||
+       (pMessage->GetUUID().compare("") == 0)) {
+      fuppesThreadUnlockMutex(&m_RemoteDevicesMutex);
       return;
+    }
       
     CUPnPDevice* pDevice = new CUPnPDevice(this, pMessage->GetUUID());
 		m_RemoteDevices[pMessage->GetUUID()] = pDevice;
