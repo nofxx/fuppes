@@ -23,6 +23,7 @@
 
 #ifndef DISABLE_TRANSCODING
 #include "VorbisWrapper.h"
+
 #ifdef HAVE_VORBIS
 
 #include <sstream>

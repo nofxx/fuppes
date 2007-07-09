@@ -33,7 +33,12 @@
 
 #include "../Common/Common.h"
 #include <string>
+
+#ifndef HAVE_TREMOR
 #include <vorbis/vorbisfile.h>
+#elif HAVE_TREMOR
+#include <tremor/ivorbisfile.h>
+#endif
 
 #include "WrapperBase.h"
 

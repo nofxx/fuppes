@@ -3,6 +3,9 @@ Version 0.7.2a-200707??
   * include metadata in lame encoded files (id3v2 tag)
   * initial WAV-encoder
   * initial PCM-encoder
+  * fixed deadlock on malformed SSDP-messages
+    (Thanks to Justin Maggard)
+  * "tremor" (integer only vorbis decoder) support
 
 Version 0.7.2a-20070529
   * initial support for virtual containers

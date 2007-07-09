@@ -248,12 +248,15 @@ transcoding=yes
 use_lame=yes
 use_twolame=yes
 
+use_tremor=no
+
 have_encoder=no
 have_lame=no
 have_twolame=no
 
 have_decoder=no
 have_vorbis=no
+have_tremor=no
 have_mpc=no
 have_flac=no
 
@@ -316,13 +319,31 @@ if test "x$transcoding" = "xyes"; then
   have_decoder=no
   if test "x$have_encoder" = "xyes"; then
 
-    # vorbis
-	  AH_TEMPLATE([HAVE_VORBIS], [])
-    PKG_CHECK_MODULES(VORBISFILE, vorbisfile >= 1.0, have_vorbis=yes, have_vorbis=no)    
-    if test "x$have_vorbis" = "xyes"; then      
-      have_decoder=yes    
-			AC_DEFINE([HAVE_VORBIS], [1], [])
+    
+    
+    # tremor
+    TREMOR_H_DIR=""
+    AH_TEMPLATE([HAVE_TREMOR], [])
+    AH_TEMPLATE([HAVE_VORBIS], [])
+    if test "x$use_tremor" = "xyes"; then
+      AC_CHECK_HEADERS(${TREMOR_H_DIR}tremor/ivorbisfile.h, have_tremor=yes, have_tremor=no)
+      if test "x$have_tremor" = "xyes"; then  
+        FUPPES_LIBS="$FUPPES_LIBS "
+        AC_DEFINE([HAVE_VORBIS], [1], [])
+        AC_DEFINE([HAVE_TREMOR], [1], [])
+      fi
     fi
+
+    # vorbis
+	  #AH_TEMPLATE([HAVE_VORBIS], [])
+    if test "x$have_tremor" = "xno"; then
+      PKG_CHECK_MODULES(VORBISFILE, vorbisfile >= 1.0, have_vorbis=yes, have_vorbis=no)    
+      if test "x$have_vorbis" = "xyes"; then      
+        have_decoder=yes    
+        AC_DEFINE([HAVE_VORBIS], [1], [])
+      fi
+    fi
+
     
     # musepack
 	  AH_TEMPLATE([HAVE_MUSEPACK], []) 
@@ -537,7 +558,13 @@ if test "x$transcoding" = "xyes"; then
     else
       echo "      vorbis : no"      
     fi
-      
+
+    if test "x$have_tremor" = "xyes"; then
+      echo "      tremor : yes"
+    else
+      echo "      tremor : no"      
+    fi      
+
     if test "x$have_mpc" = "xyes"; then
       echo "      mpc    : yes"
     else
