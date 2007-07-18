@@ -250,6 +250,8 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 					  sVal = "(31)";
           else if(sVal.compare("object.container.genre.musicGenre") == 0)
             sVal = "(41)";
+          else if (sVal.compare("object.container.playlistContainer") == 0)
+            sVal = "(20)";
 					else
 					  bBuildOK = false;
 				} 
