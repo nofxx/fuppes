@@ -692,6 +692,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     bChunkLoop    = false;
   }
 
+  
+  
   // send loop
   while((nErr != -1) && 
         ((nRet = p_Response->GetBinContentChunk(szChunk, nReqChunkSize, nOffset)) > 0)
@@ -701,15 +703,30 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     if(nCnt == 0) {      
       // send
       nErr = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()));   
+      CSharedLog::Shared()->Log(L_DEBUG, p_Response->GetHeaderAsString(), __FILE__, __LINE__);      
     }
 
+    
     if(nErr > 0) {
       sLog << "partial binary (" << nOffset << " - " << nOffset + nRet << ")";
       CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__);
       sLog.str("");          
       
+      
+      if(p_Response->GetTransferEncoding() == HTTP_TRANSFER_ENCODING_CHUNKED) {
+        char szSize[10];
+        sprintf(szSize, "%X\r\n", nRet);
+        fuppesSocketSend(p_Session->GetConnection(), szSize, strlen(szSize));
+      }     
+      
       // send chunk
       nErr = fuppesSocketSend(p_Session->GetConnection(), szChunk, nRet);    
+      
+      if(p_Response->GetTransferEncoding() == HTTP_TRANSFER_ENCODING_CHUNKED) {
+        char* szCRLF = "\r\n";
+        fuppesSocketSend(p_Session->GetConnection(), szCRLF, strlen(szCRLF));
+      }
+      
     }        
    
     nSend += nRet; 

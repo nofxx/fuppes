@@ -31,6 +31,7 @@
 #include "../ContentDirectory/FileDetails.h"
 
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -45,7 +46,8 @@ CTranscodingCacheObject::CTranscodingCacheObject()
   m_bIsTranscoding  = false;  
   m_TranscodeThread = (fuppesThread)NULL; 
   m_pAudioEncoder   = NULL;
-  m_pDecoder        = NULL;  
+  m_pDecoder        = NULL; 
+  m_pTranscoder     = NULL;
   m_bIsComplete     = false;
   //m_pSessionInfo    = NULL;
   m_bBreakTranscoding = false;  
@@ -73,12 +75,28 @@ CTranscodingCacheObject::~CTranscodingCacheObject()
     
   delete m_pAudioEncoder;
   delete m_pDecoder;
+  
+  delete m_pTranscoder;
 }
 
 bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
 {
+  std::string sExt = ToLower(ExtractFileExt(pSessionInfo->m_sInFileName));
+  
+  if((sExt.compare("flv") == 0) || (sExt.compare("wmv") == 0)) {  
+    
+    if(m_bInitialized) {
+      return true;
+    }     
+    
+    m_pTranscoder = CTranscodingMgr::Shared()->CreateTranscoder(sExt);
+    m_bInitialized = true;
+    return true;
+  }
+  
+  
+  
   if(m_bInitialized) {
-    cout << "already initialized" << endl;
     //m_pSessionInfo = pSessionInfo;
     if(!m_bIsComplete) {
       pSessionInfo->m_nGuessContentLength = m_pAudioEncoder->GuessContentLength(m_pDecoder->GuessPcmLength());
@@ -88,14 +106,11 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
     }
     return true;
   }
-  else {
-    cout << "initialize TranscodingCacheObject" << endl;
-  }
+  
   
   CSharedLog::Shared()->Log(L_EXTENDED, "Init " + pSessionInfo->m_sInFileName, __FILE__, __LINE__);  
   //mm_pSessionInfo = pSessionInfo;  
-  
-  std::string sExt = ToLower(ExtractFileExt(pSessionInfo->m_sInFileName));  
+    
   
   // init decoder
   if(!m_pDecoder)
@@ -162,32 +177,66 @@ void CTranscodingCacheObject::Unlock()
   fuppesThreadUnlockMutex(&m_Mutex);
 }
 
+unsigned int CTranscodingCacheObject::GetBufferSize()
+{
+  if(m_pTranscoder != NULL) {
+    unsigned int nFileSize = 0;
+    std::fstream fsFile;
+      
+    fsFile.open(m_sOutFileName.c_str(), ios::binary|ios::in);
+    if(fsFile.fail() != 1) { 
+      fsFile.seekg(0, ios::end); 
+      nFileSize = streamoff(fsFile.tellg()); 
+      fsFile.seekg(0, ios::beg);
+      fsFile.close();
+    }
+    else {
+      cout << __FILE__ << " error opening " << m_sOutFileName << endl;
+    }
+    
+    return nFileSize;
+  }
+  else {
+    return m_nBufferSize;
+  }
+}
+
+bool CTranscodingCacheObject::TranscodeToFile()
+{
+  if(m_pTranscoder != NULL) {
+    return true;
+  }
+  else {
+    return false;
+  }        
+}
+
 unsigned int CTranscodingCacheObject::Transcode()
 {  
   /* start new transcoding thread */
   if(!m_TranscodeThread && !m_bIsComplete)
-  {   
+  {
     m_bIsTranscoding = true;
     fuppesThreadStartArg(m_TranscodeThread, TranscodeThread, *this);
-    while(m_bIsTranscoding && (m_nBufferSize == 0))
+    while(m_bIsTranscoding && (GetBufferSize() == 0))
       fuppesSleep(100);
     
-    return m_nBufferSize;
+    return GetBufferSize();
   }
   
   /* transcoding is already running */
   if(m_bIsTranscoding)
   {    
-    unsigned int nSize = m_nBufferSize;
-    while(m_bIsTranscoding && (nSize == m_nBufferSize))
+    unsigned int nSize = GetBufferSize();
+    while(m_bIsTranscoding && (nSize == GetBufferSize()))
       fuppesSleep(100);
     if(m_bIsTranscoding)
-      return m_nBufferSize;
+      return GetBufferSize();
   }
   
   /* object is already transcoded completely */  
-  if(m_bIsComplete)    
-    return m_nBufferSize;
+  if(m_bIsComplete) 
+    return GetBufferSize();
 
 	return 0;
 }
@@ -206,6 +255,23 @@ fuppesThreadCallback TranscodeThread(void *arg)
 {  
   CTranscodingCacheObject* pCacheObj = (CTranscodingCacheObject*)arg;     
   //CSharedLog::Shared()->Log(L_EXTENDED, "TranscodeThread :: " + pCacheObj->m_pSessionInfo->m_sInFileName, __FILE__, __LINE__);   
+  
+  
+  if(pCacheObj->m_pTranscoder != NULL) {
+    pCacheObj->m_sOutFileName = "/tmp/fuppes.mpg";
+    
+    pCacheObj->m_pTranscoder->Transcode(string(""), pCacheObj->m_sInFileName, string(""), &pCacheObj->m_sOutFileName);    
+    
+    pCacheObj->Lock();
+    pCacheObj->m_bIsComplete = true;          
+    pCacheObj->Unlock();   
+    
+    fuppesThreadExit();
+    return 0;
+  }
+  
+  
+  
   
   long  samplesRead  = 0;    
   int   nLameRet     = 0;  
@@ -248,12 +314,12 @@ fuppesThreadCallback TranscodeThread(void *arg)
       if(!pCacheObj->m_szBuffer)
         pCacheObj->m_szBuffer = (char*)malloc(nTmpSize * sizeof(char));
       else
-        pCacheObj->m_szBuffer = (char*)realloc(pCacheObj->m_szBuffer, (pCacheObj->m_nBufferSize + nTmpSize) * sizeof(char));
+        pCacheObj->m_szBuffer = (char*)realloc(pCacheObj->m_szBuffer, (pCacheObj->GetBufferSize() + nTmpSize) * sizeof(char));
       
-      memcpy(&pCacheObj->m_szBuffer[pCacheObj->m_nBufferSize], szTmpBuff, nTmpSize);
+      memcpy(&pCacheObj->m_szBuffer[pCacheObj->GetBufferSize()], szTmpBuff, nTmpSize);
       
       //cout << "buffer size: " << pCacheObj->m_nBufferSize << " + " << nTmpSize << " = "; fflush(stdout);
-      pCacheObj->m_nBufferSize += nTmpSize;
+      pCacheObj->SetBufferSize(pCacheObj->GetBufferSize()+ nTmpSize);
       //cout << pCacheObj->m_nBufferSize << endl; fflush(stdout);
             
       pCacheObj->Unlock();
@@ -279,10 +345,10 @@ fuppesThreadCallback TranscodeThread(void *arg)
     if(!pCacheObj->m_szBuffer)
         pCacheObj->m_szBuffer = (char*)malloc(nTmpSize * sizeof(char));
       else
-        pCacheObj->m_szBuffer = (char*)realloc(pCacheObj->m_szBuffer, (pCacheObj->m_nBufferSize + nTmpSize) * sizeof(char));
+        pCacheObj->m_szBuffer = (char*)realloc(pCacheObj->m_szBuffer, (pCacheObj->GetBufferSize() + nTmpSize) * sizeof(char));
       
-    memcpy(&pCacheObj->m_szBuffer[pCacheObj->m_nBufferSize], szTmpBuff, nTmpSize);      
-    pCacheObj->m_nBufferSize += nTmpSize;
+    memcpy(&pCacheObj->m_szBuffer[pCacheObj->GetBufferSize()], szTmpBuff, nTmpSize);      
+    pCacheObj->SetBufferSize(pCacheObj->GetBufferSize()+ nTmpSize);
     
     pCacheObj->Unlock();
 
@@ -296,10 +362,10 @@ fuppesThreadCallback TranscodeThread(void *arg)
     if(!pCacheObj->m_szBuffer)
         pCacheObj->m_szBuffer = (char*)malloc(nTmpSize * sizeof(char));
       else
-        pCacheObj->m_szBuffer = (char*)realloc(pCacheObj->m_szBuffer, (pCacheObj->m_nBufferSize + nTmpSize) * sizeof(char));
+        pCacheObj->m_szBuffer = (char*)realloc(pCacheObj->m_szBuffer, (pCacheObj->GetBufferSize() + nTmpSize) * sizeof(char));
     
-    memcpy(&pCacheObj->m_szBuffer[pCacheObj->m_nBufferSize], pCacheObj->m_pAudioEncoder->GetEncodedBuffer(), nTmpSize);
-    pCacheObj->m_nBufferSize += nTmpSize;
+    memcpy(&pCacheObj->m_szBuffer[pCacheObj->GetBufferSize()], pCacheObj->m_pAudioEncoder->GetEncodedBuffer(), nTmpSize);
+    pCacheObj->SetBufferSize(pCacheObj->GetBufferSize() + nTmpSize);
 
     pCacheObj->m_bIsComplete = true;          
     pCacheObj->Unlock();    

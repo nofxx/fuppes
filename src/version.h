@@ -1,0 +1,1 @@
+#define FUPPES_VERSION "SVN-r454"

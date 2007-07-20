@@ -36,6 +36,8 @@
 #include <net/if.h>
 #endif
 
+#include "version.h"
+
 #include "Common/Common.h"
 #include "Common/UUID.h"
 #include "Common/RegEx.h"
@@ -59,7 +61,7 @@
 
 using namespace std;
 
-const std::string FUPPES_VERSION = "0.7.2a-20070529";
+//const std::string FUPPES_VERSION = "0.7.2a-20070529";
 
 CSharedConfig* CSharedConfig::m_Instance = 0;
 

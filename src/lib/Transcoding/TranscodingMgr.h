@@ -73,6 +73,9 @@ class CTranscodingMgr
      */
     CAudioDecoderBase* CreateAudioDecoder(std::string p_sFileExt, unsigned int* p_nBufferSize);
   
+  
+    CTranscoderBase* CreateTranscoder(std::string p_sFileExt);
+  
   private:
     CTranscodingMgr();
     ~CTranscodingMgr();

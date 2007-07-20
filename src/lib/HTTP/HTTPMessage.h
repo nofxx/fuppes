@@ -102,6 +102,11 @@ TIMEOUT: Second-actual subscription duration
   HTTP_CONTENT_TYPE_IMAGE_JPEG    =  5
 }HTTP_CONTENT_TYPE;*/
 
+typedef enum HTTP_TRANSFER_ENCODING {
+  HTTP_TRANSFER_ENCODING_NONE,
+  HTTP_TRANSFER_ENCODING_CHUNKED
+} HTTP_TRANSFER_ENCODING;
+
 class CHTTPMessage;
 
 class CHTTPMessage: public CMessageBase
@@ -126,6 +131,9 @@ class CHTTPMessage: public CMessageBase
     void              SetIsBinary(bool p_bIsBinary) { m_bIsBinary = p_bIsBinary; }
   
 
+    HTTP_TRANSFER_ENCODING GetTransferEncoding() { return m_nTransferEncoding; }
+    void SetTransferEncoding(HTTP_TRANSFER_ENCODING p_nTransferEncoding) { m_nTransferEncoding = p_nTransferEncoding; }
+  
     CUPnPAction*      GetAction();
     std::string 		  GetHeaderAsString();		  
 	  std::string			  GetMessageAsString();
@@ -199,6 +207,8 @@ private:
     std::string        m_sGENASubscriptionID;
   
 	
+    HTTP_TRANSFER_ENCODING m_nTransferEncoding;
+  
 	  CUPnPAction*       m_pUPnPAction;
     std::fstream       m_fsFile;
     unsigned int       m_nRangeStart;

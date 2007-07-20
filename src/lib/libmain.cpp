@@ -44,6 +44,14 @@
 #include <Magick++.h>
 #endif
 
+#ifdef HAVE_LIBAVFORMAT
+extern "C"
+{ 
+  #include <avformat.h>
+  #include <avcodec.h>
+}
+#endif
+
 using namespace std;
 
 CFuppes* pFuppes = 0;
@@ -65,7 +73,7 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
 
   cout << "            FUPPES - " << CSharedConfig::Shared()->GetAppVersion() << endl;
   cout << "    the Free UPnP Entertainment Service" << endl;
-  cout << "       http://fuppes.sourceforge.net" << endl << endl;
+  cout << "      http://fuppes.ulrich-voelkel.de" << endl << endl;
   
   // arguments  
   string sConfigDir;
@@ -102,6 +110,10 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   Magick::InitializeMagick(*argv);
   #endif    
     
+  #ifdef HAVE_LIBAVFORMAT
+  av_register_all();
+  #endif
+  
   xmlInitParser();
     
   return FUPPES_OK;

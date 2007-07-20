@@ -54,6 +54,12 @@
   #include "FlacWrapper.h"
   #endif
 
+
+  // transcoder
+  #ifdef HAVE_LIBAVFORMAT
+  #include "FFmpegWrapper.h"
+  #endif
+
 #endif
 
 #include <iostream>
@@ -139,12 +145,21 @@ bool CTranscodingMgr::IsTranscodingExtension(std::string p_sFileExt)
 
   if((p_sFileExt.compare("mp3") == 0))
     return false;
+  
   else if((p_sFileExt.compare("ogg") == 0)  && IsTranscodingAvailable() && m_bVorbisAvailable   && m_bTranscodeVorbis)
     return true;
   else if((p_sFileExt.compare("mpc") == 0)  && IsTranscodingAvailable() && m_bMusePackAvailable && m_bTranscodeMusePack)
     return true;
   else if((p_sFileExt.compare("flac") == 0) && IsTranscodingAvailable() && m_bFlacAvailable     && m_bTranscodeFlac)
     return true;
+  
+  else if(p_sFileExt.compare("flv") == 0)
+    return true;
+  else if(p_sFileExt.compare("wmv") == 0)
+    return true;
+  else if(p_sFileExt.compare("vdr") == 0)
+    return true;  
+  
   else
     return false;
 }
@@ -371,5 +386,16 @@ CAudioDecoderBase* CTranscodingMgr::CreateAudioDecoder(std::string p_sFileExt, u
 
   #endif
 
+  return pResult;
+}
+
+CTranscoderBase* CTranscodingMgr::CreateTranscoder(std::string p_sFileExt)
+{
+  CTranscoderBase* pResult = NULL;
+  
+  #ifdef HAVE_LIBAVFORMAT
+  pResult = new CFFmpegWrapper();
+  #endif
+  
   return pResult;
 }

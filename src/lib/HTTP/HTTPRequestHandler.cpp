@@ -293,6 +293,7 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
           // mark the head response as chunked so
           // the correct header will be build
           pResponse->SetIsBinary(true);
+          pResponse->SetTransferEncoding(HTTP_TRANSFER_ENCODING_CHUNKED);
         }
       }
       else {

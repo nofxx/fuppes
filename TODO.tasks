@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<gtodo>
+  <category title="Personal" place="0">
+    <item>
+      <attribute id="1184966031" priority="1" done="0" start_date="732877" enddate="99999999" notify="0" endtime="-60" last_edited="1184966031"/>
+      <summary>ffmpeg check</summary>
+      <comment>check available en-/decoders and compare with the config values</comment>
+    </item>
+  </category>
+  <category title="Business" place="1"/>
+  <category title="Unfiled" place="2"/>
+</gtodo>

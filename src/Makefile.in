@@ -70,7 +70,8 @@ am_libfuppes_la_OBJECTS = UPnPAction.lo Common.lo md5.lo UUID.lo \
 	device_type_media_server_png.lo TranscodingMgr.lo \
 	TranscodingCache.lo LameWrapper.lo TwoLameEncoder.lo \
 	WavEncoder.lo PcmEncoder.lo VorbisWrapper.lo MpcWrapper.lo \
-	FlacWrapper.lo DeviceSettings.lo DeviceIdentificationMgr.lo \
+	FlacWrapper.lo FFmpegWrapper.lo cmdutils.lo ffmpeg.lo \
+	DeviceSettings.lo DeviceIdentificationMgr.lo \
 	XMSMediaReceiverRegistrar.lo SharedConfig.lo SharedLog.lo \
 	Fuppes.lo libmain.lo FileAlterationMonitor.lo \
 	VirtualContainerMgr.lo XMLParser.lo iTunesImporter.lo \
@@ -378,6 +379,12 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/VorbisWrapper.cpp\
   lib/Transcoding/MpcWrapper.cpp\
   lib/Transcoding/FlacWrapper.cpp\
+  lib/Transcoding/FFmpegWrapper.h\
+  lib/Transcoding/FFmpegWrapper.cpp\
+  lib/Transcoding/ffmpeg/cmdutils.h\
+  lib/Transcoding/ffmpeg/cmdutils.c\
+  lib/Transcoding/ffmpeg/ffmpeg.h\
+  lib/Transcoding/ffmpeg/ffmpeg.c\
 	lib/DeviceSettings/DeviceSettings.cpp\
 	lib/DeviceSettings/DeviceIdentificationMgr.cpp\
 	lib/XMSMediaReceiverRegistrar.cpp\
@@ -394,8 +401,10 @@ libfuppes_la_SOURCES = \
 	lib/ContentDirectory/iTunesImporter.cpp\
 	lib/ContentDirectory/iTunesImporter.h\
 	lib/Configuration/ConfigFile.cpp\
-	lib/Configuration/ConfigFile.h
+	lib/Configuration/ConfigFile.h\
+  version.h
 
+BUILT_SOURCES = version.h
 libfuppes_la_LDFLAGS = \
   $(FUPPES_LIBS)\
   ${PTHREAD_LIBS}\
@@ -405,7 +414,7 @@ libfuppes_la_LDFLAGS = \
   ${SQLITE3_LIBS}\
   ${TAGLIB_LIBS}
 
-all: config.h
+all: $(BUILT_SOURCES) config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
@@ -537,6 +546,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DeviceIdentificationMgr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DeviceSettings.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EventNotification.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FFmpegWrapper.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FileAlterationMonitor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FileDetails.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FlacWrapper.Plo@am__quote@
@@ -578,10 +588,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WavEncoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/XMLParser.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/XMSMediaReceiverRegistrar.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmdutils.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/console_main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/daemon_main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/device_type_media_server_png.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/device_type_unknown_png.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ffmpeg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuppes_small_png.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/header_gradient_png.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/header_gradient_small_png.Plo@am__quote@
@@ -616,6 +628,20 @@ md5.lo: lib/Common/md5.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='lib/Common/md5.c' object='md5.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o md5.lo `test -f 'lib/Common/md5.c' || echo '$(srcdir)/'`lib/Common/md5.c
+
+cmdutils.lo: lib/Transcoding/ffmpeg/cmdutils.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cmdutils.lo -MD -MP -MF $(DEPDIR)/cmdutils.Tpo -c -o cmdutils.lo `test -f 'lib/Transcoding/ffmpeg/cmdutils.c' || echo '$(srcdir)/'`lib/Transcoding/ffmpeg/cmdutils.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/cmdutils.Tpo $(DEPDIR)/cmdutils.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='lib/Transcoding/ffmpeg/cmdutils.c' object='cmdutils.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cmdutils.lo `test -f 'lib/Transcoding/ffmpeg/cmdutils.c' || echo '$(srcdir)/'`lib/Transcoding/ffmpeg/cmdutils.c
+
+ffmpeg.lo: lib/Transcoding/ffmpeg/ffmpeg.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ffmpeg.lo -MD -MP -MF $(DEPDIR)/ffmpeg.Tpo -c -o ffmpeg.lo `test -f 'lib/Transcoding/ffmpeg/ffmpeg.c' || echo '$(srcdir)/'`lib/Transcoding/ffmpeg/ffmpeg.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/ffmpeg.Tpo $(DEPDIR)/ffmpeg.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='lib/Transcoding/ffmpeg/ffmpeg.c' object='ffmpeg.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ffmpeg.lo `test -f 'lib/Transcoding/ffmpeg/ffmpeg.c' || echo '$(srcdir)/'`lib/Transcoding/ffmpeg/ffmpeg.c
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -967,6 +993,13 @@ FlacWrapper.lo: lib/Transcoding/FlacWrapper.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o FlacWrapper.lo `test -f 'lib/Transcoding/FlacWrapper.cpp' || echo '$(srcdir)/'`lib/Transcoding/FlacWrapper.cpp
 
+FFmpegWrapper.lo: lib/Transcoding/FFmpegWrapper.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT FFmpegWrapper.lo -MD -MP -MF $(DEPDIR)/FFmpegWrapper.Tpo -c -o FFmpegWrapper.lo `test -f 'lib/Transcoding/FFmpegWrapper.cpp' || echo '$(srcdir)/'`lib/Transcoding/FFmpegWrapper.cpp
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/FFmpegWrapper.Tpo $(DEPDIR)/FFmpegWrapper.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='lib/Transcoding/FFmpegWrapper.cpp' object='FFmpegWrapper.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o FFmpegWrapper.lo `test -f 'lib/Transcoding/FFmpegWrapper.cpp' || echo '$(srcdir)/'`lib/Transcoding/FFmpegWrapper.cpp
+
 DeviceSettings.lo: lib/DeviceSettings/DeviceSettings.cpp
 @am__fastdepCXX_TRUE@	$(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT DeviceSettings.lo -MD -MP -MF $(DEPDIR)/DeviceSettings.Tpo -c -o DeviceSettings.lo `test -f 'lib/DeviceSettings/DeviceSettings.cpp' || echo '$(srcdir)/'`lib/DeviceSettings/DeviceSettings.cpp
 @am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/DeviceSettings.Tpo $(DEPDIR)/DeviceSettings.Plo
@@ -1132,7 +1165,8 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-check: check-am
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) config.h
 install-binPROGRAMS: install-libLTLIBRARIES
 
@@ -1140,7 +1174,8 @@ installdirs:
 	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-am
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -1164,6 +1199,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic clean-libLTLIBRARIES \
@@ -1240,6 +1276,11 @@ uninstall-am: uninstall-binPROGRAMS uninstall-libLTLIBRARIES
 	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
 	uninstall-am uninstall-binPROGRAMS uninstall-libLTLIBRARIES
 
+
+version.h: Makefile
+	if test -e "../version.sh"; then \
+		../version.sh; \
+	fi
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

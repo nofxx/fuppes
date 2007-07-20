@@ -83,6 +83,7 @@ struct FileType_t FileTypes[] =
   {"wmv" , ITEM_VIDEO_ITEM_MOVIE, "video/x-ms-wmv", ""},
   {"vob" , ITEM_VIDEO_ITEM_MOVIE, "video/x-ms-vob", ""},
   {"vdr" , ITEM_VIDEO_ITEM_MOVIE, "application/x-extension-vdr", ""},
+  {"flv" , ITEM_VIDEO_ITEM_MOVIE, "application/x-flash-video", ""},
   
   /* playlist types */
   {"m3u", CONTAINER_PLAYLIST_CONTAINER, "audio/x-mpegurl", ""},
@@ -103,6 +104,9 @@ struct TranscodingSetting_t TranscodingSettings[] =
   
   /* video */
   {"vdr", "vob", "video/x-ms-vob", ITEM_VIDEO_ITEM_MOVIE, 0, 0},
+  //{"flv", "avi", "video/x-msvideo", ITEM_VIDEO_ITEM_MOVIE, 0, 0},
+  {"flv", "mpg", "video/mpeg", ITEM_VIDEO_ITEM_MOVIE, 0, 0},
+  {"wmv", "mpg", "video/mpeg", ITEM_VIDEO_ITEM_MOVIE, 0, 0},
   
   /* empty entry to mark the list's end */
   {"", "", "", OBJECT_TYPE_UNKNOWN, 0, 0}
@@ -280,7 +284,7 @@ bool CFileDetails::IsTranscodingExtension(std::string p_sExt)
   TranscodingSetting_t* pTranscoding;
   pTranscoding = TranscodingSettings;
   while(!pTranscoding->sExt.empty())
-  {
+  {    
     if(pTranscoding->sExt.compare(p_sExt) == 0)    
       return CTranscodingMgr::Shared()->IsTranscodingExtension(p_sExt);
     
@@ -457,7 +461,7 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
 bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoItem)
 {
   #ifdef HAVE_LIBAVFORMAT
-	av_register_all();
+	//av_register_all();
 	AVFormatContext *pFormatCtx;
 	
 	if(av_open_input_file(&pFormatCtx, p_sFileName.c_str(), NULL, 0, NULL) != 0) {

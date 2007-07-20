@@ -136,6 +136,12 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/VorbisWrapper.cpp\
   lib/Transcoding/MpcWrapper.cpp\
   lib/Transcoding/FlacWrapper.cpp\
+  lib/Transcoding/FFmpegWrapper.h\
+  lib/Transcoding/FFmpegWrapper.cpp\
+  lib/Transcoding/ffmpeg/cmdutils.h\
+  lib/Transcoding/ffmpeg/cmdutils.c\
+  lib/Transcoding/ffmpeg/ffmpeg.h\
+  lib/Transcoding/ffmpeg/ffmpeg.c\
 	lib/DeviceSettings/DeviceSettings.cpp\
 	lib/DeviceSettings/DeviceIdentificationMgr.cpp\
 	lib/XMSMediaReceiverRegistrar.cpp\
@@ -152,8 +158,15 @@ libfuppes_la_SOURCES = \
 	lib/ContentDirectory/iTunesImporter.cpp\
 	lib/ContentDirectory/iTunesImporter.h\
 	lib/Configuration/ConfigFile.cpp\
-	lib/Configuration/ConfigFile.h
+	lib/Configuration/ConfigFile.h\
+  version.h
 	
+BUILT_SOURCES = version.h
+
+version.h: Makefile
+	if test -e "../version.sh"; then \
+		../version.sh; \
+	fi
 
 libfuppes_la_LDFLAGS = \
   $(FUPPES_LIBS)\

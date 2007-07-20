@@ -885,14 +885,23 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   /* res */
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
   
+  string sMimeType = pSQLResult->GetValue("MIME_TYPE");
+  string sExt = ExtractFileExt(pSQLResult->GetValue("PATH"));         
+                                                    
+  if(CFileDetails::Shared()->IsTranscodingExtension(sExt)) {
+    sMimeType = CFileDetails::Shared()->GetMimeType(pSQLResult->GetValue("PATH"), true);
+    sExt      = CFileDetails::Shared()->GetTargetExtension(sExt);
+  }                                                    
+                                                    
+                                                    
   std::stringstream sTmp;
-  sTmp << "http-get:*:" << pSQLResult->GetValue("MIME_TYPE") << ":*";
+  sTmp << "http-get:*:" << sMimeType << ":*";
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
   sTmp.str("");   
 
 
   // duration
-  if(pUPnPBrowse->IncludeProperty("res@duration") && !pSQLResult->IsNull("AV_DURATION")) {
+  /*if(pUPnPBrowse->IncludeProperty("res@duration") && !pSQLResult->IsNull("AV_DURATION")) {
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->GetValue("AV_DURATION").c_str());
   }
       
@@ -911,15 +920,7 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   // size
   if(pUPnPBrowse->IncludeProperty("res@size") && !pSQLResult->IsNull("SIZE")) {
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->GetValue("SIZE").c_str());
-  }
-
-  /* set transcoding target extension 
-     as video transcoding is not yet supported
-     we just rename files e.g. vdr to vob */
-  string sExt = ExtractFileExt(pSQLResult->GetValue("PATH"));
-  if(CFileDetails::Shared()->IsTranscodingExtension(sExt)) {
-    sExt = CFileDetails::Shared()->GetTargetExtension(sExt);
-  }     
+  }*/
   
   sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/VideoItems/" << p_sObjectID << "." << sExt;  
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());

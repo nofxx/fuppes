@@ -52,8 +52,12 @@ class CTranscodingCacheObject
   
     // the buffer that stores the transcoded bytes
     char* m_szBuffer; 
-    // the buffer's size
-    unsigned int m_nBufferSize;
+    
+  
+    unsigned int GetBufferSize();
+    void SetBufferSize(unsigned int p_nBufferSize) { m_nBufferSize = p_nBufferSize; }
+  
+    bool TranscodeToFile();
   
     bool  m_bIsTranscoding;
     bool  m_bBreakTranscoding;
@@ -73,6 +77,8 @@ class CTranscodingCacheObject
     CAudioDecoderBase* m_pDecoder;    
     CAudioDetails      m_AudioDetails;
     
+    CTranscoderBase*   m_pTranscoder;
+  
     //CTranscodeSessionInfo* m_pSessionInfo;          
   
     unsigned int nBufferLength;  
@@ -80,7 +86,13 @@ class CTranscodingCacheObject
     
 //  private:
     std::string m_sInFileName;
+    std::string m_sOutFileName;
     fuppesThread m_TranscodeThread;
+  
+   private:
+    // the buffer's size
+    unsigned int m_nBufferSize;
+  
 };
 
 class CTranscodingCache
