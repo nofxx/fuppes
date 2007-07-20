@@ -208,10 +208,12 @@ std::string CHTTPMessage::GetHeaderAsString()
     else
     { 
       // transcoding responses don't contain content length
-      if(!this->IsTranscoding() && (m_nBinContentLength > 0))
+      if(!this->IsTranscoding() && 
+         (m_nBinContentLength > 0) &&
+         (m_nTransferEncoding != HTTP_TRANSFER_ENCODING_CHUNKED))
       {      
         // ranges
-        /*if((m_nRangeStart > 0) || (m_nRangeEnd > 0))
+        if((m_nRangeStart > 0) || (m_nRangeEnd > 0))
         {
           if(m_nRangeEnd < m_nBinContentLength) {
             sResult << "Content-Length: " << m_nRangeEnd - m_nRangeStart + 1 << "\r\n";
@@ -225,7 +227,7 @@ std::string CHTTPMessage::GetHeaderAsString()
         // complete
         else {
           sResult << "Content-Length: " << m_nBinContentLength << "\r\n";
-        } */
+        }
       }
       // transcoding
       else if(this->IsTranscoding()) {
@@ -272,14 +274,13 @@ std::string CHTTPMessage::GetHeaderAsString()
     }
     
     // Accept-Ranges
-   /* if(!this->IsTranscoding()) {
+   if(!this->IsTranscoding() && (m_nTransferEncoding != HTTP_TRANSFER_ENCODING_CHUNKED)) {
       sResult << "Accept-Ranges: bytes\r\n";
     }
     else {
       sResult << "Accept-Ranges: none\r\n";
-    }*/
-    
-    sResult << "Accept-Ranges: none\r\n";
+    }
+
     
     /* Connection */
     sResult << "Connection: close\r\n";    
@@ -685,7 +686,7 @@ bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
   m_bIsBinary  = true;  
   bool bResult = false;
   
-  m_nTransferEncoding = HTTP_TRANSFER_ENCODING_CHUNKED;
+  //m_nTransferEncoding = HTTP_TRANSFER_ENCODING_CHUNKED;
   
   //fstream fFile;    
   m_fsFile.open(p_sFileName.c_str(), ios::binary|ios::in);

@@ -1,1 +1,1 @@
-#define FUPPES_VERSION "SVN-r454"
+#define FUPPES_VERSION "SVN-r462"
