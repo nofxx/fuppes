@@ -6,6 +6,12 @@
       <summary>ffmpeg check</summary>
       <comment>check available en-/decoders and compare with the config values</comment>
     </item>
+    <item>
+      <attribute id="1185041688" priority="1" done="0" start_date="732878" enddate="99999999" notify="0" endtime="-60" last_edited="1185041688"/>
+      <summary>temp dir</summary>
+      <comment>- temp dir configurable (default value from env-vars)
+- check if temp dir is writable on startup (only if temp dir is needed)</comment>
+    </item>
   </category>
   <category title="Business" place="1"/>
   <category title="Unfiled" place="2"/>

@@ -142,6 +142,8 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/ffmpeg/cmdutils.c\
   lib/Transcoding/ffmpeg/ffmpeg.h\
   lib/Transcoding/ffmpeg/ffmpeg.c\
+  lib/Transcoding/ImageMagickWrapper.h\
+  lib/Transcoding/ImageMagickWrapper.cpp\
 	lib/DeviceSettings/DeviceSettings.cpp\
 	lib/DeviceSettings/DeviceIdentificationMgr.cpp\
 	lib/XMSMediaReceiverRegistrar.cpp\
