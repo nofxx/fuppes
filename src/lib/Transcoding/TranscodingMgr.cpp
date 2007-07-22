@@ -60,6 +60,10 @@
   #include "FFmpegWrapper.h"
   #endif
 
+  #ifdef HAVE_IMAGEMAGICK
+  #include "ImageMagickWrapper.h"
+  #endif
+
 #endif
 
 #include <iostream>
@@ -159,6 +163,9 @@ bool CTranscodingMgr::IsTranscodingExtension(std::string p_sFileExt)
     return true;
   else if(p_sFileExt.compare("vdr") == 0)
     return true;  
+  
+  else if(p_sFileExt.compare("jpg") == 0)
+    return true;
   
   else
     return false;
@@ -394,7 +401,15 @@ CTranscoderBase* CTranscodingMgr::CreateTranscoder(std::string p_sFileExt)
   CTranscoderBase* pResult = NULL;
   
   #ifdef HAVE_LIBAVFORMAT
-  pResult = new CFFmpegWrapper();
+  if(p_sFileExt.compare("wmv") == 0 || p_sFileExt.compare("flv") == 0) {     
+    pResult = new CFFmpegWrapper();
+  }
+  #endif
+  
+  #ifdef HAVE_IMAGEMAGICK
+  if(p_sFileExt.compare("jpg") == 0) {
+    pResult = new CImageMagickWrapper();
+  }
   #endif
   
   return pResult;

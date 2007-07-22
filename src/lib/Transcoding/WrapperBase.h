@@ -99,6 +99,7 @@ class CTranscoderBase
   public:
 	  virtual ~CTranscoderBase() {};
     virtual bool Transcode(std::string p_sInFileParams, std::string p_sInFile, std::string p_sOutFileParams, std::string* p_psOutFile) = 0;
+    virtual bool Threaded() = 0;
 };
 
 #endif // _WRAPPERBASE_H

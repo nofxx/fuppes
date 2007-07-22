@@ -89,9 +89,13 @@ class CTranscodingCacheObject
     std::string m_sOutFileName;
     fuppesThread m_TranscodeThread;
   
+    bool Threaded() { return m_bThreaded; }
+  
    private:
     // the buffer's size
     unsigned int m_nBufferSize;
+  
+    bool m_bThreaded;
   
 };
 

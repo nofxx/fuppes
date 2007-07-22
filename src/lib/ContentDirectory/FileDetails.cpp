@@ -108,6 +108,9 @@ struct TranscodingSetting_t TranscodingSettings[] =
   {"flv", "mpg", "video/mpeg", ITEM_VIDEO_ITEM_MOVIE, 0, 0},
   {"wmv", "mpg", "video/mpeg", ITEM_VIDEO_ITEM_MOVIE, 0, 0},
   
+  /* image */
+  {"jpg" , "jpg", "image/jpeg", ITEM_IMAGE_ITEM_PHOTO, 0, 0},
+  
   /* empty entry to mark the list's end */
   {"", "", "", OBJECT_TYPE_UNKNOWN, 0, 0}
 };

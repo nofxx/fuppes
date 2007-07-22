@@ -53,6 +53,8 @@ CTranscodingCacheObject::CTranscodingCacheObject()
   m_bBreakTranscoding = false;  
   m_bInitialized    = false;
   
+  m_bThreaded       = false;
+  
   fuppesThreadInitMutex(&m_Mutex);
 }
 
@@ -83,7 +85,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
 {
   std::string sExt = ToLower(ExtractFileExt(pSessionInfo->m_sInFileName));
   
-  if((sExt.compare("flv") == 0) || (sExt.compare("wmv") == 0)) {  
+  if((sExt.compare("flv") == 0) || (sExt.compare("wmv") == 0) || (sExt.compare("jpg") == 0)) {  
     
     if(m_bInitialized) {
       return true;
@@ -91,6 +93,9 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
     
     m_pTranscoder = CTranscodingMgr::Shared()->CreateTranscoder(sExt);
     m_bInitialized = true;
+        
+    m_bThreaded = m_pTranscoder->Threaded();
+        
     return true;
   }
   
@@ -157,6 +162,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
     //cout << "guess content: " << pSessionInfo->m_nGuessContentLength << endl;
   }  
   
+  m_bThreaded = true;
   m_bInitialized = true;
 
   return true;
@@ -213,6 +219,17 @@ bool CTranscodingCacheObject::TranscodeToFile()
 
 unsigned int CTranscodingCacheObject::Transcode()
 {  
+  
+  if(!m_bThreaded) {
+    m_sOutFileName = "/tmp/fuppes.jpg";
+    m_pTranscoder->Transcode(string(""), m_sInFileName, string(""), &m_sOutFileName);
+    
+    m_bIsComplete    = true;
+    m_bIsTranscoding = false;
+    return GetBufferSize();
+  }
+  
+  
   /* start new transcoding thread */
   if(!m_TranscodeThread && !m_bIsComplete)
   {

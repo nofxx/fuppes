@@ -471,7 +471,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
       if(bTranscode && m_pTranscodingCacheObj->TranscodeToFile()) {
         
         fstream fsTmp;        
-        fsTmp.open("/tmp/fuppes.mpg", ios::binary|ios::in);
+        fsTmp.open(m_pTranscodingCacheObj->m_sOutFileName.c_str(), ios::binary|ios::in);
         if(m_fsFile.fail() != 1) { 
           fsTmp.seekg(m_nBinContentPosition, ios::beg);   
           fsTmp.read(p_sContentChunk, p_nSize);
@@ -493,7 +493,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
          
       if(bTranscode && m_pTranscodingCacheObj->TranscodeToFile()) {
         fstream fsTmp;        
-        fsTmp.open("/tmp/fuppes.mpg", ios::binary|ios::in);
+        fsTmp.open(m_pTranscodingCacheObj->m_sOutFileName.c_str(), ios::binary|ios::in);
         if(m_fsFile.fail() != 1) { 
           fsTmp.seekg(m_nBinContentPosition, ios::beg);   
           fsTmp.read(p_sContentChunk, nRest);
@@ -747,7 +747,9 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName, SMusicTrack
   m_pTranscodingCacheObj->Init(m_pTranscodingSessionInfo);
   m_pTranscodingCacheObj->Transcode();
 
-  m_nTransferEncoding = HTTP_TRANSFER_ENCODING_CHUNKED;
+  if(m_pTranscodingCacheObj->Threaded()) {
+    m_nTransferEncoding = HTTP_TRANSFER_ENCODING_CHUNKED;
+  }
   
   return true;
   #endif
