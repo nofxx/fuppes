@@ -25,6 +25,11 @@
 
 #ifdef HAVE_LIBAVFORMAT
 
+CFFmpegWrapper::~CFFmpegWrapper()
+{
+  this->Break();
+}
+
 bool CFFmpegWrapper::Transcode(std::string p_sInFileParams, std::string p_sInFile, std::string p_sOutFileParams, std::string* p_psOutFile)
 {
 
@@ -89,6 +94,9 @@ bool CFFmpegWrapper::Transcode(std::string p_sInFileParams, std::string p_sInFil
   
    return true;  
 }
- 
+
+void CFFmpegWrapper::Break()
+{
+}
 
 #endif // HAVE_LIBAVFORMAT

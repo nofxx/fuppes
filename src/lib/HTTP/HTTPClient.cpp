@@ -60,9 +60,8 @@ CHTTPClient::~CHTTPClient()
 fuppesThreadCallback AsyncThread(void* arg)
 {
   CHTTPClient* pClient = (CHTTPClient*)arg;                  
-  char buffer[4096];  
+  char buffer[16384];
   int nBytesReceived = 0;
-  //string sReceived;
   
   // connect socket
   if(connect(pClient->m_Socket, (struct sockaddr*)&pClient->m_RemoteEndpoint, sizeof(pClient->m_RemoteEndpoint)) == -1) {
@@ -82,11 +81,19 @@ fuppesThreadCallback AsyncThread(void* arg)
   }
   
   // receive answer
-  //while((nBytesReceived = recv(pClient->m_Socket, buffer, sizeof(buffer), 0)) > 0) { 
-  if((nBytesReceived = recv(pClient->m_Socket, buffer, sizeof(buffer), 0)) > 0) { 
-    buffer[nBytesReceived] = '\0';
-    //sReceived += buffer;
+  char szTmpBuf[4096];
+  int  nOffset = 0;
+  
+  while((nBytesReceived = recv(pClient->m_Socket, szTmpBuf, sizeof(szTmpBuf), 0)) > 0) {
+    
+    if((nOffset + nBytesReceived) > sizeof(buffer)) {      
+      break;
+    }
+    
+    memcpy(&buffer[nOffset], &szTmpBuf, nBytesReceived);
+    nOffset += nBytesReceived;
   }
+  buffer[nOffset] = '\0';
   
 	pClient->m_sAsyncResult = buffer; //sReceived;
 	CHTTPMessage Message;

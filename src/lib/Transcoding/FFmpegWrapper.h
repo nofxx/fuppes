@@ -37,8 +37,11 @@
 class CFFmpegWrapper: public CTranscoderBase
 {
   public:
-    virtual ~CFFmpegWrapper() {};
+    virtual ~CFFmpegWrapper();
     bool Transcode(std::string p_sInFileParams, std::string p_sInFile, std::string p_sOutFileParams, std::string* p_psOutFile);
+  
+  private:
+    void Break();
 };
 
 #endif // HAVE_LIBAVFORMAT

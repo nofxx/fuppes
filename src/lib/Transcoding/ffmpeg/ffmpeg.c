@@ -3841,3 +3841,7 @@ int ffmpeg_main(int argc, char **argv)
     return 0;
 }
 
+void ffmpeg_break()
+{
+  q_pressed = 1;
+}
