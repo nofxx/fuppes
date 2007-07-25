@@ -230,7 +230,7 @@ std::string CHTTPMessage::GetHeaderAsString()
         }
       }
       // transcoding
-      else if(this->IsTranscoding()) {
+      /*else if(this->IsTranscoding()) {
         
         if((m_nRangeStart > 0) || (m_nRangeEnd > 0)) {
           
@@ -259,7 +259,7 @@ std::string CHTTPMessage::GetHeaderAsString()
         }
         
         
-      }
+      }*/
       
     } // if(m_bIsBinary)
     /* end Content length */        
