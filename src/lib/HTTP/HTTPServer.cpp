@@ -722,6 +722,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       // send chunk
       nErr = fuppesSocketSend(p_Session->GetConnection(), szChunk, nRet);    
       
+      
       if(p_Response->GetTransferEncoding() == HTTP_TRANSFER_ENCODING_CHUNKED) {
         char* szCRLF = "\r\n";
         fuppesSocketSend(p_Session->GetConnection(), szCRLF, strlen(szCRLF));
@@ -775,6 +776,13 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
 
   } // while
 
+  // send last chunk
+  if((nErr > 0) && (p_Response->GetTransferEncoding() == HTTP_TRANSFER_ENCODING_CHUNKED)) {
+    char* szCRLF = "0\r\n\r\n";
+    fuppesSocketSend(p_Session->GetConnection(), szCRLF, strlen(szCRLF));    
+  }
+  
+  
   delete [] szChunk;    
   return true;  
 }
