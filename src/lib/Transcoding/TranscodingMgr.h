@@ -42,6 +42,7 @@ class CTranscodingMgr
     bool IsMusePackAvailabe();
   
     bool IsTranscodingExtension(std::string p_sFileExt);
+    TRANSCODING_TYPE GetTranscodingType(std::string p_sFileExt);
   
     void SetDoTranscodeVorbis(bool p_bDoTranscodeVorbis);
     bool GetDoTranscodeVorbis() { return m_bTranscodeVorbis; }

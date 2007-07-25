@@ -62,6 +62,13 @@ class CTranscodeSessionInfo
     bool          m_bTranscodeToFile;
 };
 
+typedef enum TRANSCODING_TYPE {
+  TT_NONE,
+  TT_THREADED_DECODER_ENCODER,
+  TT_TRANSCODER,
+  TT_THREADED_TRANSCODER  
+} TRANSCODING_TYPE;
+
 class CAudioEncoderBase
 {
   public:    

@@ -163,6 +163,8 @@ bool CTranscodingMgr::IsTranscodingExtension(std::string p_sFileExt)
     return true;
   else if(p_sFileExt.compare("vdr") == 0)
     return true;  
+  else if(p_sFileExt.compare("asf") == 0)
+    return true; 
   
   else if(p_sFileExt.compare("jpg") == 0)
     return true;
@@ -171,6 +173,33 @@ bool CTranscodingMgr::IsTranscodingExtension(std::string p_sFileExt)
     return false;
 }
 
+TRANSCODING_TYPE CTranscodingMgr::GetTranscodingType(std::string p_sFileExt)
+{
+  if((p_sFileExt.compare("mp3") == 0))
+    return TT_NONE;
+  
+  else if((p_sFileExt.compare("ogg") == 0)  && IsTranscodingAvailable() && m_bVorbisAvailable   && m_bTranscodeVorbis)
+    return TT_THREADED_DECODER_ENCODER;
+  else if((p_sFileExt.compare("mpc") == 0)  && IsTranscodingAvailable() && m_bMusePackAvailable && m_bTranscodeMusePack)
+    return TT_THREADED_DECODER_ENCODER;
+  else if((p_sFileExt.compare("flac") == 0) && IsTranscodingAvailable() && m_bFlacAvailable     && m_bTranscodeFlac)
+    return TT_THREADED_DECODER_ENCODER; 
+  
+  else if(p_sFileExt.compare("flv") == 0)
+    return TT_THREADED_TRANSCODER;
+  else if(p_sFileExt.compare("wmv") == 0)
+    return TT_THREADED_TRANSCODER;
+  else if(p_sFileExt.compare("vdr") == 0)
+    return TT_NONE;  
+  else if(p_sFileExt.compare("asf") == 0)
+    return TT_THREADED_TRANSCODER; 
+  
+  else if(p_sFileExt.compare("jpg") == 0)
+    return TT_TRANSCODER;
+  
+  else
+    return TT_NONE;  
+}
 
 void CTranscodingMgr::SetDoTranscodeVorbis(bool p_bDoTranscodeVorbis)
 {
@@ -401,7 +430,8 @@ CTranscoderBase* CTranscodingMgr::CreateTranscoder(std::string p_sFileExt)
   CTranscoderBase* pResult = NULL;
   
   #ifdef HAVE_LIBAVFORMAT
-  if(p_sFileExt.compare("wmv") == 0 || p_sFileExt.compare("flv") == 0) {     
+  if(p_sFileExt.compare("wmv") == 0 || p_sFileExt.compare("flv") == 0 ||
+     p_sFileExt.compare("asf") == 0) {     
     pResult = new CFFmpegWrapper();
   }
   #endif

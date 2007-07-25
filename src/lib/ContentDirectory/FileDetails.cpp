@@ -84,6 +84,7 @@ struct FileType_t FileTypes[] =
   {"vob" , ITEM_VIDEO_ITEM_MOVIE, "video/x-ms-vob", ""},
   {"vdr" , ITEM_VIDEO_ITEM_MOVIE, "application/x-extension-vdr", ""},
   {"flv" , ITEM_VIDEO_ITEM_MOVIE, "application/x-flash-video", ""},
+  {"asf" , ITEM_VIDEO_ITEM_MOVIE, "video/x-ms-asf", ""},
   
   /* playlist types */
   {"m3u", CONTAINER_PLAYLIST_CONTAINER, "audio/x-mpegurl", ""},
@@ -107,6 +108,7 @@ struct TranscodingSetting_t TranscodingSettings[] =
   //{"flv", "avi", "video/x-msvideo", ITEM_VIDEO_ITEM_MOVIE, 0, 0},
   {"flv", "mpg", "video/mpeg", ITEM_VIDEO_ITEM_MOVIE, 0, 0},
   {"wmv", "mpg", "video/mpeg", ITEM_VIDEO_ITEM_MOVIE, 0, 0},
+  {"asf", "mpg", "video/mpeg", ITEM_VIDEO_ITEM_MOVIE, 0, 0},
   
   /* image */
   {"jpg" , "jpg", "image/jpeg", ITEM_IMAGE_ITEM_PHOTO, 0, 0},

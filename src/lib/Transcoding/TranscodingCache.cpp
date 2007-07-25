@@ -91,7 +91,8 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
 {
   std::string sExt = ToLower(ExtractFileExt(pSessionInfo->m_sInFileName));
   
-  if((sExt.compare("flv") == 0) || (sExt.compare("wmv") == 0) || (sExt.compare("jpg") == 0)) {  
+  if(CTranscodingMgr::Shared()->GetTranscodingType(sExt) == TT_THREADED_TRANSCODER ||
+     CTranscodingMgr::Shared()->GetTranscodingType(sExt) == TT_TRANSCODER) {
     
     if(m_bInitialized) {
       return true;
@@ -105,6 +106,8 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
     return true;
   }
   
+       
+       
   
   
   if(m_bInitialized) {
