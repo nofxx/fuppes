@@ -114,9 +114,6 @@ class CContentDatabase: public IFileAlterationMonitor
 
     bool Init(bool* p_bIsNewDB);
   
-    void BeginTransaction();
-    void Commit();
-  
     unsigned int Insert(std::string p_sStatement);
     bool Execute(std::string p_sStatement);
     bool Select(std::string p_sStatement);
@@ -129,6 +126,9 @@ class CContentDatabase: public IFileAlterationMonitor
     std::list<CSelectResult*>::iterator m_ResultListIterator;
     unsigned int  m_nRowsReturned;    
 
+
+    void BeginTransaction();
+    void Commit();  
   
     void BuildDB();
     bool IsRebuilding();// { return m_bIsRebuilding; };

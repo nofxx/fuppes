@@ -3843,5 +3843,6 @@ int ffmpeg_main(int argc, char **argv)
 
 void ffmpeg_break()
 {
+  received_sigterm = 1;
   q_pressed = 1;
 }

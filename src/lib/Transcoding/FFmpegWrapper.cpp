@@ -97,6 +97,7 @@ bool CFFmpegWrapper::Transcode(std::string p_sInFileParams, std::string p_sInFil
 
 void CFFmpegWrapper::Break()
 {
+  ffmpeg_break();
 }
 
 #endif // HAVE_LIBAVFORMAT

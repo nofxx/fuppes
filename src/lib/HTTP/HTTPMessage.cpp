@@ -80,7 +80,7 @@ CHTTPMessage::~CHTTPMessage()
 
   #ifndef DISABLE_TRANSCODING
   if(m_pTranscodingCacheObj) {
-    //CTranscodingCache::Shared()->ReleaseCacheObject(m_pTranscodingCacheObj);
+    CTranscodingCache::Shared()->ReleaseCacheObject(m_pTranscodingCacheObj);
   }  
   #endif
 
@@ -375,6 +375,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     // id3v1 request
     if(m_pTranscodingSessionInfo) {
 
+      if(m_pTranscodingSessionInfo->m_nGuessContentLength > 0) {
       if(((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 127) ||
          ((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 128)) {
       
@@ -387,17 +388,13 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
         memcpy(p_sContentChunk, sBinFake.c_str(), 127);      
         return 127;      
       }
+      }
     }
     
     
     unsigned int nRest = 0;
     unsigned int nDelayCount = 0;  
-    bool bTranscode = false;
-    
-    if(m_pTranscodingSessionInfo) {
-      bTranscode = true;
-    }
-    
+    bool bTranscode = (m_pTranscodingSessionInfo != NULL);
 
     
     #ifndef DISABLE_TRANSCODING
@@ -417,12 +414,14 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
       nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition; 
     }
     else
+      nRest = m_nBinContentLength - m_nBinContentPosition;
+    #else
+      nRest = m_nBinContentLength - m_nBinContentPosition;
     #endif
-      nRest = m_nBinContentLength - m_nBinContentPosition;    
     
     
     #ifndef DISABLE_TRANSCODING
-    while(this->IsTranscoding() && (nRest < p_nSize) && !m_pTranscodingSessionInfo->m_bBreakTranscoding)
+    while(bTranscode && !m_pTranscodingCacheObj->m_bIsComplete && (nRest < p_nSize) && !m_pTranscodingSessionInfo->m_bBreakTranscoding)
     { 
       nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition;
 
@@ -464,9 +463,8 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     #else
     nRest = m_nBinContentLength - m_nBinContentPosition;         
     #endif
-      
-  
-    if(nRest > p_nSize) {
+    
+    if(nRest >= p_nSize) {
              
       if(bTranscode && m_pTranscodingCacheObj->TranscodeToFile()) {
         
@@ -477,6 +475,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
           fsTmp.read(p_sContentChunk, p_nSize);
           fsTmp.close();
 
+          m_nBinContentPosition += p_nSize;
           return p_nSize;
         }
         else {
@@ -489,8 +488,8 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
         return p_nSize;
       }
     }
-    else if((nRest < p_nSize) && !this->IsTranscoding()) {
-         
+    else if(nRest < p_nSize && m_pTranscodingCacheObj->m_bIsComplete) {
+      
       if(bTranscode && m_pTranscodingCacheObj->TranscodeToFile()) {
         fstream fsTmp;        
         fsTmp.open(m_pTranscodingCacheObj->m_sOutFileName.c_str(), ios::binary|ios::in);
@@ -498,13 +497,15 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
           fsTmp.seekg(m_nBinContentPosition, ios::beg);   
           fsTmp.read(p_sContentChunk, nRest);
           fsTmp.close();
+          
+          m_nBinContentPosition += nRest;
           return nRest;
         }
         else {
           return 0;
         }
       }
-      else {
+      else if(!this->IsTranscoding()) {
         memcpy(p_sContentChunk, &m_pszBinContent[m_nBinContentPosition], nRest);
         m_nBinContentPosition += nRest;      
         return nRest;

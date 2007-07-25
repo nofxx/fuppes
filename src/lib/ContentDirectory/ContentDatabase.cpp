@@ -328,37 +328,50 @@ void CContentDatabase::Commit()
 }
 
 unsigned int CContentDatabase::Insert(std::string p_sStatement)
-{
-  //cout << "INSERT :: " << p_sStatement << endl; fflush(stdout);
+{  
+  bool bTransaction = false;
+  
+  if(!m_bInTransaction) {
+    bTransaction = true;
+    BeginTransaction();
+  }
 
   Lock();
-  //Open();
-
-  char* szErr = NULL;
   
-  /*int nTrans = sqlite3_exec(m_pDbHandle, "BEGIN TRANSACTION;", NULL, NULL, &szErr);
-  if(nTrans != SQLITE_OK)
-    fprintf(stderr, "CContentDatabase::Insert - start transaction :: SQL error: %s\n", szErr);  */
+  char* szErr  = NULL;
+  bool  bRetry = true;
+  int   nResult;
     
-  int nResult = sqlite3_exec(m_pDbHandle, p_sStatement.c_str(), NULL, NULL, &szErr);  
-  if(nResult != SQLITE_OK) {
-    fprintf(stderr, "CContentDatabase::Insert - insert :: SQL error: %s\n", szErr);    
-    sqlite3_free(szErr);
-    nResult = 0;
+  while(bRetry) {  
+    
+    nResult = sqlite3_exec(m_pDbHandle, p_sStatement.c_str(), NULL, NULL, &szErr);  
+    switch(nResult) {
+      case SQLITE_BUSY:
+        bRetry = true;
+        fuppesSleep(50);
+        break;
+      
+      case SQLITE_OK:
+        bRetry  = false;
+        nResult = sqlite3_last_insert_rowid(m_pDbHandle);
+        break;
+      
+      default:
+        bRetry = false;
+        fprintf(stderr, "CContentDatabase::Insert - insert :: SQL error: %s\n", szErr);          
+        sqlite3_free(szErr);
+        nResult = 0;
+        break;
+    }
+    
   }
-  else {
-    nResult = sqlite3_last_insert_rowid(m_pDbHandle);
+   
+  Unlock();
+  
+  if(bTransaction) {
+    Commit();
   }
-	
-  /*nTrans = sqlite3_exec(m_pDbHandle, "COMMIT;", NULL, NULL, &szErr);
-  if(nTrans != SQLITE_OK)
-    fprintf(stderr, "CContentDatabase::Insert - commit :: SQL error: %s\n", szErr);       */ 
-
-  //Close();
-	Unlock();
-	
-  //cout << "INSERT DONE" << endl; fflush(stdout);
-	
+  
   return nResult;  
 }
 

@@ -35,6 +35,8 @@
 
 using namespace std;
 
+#define RELEASE_DELAY 5 // seconds
+
 fuppesThreadCallback TranscodeThread(void *arg);
 
 CTranscodingCacheObject::CTranscodingCacheObject()
@@ -54,6 +56,7 @@ CTranscodingCacheObject::CTranscodingCacheObject()
   m_bInitialized    = false;
   
   m_bThreaded       = false;
+  m_nReleaseCnt     = RELEASE_DELAY;
   
   fuppesThreadInitMutex(&m_Mutex);
 }
@@ -65,7 +68,10 @@ CTranscodingCacheObject::~CTranscodingCacheObject()
     m_bBreakTranscoding = true;    
   }
   
-  if(m_TranscodeThread) {    
+  if(m_TranscodeThread) {
+    if(TranscodeToFile()) {
+      fuppesThreadCancel(m_TranscodeThread);
+    }
     fuppesThreadClose(m_TranscodeThread);        
   }
     
@@ -410,6 +416,8 @@ fuppesThreadCallback TranscodeThread(void *arg)
 
 
 
+fuppesThreadCallback ReleaseLoop(void* arg);
+
 CTranscodingCache* CTranscodingCache::m_pInstance = 0;
 
 CTranscodingCache* CTranscodingCache::Shared()
@@ -421,11 +429,17 @@ CTranscodingCache* CTranscodingCache::Shared()
 
 CTranscodingCache::CTranscodingCache()
 {
+  m_ReleaseThread = (fuppesThread)NULL;
   fuppesThreadInitMutex(&m_Mutex); 
 }
 
 CTranscodingCache::~CTranscodingCache()
 {
+  if(m_ReleaseThread) {
+    fuppesThreadCancel(m_ReleaseThread);
+    fuppesThreadClose(m_ReleaseThread);
+  }
+  
   fuppesThreadDestroyMutex(&m_Mutex);
 }
 
@@ -438,14 +452,14 @@ CTranscodingCacheObject* CTranscodingCache::GetCacheObject(std::string p_sFileNa
   
   /* check if object exists */
   pResult = m_CachedObjects[p_sFileName];  
-  if(!pResult)      
-  {
+  if(!pResult) {
     pResult = new CTranscodingCacheObject();    
     m_CachedObjects[p_sFileName] = pResult;
     pResult->m_sInFileName = p_sFileName;
   } 
     
   pResult->m_nRefCount++;
+  pResult->m_nReleaseCnt = RELEASE_DELAY;
   
   fuppesThreadUnlockMutex(&m_Mutex);  
   
@@ -455,19 +469,54 @@ CTranscodingCacheObject* CTranscodingCache::GetCacheObject(std::string p_sFileNa
 void CTranscodingCache::ReleaseCacheObject(CTranscodingCacheObject* pCacheObj)
 {
   fuppesThreadLockMutex(&m_Mutex);  
-    
-  pCacheObj->m_nRefCount--;
-  if(pCacheObj->m_nRefCount == 0)
-  {  
-    m_CachedObjectsIterator = m_CachedObjects.find(pCacheObj->m_sInFileName);
-    if(m_CachedObjectsIterator != m_CachedObjects.end()) {
-      CSharedLog::Shared()->Log(L_DEBUG, "delete cache object: " + pCacheObj->m_sInFileName, __FILE__, __LINE__);
-      m_CachedObjects.erase(m_CachedObjectsIterator);
-      delete pCacheObj;
-    } 
+ 
+  if(!m_ReleaseThread) {
+    fuppesThreadStart(m_ReleaseThread, ReleaseLoop);
   }
+  
+  pCacheObj->m_nRefCount--;
 
   fuppesThreadUnlockMutex(&m_Mutex);  
+}
+
+fuppesThreadCallback ReleaseLoop(void* arg)
+{
+  CTranscodingCache* pCache = (CTranscodingCache*)arg;
+  CTranscodingCacheObject* pCacheObj;
+  std::map<std::string, CTranscodingCacheObject*>::iterator TmpIterator; 
+  
+  while(true) {
+    fuppesSleep(1000);
+    
+    fuppesThreadLockMutex(&pCache->m_Mutex);  
+   
+    for(pCache->m_CachedObjectsIterator = pCache->m_CachedObjects.begin();
+        pCache->m_CachedObjectsIterator != pCache->m_CachedObjects.end();
+        )
+    {
+      pCacheObj = (*pCache->m_CachedObjectsIterator).second;
+      
+      if((pCacheObj->m_nRefCount == 0) && 
+         (pCacheObj->m_nReleaseCnt == 0)) {
+        TmpIterator = pCache->m_CachedObjectsIterator;
+        TmpIterator++;
+        pCache->m_CachedObjects.erase(pCache->m_CachedObjectsIterator);
+        delete pCacheObj;
+        pCache->m_CachedObjectsIterator = TmpIterator;
+      }
+      else if(pCacheObj->m_nRefCount == 0) {
+        pCacheObj->m_nReleaseCnt--;
+        pCache->m_CachedObjectsIterator++;
+      }
+      else {
+        pCache->m_CachedObjectsIterator++;
+      }
+    }
+    
+    fuppesThreadUnlockMutex(&pCache->m_Mutex);   
+  }
+  
+  fuppesThreadExit();
 }
 
 #endif // DISABLE_TRANSCODING

@@ -71,6 +71,7 @@ class CTranscodingCacheObject
   
   //private:
     unsigned int m_nRefCount;
+    unsigned int m_nReleaseCnt;
     fuppesThreadMutex  m_Mutex;
 
     CAudioEncoderBase* m_pAudioEncoder;
@@ -116,13 +117,13 @@ class CTranscodingCache
     CTranscodingCacheObject* GetCacheObject(std::string p_sFileName);
     void ReleaseCacheObject(CTranscodingCacheObject* pCacheObj);
 
+
+    fuppesThreadMutex  m_Mutex; 
+    std::map<std::string, CTranscodingCacheObject*>           m_CachedObjects;
+    std::map<std::string, CTranscodingCacheObject*>::iterator m_CachedObjectsIterator;
   
   private:
-    fuppesThreadMutex  m_Mutex;
-  
-    std::map<std::string, CTranscodingCacheObject*>           m_CachedObjects;
-    std::map<std::string, CTranscodingCacheObject*>::iterator m_CachedObjectsIterator;  
-
+    fuppesThread       m_ReleaseThread;
 };
 #endif // DISABLE_TRANSCODING
 #endif // _TRANSCODINGCACHE_H

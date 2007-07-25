@@ -6,6 +6,8 @@ Version 0.7.2a-200707??
   * fixed deadlock on malformed SSDP-messages
     (Thanks to Justin Maggard)
   * "tremor" (integer only vorbis decoder) support
+  * initial video transcoding (feature request #1617435)
+  * image rescaling (feature request #1656859)
 
 Version 0.7.2a-20070529
   * initial support for virtual containers
