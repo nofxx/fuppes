@@ -206,7 +206,12 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 			
 			/* modelNumber */
 			xmlTextWriterStartElement(writer, BAD_CAST "modelNumber");
-      xmlTextWriterWriteString(writer, BAD_CAST m_sModelNumber.c_str());
+      if(pRequest->GetDeviceSettings()->m_bXBox360Support) {
+        xmlTextWriterWriteString(writer, BAD_CAST "2.0");
+			}
+			else {
+        xmlTextWriterWriteString(writer, BAD_CAST m_sModelNumber.c_str());
+			} 
 			xmlTextWriterEndElement(writer);
       
 			/* modelURL */
