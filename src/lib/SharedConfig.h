@@ -61,6 +61,10 @@ class CSharedConfig
     std::string GetAppFullname();
     std::string GetAppVersion();
 	
+    std::string FriendlyName();
+    void        FriendlyName(std::string p_sFriendlyName);
+    
+  
     std::string GetHostname();
     std::string GetUUID();
   
@@ -122,6 +126,8 @@ class CSharedConfig
   private:
     static CSharedConfig* m_Instance;    
       
+    std::string   m_sFriendlyName;
+  
     CConfigFile*  m_pConfigFile;
     std::string   m_sConfigDir;
     std::string   m_sConfigFileName;

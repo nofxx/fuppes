@@ -82,7 +82,7 @@ CSharedConfig::CSharedConfig()
   m_nHTTPPort = DEFAULT_HTTP_PORT;
   #else
   m_nHTTPPort = 0;
-  #endif  
+  #endif
 }
 
 CSharedConfig::~CSharedConfig()
@@ -199,6 +199,20 @@ string CSharedConfig::GetAppFullname()
 string CSharedConfig::GetAppVersion()
 {
 	return FUPPES_VERSION;
+}
+
+void CSharedConfig::FriendlyName(std::string p_sFriendlyName)
+{
+  m_sFriendlyName = p_sFriendlyName;
+}
+
+std::string CSharedConfig::FriendlyName()
+{
+  if(m_sFriendlyName.empty()) {
+    m_sFriendlyName = GetAppName() + " " + GetAppVersion() + " (" + GetHostname() + ")";
+  }
+  
+  return m_sFriendlyName;
 }
 
 string CSharedConfig::GetHostname()

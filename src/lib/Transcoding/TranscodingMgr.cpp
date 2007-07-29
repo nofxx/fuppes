@@ -57,7 +57,9 @@
 
   // transcoder
   #ifdef HAVE_LIBAVFORMAT
+  #ifdef ENABLE_VIDEO_TRANSCODING
   #include "FFmpegWrapper.h"
+  #endif
   #endif
 
   #ifdef HAVE_IMAGEMAGICK
@@ -157,6 +159,7 @@ bool CTranscodingMgr::IsTranscodingExtension(std::string p_sFileExt)
   else if((p_sFileExt.compare("flac") == 0) && IsTranscodingAvailable() && m_bFlacAvailable     && m_bTranscodeFlac)
     return true;
   
+  #ifdef ENABLE_VIDEO_TRANSCODING
   else if(p_sFileExt.compare("flv") == 0)
     return true;
   else if(p_sFileExt.compare("wmv") == 0)
@@ -165,6 +168,7 @@ bool CTranscodingMgr::IsTranscodingExtension(std::string p_sFileExt)
     return true;  
   else if(p_sFileExt.compare("asf") == 0)
     return true; 
+  #endif
   
   else if(p_sFileExt.compare("jpg") == 0)
     return true;
@@ -430,10 +434,12 @@ CTranscoderBase* CTranscodingMgr::CreateTranscoder(std::string p_sFileExt)
   CTranscoderBase* pResult = NULL;
   
   #ifdef HAVE_LIBAVFORMAT
+  #ifdef ENABLE_VIDEO_TRANSCODING
   if(p_sFileExt.compare("wmv") == 0 || p_sFileExt.compare("flv") == 0 ||
      p_sFileExt.compare("asf") == 0) {     
     pResult = new CFFmpegWrapper();
   }
+  #endif
   #endif
   
   #ifdef HAVE_IMAGEMAGICK

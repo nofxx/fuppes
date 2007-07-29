@@ -238,6 +238,27 @@ if test "x$use_libavformat" = "xyes"; then
 fi
 # end libavformat
 
+
+video_transcoding=no
+AC_ARG_ENABLE(video-transcoding, 
+            [ --enable-video-transcoding  enable video transcoding using libavformat],
+            [ video_transcoding=yes; ] )
+
+AH_TEMPLATE([ENABLE_VIDEO_TRANSCODING], [])
+if test "x$have_libavformat" = "xno"; then
+  video_transcoding=no
+else
+  if test "x$video_transcoding" = "xyes"; then
+    AC_DEFINE([ENABLE_VIDEO_TRANSCODING], [1], [])
+  fi
+fi
+AM_CONDITIONAL(VIDEO_TRANSCODING, test "x$video_transcoding" = "xyes")
+
+			
+
+
+
+
 LAME_LIBS=""
 TWOLAME_LIBS=""
 
@@ -582,6 +603,16 @@ if test "x$transcoding" = "xyes"; then
 else # transcoding = yes  
   echo "  audio transcoding disabled"  
 fi
+
+echo ""
+echo "  video transcoding (experimental)"
+if test "x$video_transcoding" = "xyes"; then
+  echo "  ffmpeg     : enabled"
+else
+  echo "  ffmpeg     : disabled"
+fi
+echo ""
+
 
 # iconv
 echo ""

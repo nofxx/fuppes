@@ -80,6 +80,7 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   string sDbFile;
   string sConfigFile;
   string sVFolderFile;
+  string sFriendlyName;
   
   for(int i = 0; i < argc; i++) {
     if((strcmp(argv[i], "--config-dir") == 0) && (argc > i + 1)) {
@@ -93,15 +94,20 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
     }    
     else if((strcmp(argv[i], "--vfolder-config-file") == 0) && (argc > i + 1)) {
       sVFolderFile = argv[i + 1];
-    }     
+    }
+    else if((strcmp(argv[i], "--friendly-name") == 0) && (argc > i + 1)) {
+      sFriendlyName = argv[i + 1];
+    }
   }
   
   CSharedConfig::Shared()->SetConfigDir(sConfigDir);
   CSharedConfig::Shared()->SetConfigFileName(sConfigFile);
   CSharedConfig::Shared()->SetDbFileName(sDbFile);
   CSharedConfig::Shared()->SetVFolderConfigFileName(sVFolderFile);  
-  
+  CSharedConfig::Shared()->FriendlyName(sFriendlyName);
     
+  xmlInitParser();
+  
   // init config
   if(!CSharedConfig::Shared()->SetupConfig())
     return FUPPES_FALSE;
@@ -113,8 +119,6 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   #ifdef HAVE_LIBAVFORMAT
   av_register_all();
   #endif
-  
-  xmlInitParser();
     
   return FUPPES_OK;
 }

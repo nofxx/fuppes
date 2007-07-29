@@ -32,29 +32,15 @@ using namespace std;
 CMediaServer::CMediaServer(std::string p_sHTTPServerURL, IUPnPDevice* pOnTimerHandler):
   CUPnPDevice(UPNP_DEVICE_MEDIA_SERVER, p_sHTTPServerURL, pOnTimerHandler)
 {
-  stringstream stream;
-
-  //stream << "Free UPnP Entertainment Service (" << CSharedConfig::Shared()->GetHostname() << ")";	
-  stream << CSharedConfig::Shared()->GetAppName() << " ";
-  stream << CSharedConfig::Shared()->GetAppVersion() << " (";
-  stream << CSharedConfig::Shared()->GetHostname() << ")";  
-  m_sFriendlyName = stream.str();
-  stream.str("");
-  stream.clear();
+  m_sFriendlyName = CSharedConfig::Shared()->FriendlyName();
 
   m_sManufacturer     = "Ulrich Völkel";
   m_sManufacturerURL  = "http://www.ulrich-voelkel.de";      
   m_sModelDescription = "Free UPnP Media Server licensed under the terms of the GPL";
 
-  stream << "Free UPnP Entertainment Service " << CSharedConfig::Shared()->GetAppVersion();
-  m_sModelName = stream.str();
-  stream.str("");
-  stream.clear();
+  m_sModelName = "Free UPnP Entertainment Service " + CSharedConfig::Shared()->GetAppVersion();
 
-  stream << CSharedConfig::Shared()->GetAppVersion();   
-  m_sModelNumber = stream.str();
-  stream.str("");
-  stream.clear();
+  m_sModelNumber = CSharedConfig::Shared()->GetAppVersion();
 
   m_sModelURL        = "http://fuppes.sourceforge.net";
   m_sSerialNumber    = "012345678910";

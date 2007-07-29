@@ -136,12 +136,6 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/VorbisWrapper.cpp\
   lib/Transcoding/MpcWrapper.cpp\
   lib/Transcoding/FlacWrapper.cpp\
-  lib/Transcoding/FFmpegWrapper.h\
-  lib/Transcoding/FFmpegWrapper.cpp\
-  lib/Transcoding/ffmpeg/cmdutils.h\
-  lib/Transcoding/ffmpeg/cmdutils.c\
-  lib/Transcoding/ffmpeg/ffmpeg.h\
-  lib/Transcoding/ffmpeg/ffmpeg.c\
   lib/Transcoding/ImageMagickWrapper.h\
   lib/Transcoding/ImageMagickWrapper.cpp\
 	lib/DeviceSettings/DeviceSettings.cpp\
@@ -163,6 +157,16 @@ libfuppes_la_SOURCES = \
 	lib/Configuration/ConfigFile.h\
   version.h
 	
+if VIDEO_TRANSCODING
+libfuppes_la_SOURCES += \
+  lib/Transcoding/FFmpegWrapper.h\
+  lib/Transcoding/FFmpegWrapper.cpp\
+  lib/Transcoding/ffmpeg/cmdutils.h\
+  lib/Transcoding/ffmpeg/cmdutils.c\
+  lib/Transcoding/ffmpeg/ffmpeg.h\
+  lib/Transcoding/ffmpeg/ffmpeg.c
+endif
+
 BUILT_SOURCES = version.h
 
 version.h: Makefile
