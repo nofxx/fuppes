@@ -3761,7 +3761,9 @@ int ffmpeg_main(int argc, char **argv)
     int i;
     int64_t ti;
 
-    av_register_all();
+    //av_register_all();
+    nb_input_files = 0;
+    nb_output_files = 0;
 
     for(i=0; i<CODEC_TYPE_NB; i++){
         avctx_opts[i]= avcodec_alloc_context2(i);
@@ -3843,6 +3845,6 @@ int ffmpeg_main(int argc, char **argv)
 
 void ffmpeg_break()
 {
-  received_sigterm = 1;
-  q_pressed = 1;
+  //received_sigterm = 1;
+  //q_pressed = 1;
 }

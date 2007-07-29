@@ -230,7 +230,7 @@ std::string CHTTPMessage::GetHeaderAsString()
         }
       }
       // transcoding
-      /*else if(this->IsTranscoding()) {
+      else if(this->IsTranscoding() && (m_nTransferEncoding != HTTP_TRANSFER_ENCODING_CHUNKED)) {
         
         if((m_nRangeStart > 0) || (m_nRangeEnd > 0)) {
           
@@ -259,7 +259,7 @@ std::string CHTTPMessage::GetHeaderAsString()
         }
         
         
-      }*/
+      }
       
     } // if(m_bIsBinary)
     /* end Content length */        
@@ -748,7 +748,7 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName, SMusicTrack
   m_pTranscodingCacheObj->Init(m_pTranscodingSessionInfo);
   m_pTranscodingCacheObj->Transcode();
 
-  if(m_pTranscodingCacheObj->Threaded()) {
+  if(m_pTranscodingCacheObj->Threaded() && m_pTranscodingSessionInfo->m_nGuessContentLength == 0) {
     m_nTransferEncoding = HTTP_TRANSFER_ENCODING_CHUNKED;
   }
   
