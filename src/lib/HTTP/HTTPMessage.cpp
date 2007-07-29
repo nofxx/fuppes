@@ -488,7 +488,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
         return p_nSize;
       }
     }
-    else if(nRest < p_nSize && m_pTranscodingCacheObj->m_bIsComplete) {
+    else if(nRest < p_nSize) {
       
       if(bTranscode && m_pTranscodingCacheObj->TranscodeToFile()) {
         fstream fsTmp;        
