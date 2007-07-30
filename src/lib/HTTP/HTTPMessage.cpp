@@ -85,7 +85,7 @@ CHTTPMessage::~CHTTPMessage()
   #endif
 
   if(m_pTranscodingSessionInfo) {    
-    m_pTranscodingSessionInfo->m_pszBinBuffer = NULL;
+    //m_pTranscodingSessionInfo->m_pszBinBuffer = NULL;
     delete m_pTranscodingSessionInfo;
   }
   
@@ -379,6 +379,8 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
       if(((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 127) ||
          ((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 128)) {
       
+        cout << "chunk size: " << m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset << endl;
+           
         const string sFakeMp3Tail = 
           "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
           "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
@@ -463,6 +465,13 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     #else
     nRest = m_nBinContentLength - m_nBinContentPosition;         
     #endif
+    
+    
+    cout << "offset: " << p_nOffset << " pos: " << m_nBinContentPosition << endl;
+    cout << "rest: " << nRest << " size: " << p_nSize << endl;
+    if(bTranscode) {
+      cout << "buffer size: " << m_pTranscodingCacheObj->GetBufferSize() << endl;
+    }
     
     if(nRest >= p_nSize) {
              
@@ -722,7 +731,7 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName, SMusicTrack
   m_bIsBinary  = true;  
     
   if(m_pTranscodingSessionInfo) {
-    m_pTranscodingSessionInfo->m_pszBinBuffer = NULL;
+    //m_pTranscodingSessionInfo->m_pszBinBuffer = NULL;
     delete m_pTranscodingSessionInfo;
     
     CTranscodingCache::Shared()->ReleaseCacheObject(m_pTranscodingCacheObj);
@@ -733,8 +742,8 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName, SMusicTrack
   m_pTranscodingSessionInfo->m_bBreakTranscoding   = false;
   m_pTranscodingSessionInfo->m_bIsTranscoding      = true;
   m_pTranscodingSessionInfo->m_sInFileName         = p_sFileName;  
-  m_pTranscodingSessionInfo->m_pnBinContentLength  = &m_nBinContentLength;
-  m_pTranscodingSessionInfo->m_pszBinBuffer        = &m_pszBinContent;
+  /*m_pTranscodingSessionInfo->m_pnBinContentLength  = &m_nBinContentLength;
+  m_pTranscodingSessionInfo->m_pszBinBuffer        = &m_pszBinContent;*/
   m_pTranscodingSessionInfo->m_nGuessContentLength = 0;
   
   m_pTranscodingSessionInfo->m_sTitle = p_sTrackDetails.mAudioItem.sTitle;

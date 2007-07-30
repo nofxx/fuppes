@@ -270,6 +270,7 @@ unsigned int CTranscodingCacheObject::Transcode()
 int CTranscodingCacheObject::Append(char** p_pszBinBuffer, unsigned int p_nBinBufferSize)
 {
   Lock();   
+  cout << __FILE__ <<" :: append: " << m_nBufferSize << " bytes" << endl;
   *p_pszBinBuffer = (char*)realloc(*p_pszBinBuffer, sizeof(char)*(m_nBufferSize));  
   memcpy(*p_pszBinBuffer, m_szBuffer, m_nBufferSize);    
   Unlock();
@@ -459,8 +460,26 @@ CTranscodingCacheObject* CTranscodingCache::GetCacheObject(std::string p_sFileNa
     pResult = new CTranscodingCacheObject();    
     m_CachedObjects[p_sFileName] = pResult;
     pResult->m_sInFileName = p_sFileName;
-  } 
     
+    cout << "new transcoding obj: " << p_sFileName << endl;
+  }
+  else {
+    cout << "existing transcoding obj: " << p_sFileName << endl;
+    cout << "size: " << pResult->GetBufferSize() << endl;
+    if(pResult->m_bIsTranscoding) {
+      cout << "transcoding running" << endl;
+    }
+    else {
+      if (pResult->m_bIsComplete) {
+        cout << "complete" << endl;
+      }
+      else {
+        cout << "error :: obj incomplete but not transcoding" << endl;
+      }
+    }
+  }
+  cout << endl;
+  
   pResult->m_nRefCount++;
   pResult->m_nReleaseCnt = RELEASE_DELAY;
   

@@ -44,8 +44,8 @@ class CTranscodeSessionInfo
     bool          m_bBreakTranscoding;
     bool          m_bIsTranscoding;
     std::string   m_sInFileName;
-    unsigned int* m_pnBinContentLength;
-    char**        m_pszBinBuffer;
+    /*unsigned int* m_pnBinContentLength;
+    char**        m_pszBinBuffer;*/
   
     unsigned int  m_nGuessContentLength;
   

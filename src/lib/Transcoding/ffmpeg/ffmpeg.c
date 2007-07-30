@@ -3817,15 +3817,20 @@ int ffmpeg_main(int argc, char **argv)
     av_free_static();
 
     av_free(intra_matrix);
+    intra_matrix = NULL;
     av_free(inter_matrix);
+    inter_matrix = NULL;
 
     if (fvstats)
         fclose(fvstats);
     av_free(vstats_filename);
+    vstats_filename = NULL;
 
     av_free(opt_names);
+    opt_names = NULL;
 
     av_free(video_standard);
+    video_standard = NULL;
 
 #ifdef CONFIG_POWERPC_PERF
     extern void powerpc_display_perf_report(void);

@@ -297,7 +297,7 @@ unsigned int CLameWrapper::GuessContentLength(unsigned int p_nNumPcmSamples)
   
   cout << "size + const: " << size + 1218 << endl;*/
   
-  cout << "lame: " << p_nNumPcmSamples << " :: " << (unsigned int)p_nNumPcmSamples * (bitrate/8.0)/samplerate + 4 * 1152 * (bitrate/8.0)/samplerate + 512 << endl;
+  //cout << "lame: " << p_nNumPcmSamples << " :: " << (unsigned int)p_nNumPcmSamples * (bitrate/8.0)/samplerate + 4 * 1152 * (bitrate/8.0)/samplerate + 512 << endl;
   
   return (unsigned int)p_nNumPcmSamples * (bitrate/8.0)/samplerate + 4 * 1152 * (bitrate/8.0)/samplerate + 512;
 }
