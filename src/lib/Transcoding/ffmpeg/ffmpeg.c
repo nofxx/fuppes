@@ -3765,6 +3765,23 @@ int ffmpeg_main(int argc, char **argv)
     nb_input_files = 0;
     nb_output_files = 0;
 
+    av_free(intra_matrix);
+    intra_matrix = NULL;
+    av_free(inter_matrix);
+    inter_matrix = NULL;
+
+    if (fvstats)
+        fclose(fvstats);
+    av_free(vstats_filename);
+    vstats_filename = NULL;
+
+    av_free(opt_names);
+    opt_names = NULL;
+
+    av_free(video_standard);
+    video_standard = NULL;  
+  
+  
     for(i=0; i<CODEC_TYPE_NB; i++){
         avctx_opts[i]= avcodec_alloc_context2(i);
     }
@@ -3807,14 +3824,16 @@ int ffmpeg_main(int argc, char **argv)
             url_fclose(&s->pb);
         for(j=0;j<s->nb_streams;j++) {
             av_free(s->streams[j]->codec);
+            s->streams[j]->codec = NULL;
             av_free(s->streams[j]);
+            s->streams[j] = NULL;
         }
         av_free(s);
     }
     for(i=0;i<nb_input_files;i++)
         av_close_input_file(input_files[i]);
 
-    av_free_static();
+    //av_free_static();
 
     av_free(intra_matrix);
     intra_matrix = NULL;

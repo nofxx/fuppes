@@ -413,7 +413,10 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
         }        
       }
       
-      nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition; 
+      if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
+        nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition; 
+      }
+      
     }
     else
       nRest = m_nBinContentLength - m_nBinContentPosition;
@@ -421,11 +424,15 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
       nRest = m_nBinContentLength - m_nBinContentPosition;
     #endif
     
+    unsigned int nBufSize;
     
     #ifndef DISABLE_TRANSCODING
     while(bTranscode && !m_pTranscodingCacheObj->m_bIsComplete && (nRest < p_nSize) && !m_pTranscodingSessionInfo->m_bBreakTranscoding)
     { 
-      nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition;
+      nBufSize = m_pTranscodingCacheObj->GetBufferSize();
+      if(nBufSize > m_nBinContentPosition) {      
+        nRest = nBufSize - m_nBinContentPosition;
+      }
 
       stringstream sLog;
       sLog << "we are sending faster then we can transcode!" << endl;
@@ -454,7 +461,14 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     }    
     
     if(bTranscode) {
-      nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition;
+      
+      if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
+        nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition; 
+      }
+      else {
+        nRest = 0;
+      }
+      
       if(!m_pTranscodingCacheObj->TranscodeToFile()) {
         m_pTranscodingCacheObj->Append(&m_pszBinContent, 0);
       }

@@ -35,7 +35,7 @@
 
 using namespace std;
 
-#define RELEASE_DELAY 5 // seconds
+#define RELEASE_DELAY 10 // seconds
 
 fuppesThreadCallback TranscodeThread(void *arg);
 
@@ -195,6 +195,11 @@ void CTranscodingCacheObject::Unlock()
 unsigned int CTranscodingCacheObject::GetBufferSize()
 {
   if(m_pTranscoder != NULL) {
+    
+    if(m_bIsComplete && m_nBufferSize > 0) {
+      return m_nBufferSize;
+    }
+    
     unsigned int nFileSize = 0;
     std::fstream fsFile;
       
@@ -207,6 +212,10 @@ unsigned int CTranscodingCacheObject::GetBufferSize()
     }
     else {
       cout << __FILE__ << " error opening " << m_sOutFileName << endl;
+    }
+    
+    if(m_bIsComplete) {
+      m_nBufferSize = nFileSize;
     }
     
     return nFileSize;
@@ -290,7 +299,7 @@ fuppesThreadCallback TranscodeThread(void *arg)
     pCacheObj->m_pTranscoder->Transcode(string(""), pCacheObj->m_sInFileName, string(""), &pCacheObj->m_sOutFileName);    
     
     pCacheObj->Lock();
-    pCacheObj->m_bIsComplete = true;          
+    pCacheObj->m_bIsComplete = true;
     pCacheObj->Unlock();   
     
     fuppesThreadExit();
@@ -466,6 +475,7 @@ CTranscodingCacheObject* CTranscodingCache::GetCacheObject(std::string p_sFileNa
   else {
     cout << "existing transcoding obj: " << p_sFileName << endl;
     cout << "size: " << pResult->GetBufferSize() << endl;
+    cout << "ref count: " << pResult->m_nRefCount << endl;
     if(pResult->m_bIsTranscoding) {
       cout << "transcoding running" << endl;
     }
@@ -496,8 +506,11 @@ void CTranscodingCache::ReleaseCacheObject(CTranscodingCacheObject* pCacheObj)
     fuppesThreadStart(m_ReleaseThread, ReleaseLoop);
   }
   
+  cout << __FILE__ << " release : " << pCacheObj->m_sInFileName << endl;
+  cout << "ref count: " << pCacheObj->m_nRefCount << endl;
+  
   pCacheObj->m_nRefCount--;
-
+  
   fuppesThreadUnlockMutex(&m_Mutex);  
 }
 
@@ -522,6 +535,9 @@ fuppesThreadCallback ReleaseLoop(void* arg)
          (pCacheObj->m_nReleaseCnt == 0)) {
         TmpIterator = pCache->m_CachedObjectsIterator;
         TmpIterator++;
+        
+        cout << "free: " << pCacheObj->m_sInFileName << endl;
+           
         pCache->m_CachedObjects.erase(pCache->m_CachedObjectsIterator);
         delete pCacheObj;
         pCache->m_CachedObjectsIterator = TmpIterator;
