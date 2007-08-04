@@ -410,13 +410,15 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
         }
         else {
           m_nBinContentPosition = p_nOffset;
-        }        
+        }
       }
       
       if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
         nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition; 
       }
-      
+      else {
+        nRest = 0;
+      }
     }
     else
       nRest = m_nBinContentLength - m_nBinContentPosition;
@@ -424,20 +426,21 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
       nRest = m_nBinContentLength - m_nBinContentPosition;
     #endif
     
-    unsigned int nBufSize;
     
     #ifndef DISABLE_TRANSCODING
     while(bTranscode && !m_pTranscodingCacheObj->m_bIsComplete && (nRest < p_nSize) && !m_pTranscodingSessionInfo->m_bBreakTranscoding)
     { 
-      nBufSize = m_pTranscodingCacheObj->GetBufferSize();
-      if(nBufSize > m_nBinContentPosition) {      
-        nRest = nBufSize - m_nBinContentPosition;
+      if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
+        nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition; 
+      }
+      else {
+        nRest = 0;
       }
 
       stringstream sLog;
       sLog << "we are sending faster then we can transcode!" << endl;
       sLog << "  try     : " << (nDelayCount + 1) << "/20" << endl;
-      sLog << "  length  : " << m_nBinContentLength << endl;
+      sLog << "  length  : " << m_pTranscodingCacheObj->GetBufferSize() << endl;
       sLog << "  position: " << m_nBinContentPosition << endl;
       sLog << "  size    : " << p_nSize << endl;
       sLog << "  rest    : " << nRest << endl;
@@ -461,13 +464,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     }    
     
     if(bTranscode) {
-      
-      if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
-        nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition; 
-      }
-      else {
-        nRest = 0;
-      }
+      nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition;
       
       if(!m_pTranscodingCacheObj->TranscodeToFile()) {
         m_pTranscodingCacheObj->Append(&m_pszBinContent, 0);
@@ -768,10 +765,12 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName, SMusicTrack
     
   
   m_pTranscodingCacheObj = CTranscodingCache::Shared()->GetCacheObject(m_pTranscodingSessionInfo->m_sInFileName);
-  m_pTranscodingCacheObj->Init(m_pTranscodingSessionInfo);
+  m_pTranscodingCacheObj->Init(m_pTranscodingSessionInfo, DeviceSettings());
   m_pTranscodingCacheObj->Transcode();
 
-  if(m_pTranscodingCacheObj->Threaded() && m_pTranscodingSessionInfo->m_nGuessContentLength == 0) {
+  if(m_pTranscodingCacheObj->Threaded() && 
+     (m_pTranscodingSessionInfo->m_nGuessContentLength == 0 ||
+      DeviceSettings()->TranscodingHTTPResponse(ExtractFileExt(p_sFileName)) == RESPONSE_CHUNKED)) {
     m_nTransferEncoding = HTTP_TRANSFER_ENCODING_CHUNKED;
   }
   

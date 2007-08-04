@@ -66,45 +66,45 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent, C
 	{    
     if(sName.compare("Browse") == 0) {
       pAction = new CUPnPBrowse(p_sContent);
-      pAction->SetDeviceSettings(pDeviceSettings);
+      pAction->DeviceSettings(pDeviceSettings);
       ParseBrowseAction((CUPnPBrowse*)pAction);
     }
 	  else if(sName.compare("Search") == 0) {
 	    pAction = new CUPnPSearch(p_sContent);
-      pAction->SetDeviceSettings(pDeviceSettings);
+      pAction->DeviceSettings(pDeviceSettings);
 		  ParseSearchAction((CUPnPSearch*)pAction);
 	  }
     else if(sName.compare("GetSearchCapabilities") == 0) {
       pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_SEARCH_CAPABILITIES, p_sContent);      
-      pAction->SetDeviceSettings(pDeviceSettings);
+      pAction->DeviceSettings(pDeviceSettings);
     }
     else if(sName.compare("GetSortCapabilities") == 0) {
       pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_SORT_CAPABILITIES, p_sContent);
-      pAction->SetDeviceSettings(pDeviceSettings);
+      pAction->DeviceSettings(pDeviceSettings);
     }
     else if(sName.compare("GetSystemUpdateID") == 0) {
       pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_SYSTEM_UPDATE_ID, p_sContent);
-      pAction->SetDeviceSettings(pDeviceSettings);
+      pAction->DeviceSettings(pDeviceSettings);
     }  
     else if(sName.compare("GetProtocolInfo") == 0) {
       pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_PROTOCOL_INFO, p_sContent);
-      pAction->SetDeviceSettings(pDeviceSettings);
+      pAction->DeviceSettings(pDeviceSettings);
     }
 	}
 	else if(sNs.compare("urn:schemas-upnp-org:service:ConnectionManager:1") == 0)
 	{
 	  pAction = new CUPnPAction(UPNP_SERVICE_CONNECTION_MANAGER, UPNP_UNKNOWN, p_sContent);
-    pAction->SetDeviceSettings(pDeviceSettings);
+    pAction->DeviceSettings(pDeviceSettings);
 	}
 	else if(sNs.compare("urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1") == 0)
 	{
 	  if(sName.compare("IsAuthorized") == 0) {
 	    pAction = new CUPnPAction(UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR, UPNP_IS_AUTHORIZED, p_sContent);
-      pAction->SetDeviceSettings(pDeviceSettings);
+      pAction->DeviceSettings(pDeviceSettings);
 	  }
 	  else if(sName.compare("IsValidated") == 0) {
 	    pAction = new CUPnPAction(UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR, UPNP_IS_VALIDATED, p_sContent);
-      pAction->SetDeviceSettings(pDeviceSettings);
+      pAction->DeviceSettings(pDeviceSettings);
 	  }
 	}
 	
@@ -144,7 +144,7 @@ bool CUPnPActionFactory::ParseBrowseAction(CUPnPBrowse* pAction)
   
   /* Object ID */
   string sRxObjId;
-  if(!pAction->GetDeviceSettings()->m_bXBox360Support) {
+  if(!pAction->DeviceSettings()->m_bXBox360Support) {
     sRxObjId = "<ObjectID>(.+)</ObjectID>";
   }
   else {

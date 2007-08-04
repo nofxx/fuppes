@@ -163,7 +163,7 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
       xmlTextWriterEndElement(writer);
 		
 			// friendlyName
-			if(pRequest->GetDeviceSettings()->m_bXBox360Support) {
+			if(pRequest->DeviceSettings()->m_bXBox360Support) {
 			  stringstream sName;
 				sName << m_sFriendlyName << " : 1 : Windows Media Connect";
 			
@@ -193,7 +193,7 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 			xmlTextWriterEndElement(writer);
 			
 			// modelName
-			if(pRequest->GetDeviceSettings()->m_bXBox360Support) {
+			if(pRequest->DeviceSettings()->m_bXBox360Support) {
 			  xmlTextWriterStartElement(writer, BAD_CAST "modelName");
         xmlTextWriterWriteString(writer, BAD_CAST "Windows Media Connect compatible (fuppes)");
 			  xmlTextWriterEndElement(writer);
@@ -206,7 +206,7 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 			
 			/* modelNumber */
 			xmlTextWriterStartElement(writer, BAD_CAST "modelNumber");
-      if(pRequest->GetDeviceSettings()->m_bXBox360Support) {
+      if(pRequest->DeviceSettings()->m_bXBox360Support) {
         xmlTextWriterWriteString(writer, BAD_CAST "2.0");
 			}
 			else {
@@ -246,7 +246,7 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 				
 			  if(pTmp->GetUPnPDeviceType() == UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR)
 				{
-				  if(!pRequest->GetDeviceSettings()->m_bXBox360Support)
+				  if(!pRequest->DeviceSettings()->m_bXBox360Support)
 			      continue;
 				
 				  stringstream sDescription;

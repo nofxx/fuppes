@@ -484,7 +484,8 @@ bool CSharedConfig::ResolveIPByInterface(std::string p_sInterfaceName)
 		return false;
 	}
   saddr = (struct sockaddr_in*)&ifa.ifr_addr;
-  m_sIP = inet_ntoa(saddr->sin_addr);
+  m_sIP = inet_ntoa(saddr->sin_addr);  
+  //cout << "address of iface: " << p_sInterfaceName << " = " << m_sIP << endl;  
   return true;
   #endif
 }

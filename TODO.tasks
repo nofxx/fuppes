@@ -12,6 +12,11 @@
       <comment>- temp dir configurable (default value from env-vars)
 - check if temp dir is writable on startup (only if temp dir is needed)</comment>
     </item>
+    <item>
+      <attribute id="1186254539" priority="1" done="0" start_date="732892" enddate="99999999" notify="0" endtime="-60" last_edited="1186254539"/>
+      <summary>Device specific config file</summary>
+      <comment>- include device specific config files e.g. xbox360.cfg</comment>
+    </item>
   </category>
   <category title="Business" place="1"/>
   <category title="Unfiled" place="2"/>

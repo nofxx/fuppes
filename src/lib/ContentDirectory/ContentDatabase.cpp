@@ -715,9 +715,11 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
   string sTitle;
   switch(nObjectType)
   {
+    case ITEM_AUDIO_ITEM:
     case ITEM_AUDIO_ITEM_MUSIC_TRACK:     
 		  nDetailId = InsertAudioFile(pDb, p_sFileName, &sTitle); 
       break;
+    case ITEM_IMAGE_ITEM:
 		case ITEM_IMAGE_ITEM_PHOTO:
 		  nDetailId = InsertImageFile(pDb, p_sFileName);
 			break;
@@ -733,11 +735,6 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
   
   // insert object  
   string sTmpFileName =  p_sFileName;
-  
-  // vdr -> vob
-  if(ExtractFileExt(sTmpFileName) == "vdr") {
-    sTmpFileName = TruncateFileExt(sTmpFileName) + ".vob";
-  }
   
   // format file name
   int nPathLen = ExtractFilePath(sTmpFileName).length();
@@ -766,7 +763,7 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
        "'" << SQLEscape(p_sFileName) << "', " << 
        "'" << sTmpFileName << "', " << 
        "'" << sTitle << "', " << 
-       "'" << CFileDetails::Shared()->GetMimeType(p_sFileName, false) << "');";
+       "'" << "obsolete" << "');";
                
   pDb->Insert(sSql.str());  
   sSql.str("");

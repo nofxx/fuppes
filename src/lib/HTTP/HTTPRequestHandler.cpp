@@ -46,6 +46,8 @@ bool CHTTPRequestHandler::HandleRequest(CHTTPMessage* pRequest, CHTTPMessage* pR
   cout << "Type: " << pRequest->GetMessageType() << endl;  */
   bool bResult;
   
+  pResponse->DeviceSettings(pRequest->DeviceSettings());
+  
   switch(pRequest->GetMessageType())
   {
     // HTTP request
@@ -126,8 +128,10 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
     CPlaylistFactory* pFact = new CPlaylistFactory();    
     string sPlaylist = pFact->BuildPlaylist(sObjectId);
     pResponse->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    
-    pResponse->SetContentType(CFileDetails::GetMimeType(sObjectId, false));    
-    pResponse->SetContent(sPlaylist);    
+    string sExt = ExtractFileExt(sObjectId);
+    pResponse->SetContentType(pRequest->DeviceSettings()->MimeType(sExt));
+    //pResponse->SetContentType(CFileDetails::GetMimeType(sObjectId));    
+    pResponse->SetContent(sPlaylist); 
 
     delete pFact;
     bResult = true;
@@ -232,8 +236,8 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
   
   
   string sDevice = " and o.DEVICE is NULL ";
-  if(CVirtualContainerMgr::Shared()->IsVirtualContainer(HexToInt(p_sObjectId), pRequest->GetDeviceSettings()->m_sVirtualFolderDevice))
-    sDevice = " and o.DEVICE = '" + pRequest->GetDeviceSettings()->m_sVirtualFolderDevice + "' ";
+  if(CVirtualContainerMgr::Shared()->IsVirtualContainer(HexToInt(p_sObjectId), pRequest->DeviceSettings()->m_sVirtualFolderDevice))
+    sDevice = " and o.DEVICE = '" + pRequest->DeviceSettings()->m_sVirtualFolderDevice + "' ";
   
   sSql << 
     "select " <<
@@ -260,10 +264,11 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
     }
     else
     {    
-      if(CFileDetails::IsTranscodingExtension(sExt)) {
+      //if(CFileDetails::IsTranscodingExtension(sExt)) {
+      if(pRequest->DeviceSettings()->DoTranscode(sExt)) {
         CSharedLog::Shared()->Log(L_EXTENDED, "transcode " + sPath, __FILE__, __LINE__);        
      
-        sMimeType = CFileDetails::GetMimeType(sPath, true);
+        sMimeType = pRequest->DeviceSettings()->MimeType(sExt); // CFileDetails::GetMimeType(sPath, true);
         if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {          
           //
           SMusicTrack trackDetails;
@@ -293,11 +298,12 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
           // mark the head response as chunked so
           // the correct header will be build
           pResponse->SetIsBinary(true);
+          #warning todo: set encoding depending on decoder/encoder combination
           pResponse->SetTransferEncoding(HTTP_TRANSFER_ENCODING_CHUNKED);
         }
       }
       else {
-        sMimeType = pDb->GetResult()->GetValue("MIME_TYPE");
+        sMimeType = pRequest->DeviceSettings()->MimeType(sExt); //pDb->GetResult()->GetValue("MIME_TYPE");
         pResponse->LoadContentFromFile(sPath);
       }      
       

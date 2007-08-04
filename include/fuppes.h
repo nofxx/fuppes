@@ -81,6 +81,8 @@ int fuppes_is_started();
 const char* fuppes_get_version();
 
 void fuppes_print_info();
+void fuppes_print_device_settings();
+  
 void fuppes_set_loglevel(int n_log_level);
 void fuppes_inc_loglevel();
 void fuppes_rebuild_db();

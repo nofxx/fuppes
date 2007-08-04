@@ -27,6 +27,7 @@
 #include "../SharedConfig.h"
 #include "../SharedLog.h"
 #include "../Transcoding/TranscodingMgr.h"
+#include "../DeviceSettings/DeviceIdentificationMgr.h"
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
@@ -57,25 +58,25 @@ extern "C"
 using namespace std;
 
 /** default file settings */
-struct FileType_t FileTypes[] = 
+/*struct FileType_t FileTypes[] = 
 {
-  /* audio types */
+  // audio types 
   {"mp3" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "audio/mpeg", "MP3"},
   {"ogg" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "application/octet-stream", ""},
   {"mpc" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "application/octet-stream", ""},
   {"raw" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "application/octet-stream", ""},
   {"wav" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "audio/x-wav", ""},
   {"flac", ITEM_AUDIO_ITEM_MUSIC_TRACK, "audio/x-flac", ""},  
-  {"wma" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "x-ms-wma", "WMAFULL"},
+  {"wma" , ITEM_AUDIO_ITEM_MUSIC_TRACK, "audio/x-ms-wma", "WMAFULL"},
   
-  /* image types */
+  // image types 
   {"jpeg", ITEM_IMAGE_ITEM_PHOTO, "image/jpeg", ""},
   {"jpg" , ITEM_IMAGE_ITEM_PHOTO, "image/jpeg", ""},
   {"bmp" , ITEM_IMAGE_ITEM_PHOTO, "image/bmp", ""},
   {"png" , ITEM_IMAGE_ITEM_PHOTO, "image/png", ""},
   {"gif" , ITEM_IMAGE_ITEM_PHOTO, "image/gif", ""},
   
-  /* video types */
+  // video types 
   {"mpeg", ITEM_VIDEO_ITEM_MOVIE, "video/mpeg", ""},
   {"mpg" , ITEM_VIDEO_ITEM_MOVIE, "video/mpeg", ""},
   {"mp4" , ITEM_VIDEO_ITEM_MOVIE, "video/mp4", ""}, // "video/mpeg"},
@@ -86,37 +87,36 @@ struct FileType_t FileTypes[] =
   {"flv" , ITEM_VIDEO_ITEM_MOVIE, "application/x-flash-video", ""},
   {"asf" , ITEM_VIDEO_ITEM_MOVIE, "video/x-ms-asf", ""},
   
-  /* playlist types */
+  // playlist types 
   {"m3u", CONTAINER_PLAYLIST_CONTAINER, "audio/x-mpegurl", ""},
   {"pls", CONTAINER_PLAYLIST_CONTAINER, "audio/x-scpls", ""},
   
-  /* empty entry to mark the list's end */
+  // empty entry to mark the list's end 
   {"", OBJECT_TYPE_UNKNOWN, "", ""}
 };
+*/
 
-
-struct TranscodingSetting_t TranscodingSettings[] =
+/*struct TranscodingSetting_t TranscodingSettings[] =
 {
-  /* audio */
+  // audio 
   //{"ogg" , "wav", "audio/x-wav", ITEM_AUDIO_ITEM_MUSIC_TRACK, 0, 44100},
   {"ogg" , "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK, 128, 44100},
   {"mpc" , "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK, 128, 44100},
   {"flac", "mp3", "audio/mpeg", ITEM_AUDIO_ITEM_MUSIC_TRACK, 128, 44100},
   
-  /* video */
+  // video
   {"vdr", "vob", "video/x-ms-vob", ITEM_VIDEO_ITEM_MOVIE, 0, 0},
   //{"flv", "avi", "video/x-msvideo", ITEM_VIDEO_ITEM_MOVIE, 0, 0},
   {"flv", "mpg", "video/mpeg", ITEM_VIDEO_ITEM_MOVIE, 0, 0},
   {"wmv", "mpg", "video/mpeg", ITEM_VIDEO_ITEM_MOVIE, 0, 0},
   {"asf", "mpg", "video/mpeg", ITEM_VIDEO_ITEM_MOVIE, 0, 0},
   
-  /* image */
+  // image
   {"jpg" , "jpg", "image/jpeg", ITEM_IMAGE_ITEM_PHOTO, 0, 0},
   
-  /* empty entry to mark the list's end */
+  // empty entry to mark the list's end 
   {"", "", "", OBJECT_TYPE_UNKNOWN, 0, 0}
-};
- 
+}; */
 
 CFileDetails* CFileDetails::m_Instance = 0;
 
@@ -134,7 +134,10 @@ CFileDetails::CFileDetails()
 OBJECT_TYPE CFileDetails::GetObjectType(std::string p_sFileName)
 {
   string sExt = ToLower(ExtractFileExt(p_sFileName));
-  struct FileType_t* pType;   
+  
+  return CDeviceIdentificationMgr::Shared()->DefaultDevice()->ObjectType(sExt);
+  
+  /*struct FileType_t* pType;   
   
   pType = FileTypes;
   while(!pType->sExt.empty())
@@ -149,13 +152,16 @@ OBJECT_TYPE CFileDetails::GetObjectType(std::string p_sFileName)
   }
 
   CSharedLog::Shared()->Log(L_WARNING, "unhandled file extension: " + sExt, __FILE__, __LINE__);  
-  return OBJECT_TYPE_UNKNOWN;  
+  return OBJECT_TYPE_UNKNOWN;  */
 }
 
-std::string CFileDetails::GetMimeType(std::string p_sFileName, bool p_bTranscodingMimeType)
+/*std::string CFileDetails::GetMimeType(std::string p_sFileName) //, bool p_bTranscodingMimeType)
 {
   string sExt = ToLower(ExtractFileExt(p_sFileName));
-  struct FileType_t* pType; 
+  
+  return CDeviceIdentificationMgr::Shared()->DefaultDevice()->MimeType(sExt);
+  */
+  /*struct FileType_t* pType; 
   struct TranscodingSetting_t* pTranscoding;  
   
   pType = FileTypes;
@@ -187,9 +193,9 @@ std::string CFileDetails::GetMimeType(std::string p_sFileName, bool p_bTranscodi
   
   CSharedLog::Shared()->Log(L_EXTENDED_WARN, string("unhandled file extension: ") + sExt + " :: " + p_sFileName, __FILE__, __LINE__);  
   return "";
-}
+}*/
 
-std::string CFileDetails::GetObjectTypeAsString(unsigned int p_nObjectType)
+/*std::string CFileDetails::GetObjectTypeAsString(unsigned int p_nObjectType)
 {
   switch(p_nObjectType)
   {
@@ -207,7 +213,7 @@ std::string CFileDetails::GetObjectTypeAsString(unsigned int p_nObjectType)
       return "object.audioItem.musicTrack";
     case ITEM_AUDIO_ITEM_AUDIO_BROADCAST :
       return "object.audioItem.audioBroadcast";
-    //ITEM_AUDIO_ITEM_AUDIO_BOOK      = 202,*/
+    //ITEM_AUDIO_ITEM_AUDIO_BOOK      = 202,
   
     case ITEM_VIDEO_ITEM :
       return "object.videoItem";
@@ -217,14 +223,51 @@ std::string CFileDetails::GetObjectTypeAsString(unsigned int p_nObjectType)
       return "object.videoItem.videoBroadcast";
     //ITEM_VIDEO_ITEM_MUSIC_VIDEO_CLIP = 302,  
   
-    /*CONTAINER_PERSON = 4,*/
+    //CONTAINER_PERSON = 4,
     case CONTAINER_PERSON_MUSIC_ARTIST :
       return "object.container.person.musicArtist";
     
     case CONTAINER_PLAYLIST_CONTAINER :
       return "object.container.playlistContainer";
     
-    /*CONTAINER_ALBUM = 6, */
+    //CONTAINER_ALBUM = 6, 
+    
+		case CONTAINER_ALBUM_MUSIC_ALBUM :
+		  return "object.container.album.musicAlbum";
+			
+    case CONTAINER_ALBUM_PHOTO_ALBUM :
+		  return "object.container.album.photoAlbum";
+    
+    case CONTAINER_GENRE :
+      return "object.container.genre";
+    case CONTAINER_GENRE_MUSIC_GENRE :
+      return "object.container.genre.musicGenre";    
+    /*  CONTAINER_GENRE_MOVIE_GENRE = 701,
+      
+    CONTAINER_STORAGE_SYSTEM = 8,
+    CONTAINER_STORAGE_VOLUME = 9, */
+    /*case CONTAINER_STORAGE_FOLDER :
+      return "object.container.storageFolder";
+  
+    default :
+      return "CFileDetails::GetObjectTypeAsString() :: unhandled type (please send a bugreport)";
+  }
+}
+*/
+
+
+std::string CFileDetails::GetContainerTypeAsStr(OBJECT_TYPE p_nContainerType)
+{
+  switch(p_nContainerType) {
+    
+    //CONTAINER_PERSON = 4,
+    case CONTAINER_PERSON_MUSIC_ARTIST :
+      return "object.container.person.musicArtist";
+    
+    case CONTAINER_PLAYLIST_CONTAINER :
+      return "object.container.playlistContainer";
+    
+    //CONTAINER_ALBUM = 6, 
     
 		case CONTAINER_ALBUM_MUSIC_ALBUM :
 		  return "object.container.album.musicAlbum";
@@ -242,15 +285,16 @@ std::string CFileDetails::GetObjectTypeAsString(unsigned int p_nObjectType)
     CONTAINER_STORAGE_VOLUME = 9, */
     case CONTAINER_STORAGE_FOLDER :
       return "object.container.storageFolder";
-  
-    default :
-      return "CFileDetails::GetObjectTypeAsString() :: unhandled type (please send a bugreport)";
+    
+    default:
+      return "unknown";
   }
 }
 
 bool CFileDetails::IsSupportedFileExtension(std::string p_sFileExtension)
 {
-  p_sFileExtension = ToLower(p_sFileExtension);
+  return CDeviceIdentificationMgr::Shared()->DefaultDevice()->Exists(p_sFileExtension);
+  /*p_sFileExtension = ToLower(p_sFileExtension);
   struct FileType_t* pType;   
   
   pType = FileTypes;
@@ -263,11 +307,11 @@ bool CFileDetails::IsSupportedFileExtension(std::string p_sFileExtension)
     pType++;
   }
 
-  return false;
+  return false;*/
 }
 
-std::string CFileDetails::GetDLNA(std::string p_sFileExtension)
-{
+/*std::string CFileDetails::GetDLNA(std::string p_sFileExtension)
+{  
   p_sFileExtension = ToLower(p_sFileExtension);
   struct FileType_t* pType;   
   
@@ -282,11 +326,18 @@ std::string CFileDetails::GetDLNA(std::string p_sFileExtension)
   }
 
   return "";
-}
+}*/
 
-bool CFileDetails::IsTranscodingExtension(std::string p_sExt)
+/*bool CFileDetails::IsTranscodingExtension(std::string p_sExt)
 {
-  TranscodingSetting_t* pTranscoding;
+  bool bTranscode = 
+    CDeviceIdentificationMgr::Shared()->DefaultDevice()->DoTranscode(p_sExt);
+  
+  #warning todo check if required transcoding libs exist
+  
+  return bTranscode;*/
+  
+  /*TranscodingSetting_t* pTranscoding;
   pTranscoding = TranscodingSettings;
   while(!pTranscoding->sExt.empty())
   {    
@@ -296,9 +347,9 @@ bool CFileDetails::IsTranscodingExtension(std::string p_sExt)
     pTranscoding++;
   }
   return false;
-}
+}*/
 
-std::string CFileDetails::GetTargetExtension(std::string p_sExt)
+/*std::string CFileDetails::GetTargetExtension(std::string p_sExt)
 {
   string sResult = p_sExt;
   
@@ -315,9 +366,9 @@ std::string CFileDetails::GetTargetExtension(std::string p_sExt)
   }
   
   return sResult;
-}
+}*/
 
-int CFileDetails::GetTargetBitrate(std::string p_sExt)
+/*int CFileDetails::GetTargetBitrate(std::string p_sExt)
 {
   int nResult = 0;
   
@@ -353,7 +404,7 @@ int CFileDetails::GetTargetSamplerate(std::string p_sExt)
   }
   
   return nResult;  
-}
+}*/
 
 
 bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pMusicTrack)

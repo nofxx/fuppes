@@ -305,7 +305,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
     fuppesThread SessionThread = (fuppesThread)NULL;
     fuppesThreadStartArg(SessionThread, SessionLoop, *pSession);
     pSession->SetThreadHandle(SessionThread);
-
+    
     // ... and store the thread in the session list
     pHTTPServer->m_ThreadList.push_back(pSession);
 		
@@ -337,8 +337,9 @@ fuppesThreadCallback SessionLoop(void *arg)
     // receive HTTP-request
 		pRequest->SetRemoteEndPoint(pSession->GetRemoteEndPoint());
     bResult = ReceiveRequest(pSession, pRequest);  
-    if(!bResult)
+    if(!bResult) {
       break;
+    }
 
     sLog << "REQUEST:" << endl << pRequest->GetMessage();    
     CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__);
@@ -521,7 +522,7 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
     if(sContent.length() < nContentLength) {
       
       // xbox 360: sends a content length of 3 but only 2 bytes of data
-      if((p_Request->GetDeviceSettings()->m_bXBox360Support) && (nContentLength == 3)) {
+      if((p_Request->DeviceSettings()->m_bXBox360Support) && (nContentLength == 3)) {
         bDoReceive = false;
       }
       else {      

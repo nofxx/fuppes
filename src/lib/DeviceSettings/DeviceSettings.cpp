@@ -27,6 +27,169 @@
 
 using namespace std;
 
+CImageSettings::CImageSettings()
+{ 
+  bEnabled = true;
+}
+
+CImageSettings::CImageSettings(CImageSettings* pImageSettings)
+{
+  bEnabled = pImageSettings->bEnabled;
+}
+
+CTranscodingSettings::CTranscodingSettings() 
+{
+  bEnabled = true;
+  nTranscodingResponse = RESPONSE_CHUNKED;
+  nBitRate = 0;
+  nSampleRate = 0;
+}
+
+CTranscodingSettings::CTranscodingSettings(CTranscodingSettings* pTranscodingSettings)
+{
+  bEnabled = pTranscodingSettings->bEnabled;
+  nTranscodingResponse = pTranscodingSettings->nTranscodingResponse;
+  
+  nBitRate    = pTranscodingSettings->BitRate();
+  nSampleRate = pTranscodingSettings->SampleRate();
+}
+
+
+CFileSettings::CFileSettings() 
+{
+  pTranscodingSettings = NULL;
+  pImageSettings       = NULL;
+  bEnabled = true;
+}
+
+CFileSettings::CFileSettings(CFileSettings* pFileSettings)
+{
+  if(pFileSettings->pTranscodingSettings) {
+    pTranscodingSettings = new CTranscodingSettings(pFileSettings->pTranscodingSettings);
+  }
+  else if(pFileSettings->pImageSettings) {
+    pImageSettings = new CImageSettings(pFileSettings->pImageSettings);
+  }
+}
+
+std::string CFileSettings::ObjectTypeAsStr() 
+{
+  switch(nType) {
+    case OBJECT_TYPE_UNKNOWN :
+      return "unknown";
+    
+    case ITEM_IMAGE_ITEM :
+      return "object.item.imageItem";    
+    case ITEM_IMAGE_ITEM_PHOTO :
+      return "object.item.imageItem.photo";
+  
+    case ITEM_AUDIO_ITEM :
+      return "object.item.audioItem";
+    case ITEM_AUDIO_ITEM_MUSIC_TRACK :
+      return "object.item.audioItem.musicTrack";
+    case ITEM_AUDIO_ITEM_AUDIO_BROADCAST :
+      return "object.item.audioItem.audioBroadcast";
+    //ITEM_AUDIO_ITEM_AUDIO_BOOK      = 202,*/
+  
+    case ITEM_VIDEO_ITEM :
+      return "object.item.videoItem";
+    case ITEM_VIDEO_ITEM_MOVIE :
+      return "object.item.videoItem"; //.movie";
+    case ITEM_VIDEO_ITEM_VIDEO_BROADCAST :
+      return "object.item.videoItem.videoBroadcast";
+    //ITEM_VIDEO_ITEM_MUSIC_VIDEO_CLIP = 302,  
+  
+    /*CONTAINER_PERSON = 4,*/
+    case CONTAINER_PERSON_MUSIC_ARTIST :
+      return "object.container.person.musicArtist";
+    
+    case CONTAINER_PLAYLIST_CONTAINER :
+      return "object.container.playlistContainer";
+    
+    /*CONTAINER_ALBUM = 6, */
+    
+		case CONTAINER_ALBUM_MUSIC_ALBUM :
+		  return "object.container.album.musicAlbum";
+			
+    case CONTAINER_ALBUM_PHOTO_ALBUM :
+		  return "object.container.album.photoAlbum";
+    
+    case CONTAINER_GENRE :
+      return "object.container.genre";
+    case CONTAINER_GENRE_MUSIC_GENRE :
+      return "object.container.genre.musicGenre";    
+    /*  CONTAINER_GENRE_MOVIE_GENRE = 701,
+      
+    CONTAINER_STORAGE_SYSTEM = 8,
+    CONTAINER_STORAGE_VOLUME = 9, */
+    case CONTAINER_STORAGE_FOLDER :
+      return "object.container.storageFolder";
+    
+    default:
+      return "unknown";
+  }
+}
+
+std::string CFileSettings::MimeType()
+{
+  if(pTranscodingSettings && pTranscodingSettings->Enabled()) {
+    return pTranscodingSettings->MimeType();
+  }
+  else { 
+    return sMimeType;
+  }
+}
+
+std::string CFileSettings::DLNA()
+{
+  if(pTranscodingSettings && pTranscodingSettings->Enabled()) {
+    return pTranscodingSettings->DLNA();
+  }
+  else { 
+    return sDLNA;
+  }
+}
+
+unsigned int  CFileSettings::TargetSampleRate()
+{
+  if(pTranscodingSettings && pTranscodingSettings->Enabled()) {
+    return pTranscodingSettings->SampleRate();
+  }
+  else {
+    return 0;
+  }
+}
+
+unsigned int  CFileSettings::TargetBitRate()
+{
+  if(pTranscodingSettings && pTranscodingSettings->Enabled()) {
+    return pTranscodingSettings->BitRate();
+  }
+  else {
+    return 0;
+  }
+}
+
+std::string CFileSettings::Extension(std::string p_sExt)
+{
+  if(pTranscodingSettings && pTranscodingSettings->Enabled()) {
+    return pTranscodingSettings->Extension();
+  }
+  else {
+    return p_sExt;
+  }
+}
+
+TRANSCODING_HTTP_RESPONSE CFileSettings::TranscodingHTTPResponse()
+{ 
+  if(pTranscodingSettings && pTranscodingSettings->Enabled()) {
+    return pTranscodingSettings->TranscodingHTTPResponse();
+  }
+  else {
+    return RESPONSE_CHUNKED;
+  }
+}
+
 CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
 {
   m_sDeviceName = p_sDeviceName;
@@ -34,15 +197,46 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
 	
   m_bShowPlaylistAsContainer = false;
 	m_bXBox360Support					 = false;
-	m_nMaxFileNameLength			 = 0;
 	m_bDLNAEnabled             = false;
-	
-	m_ImageSettings.bResize         = false;
-	m_ImageSettings.bResizeIfLarger = false;
-	m_ImageSettings.nMaxWidth       = 0;
-	m_ImageSettings.nMaxHeight      = 0;
+	//m_nTranscodingResponse     = RESPONSE_CHUNKED;
     
   m_DisplaySettings.bShowChildCountInTitle = false;
+  m_DisplaySettings.nMaxFileNameLength     = 0;
+}
+
+CDeviceSettings::CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSettings)
+{
+  m_sDeviceName = p_sDeviceName;
+  m_sVirtualFolderDevice = pSettings->m_sVirtualFolderDevice;
+  
+  m_bShowPlaylistAsContainer = pSettings->m_bShowPlaylistAsContainer;
+  m_bXBox360Support          = pSettings->m_bXBox360Support;
+  m_bDLNAEnabled             = pSettings->m_bDLNAEnabled;
+  //m_nTranscodingResponse     = pSettings->m_nTranscodingResponse;
+  
+  /*m_ImageSettings.bResize    = pSettings->m_ImageSettings.bResize;
+  m_ImageSettings.bResizeIfLarger = pSettings->m_ImageSettings.bResizeIfLarger;
+  m_ImageSettings.nWidth  = pSettings->m_ImageSettings.nWidth;
+  m_ImageSettings.nHeight = pSettings->m_ImageSettings.nWidth;*/
+  
+  m_DisplaySettings.bShowChildCountInTitle = pSettings->m_DisplaySettings.bShowChildCountInTitle;
+  m_DisplaySettings.nMaxFileNameLength     = pSettings->m_DisplaySettings.nMaxFileNameLength; 
+  
+  
+  for(pSettings->m_FileSettingsIterator = pSettings->m_FileSettings.begin();
+      pSettings->m_FileSettingsIterator != pSettings->m_FileSettings.end();
+      pSettings->m_FileSettingsIterator++) {
+    
+    m_FileSettingsIterator = m_FileSettings.find(pSettings->m_FileSettingsIterator->first);
+    
+    if(m_FileSettingsIterator != m_FileSettings.end()) {
+      m_FileSettings[pSettings->m_FileSettingsIterator->first] = m_FileSettingsIterator->second;
+    }
+    else {    
+      m_FileSettings[pSettings->m_FileSettingsIterator->first] =
+          new CFileSettings(pSettings->m_FileSettingsIterator->second);
+    }
+  }  
 }
 
 bool CDeviceSettings::HasUserAgent(std::string p_sUserAgent)
@@ -78,4 +272,139 @@ bool CDeviceSettings::HasIP(std::string p_sIPAddress)
 		  return true;
 	}
 	return false;
+}
+
+CFileSettings* CDeviceSettings::FileSettings(std::string p_sExt) {
+  
+  m_FileSettingsIterator = m_FileSettings.find(p_sExt);
+  
+  if(m_FileSettingsIterator == m_FileSettings.end()) {
+    m_FileSettings[p_sExt] = new CFileSettings();
+  }
+  
+  return m_FileSettings[p_sExt];  
+}
+
+void CDeviceSettings::AddExt(CFileSettings* pFileSettings, std::string p_sExt)
+{
+  m_FileSettingsIterator = m_FileSettings.find(p_sExt);
+  if(m_FileSettingsIterator != m_FileSettings.end()) {
+    return;
+  }
+  m_FileSettings[p_sExt] = pFileSettings;
+}
+
+
+std::string CDeviceSettings::ObjectTypeAsStr(std::string p_sExt)
+{
+  m_FileSettingsIterator = m_FileSettings.find(p_sExt);
+  if(m_FileSettingsIterator != m_FileSettings.end()) {
+    return m_FileSettingsIterator->second->ObjectTypeAsStr();
+  }
+  else {
+    return "unkown";
+  }
+}
+
+OBJECT_TYPE CDeviceSettings::ObjectType(std::string p_sExt)
+{
+  m_FileSettingsIterator = m_FileSettings.find(p_sExt);
+  if(m_FileSettingsIterator != m_FileSettings.end()) {
+    return m_FileSettingsIterator->second->ObjectType();
+  }
+  else {
+    return OBJECT_TYPE_UNKNOWN;
+  }
+}
+
+
+bool CDeviceSettings::DoTranscode(std::string p_sExt)
+{
+  m_FileSettingsIterator = m_FileSettings.find(p_sExt);
+  if(m_FileSettingsIterator != m_FileSettings.end()) {
+    if(m_FileSettingsIterator->second->pTranscodingSettings ||
+       m_FileSettingsIterator->second->pImageSettings) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+  else 
+    return false;
+}
+
+
+std::string CDeviceSettings::MimeType(std::string p_sExt)
+{
+  FileSettingsIterator_t  iter;
+  
+  iter = m_FileSettings.find(p_sExt);
+  if(iter != m_FileSettings.end())
+    return iter->second->MimeType();
+  else  
+    return "";
+}
+
+std::string CDeviceSettings::DLNA(std::string p_sExt)
+{
+  FileSettingsIterator_t  iter;
+  
+  iter = m_FileSettings.find(p_sExt);
+  if(iter != m_FileSettings.end())
+    return iter->second->DLNA();
+  else  
+    return "";
+}
+
+unsigned int CDeviceSettings::TargetSampleRate(std::string p_sExt)
+{
+  FileSettingsIterator_t  iter;
+  
+  iter = m_FileSettings.find(p_sExt);
+  if(iter != m_FileSettings.end())
+    return iter->second->TargetSampleRate();
+  else  
+    return 0;
+}
+
+unsigned int CDeviceSettings::TargetBitRate(std::string p_sExt)
+{
+  FileSettingsIterator_t  iter;
+  
+  iter = m_FileSettings.find(p_sExt);
+  if(iter != m_FileSettings.end())
+    return iter->second->TargetBitRate();
+  else  
+    return 0;
+}
+
+bool CDeviceSettings::Exists(std::string p_sExt)
+{
+  FileSettingsIterator_t  iter;
+  
+  iter = m_FileSettings.find(p_sExt);
+  return (iter != m_FileSettings.end());
+}
+
+std::string CDeviceSettings::Extension(std::string p_sExt)
+{
+  FileSettingsIterator_t  iter;
+  
+  iter = m_FileSettings.find(p_sExt);
+  if(iter != m_FileSettings.end())
+    return iter->second->Extension(p_sExt);
+  else  
+    return p_sExt;
+}
+
+TRANSCODING_HTTP_RESPONSE CDeviceSettings::TranscodingHTTPResponse(std::string p_sExt)
+{
+  FileSettingsIterator_t  iter;
+  
+  iter = m_FileSettings.find(p_sExt);
+  if(iter != m_FileSettings.end())
+    return iter->second->TranscodingHTTPResponse();
+  else  
+    return RESPONSE_CHUNKED;
 }

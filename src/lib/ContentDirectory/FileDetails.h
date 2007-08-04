@@ -139,19 +139,20 @@ class CFileDetails
   public:
     static CFileDetails* Shared();
     OBJECT_TYPE GetObjectType(std::string p_sFileName);
-    std::string GetObjectTypeAsString(unsigned int p_nObjectType);
-    static std::string GetMimeType(std::string p_sFileName, bool p_bTranscodingMimeType);
+    //std::string GetObjectTypeAsString(unsigned int p_nObjectType);
+    std::string GetContainerTypeAsStr(OBJECT_TYPE p_nContainerType);
+    //static std::string GetMimeType(std::string p_sFileName); //, bool p_bTranscodingMimeType);
   
     bool GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pMusicTrack);
     bool GetImageDetails(std::string p_sFileName, SImageItem* pImageItem);
 	  bool GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoItem);
 	
     bool IsSupportedFileExtension(std::string p_sFileExtension);
-    std::string GetDLNA(std::string p_sFileExtension);
-    static bool IsTranscodingExtension(std::string p_sExt);
-    static std::string GetTargetExtension(std::string p_sExt);
+    //std::string GetDLNA(std::string p_sFileExtension);
+    //static bool IsTranscodingExtension(std::string p_sExt);
+    /*static std::string GetTargetExtension(std::string p_sExt);
     static int GetTargetBitrate(std::string p_sExt);
-    static int GetTargetSamplerate(std::string p_sExt);
+    static int GetTargetSamplerate(std::string p_sExt);*/
   
   private:
     static CFileDetails* m_Instance; 

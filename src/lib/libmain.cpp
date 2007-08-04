@@ -30,6 +30,7 @@
 #include "Fuppes.h"
 #include "ContentDirectory/ContentDatabase.h"
 #include "ContentDirectory/VirtualContainerMgr.h"
+#include "DeviceSettings/DeviceIdentificationMgr.h"
 
 #ifdef WIN32
 #include <shellapi.h>
@@ -81,6 +82,9 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   string sConfigFile;
   string sVFolderFile;
   string sFriendlyName;
+  int    nLogLevel = 1;
+  
+  #warning todo: check params
   
   for(int i = 0; i < argc; i++) {
     if((strcmp(argv[i], "--config-dir") == 0) && (argc > i + 1)) {
@@ -98,7 +102,12 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
     else if((strcmp(argv[i], "--friendly-name") == 0) && (argc > i + 1)) {
       sFriendlyName = argv[i + 1];
     }
+    else if((strcmp(argv[i], "--log-level") == 0) && (argc > i + 1)) {
+      nLogLevel = atoi(argv[i + 1]);
+    }
   }
+  
+  CSharedLog::Shared()->SetLogLevel(nLogLevel, false);
   
   CSharedConfig::Shared()->SetConfigDir(sConfigDir);
   CSharedConfig::Shared()->SetConfigFileName(sConfigFile);
@@ -153,7 +162,7 @@ int fuppes_start()
     CSharedLog::Shared()->UserError(ex.What());    
     cout << "[exiting]" << endl;
     return FUPPES_FALSE;
-  }  
+  }
 }
 
 int fuppes_stop()
@@ -261,6 +270,9 @@ void fuppes_print_info()
 	#else
 	cout << " compiled without ImageMagick support" << endl;	
 	#endif
-	
-	
+}
+
+void fuppes_print_device_settings()
+{
+  CDeviceIdentificationMgr::Shared()->PrintSettings();
 }

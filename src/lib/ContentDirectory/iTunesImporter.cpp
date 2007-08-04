@@ -170,7 +170,7 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
           "'" << SQLEscape(sFileName) << "', " <<
           "'" << SQLEscape(track.mAudioItem.sTitle) << "', " <<
           "'n/a', " <<
-          "'" << CFileDetails::Shared()->GetMimeType(sFileName, false) << "') ";
+          "'" << "obsolete" << "') ";
 
   pDb->Insert(sSql.str());
   

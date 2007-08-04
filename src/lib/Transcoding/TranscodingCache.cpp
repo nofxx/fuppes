@@ -87,7 +87,7 @@ CTranscodingCacheObject::~CTranscodingCacheObject()
   delete m_pTranscoder;
 }
 
-bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
+bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceSettings* pDeviceSettings)
 {
   std::string sExt = ToLower(ExtractFileExt(pSessionInfo->m_sInFileName));
   
@@ -151,7 +151,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo)
   // init encoder
   if(!m_pAudioEncoder) {
     
-    m_pAudioEncoder = CTranscodingMgr::Shared()->CreateAudioEncoder(CFileDetails::Shared()->GetTargetExtension(sExt));
+    m_pAudioEncoder = CTranscodingMgr::Shared()->CreateAudioEncoder(pDeviceSettings->Extension(sExt)); //(CFileDetails::Shared()->GetTargetExtension(sExt));
     if(!m_pAudioEncoder->LoadLib()) {      
       delete m_pAudioEncoder;
       m_pAudioEncoder = NULL;
@@ -510,6 +510,8 @@ void CTranscodingCache::ReleaseCacheObject(CTranscodingCacheObject* pCacheObj)
   cout << "ref count: " << pCacheObj->m_nRefCount << endl;
   
   pCacheObj->m_nRefCount--;
+  
+  #warning todo: pause transcoding if ref count == 0
   
   fuppesThreadUnlockMutex(&m_Mutex);  
 }

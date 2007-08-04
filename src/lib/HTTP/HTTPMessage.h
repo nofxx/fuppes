@@ -165,8 +165,8 @@ class CHTTPMessage: public CMessageBase
     void             BreakTranscoding();  
     bool             IsTranscoding();
   
-	  CDeviceSettings* GetDeviceSettings() { return m_pDeviceSettings; }
-	  void SetDeviceSettings(CDeviceSettings* pSettings) { m_pDeviceSettings = pSettings; }
+	  CDeviceSettings*  DeviceSettings() { return m_pDeviceSettings; }
+	  void              DeviceSettings(CDeviceSettings* pSettings) { m_pDeviceSettings = pSettings; }
   
   public:
     char*         m_pszBinContent;

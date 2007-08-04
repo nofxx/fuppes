@@ -70,8 +70,8 @@ class CUPnPAction
 		std::string GetContent() { return m_sContent; }
 		UPNP_DEVICE_TYPE GetTargetDeviceType() { return m_nTargetDeviceType; }
 
-    CDeviceSettings* GetDeviceSettings() { return m_pDeviceSettings; }
-	  void SetDeviceSettings(CDeviceSettings* pSettings) { m_pDeviceSettings = pSettings; }
+    CDeviceSettings* DeviceSettings() { return m_pDeviceSettings; }
+	  void DeviceSettings(CDeviceSettings* pSettings) { m_pDeviceSettings = pSettings; }
 
   private:
     UPNP_DEVICE_TYPE m_nTargetDeviceType;

@@ -55,20 +55,20 @@ void CDeviceIdentificationMgr::IdentifyDevice(CHTTPMessage* pDeviceMessage)
 	  pSettings = *m_SettingsIt;		
 		
 		if(pSettings->HasIP(pDeviceMessage->GetRemoteIPAddress())) {
-		  pDeviceMessage->SetDeviceSettings(pSettings);
+		  pDeviceMessage->DeviceSettings(pSettings);
 			break;
 		}
 		
 		if(pSettings->HasUserAgent(pDeviceMessage->m_sUserAgent)) {
-		  pDeviceMessage->SetDeviceSettings(pSettings);
+		  pDeviceMessage->DeviceSettings(pSettings);
 			break;
 		}		
 	}
 	
-	if(!pDeviceMessage->GetDeviceSettings())
-  	pDeviceMessage->SetDeviceSettings(m_pDefaultSettings);
+	if(!pDeviceMessage->DeviceSettings())
+  	pDeviceMessage->DeviceSettings(m_pDefaultSettings);
 
-  CSharedLog::Shared()->Log(L_EXTENDED, pDeviceMessage->GetDeviceSettings()->m_sDeviceName, __FILE__, __LINE__);
+  CSharedLog::Shared()->Log(L_EXTENDED, pDeviceMessage->DeviceSettings()->m_sDeviceName, __FILE__, __LINE__);
 }
 
 
@@ -90,19 +90,71 @@ CDeviceSettings* CDeviceIdentificationMgr::GetSettingsForInitialization(std::str
   }
   
   // create new setting
-  if(pSettings == NULL) {
-    
-    pSettings = new CDeviceSettings(p_sDeviceName);
-    
-    // copy default settings
-    pSettings->m_bShowPlaylistAsContainer = m_pDefaultSettings->m_bShowPlaylistAsContainer;
-    pSettings->m_bXBox360Support          = m_pDefaultSettings->m_bXBox360Support;
-    pSettings->m_nMaxFileNameLength       = m_pDefaultSettings->m_nMaxFileNameLength;
-    pSettings->m_DisplaySettings.bShowChildCountInTitle = m_pDefaultSettings->m_DisplaySettings.bShowChildCountInTitle;
-    pSettings->m_bDLNAEnabled             = m_pDefaultSettings->m_bDLNAEnabled;
-    
+  if(!pSettings) {
+    pSettings = new CDeviceSettings(p_sDeviceName, m_pDefaultSettings);
     m_Settings.push_back(pSettings);
   } 
     
   return pSettings;
+}
+
+void print_settings(CDeviceSettings* pSettings) {
+  
+  CFileSettings  * pFileSet;
+  
+  cout << "device: " << pSettings->m_sDeviceName << endl;    
+  cout << "  file_settings:" << endl;  
+  
+  for(pSettings->m_FileSettingsIterator = pSettings->m_FileSettings.begin();
+      pSettings->m_FileSettingsIterator != pSettings->m_FileSettings.end();
+      pSettings->m_FileSettingsIterator++) {
+          
+    pFileSet = pSettings->m_FileSettingsIterator->second;
+    
+    cout << "    ext: " << pSettings->m_FileSettingsIterator->first << endl; 
+    //cout << "    ext: " << pFileSet->sExt << endl;
+    cout << "    dlna: " << pFileSet->sDLNA << endl;
+    cout << "    mime-type: " << pFileSet->sMimeType << endl;
+    cout << "    upnp-type: " << pFileSet->ObjectType() << endl;
+          
+    if(pFileSet->pTranscodingSettings) {
+      cout << "  transcode: " << endl;
+      
+      cout << "    ext: " << pFileSet->pTranscodingSettings->sExt << endl;
+      cout << "    dlna: " << pFileSet->pTranscodingSettings->sDLNA << endl;
+      cout << "    mime-type: " << pFileSet->pTranscodingSettings->sMimeType << endl;      
+    }
+    else if(pFileSet->pImageSettings) {
+      cout << "  resize: " << endl;
+      
+      cout << "    height: " << pFileSet->pImageSettings->nHeight << endl;
+      cout << "    width: " << pFileSet->pImageSettings->nWidth << endl;
+      cout << "    greater: " << pFileSet->pImageSettings->bGreater << endl;
+      cout << "    lower: " << pFileSet->pImageSettings->bLower << endl;
+    }
+    else {
+      cout << "  no transcoding/resizing" << endl;
+    }
+          
+    cout << endl;
+  }
+}
+
+void CDeviceIdentificationMgr::PrintSettings()
+{
+  CDeviceSettings* pSettings;
+  
+  cout << "device settings" << endl;
+  
+  print_settings(m_pDefaultSettings);
+  
+  for(m_SettingsIt = m_Settings.begin(); 
+      m_SettingsIt != m_Settings.end(); 
+      m_SettingsIt++)	{    
+
+    pSettings = *m_SettingsIt;
+      
+    print_settings(pSettings);    
+  }
+  
 }

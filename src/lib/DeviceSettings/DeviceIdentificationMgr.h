@@ -35,9 +35,10 @@ class CDeviceIdentificationMgr
     ~CDeviceIdentificationMgr();
 
     void IdentifyDevice(CHTTPMessage* pDeviceMessage);
-
-  
     CDeviceSettings* GetSettingsForInitialization(std::string p_sDeviceName);
+    void PrintSettings();
+  
+    CDeviceSettings* DefaultDevice() { return m_pDefaultSettings; }
   
   private:
 		CDeviceIdentificationMgr();

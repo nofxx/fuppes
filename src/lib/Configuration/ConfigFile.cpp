@@ -23,14 +23,12 @@
 
 #include "ConfigFile.h"
 #include "../DeviceSettings/DeviceIdentificationMgr.h"
+#include "DefaultConfig.h"
 
-#include <libxml/xmlwriter.h>
 #include <sstream>
 #include <iostream>
 
 using namespace std;
-
-const std::string NEEDED_CONFIGFILE_VERSION = "0.7.2";
 
 CConfigFile::CConfigFile()
 {
@@ -193,10 +191,11 @@ void CConfigFile::ReadNetworkSettings()
   }  
 }
 
-void CConfigFile::SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode)
+void CConfigFile::SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode, bool p_bDefaultInitialized)
 {
   int i;
   int j;
+  int k;
   CXMLNode* pDevice;
   CXMLNode* pTmp;
   CDeviceSettings* pSettings;
@@ -204,9 +203,25 @@ void CConfigFile::SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode)
   for(i = 0; i < pDeviceSettingsNode->ChildCount(); i++) {
     
     pDevice = pDeviceSettingsNode->ChildNode(i);
-    if(pDevice->Attribute("name").compare("default") != 0 && pDevice->Attribute("enabled").compare("true") != 0) {
+    
+    // "default" can't be disabled
+    if(pDevice->Attribute("name").compare("default") != 0 && 
+       pDevice->Attribute("enabled").compare("true") != 0) {
       continue;
-    }    
+    }
+    
+    // make sure we fully initialize "default"
+    // because other devices inherit the settings
+    if(pDevice->Attribute("name").compare("default") != 0 &&
+       !p_bDefaultInitialized) {
+      continue;
+    }
+    
+    // default already initialized
+    if(pDevice->Attribute("name").compare("default") == 0 &&
+       p_bDefaultInitialized) {
+      continue;
+    }
     
     pSettings = CDeviceIdentificationMgr::Shared()->GetSettingsForInitialization(pDevice->Attribute("name"));
     
@@ -233,11 +248,11 @@ void CConfigFile::SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode)
       }
       // max_file_name_length
       else if(pTmp->Name().compare("max_file_name_length") == 0) {
-        pSettings->m_nMaxFileNameLength = atoi(pTmp->Value().c_str());
+        pSettings->DisplaySettings()->nMaxFileNameLength = atoi(pTmp->Value().c_str());
       }
       // show_childcount_in_title
       else if(pTmp->Name().compare("show_childcount_in_title") == 0) {
-        pSettings->m_DisplaySettings.bShowChildCountInTitle = (pTmp->Value().compare("true") == 0);
+        pSettings->DisplaySettings()->bShowChildCountInTitle = (pTmp->Value().compare("true") == 0);
       }
       // xbox360
       else if(pTmp->Name().compare("xbox360") == 0) {
@@ -246,9 +261,188 @@ void CConfigFile::SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode)
       // xbox360
       else if(pTmp->Name().compare("enable_dlna") == 0) {
         pSettings->m_bDLNAEnabled = (pTmp->Value().compare("true") == 0);
-      }      
+      }
+      else if(pTmp->Name().compare("file_settings") == 0) {
+        
+        for(k = 0; k < pTmp->ChildCount(); k++) {
+          if(pTmp->ChildNode(k)->Name().compare("file") != 0)
+            continue;
+          
+          ParseFileSettings(pTmp->ChildNode(k), pSettings);
+        }
+      }
     }
     
+    // now that we got "default" initialized let's
+    // set up the other devices
+    if(pDevice->Attribute("name").compare("default") == 0) {
+      SetupDeviceIdentificationMgr(pDeviceSettingsNode, true);
+      break;
+    }
+    
+  }
+}
+
+OBJECT_TYPE ParseObjectType(std::string p_sObjectType)
+{
+  if(p_sObjectType.compare("AUDIO_ITEM") == 0) {
+    return ITEM_AUDIO_ITEM;
+  }
+  else if(p_sObjectType.compare("AUDIO_ITEM_MUSIC_TRACK") == 0) {
+    return ITEM_AUDIO_ITEM_MUSIC_TRACK;
+  }
+  
+  else if(p_sObjectType.compare("IMAGE_ITEM") == 0) {
+    return ITEM_IMAGE_ITEM;
+  }
+  else if(p_sObjectType.compare("IMAGE_ITEM_PHOTO") == 0) {
+    return ITEM_IMAGE_ITEM_PHOTO;
+  }
+  
+  else if(p_sObjectType.compare("VIDEO_ITEM") == 0) {
+    return ITEM_VIDEO_ITEM;
+  }
+  else if(p_sObjectType.compare("VIDEO_ITEM_MOVIE") == 0) {
+    return ITEM_VIDEO_ITEM_MOVIE;
+  }
+  
+  else if(p_sObjectType.compare("PLAYLIST") == 0) {
+    return CONTAINER_PLAYLIST_CONTAINER;
+  }
+  
+  else 
+    return OBJECT_TYPE_UNKNOWN;
+}
+
+void CConfigFile::ParseFileSettings(CXMLNode* pFileSettings, CDeviceSettings* pDevSet)
+{
+  int i;
+  CFileSettings* pFileSet;
+  CXMLNode* pTmp;
+
+  pFileSet = pDevSet->FileSettings(pFileSettings->Attribute("ext"));
+  
+  for(i = 0; i < pFileSettings->ChildCount(); i++) {    
+    
+    pTmp = pFileSettings->ChildNode(i);  
+    
+    if(pTmp->Name().compare("type") == 0) {
+      pFileSet->nType = ParseObjectType(pTmp->Value());
+    }
+    else if(pTmp->Name().compare("ext") == 0) {
+      pDevSet->AddExt(pFileSet, pTmp->Value());
+    }
+    else if(pTmp->Name().compare("mime_type") == 0) {
+      pFileSet->sMimeType = pTmp->Value();
+    }
+    else if(pTmp->Name().compare("dlna") == 0) {
+      pFileSet->sDLNA = pTmp->Value();
+    }
+    else if(pTmp->Name().compare("transcode") == 0) {
+      ParseTranscodingSettings(pTmp, pFileSet);
+    }
+    else if(pTmp->Name().compare("resize") == 0) {
+      ParseImageSettings(pTmp, pFileSet);
+    }
+    
+  }
+}
+
+void CConfigFile::ParseTranscodingSettings(CXMLNode* pTCNode, CFileSettings* pFileSet)
+{
+  int i;
+  CXMLNode* pTmp;
+  
+  // delete existing (inherited) settings
+  // if transcoding disabled
+  if(pTCNode->Attribute("enabled").compare("true") != 0) {
+    if(pFileSet->pTranscodingSettings) {
+      delete pFileSet->pTranscodingSettings;
+      pFileSet->pTranscodingSettings = NULL;
+      return;
+    }
+  }
+  
+  // create new settings
+  if(!pFileSet->pTranscodingSettings) {
+    pFileSet->pTranscodingSettings = new CTranscodingSettings();
+  }
+  
+  // read transcoding settings
+  for(i = 0; i < pTCNode->ChildCount(); i++) {
+    pTmp = pTCNode->ChildNode(i);
+    
+    if(pTmp->Name().compare("ext") == 0) {
+      pFileSet->pTranscodingSettings->sExt = pTmp->Value();
+    }
+    else if(pTmp->Name().compare("mime_type") == 0) {
+      pFileSet->pTranscodingSettings->sMimeType = pTmp->Value();
+    }
+    else if(pTmp->Name().compare("dlna") == 0) {
+      pFileSet->pTranscodingSettings->sDLNA = pTmp->Value();
+    }
+    else if(pTmp->Name().compare("encoding") == 0) {
+      if(pTmp->Value().compare("chunked") == 0) {
+        pFileSet->pTranscodingSettings->nTranscodingResponse = RESPONSE_CHUNKED;
+      }
+      else if(pTmp->Value().compare("stream") == 0) {
+        pFileSet->pTranscodingSettings->nTranscodingResponse = RESPONSE_STREAM;
+      }
+    }
+    else if(pTmp->Name().compare("out_params") == 0) {
+      pFileSet->pTranscodingSettings->sOutParams = pTmp->Value();
+    }                           
+    else if(pTmp->Name().compare("encoder") == 0) {
+      pFileSet->pTranscodingSettings->sEncoder = pTmp->Value();
+    }
+    else if(pTmp->Name().compare("decoder") == 0) {
+      pFileSet->pTranscodingSettings->sDecoder = pTmp->Value();
+    }
+    else if(pTmp->Name().compare("transcoder") == 0) {
+      pFileSet->pTranscodingSettings->sTranscoder = pTmp->Value();
+    }
+    
+    //pFileSet->pTranscodingSettings
+    
+  }
+}
+
+void CConfigFile::ParseImageSettings(CXMLNode* pISNode, CFileSettings* pFileSet)
+{
+  int i;
+  CXMLNode* pTmp;
+  
+  // delete existing (inherited) settings
+  // if transcoding disabled
+  if(pISNode->Attribute("enabled").compare("true") != 0) {
+    if(pFileSet->pImageSettings) {
+      delete pFileSet->pImageSettings;
+      pFileSet->pImageSettings = NULL;
+      return;
+    }
+  }
+  
+  // create new settings
+  if(!pFileSet->pImageSettings) {
+    pFileSet->pImageSettings = new CImageSettings();
+  }
+  
+  // read image settings
+  for(i = 0; i < pISNode->ChildCount(); i++) {
+    pTmp = pISNode->ChildNode(i);
+    
+    if(pTmp->Name().compare("height") == 0) {
+      pFileSet->pImageSettings->nHeight = atoi(pTmp->Value().c_str());
+    }
+    else if(pTmp->Name().compare("width") == 0) {
+      pFileSet->pImageSettings->nWidth = atoi(pTmp->Value().c_str());
+    }
+    else if(pTmp->Name().compare("greater") == 0) {
+      pFileSet->pImageSettings->bGreater = (pTmp->Value().compare("true") == 0);
+    }
+    else if(pTmp->Name().compare("lower") == 0) {
+      pFileSet->pImageSettings->bLower = (pTmp->Value().compare("true") == 0);
+    }
   }
 }
 
@@ -392,245 +586,5 @@ void CConfigFile::RemoveAllowedIp(int p_nIdx)
 
 bool CConfigFile::WriteDefaultConfig(std::string p_sFileName)
 {
-  xmlTextWriterPtr  pWriter;
-	
-	pWriter = xmlNewTextWriterFilename(p_sFileName.c_str(), 0);
-  if(!pWriter)
-	  return false;
-  
-	xmlTextWriterSetIndent(pWriter, 4);
-	xmlTextWriterStartDocument(pWriter, NULL, "UTF-8", NULL);
-
-	// fuppes_config
-	xmlTextWriterStartElement(pWriter, BAD_CAST "fuppes_config");  
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "version", BAD_CAST NEEDED_CONFIGFILE_VERSION.c_str()); 
-	
-    // shared_objects
-    xmlTextWriterStartElement(pWriter, BAD_CAST "shared_objects");
-      
-      #ifdef WIN32
-      xmlTextWriterWriteComment(pWriter, BAD_CAST "<dir>C:\\Music\\</dir>");
-      xmlTextWriterWriteComment(pWriter, BAD_CAST "<itunes>C:\\Documents and Settings\\...\\iTunes.xml</itunes>");  
-      #else 
-      xmlTextWriterWriteComment(pWriter, BAD_CAST "<dir>/mnt/music</dir>");
-      xmlTextWriterWriteComment(pWriter, BAD_CAST "<itunes>/Users/.../iTunes.xml</itunes>");  
-      #endif
-  
-    // end shared_objects
-    xmlTextWriterEndElement(pWriter);
-    
-    
-    // network
-    xmlTextWriterStartElement(pWriter, BAD_CAST "network");
-        
-      xmlTextWriterWriteComment(pWriter, BAD_CAST "empty = automatic detection");
-      xmlTextWriterStartElement(pWriter, BAD_CAST "interface");
-      xmlTextWriterEndElement(pWriter); 
-      
-      xmlTextWriterWriteComment(pWriter, BAD_CAST "empty or 0 = random port");
-      xmlTextWriterStartElement(pWriter, BAD_CAST "http_port");
-      xmlTextWriterEndElement(pWriter); 
-  
-      xmlTextWriterWriteComment(pWriter, BAD_CAST "list of ip addresses allowed to access fuppes. if empty all ips are allowed");
-      xmlTextWriterStartElement(pWriter, BAD_CAST "allowed_ips");        
-        xmlTextWriterWriteComment(pWriter, BAD_CAST "<ip>192.168.0.1</ip>");
-      xmlTextWriterEndElement(pWriter); 
-  
-    // end network
-    xmlTextWriterEndElement(pWriter);
-
-
-    // content directory
-    xmlTextWriterStartElement(pWriter, BAD_CAST "content_directory");
-    
-      std::stringstream sComment;
-      
-      // charset
-      sComment << "a list of possible charsets can be found under:" << endl << "      http://www.gnu.org/software/libiconv/";
-      xmlTextWriterWriteComment(pWriter, BAD_CAST sComment.str().c_str());
-      sComment.str("");
-      xmlTextWriterStartElement(pWriter, BAD_CAST "local_charset");
-      xmlTextWriterWriteString(pWriter, BAD_CAST "UTF-8");
-      xmlTextWriterEndElement(pWriter); 
-    
-      // libs for metadata extraction
-      xmlTextWriterWriteComment(pWriter, BAD_CAST "libs used for metadata extraction when building the database. [true|false]");
-      xmlTextWriterStartElement(pWriter, BAD_CAST "use_imagemagick");
-      xmlTextWriterWriteString(pWriter, BAD_CAST "true");
-      xmlTextWriterEndElement(pWriter);  
-      xmlTextWriterStartElement(pWriter, BAD_CAST "use_taglib");
-      xmlTextWriterWriteString(pWriter, BAD_CAST "true");
-      xmlTextWriterEndElement(pWriter);
-      xmlTextWriterStartElement(pWriter, BAD_CAST "use_libavformat");
-      xmlTextWriterWriteString(pWriter, BAD_CAST "true");
-      xmlTextWriterEndElement(pWriter); 
-  
-    // end content directory
-    xmlTextWriterEndElement(pWriter);
-    
-    
-    // transcoding 
-    xmlTextWriterStartElement(pWriter, BAD_CAST "transcoding");
-      
-      // audio_encoder
-      xmlTextWriterWriteComment(pWriter, BAD_CAST "[lame|twolame]");
-      xmlTextWriterStartElement(pWriter, BAD_CAST "audio_encoder");
-      xmlTextWriterWriteString(pWriter, BAD_CAST "lame"); // [lame|twolame]
-      xmlTextWriterEndElement(pWriter);
-      
-      // transcode_vorbis
-      xmlTextWriterWriteComment(pWriter, BAD_CAST "[true|false]");
-      xmlTextWriterStartElement(pWriter, BAD_CAST "transcode_vorbis");
-      xmlTextWriterWriteString(pWriter, BAD_CAST "true"); // [true|false]
-      xmlTextWriterEndElement(pWriter);
-      
-      // transcode_musepack
-      xmlTextWriterStartElement(pWriter, BAD_CAST "transcode_musepack");
-      xmlTextWriterWriteString(pWriter, BAD_CAST "true"); // [true|false]
-      xmlTextWriterEndElement(pWriter);
-      
-      // transcode_flac
-      xmlTextWriterStartElement(pWriter, BAD_CAST "transcode_flac");
-      xmlTextWriterWriteString(pWriter, BAD_CAST "true"); // [true|false]
-      xmlTextWriterEndElement(pWriter);
-    
-    // end transcoding
-    xmlTextWriterEndElement(pWriter);
-    
-  
-    // device_settings
-    xmlTextWriterStartElement(pWriter, BAD_CAST "device_settings");
-      
-      // device (default)
-      xmlTextWriterStartElement(pWriter, BAD_CAST "device");
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "name", BAD_CAST "default");   
-  
-        // max_file_name_length
-        sComment << "specify the maximum length for file names." << endl;
-           sComment << "      e.g. the Telegent TG 100 can handle file names up" << endl;
-           sComment << "      to 101 characters. everything above leads to an error." << endl;
-           sComment << "      if you leave the field empty or insert 0 the maximum" << endl;
-           sComment << "      length is unlimited.";
-        xmlTextWriterWriteComment(pWriter, BAD_CAST sComment.str().c_str());
-        sComment.str("");
-        xmlTextWriterStartElement(pWriter, BAD_CAST "max_file_name_length");
-        xmlTextWriterWriteString(pWriter, BAD_CAST "0");
-        xmlTextWriterEndElement(pWriter);
-    
-        // playlist_style
-        xmlTextWriterWriteComment(pWriter, BAD_CAST "[file|container]");
-        xmlTextWriterStartElement(pWriter, BAD_CAST "playlist_style");
-        xmlTextWriterWriteString(pWriter, BAD_CAST "file"); // [file|container]
-        xmlTextWriterEndElement(pWriter);
-  
-        xmlTextWriterStartElement(pWriter, BAD_CAST "show_childcount_in_title");
-        xmlTextWriterWriteString(pWriter, BAD_CAST "false");
-        xmlTextWriterEndElement(pWriter);  
-  
-        xmlTextWriterStartElement(pWriter, BAD_CAST "enable_dlna");
-        xmlTextWriterWriteString(pWriter, BAD_CAST "false");
-        xmlTextWriterEndElement(pWriter);  
-  
-      // end device (default)
-      xmlTextWriterEndElement(pWriter);
-  
-  
-      // device (PS3)
-      xmlTextWriterStartElement(pWriter, BAD_CAST "device");
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "name", BAD_CAST "PS3");
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "false");
-        
-        // user_agent
-        xmlTextWriterStartElement(pWriter, BAD_CAST "user_agent");
-        xmlTextWriterWriteString(pWriter, BAD_CAST "UPnP/1.0 DLNADOC/1.00");
-        xmlTextWriterEndElement(pWriter);
-  
-        xmlTextWriterWriteComment(pWriter, BAD_CAST "<ip></ip>");  
-  
-        // enable_dlna
-        xmlTextWriterStartElement(pWriter, BAD_CAST "enable_dlna");
-        xmlTextWriterWriteString(pWriter, BAD_CAST "true");
-        xmlTextWriterEndElement(pWriter);
-  
-      // end device (Xbox 360)
-      xmlTextWriterEndElement(pWriter);      
-  
-      // device (Xbox 360)
-      xmlTextWriterStartElement(pWriter, BAD_CAST "device");
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "name", BAD_CAST "Xbox 360");
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "virtual", BAD_CAST "Xbox 360");
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "false");
-  
-        // user_agent
-        xmlTextWriterStartElement(pWriter, BAD_CAST "user_agent");
-        xmlTextWriterWriteString(pWriter, BAD_CAST "Xbox/2.0.\\d+.\\d+ UPnP/1.0 Xbox/2.0.\\d+.\\d+");
-        xmlTextWriterEndElement(pWriter);
-        xmlTextWriterStartElement(pWriter, BAD_CAST "user_agent");
-        xmlTextWriterWriteString(pWriter, BAD_CAST "Xenon");
-        xmlTextWriterEndElement(pWriter);
-  
-        // xbox 360
-        xmlTextWriterStartElement(pWriter, BAD_CAST "xbox360");
-        xmlTextWriterWriteString(pWriter, BAD_CAST "true");
-        xmlTextWriterEndElement(pWriter);
-  
-      // end device (Xbox 360)
-      xmlTextWriterEndElement(pWriter);  
-  
-  
-      // device (Noxon audio)
-      xmlTextWriterStartElement(pWriter, BAD_CAST "device");
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "name", BAD_CAST "Noxon audio");
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "virtual", BAD_CAST "default");
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "false");
-  
-        xmlTextWriterWriteComment(pWriter, BAD_CAST "<ip></ip>");
-  
-        xmlTextWriterStartElement(pWriter, BAD_CAST "playlist_style");
-        xmlTextWriterWriteString(pWriter, BAD_CAST "container");
-        xmlTextWriterEndElement(pWriter);
-  
-        xmlTextWriterStartElement(pWriter, BAD_CAST "show_childcount_in_title");
-        xmlTextWriterWriteString(pWriter, BAD_CAST "true");
-        xmlTextWriterEndElement(pWriter);  
-  
-      // end device (Noxon audio)
-      xmlTextWriterEndElement(pWriter);   
-  
-      // device (Telegent TG 100)
-      xmlTextWriterStartElement(pWriter, BAD_CAST "device");
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "name", BAD_CAST "Telegent TG 100");
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "virtual", BAD_CAST "default");
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "false");
-  
-        xmlTextWriterWriteComment(pWriter, BAD_CAST "<ip></ip>");
-  
-        xmlTextWriterStartElement(pWriter, BAD_CAST "playlist_style");
-        xmlTextWriterWriteString(pWriter, BAD_CAST "file");
-        xmlTextWriterEndElement(pWriter);
-  
-        xmlTextWriterStartElement(pWriter, BAD_CAST "max_file_name_length");
-        xmlTextWriterWriteString(pWriter, BAD_CAST "101");
-        xmlTextWriterEndElement(pWriter);  
-  
-      // end device (Telegent TG 100)
-      xmlTextWriterEndElement(pWriter);  
-  
-  
-    // end device_settings
-    xmlTextWriterEndElement(pWriter);
-  
-	// end fuppes_config
-	xmlTextWriterEndElement(pWriter);	
-	xmlTextWriterEndDocument(pWriter);
-	xmlFreeTextWriter(pWriter);
-	
-  //xmlCleanupParser(); 
-  
-  CXMLDocument* pDoc = new CXMLDocument();
-  pDoc->Load(p_sFileName);
-  pDoc->Save();
-  delete pDoc;
-  
-  return true;
+  return WriteDefaultConfigFile(p_sFileName);
 }

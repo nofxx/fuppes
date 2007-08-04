@@ -108,9 +108,9 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
   
   unsigned int nContainerId = GetContainerIdAsUInt();
   if(nContainerId > 0) {
-    if(CVirtualContainerMgr::Shared()->IsVirtualContainer(nContainerId, GetDeviceSettings()->m_sVirtualFolderDevice)) {
+    if(CVirtualContainerMgr::Shared()->IsVirtualContainer(nContainerId, DeviceSettings()->m_sVirtualFolderDevice)) {
       bVirtualSearch = true;
-      sDevice = " = '" + GetDeviceSettings()->m_sVirtualFolderDevice + "' ";
+      sDevice = " = '" + DeviceSettings()->m_sVirtualFolderDevice + "' ";
     }
     
     if(m_sParentIds.length() == 0) {

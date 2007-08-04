@@ -25,6 +25,7 @@
 #define _CONFIGFILE_H
 
 #include "../Common/XMLParser.h"
+#include "../DeviceSettings/DeviceSettings.h"
 #include <vector>
 
 typedef enum CONFIG_FILE_ERROR {
@@ -86,7 +87,10 @@ class CConfigFile
   
     void ReadSharedObjects();
     void ReadNetworkSettings();
-    void SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode);
+    void SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode, bool p_bDefaultInitialized = false);
+    void ParseFileSettings(CXMLNode* pFileSettings, CDeviceSettings* pDevSet);
+    void ParseTranscodingSettings(CXMLNode* pTCNode, CFileSettings* pFileSet);
+    void ParseImageSettings(CXMLNode* pISNode, CFileSettings* pFileSet);
   
     // shared objects
     std::vector<std::string>  m_lSharedDirs;

@@ -27,6 +27,7 @@
 #ifndef DISABLE_TRANSCODING
 #include "../Common/Common.h"
 #include "WrapperBase.h"
+#include "../DeviceSettings/DeviceSettings.h"
 #include <map>
 #endif
 
@@ -40,7 +41,7 @@ class CTranscodingCacheObject
     CTranscodingCacheObject();
     ~CTranscodingCacheObject();
   
-    bool Init(CTranscodeSessionInfo* pSessionInfo);
+    bool Init(CTranscodeSessionInfo* pSessionInfo, CDeviceSettings* pDeviceSettings);
   
     //void Retain();
     //void Release();

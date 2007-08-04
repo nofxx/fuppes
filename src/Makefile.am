@@ -155,6 +155,7 @@ libfuppes_la_SOURCES = \
 	lib/ContentDirectory/iTunesImporter.h\
 	lib/Configuration/ConfigFile.cpp\
 	lib/Configuration/ConfigFile.h\
+  lib/Configuration/DefaultConfig.h\
   version.h
 	
 if VIDEO_TRANSCODING

@@ -83,6 +83,7 @@ void PrintHelp()
   cout << "l = change log-level" << endl;
   cout << "    (disabled, normal, extended, debug) default is \"normal\"" << endl;
   cout << "i = print system info" << endl;
+  cout << "s = print device settings" << endl;
   cout << "r = rebuild database" << endl;
   cout << "v = rebuild virtual container layout" << endl;
   //cout << "c = refresh configuration" << endl;
@@ -124,8 +125,10 @@ int main(int argc, char* argv[])
 	if(fuppes_init(argc, argv, NULL) != FUPPES_OK) {
 	  return -1;
 	}
-  fuppes_start();
-
+  if(fuppes_start() != FUPPES_OK) {
+    return -1;
+  }
+    
   char szHTTP[100];
   fuppes_get_http_server_address(szHTTP, 100);
   cout << "webinterface: " << szHTTP << endl;
@@ -186,6 +189,9 @@ int main(int argc, char* argv[])
     }
     else if (input == "i") {
       fuppes_print_info();
+    }
+    else if (input == "s") {
+      fuppes_print_device_settings();
     }
   }  // while (!g_bExitApp)
   

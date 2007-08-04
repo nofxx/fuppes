@@ -28,7 +28,7 @@
 #include "../SharedLog.h"
 #include "../Common/Common.h"
 #include "../Common/RegEx.h"
-#include "FileDetails.h"
+//#include "FileDetails.h"
 #include "VirtualContainerMgr.h"
  
 #include <iostream>
@@ -248,11 +248,11 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   CContentDatabase* pDb = new CContentDatabase();
 
   pUPnPBrowse->m_bVirtualContainer = CVirtualContainerMgr::Shared()->IsVirtualContainer(pUPnPBrowse->GetObjectIDAsInt(),
-                                                           pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice);
+                                                           pUPnPBrowse->DeviceSettings()->m_sVirtualFolderDevice);
   
   string sDevice = "DEVICE is NULL ";
   if(pUPnPBrowse->m_bVirtualContainer)
-    sDevice = "DEVICE = '" + pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice + "' ";
+    sDevice = "DEVICE = '" + pUPnPBrowse->DeviceSettings()->m_sVirtualFolderDevice + "' ";
                         
   // get container type
   OBJECT_TYPE nContainerType = CONTAINER_STORAGE_FOLDER;
@@ -375,11 +375,11 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   //OBJECT_TYPE nContainerType = CONTAINER_STORAGE_FOLDER;
  
                             
-  pUPnPBrowse->m_bVirtualContainer = CVirtualContainerMgr::Shared()->HasVirtualChildren(pUPnPBrowse->GetObjectIDAsInt(), pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice);	
+  pUPnPBrowse->m_bVirtualContainer = CVirtualContainerMgr::Shared()->HasVirtualChildren(pUPnPBrowse->GetObjectIDAsInt(), pUPnPBrowse->DeviceSettings()->m_sVirtualFolderDevice);	
  
   string sDevice = "DEVICE is NULL ";
   if(pUPnPBrowse->m_bVirtualContainer)
-    sDevice = "DEVICE = '" + pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice + "' ";
+    sDevice = "DEVICE = '" + pUPnPBrowse->DeviceSettings()->m_sVirtualFolderDevice + "' ";
                             
   // get total matches
   //cout << "get total matches" << endl; fflush(stdout);
@@ -460,7 +460,7 @@ void CContentDirectory::BuildDescription(xmlTextWriterPtr pWriter,
   // container
   if(nObjType < ITEM) {
     
-    if((nObjType == CONTAINER_PLAYLIST_CONTAINER) && !pUPnPBrowse->GetDeviceSettings()->m_bShowPlaylistAsContainer) {
+    if((nObjType == CONTAINER_PLAYLIST_CONTAINER) && !pUPnPBrowse->DeviceSettings()->m_bShowPlaylistAsContainer) {
       BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, nObjType, p_sParentId);
     }
     else {
@@ -488,8 +488,8 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
   string sSql;
   
   string sDevice = "DEVICE is NULL ";
-  if(CVirtualContainerMgr::Shared()->HasVirtualChildren(pSQLResult->GetValueAsUInt("OBJECT_ID"), pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice))
-    sDevice = "DEVICE = '" + pUPnPBrowse->GetDeviceSettings()->m_sVirtualFolderDevice + "' ";                                                    
+  if(CVirtualContainerMgr::Shared()->HasVirtualChildren(pSQLResult->GetValueAsUInt("OBJECT_ID"), pUPnPBrowse->DeviceSettings()->m_sVirtualFolderDevice))
+    sDevice = "DEVICE = '" + pUPnPBrowse->DeviceSettings()->m_sVirtualFolderDevice + "' ";                                                    
 
   sSql = string("select count(*) as COUNT from MAP_OBJECTS ") +
     "where PARENT_ID = " + pSQLResult->GetValue("OBJECT_ID") + " and " + sDevice;
@@ -519,12 +519,12 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
      
     // title
     string sTitle = pSQLResult->GetValue("FILE_NAME");
-    int nLen = pUPnPBrowse->GetDeviceSettings()->m_nMaxFileNameLength;
-    if(nLen > 0 && pUPnPBrowse->GetDeviceSettings()->m_DisplaySettings.bShowChildCountInTitle) {
+    int nLen = pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength;
+    if(nLen > 0 && pUPnPBrowse->DeviceSettings()->DisplaySettings()->bShowChildCountInTitle) {
       nLen -= (sChildCount.length() + 3); // "_(n)"
     }
     sTitle = TrimFileName(sTitle, nLen);
-    if(pUPnPBrowse->GetDeviceSettings()->m_DisplaySettings.bShowChildCountInTitle) {
+    if(pUPnPBrowse->DeviceSettings()->DisplaySettings()->bShowChildCountInTitle) {
       sTitle = sTitle + " (" + sChildCount + ")";
     }
                                                       
@@ -534,7 +534,7 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
    
     // class
     xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");       
-    xmlTextWriterWriteString(pWriter, BAD_CAST CFileDetails::Shared()->GetObjectTypeAsString(p_nContainerType).c_str());  
+    xmlTextWriterWriteString(pWriter, BAD_CAST CFileDetails::Shared()->GetContainerTypeAsStr(p_nContainerType).c_str());
     xmlTextWriterEndElement(pWriter); 
      
     // writeStatus (optional)
@@ -614,15 +614,18 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter,
     
     switch(p_nObjectType)
     {
+      case ITEM_AUDIO_ITEM:
       case ITEM_AUDIO_ITEM_MUSIC_TRACK:
         BuildAudioItemDescription(pWriter, pSQLResult, pUPnPBrowse, szObjId);
         break;
       case ITEM_AUDIO_ITEM_AUDIO_BROADCAST:
         BuildAudioItemAudioBroadcastDescription(pWriter, pSQLResult, pUPnPBrowse, szObjId);
-        break;      
+        break;
+      case ITEM_IMAGE_ITEM:
       case ITEM_IMAGE_ITEM_PHOTO:
         BuildImageItemDescription(pWriter, pSQLResult, pUPnPBrowse, szObjId);
         break;
+      case ITEM_VIDEO_ITEM:
       case ITEM_VIDEO_ITEM_MOVIE:
         BuildVideoItemDescription(pWriter, pSQLResult, pUPnPBrowse, szObjId);
         break;
@@ -649,7 +652,10 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
                                                   CSelectResult* pSQLResult,
                                                   CUPnPBrowseSearchBase*  pUPnPBrowse,
                                                   std::string p_sObjectID)
-{                                              
+{                 
+  string sExt = ExtractFileExt(pSQLResult->GetValue("PATH"));                                                                                          
+
+                                                    
   // title
   xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
     // trim filename
@@ -657,14 +663,16 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
 		if(!pSQLResult->IsNull("TITLE"))
 		  sFileName = pSQLResult->GetValue("TITLE");
 			
-	  sFileName = TrimFileName(sFileName, pUPnPBrowse->GetDeviceSettings()->m_nMaxFileNameLength, true);    
+	  sFileName = TrimFileName(sFileName, pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength, true);    
     sFileName = TruncateFileExt(sFileName);
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);
 	
   /* class */
   xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
-    xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.audioItem.musicTrack");
+    
+    //xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.audioItem.musicTrack");
+    xmlTextWriterWriteString(pWriter, BAD_CAST pUPnPBrowse->DeviceSettings()->ObjectTypeAsStr(sExt).c_str());    
   xmlTextWriterEndElement(pWriter);
 
   // creator
@@ -708,22 +716,22 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   /* res */
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
   
-  string sMimeType = pSQLResult->GetValue("MIME_TYPE");
-  string sExt      = ExtractFileExt(pSQLResult->GetValue("PATH"));
   string sOrigExt  = sExt;
-  bool bTranscode  = false;
-
-  if(CFileDetails::Shared()->IsTranscodingExtension(sExt)) {
+  bool bTranscode  = pUPnPBrowse->DeviceSettings()->DoTranscode(sExt);
+  string sMimeType = pUPnPBrowse->DeviceSettings()->MimeType(sExt);
+  //string sMimeType = pSQLResult->GetValue("MIME_TYPE");
+                                                    
+                                                    
+  /*if(CFileDetails::Shared()->IsTranscodingExtension(sExt)) {
     sMimeType = CFileDetails::Shared()->GetMimeType(pSQLResult->GetValue("PATH"), true);
     sExt      = CFileDetails::Shared()->GetTargetExtension(sExt);
-    
     bTranscode = true;
-  }
+  }*/
   
   // protocol info
   string sTmp;
-  if(pUPnPBrowse->GetDeviceSettings()->m_bDLNAEnabled) {       
-    string sDLNA = CFileDetails::Shared()->GetDLNA(sExt);    
+  if(pUPnPBrowse->DeviceSettings()->m_bDLNAEnabled) {
+    string sDLNA = pUPnPBrowse->DeviceSettings()->DLNA(sExt); //CFileDetails::Shared()->GetDLNA(sExt);    
     if(!sDLNA.empty()) {
       sTmp = "http-get:*:" + sMimeType + ":DLNA.ORG_PN=" + sDLNA + ";DLNA.ORG_OP=01;DLNA.ORG_CI=0";
     }
@@ -753,9 +761,11 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
     if(!bTranscode && !pSQLResult->IsNull("A_SAMPLERATE")) {		  
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST pSQLResult->GetValue("A_SAMPLERATE").c_str());
     }
-    else if(bTranscode && CFileDetails::Shared()->GetTargetSamplerate(sOrigExt) > 0) {
+    //else if(bTranscode && CFileDetails::Shared()->GetTargetSamplerate(sOrigExt) > 0) {
+    else if(bTranscode && pUPnPBrowse->DeviceSettings()->TargetSampleRate(sExt) > 0) {
       char szSamplerate[20];
-      sprintf(szSamplerate, "%d", CFileDetails::Shared()->GetTargetSamplerate(sOrigExt));
+      //sprintf(szSamplerate, "%d", CFileDetails::Shared()->GetTargetSamplerate(sOrigExt));
+      sprintf(szSamplerate, "%d", pUPnPBrowse->DeviceSettings()->TargetSampleRate(sExt));
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST szSamplerate);
     }
   }
@@ -765,13 +775,17 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
     if(!bTranscode && !pSQLResult->IsNull("AV_BITRATE")) {
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("AV_BITRATE").c_str());
     }
-    else if(bTranscode && CFileDetails::Shared()->GetTargetBitrate(sOrigExt) > 0) {
+    //else if(bTranscode && CFileDetails::Shared()->GetTargetBitrate(sOrigExt) > 0) {
+    else if(bTranscode && pUPnPBrowse->DeviceSettings()->TargetBitRate(sExt) > 0) {
       char szBitrate[20];
-      sprintf(szBitrate, "%d", CFileDetails::Shared()->GetTargetBitrate(sOrigExt));
+      //sprintf(szBitrate, "%d", CFileDetails::Shared()->GetTargetBitrate(sOrigExt));
+      sprintf(szBitrate, "%d", pUPnPBrowse->DeviceSettings()->TargetBitRate(sExt));
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST szBitrate);
     }
   }
 
+  sExt = pUPnPBrowse->DeviceSettings()->Extension(sExt);
+                                                    
   sTmp = "http://" + m_sHTTPServerURL + "/MediaServer/AudioItems/" + p_sObjectID + "." + sExt;  
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.c_str());
   xmlTextWriterEndElement(pWriter);  
@@ -785,7 +799,7 @@ void CContentDirectory::BuildAudioItemAudioBroadcastDescription(xmlTextWriterPtr
   // title
 	xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
     // trim filename
-    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->GetDeviceSettings()->m_nMaxFileNameLength, true);    
+    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength, true);    
     sFileName = TruncateFileExt(sFileName);
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);
@@ -814,17 +828,20 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
                                                   CUPnPBrowseSearchBase*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {
+  string sExt = ExtractFileExt(pSQLResult->GetValue("PATH"));
+                                                    
   // title
 	xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
     // trim filename
-    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->GetDeviceSettings()->m_nMaxFileNameLength, true);    
+    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength, true);    
     sFileName = TruncateFileExt(sFileName);
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);
 
   /* class */
   xmlTextWriterStartElementNS(pWriter, BAD_CAST "upnp", BAD_CAST "class", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");    
-  xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.imageItem.photo");
+  //xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.imageItem.photo");
+  xmlTextWriterWriteString(pWriter, BAD_CAST pUPnPBrowse->DeviceSettings()->ObjectTypeAsStr(sExt).c_str());
   xmlTextWriterEndElement(pWriter);
 
   /* storageMedium */
@@ -844,22 +861,19 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
   
   // protocol info
-  std::stringstream sTmp;
-  sTmp << "http-get:*:" << pSQLResult->GetValue("MIME_TYPE") << ":*";
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
-  sTmp.str("");
+  string sTmp = "http-get:*:" + pSQLResult->GetValue("MIME_TYPE") + ":*";
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
   
   // resolution
 	if(pUPnPBrowse->IncludeProperty("res@resolution") &&
      (pSQLResult->GetValue("IV_WIDTH").compare("NULL") != 0) && 
      (pSQLResult->GetValue("IV_HEIGHT").compare("NULL") != 0)) {
-    sTmp << pSQLResult->GetValue("IV_WIDTH") << "x" << pSQLResult->GetValue("IV_HEIGHT");
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.str().c_str());
-    sTmp.str("");
+    sTmp = pSQLResult->GetValue("IV_WIDTH") + "x" + pSQLResult->GetValue("IV_HEIGHT");
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.c_str());
 	}
   
-  sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/ImageItems/" << p_sObjectID << "." << ExtractFileExt(pSQLResult->GetValue("PATH"));
-  xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
+  sTmp = "http://" + m_sHTTPServerURL + "/MediaServer/ImageItems/" + p_sObjectID + "." + sExt;
+  xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.c_str());
   xmlTextWriterEndElement(pWriter);  
     
 }
@@ -872,7 +886,7 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   // title
 	xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
     // trim filename
-    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->GetDeviceSettings()->m_nMaxFileNameLength, true);    
+    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength, true);    
     sFileName = TruncateFileExt(sFileName);
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);
@@ -885,19 +899,14 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   /* res */
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
   
-  string sMimeType = pSQLResult->GetValue("MIME_TYPE");
+  //string sMimeType = pSQLResult->GetValue("MIME_TYPE");
   string sExt = ExtractFileExt(pSQLResult->GetValue("PATH"));         
-                                                    
-  if(CFileDetails::Shared()->IsTranscodingExtension(sExt)) {
-    sMimeType = CFileDetails::Shared()->GetMimeType(pSQLResult->GetValue("PATH"), true);
-    sExt      = CFileDetails::Shared()->GetTargetExtension(sExt);
-  }                                                    
+         
+  string sMimeType = pUPnPBrowse->DeviceSettings()->MimeType(sExt);
                                                     
                                                     
-  std::stringstream sTmp;
-  sTmp << "http-get:*:" << sMimeType << ":*";
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
-  sTmp.str("");   
+  string sTmp = "http-get:*:" + sMimeType + ":*";
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
 
 
   // duration
@@ -922,8 +931,10 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->GetValue("SIZE").c_str());
   }*/
   
-  sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/VideoItems/" << p_sObjectID << "." << sExt;  
-  xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
+  sExt = pUPnPBrowse->DeviceSettings()->Extension(sExt);
+                                                                                                    
+  sTmp = "http://" + m_sHTTPServerURL + "/MediaServer/VideoItems/" + p_sObjectID + "." + sExt;  
+  xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.c_str());
   xmlTextWriterEndElement(pWriter);  
 }
 
@@ -935,7 +946,7 @@ void CContentDirectory::BuildVideoItemVideoBroadcastDescription(xmlTextWriterPtr
   // title
 	xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
     // trim filename
-    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->GetDeviceSettings()->m_nMaxFileNameLength, true);    
+    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength, true);    
     sFileName = TruncateFileExt(sFileName);
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);
@@ -967,7 +978,7 @@ void CContentDirectory::BuildPlaylistItemDescription(xmlTextWriterPtr pWriter,
   // title
 	xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
 		// trim filename
-		string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->GetDeviceSettings()->m_nMaxFileNameLength, true);    
+		string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength, true);    
 		sFileName = TruncateFileExt(sFileName);
 		xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);  

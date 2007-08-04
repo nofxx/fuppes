@@ -26,40 +26,152 @@
 
 #include <string>
 #include <list>
+#include <map>
 
-typedef struct {
-  bool bResize;
-	bool bResizeIfLarger;
-	int  nMaxWidth;
-	int  nMaxHeight;
+#include "../ContentDirectory/ContentDatabase.h"
+#include "../Transcoding/WrapperBase.h"
+
+struct CImageSettings {
+  CImageSettings();
+  CImageSettings(CImageSettings* pImageSettings);
+  
+  bool bGreater;
+	bool bLower;
+	int  nWidth;
+	int  nHeight;
 	enum { resize, scale } nResizeMethod; // resize = better quality (lower) | scale = lower quality (faster)
-} ImageSettings_t;
+  
+  private:
+    bool bEnabled;
+};
 
 typedef struct {
   bool bShowChildCountInTitle;
+  int  nMaxFileNameLength;
 } DisplaySettings_t;
+
+typedef enum TRANSCODING_HTTP_RESPONSE {
+  RESPONSE_STREAM,
+  RESPONSE_CHUNKED
+} TRANSCODING_HTTP_RESPONSE;
+
+struct CTranscodingSettings {
+  
+  CTranscodingSettings();  
+  CTranscodingSettings(CTranscodingSettings* pTranscodingSettings);
+  
+  std::string   sExt;
+  std::string   sMimeType;
+  std::string   sDLNA;
+  
+  std::string   sDecoder;     // vorbis | flac | mpc
+  std::string   sEncoder;     // lame | twolame | pcm | wav
+  std::string   sTranscoder;  // ffmpeg
+  
+  std::string   sOutParams;
+  
+  std::string MimeType() { return sMimeType; }
+  std::string DLNA() { return sDLNA; }
+  bool Enabled() { return bEnabled; }
+  
+  unsigned int BitRate() { return nBitRate; }
+  unsigned int SampleRate() { return nSampleRate; }
+  
+  std::string  Extension() { return sExt; }
+  TRANSCODING_HTTP_RESPONSE   TranscodingHTTPResponse() { return nTranscodingResponse; }
+  
+  TRANSCODING_HTTP_RESPONSE   nTranscodingResponse;
+  TRANSCODING_TYPE            nTranscodingType;
+  unsigned int                nReleaseDelay;
+  
+    unsigned int  nBitRate;
+    unsigned int  nSampleRate;
+  
+  private:
+    bool          bEnabled;
+};
+
+struct CFileSettings {
+  
+  CFileSettings();
+  CFileSettings(CFileSettings* pFileSettings);
+  
+  std::string   MimeType();
+  std::string   DLNA();
+  
+  unsigned int  TargetSampleRate();
+  unsigned int  TargetBitRate();
+  
+  std::string   Extension(std::string p_sExt);
+  
+  TRANSCODING_HTTP_RESPONSE   TranscodingHTTPResponse();
+  
+  //std::string   sExt;
+  OBJECT_TYPE   nType;
+  std::string   sMimeType;
+  std::string   sDLNA;
+  
+  bool Enabled() { return bEnabled; }
+  void Enabled(bool p_bEnabled) { bEnabled = p_bEnabled; }
+  
+  CTranscodingSettings* pTranscodingSettings;
+  CImageSettings*       pImageSettings;
+  
+  OBJECT_TYPE   ObjectType() { return nType; }
+  std::string   ObjectTypeAsStr();
+  
+  private:
+    bool  bEnabled;
+};
+
+typedef std::map<std::string, CFileSettings*>::iterator FileSettingsIterator_t;
 
 class CDeviceSettings
 {
   public:
 	  CDeviceSettings(std::string p_sDeviceName);
+    CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSettings);
 		
 		bool HasUserAgent(std::string p_sUserAgent);
 		std::list<std::string> m_slUserAgents;
 		bool HasIP(std::string p_sIPAddress);
 		std::list<std::string> m_slIPAddresses;
 		
+    /** show playlist as container or file */
 		bool m_bShowPlaylistAsContainer;
+    /** XBox 360 fixes */
 		bool m_bXBox360Support;
-		int  m_nMaxFileNameLength;
+    /** DLNA */
     bool m_bDLNAEnabled;
-		
-		ImageSettings_t   m_ImageSettings;
-    DisplaySettings_t m_DisplaySettings;
+  
+    OBJECT_TYPE   ObjectType(std::string p_sExt);
+    std::string   ObjectTypeAsStr(std::string p_sExt);
+    bool          DoTranscode(std::string p_sExt);
+    std::string   MimeType(std::string p_sExt);
+    std::string   DLNA(std::string p_sExt);
+  
+    unsigned int  TargetSampleRate(std::string p_sExt);
+    unsigned int  TargetBitRate(std::string p_sExt);
+    
+    bool          Exists(std::string p_sExt);
+    std::string   Extension(std::string p_sExt);
+    TRANSCODING_HTTP_RESPONSE TranscodingHTTPResponse(std::string p_sExt);
+  
+		//ImageSettings_t   m_ImageSettings;
+    
+    DisplaySettings_t* DisplaySettings() { return &m_DisplaySettings; }
 
- // private:
 	  std::string m_sDeviceName;
     std::string m_sVirtualFolderDevice;
+
+    CFileSettings* FileSettings(std::string p_sExt);
+    void AddExt(CFileSettings* pFileSettings, std::string p_sExt);
+  
+    std::map<std::string, CFileSettings*> m_FileSettings;
+    std::map<std::string, CFileSettings*>::iterator m_FileSettingsIterator;
+  
+  private:
+    DisplaySettings_t m_DisplaySettings;
 };
 
 #endif // _DEVICESETTINGS_H

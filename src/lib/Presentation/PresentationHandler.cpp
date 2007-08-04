@@ -450,7 +450,8 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
     sResult << "<tr>" << endl;
     
     nType = atoi(pDb->GetResult()->GetValue("TYPE").c_str());
-    sResult << "<td>" << CFileDetails::Shared()->GetObjectTypeAsString(nType) << "</td>" << endl;
+    //sResult << "<td>" << CFileDetails::Shared()->GetObjectTypeAsString(nType) << "</td>" << endl;
+    sResult << "<td>" << nType << "</td>" << endl;
     sResult << "<td>" << pDb->GetResult()->GetValue("VALUE") << "</td>" << endl;
     pDb->Next();
     
