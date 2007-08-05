@@ -31,7 +31,7 @@
 
 using namespace std;
 
-const std::string NEEDED_CONFIGFILE_VERSION = "0.7.2.1";
+const std::string NEEDED_CONFIGFILE_VERSION = "0.7.2.2";
 
 bool WriteDefaultConfigFile(std::string p_sFileName)
 {
@@ -144,18 +144,14 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
     // device_settings
     xmlTextWriterStartElement(pWriter, BAD_CAST "device_settings");
       
+      xmlTextWriterWriteComment(pWriter, BAD_CAST "\"default\" settings are inhertied by specific devices and can be overwritten");
+  
       // device (default)
       xmlTextWriterStartElement(pWriter, BAD_CAST "device");
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "name", BAD_CAST "default");   
   
-        // max_file_name_length
-        sComment << "specify the maximum length for file names." << endl;
-           sComment << "      e.g. the Telegent TG 100 can handle file names up" << endl;
-           sComment << "      to 101 characters. everything above leads to an error." << endl;
-           sComment << "      if you leave the field empty or insert 0 the maximum" << endl;
-           sComment << "      length is unlimited.";
-        xmlTextWriterWriteComment(pWriter, BAD_CAST sComment.str().c_str());
-        sComment.str("");
+        // max_file_name_length        
+        xmlTextWriterWriteComment(pWriter, BAD_CAST "specify the maximum length for file names (0 or empty = unlimited)");
         xmlTextWriterStartElement(pWriter, BAD_CAST "max_file_name_length");
         xmlTextWriterWriteString(pWriter, BAD_CAST "0");
         xmlTextWriterEndElement(pWriter);
@@ -173,6 +169,10 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
         xmlTextWriterStartElement(pWriter, BAD_CAST "enable_dlna");
         xmlTextWriterWriteString(pWriter, BAD_CAST "false");
         xmlTextWriterEndElement(pWriter);  
+
+        xmlTextWriterStartElement(pWriter, BAD_CAST "transcoding_release_delay");
+        xmlTextWriterWriteString(pWriter, BAD_CAST "4");
+        xmlTextWriterEndElement(pWriter); 
   
         // file_settings (default)
         xmlTextWriterStartElement(pWriter, BAD_CAST "file_settings");
@@ -213,8 +213,20 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
               xmlTextWriterStartElement(pWriter, BAD_CAST "dlna");
                 xmlTextWriterWriteString(pWriter, BAD_CAST "MP3");
               xmlTextWriterEndElement(pWriter);
-              xmlTextWriterStartElement(pWriter, BAD_CAST "encoding");
+              xmlTextWriterStartElement(pWriter, BAD_CAST "http_encoding");
                 xmlTextWriterWriteString(pWriter, BAD_CAST "chunked");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "decoder");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "vorbis");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "encoder");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "lame");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "bitrate");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "192");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "samplerate");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "44100");
               xmlTextWriterEndElement(pWriter);
             xmlTextWriterEndElement(pWriter);
           xmlTextWriterEndElement(pWriter);
@@ -398,6 +410,39 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
             xmlTextWriterStartElement(pWriter, BAD_CAST "mime_type");
               xmlTextWriterWriteString(pWriter, BAD_CAST "application/x-flash-video");
             xmlTextWriterEndElement(pWriter);
+  
+            xmlTextWriterStartElement(pWriter, BAD_CAST "transcode");
+            xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "true");
+              xmlTextWriterStartElement(pWriter, BAD_CAST "ext");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "mpg");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "mime_type");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "video/mpeg");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "transcoder");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "ffmpeg");
+              xmlTextWriterEndElement(pWriter);              
+              xmlTextWriterStartElement(pWriter, BAD_CAST "transcoder_settings");
+                xmlTextWriterWriteComment(pWriter, BAD_CAST "run \"ffmpeg -formats\" to see available video-/audio codecs");
+                xmlTextWriterStartElement(pWriter, BAD_CAST "video_codec");
+                  xmlTextWriterWriteString(pWriter, BAD_CAST "mpeg1video");
+                xmlTextWriterEndElement(pWriter);                
+                xmlTextWriterStartElement(pWriter, BAD_CAST "audio_codec");
+                  xmlTextWriterWriteString(pWriter, BAD_CAST "mp2");
+                xmlTextWriterEndElement(pWriter);
+                xmlTextWriterStartElement(pWriter, BAD_CAST "audio_bitrate");
+                  xmlTextWriterWriteString(pWriter, BAD_CAST "192000");
+                xmlTextWriterEndElement(pWriter);
+                xmlTextWriterStartElement(pWriter, BAD_CAST "audio_samplerate");
+                  xmlTextWriterWriteString(pWriter, BAD_CAST "44100");
+                xmlTextWriterEndElement(pWriter);
+                xmlTextWriterWriteComment(pWriter, BAD_CAST "additional output parameters for ffpmeg (e.g. force stereo)");
+                xmlTextWriterStartElement(pWriter, BAD_CAST "out_params");
+                  xmlTextWriterWriteString(pWriter, BAD_CAST "-ac 2");
+                xmlTextWriterEndElement(pWriter);
+              xmlTextWriterEndElement(pWriter);
+              
+            xmlTextWriterEndElement(pWriter);
           xmlTextWriterEndElement(pWriter);  
   
           // asf
@@ -443,6 +488,8 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
       xmlTextWriterEndElement(pWriter);
   
   
+      xmlTextWriterWriteComment(pWriter, BAD_CAST "If you have more than one device it is a good idea to set the ip address manually as some devices may have conflicting \"user agents\".");
+  
       // device (PS3)
       xmlTextWriterStartElement(pWriter, BAD_CAST "device");
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "name", BAD_CAST "PS3");
@@ -460,6 +507,10 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
         xmlTextWriterWriteString(pWriter, BAD_CAST "true");
         xmlTextWriterEndElement(pWriter);
   
+        xmlTextWriterStartElement(pWriter, BAD_CAST "transcoding_release_delay");
+        xmlTextWriterWriteString(pWriter, BAD_CAST "50");
+        xmlTextWriterEndElement(pWriter); 
+  
         xmlTextWriterStartElement(pWriter, BAD_CAST "file_settings");
 
         // mp3
@@ -470,8 +521,8 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
           xmlTextWriterEndElement(pWriter);          
           xmlTextWriterStartElement(pWriter, BAD_CAST "transcode");
           xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "true");
-            xmlTextWriterStartElement(pWriter, BAD_CAST "encoding")>
-              xmlTextWriterWriteString(pWriter, BAD_CAST "MP3");
+            xmlTextWriterStartElement(pWriter, BAD_CAST "http_encoding")>
+              xmlTextWriterWriteString(pWriter, BAD_CAST "stream");
             xmlTextWriterEndElement(pWriter);
           xmlTextWriterEndElement(pWriter);
         xmlTextWriterEndElement(pWriter);
@@ -510,6 +561,7 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "virtual", BAD_CAST "default");
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "false");
   
+        xmlTextWriterWriteComment(pWriter, BAD_CAST "Please enter the address of your Noxon. Automatic detection is impossible because the Noxon does not send a \"user-agent\" in it's requests");
         xmlTextWriterWriteComment(pWriter, BAD_CAST "<ip></ip>");
   
         xmlTextWriterStartElement(pWriter, BAD_CAST "playlist_style");
@@ -529,7 +581,13 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "virtual", BAD_CAST "default");
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "false");
   
-        xmlTextWriterWriteComment(pWriter, BAD_CAST "<ip></ip>");
+        xmlTextWriterStartElement(pWriter, BAD_CAST "user_agent");
+        xmlTextWriterWriteString(pWriter, BAD_CAST "dma/1.0 \\(http://www.cybertan.com.tw/\\)");
+        xmlTextWriterEndElement(pWriter);
+        
+        xmlTextWriterStartElement(pWriter, BAD_CAST "user_agent");
+        xmlTextWriterWriteString(pWriter, BAD_CAST "UPnP/1.0 DLNADOC/1.00");
+        xmlTextWriterEndElement(pWriter);  
   
         xmlTextWriterStartElement(pWriter, BAD_CAST "playlist_style");
         xmlTextWriterWriteString(pWriter, BAD_CAST "file");

@@ -35,8 +35,6 @@
 
 using namespace std;
 
-#define RELEASE_DELAY 10 // seconds
-
 fuppesThreadCallback TranscodeThread(void *arg);
 
 CTranscodingCacheObject::CTranscodingCacheObject()
@@ -56,7 +54,8 @@ CTranscodingCacheObject::CTranscodingCacheObject()
   m_bInitialized    = false;
   
   m_bThreaded       = false;
-  m_nReleaseCnt     = RELEASE_DELAY;
+  m_nReleaseCnt     = 0;
+  m_nReleaseCntBak  = 0;
   
   fuppesThreadInitMutex(&m_Mutex);
 }
@@ -90,6 +89,8 @@ CTranscodingCacheObject::~CTranscodingCacheObject()
 bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceSettings* pDeviceSettings)
 {
   std::string sExt = ToLower(ExtractFileExt(pSessionInfo->m_sInFileName));
+  
+  ReleaseCount(pDeviceSettings->ReleaseDelay(sExt));
   
   if(CTranscodingMgr::Shared()->GetTranscodingType(sExt) == TT_THREADED_TRANSCODER ||
      CTranscodingMgr::Shared()->GetTranscodingType(sExt) == TT_TRANSCODER) {
@@ -491,7 +492,8 @@ CTranscodingCacheObject* CTranscodingCache::GetCacheObject(std::string p_sFileNa
   cout << endl;
   
   pResult->m_nRefCount++;
-  pResult->m_nReleaseCnt = RELEASE_DELAY;
+  pResult->ResetReleaseCount();
+  //pResult->m_nReleaseCnt = RELEASE_DELAY;
   
   fuppesThreadUnlockMutex(&m_Mutex);  
   
@@ -534,7 +536,7 @@ fuppesThreadCallback ReleaseLoop(void* arg)
       pCacheObj = (*pCache->m_CachedObjectsIterator).second;
       
       if((pCacheObj->m_nRefCount == 0) && 
-         (pCacheObj->m_nReleaseCnt == 0)) {
+         (pCacheObj->ReleaseCount() == 0)) {
         TmpIterator = pCache->m_CachedObjectsIterator;
         TmpIterator++;
         
@@ -545,7 +547,7 @@ fuppesThreadCallback ReleaseLoop(void* arg)
         pCache->m_CachedObjectsIterator = TmpIterator;
       }
       else if(pCacheObj->m_nRefCount == 0) {
-        pCacheObj->m_nReleaseCnt--;
+        pCacheObj->DecReleaseCount();
         pCache->m_CachedObjectsIterator++;
       }
       else {

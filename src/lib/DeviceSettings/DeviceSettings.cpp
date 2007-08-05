@@ -25,6 +25,8 @@
 #include "../Common/RegEx.h"
 #include <iostream>
 
+#define DEFAULT_RELEASE_DELAY 4
+
 using namespace std;
 
 CImageSettings::CImageSettings()
@@ -43,6 +45,7 @@ CTranscodingSettings::CTranscodingSettings()
   nTranscodingResponse = RESPONSE_CHUNKED;
   nBitRate = 0;
   nSampleRate = 0;
+  nReleaseDelay = -1;
 }
 
 CTranscodingSettings::CTranscodingSettings(CTranscodingSettings* pTranscodingSettings)
@@ -50,8 +53,17 @@ CTranscodingSettings::CTranscodingSettings(CTranscodingSettings* pTranscodingSet
   bEnabled = pTranscodingSettings->bEnabled;
   nTranscodingResponse = pTranscodingSettings->nTranscodingResponse;
   
-  nBitRate    = pTranscodingSettings->BitRate();
-  nSampleRate = pTranscodingSettings->SampleRate();
+  nBitRate      = pTranscodingSettings->nBitRate;
+  nSampleRate   = pTranscodingSettings->nSampleRate;
+  nReleaseDelay = pTranscodingSettings->nReleaseDelay;
+  
+  sDecoder      = pTranscodingSettings->sDecoder;
+  sEncoder      = pTranscodingSettings->sEncoder;
+  sTranscoder   = pTranscodingSettings->sTranscoder;
+  
+  sExt        = pTranscodingSettings->sExt;
+  sDLNA       = pTranscodingSettings->sDLNA;
+  sMimeType   = pTranscodingSettings->sMimeType;
 }
 
 
@@ -64,12 +76,20 @@ CFileSettings::CFileSettings()
 
 CFileSettings::CFileSettings(CFileSettings* pFileSettings)
 {
+  pTranscodingSettings = NULL;
+  pImageSettings = NULL;
+  
   if(pFileSettings->pTranscodingSettings) {
     pTranscodingSettings = new CTranscodingSettings(pFileSettings->pTranscodingSettings);
   }
   else if(pFileSettings->pImageSettings) {
     pImageSettings = new CImageSettings(pFileSettings->pImageSettings);
-  }
+  }  
+  
+  bEnabled  = pFileSettings->bEnabled;
+  sMimeType = pFileSettings->sMimeType;
+  sDLNA     = pFileSettings->sDLNA;
+  nType     = pFileSettings->nType;
 }
 
 std::string CFileSettings::ObjectTypeAsStr() 
@@ -190,6 +210,16 @@ TRANSCODING_HTTP_RESPONSE CFileSettings::TranscodingHTTPResponse()
   }
 }
 
+int CFileSettings::ReleaseDelay()
+{ 
+  if(pTranscodingSettings && pTranscodingSettings->Enabled()) {
+    return pTranscodingSettings->ReleaseDelay();
+  }
+  else {
+    return -1;
+  }
+}
+
 CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
 {
   m_sDeviceName = p_sDeviceName;
@@ -202,6 +232,8 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
     
   m_DisplaySettings.bShowChildCountInTitle = false;
   m_DisplaySettings.nMaxFileNameLength     = 0;
+  
+  nDefaultReleaseDelay = DEFAULT_RELEASE_DELAY;
 }
 
 CDeviceSettings::CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSettings)
@@ -222,6 +254,8 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSe
   m_DisplaySettings.bShowChildCountInTitle = pSettings->m_DisplaySettings.bShowChildCountInTitle;
   m_DisplaySettings.nMaxFileNameLength     = pSettings->m_DisplaySettings.nMaxFileNameLength; 
   
+  
+  nDefaultReleaseDelay = pSettings->nDefaultReleaseDelay;
   
   for(pSettings->m_FileSettingsIterator = pSettings->m_FileSettings.begin();
       pSettings->m_FileSettingsIterator != pSettings->m_FileSettings.end();
@@ -407,4 +441,18 @@ TRANSCODING_HTTP_RESPONSE CDeviceSettings::TranscodingHTTPResponse(std::string p
     return iter->second->TranscodingHTTPResponse();
   else  
     return RESPONSE_CHUNKED;
+}
+
+int CDeviceSettings::ReleaseDelay(std::string p_sExt)
+{
+  FileSettingsIterator_t  iter;
+  
+  iter = m_FileSettings.find(p_sExt);
+  if(iter != m_FileSettings.end()) {
+    if(iter->second->ReleaseDelay() >= 0) {
+      return iter->second->ReleaseDelay();
+    }
+  }
+  
+  return nDefaultReleaseDelay;
 }

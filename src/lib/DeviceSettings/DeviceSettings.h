@@ -80,9 +80,11 @@ struct CTranscodingSettings {
   std::string  Extension() { return sExt; }
   TRANSCODING_HTTP_RESPONSE   TranscodingHTTPResponse() { return nTranscodingResponse; }
   
+  int ReleaseDelay() { return nReleaseDelay; }
+  
   TRANSCODING_HTTP_RESPONSE   nTranscodingResponse;
   TRANSCODING_TYPE            nTranscodingType;
-  unsigned int                nReleaseDelay;
+  int                nReleaseDelay;
   
     unsigned int  nBitRate;
     unsigned int  nSampleRate;
@@ -119,6 +121,8 @@ struct CFileSettings {
   
   OBJECT_TYPE   ObjectType() { return nType; }
   std::string   ObjectTypeAsStr();
+  
+  int ReleaseDelay();
   
   private:
     bool  bEnabled;
@@ -157,6 +161,8 @@ class CDeviceSettings
     std::string   Extension(std::string p_sExt);
     TRANSCODING_HTTP_RESPONSE TranscodingHTTPResponse(std::string p_sExt);
   
+    int ReleaseDelay(std::string p_sExt);
+    int nDefaultReleaseDelay;
 		//ImageSettings_t   m_ImageSettings;
     
     DisplaySettings_t* DisplaySettings() { return &m_DisplaySettings; }
@@ -164,6 +170,8 @@ class CDeviceSettings
 	  std::string m_sDeviceName;
     std::string m_sVirtualFolderDevice;
 
+    
+  
     CFileSettings* FileSettings(std::string p_sExt);
     void AddExt(CFileSettings* pFileSettings, std::string p_sExt);
   

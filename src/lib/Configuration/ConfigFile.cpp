@@ -258,9 +258,12 @@ void CConfigFile::SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode, bo
       else if(pTmp->Name().compare("xbox360") == 0) {
         pSettings->m_bXBox360Support = (pTmp->Value().compare("true") == 0);
       }     
-      // xbox360
+      // dlna
       else if(pTmp->Name().compare("enable_dlna") == 0) {
         pSettings->m_bDLNAEnabled = (pTmp->Value().compare("true") == 0);
+      }
+      else if(pTmp->Name().compare("transcoding_release_delay") == 0) {
+        pSettings->nDefaultReleaseDelay = atoi(pTmp->Value().c_str());
       }
       else if(pTmp->Name().compare("file_settings") == 0) {
         
@@ -381,7 +384,7 @@ void CConfigFile::ParseTranscodingSettings(CXMLNode* pTCNode, CFileSettings* pFi
     else if(pTmp->Name().compare("dlna") == 0) {
       pFileSet->pTranscodingSettings->sDLNA = pTmp->Value();
     }
-    else if(pTmp->Name().compare("encoding") == 0) {
+    else if(pTmp->Name().compare("http_encoding") == 0) {
       if(pTmp->Value().compare("chunked") == 0) {
         pFileSet->pTranscodingSettings->nTranscodingResponse = RESPONSE_CHUNKED;
       }

@@ -72,7 +72,24 @@ class CTranscodingCacheObject
   
   //private:
     unsigned int m_nRefCount;
-    unsigned int m_nReleaseCnt;
+    
+    unsigned int ReleaseCount()
+      { return m_nReleaseCnt; }
+  
+    void ReleaseCount(unsigned int p_nCnt) 
+      { 
+        if(m_nReleaseCnt < p_nCnt) {
+          m_nReleaseCnt = p_nCnt;
+          m_nReleaseCntBak = m_nReleaseCnt;
+        }
+      }
+  
+    void DecReleaseCount()
+      { m_nReleaseCnt--; }
+  
+    void ResetReleaseCount() 
+      { m_nReleaseCnt = m_nReleaseCntBak; }
+        
     fuppesThreadMutex  m_Mutex;
 
     CAudioEncoderBase* m_pAudioEncoder;
@@ -99,6 +116,8 @@ class CTranscodingCacheObject
   
     bool m_bThreaded;
   
+    unsigned int m_nReleaseCnt;
+    unsigned int m_nReleaseCntBak;
 };
 
 class CTranscodingCache

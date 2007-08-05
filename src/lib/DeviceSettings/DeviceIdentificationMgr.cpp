@@ -102,8 +102,9 @@ void print_settings(CDeviceSettings* pSettings) {
   
   CFileSettings  * pFileSet;
   
-  cout << "device: " << pSettings->m_sDeviceName << endl;    
-  cout << "  file_settings:" << endl;  
+  cout << "device: " << pSettings->m_sDeviceName << endl;
+  cout << "  release delay: " << pSettings->nDefaultReleaseDelay << endl;
+  cout << "  file_settings: " << endl;  
   
   for(pSettings->m_FileSettingsIterator = pSettings->m_FileSettings.begin();
       pSettings->m_FileSettingsIterator != pSettings->m_FileSettings.end();
@@ -123,6 +124,7 @@ void print_settings(CDeviceSettings* pSettings) {
       cout << "    ext: " << pFileSet->pTranscodingSettings->sExt << endl;
       cout << "    dlna: " << pFileSet->pTranscodingSettings->sDLNA << endl;
       cout << "    mime-type: " << pFileSet->pTranscodingSettings->sMimeType << endl;      
+      cout << "    release delay: " << pFileSet->ReleaseDelay() << endl;
     }
     else if(pFileSet->pImageSettings) {
       cout << "  resize: " << endl;
