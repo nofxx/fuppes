@@ -406,6 +406,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
         
         // offset groesser als verfuegbare daten
         if(p_nOffset > m_pTranscodingCacheObj->GetBufferSize() && m_pTranscodingCacheObj->m_bIsComplete)  {          
+          cout << "error offset too high" << endl;
           return 0;
         }
         else {
@@ -413,12 +414,16 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
         }
       }
       
-      if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
+      /*if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
         nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition; 
       }
       else {
         nRest = 0;
+      }*/
+      if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
+        cout << "integer overflow 1" << endl;
       }
+      nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition;
     }
     else
       nRest = m_nBinContentLength - m_nBinContentPosition;
@@ -431,11 +436,12 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     while(bTranscode && !m_pTranscodingCacheObj->m_bIsComplete && (nRest < p_nSize) && !m_pTranscodingSessionInfo->m_bBreakTranscoding)
     { 
       if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
-        nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition; 
+        cout << "integer overflow 2" << endl;
       }
-      else {
+      /*else {
         nRest = 0;
-      }
+      }*/
+      nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition; 
 
       stringstream sLog;
       sLog << "we are sending faster then we can transcode!" << endl;

@@ -90,7 +90,8 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
 {
   std::string sExt = ToLower(ExtractFileExt(pSessionInfo->m_sInFileName));
   
-  ReleaseCount(pDeviceSettings->ReleaseDelay(sExt));
+  ReleaseCount(pDeviceSettings->ReleaseDelay(sExt));  
+  cout << __FILE__ << " release 2 " << ReleaseCount() << endl;
   
   if(CTranscodingMgr::Shared()->GetTranscodingType(sExt) == TT_THREADED_TRANSCODER ||
      CTranscodingMgr::Shared()->GetTranscodingType(sExt) == TT_TRANSCODER) {
@@ -493,6 +494,7 @@ CTranscodingCacheObject* CTranscodingCache::GetCacheObject(std::string p_sFileNa
   
   pResult->m_nRefCount++;
   pResult->ResetReleaseCount();
+  cout << __FILE__ << " release 1 " << pResult->ReleaseCount() << endl;
   //pResult->m_nReleaseCnt = RELEASE_DELAY;
   
   fuppesThreadUnlockMutex(&m_Mutex);  
