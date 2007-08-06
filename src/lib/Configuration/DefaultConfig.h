@@ -500,6 +500,11 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
         xmlTextWriterWriteString(pWriter, BAD_CAST "UPnP/1.0 DLNADOC/1.00");
         xmlTextWriterEndElement(pWriter);
   
+        xmlTextWriterStartElement(pWriter, BAD_CAST "user_agent");
+        xmlTextWriterWriteString(pWriter, BAD_CAST "PLAYSTATION3");
+        xmlTextWriterEndElement(pWriter);
+  
+  
         xmlTextWriterWriteComment(pWriter, BAD_CAST "<ip></ip>");  
   
         // enable_dlna
