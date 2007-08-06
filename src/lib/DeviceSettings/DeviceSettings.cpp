@@ -43,8 +43,8 @@ CTranscodingSettings::CTranscodingSettings()
 {
   bEnabled = true;
   nTranscodingResponse = RESPONSE_CHUNKED;
-  nBitRate = 0;
-  nSampleRate = 0;
+  nBitRate = 128; //0;
+  nSampleRate = 44100; //0;
   nReleaseDelay = -1;
 }
 

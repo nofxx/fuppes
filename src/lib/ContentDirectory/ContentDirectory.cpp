@@ -771,6 +771,7 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
 
   // sampleFrequency
   if(pUPnPBrowse->IncludeProperty("res@sampleFrequency")) {
+    
     if(!bTranscode && !pSQLResult->IsNull("A_SAMPLERATE")) {		  
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST pSQLResult->GetValue("A_SAMPLERATE").c_str());
     }
