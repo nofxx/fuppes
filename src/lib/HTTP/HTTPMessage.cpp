@@ -376,17 +376,20 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     if(m_pTranscodingSessionInfo) {
 
       if(m_pTranscodingSessionInfo->m_nGuessContentLength > 0) {
-      if(((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 127) ||
+
+      #warning todo: new option "fake mp3 tail"
+      if(/*((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 127) ||*/
          ((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 128)) {       
            
         const string sFakeMp3Tail = 
           "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
           "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
+          "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
           "qqqqqqqqqqqqqqqqqqo=";    
     
         string sBinFake = Base64Decode(sFakeMp3Tail);      
-        memcpy(p_sContentChunk, sBinFake.c_str(), m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset);      
-        return m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset;      
+        memcpy(p_sContentChunk, sBinFake.c_str(), 128);
+        return 128;
       }
       }
     }
@@ -414,16 +417,18 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
       
       //if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
         
-        nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition; 
+        //nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition; 
         
         cout << "buffer: " << m_pTranscodingCacheObj->GetBufferSize() << endl;
         cout << "pos: " << m_nBinContentPosition << endl;
       
         if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
           cout << "calc rest: " << m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition << endl;
+          nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition; 
         }
         else {
           cout << "rest == 0" << endl;
+          nRest = 0;
         }
       
         cout << "rest: " << nRest << endl << endl;
@@ -446,12 +451,12 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     #ifndef DISABLE_TRANSCODING
     while(bTranscode && !m_pTranscodingCacheObj->m_bIsComplete && (nRest < p_nSize) && !m_pTranscodingSessionInfo->m_bBreakTranscoding)
     { 
-      //if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
+      if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
         nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition; 
-      /*}
+      }
       else {
         nRest = 0;
-      }*/
+      }
            
       if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
         cout << "calc rest 3: " << m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition << endl;

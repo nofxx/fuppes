@@ -627,7 +627,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       // partial id3v1 request
       if((p_Request->GetRangeEnd() - p_Request->GetRangeStart()) == 127) {
         cout << __FILE__ << " . " << __LINE__ << " 1. id3v1 request" << endl;
-        nRequestSize = 127;
+        nRequestSize = 128;
       }
       
       else if(p_Request->GetRangeEnd() > p_Request->GetRangeStart())
