@@ -115,8 +115,6 @@ void CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
     pMessageOut->SetContent(sContent);        
   }
   
-  cout << __FILE__ << endl << sContent << endl;
-  
   //cout << "CDIR ACTION HANDLED" << endl; fflush(stdout);
 }
 

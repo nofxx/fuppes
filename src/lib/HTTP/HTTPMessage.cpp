@@ -377,9 +377,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
 
       if(m_pTranscodingSessionInfo->m_nGuessContentLength > 0) {
       if(((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 127) ||
-         ((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 128)) {
-      
-        cout << "chunk size: " << m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset << endl;
+         ((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 128)) {       
            
         const string sFakeMp3Tail = 
           "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
@@ -387,8 +385,8 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
           "qqqqqqqqqqqqqqqqqqo=";    
     
         string sBinFake = Base64Decode(sFakeMp3Tail);      
-        memcpy(p_sContentChunk, sBinFake.c_str(), 127);      
-        return 127;      
+        memcpy(p_sContentChunk, sBinFake.c_str(), m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset);      
+        return m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset;      
       }
       }
     }
@@ -414,12 +412,27 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
         }
       }
       
-      if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
+      //if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
+        
         nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition; 
-      }
+        
+        cout << "buffer: " << m_pTranscodingCacheObj->GetBufferSize() << endl;
+        cout << "pos: " << m_nBinContentPosition << endl;
+      
+        if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
+          cout << "calc rest: " << m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition << endl;
+        }
+        else {
+          cout << "rest == 0" << endl;
+        }
+      
+        cout << "rest: " << nRest << endl << endl;
+        
+      
+      /*}
       else {
         nRest = 0;
-      }      
+      } */     
     }
     else
       nRest = m_nBinContentLength - m_nBinContentPosition;
@@ -428,15 +441,27 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     #endif
     
     
+    cout << "rest 2: " << nRest << endl << endl;
+    
     #ifndef DISABLE_TRANSCODING
     while(bTranscode && !m_pTranscodingCacheObj->m_bIsComplete && (nRest < p_nSize) && !m_pTranscodingSessionInfo->m_bBreakTranscoding)
     { 
-      if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
+      //if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
         nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition; 
-      }
+      /*}
       else {
         nRest = 0;
+      }*/
+           
+      if(m_pTranscodingCacheObj->GetBufferSize() > m_nBinContentPosition) {
+        cout << "calc rest 3: " << m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition << endl;
       }
+      else {
+        cout << "rest 3 == 0" << endl;
+      }      
+      
+      cout << "rest 3: " << nRest << endl << endl;  
+      
       
 
       stringstream sLog;
@@ -463,7 +488,10 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
         BreakTranscoding();                                  
         return 0;
       }
-    }    
+    }
+    
+    cout << "rest 4: " << nRest << endl << endl;      
+    
     
     if(bTranscode) {
       nRest = m_pTranscodingCacheObj->GetBufferSize() - m_nBinContentPosition;
@@ -483,7 +511,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     cout << "offset: " << p_nOffset << " pos: " << m_nBinContentPosition << endl;
     cout << "rest: " << nRest << " size: " << p_nSize << endl;
     if(bTranscode) {
-      cout << "buffer size: " << m_pTranscodingCacheObj->GetBufferSize() << endl;
+      cout << "buffer size: " << m_pTranscodingCacheObj->GetBufferSize() << endl << endl;
     }
     
     if(nRest >= p_nSize) {

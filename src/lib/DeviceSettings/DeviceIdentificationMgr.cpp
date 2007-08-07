@@ -68,7 +68,6 @@ void CDeviceIdentificationMgr::IdentifyDevice(CHTTPMessage* pDeviceMessage)
 	if(!pDeviceMessage->DeviceSettings())
   	pDeviceMessage->DeviceSettings(m_pDefaultSettings);
 
-  cout << __FILE__ << " device: " << pDeviceMessage->DeviceSettings()->m_sDeviceName << endl;
   CSharedLog::Shared()->Log(L_EXTENDED, pDeviceMessage->DeviceSettings()->m_sDeviceName, __FILE__, __LINE__);
 }
 
