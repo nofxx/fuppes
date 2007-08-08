@@ -323,7 +323,7 @@ void CConfigFile::ParseFileSettings(CXMLNode* pFileSettings, CDeviceSettings* pD
   CFileSettings* pFileSet;
   CXMLNode* pTmp;
 
-  pFileSet = pDevSet->FileSettings(pFileSettings->Attribute("ext"));
+  pFileSet = pDevSet->FileSettings(ToLower(pFileSettings->Attribute("ext")));
   
   for(i = 0; i < pFileSettings->ChildCount(); i++) {    
     
@@ -333,7 +333,7 @@ void CConfigFile::ParseFileSettings(CXMLNode* pFileSettings, CDeviceSettings* pD
       pFileSet->nType = ParseObjectType(pTmp->Value());
     }
     else if(pTmp->Name().compare("ext") == 0) {
-      pDevSet->AddExt(pFileSet, pTmp->Value());
+      pDevSet->AddExt(pFileSet, ToLower(pTmp->Value()));
     }
     else if(pTmp->Name().compare("mime_type") == 0) {
       pFileSet->sMimeType = pTmp->Value();

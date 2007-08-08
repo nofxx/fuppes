@@ -71,8 +71,10 @@ fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
   CVirtualContainerMgr* pMgr = (CVirtualContainerMgr*)arg;
     
   CSharedLog::Shared()->Log(L_NORMAL, "[VirtualContainer] create virtual container layout", __FILE__, __LINE__);
+  #ifndef WIN32
   struct timeval startTime;
   gettimeofday(&startTime, NULL);
+  #endif
   
   CXMLDocument* pDoc = new CXMLDocument();
   if(!pDoc->Load(CSharedConfig::Shared()->GetVFolderConfigFileName())) {    
@@ -106,6 +108,8 @@ fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
   delete pDoc;    
   
   CSharedLog::Shared()->Log(L_NORMAL, "[VirtualContainer] virtual container layout created", __FILE__, __LINE__);
+  
+  #ifndef WIN32
   struct timeval endTime;
   gettimeofday(&endTime, NULL);
   
@@ -114,6 +118,7 @@ fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
   cout << "creation took " << durationMcr << " microseconds :: ";
   cout << durationMcr / 100000.0 << " seconds ";  
   fflush(stdout);
+  #endif
   
   g_bIsRebuilding = false;
   fuppesThreadExit();

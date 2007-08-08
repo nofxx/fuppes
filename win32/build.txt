@@ -1,0 +1,46 @@
+--prefix=/sources/root
+
+
+2007-05-15
+
+
+zlib-1.2.3		msys
+
+
+pcre 7.1		msys
+	./configure --enable-utf8 --enable-newline-is-anycrlf
+
+
+libxml2-2.6.28		msys
+	./configure  --enable-ipv6=no --with-debug=off --with-http=off --with-ftp=off 
+		     --with-docbook=off --with-schemas=off --with-schematron=off
+
+
+sqlite-3.3.17		msys
+	./configure  --disable-tcl --enable-tempstore=yes --enable-threadsafe
+
+
+
+libogg-1.1.3		msys
+
+
+libvorbis-1.1.2		msys
+
+
+libiconv-1.11
+	./configure --disable-rpath
+
+
+
+updated 2007-08-08
+
+pcre 7.1		msys
+	./configure --enable-utf8 --enable-newline-is-anycrlf
+
+
+libvorbis-1.2.0		msys
+
+
+
+ffmpeg			msys
+	./configure --enable-libogg --enable-memalign-hack --enable-shared

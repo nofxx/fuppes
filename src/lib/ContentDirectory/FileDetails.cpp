@@ -293,6 +293,7 @@ std::string CFileDetails::GetContainerTypeAsStr(OBJECT_TYPE p_nContainerType)
 
 bool CFileDetails::IsSupportedFileExtension(std::string p_sFileExtension)
 {
+  p_sFileExtension = ToLower(p_sFileExtension);
   return CDeviceIdentificationMgr::Shared()->DefaultDevice()->Exists(p_sFileExtension);
   /*p_sFileExtension = ToLower(p_sFileExtension);
   struct FileType_t* pType;   

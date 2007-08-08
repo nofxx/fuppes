@@ -659,7 +659,7 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
                                                   CUPnPBrowseSearchBase*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {                 
-  string sExt = ExtractFileExt(pSQLResult->GetValue("PATH"));                                                                                          
+  string sExt = ToLower(ExtractFileExt(pSQLResult->GetValue("PATH")));
 
                                                     
   // title
@@ -840,7 +840,7 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
                                                   CUPnPBrowseSearchBase*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {
-  string sExt = ExtractFileExt(pSQLResult->GetValue("PATH"));
+  string sExt = ToLower(ExtractFileExt(pSQLResult->GetValue("PATH")));
                                                     
   // title
 	//xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
@@ -897,7 +897,7 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
                                                   CUPnPBrowseSearchBase*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {                                                     
-  string sExt = ExtractFileExt(pSQLResult->GetValue("PATH"));                                                             
+  string sExt = ToLower(ExtractFileExt(pSQLResult->GetValue("PATH")));
                                                     
   // title
 	//xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");

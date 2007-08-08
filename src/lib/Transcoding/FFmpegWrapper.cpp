@@ -24,6 +24,7 @@
 #include "FFmpegWrapper.h"
 
 #ifdef HAVE_LIBAVFORMAT
+#ifdef ENABLE_VIDEO_TRANSCODING
 
 CFFmpegWrapper::~CFFmpegWrapper()
 {
@@ -100,4 +101,5 @@ void CFFmpegWrapper::Break()
   ffmpeg_break();
 }
 
+#endif // ENABLE_VIDEO_TRANSCODING
 #endif // HAVE_LIBAVFORMAT

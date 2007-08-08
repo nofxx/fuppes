@@ -28,6 +28,8 @@
 #include "../../config.h"
 #endif
 
+#ifdef ENABLE_VIDEO_TRANSCODING
+
 #include "WrapperBase.h"
 
 #ifdef HAVE_LIBAVFORMAT
@@ -46,5 +48,7 @@ class CFFmpegWrapper: public CTranscoderBase
 };
 
 #endif // HAVE_LIBAVFORMAT
+
+#endif // NABLE_VIDEO_TRANSCODING
 
 #endif // FFMPEGWRAPPER_H
