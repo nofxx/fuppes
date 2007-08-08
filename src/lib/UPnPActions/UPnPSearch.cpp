@@ -243,7 +243,7 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 					else if(sVal.compare("object.item.audioItem") == 0)
 					  sVal = "(120, 121, 122)";	
 					else if(sVal.compare("object.item.videoItem") == 0)
-					  sVal = "(133, 131, 132)";
+					  sVal = "(130, 131, 132, 133)";
 					else if(sVal.compare("object.container.person.musicArtist") == 0)
 					  sVal = "(11)";          
 					else if(sVal.compare("object.container.album.musicAlbum") == 0)

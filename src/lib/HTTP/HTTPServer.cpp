@@ -625,8 +625,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
 		else if(p_Response->IsTranscoding()) {
      
       // partial id3v1 request
+      #warning todo: "fake id3 tail"
       if((p_Request->GetRangeEnd() - p_Request->GetRangeStart()) == 127) {
-        cout << __FILE__ << " . " << __LINE__ << " 1. id3v1 request" << endl;
         nRequestSize = 128;
       }
       
@@ -700,9 +700,6 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
         ((nRet = p_Response->GetBinContentChunk(szChunk, nReqChunkSize, nOffset)) > 0)
         )
   {
-    
-    cout << __FILE__ << " chunk size: " << nRet << endl;
-    
     // send HTTP header when the first package is ready
     if(nCnt == 0) {      
       // send
@@ -779,9 +776,6 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     } 
 
   } // while
-
-  
-  cout << __FILE__ << " chunk size 2: " << nRet << endl;
   
   // send last chunk
   if((nErr > 0) && (p_Response->GetTransferEncoding() == HTTP_TRANSFER_ENCODING_CHUNKED)) {

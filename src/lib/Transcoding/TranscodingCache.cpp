@@ -90,8 +90,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
 {
   std::string sExt = ToLower(ExtractFileExt(pSessionInfo->m_sInFileName));
   
-  ReleaseCount(pDeviceSettings->ReleaseDelay(sExt));  
-  cout << __FILE__ << " release 2 " << ReleaseCount() << endl;
+  ReleaseCount(pDeviceSettings->ReleaseDelay(sExt));
   
   if(CTranscodingMgr::Shared()->GetTranscodingType(sExt) == TT_THREADED_TRANSCODER ||
      CTranscodingMgr::Shared()->GetTranscodingType(sExt) == TT_TRANSCODER) {
@@ -212,9 +211,9 @@ unsigned int CTranscodingCacheObject::GetBufferSize()
       fsFile.seekg(0, ios::beg);
       fsFile.close();
     }
-    else {
+    /*else {
       cout << __FILE__ << " error opening " << m_sOutFileName << endl;
-    }
+    }*/
     
     if(m_bIsComplete) {
       m_nBufferSize = nFileSize;
@@ -280,8 +279,7 @@ unsigned int CTranscodingCacheObject::Transcode()
 
 int CTranscodingCacheObject::Append(char** p_pszBinBuffer, unsigned int p_nBinBufferSize)
 {
-  Lock();   
-  cout << __FILE__ <<" :: append: " << m_nBufferSize << " bytes" << endl;
+  Lock();
   *p_pszBinBuffer = (char*)realloc(*p_pszBinBuffer, sizeof(char)*(m_nBufferSize));  
   memcpy(*p_pszBinBuffer, m_szBuffer, m_nBufferSize);    
   Unlock();
@@ -471,31 +469,10 @@ CTranscodingCacheObject* CTranscodingCache::GetCacheObject(std::string p_sFileNa
     pResult = new CTranscodingCacheObject();    
     m_CachedObjects[p_sFileName] = pResult;
     pResult->m_sInFileName = p_sFileName;
-    
-    cout << "new transcoding obj: " << p_sFileName << endl;
   }
-  else {
-    cout << "existing transcoding obj: " << p_sFileName << endl;
-    cout << "size: " << pResult->GetBufferSize() << endl;
-    cout << "ref count: " << pResult->m_nRefCount << endl;
-    if(pResult->m_bIsTranscoding) {
-      cout << "transcoding running" << endl;
-    }
-    else {
-      if (pResult->m_bIsComplete) {
-        cout << "complete" << endl;
-      }
-      else {
-        cout << "error :: obj incomplete but not transcoding" << endl;
-      }
-    }
-  }
-  cout << endl;
   
   pResult->m_nRefCount++;
   pResult->ResetReleaseCount();
-  cout << __FILE__ << " release 1 " << pResult->ReleaseCount() << endl;
-  //pResult->m_nReleaseCnt = RELEASE_DELAY;
   
   fuppesThreadUnlockMutex(&m_Mutex);  
   
@@ -509,10 +486,7 @@ void CTranscodingCache::ReleaseCacheObject(CTranscodingCacheObject* pCacheObj)
   if(!m_ReleaseThread) {
     fuppesThreadStart(m_ReleaseThread, ReleaseLoop);
   }
-  
-  cout << __FILE__ << " release : " << pCacheObj->m_sInFileName << endl;
-  cout << "ref count: " << pCacheObj->m_nRefCount << endl;
-  
+
   pCacheObj->m_nRefCount--;
   
   #warning todo: pause transcoding if ref count == 0
@@ -541,9 +515,7 @@ fuppesThreadCallback ReleaseLoop(void* arg)
          (pCacheObj->ReleaseCount() == 0)) {
         TmpIterator = pCache->m_CachedObjectsIterator;
         TmpIterator++;
-        
-        cout << "free: " << pCacheObj->m_sInFileName << endl;
-           
+
         pCache->m_CachedObjects.erase(pCache->m_CachedObjectsIterator);
         delete pCacheObj;
         pCache->m_CachedObjectsIterator = TmpIterator;
