@@ -403,9 +403,9 @@ long CFLACDecoder::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_n
     return -1;
 }
 
-unsigned int CFLACDecoder::GuessPcmLength()
+unsigned int CFLACDecoder::NumPcmSamples()
 {
-  cout << "FLAC :: guess pcm length" << m_pFLACData->total_samples << endl;
+  //cout << "FLAC :: guess pcm length" << m_pFLACData->total_samples << endl;
   return m_pFLACData->total_samples;
 }
   

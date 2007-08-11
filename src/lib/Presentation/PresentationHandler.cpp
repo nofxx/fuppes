@@ -659,6 +659,9 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
   }
   
   
+  sResult << "<strong>Device and file settings are currently not configurable via this webinterface.<br />";
+  sResult << "Please edit the file: " << CSharedConfig::Shared()->GetConfigFileName() << "</strong>" << endl;
+  
   /* show config page */
   sResult << "<h1>ContentDirectory settings</h1>" << endl;
   sResult << "<form method=\"POST\" action=\"/presentation/config.html\" enctype=\"text/plain\" accept-charset=\"UTF-8\">" << endl;  //  

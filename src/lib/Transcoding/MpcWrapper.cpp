@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*  Some code parts are taken from the
@@ -162,6 +162,11 @@ bool CMpcDecoder::LoadLib()
     return false;
   }  
   
+  m_MpcStreaminfoGetLengthSamples = (MpcStreaminfoGetLengthSamples_t)FuppesGetProcAddress(m_LibHandle, "mpc_streaminfo_get_length_samples");
+  if(!m_MpcStreaminfoGetLengthSamples) {
+    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'mpc_streaminfo_get_length_samples'", __FILE__, __LINE__);
+  }  
+  
   m_MpcDecoderSetup = (MpcDecoderSetup_t)FuppesGetProcAddress(m_LibHandle, "mpc_decoder_setup");
   if(!m_MpcDecoderSetup)
   {
@@ -263,6 +268,16 @@ long CMpcDecoder::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nB
     #warning todo: bytes read
     convertLE32to16(sample_buffer, p_PcmOut, status);
     return status;
+  }
+}
+
+unsigned int CMpcDecoder::NumPcmSamples()
+{
+  if(m_MpcStreaminfoGetLengthSamples) {
+    return m_MpcStreaminfoGetLengthSamples(&m_StreamInfo);
+  }
+  else {
+    return 0;
   }
 }
 

@@ -75,7 +75,7 @@ class CVorbisDecoder: public CAudioDecoderBase
   
     bool OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetails);
   
-    unsigned int GuessPcmLength();
+    unsigned int NumPcmSamples();
   
     /**
      * @param   p_PcmOut[]

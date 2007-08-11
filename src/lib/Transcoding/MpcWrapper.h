@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -47,6 +47,10 @@ extern "C"
      Reads streaminfo header from the mpc stream supplied by r. */
   typedef mpc_int32_t (*MpcStreaminfoRead_t)(mpc_streaminfo*, mpc_reader*);
     
+  /* mpc_int64_t mpc_streaminfo_get_length_samples(mpc_streaminfo *si);
+    Returns length of stream si, in samples. */
+  typedef mpc_int64_t (*MpcStreaminfoGetLengthSamples_t)(mpc_streaminfo*);
+
   /* void mpc_decoder_setup(mpc_decoder* d, mpc_reader* r);
      Sets up decoder library. Call this first when preparing to decode an mpc stream. */
   typedef void (*MpcDecoderSetup_t)(mpc_decoder*, mpc_reader*);
@@ -81,9 +85,8 @@ class CMpcDecoder: public CAudioDecoderBase
     bool OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetails);
     void CloseFile();
     long DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead);
-  
-    #warning todo
-    unsigned int GuessPcmLength() { return 0; }
+
+    unsigned int NumPcmSamples();
   
   private:
     reader_data    m_ReaderData;   
@@ -93,11 +96,12 @@ class CMpcDecoder: public CAudioDecoderBase
     
     fuppesLibHandle m_LibHandle;
   
-    MpcStreaminfoInit_t    m_MpcStreaminfoInit;
-    MpcStreaminfoRead_t    m_MpcStreaminfoRead;
-    MpcDecoderSetup_t      m_MpcDecoderSetup;
-    MpcDecoderInitialize_t m_MpcDecoderInitialize;
-    MpcDecoderDecode_t     m_MpcDecoderDecode;    
+    MpcStreaminfoInit_t               m_MpcStreaminfoInit;
+    MpcStreaminfoRead_t               m_MpcStreaminfoRead;
+    MpcStreaminfoGetLengthSamples_t   m_MpcStreaminfoGetLengthSamples;
+    MpcDecoderSetup_t                 m_MpcDecoderSetup;
+    MpcDecoderInitialize_t            m_MpcDecoderInitialize;
+    MpcDecoderDecode_t                m_MpcDecoderDecode;    
 };
 
 #endif // _MPCWRAPPER_H

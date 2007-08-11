@@ -35,12 +35,20 @@ struct CImageSettings {
   CImageSettings();
   CImageSettings(CImageSettings* pImageSettings);
   
+  std::string  sExt;
+  std::string  sMimeType;  
+  
+  // dcraw
+  bool    bDcraw;
+  std::string  sDcrawParams;
+
+  // ImageMagick
   bool bGreater;
 	bool bLower;
 	int  nWidth;
 	int  nHeight;
 	enum { resize, scale } nResizeMethod; // resize = better quality (lower) | scale = lower quality (faster)
-  
+
   private:
     bool bEnabled;
 };

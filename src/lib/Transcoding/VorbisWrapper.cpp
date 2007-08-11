@@ -206,7 +206,7 @@ long CVorbisDecoder::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p
   }  
 }
 
-unsigned int CVorbisDecoder::GuessPcmLength()
+unsigned int CVorbisDecoder::NumPcmSamples()
 {
   //cout << __FILE__ << " guess: " << m_OvPcmTotal(&m_VorbisFile, -1) << endl;
   return m_OvPcmTotal(&m_VorbisFile, -1);  

@@ -17,6 +17,22 @@
       <summary>Device specific config file</summary>
       <comment>- include device specific config files e.g. xbox360.cfg</comment>
     </item>
+    <item>
+      <attribute id="1186398701" priority="1" done="0" start_date="732894" enddate="99999999" notify="0" endtime="-60" last_edited="1186398701"/>
+      <summary>allowed request/device identification via MAC address</summary>
+      <comment>use MAC address to detect device resp. check if request is allowed</comment>
+    </item>
+    <item>
+      <attribute id="1186651627" priority="0" done="0" start_date="732897" enddate="99999999" notify="0" endtime="-60" last_edited="1186651627"/>
+      <summary>transcoding pausieren abh&#xE4;ngig vom status des anfragenden device</summary>
+      <comment>wenn ein transcoding object nicht referenziert wird den status
+aller verf&#xFC;gbaren devices abfragen und wenn die ensprechende object id von keinem ger&#xE4;t verwendet wird (z.b. wegen stop oder skip) transcodieren w&#xE4;hrend des release delays pausieren (evtl. sogar ganz abbrechen) andernfalls fortsetzen.</comment>
+    </item>
+    <item>
+      <attribute id="1186701555" priority="1" done="0" start_date="732898" enddate="99999999" notify="0" endtime="-60" last_edited="1186701555"/>
+      <summary>transcoding lib names configurable</summary>
+      <comment>nt</comment>
+    </item>
   </category>
   <category title="Business" place="1"/>
   <category title="Unfiled" place="2"/>

@@ -114,7 +114,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
   if(m_bInitialized) {
     //m_pSessionInfo = pSessionInfo;
     if(!m_bIsComplete) {
-      pSessionInfo->m_nGuessContentLength = m_pAudioEncoder->GuessContentLength(m_pDecoder->GuessPcmLength());
+      pSessionInfo->m_nGuessContentLength = m_pAudioEncoder->GuessContentLength(m_pDecoder->NumPcmSamples());
     }
     else {
       pSessionInfo->m_nGuessContentLength = m_nBufferSize;
@@ -168,7 +168,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
     //m_pAudioEncoder->Init();
     
          
-    pSessionInfo->m_nGuessContentLength = m_pAudioEncoder->GuessContentLength(m_pDecoder->GuessPcmLength());
+    pSessionInfo->m_nGuessContentLength = m_pAudioEncoder->GuessContentLength(m_pDecoder->NumPcmSamples());
     //cout << "guess content: " << pSessionInfo->m_nGuessContentLength << endl;
   }  
   

@@ -344,7 +344,7 @@ void CConfigFile::ParseFileSettings(CXMLNode* pFileSettings, CDeviceSettings* pD
     else if(pTmp->Name().compare("transcode") == 0) {
       ParseTranscodingSettings(pTmp, pFileSet);
     }
-    else if(pTmp->Name().compare("resize") == 0) {
+    else if(pTmp->Name().compare("convert") == 0) {
       ParseImageSettings(pTmp, pFileSet);
     }
     
@@ -414,6 +414,8 @@ void CConfigFile::ParseImageSettings(CXMLNode* pISNode, CFileSettings* pFileSet)
 {
   int i;
   CXMLNode* pTmp;
+  int j;
+  CXMLNode* pChild;
   
   // delete existing (inherited) settings
   // if transcoding disabled
@@ -434,18 +436,37 @@ void CConfigFile::ParseImageSettings(CXMLNode* pISNode, CFileSettings* pFileSet)
   for(i = 0; i < pISNode->ChildCount(); i++) {
     pTmp = pISNode->ChildNode(i);
     
-    if(pTmp->Name().compare("height") == 0) {
-      pFileSet->pImageSettings->nHeight = atoi(pTmp->Value().c_str());
+    if(pTmp->Name().compare("ext") == 0) {
+      pFileSet->pImageSettings->sExt = pTmp->Value();
     }
-    else if(pTmp->Name().compare("width") == 0) {
-      pFileSet->pImageSettings->nWidth = atoi(pTmp->Value().c_str());
+    else if(pTmp->Name().compare("mime_type") == 0) {
+      pFileSet->pImageSettings->sMimeType = pTmp->Value();
+    }    
+    else if(pTmp->Name().compare("dcraw") == 0) {
+      if(pTmp->Attribute("enabled").compare("false") != 0) {
+        pFileSet->pImageSettings->bDcraw = true;
+        pFileSet->pImageSettings->sDcrawParams = pTmp->Value();
+      }
     }
-    else if(pTmp->Name().compare("greater") == 0) {
-      pFileSet->pImageSettings->bGreater = (pTmp->Value().compare("true") == 0);
+    else if(pTmp->Name().compare("scale") == 0) {
+      for(j = 0; j < pTmp->ChildCount(); j++) {
+        pChild = pTmp->ChildNode(j);
+        
+        if(pChild->Name().compare("height") == 0) {
+          pFileSet->pImageSettings->nHeight = atoi(pChild->Value().c_str());
+        }
+        else if(pChild->Name().compare("width") == 0) {
+          pFileSet->pImageSettings->nWidth = atoi(pChild->Value().c_str());
+        }
+        else if(pChild->Name().compare("greater") == 0) {
+          pFileSet->pImageSettings->bGreater = (pChild->Value().compare("true") == 0);
+        }
+        else if(pChild->Name().compare("lower") == 0) {
+          pFileSet->pImageSettings->bLower = (pChild->Value().compare("true") == 0);
+        }        
+      }
     }
-    else if(pTmp->Name().compare("lower") == 0) {
-      pFileSet->pImageSettings->bLower = (pTmp->Value().compare("true") == 0);
-    }
+
   }
 }
 

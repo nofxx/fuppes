@@ -32,11 +32,29 @@ using namespace std;
 CImageSettings::CImageSettings()
 { 
   bEnabled = true;
+  
+  nHeight = 0;
+  nWidth = 0;
+  bGreater = false;
+  bLower = false;
+  
+  bDcraw = false;
 }
 
 CImageSettings::CImageSettings(CImageSettings* pImageSettings)
 {
   bEnabled = pImageSettings->bEnabled;
+  
+  sExt = pImageSettings->sExt;
+  sMimeType = pImageSettings->sMimeType;
+  
+  nHeight = pImageSettings->nHeight;
+  nWidth  = pImageSettings->nWidth;
+  bGreater = pImageSettings->bGreater;
+  bLower = pImageSettings->bLower;
+  
+  bDcraw = pImageSettings->bDcraw;
+  sDcrawParams = pImageSettings->sDcrawParams;
 }
 
 CTranscodingSettings::CTranscodingSettings() 
