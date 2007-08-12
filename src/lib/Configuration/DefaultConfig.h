@@ -293,6 +293,30 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
             xmlTextWriterStartElement(pWriter, BAD_CAST "mime_type");
               xmlTextWriterWriteString(pWriter, BAD_CAST "image/jpeg");
             xmlTextWriterEndElement(pWriter);
+            
+            xmlTextWriterStartElement(pWriter, BAD_CAST "convert");
+            xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "false");
+              xmlTextWriterWriteComment(pWriter, BAD_CAST "<dcraw enabled=\"true\">-q 0</dcraw>");
+              xmlTextWriterStartElement(pWriter, BAD_CAST "ext");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "png");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "mime_type");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "image/png");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "height");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "0");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "width");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "0");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "greater");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "false");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "less");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "false");
+              xmlTextWriterEndElement(pWriter);
+            xmlTextWriterEndElement(pWriter);
+  
           xmlTextWriterEndElement(pWriter);        
   
           // bmp

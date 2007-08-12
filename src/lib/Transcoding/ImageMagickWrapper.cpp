@@ -28,12 +28,35 @@
 #include <iostream>
 #include <Magick++.h>
 
+#include "../SharedConfig.h"
+
 using namespace std;
 
-bool CImageMagickWrapper::Transcode(std::string p_sInFileParams, std::string p_sInFile, std::string p_sOutFileParams, std::string* p_psOutFile)
+bool CImageMagickWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile)
 {
   Magick::Image     image;
   Magick::Geometry  geometry;
+  
+  std::string sTmpFileName;
+  
+  // first run dcraw
+  if(pFileSettings->pImageSettings->bDcraw) {
+    sTmpFileName = CSharedConfig::Shared()->CreateTempFileName() + ".tiff";
+    #warning todo: dcraw
+    // dcraw pFileSettings->pImageSettings->sDcrawParams -T -c p_sInFile > sTmpFileName
+    
+    p_sInFile = sTmpFileName;
+  }
+  
+  
+  if(sTmpFileName.empty()) {
+    sTmpFileName = CSharedConfig::Shared()->CreateTempFileName();
+  }
+  sTmpFileName += "." + pFileSettings->Extension();
+  *p_psOutFile = sTmpFileName;
+  
+  
+  // and then convert/resize using imagemagick
   
   cout << __FILE__ << " resize: " << p_sInFile <<  " >> " << *p_psOutFile << endl;
   
@@ -52,9 +75,15 @@ bool CImageMagickWrapper::Transcode(std::string p_sInFileParams, std::string p_s
   
   
   try {
-    geometry.width(200);
-    geometry.height(100);
-    geometry.greater(true);
+    
+    if(pFileSettings->pImageSettings->Width() > 0)
+      geometry.width(pFileSettings->pImageSettings->Width());
+    
+    if(pFileSettings->pImageSettings->Height() > 0)
+      geometry.height(pFileSettings->pImageSettings->Height());
+   
+    geometry.greater(pFileSettings->pImageSettings->Greater());
+    geometry.less(pFileSettings->pImageSettings->Less());
     
     image.scale(geometry);
     

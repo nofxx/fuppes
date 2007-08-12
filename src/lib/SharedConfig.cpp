@@ -126,24 +126,26 @@ bool CSharedConfig::SetupConfig()
   
 	#warning todo: system checks (e.g. XP firewall)
 
-	/*stringstream sTemp;
-	#ifdef WIN32
-	sTemp << getenv("TEMP") << "\\fuppes\\";
-	m_sTempDir = sTemp.str();
-	if(!DirectoryExists(m_sTempDir)) 
-		CreateDirectory(m_sTempDir.c_str(), NULL);
-	#else
-  char* szTmp = getenv("TEMP");
-	if(szTmp != NULL)
-	  sTemp << szTmp << "/fuppes/";
-	else
-	  sTemp << "/tmp/fuppes/";
-	m_sTempDir = sTemp.str();
-	if(!DirectoryExists(m_sTempDir)) 
-		mkdir(m_sTempDir.c_str(), S_IRWXU | S_IRWXG);
-	#endif
-	cout << "TEMP: " << m_sTempDir << "." << endl; */
+  // setup temp dir
+  if(m_sTempDir.empty()) {
+    #ifdef WIN32
+    m_sTempDir = getenv("TEMP") + "\\fuppes\\";
+    #else
+    char* szTmp = getenv("TEMP");
+    if(szTmp != NULL)
+      m_sTempDir = string(szTmp) + "/fuppes/";
+    else
+      m_sTempDir = "/tmp/fuppes/";      
+    #endif
+  }  
 	
+	if(!DirectoryExists(m_sTempDir)) {
+    #ifdef WIN32
+		CreateDirectory(m_sTempDir.c_str(), NULL);
+    #else
+		mkdir(m_sTempDir.c_str(), S_IRWXU | S_IRWXG);
+    #endif
+  }
 	
   // Network settings
   if(!ResolveHostAndIP()) {  
@@ -530,4 +532,14 @@ void CSharedConfig::GetOSInfo()
   m_sOSName    = sUtsName.sysname;
   m_sOSVersion = sUtsName.release;  
   #endif
+}
+
+static int nTmpCnt = 0;
+
+std::string CSharedConfig::CreateTempFileName()
+{
+  stringstream sResult;
+  sResult << m_sTempDir << nTmpCnt;
+  nTmpCnt++;
+  return sResult.str();
 }

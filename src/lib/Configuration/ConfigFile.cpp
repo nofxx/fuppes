@@ -324,6 +324,7 @@ void CConfigFile::ParseFileSettings(CXMLNode* pFileSettings, CDeviceSettings* pD
   CXMLNode* pTmp;
 
   pFileSet = pDevSet->FileSettings(ToLower(pFileSettings->Attribute("ext")));
+  pFileSet->sExt = ToLower(pFileSettings->Attribute("ext"));
   
   for(i = 0; i < pFileSettings->ChildCount(); i++) {    
     
@@ -461,8 +462,8 @@ void CConfigFile::ParseImageSettings(CXMLNode* pISNode, CFileSettings* pFileSet)
         else if(pChild->Name().compare("greater") == 0) {
           pFileSet->pImageSettings->bGreater = (pChild->Value().compare("true") == 0);
         }
-        else if(pChild->Name().compare("lower") == 0) {
-          pFileSet->pImageSettings->bLower = (pChild->Value().compare("true") == 0);
+        else if(pChild->Name().compare("less") == 0) {
+          pFileSet->pImageSettings->bLess = (pChild->Value().compare("true") == 0);
         }        
       }
     }

@@ -29,7 +29,6 @@
 #include <map>
 
 #include "../ContentDirectory/ContentDatabase.h"
-#include "../Transcoding/WrapperBase.h"
 
 struct CImageSettings {
   CImageSettings();
@@ -42,13 +41,23 @@ struct CImageSettings {
   bool    bDcraw;
   std::string  sDcrawParams;
 
+  std::string Extension() { return sExt; }
+  std::string MimeType() { return sMimeType; }
+  
+  bool Enabled() { return bEnabled; }
+  
   // ImageMagick
   bool bGreater;
-	bool bLower;
+	bool bLess;
 	int  nWidth;
 	int  nHeight;
 	enum { resize, scale } nResizeMethod; // resize = better quality (lower) | scale = lower quality (faster)
 
+  bool Greater() { return bGreater; }
+  bool Less() { return bLess; }
+  int  Width() { return nWidth; }
+  int  Height() { return nHeight; }
+  
   private:
     bool bEnabled;
 };
@@ -57,6 +66,13 @@ typedef struct {
   bool bShowChildCountInTitle;
   int  nMaxFileNameLength;
 } DisplaySettings_t;
+
+typedef enum TRANSCODING_TYPE {
+  TT_NONE,
+  TT_THREADED_DECODER_ENCODER,
+  TT_TRANSCODER,
+  TT_THREADED_TRANSCODER  
+} TRANSCODING_TYPE;
 
 typedef enum TRANSCODING_HTTP_RESPONSE {
   RESPONSE_STREAM,
@@ -112,11 +128,11 @@ struct CFileSettings {
   unsigned int  TargetSampleRate();
   unsigned int  TargetBitRate();
   
-  std::string   Extension(std::string p_sExt);
+  std::string   Extension();
   
   TRANSCODING_HTTP_RESPONSE   TranscodingHTTPResponse();
   
-  //std::string   sExt;
+  std::string   sExt;
   OBJECT_TYPE   nType;
   std::string   sMimeType;
   std::string   sDLNA;

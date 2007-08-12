@@ -36,7 +36,7 @@ CImageSettings::CImageSettings()
   nHeight = 0;
   nWidth = 0;
   bGreater = false;
-  bLower = false;
+  bLess = false;
   
   bDcraw = false;
 }
@@ -51,7 +51,7 @@ CImageSettings::CImageSettings(CImageSettings* pImageSettings)
   nHeight = pImageSettings->nHeight;
   nWidth  = pImageSettings->nWidth;
   bGreater = pImageSettings->bGreater;
-  bLower = pImageSettings->bLower;
+  bLess = pImageSettings->bLess;
   
   bDcraw = pImageSettings->bDcraw;
   sDcrawParams = pImageSettings->sDcrawParams;
@@ -173,6 +173,14 @@ std::string CFileSettings::MimeType()
   if(pTranscodingSettings && pTranscodingSettings->Enabled()) {
     return pTranscodingSettings->MimeType();
   }
+  else if(pImageSettings && pImageSettings->Enabled()) {
+    if(!pImageSettings->MimeType().empty()) {
+      return pImageSettings->MimeType();
+    }
+    else {
+      return sMimeType;
+    }
+  }
   else { 
     return sMimeType;
   }
@@ -208,13 +216,23 @@ unsigned int  CFileSettings::TargetBitRate()
   }
 }
 
-std::string CFileSettings::Extension(std::string p_sExt)
+std::string CFileSettings::Extension()
 {
+  // if transcoding is enabled it MUST have an extension
   if(pTranscodingSettings && pTranscodingSettings->Enabled()) {
     return pTranscodingSettings->Extension();
   }
+  // image settings MAY have an extension
+  else if(pImageSettings && pImageSettings->Enabled()) {
+    if(!pImageSettings->Extension().empty()) {
+      return pImageSettings->Extension();
+    }
+    else {
+      return sExt;
+    }
+  }
   else {
-    return p_sExt;
+    return sExt;
   }
 }
 
@@ -445,7 +463,7 @@ std::string CDeviceSettings::Extension(std::string p_sExt)
   
   iter = m_FileSettings.find(p_sExt);
   if(iter != m_FileSettings.end())
-    return iter->second->Extension(p_sExt);
+    return iter->second->Extension();
   else  
     return p_sExt;
 }

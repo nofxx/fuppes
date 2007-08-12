@@ -123,6 +123,9 @@ class CSharedConfig
     bool UseTaglib()      { return m_pConfigFile->UseTaglib(); }
     bool UseLibAvFormat() { return m_pConfigFile->UseLibAvFormat(); }
 
+    std::string TempDir() { return m_sTempDir; }
+    std::string CreateTempFileName();
+  
   private:
     static CSharedConfig* m_Instance;    
       

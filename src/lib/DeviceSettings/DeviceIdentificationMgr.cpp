@@ -132,7 +132,7 @@ void print_settings(CDeviceSettings* pSettings) {
       cout << "    height: " << pFileSet->pImageSettings->nHeight << endl;
       cout << "    width: " << pFileSet->pImageSettings->nWidth << endl;
       cout << "    greater: " << pFileSet->pImageSettings->bGreater << endl;
-      cout << "    lower: " << pFileSet->pImageSettings->bLower << endl;
+      cout << "    less: " << pFileSet->pImageSettings->bLess << endl;
     }
     else {
       cout << "  no transcoding/resizing" << endl;

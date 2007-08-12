@@ -27,6 +27,7 @@
 #include <string>
 #include "../Common/Common.h"
 #include "../SharedLog.h"
+#include "../DeviceSettings/DeviceSettings.h"
 
 struct CAudioDetails
 {
@@ -61,13 +62,6 @@ class CTranscodeSessionInfo
     std::string   m_sOutFileName;  
     bool          m_bTranscodeToFile;
 };
-
-typedef enum TRANSCODING_TYPE {
-  TT_NONE,
-  TT_THREADED_DECODER_ENCODER,
-  TT_TRANSCODER,
-  TT_THREADED_TRANSCODER  
-} TRANSCODING_TYPE;
 
 class CAudioEncoderBase
 {
@@ -106,6 +100,7 @@ class CTranscoderBase
   public:
 	  virtual ~CTranscoderBase() {};
     virtual bool Transcode(std::string p_sInFileParams, std::string p_sInFile, std::string p_sOutFileParams, std::string* p_psOutFile) = 0;
+    virtual bool Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile) = 0;
     virtual bool Threaded() = 0;
 };
 

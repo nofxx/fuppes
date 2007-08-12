@@ -37,7 +37,9 @@ class CImageMagickWrapper: public CTranscoderBase
 {
   public:
     virtual ~CImageMagickWrapper() {};
-    bool Transcode(std::string p_sInFileParams, std::string p_sInFile, std::string p_sOutFileParams, std::string* p_psOutFile);
+    
+    bool Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile);
+    bool Transcode(std::string p_sInFileParams, std::string p_sInFile, std::string p_sOutFileParams, std::string* p_psOutFile) { return false; }
     bool Threaded() { return false; }
 };
 
