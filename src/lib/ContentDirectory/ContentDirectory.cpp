@@ -875,7 +875,7 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
   
   // protocol info
-  string sTmp = "http-get:*:" + pSQLResult->GetValue("MIME_TYPE") + ":*";
+  string sTmp = "http-get:*:" + pUPnPBrowse->DeviceSettings()->MimeType(sExt) + ":*";
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
   
   // resolution
