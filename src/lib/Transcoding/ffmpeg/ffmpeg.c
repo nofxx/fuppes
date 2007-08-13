@@ -19,7 +19,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "config.h"
+//#include "config.h"
+
+#ifdef HAVE_CONFIG_H
+#include "../../../config.h"
+#endif
+
+#ifdef HAVE_AVSTRING_H
+#include "avstring.h"
+#endif
+
 #include <ctype.h>
 #include <string.h>
 #include <math.h>
@@ -32,7 +41,7 @@
 //#include "framehook.h"
 #include "opt.h"
 #include "fifo.h"
-#include "avstring.h"
+//#include "avstring.h"
 
 #if !defined(HAVE_GETRUSAGE) && defined(HAVE_GETPROCESSTIMES)
 #include <windows.h>
@@ -2886,7 +2895,11 @@ static void new_audio_stream(AVFormatContext *oc)
     audio_enc->sample_rate = audio_sample_rate;
     audio_enc->time_base= (AVRational){1, audio_sample_rate};
     if (audio_language) {
+        #ifdef HAVE_AVSTRING_H
         av_strlcpy(st->language, audio_language, sizeof(st->language));
+        #else
+        pstrcpy(st->language, sizeof(st->language), audio_language);
+        #endif
         av_free(audio_language);
         audio_language = NULL;
     }
@@ -2932,7 +2945,11 @@ static void opt_new_subtitle_stream(void)
     }
 
     if (subtitle_language) {
+        #ifdef HAVE_AVSTRING_H
         av_strlcpy(st->language, subtitle_language, sizeof(st->language));
+        #else
+        pstrcpy(st->language, sizeof(st->language), subtitle_language);      
+        #endif
         av_free(subtitle_language);
         subtitle_language = NULL;
     }
@@ -2984,10 +3001,19 @@ static void opt_output_file(const char *filename)
     }
 
     oc->oformat = file_oformat;
+    #ifdef HAVE_AVSTRING_H
     av_strlcpy(oc->filename, filename, sizeof(oc->filename));
+    #else
+    pstrcpy(oc->filename, sizeof(oc->filename), filename);
+    #endif
 
     if (!strcmp(file_oformat->name, "ffm") &&
-        av_strstart(filename, "http:", NULL)) {
+        #ifdef HAVE_AVSTRING_H
+        av_strstart(filename, "http:", NULL)
+        #else
+        strstart(filename, "http:", NULL)
+        #endif
+        ) {
         /* special case for files sent to ffserver: we get the stream
            parameters from ffserver */
         if (read_ffserver_streams(oc, filename) < 0) {
@@ -3026,6 +3052,7 @@ static void opt_output_file(const char *filename)
 
         oc->timestamp = rec_timestamp;
 
+        #ifdef HAVE_AVSTRING_H
         if (str_title)
             av_strlcpy(oc->title, str_title, sizeof(oc->title));
         if (str_author)
@@ -3036,6 +3063,18 @@ static void opt_output_file(const char *filename)
             av_strlcpy(oc->comment, str_comment, sizeof(oc->comment));
         if (str_album)
             av_strlcpy(oc->album, str_album, sizeof(oc->album));
+        #else
+        if (str_title)
+            pstrcpy(oc->title, sizeof(oc->title), str_title);
+        if (str_author)
+            pstrcpy(oc->author, sizeof(oc->author), str_author);
+        if (str_copyright)
+            pstrcpy(oc->copyright, sizeof(oc->copyright), str_copyright);
+        if (str_comment)
+            pstrcpy(oc->comment, sizeof(oc->comment), str_comment);
+        if (str_album)
+            pstrcpy(oc->album, sizeof(oc->album), str_album);
+        #endif
     }
 
     output_files[nb_output_files++] = oc;
@@ -3052,7 +3091,12 @@ static void opt_output_file(const char *filename)
         /* test if it already exists to avoid loosing precious files */
         if (!file_overwrite &&
             (strchr(filename, ':') == NULL ||
-             av_strstart(filename, "file:", NULL))) {
+             #ifdef HAVE_AVSTRING_H
+             av_strstart(filename, "file:", NULL)
+             #else
+             strstart(filename, "file:", NULL)
+             #endif             
+             )) {
             if (url_exist(filename)) {
                 int c;
 

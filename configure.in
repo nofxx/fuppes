@@ -216,8 +216,10 @@ fi
 #
 # libavformat
 #
-AH_TEMPLATE([HAVE_LIBAVFORMAT], [second argument of iconv])
+AH_TEMPLATE([HAVE_LIBAVFORMAT], [])
+AH_TEMPLATE([HAVE_AVSTRING_H], [])
 use_libavformat=yes
+have_avstring_h=no
 AC_ARG_ENABLE(libavformat, 
             [  --disable-libavformat  Do not use libavformat (from the FFmpeg package)],
             [ use_libavformat=no; ] )
@@ -232,6 +234,13 @@ if test "x$use_libavformat" = "xyes"; then
 		AC_DEFINE([HAVE_LIBAVFORMAT], [1], [])
     FUPPES_CFLAGS="$FUPPES_CFLAGS -D__STDC_CONSTANT_MACROS $LIBAVFORMAT_CFLAGS"
 		FUPPES_LIBS="$FUPPES_LIBS $LIBAVFORMAT_LIBS"
+
+    
+    AC_CHECK_HEADERS(ffmpeg/avstring.h, have_avstring_h=yes, have_avstring_h=no)
+    if test "x$have_avstring_h" = "xyes"; then
+      AC_DEFINE([HAVE_AVSTRING_H], [1], [])
+    fi
+
   else
     AC_MSG_NOTICE([*** libavformat (FFmpeg) support disabled ***]);
   fi 

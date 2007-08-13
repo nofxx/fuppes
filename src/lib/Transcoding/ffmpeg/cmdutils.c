@@ -25,7 +25,14 @@
 
 #include "avformat.h"
 #include "cmdutils.h"
+
+#ifdef HAVE_CONFIG_H
+#include "../../../config.h"
+#endif
+
+#ifdef HAVE_AVSTRING_H
 #include "avstring.h"
+#endif
 
 #undef exit
 
@@ -42,11 +49,19 @@ void show_help_options(const OptionDef *options, const char *msg, int mask, int 
                 printf("%s", msg);
                 first = 0;
             }
+            #ifdef HAVE_AVSTRING_H
             av_strlcpy(buf, po->name, sizeof(buf));
             if (po->flags & HAS_ARG) {
                 av_strlcat(buf, " ", sizeof(buf));
                 av_strlcat(buf, po->argname, sizeof(buf));
             }
+            #else
+            pstrcpy(buf, sizeof(buf), po->name);
+            if (po->flags & HAS_ARG) {
+                pstrcat(buf, sizeof(buf), " ");
+                pstrcat(buf, sizeof(buf), po->argname);
+            }
+            #endif
             printf("-%-17s  %s\n", buf, po->help);
         }
     }

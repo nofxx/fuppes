@@ -333,8 +333,11 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
     // escape title
     sTitle = SQLEscape(pDb->GetResult()->GetValue("VALUE"));
     if(sTitle.length() == 0) {
-      sTitle = "unknown";
+      sTitle = "Unknown";
     }    
+    else if(nContainerType == CONTAINER_ALBUM_MUSIC_ALBUM) {
+      sTitle = pDetails->sArtist + ": " + pDetails->sAlbum;
+    }
     
     // insert container details
     sSql << "insert into OBJECT_DETAILS (A_ARTIST, A_ALBUM, A_GENRE) " <<
@@ -461,25 +464,30 @@ void CVirtualContainerMgr::CreateItemMappings(CXMLNode* pNode,
   stringstream sSql;
   OBJECT_TYPE nObjectType;                                                
                                                 
-  if(pNode->Attribute("type").compare("audioItem") == 0) {
+  if(pNode->Attribute("type").compare("audioItem") == 0 ||
+     pNode->Attribute("filter").compare("contains(audioItem)") == 0 ) {
     nObjectType = ITEM_AUDIO_ITEM_MUSIC_TRACK;
   }
-  else if(pNode->Attribute("type").compare("imageItem") == 0) {
+  else if(pNode->Attribute("type").compare("imageItem") == 0 ||
+     pNode->Attribute("filter").compare("contains(imageItem)") == 0 ) {
     nObjectType = ITEM_IMAGE_ITEM_PHOTO;
   }
-  else if(pNode->Attribute("type").compare("videoItem") == 0) {
+  else if(pNode->Attribute("type").compare("videoItem") == 0 ||
+     pNode->Attribute("filter").compare("contains(videoItem)") == 0 ) {
     nObjectType = ITEM_VIDEO_ITEM_MOVIE;
   }                                             
     
   sSql.str("");
   sSql << 
     "select " << 
-    "  o.DETAIL_ID, o.TITLE, o.TYPE, o.FILE_NAME, o.PATH, o.MIME_TYPE " <<
+    "  o.DETAIL_ID, o.TITLE, o.TYPE, o.FILE_NAME, o.PATH, o.MIME_TYPE, d.A_ARTIST " <<
     "from " <<
-    "  OBJECTS o " <<
+    "  OBJECTS o, MAP_OBJECTS m " <<
     "left join " <<
     "  OBJECT_DETAILS d on (d.ID = o.DETAIL_ID) " <<
     "where " <<
+    "  m.OBJECT_ID = o.OBJECT_ID and " <<
+    "  m.DEVICE is NULL and " <<
     "  o.DEVICE is NULL and " <<
     "  o.TYPE = " << nObjectType;                                                 
 
@@ -532,7 +540,8 @@ void CVirtualContainerMgr::CreateFolderMappings(CXMLNode* pNode,
                                                 unsigned int p_nParentId, 
                                                 std::string p_sFilter)
 {
-
+/*
+#if 0
   CContentDatabase* pDb;
   CContentDatabase* pIns = NULL;
   stringstream sSql;
@@ -588,6 +597,113 @@ void CVirtualContainerMgr::CreateFolderMappings(CXMLNode* pNode,
   }
 
   delete pIns;
+  delete pDb;
+#else 
+*/
+  CContentDatabase* pDb;
+  CContentDatabase* pIns = NULL;
+  stringstream sSql;
+  string sFilter;
+  OBJECT_TYPE nObjectType; 
+                                                  
+  if(pNode->Attribute("filter").length() > 0) {
+    sFilter = pNode->Attribute("filter");
+    
+    if(sFilter.compare("contains(audioItem)") == 0) {
+      nObjectType = ITEM_AUDIO_ITEM_MUSIC_TRACK;
+    }
+    else if(sFilter.compare("contains(imageItem)") == 0) {
+      nObjectType = ITEM_IMAGE_ITEM_PHOTO;
+    }
+    else if(sFilter.compare("contains(videoItem)") == 0) {
+      nObjectType = ITEM_VIDEO_ITEM_MOVIE;
+    }
+  }
+  else {
+    cout << "unhandled folders attribute " << __FILE__ << " " << __LINE__ << endl;
+    return;
+  }
+
+  pDb  = new CContentDatabase();
+         
+  sSql << 
+    "select " <<
+    "  distinct m.PARENT_ID " <<
+    "from " <<
+    "  OBJECTS o, " <<
+    "  MAP_OBJECTS m " <<
+    "where " <<
+    "  o.TYPE = " << nObjectType << " and " <<
+    "  m.OBJECT_ID = o.OBJECT_ID and " <<
+    "  o.DEVICE is NULL and " <<
+    "  m.DEVICE is NULL";
+                
+  //cout << sSql.str() << endl; fflush(stdout);
+                                                  
+  pDb->Select(sSql.str());
+  while(!pDb->Eof()) {
+    CreateSingleVFolderFolder(pNode, p_sDevice, atoi(pDb->GetResult()->GetValue("PARENT_ID").c_str()), p_nParentId);
+    pDb->Next();
+  }
+
+  delete pDb;
+
+}
+
+void CVirtualContainerMgr::CreateSingleVFolderFolder(CXMLNode* pNode, std::string p_sDevice, unsigned int p_nObjectId, unsigned int p_nParentId)
+{
+  CContentDatabase* pDb;
+  CContentDatabase* pIns = NULL;
+  stringstream sSql;
+                                                  
+  pDb  = new CContentDatabase();
+         
+  sSql << 
+    "select " <<
+    "  TITLE " <<
+    "from " <<
+    "  OBJECTS " <<
+    "where " <<
+    "  OBJECT_ID = " << p_nObjectId;
+                
+  //cout << sSql.str() << endl; fflush(stdout);
+                                                  
+  pDb->Select(sSql.str());
+  while(!pDb->Eof()) {
+    pIns = new CContentDatabase();
+    sSql.str("");
+    unsigned int nId = GetId();
+    OBJECT_TYPE  nObjType = CONTAINER_STORAGE_FOLDER;
+    
+    sSql << "insert into OBJECTS (OBJECT_ID, TYPE, PATH, TITLE, FILE_NAME, DEVICE) " <<
+            "values " <<
+            "( " << nId << 
+            ", " << nObjType << 
+            ", 'virtual' " <<
+            ", '" <<  SQLEscape(pDb->GetResult()->GetValue("TITLE")) << "'" <<
+            ", '" <<  SQLEscape(pDb->GetResult()->GetValue("TITLE")) << "'" <<
+            ", '" << p_sDevice << "')";
+  
+  //cout << sSql.str() << endl; fflush(stdout);
+    pIns->Execute(sSql.str());
+    sSql.str("");
+  
+    sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID, DEVICE) values " <<
+      "( "  << nId << 
+      ", "  << p_nParentId << 
+      ", '" << p_sDevice << "');";
+  
+  //cout << sSql.str() << endl; fflush(stdout);
+    pIns->Insert(sSql.str());  
+    delete pIns;
+  
+    stringstream sFilter;
+    sFilter << "m.PARENT_ID = " << p_nObjectId;
+    CreateItemMappings(pNode, p_sDevice, nId, sFilter.str());
+
+    pDb->Next();
+  }
+
   delete pDb;
 }
 
