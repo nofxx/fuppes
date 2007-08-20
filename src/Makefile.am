@@ -5,7 +5,7 @@ INCLUDES = ${FUPPES_CFLAGS} ${LIBXML_CFLAGS} ${PCRE_CFLAGS} ${VORBISFILE_CFLAGS}
 
 lib_LTLIBRARIES = libfuppes.la
 
-bin_PROGRAMS = fuppes fuppesd
+bin_PROGRAMS = fuppes
 
 fuppes_SOURCES = \
   console_main.cpp
@@ -21,20 +21,21 @@ fuppes_LDADD = ./libfuppes.la
 #  ${TAGLIB_LIBS}
 
 
-fuppesd_SOURCES = \
-  daemon_main.cpp
-  
-fuppesd_LDADD = ./libfuppes.la
-fuppesd_LDFLAGS = \
-  $(FUPPES_LIBS)\
-  ${PTHREAD_LIBS}\
-  ${UUID_LIBS}\
-  ${LIBXML_LIBS}\
-	${PCRE_LIBS}\
-  ${SQLITE3_LIBS}\
-  ${TAGLIB_LIBS}
+if BUILD_DAEMON
+	bin_PROGRAMS += fuppesd
 
+	fuppesd_SOURCES = daemon_main.cpp  
+	fuppesd_LDADD = ./libfuppes.la
+endif
 
+#fuppesd_LDFLAGS = \
+#	$(FUPPES_LIBS)\
+#	${PTHREAD_LIBS}\
+#	${UUID_LIBS}\
+#	${LIBXML_LIBS}\
+#	${PCRE_LIBS}\
+#	${SQLITE3_LIBS}\
+#	${TAGLIB_LIBS}
 
 
 libfuppes_la_SOURCES = \
@@ -176,12 +177,10 @@ version.h: Makefile
 	fi
 
 libfuppes_la_LDFLAGS = \
-  $(FUPPES_LIBS)\
-  ${PTHREAD_LIBS}\
-  ${UUID_LIBS}\
-  ${LIBXML_LIBS}\
+	$(FUPPES_LIBS)\
+	${PTHREAD_LIBS}\
+	${UUID_LIBS}\
+	${LIBXML_LIBS}\
 	${PCRE_LIBS}\
-  ${SQLITE3_LIBS}\
-  ${TAGLIB_LIBS}
-
-
+	${SQLITE3_LIBS}\
+	${TAGLIB_LIBS}

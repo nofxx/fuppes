@@ -69,6 +69,17 @@ nonstandard prefix so pkg-config can find them.]), [$4])
 FUPPES_CFLAGS=""
 FUPPES_LIBS=""
 
+LDFLAGS="$LDFLAGS"
+
+case $host in 
+    *-*-mingw32*)
+		echo "building with MinGW"
+        LDFLAGS="$LDFLAGS -lws2_32 -lole32"
+		AM_CONDITIONAL(BUILD_DAEMON, test "xno" = "xyes")
+	;;
+esac
+
+
 dnl Checks for libraries.
 PKG_CHECK_MODULES(PCRE, libpcre >= 5.0)
 PKG_CHECK_MODULES(LIBXML, libxml-2.0 >= 2.6.1)
@@ -520,7 +531,7 @@ AC_SUBST(FUPPES_LIBS)
 AC_SUBST(FUPPES_CFLAGS)
 AC_SUBST(PTHREAD_LIBS)
 
-
+AC_SUBST(LDFLAGS)
 
 AC_OUTPUT([
 Makefile

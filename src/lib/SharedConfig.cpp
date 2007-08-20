@@ -36,7 +36,7 @@
 #include <net/if.h>
 #endif
 
-#include "version.h"
+#include "../version.h"
 
 #include "Common/Common.h"
 #include "Common/UUID.h"
@@ -129,7 +129,7 @@ bool CSharedConfig::SetupConfig()
   // setup temp dir
   if(m_sTempDir.empty()) {
     #ifdef WIN32
-    m_sTempDir = getenv("TEMP") + "\\fuppes\\";
+    m_sTempDir = getenv("TEMP") + string("\\fuppes\\");
     #else
     char* szTmp = getenv("TEMP");
     if(szTmp != NULL)
