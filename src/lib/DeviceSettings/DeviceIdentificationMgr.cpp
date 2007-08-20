@@ -98,7 +98,7 @@ CDeviceSettings* CDeviceIdentificationMgr::GetSettingsForInitialization(std::str
   return pSettings;
 }
 
-void print_settings(CDeviceSettings* pSettings) {
+void CDeviceIdentificationMgr::PrintSetting(CDeviceSettings* pSettings) {
   
   CFileSettings  * pFileSet;
   
@@ -148,7 +148,7 @@ void CDeviceIdentificationMgr::PrintSettings()
   
   cout << "device settings" << endl;
   
-  print_settings(m_pDefaultSettings);
+  PrintSetting(m_pDefaultSettings);
   
   for(m_SettingsIt = m_Settings.begin(); 
       m_SettingsIt != m_Settings.end(); 
@@ -156,7 +156,7 @@ void CDeviceIdentificationMgr::PrintSettings()
 
     pSettings = *m_SettingsIt;
       
-    print_settings(pSettings);    
+    PrintSetting(pSettings);    
   }
   
 }

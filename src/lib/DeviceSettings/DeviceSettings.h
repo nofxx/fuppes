@@ -75,43 +75,57 @@ typedef enum TRANSCODING_TYPE {
 } TRANSCODING_TYPE;
 
 typedef enum TRANSCODING_HTTP_RESPONSE {
+  RESPONSE_NONE,
   RESPONSE_STREAM,
   RESPONSE_CHUNKED
 } TRANSCODING_HTTP_RESPONSE;
 
+struct CFFmpegSettings {
+  
+  private:
+    std::string   sVcodec;
+    std::string   sAcodec;
+    int           nVBitRate;
+    int           nVFrameRate;
+    int           nABitRate;
+    int           nASampleRate;
+};
+
 struct CTranscodingSettings {
   
-  CTranscodingSettings();  
-  CTranscodingSettings(CTranscodingSettings* pTranscodingSettings);
+    CTranscodingSettings();  
+    CTranscodingSettings(CTranscodingSettings* pTranscodingSettings);
   
-  std::string   sExt;
-  std::string   sMimeType;
-  std::string   sDLNA;
+    std::string   sExt;
+    std::string   sMimeType;
+    std::string   sDLNA;
   
-  std::string   sDecoder;     // vorbis | flac | mpc
-  std::string   sEncoder;     // lame | twolame | pcm | wav
-  std::string   sTranscoder;  // ffmpeg
+    std::string   sDecoder;     // vorbis | flac | mpc
+    std::string   sEncoder;     // lame | twolame | pcm | wav
+    std::string   sTranscoder;  // ffmpeg
   
-  std::string   sOutParams;
+    std::string   sOutParams;
   
-  std::string MimeType() { return sMimeType; }
-  std::string DLNA() { return sDLNA; }
-  bool Enabled() { return bEnabled; }
+    std::string MimeType() { return sMimeType; }
+    std::string DLNA() { return sDLNA; }
+    bool Enabled() { return bEnabled; }
   
-  unsigned int BitRate() { return nBitRate; }
-  unsigned int SampleRate() { return nSampleRate; }
+    unsigned int BitRate() { return nBitRate; }
+    unsigned int SampleRate() { return nSampleRate; }
   
-  std::string  Extension() { return sExt; }
-  TRANSCODING_HTTP_RESPONSE   TranscodingHTTPResponse() { return nTranscodingResponse; }
+    std::string  Extension() { return sExt; }
+    TRANSCODING_HTTP_RESPONSE   TranscodingHTTPResponse() { return nTranscodingResponse; }
   
-  int ReleaseDelay() { return nReleaseDelay; }
+    int ReleaseDelay() { return nReleaseDelay; }
   
-  TRANSCODING_HTTP_RESPONSE   nTranscodingResponse;
-  TRANSCODING_TYPE            nTranscodingType;
-  int                nReleaseDelay;
+    TRANSCODING_HTTP_RESPONSE   nTranscodingResponse;
+    TRANSCODING_TYPE            nTranscodingType;
+    int                         nReleaseDelay;
   
     unsigned int  nBitRate;
     unsigned int  nSampleRate;
+  
+    std::list<CFFmpegSettings*>   pFFmpegSettings;
   
   private:
     bool          bEnabled;
@@ -156,22 +170,19 @@ typedef std::map<std::string, CFileSettings*>::iterator FileSettingsIterator_t;
 
 class CDeviceSettings
 {
+  friend class CConfigFile;
+  friend class CDeviceIdentificationMgr;
+  
   public:
 	  CDeviceSettings(std::string p_sDeviceName);
     CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSettings);
 		
 		bool HasUserAgent(std::string p_sUserAgent);
-		std::list<std::string> m_slUserAgents;
-		bool HasIP(std::string p_sIPAddress);
-		std::list<std::string> m_slIPAddresses;
+    bool HasIP(std::string p_sIPAddress);	
+    /*std::list<std::string> m_slUserAgents;
+		std::list<std::string> m_slIPAddresses;*/
 		
-    /** show playlist as container or file */
-		bool m_bShowPlaylistAsContainer;
-    /** XBox 360 fixes */
-		bool m_bXBox360Support;
-    /** DLNA */
-    bool m_bDLNAEnabled;
-  
+
     OBJECT_TYPE   ObjectType(std::string p_sExt);
     std::string   ObjectTypeAsStr(std::string p_sExt);
     bool          DoTranscode(std::string p_sExt);
@@ -186,24 +197,46 @@ class CDeviceSettings
     TRANSCODING_HTTP_RESPONSE TranscodingHTTPResponse(std::string p_sExt);
   
     int ReleaseDelay(std::string p_sExt);
-    int nDefaultReleaseDelay;
 		//ImageSettings_t   m_ImageSettings;
     
     DisplaySettings_t* DisplaySettings() { return &m_DisplaySettings; }
 
-	  std::string m_sDeviceName;
-    std::string m_sVirtualFolderDevice;
+	  
 
     
   
     CFileSettings* FileSettings(std::string p_sExt);
     void AddExt(CFileSettings* pFileSettings, std::string p_sExt);
   
+    
+  
+    bool          Xbox360Support() { return m_bXBox360Support; }
+    std::string   VirtualFolderDevice() { return m_sVirtualFolderDevice; }
+		bool ShowPlaylistAsContainer() { return m_bShowPlaylistAsContainer; }
+		
+    bool DLNAEnabled() { return m_bDLNAEnabled; }
+    
+  
+  private:
+    std::string m_sDeviceName;
+    std::string m_sVirtualFolderDevice;
+    
+    DisplaySettings_t m_DisplaySettings;
+  
+    /** show playlist as container or file */
+		bool m_bShowPlaylistAsContainer;
+    /** XBox 360 fixes */
+		bool m_bXBox360Support;
+    /** DLNA */
+    bool m_bDLNAEnabled;
+    
     std::map<std::string, CFileSettings*> m_FileSettings;
     std::map<std::string, CFileSettings*>::iterator m_FileSettingsIterator;
   
-  private:
-    DisplaySettings_t m_DisplaySettings;
+    int nDefaultReleaseDelay;
+    
+    std::list<std::string> m_slUserAgents;
+		std::list<std::string> m_slIPAddresses;
 };
 
 #endif // _DEVICESETTINGS_H

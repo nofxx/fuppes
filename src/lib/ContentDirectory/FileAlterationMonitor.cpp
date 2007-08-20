@@ -23,7 +23,9 @@
 
 #include "FileAlterationMonitor.h"
 
+#ifdef HAVE_INOTIFY
 #include <sys/ioctl.h>
+#endif
 
 #include <iostream>
 using namespace std;

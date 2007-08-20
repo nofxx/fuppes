@@ -26,14 +26,17 @@
 #ifdef HAVE_LIBAVFORMAT
 #ifdef ENABLE_VIDEO_TRANSCODING
 
+#include "../SharedConfig.h"
+
 CFFmpegWrapper::~CFFmpegWrapper()
 {
   this->Break();
 }
 
-bool CFFmpegWrapper::Transcode(std::string p_sInFileParams, std::string p_sInFile, std::string p_sOutFileParams, std::string* p_psOutFile)
+bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile)
 {
-
+  *p_psOutFile = CSharedConfig::Shared()->CreateTempFileName() + pFileSettings->Extension();
+  
   /*char* szArgs[] = {"ffmpeg", "-y",
     "-i", "/home/ulrich/Desktop/Mary Fahl - Going Home.wmv",
     "-vcodec", "mpeg1video", //"libxvid",
@@ -58,6 +61,9 @@ bool CFFmpegWrapper::Transcode(std::string p_sInFileParams, std::string p_sInFil
   
   szArgs[4] = (char*)malloc(strlen("-vcodec") * sizeof(char));
   strcpy(szArgs[4], "-vcodec");
+  
+  /*szArgs[5] = (char*)malloc(strlen("mpeg1video") * sizeof(char));
+  strcpy(szArgs[5], "mpeg1video");*/
   
   szArgs[5] = (char*)malloc(strlen("mpeg1video") * sizeof(char));
   strcpy(szArgs[5], "mpeg1video");
@@ -85,8 +91,8 @@ bool CFFmpegWrapper::Transcode(std::string p_sInFileParams, std::string p_sInFil
   
   
   
-  szArgs[12] = (char*)malloc(strlen("/tmp/fuppes.mpg") * sizeof(char));
-  strcpy(szArgs[12], "/tmp/fuppes.mpg");
+  szArgs[12] = (char*)malloc(p_psOutFile->length() * sizeof(char));
+  strcpy(szArgs[12], p_psOutFile->c_str());
   
   szArgs[13] = (char*)malloc(sizeof(char));
   szArgs[13] = '\0';

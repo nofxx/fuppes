@@ -44,6 +44,9 @@ class CDeviceIdentificationMgr
 		CDeviceIdentificationMgr();
 	  static CDeviceIdentificationMgr* m_pInstance;
 		
+    void PrintSetting(CDeviceSettings* pSettings);
+
+  
 		CDeviceSettings* m_pDefaultSettings;
 		std::list<CDeviceSettings*> m_Settings;
 		std::list<CDeviceSettings*>::const_iterator m_SettingsIt;

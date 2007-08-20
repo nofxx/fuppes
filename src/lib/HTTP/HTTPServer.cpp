@@ -522,7 +522,7 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
     if(sContent.length() < nContentLength) {
       
       // xbox 360: sends a content length of 3 but only 2 bytes of data
-      if((p_Request->DeviceSettings()->m_bXBox360Support) && (nContentLength == 3)) {
+      if((p_Request->DeviceSettings()->Xbox360Support()) && (nContentLength == 3)) {
         bDoReceive = false;
       }
       else {      

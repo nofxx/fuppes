@@ -144,7 +144,7 @@ bool CUPnPActionFactory::ParseBrowseAction(CUPnPBrowse* pAction)
   
   /* Object ID */
   string sRxObjId;
-  if(!pAction->DeviceSettings()->m_bXBox360Support) {
+  if(!pAction->DeviceSettings()->Xbox360Support()) {
     sRxObjId = "<ObjectID>(.+)</ObjectID>";
   }
   else {

@@ -236,8 +236,8 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
   
   
   string sDevice = " and o.DEVICE is NULL ";
-  if(CVirtualContainerMgr::Shared()->IsVirtualContainer(HexToInt(p_sObjectId), pRequest->DeviceSettings()->m_sVirtualFolderDevice))
-    sDevice = " and o.DEVICE = '" + pRequest->DeviceSettings()->m_sVirtualFolderDevice + "' ";
+  if(CVirtualContainerMgr::Shared()->IsVirtualContainer(HexToInt(p_sObjectId), pRequest->DeviceSettings()->VirtualFolderDevice()))
+    sDevice = " and o.DEVICE = '" + pRequest->DeviceSettings()->VirtualFolderDevice() + "' ";
   
   sSql << 
     "select " <<

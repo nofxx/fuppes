@@ -250,11 +250,11 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   CContentDatabase* pDb = new CContentDatabase();
 
   pUPnPBrowse->m_bVirtualContainer = CVirtualContainerMgr::Shared()->IsVirtualContainer(pUPnPBrowse->GetObjectIDAsInt(),
-                                                           pUPnPBrowse->DeviceSettings()->m_sVirtualFolderDevice);
+                                                           pUPnPBrowse->DeviceSettings()->VirtualFolderDevice());
   
   string sDevice = "DEVICE is NULL ";
   if(pUPnPBrowse->m_bVirtualContainer)
-    sDevice = "DEVICE = '" + pUPnPBrowse->DeviceSettings()->m_sVirtualFolderDevice + "' ";
+    sDevice = "DEVICE = '" + pUPnPBrowse->DeviceSettings()->VirtualFolderDevice() + "' ";
                         
   // get container type
   OBJECT_TYPE nContainerType = CONTAINER_STORAGE_FOLDER;
@@ -379,11 +379,11 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   //OBJECT_TYPE nContainerType = CONTAINER_STORAGE_FOLDER;
  
                             
-  pUPnPBrowse->m_bVirtualContainer = CVirtualContainerMgr::Shared()->HasVirtualChildren(pUPnPBrowse->GetObjectIDAsInt(), pUPnPBrowse->DeviceSettings()->m_sVirtualFolderDevice);	
+  pUPnPBrowse->m_bVirtualContainer = CVirtualContainerMgr::Shared()->HasVirtualChildren(pUPnPBrowse->GetObjectIDAsInt(), pUPnPBrowse->DeviceSettings()->VirtualFolderDevice());	
  
   string sDevice = "DEVICE is NULL ";
   if(pUPnPBrowse->m_bVirtualContainer)
-    sDevice = "DEVICE = '" + pUPnPBrowse->DeviceSettings()->m_sVirtualFolderDevice + "' ";
+    sDevice = "DEVICE = '" + pUPnPBrowse->DeviceSettings()->VirtualFolderDevice() + "' ";
                             
   // get total matches
   //cout << "get total matches" << endl; fflush(stdout);
@@ -464,7 +464,7 @@ void CContentDirectory::BuildDescription(xmlTextWriterPtr pWriter,
   // container
   if(nObjType < ITEM) {
     
-    if((nObjType == CONTAINER_PLAYLIST_CONTAINER) && !pUPnPBrowse->DeviceSettings()->m_bShowPlaylistAsContainer) {
+    if((nObjType == CONTAINER_PLAYLIST_CONTAINER) && !pUPnPBrowse->DeviceSettings()->ShowPlaylistAsContainer()) {
       BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, nObjType, p_sParentId);
     }
     else {
@@ -492,8 +492,8 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
   string sSql;
   
   string sDevice = "DEVICE is NULL ";
-  if(CVirtualContainerMgr::Shared()->HasVirtualChildren(pSQLResult->GetValueAsUInt("OBJECT_ID"), pUPnPBrowse->DeviceSettings()->m_sVirtualFolderDevice))
-    sDevice = "DEVICE = '" + pUPnPBrowse->DeviceSettings()->m_sVirtualFolderDevice + "' ";                                                    
+  if(CVirtualContainerMgr::Shared()->HasVirtualChildren(pSQLResult->GetValueAsUInt("OBJECT_ID"), pUPnPBrowse->DeviceSettings()->VirtualFolderDevice()))
+    sDevice = "DEVICE = '" + pUPnPBrowse->DeviceSettings()->VirtualFolderDevice() + "' ";                                                    
 
   sSql = string("select count(*) as COUNT from MAP_OBJECTS ") +
     "where PARENT_ID = " + pSQLResult->GetValue("OBJECT_ID") + " and " + sDevice;
@@ -741,7 +741,7 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   
   // protocol info
   string sTmp;
-  if(pUPnPBrowse->DeviceSettings()->m_bDLNAEnabled) {
+  if(pUPnPBrowse->DeviceSettings()->DLNAEnabled()) {
     string sDLNA = pUPnPBrowse->DeviceSettings()->DLNA(sExt); //CFileDetails::Shared()->GetDLNA(sExt);    
     if(!sDLNA.empty()) {
       sTmp = "http-get:*:" + sMimeType + ":DLNA.ORG_PN=" + sDLNA + ";DLNA.ORG_OP=01;DLNA.ORG_CI=0";

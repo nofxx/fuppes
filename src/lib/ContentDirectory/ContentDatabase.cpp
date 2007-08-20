@@ -162,8 +162,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
   *p_bIsNewDB = bIsNewDb;
   
   if(bIsNewDb) {
-    int nRes = sqlite3_open(m_sDbFileName.c_str(), &m_pDbHandle);   
-    if(nRes) {
+    if(sqlite3_open(m_sDbFileName.c_str(), &m_pDbHandle) != SQLITE_OK) {
       fprintf(stderr, "Can't create/open database: %s\n", sqlite3_errmsg(m_pDbHandle));
       sqlite3_close(m_pDbHandle);
       return false;
@@ -222,7 +221,16 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
       return false;
     
     if(!Execute("CREATE INDEX IDX_MAP_OBJECTS_PARENT_ID ON MAP_OBJECTS(PARENT_ID);"))
-      return false;		
+      return false;	
+        
+    if(!Execute("CREATE INDEX IDX_OBJECTS_DETAIL_ID ON OBJECTS(DETAIL_ID);"))
+      return false;
+
+    if(!Execute("CREATE INDEX IDX_OBJECT_DETAILS_ID ON OBJECT_DETAILS(ID);"))
+      return false;
+
+    if(!Execute("PRAGMA temp_store = MEMORY;"))
+      return false;
   }
 
   return true;
@@ -273,7 +281,7 @@ void CContentDatabase::ClearResult()
 bool CContentDatabase::Open()
 {  
   //cout << "OPEN" << endl; fflush(stdout);
-  if(sqlite3_open(m_sDbFileName.c_str(), &m_pDbHandle)) {
+  if(sqlite3_open(m_sDbFileName.c_str(), &m_pDbHandle) != SQLITE_OK) {
     fprintf(stderr, "Can't create/open database: %s\n", sqlite3_errmsg(m_pDbHandle));
     sqlite3_close(m_pDbHandle);
     return false;
