@@ -157,7 +157,7 @@ void CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse, std::string
       xmlTextWriterStartDocument(resWriter, NULL, "UTF-8", NULL);
   
       xmlTextWriterStartElementNS(resWriter, NULL, BAD_CAST "DIDL-Lite", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/");    
-      xmlTextWriterWriteAttribute(resWriter, BAD_CAST "xmlns:dc:", BAD_CAST "http://purl.org/dc/elements/1.1/");
+      xmlTextWriterWriteAttribute(resWriter, BAD_CAST "xmlns:dc", BAD_CAST "http://purl.org/dc/elements/1.1/");
       xmlTextWriterWriteAttribute(resWriter, BAD_CAST "xmlns:upnp", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");
   
       unsigned int nNumberReturned = 0;
@@ -333,7 +333,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
     sSql <<
       "select " <<
       "  m.OBJECT_ID, m.PARENT_ID, " <<
-      "  o.PATH, o.FILE_NAME, o.TYPE, o.MIME_TYPE, " <<
+      "  o.TITLE, o.PATH, o.FILE_NAME, o.TYPE, o.MIME_TYPE, " <<
       "  d.* " <<
       "from " <<
       "  OBJECTS o, MAP_OBJECTS m " <<
@@ -1123,7 +1123,7 @@ void CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_ps
       xmlTextWriterStartDocument(resWriter, NULL, "UTF-8", NULL);
   
       xmlTextWriterStartElementNS(resWriter, NULL, BAD_CAST "DIDL-Lite", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/");
-      xmlTextWriterWriteAttribute(resWriter, BAD_CAST "xmlns:dc:", BAD_CAST "http://purl.org/dc/elements/1.1/");
+      xmlTextWriterWriteAttribute(resWriter, BAD_CAST "xmlns:dc", BAD_CAST "http://purl.org/dc/elements/1.1/");
       xmlTextWriterWriteAttribute(resWriter, BAD_CAST "xmlns:upnp", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");          
   
       while(!pDb->Eof()) {        
