@@ -72,10 +72,13 @@ FUPPES_LIBS=""
 LDFLAGS="$LDFLAGS"
 
 case $host in 
-    *-*-mingw32*)
+  *-*-mingw32*)
 		echo "building with MinGW"
-        LDFLAGS="$LDFLAGS -lws2_32 -lole32"
+    LDFLAGS="$LDFLAGS -lws2_32 -lole32"
 		AM_CONDITIONAL(BUILD_DAEMON, test "xno" = "xyes")
+	;;
+	*)
+	  AM_CONDITIONAL(BUILD_DAEMON, test "xyes" = "xyes")
 	;;
 esac
 
