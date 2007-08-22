@@ -1085,12 +1085,13 @@ void ParsePLSPlaylist(CSelectResult* pResult)
 fuppesThreadCallback BuildLoop(void* arg)
 {
   CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] create database. this may take a while.", __FILE__, __LINE__, false);
-  
-  CContentDatabase::Shared()->Execute("delete from OBJECTS");
-  CContentDatabase::Shared()->Execute("delete from OBJECT_DETAILS");
-  CContentDatabase::Shared()->Execute("delete from MAP_OBJECTS");
     
   CContentDatabase* pDb = new CContentDatabase();
+  
+  pDb->Execute("delete from OBJECTS");
+  pDb->Execute("delete from OBJECT_DETAILS");
+  pDb->Execute("delete from MAP_OBJECTS");
+    
   int i;
   unsigned int nObjId;
   stringstream sSql;
