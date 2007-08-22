@@ -57,9 +57,6 @@ bool CImageMagickWrapper::Transcode(CFileSettings* pFileSettings, std::string p_
   
   
   // and then convert/resize using imagemagick
-  
-  cout << __FILE__ << " resize: " << p_sInFile <<  " >> " << *p_psOutFile << endl;
-  
   try {
     image.read(p_sInFile);
   }
@@ -75,12 +72,8 @@ bool CImageMagickWrapper::Transcode(CFileSettings* pFileSettings, std::string p_
   
   
   try {
-    
-    if(pFileSettings->pImageSettings->Width() > 0)
-      geometry.width(pFileSettings->pImageSettings->Width());
-    
-    if(pFileSettings->pImageSettings->Height() > 0)
-      geometry.height(pFileSettings->pImageSettings->Height());
+    geometry.width(pFileSettings->pImageSettings->Width());
+    geometry.height(pFileSettings->pImageSettings->Height());
    
     geometry.greater(pFileSettings->pImageSettings->Greater());
     geometry.less(pFileSettings->pImageSettings->Less());

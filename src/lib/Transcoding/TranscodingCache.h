@@ -67,7 +67,7 @@ class CTranscodingCacheObject
     bool  m_bIsComplete;
     bool  m_bInitialized;
   
-    unsigned int Transcode();
+    unsigned int Transcode(CDeviceSettings* pDeviceSettings);
     int Append(char** p_pszBinBuffer, unsigned int p_nBinBufferSize);
   
   //private:

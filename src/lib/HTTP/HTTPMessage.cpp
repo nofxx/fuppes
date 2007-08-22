@@ -763,12 +763,16 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName, SMusicTrack
   
   m_pTranscodingCacheObj = CTranscodingCache::Shared()->GetCacheObject(m_pTranscodingSessionInfo->m_sInFileName);
   m_pTranscodingCacheObj->Init(m_pTranscodingSessionInfo, DeviceSettings());
-  m_pTranscodingCacheObj->Transcode();
+  m_pTranscodingCacheObj->Transcode(DeviceSettings());
 
   if(m_pTranscodingCacheObj->Threaded() && 
      (m_pTranscodingSessionInfo->m_nGuessContentLength == 0 ||
       DeviceSettings()->TranscodingHTTPResponse(ExtractFileExt(p_sFileName)) == RESPONSE_CHUNKED)) {
     m_nTransferEncoding = HTTP_TRANSFER_ENCODING_CHUNKED;
+  }
+  
+  if(!m_pTranscodingCacheObj->Threaded()) {
+    LoadContentFromFile(m_pTranscodingCacheObj->m_sOutFileName);
   }
   
   return true;

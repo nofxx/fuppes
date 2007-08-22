@@ -92,16 +92,19 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
   
   ReleaseCount(pDeviceSettings->ReleaseDelay(sExt));
   
-  if(CTranscodingMgr::Shared()->GetTranscodingType(sExt) == TT_THREADED_TRANSCODER ||
-     CTranscodingMgr::Shared()->GetTranscodingType(sExt) == TT_TRANSCODER) {
+  if(pDeviceSettings->GetTranscodingType(sExt) == TT_THREADED_TRANSCODER ||
+     pDeviceSettings->GetTranscodingType(sExt) == TT_TRANSCODER) {
     
     if(m_bInitialized) {
       return true;
     }     
     
-    m_pTranscoder = CTranscodingMgr::Shared()->CreateTranscoder(sExt);
-    m_bInitialized = true;
-        
+    m_pTranscoder = CTranscodingMgr::Shared()->CreateTranscoder(pDeviceSettings->GetTranscoderType(sExt));
+    if(!m_pTranscoder) {
+      return false;
+    }
+       
+    m_bInitialized = true;        
     m_bThreaded = m_pTranscoder->Threaded();
         
     return true;
@@ -236,12 +239,13 @@ bool CTranscodingCacheObject::TranscodeToFile()
   }        
 }
 
-unsigned int CTranscodingCacheObject::Transcode()
+unsigned int CTranscodingCacheObject::Transcode(CDeviceSettings* pDeviceSettings)
 {  
   
   if(!m_bThreaded) {
-    m_sOutFileName = "/tmp/fuppes.jpg";
-    m_pTranscoder->Transcode(string(""), m_sInFileName, string(""), &m_sOutFileName);
+    //m_sOutFileName = "/tmp/fuppes.jpg";
+    std::string sExt = ToLower(ExtractFileExt(m_sInFileName));
+    m_pTranscoder->Transcode(pDeviceSettings->FileSettings(sExt), m_sInFileName, &m_sOutFileName);
     
     m_bIsComplete    = true;
     m_bIsTranscoding = false;

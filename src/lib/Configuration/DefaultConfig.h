@@ -309,12 +309,15 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
               xmlTextWriterStartElement(pWriter, BAD_CAST "width");
                 xmlTextWriterWriteString(pWriter, BAD_CAST "0");
               xmlTextWriterEndElement(pWriter);
+              xmlTextWriterWriteComment(pWriter, BAD_CAST "set \"greater\" to \"true\" if you only want to resize images greater than \"height\" or \"width\"");
               xmlTextWriterStartElement(pWriter, BAD_CAST "greater");
                 xmlTextWriterWriteString(pWriter, BAD_CAST "false");
               xmlTextWriterEndElement(pWriter);
+              xmlTextWriterWriteComment(pWriter, BAD_CAST "set \"less\" to \"true\" if you only want to resize images less than \"height\" or \"width\"");
               xmlTextWriterStartElement(pWriter, BAD_CAST "less");
                 xmlTextWriterWriteString(pWriter, BAD_CAST "false");
               xmlTextWriterEndElement(pWriter);
+              xmlTextWriterWriteComment(pWriter, BAD_CAST "set \"less\" and \"greater\" to \"false\" if you always want to resize");
             xmlTextWriterEndElement(pWriter);
   
           xmlTextWriterEndElement(pWriter);        
@@ -423,6 +426,17 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
             xmlTextWriterStartElement(pWriter, BAD_CAST "mime_type");
               xmlTextWriterWriteString(pWriter, BAD_CAST "video/x-extension-vdr");
             xmlTextWriterEndElement(pWriter);
+  
+            xmlTextWriterStartElement(pWriter, BAD_CAST "transcode");
+              xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "true");
+              xmlTextWriterStartElement(pWriter, BAD_CAST "ext");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "vob");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "mime_type");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "video/x-ms-vob");
+              xmlTextWriterEndElement(pWriter);
+            xmlTextWriterEndElement(pWriter);
+  
           xmlTextWriterEndElement(pWriter);
   
           // flv
@@ -435,7 +449,7 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
               xmlTextWriterWriteString(pWriter, BAD_CAST "application/x-flash-video");
             xmlTextWriterEndElement(pWriter);
   
-            xmlTextWriterStartElement(pWriter, BAD_CAST "transcode");
+            /*xmlTextWriterStartElement(pWriter, BAD_CAST "transcode");
             xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "true");
               xmlTextWriterStartElement(pWriter, BAD_CAST "ext");
                 xmlTextWriterWriteString(pWriter, BAD_CAST "mpg");
@@ -464,7 +478,7 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
                 xmlTextWriterStartElement(pWriter, BAD_CAST "out_params");
                   xmlTextWriterWriteString(pWriter, BAD_CAST "-ac 2");
                 xmlTextWriterEndElement(pWriter);
-              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterEndElement(pWriter);*/
               
             xmlTextWriterEndElement(pWriter);
           xmlTextWriterEndElement(pWriter);  

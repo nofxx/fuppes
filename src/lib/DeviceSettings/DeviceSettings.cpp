@@ -392,17 +392,154 @@ bool CDeviceSettings::DoTranscode(std::string p_sExt)
 {
   m_FileSettingsIterator = m_FileSettings.find(p_sExt);
   if(m_FileSettingsIterator != m_FileSettings.end()) {
-    if(m_FileSettingsIterator->second->pTranscodingSettings ||
-       m_FileSettingsIterator->second->pImageSettings) {
+    if(
+       (m_FileSettingsIterator->second->pTranscodingSettings &&
+        m_FileSettingsIterator->second->pTranscodingSettings->Enabled() &&
+        (!m_FileSettingsIterator->second->pTranscodingSettings->sDecoder.empty() ||
+         !m_FileSettingsIterator->second->pTranscodingSettings->sEncoder.empty() ||
+         !m_FileSettingsIterator->second->pTranscodingSettings->sTranscoder.empty())
+        ) ||
+       
+       (m_FileSettingsIterator->second->pImageSettings &&
+        m_FileSettingsIterator->second->pImageSettings->Enabled())) {
       return true;
     }
     else {
       return false;
     }
   }
-  else 
+  else {
     return false;
+  }
 }
+
+
+TRANSCODING_TYPE CDeviceSettings::GetTranscodingType(std::string p_sExt)
+{
+  m_FileSettingsIterator = m_FileSettings.find(p_sExt);
+  if(m_FileSettingsIterator != m_FileSettings.end()) {
+    if(m_FileSettingsIterator->second->pTranscodingSettings &&
+       m_FileSettingsIterator->second->pTranscodingSettings->Enabled()) {
+         
+       CTranscodingSettings* pTranscodingSettings = m_FileSettingsIterator->second->pTranscodingSettings;
+         
+       if(!pTranscodingSettings->sTranscoder.empty()) {
+         return TT_THREADED_TRANSCODER;
+       }
+       else if(!pTranscodingSettings->sDecoder.empty() && !pTranscodingSettings->sEncoder.empty()) {
+         return TT_THREADED_DECODER_ENCODER;
+       }
+       else {
+         return TT_NONE;
+       }         
+    }
+    else if(m_FileSettingsIterator->second->pImageSettings &&
+            m_FileSettingsIterator->second->pImageSettings->Enabled()) {
+      return TT_TRANSCODER;
+    }
+    else {
+      return TT_NONE;
+    }
+  }
+  else {
+    return TT_NONE;
+  }
+}
+
+TRANSCODER_TYPE CDeviceSettings::GetTranscoderType(std::string p_sExt)
+{
+  m_FileSettingsIterator = m_FileSettings.find(p_sExt);
+  if(m_FileSettingsIterator != m_FileSettings.end()) {
+    if(m_FileSettingsIterator->second->pTranscodingSettings &&
+       m_FileSettingsIterator->second->pTranscodingSettings->Enabled()) {
+
+       CTranscodingSettings* pTranscodingSettings = m_FileSettingsIterator->second->pTranscodingSettings;
+
+       if(!pTranscodingSettings->sTranscoder.empty() && 
+          pTranscodingSettings->sTranscoder.compare("ffmpeg") == 0) {
+         return TTYP_FFMPEG;
+       }
+       else {
+         return TTYP_NONE;
+       }         
+    }
+    else if(m_FileSettingsIterator->second->pImageSettings &&
+            m_FileSettingsIterator->second->pImageSettings->Enabled()) {
+      return TTYP_IMAGE_MAGICK;
+    }
+    else {
+      return TTYP_NONE;
+    }
+  }
+  else {
+    return TTYP_NONE;
+  }
+}
+
+DECODER_TYPE CDeviceSettings::GetDecoderType(std::string p_sExt)
+{
+  m_FileSettingsIterator = m_FileSettings.find(p_sExt);
+  if(m_FileSettingsIterator != m_FileSettings.end()) {
+    if(m_FileSettingsIterator->second->pTranscodingSettings &&
+       m_FileSettingsIterator->second->pTranscodingSettings->Enabled()) {
+
+       CTranscodingSettings* pTranscodingSettings = m_FileSettingsIterator->second->pTranscodingSettings;
+
+       if(!pTranscodingSettings->sDecoder.empty()) {
+        
+         if(pTranscodingSettings->sDecoder.compare("vorbis") == 0) {
+           return DT_OGG_VORBIS;
+         }
+         else {
+           return DT_NONE;
+         }
+         
+       }
+       else {
+         return DT_NONE;
+       }         
+    }   
+    else {
+      return DT_NONE;
+    }
+  }
+  else {
+    return DT_NONE;
+  }
+}
+
+ENCODER_TYPE CDeviceSettings::GetEncoderType(std::string p_sExt)
+{
+  m_FileSettingsIterator = m_FileSettings.find(p_sExt);
+  if(m_FileSettingsIterator != m_FileSettings.end()) {
+    if(m_FileSettingsIterator->second->pTranscodingSettings &&
+       m_FileSettingsIterator->second->pTranscodingSettings->Enabled()) {
+
+       CTranscodingSettings* pTranscodingSettings = m_FileSettingsIterator->second->pTranscodingSettings;
+
+       if(!pTranscodingSettings->sEncoder.empty()) {
+        
+         if(pTranscodingSettings->sEncoder.compare("lame") == 0) {
+           return ET_LAME;
+         }
+         else {
+           return ET_NONE;
+         }
+         
+       }
+       else {
+         return ET_NONE;
+       }         
+    }   
+    else {
+      return ET_NONE;
+    }
+  }
+  else {
+    return ET_NONE;
+  }
+}
+
 
 
 std::string CDeviceSettings::MimeType(std::string p_sExt)

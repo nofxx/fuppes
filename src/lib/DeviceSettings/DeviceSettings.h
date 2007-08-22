@@ -31,6 +31,9 @@
 #include "../ContentDirectory/ContentDatabase.h"
 
 struct CImageSettings {
+  
+  friend class CConfigFile;
+  
   CImageSettings();
   CImageSettings(CImageSettings* pImageSettings);
   
@@ -73,6 +76,27 @@ typedef enum TRANSCODING_TYPE {
   TT_TRANSCODER,
   TT_THREADED_TRANSCODER  
 } TRANSCODING_TYPE;
+
+typedef enum TRANSCODER_TYPE {
+  TTYP_NONE,
+  TTYP_IMAGE_MAGICK,
+  TTYP_FFMPEG
+} TRANSCODER_TYPE;
+
+typedef enum ENCODER_TYPE {
+  ET_NONE,
+  ET_LAME,
+  ET_TWOLAME,
+  ET_WAV,
+  ET_PCM
+} ENCODER_TYPE;
+
+typedef enum DECODER_TYPE {
+  DT_NONE,
+  DT_OGG_VORBIS,
+  DT_FLAC,
+  DT_MUSEPACK
+} DECODER_TYPE;
 
 typedef enum TRANSCODING_HTTP_RESPONSE {
   RESPONSE_NONE,
@@ -120,6 +144,9 @@ struct CTranscodingSettings {
   
     TRANSCODING_HTTP_RESPONSE   nTranscodingResponse;
     TRANSCODING_TYPE            nTranscodingType;
+    TRANSCODER_TYPE             nTranscoderType;
+    DECODER_TYPE                nDecoderType;
+    ENCODER_TYPE                nEncoderType;
     int                         nReleaseDelay;
   
     unsigned int  nBitRate;
@@ -186,6 +213,11 @@ class CDeviceSettings
     OBJECT_TYPE   ObjectType(std::string p_sExt);
     std::string   ObjectTypeAsStr(std::string p_sExt);
     bool          DoTranscode(std::string p_sExt);
+    TRANSCODING_TYPE GetTranscodingType(std::string p_sExt);
+    TRANSCODER_TYPE  GetTranscoderType(std::string p_sExt);
+    DECODER_TYPE     GetDecoderType(std::string p_sExt);
+    ENCODER_TYPE     GetEncoderType(std::string p_sExt);
+  
     std::string   MimeType(std::string p_sExt);
     std::string   DLNA(std::string p_sExt);
   

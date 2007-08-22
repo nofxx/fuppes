@@ -177,9 +177,10 @@ bool CTranscodingMgr::IsTranscodingExtension(std::string p_sFileExt)
     return false;
 }
 
-TRANSCODING_TYPE CTranscodingMgr::GetTranscodingType(std::string p_sFileExt)
+/*TRANSCODING_TYPE CTranscodingMgr::GetTranscodingType(CDeviceSettings* pDeviceSettings)
 {
-  if((p_sFileExt.compare("mp3") == 0))
+  */
+  /*if((p_sFileExt.compare("mp3") == 0))
     return TT_NONE;
   
   else if((p_sFileExt.compare("ogg") == 0)  && IsTranscodingAvailable() && m_bVorbisAvailable   && m_bTranscodeVorbis)
@@ -199,11 +200,11 @@ TRANSCODING_TYPE CTranscodingMgr::GetTranscodingType(std::string p_sFileExt)
     return TT_THREADED_TRANSCODER; 
   
   else if(p_sFileExt.compare("jpg") == 0)
-    return TT_TRANSCODER;
+    return TT_TRANSCODER;*/
   
-  else
-    return TT_NONE;  
-}
+  //else
+    /*return TT_NONE;  
+}*/
 
 void CTranscodingMgr::SetDoTranscodeVorbis(bool p_bDoTranscodeVorbis)
 {
@@ -429,21 +430,20 @@ CAudioDecoderBase* CTranscodingMgr::CreateAudioDecoder(std::string p_sFileExt, u
   return pResult;
 }
 
-CTranscoderBase* CTranscodingMgr::CreateTranscoder(std::string p_sFileExt)
+CTranscoderBase* CTranscodingMgr::CreateTranscoder(TRANSCODER_TYPE p_nTranscoderType)
 {
   CTranscoderBase* pResult = NULL;
   
   #ifdef HAVE_LIBAVFORMAT
   #ifdef ENABLE_VIDEO_TRANSCODING
-  if(p_sFileExt.compare("wmv") == 0 || p_sFileExt.compare("flv") == 0 ||
-     p_sFileExt.compare("asf") == 0) {     
+  if(p_nTranscoderType == TTYP_FFMPEG) {     
     pResult = new CFFmpegWrapper();
   }
   #endif
   #endif
   
   #ifdef HAVE_IMAGEMAGICK
-  if(p_sFileExt.compare("jpg") == 0) {
+  if(p_nTranscoderType == TTYP_IMAGE_MAGICK) {
     pResult = new CImageMagickWrapper();
   }
   #endif

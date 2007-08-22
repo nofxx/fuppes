@@ -42,7 +42,7 @@ class CTranscodingMgr
     bool IsMusePackAvailabe();
   
     bool IsTranscodingExtension(std::string p_sFileExt);
-    TRANSCODING_TYPE GetTranscodingType(std::string p_sFileExt);
+    //TRANSCODING_TYPE GetTranscodingType(CDeviceSettings* pDeviceSettings);
   
     void SetDoTranscodeVorbis(bool p_bDoTranscodeVorbis);
     bool GetDoTranscodeVorbis() { return m_bTranscodeVorbis; }
@@ -75,7 +75,7 @@ class CTranscodingMgr
     CAudioDecoderBase* CreateAudioDecoder(std::string p_sFileExt, unsigned int* p_nBufferSize);
   
   
-    CTranscoderBase* CreateTranscoder(std::string p_sFileExt);
+    CTranscoderBase* CreateTranscoder(TRANSCODER_TYPE p_nTranscoderType);
   
   private:
     CTranscodingMgr();

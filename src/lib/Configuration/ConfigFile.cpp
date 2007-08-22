@@ -431,6 +431,7 @@ void CConfigFile::ParseImageSettings(CXMLNode* pISNode, CFileSettings* pFileSet)
   // create new settings
   if(!pFileSet->pImageSettings) {
     pFileSet->pImageSettings = new CImageSettings();
+    pFileSet->pImageSettings->bEnabled = (pISNode->Attribute("enabled").compare("true") == 0);
   }
   
   // read image settings
@@ -446,27 +447,27 @@ void CConfigFile::ParseImageSettings(CXMLNode* pISNode, CFileSettings* pFileSet)
     else if(pTmp->Name().compare("dcraw") == 0) {
       if(pTmp->Attribute("enabled").compare("false") != 0) {
         pFileSet->pImageSettings->bDcraw = true;
-        pFileSet->pImageSettings->sDcrawParams = pTmp->Value();
+        pFileSet->pImageSettings->sDcrawParams = pChild->Value();
       }
     }
-    else if(pTmp->Name().compare("scale") == 0) {
+    /*else if(pTmp->Name().compare("scale") == 0) {
       for(j = 0; j < pTmp->ChildCount(); j++) {
-        pChild = pTmp->ChildNode(j);
+        pChild = pTmp->ChildNode(j);*/
         
-        if(pChild->Name().compare("height") == 0) {
-          pFileSet->pImageSettings->nHeight = atoi(pChild->Value().c_str());
+        else if(pTmp->Name().compare("height") == 0) {
+          pFileSet->pImageSettings->nHeight = atoi(pTmp->Value().c_str());
         }
-        else if(pChild->Name().compare("width") == 0) {
-          pFileSet->pImageSettings->nWidth = atoi(pChild->Value().c_str());
+        else if(pTmp->Name().compare("width") == 0) {
+          pFileSet->pImageSettings->nWidth = atoi(pTmp->Value().c_str());
         }
-        else if(pChild->Name().compare("greater") == 0) {
-          pFileSet->pImageSettings->bGreater = (pChild->Value().compare("true") == 0);
+        else if(pTmp->Name().compare("greater") == 0) {
+          pFileSet->pImageSettings->bGreater = (pTmp->Value().compare("true") == 0);
         }
-        else if(pChild->Name().compare("less") == 0) {
-          pFileSet->pImageSettings->bLess = (pChild->Value().compare("true") == 0);
-        }        
-      }
-    }
+        else if(pTmp->Name().compare("less") == 0) {
+          pFileSet->pImageSettings->bLess = (pTmp->Value().compare("true") == 0);
+        }
+      //}
+    //}
 
   }
 }
