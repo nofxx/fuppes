@@ -1,9 +1,9 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl $Id: $
 
-AC_INIT([fuppes], [0.7.2a-20070529], [u-voelkel@users.sourceforge.net])
+AC_INIT([fuppes], [0.7.3a], [fuppes@ulrich-voelkel.de])
 AM_CONFIG_HEADER(src/config.h)
-AM_INIT_AUTOMAKE(fuppes, 0.7.2a-20070529, u-voelkel@users.sourceforge.net)
+AM_INIT_AUTOMAKE(fuppes, 0.7.2a, fuppes@ulrich-voelkel.de)
 
 AC_PROG_CC
 AC_PROG_CXX
@@ -78,7 +78,7 @@ case $host in
 		AM_CONDITIONAL(BUILD_DAEMON, test "xno" = "xyes")
 	;;
 	*)
-	  AM_CONDITIONAL(BUILD_DAEMON, test "xyes" = "xyes")
+	  AM_CONDITIONAL(BUILD_DAEMON, true)
 	;;
 esac
 
@@ -266,7 +266,7 @@ fi
 
 video_transcoding=no
 AC_ARG_ENABLE(video-transcoding, 
-            [ --enable-video-transcoding  enable video transcoding using libavformat],
+            [  --enable-video-transcoding  enable video transcoding using libavformat],
             [ video_transcoding=yes; ] )
 
 AH_TEMPLATE([ENABLE_VIDEO_TRANSCODING], [])
@@ -332,6 +332,10 @@ AC_ARG_ENABLE(twolame,
             [  --disable-twolame  Do not use TwoLAME],
             [ use_twolame=no; ] )              
 
+AC_ARG_ENABLE(tremor,
+						[  --enable-tremor  Use Tremor (integer-only vorbis decoder) instead of libvorbis],
+						[ use_tremor=yes; ] )
+
 
 if test "x$transcoding" = "xyes"; then
   
@@ -366,7 +370,6 @@ if test "x$transcoding" = "xyes"; then
   if test "x$have_encoder" = "xyes"; then
 
     
-    
     # tremor
     TREMOR_H_DIR=""
     AH_TEMPLATE([HAVE_TREMOR], [])
@@ -377,7 +380,9 @@ if test "x$transcoding" = "xyes"; then
         FUPPES_LIBS="$FUPPES_LIBS "
         AC_DEFINE([HAVE_VORBIS], [1], [])
         AC_DEFINE([HAVE_TREMOR], [1], [])
-      fi
+			else
+				echo "Tremor not found. Checking for libvorbisfile instead."
+			fi
     fi
 
     # vorbis
@@ -600,16 +605,14 @@ if test "x$transcoding" = "xyes"; then
       
     echo "    decoder:"
     if test "x$have_vorbis" = "xyes"; then
-      echo "      vorbis : yes"
-    else
-      echo "      vorbis : no"      
+      echo "      vorbis : yes (libvorbisfile)"
+		else
+      if test "x$have_tremor" = "xyes"; then
+        echo "      vorbis : yes (tremor)"
+      else
+        echo "      vorbis : no"      
+      fi
     fi
-
-    if test "x$have_tremor" = "xyes"; then
-      echo "      tremor : yes"
-    else
-      echo "      tremor : no"      
-    fi      
 
     if test "x$have_mpc" = "xyes"; then
       echo "      mpc    : yes"

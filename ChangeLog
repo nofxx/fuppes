@@ -1,4 +1,4 @@
-Version 0.7.2a-200707??
+Version 0.7.3a
   * PS3 transcoding
   * include metadata in lame encoded files (id3v2 tag)
   * initial WAV-encoder
@@ -8,6 +8,9 @@ Version 0.7.2a-200707??
   * "tremor" (integer only vorbis decoder) support
   * initial video transcoding (feature request #1617435)
   * image rescaling (feature request #1656859)
+  * vfolder creation speedup
+    (patch by Justin Maggard)
+  * shared file types completely configurable
 
 Version 0.7.2a-20070529
   * initial support for virtual containers
