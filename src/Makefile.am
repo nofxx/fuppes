@@ -7,36 +7,14 @@ lib_LTLIBRARIES = libfuppes.la
 
 bin_PROGRAMS = fuppes
 
-fuppes_SOURCES = \
-  console_main.cpp
-
+fuppes_SOURCES = console_main.cpp
 fuppes_LDADD = ./libfuppes.la
-#fuppes_LDFLAGS = \
-#  $(FUPPES_LIBS)\
-#  ${PTHREAD_LIBS}\
-#  ${UUID_LIBS}\
-#  ${LIBXML_LIBS}\
-#	${PCRE_LIBS}\
-#  ${SQLITE3_LIBS}\
-#  ${TAGLIB_LIBS}
-
 
 if BUILD_DAEMON
-	bin_PROGRAMS += fuppesd
-
-	fuppesd_SOURCES = daemon_main.cpp  
-	fuppesd_LDADD = ./libfuppes.la
+  bin_PROGRAMS += fuppesd
+  fuppesd_SOURCES = daemon_main.cpp
+  fuppesd_LDADD = ./libfuppes.la
 endif
-
-#fuppesd_LDFLAGS = \
-#	$(FUPPES_LIBS)\
-#	${PTHREAD_LIBS}\
-#	${UUID_LIBS}\
-#	${LIBXML_LIBS}\
-#	${PCRE_LIBS}\
-#	${SQLITE3_LIBS}\
-#	${TAGLIB_LIBS}
-
 
 libfuppes_la_SOURCES = \
   lib/Common/Common.h\
@@ -92,6 +70,8 @@ libfuppes_la_SOURCES = \
   lib/Common/md5.c\
   lib/Common/UUID.cpp\
   lib/Common/Timer.cpp\
+  lib/Common/XMLParser.cpp\
+	lib/Common/XMLParser.h\
   lib/MessageBase.cpp\
   lib/SSDP/UDPSocket.cpp\
 	lib/SSDP/SSDPCtrl.cpp\
@@ -116,6 +96,12 @@ libfuppes_la_SOURCES = \
   lib/ContentDirectory/ContentDatabase.cpp\
 	lib/ContentDirectory/ContentDirectory.cpp\
   lib/ContentDirectory/ContentDirectoryDescription.cpp\
+	lib/ContentDirectory/FileAlterationMonitor.cpp\
+	lib/ContentDirectory/FileAlterationMonitor.h\
+	lib/ContentDirectory/VirtualContainerMgr.cpp\
+	lib/ContentDirectory/VirtualContainerMgr.h\
+	lib/ContentDirectory/iTunesImporter.cpp\
+	lib/ContentDirectory/iTunesImporter.h\
   lib/ConnectionManager/ConnectionManager.cpp\
   lib/ConnectionManager/ConnectionManagerDescription.cpp\
   lib/GENA/SubscriptionMgr.cpp\
@@ -138,27 +124,8 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/MpcWrapper.cpp\
   lib/Transcoding/FlacWrapper.cpp\
   lib/Transcoding/ImageMagickWrapper.h\
-  lib/Transcoding/ImageMagickWrapper.cpp\
-	lib/DeviceSettings/DeviceSettings.cpp\
-	lib/DeviceSettings/DeviceIdentificationMgr.cpp\
-	lib/XMSMediaReceiverRegistrar.cpp\
-	lib/SharedConfig.cpp\
-  lib/SharedLog.cpp\
-	lib/Fuppes.cpp\
-	lib/libmain.cpp\
-	lib/ContentDirectory/FileAlterationMonitor.cpp\
-	lib/ContentDirectory/FileAlterationMonitor.h\
-	lib/ContentDirectory/VirtualContainerMgr.cpp\
-	lib/ContentDirectory/VirtualContainerMgr.h\
-	lib/Common/XMLParser.cpp\
-	lib/Common/XMLParser.h\
-	lib/ContentDirectory/iTunesImporter.cpp\
-	lib/ContentDirectory/iTunesImporter.h\
-	lib/Configuration/ConfigFile.cpp\
-	lib/Configuration/ConfigFile.h\
-  lib/Configuration/DefaultConfig.h\
-  version.h
-	
+  lib/Transcoding/ImageMagickWrapper.cpp
+
 if VIDEO_TRANSCODING
 libfuppes_la_SOURCES += \
   lib/Transcoding/FFmpegWrapper.h\
@@ -169,18 +136,32 @@ libfuppes_la_SOURCES += \
   lib/Transcoding/ffmpeg/ffmpeg.c
 endif
 
+libfuppes_la_SOURCES += \
+	lib/DeviceSettings/DeviceSettings.cpp\
+	lib/DeviceSettings/DeviceIdentificationMgr.cpp\
+	lib/XMSMediaReceiverRegistrar.cpp\
+	lib/Configuration/ConfigFile.cpp\
+	lib/Configuration/ConfigFile.h\
+  lib/Configuration/DefaultConfig.h\
+	lib/SharedConfig.cpp\
+  lib/SharedLog.cpp\
+	lib/Fuppes.cpp\
+	lib/libmain.cpp\
+  version.h
+	
+
+libfuppes_la_LDFLAGS = \
+	$(FUPPES_LIBS)\
+	${UUID_LIBS}\
+	${LIBXML_LIBS}\
+	${PCRE_LIBS}\
+	${SQLITE3_LIBS}\
+	${TAGLIB_LIBS}
+
+
 BUILT_SOURCES = version.h
 
 version.h: Makefile
 	if test -e "../version.sh"; then \
 		../version.sh; \
 	fi
-
-libfuppes_la_LDFLAGS = \
-	$(FUPPES_LIBS)\
-	${PTHREAD_LIBS}\
-	${UUID_LIBS}\
-	${LIBXML_LIBS}\
-	${PCRE_LIBS}\
-	${SQLITE3_LIBS}\
-	${TAGLIB_LIBS}

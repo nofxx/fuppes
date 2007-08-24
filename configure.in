@@ -71,24 +71,25 @@ FUPPES_LIBS=""
 
 LDFLAGS="$LDFLAGS"
 
+build_daemon=true
 case $host in 
   *-*-mingw32*)
 		echo "building with MinGW"
     LDFLAGS="$LDFLAGS -lws2_32 -lole32"
-		AM_CONDITIONAL(BUILD_DAEMON, test "xno" = "xyes")
+		build_daemon=false
 	;;
 	*)
-	  AM_CONDITIONAL(BUILD_DAEMON, true)
+	  build_daemon=true
 	;;
 esac
+AM_CONDITIONAL([BUILD_DAEMON], [test x$build_daemon = xtrue])
 
 
 dnl Checks for libraries.
 PKG_CHECK_MODULES(PCRE, libpcre >= 5.0)
 PKG_CHECK_MODULES(LIBXML, libxml-2.0 >= 2.6.1)
 PKG_CHECK_MODULES(SQLITE3, sqlite3 >= 3.2)
-PTHREAD_LIBS=""
-AC_CHECK_LIB(pthread, pthread_create, PTHREAD_LIBS="-lpthread")
+AC_CHECK_LIB(pthread, pthread_create, LDFLAGS="$LDFLAGS -lpthread")
 
 # uuid
 have_uuid=no
@@ -96,7 +97,7 @@ AH_TEMPLATE([HAVE_UUID], [])
 AC_CHECK_LIB(uuid, uuid_generate, have_uuid=yes, have_uuid=no)
 if test "x$have_uuid" = "xyes"; then
   AC_DEFINE([HAVE_UUID], [1], [])
-  FUPPES_LIBS="$FUPPES_LIBS -luuid"
+  LDFLAGS="$LDFLAGS -luuid"
 fi
 
 # gamin
@@ -277,7 +278,7 @@ else
     AC_DEFINE([ENABLE_VIDEO_TRANSCODING], [1], [])
   fi
 fi
-AM_CONDITIONAL(VIDEO_TRANSCODING, test "x$video_transcoding" = "xyes")
+AM_CONDITIONAL([VIDEO_TRANSCODING], [test "x$video_transcoding" = "xyes"])
 
 			
 
@@ -537,7 +538,6 @@ AC_SUBST(MUSEPACK_LIBS)
 AC_SUBST(FLAC_LIBS)
 AC_SUBST(FUPPES_LIBS)
 AC_SUBST(FUPPES_CFLAGS)
-AC_SUBST(PTHREAD_LIBS)
 
 AC_SUBST(LDFLAGS)
 

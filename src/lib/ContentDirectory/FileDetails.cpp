@@ -136,125 +136,7 @@ OBJECT_TYPE CFileDetails::GetObjectType(std::string p_sFileName)
   string sExt = ToLower(ExtractFileExt(p_sFileName));
   
   return CDeviceIdentificationMgr::Shared()->DefaultDevice()->ObjectType(sExt);
-  
-  /*struct FileType_t* pType;   
-  
-  pType = FileTypes;
-  while(!pType->sExt.empty())
-  {
-    if(pType->sExt.compare(sExt) == 0)
-    {
-      return pType->nObjectType;
-      break;
-    } 
-    
-    pType++;
-  }
-
-  CSharedLog::Shared()->Log(L_WARNING, "unhandled file extension: " + sExt, __FILE__, __LINE__);  
-  return OBJECT_TYPE_UNKNOWN;  */
 }
-
-/*std::string CFileDetails::GetMimeType(std::string p_sFileName) //, bool p_bTranscodingMimeType)
-{
-  string sExt = ToLower(ExtractFileExt(p_sFileName));
-  
-  return CDeviceIdentificationMgr::Shared()->DefaultDevice()->MimeType(sExt);
-  */
-  /*struct FileType_t* pType; 
-  struct TranscodingSetting_t* pTranscoding;  
-  
-  pType = FileTypes;
-  while(!pType->sExt.empty())
-  {
-    if(pType->sExt.compare(sExt) == 0)
-    {
-      
-      // check for transcoding settings
-      if(p_bTranscodingMimeType && CTranscodingMgr::Shared()->IsTranscodingExtension(sExt))
-      {
-        pTranscoding = TranscodingSettings;
-        while(!pTranscoding->sExt.empty())
-        {
-          if(pTranscoding->sExt.compare(sExt) == 0)                      
-            return pTranscoding->sTargetMimeType;
-          
-          pTranscoding++;
-        }
-      }
-      
-      // return default mime type
-      return pType->sMimeType;      
-    } // if
-    
-    pType++;
-  } // while !sExt.empty
-  
-  
-  CSharedLog::Shared()->Log(L_EXTENDED_WARN, string("unhandled file extension: ") + sExt + " :: " + p_sFileName, __FILE__, __LINE__);  
-  return "";
-}*/
-
-/*std::string CFileDetails::GetObjectTypeAsString(unsigned int p_nObjectType)
-{
-  switch(p_nObjectType)
-  {
-    case OBJECT_TYPE_UNKNOWN :
-      return "unknown";
-    
-    case ITEM_IMAGE_ITEM :
-      return "object.imageItem";    
-    case ITEM_IMAGE_ITEM_PHOTO :
-      return "object.imageItem.photo";
-  
-    case ITEM_AUDIO_ITEM :
-      return "object.audioItem";
-    case ITEM_AUDIO_ITEM_MUSIC_TRACK :
-      return "object.audioItem.musicTrack";
-    case ITEM_AUDIO_ITEM_AUDIO_BROADCAST :
-      return "object.audioItem.audioBroadcast";
-    //ITEM_AUDIO_ITEM_AUDIO_BOOK      = 202,
-  
-    case ITEM_VIDEO_ITEM :
-      return "object.videoItem";
-    case ITEM_VIDEO_ITEM_MOVIE :
-      return "object.videoItem"; //.movie";
-    case ITEM_VIDEO_ITEM_VIDEO_BROADCAST :
-      return "object.videoItem.videoBroadcast";
-    //ITEM_VIDEO_ITEM_MUSIC_VIDEO_CLIP = 302,  
-  
-    //CONTAINER_PERSON = 4,
-    case CONTAINER_PERSON_MUSIC_ARTIST :
-      return "object.container.person.musicArtist";
-    
-    case CONTAINER_PLAYLIST_CONTAINER :
-      return "object.container.playlistContainer";
-    
-    //CONTAINER_ALBUM = 6, 
-    
-		case CONTAINER_ALBUM_MUSIC_ALBUM :
-		  return "object.container.album.musicAlbum";
-			
-    case CONTAINER_ALBUM_PHOTO_ALBUM :
-		  return "object.container.album.photoAlbum";
-    
-    case CONTAINER_GENRE :
-      return "object.container.genre";
-    case CONTAINER_GENRE_MUSIC_GENRE :
-      return "object.container.genre.musicGenre";    
-    /*  CONTAINER_GENRE_MOVIE_GENRE = 701,
-      
-    CONTAINER_STORAGE_SYSTEM = 8,
-    CONTAINER_STORAGE_VOLUME = 9, */
-    /*case CONTAINER_STORAGE_FOLDER :
-      return "object.container.storageFolder";
-  
-    default :
-      return "CFileDetails::GetObjectTypeAsString() :: unhandled type (please send a bugreport)";
-  }
-}
-*/
-
 
 std::string CFileDetails::GetContainerTypeAsStr(OBJECT_TYPE p_nContainerType)
 {
@@ -295,117 +177,7 @@ bool CFileDetails::IsSupportedFileExtension(std::string p_sFileExtension)
 {
   p_sFileExtension = ToLower(p_sFileExtension);
   return CDeviceIdentificationMgr::Shared()->DefaultDevice()->Exists(p_sFileExtension);
-  /*p_sFileExtension = ToLower(p_sFileExtension);
-  struct FileType_t* pType;   
-  
-  pType = FileTypes;
-  while(!pType->sExt.empty()) {
-	
-    if(pType->sExt.compare(p_sFileExtension) == 0) {
-      return true;
-    } 
-	
-    pType++;
-  }
-
-  return false;*/
 }
-
-/*std::string CFileDetails::GetDLNA(std::string p_sFileExtension)
-{  
-  p_sFileExtension = ToLower(p_sFileExtension);
-  struct FileType_t* pType;   
-  
-  pType = FileTypes;
-  while(!pType->sExt.empty()) {
-	
-    if(pType->sExt.compare(p_sFileExtension) == 0) {
-      return pType->sDLNA;
-    } 
-	
-    pType++;
-  }
-
-  return "";
-}*/
-
-/*bool CFileDetails::IsTranscodingExtension(std::string p_sExt)
-{
-  bool bTranscode = 
-    CDeviceIdentificationMgr::Shared()->DefaultDevice()->DoTranscode(p_sExt);
-  
-  #warning todo check if required transcoding libs exist
-  
-  return bTranscode;*/
-  
-  /*TranscodingSetting_t* pTranscoding;
-  pTranscoding = TranscodingSettings;
-  while(!pTranscoding->sExt.empty())
-  {    
-    if(pTranscoding->sExt.compare(p_sExt) == 0)    
-      return CTranscodingMgr::Shared()->IsTranscodingExtension(p_sExt);
-    
-    pTranscoding++;
-  }
-  return false;
-}*/
-
-/*std::string CFileDetails::GetTargetExtension(std::string p_sExt)
-{
-  string sResult = p_sExt;
-  
-  TranscodingSetting_t* pTranscoding;
-  pTranscoding = TranscodingSettings;
-  while(!pTranscoding->sExt.empty())
-  {
-    if(pTranscoding->sExt.compare(p_sExt) == 0)
-    {
-      sResult = pTranscoding->sTargetExt;
-      break;
-    }    
-    pTranscoding++;
-  }
-  
-  return sResult;
-}*/
-
-/*int CFileDetails::GetTargetBitrate(std::string p_sExt)
-{
-  int nResult = 0;
-  
-  TranscodingSetting_t* pTranscoding;
-  pTranscoding = TranscodingSettings;
-  while(!pTranscoding->sExt.empty())
-  {
-    if(pTranscoding->sExt.compare(p_sExt) == 0)
-    {
-      nResult = pTranscoding->nBitrate;
-      break;
-    }    
-    pTranscoding++;
-  }
-  
-  return nResult;  
-}
-
-int CFileDetails::GetTargetSamplerate(std::string p_sExt)
-{
-  int nResult = 0;
-  
-  TranscodingSetting_t* pTranscoding;
-  pTranscoding = TranscodingSettings;
-  while(!pTranscoding->sExt.empty())
-  {
-    if(pTranscoding->sExt.compare(p_sExt) == 0)
-    {
-      nResult = pTranscoding->nSamplerate;
-      break;
-    }    
-    pTranscoding++;
-  }
-  
-  return nResult;  
-}*/
 
 
 bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pMusicTrack)
@@ -576,9 +348,12 @@ bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoIt
 			{
 			  case CODEC_TYPE_VIDEO:
 					pVideoItem->nWidth  = pStream->codec->width;
-					pVideoItem->nHeight = pStream->codec->height;
+					pVideoItem->nHeight = pStream->codec->height;        
+          pVideoItem->sVCodec = pCodec->name;
 					break;
 			  case CODEC_TYPE_AUDIO:
+          pVideoItem->sACodec = pCodec->name;
+          
 					break;
 				case CODEC_TYPE_DATA:
 					break;

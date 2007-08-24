@@ -26,9 +26,16 @@
 #ifdef HAVE_IMAGEMAGICK
 
 #include <iostream>
+#include <sstream>
 #include <Magick++.h>
 
 #include "../SharedConfig.h"
+
+#ifdef WIN32
+#else
+#include <stdlib.h>
+#endif
+
 
 using namespace std;
 
@@ -39,11 +46,20 @@ bool CImageMagickWrapper::Transcode(CFileSettings* pFileSettings, std::string p_
   
   std::string sTmpFileName;
   
+  
+  stringstream sDcraw;
+  
   // first run dcraw
   if(pFileSettings->pImageSettings->bDcraw) {
     sTmpFileName = CSharedConfig::Shared()->CreateTempFileName() + ".tiff";
+    
+    sDcraw << "dcraw " << pFileSettings->pImageSettings->sDcrawParams << " -T -c " << p_sInFile << " > " << sTmpFileName;
+    
+    #ifdef WIN32
     #warning todo: dcraw
-    // dcraw pFileSettings->pImageSettings->sDcrawParams -T -c p_sInFile > sTmpFileName
+    #else
+    system(sDcraw.str().c_str());
+    #endif
     
     p_sInFile = sTmpFileName;
   }
