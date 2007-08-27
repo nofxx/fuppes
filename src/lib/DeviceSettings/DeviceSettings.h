@@ -99,7 +99,6 @@ typedef enum DECODER_TYPE {
 } DECODER_TYPE;
 
 typedef enum TRANSCODING_HTTP_RESPONSE {
-  RESPONSE_NONE,
   RESPONSE_STREAM,
   RESPONSE_CHUNKED
 } TRANSCODING_HTTP_RESPONSE;
@@ -229,38 +228,29 @@ class CDeviceSettings
     TRANSCODING_HTTP_RESPONSE TranscodingHTTPResponse(std::string p_sExt);
   
     int ReleaseDelay(std::string p_sExt);
-		//ImageSettings_t   m_ImageSettings;
     
     DisplaySettings_t* DisplaySettings() { return &m_DisplaySettings; }
-
-	  
-
-    
   
     CFileSettings* FileSettings(std::string p_sExt);
     void AddExt(CFileSettings* pFileSettings, std::string p_sExt);
-  
     
-  
-    bool          Xbox360Support() { return m_bXBox360Support; }
-    std::string   VirtualFolderDevice() { return m_sVirtualFolderDevice; }
-		bool ShowPlaylistAsContainer() { return m_bShowPlaylistAsContainer; }
-		
-    bool DLNAEnabled() { return m_bDLNAEnabled; }
+    bool         EnableDeviceIcon() { return m_bEnableDeviceIcon; }  
+    bool         Xbox360Support() { return m_bXBox360Support; }    
+		bool         ShowPlaylistAsContainer() { return m_bShowPlaylistAsContainer; }		
+    bool         DLNAEnabled() { return m_bDLNAEnabled; }
     
+    std::string  VirtualFolderDevice() { return m_sVirtualFolderDevice; }
   
   private:
     std::string m_sDeviceName;
     std::string m_sVirtualFolderDevice;
     
     DisplaySettings_t m_DisplaySettings;
-  
-    /** show playlist as container or file */
+
 		bool m_bShowPlaylistAsContainer;
-    /** XBox 360 fixes */
 		bool m_bXBox360Support;
-    /** DLNA */
-    bool m_bDLNAEnabled;
+    bool m_bDLNAEnabled;  
+    bool m_bEnableDeviceIcon;
     
     std::map<std::string, CFileSettings*> m_FileSettings;
     std::map<std::string, CFileSettings*>::iterator m_FileSettingsIterator;

@@ -265,6 +265,9 @@ void CConfigFile::SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode, bo
       else if(pTmp->Name().compare("transcoding_release_delay") == 0) {
         pSettings->nDefaultReleaseDelay = atoi(pTmp->Value().c_str());
       }
+      else if(pTmp->Name().compare("show_device_icon") == 0) {
+        pSettings->m_bEnableDeviceIcon = (pTmp->Value().compare("true") == 0);
+      }      
       else if(pTmp->Name().compare("file_settings") == 0) {
         
         for(k = 0; k < pTmp->ChildCount(); k++) {

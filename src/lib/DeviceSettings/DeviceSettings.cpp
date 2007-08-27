@@ -60,7 +60,7 @@ CImageSettings::CImageSettings(CImageSettings* pImageSettings)
 CTranscodingSettings::CTranscodingSettings() 
 {
   bEnabled = true;
-  nTranscodingResponse = RESPONSE_CHUNKED;
+  nTranscodingResponse = RESPONSE_STREAM;
   nBitRate = 128; //0;
   nSampleRate = 44100; //0;
   nReleaseDelay = -1;
@@ -263,9 +263,9 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
 	
   m_bShowPlaylistAsContainer = false;
 	m_bXBox360Support					 = false;
-	m_bDLNAEnabled             = false;
-	//m_nTranscodingResponse     = RESPONSE_CHUNKED;
-    
+	m_bDLNAEnabled             = false; 
+  m_bEnableDeviceIcon        = false;
+  
   m_DisplaySettings.bShowChildCountInTitle = false;
   m_DisplaySettings.nMaxFileNameLength     = 0;
   
@@ -280,7 +280,7 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSe
   m_bShowPlaylistAsContainer = pSettings->m_bShowPlaylistAsContainer;
   m_bXBox360Support          = pSettings->m_bXBox360Support;
   m_bDLNAEnabled             = pSettings->m_bDLNAEnabled;
-  //m_nTranscodingResponse     = pSettings->m_nTranscodingResponse;
+  m_bEnableDeviceIcon        = pSettings->m_bEnableDeviceIcon;
   
   /*m_ImageSettings.bResize    = pSettings->m_ImageSettings.bResize;
   m_ImageSettings.bResizeIfLarger = pSettings->m_ImageSettings.bResizeIfLarger;
