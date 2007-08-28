@@ -294,8 +294,6 @@ std::string CLameWrapper::GetVersion()
 
 void CLameWrapper::SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings)
 {
-  cout << "ts br: " << pTranscodingSettings->BitRate() << endl;
-  
   if(pTranscodingSettings->BitRate() > 0 && m_LameSetCompressionRatio) {
         
     LAME_BITRATE_MAPPING_t* mapping = LAME_BITRATE_MAPPINGS;
@@ -309,10 +307,8 @@ void CLameWrapper::SetTranscodingSettings(CTranscodingSettings* pTranscodingSett
       mapping++;
     }
     
-    cout << "lame br: " << fBitrate << endl;
-    
-    cout << "set br: " << m_LameSetCompressionRatio(m_LameGlobalFlags, fBitrate) << endl;
-    m_nBitRate = pTranscodingSettings->BitRate();
+    if(m_LameSetCompressionRatio(m_LameGlobalFlags, fBitrate) == 0)
+      m_nBitRate = pTranscodingSettings->BitRate();
   }
   
   if(m_nBitRate == 0) {
@@ -365,7 +361,7 @@ unsigned int CLameWrapper::GuessContentLength(unsigned int p_nNumPcmSamples)
   
   cout << "size + const: " << size + 1218 << endl;*/
   
-  cout << "lame: " << p_nNumPcmSamples << " :: " << (unsigned int)p_nNumPcmSamples * (bitrate/8.0)/samplerate + 4 * 1152 * (bitrate/8.0)/samplerate + 512 << endl;
+  //cout << "lame: " << p_nNumPcmSamples << " :: " << (unsigned int)p_nNumPcmSamples * (bitrate/8.0)/samplerate + 4 * 1152 * (bitrate/8.0)/samplerate + 512 << endl;
   
   return (unsigned int)p_nNumPcmSamples * (bitrate/8.0)/samplerate + 4 * 1152 * (bitrate/8.0)/samplerate + 512;
 }
