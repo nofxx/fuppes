@@ -43,6 +43,8 @@ class CWavEncoder: public CAudioEncoderBase
     bool LoadLib() { return true; }
     void Init() { m_sBuffer = NULL; }
   
+    void SetBitrate(int p_nBitrate) {}
+  
     int   EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead);
     int   Flush() { return 0; }
     unsigned char* GetEncodedBuffer() { return m_sBuffer; }

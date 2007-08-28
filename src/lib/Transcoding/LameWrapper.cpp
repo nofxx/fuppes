@@ -121,6 +121,11 @@ bool CLameWrapper::LoadLib()
     CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_set_compression_ratio'", __FILE__, __LINE__);   
   }  
   
+  m_LameSetBrate = (LameSetBrate_t)FuppesGetProcAddress(m_LibHandle, "lame_set_brate");
+  if(!m_LameSetBrate) {
+    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_set_brate'", __FILE__, __LINE__);   
+  }
+  
   m_LameSetMode = (LameSetMode_t)FuppesGetProcAddress(m_LibHandle, "lame_set_mode");
   if(!m_LameSetMode) {
     CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_set_mode'", __FILE__, __LINE__);   
@@ -265,10 +270,18 @@ std::string CLameWrapper::GetVersion()
     return "unknown";
 }
 
-void CLameWrapper::SetBitrate(LAME_BITRATE p_nBitrate)
+void CLameWrapper::SetCompressionRatio(LAME_BITRATE p_nCompressionRatio)
 {
-  if(m_LameSetCompressionRatio)
-    m_LameSetCompressionRatio(m_LameGlobalFlags, p_nBitrate);
+  if(m_LameSetCompressionRatio) {
+    m_LameSetCompressionRatio(m_LameGlobalFlags, p_nCompressionRatio);
+  }
+}
+
+void CLameWrapper::SetBitrate(int p_nBitrate)
+{
+  if(m_LameSetBrate) {
+    m_LameSetBrate(m_LameGlobalFlags, p_nBitrate);
+  }
 }
 
 int CLameWrapper::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead)

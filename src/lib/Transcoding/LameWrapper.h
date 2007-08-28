@@ -51,6 +51,9 @@ extern "C"
   typedef void               (*LamePrintConfig_t)(lame_global_flags*);
   
   typedef void               (*LameSetCompressionRatio_t)(lame_global_flags*, float);
+  /* int lame_set_brate(lame_global_flags *, int); */
+  typedef int (*LameSetBrate_t)(lame_global_flags*, int);
+
   
   /* mode = 0,1,2,3 = stereo, jstereo, dual channel (not supported), mono
   default: lame picks based on compression ration and input channels */
@@ -133,7 +136,8 @@ class CLameWrapper: public CAudioEncoderBase
     void Init();
     void PrintConfig();
     std::string GetVersion();
-    void SetBitrate(LAME_BITRATE p_nBitrate);
+    void SetCompressionRatio(LAME_BITRATE p_nCompressionRatio);
+    void SetBitrate(int p_nBitrate);
   
     int   EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead);
     int   Flush();
@@ -153,6 +157,7 @@ class CLameWrapper: public CAudioEncoderBase
     LamePrintConfig_t m_LamePrintConfig;
   
     LameSetCompressionRatio_t     m_LameSetCompressionRatio;
+    LameSetBrate_t                m_LameSetBrate;
     LameSetMode_t                 m_LameSetMode;
   
     LameEncodeBufferInterleaved_t m_LameEncodeBufferInterleaved;

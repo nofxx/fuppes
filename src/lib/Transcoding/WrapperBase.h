@@ -69,8 +69,9 @@ class CAudioEncoderBase
     virtual ~CAudioEncoderBase() {};
 		virtual bool LoadLib() = 0;
   
-    void SetAudioDetails(CAudioDetails* pAudioDetails) { m_pAudioDetails = pAudioDetails; }
+    //void SetAudioDetails(CAudioDetails* pAudioDetails) { m_pAudioDetails = pAudioDetails; }
     void SetSessionInfo(CTranscodeSessionInfo* pSessionInfo) { m_pSessionInfo = pSessionInfo; }
+    virtual void SetBitrate(int p_nBitrate) = 0;
   
     virtual void  Init() = 0;      
     virtual int   EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead) = 0;

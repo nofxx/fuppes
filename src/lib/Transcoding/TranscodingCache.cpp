@@ -166,7 +166,8 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
     
     #warning todo: set encoder bitrate from config
     //m_pLameWrapper->SetBitrate(LAME_BITRATE_320);
-    m_pAudioEncoder->SetAudioDetails(&m_AudioDetails);
+    m_pAudioEncoder->SetBitrate(pDeviceSettings->TargetBitRate(sExt));
+    //m_pAudioEncoder->SetAudioDetails(&m_AudioDetails);
     m_pAudioEncoder->SetSessionInfo(pSessionInfo);
     //m_pAudioEncoder->Init();
     
