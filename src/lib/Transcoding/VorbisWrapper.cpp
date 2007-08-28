@@ -150,7 +150,7 @@ bool CVorbisDecoder::OpenFile(std::string p_sFileName, CAudioDetails* pAudioDeta
   m_pVorbisInfo = m_OvInfo(&m_VorbisFile, -1);
      
   pAudioDetails->nChannels   = m_pVorbisInfo->channels;
-  pAudioDetails->nSamplerate = m_pVorbisInfo->rate;
+  pAudioDetails->nSampleRate = m_pVorbisInfo->rate;
   pAudioDetails->nPcmSize    = m_OvPcmTotal(&m_VorbisFile, -1);
 
   /*char **ptr = m_OvComment(&m_VorbisFile,-1)->user_comments;

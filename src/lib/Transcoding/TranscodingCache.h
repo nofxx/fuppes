@@ -94,7 +94,7 @@ class CTranscodingCacheObject
 
     CAudioEncoderBase* m_pAudioEncoder;
     CAudioDecoderBase* m_pDecoder;    
-    CAudioDetails      m_AudioDetails;
+    //CAudioDetails      m_AudioDetails;
     
     CTranscoderBase*   m_pTranscoder;
   

@@ -29,24 +29,15 @@ using namespace std;
 #ifndef DISABLE_TRANSCODING
 
 CWavEncoder::CWavEncoder()
-{
-  
-   // f.open("/home/ulrich/Desktop/test.wav", ios::out | ios::trunc | ios::binary);
-    //f << "Dieser Text geht in die Datei" << endl;
-    
+{  
 }
 
 CWavEncoder::~CWavEncoder()
 {
-  //f.close();
 }
-
 
 int CWavEncoder::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead)
 {
-  /*cout << "CWavEncoder::EncodeInterleaved - " << p_nNumSamples << " - " << sizeof(p_PcmIn) << endl;
-  fflush(stdout);*/
-  
   int nOffset = 0;
   
   if(m_sBuffer != NULL) {
@@ -91,8 +82,8 @@ void CWavEncoder::WriteFileHeader()
   if(m_pAudioDetails->nPcmSize > 0) {
     size = m_pAudioDetails->nPcmSize;
   }
-  int channels = m_pAudioDetails->nChannels; //ov_info(vf,0)->channels;
-  int samplerate = m_pAudioDetails->nSamplerate; //ov_info(vf,0)->rate;
+  int channels    = m_pAudioDetails->nChannels; //ov_info(vf,0)->channels;
+  int samplerate  = m_pAudioDetails->nSampleRate; //ov_info(vf,0)->rate;
   int bytespersec = channels*samplerate*bits/8;
   int align = channels*bits/8;
   int samplesize = bits;
@@ -114,15 +105,12 @@ void CWavEncoder::WriteFileHeader()
     WRITE_U16(headbuf+32, align);
     WRITE_U16(headbuf+34, samplesize);
     memcpy(headbuf+36, "data", 4);
-    WRITE_U32(headbuf+40, size - 44);
+    WRITE_U32(headbuf+40, size - 44);  
+}
 
-    /*if(fwrite(headbuf, 1, 44, out) != 44) {
-        fprintf(stderr, "ERROR: Failed to write wav header: %s\n", strerror(errno));
-        return 1;
-    }*/
-
-    //return 0;  
-  
+void CWavEncoder::SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings)
+{
+  #warning todo
 }
 
 unsigned int CWavEncoder::GuessContentLength(unsigned int p_nNumPcmSamples)

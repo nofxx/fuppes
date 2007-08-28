@@ -41,7 +41,7 @@ class CTranscodingMgr
     bool IsFlacAvailable();
     bool IsMusePackAvailabe();
   
-    bool IsTranscodingExtension(std::string p_sFileExt);
+    //bool IsTranscodingExtension(std::string p_sFileExt);
     //TRANSCODING_TYPE GetTranscodingType(CDeviceSettings* pDeviceSettings);
   
     void SetDoTranscodeVorbis(bool p_bDoTranscodeVorbis);

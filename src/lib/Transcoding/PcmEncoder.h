@@ -30,8 +30,6 @@
 #ifndef _PCMENCODER_H
 #define _PCMENCODER_H
 
-#include <fstream>
-
 #include "WrapperBase.h"
 
 class CPcmEncoder: public CAudioEncoderBase
@@ -43,7 +41,7 @@ class CPcmEncoder: public CAudioEncoderBase
     bool LoadLib() { return true; }
     void Init() { m_sBuffer = NULL; }
   
-    void SetBitrate(int p_nBitrate) {}
+    void SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings);
   
     int   EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead);
     int   Flush() { return 0; }
@@ -53,10 +51,7 @@ class CPcmEncoder: public CAudioEncoderBase
     unsigned int GuessContentLength(unsigned int p_nNumPcmSamples) { return 0; }
   
   private:
-    unsigned char*   m_sBuffer; //[1024 * 1024];
-  
-  std::fstream f;  
-  
+    unsigned char*   m_sBuffer; //[1024 * 1024];  
 };
 
 #endif // _PCMENCODER_H

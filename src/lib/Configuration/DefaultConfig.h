@@ -240,6 +240,33 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
             xmlTextWriterStartElement(pWriter, BAD_CAST "mime_type");
               xmlTextWriterWriteString(pWriter, BAD_CAST "application/octet-stream");
             xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "transcode");
+            xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "true");
+              xmlTextWriterStartElement(pWriter, BAD_CAST "ext");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "mp3");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "mime_type");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "audio/mpeg");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "dlna");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "MP3");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "http_encoding");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "chunked");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "decoder");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "musepack");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "encoder");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "lame");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "bitrate");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "192");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "samplerate");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "44100");
+              xmlTextWriterEndElement(pWriter);
+            xmlTextWriterEndElement(pWriter);
           xmlTextWriterEndElement(pWriter);                        
                                   
           // wav
@@ -262,6 +289,33 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
             xmlTextWriterStartElement(pWriter, BAD_CAST "mime_type");
               xmlTextWriterWriteString(pWriter, BAD_CAST "audio/x-flac");
             xmlTextWriterEndElement(pWriter);
+            xmlTextWriterStartElement(pWriter, BAD_CAST "transcode");
+            xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "true");
+              xmlTextWriterStartElement(pWriter, BAD_CAST "ext");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "mp3");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "mime_type");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "audio/mpeg");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "dlna");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "MP3");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "http_encoding");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "chunked");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "decoder");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "flac");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "encoder");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "lame");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "bitrate");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "192");
+              xmlTextWriterEndElement(pWriter);
+              xmlTextWriterStartElement(pWriter, BAD_CAST "samplerate");
+                xmlTextWriterWriteString(pWriter, BAD_CAST "44100");
+              xmlTextWriterEndElement(pWriter);
+            xmlTextWriterEndElement(pWriter);  
           xmlTextWriterEndElement(pWriter);                      
   
           // wma

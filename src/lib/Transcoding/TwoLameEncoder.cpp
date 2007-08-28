@@ -191,6 +191,11 @@ std::string CTwoLameEncoder::GetVersion()
     m_TwoLameSetCompressionRatio(m_TwoLameOptions, p_nBitrate);
 } */
 
+void CTwoLameEncoder::SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings)
+{
+  #warning todo
+}
+
 int CTwoLameEncoder::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead)
 {
   return m_TwoLameEncodeBufferInterleaved(m_TwoLameOptions, p_PcmIn, p_nNumSamples, (unsigned char*)m_sMp3Buffer, TWOLAME_MAX_BUFFER);

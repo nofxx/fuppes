@@ -277,6 +277,13 @@ std::string TrimFileName(std::string p_sFileName, unsigned int p_nMaxLength, boo
   return sFile;
 }
 
+std::string TrimWhiteSpace(std::string s)
+{
+  const std::string drop = " ";
+  std::string r = s.erase(s.find_last_not_of(drop)+1);
+  return r.erase(0,r.find_first_not_of(drop));
+}
+
 bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPort)
 {
   RegEx rxSplit("[http://]*([0-9|\\.]+):*([0-9]*)");

@@ -116,6 +116,8 @@ struct CFFmpegSettings {
 
 struct CTranscodingSettings {
   
+    friend class CConfigFile;
+  
     CTranscodingSettings();  
     CTranscodingSettings(CTranscodingSettings* pTranscodingSettings);
   
@@ -141,6 +143,11 @@ struct CTranscodingSettings {
   
     int ReleaseDelay() { return nReleaseDelay; }
   
+    std::list<CFFmpegSettings*>   pFFmpegSettings;
+  
+  private:
+    bool          bEnabled;
+  
     TRANSCODING_HTTP_RESPONSE   nTranscodingResponse;
     TRANSCODING_TYPE            nTranscodingType;
     TRANSCODER_TYPE             nTranscoderType;
@@ -149,15 +156,12 @@ struct CTranscodingSettings {
     int                         nReleaseDelay;
   
     unsigned int  nBitRate;
-    unsigned int  nSampleRate;
-  
-    std::list<CFFmpegSettings*>   pFFmpegSettings;
-  
-  private:
-    bool          bEnabled;
+    unsigned int  nSampleRate;  
 };
 
 struct CFileSettings {
+  
+  friend class CConfigFile;
   
   CFileSettings();
   CFileSettings(CFileSettings* pFileSettings);

@@ -87,6 +87,8 @@ class CTwoLameEncoder: public CAudioEncoderBase
     void PrintConfig();
     std::string GetVersion();
     //void SetBitrate(LAME_BITRATE p_nBitrate);
+    
+    void SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings);
   
     int   EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead);
     int   Flush();

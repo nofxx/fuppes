@@ -30,17 +30,19 @@ using namespace std;
 
 CPcmEncoder::CPcmEncoder()
 {
-  
-    f.open("/home/ulrich/Desktop/test.pcm", ios::out | ios::trunc | ios::binary);
-    //f << "Dieser Text geht in die Datei" << endl;
-    
 }
 
 CPcmEncoder::~CPcmEncoder()
-{
-  f.close();
+{  
+  if(m_sBuffer != NULL) {
+    free(m_sBuffer);
+  }
 }
 
+void CPcmEncoder::SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings)
+{
+  #warning todo
+}
 
 int CPcmEncoder::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead)
 {
@@ -51,7 +53,7 @@ int CPcmEncoder::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p
     free(m_sBuffer);
   }
   
-  f.write((const char*)p_PcmIn, p_nBytesRead);
+  //f.write((const char*)p_PcmIn, p_nBytesRead);
   
   m_sBuffer = (unsigned char*)malloc(p_nBytesRead);
   

@@ -145,7 +145,7 @@ bool CTranscodingMgr::IsTranscodingAvailable()
   #endif
 }
 
-bool CTranscodingMgr::IsTranscodingExtension(std::string p_sFileExt)
+/*bool CTranscodingMgr::IsTranscodingExtension(std::string p_sFileExt)
 {
   p_sFileExt = ToLower(p_sFileExt);
 
@@ -175,7 +175,7 @@ bool CTranscodingMgr::IsTranscodingExtension(std::string p_sFileExt)
   
   else
     return false;
-}
+}*/
 
 /*TRANSCODING_TYPE CTranscodingMgr::GetTranscodingType(CDeviceSettings* pDeviceSettings)
 {

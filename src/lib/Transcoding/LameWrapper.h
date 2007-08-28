@@ -50,10 +50,14 @@ extern "C"
   /* void lame_print_config(lame_global_flags*) */
   typedef void               (*LamePrintConfig_t)(lame_global_flags*);
   
-  typedef void               (*LameSetCompressionRatio_t)(lame_global_flags*, float);
+  /* int lame_set_compression_ratio(lame_global_flags *, float); */
+  typedef int  (*LameSetCompressionRatio_t)(lame_global_flags*, float);
+  /* float lame_get_compression_ratio(const lame_global_flags *); */
+  typedef float (*LameGetCompressionRatio_t)(lame_global_flags*);
   /* int lame_set_brate(lame_global_flags *, int); */
-  typedef int (*LameSetBrate_t)(lame_global_flags*, int);
-
+  typedef int   (*LameSetBrate_t)(lame_global_flags*, int);
+  /* int lame_get_brate(const lame_global_flags *); */
+  typedef int   (*LameGetBrate_t)(lame_global_flags*);
   
   /* mode = 0,1,2,3 = stereo, jstereo, dual channel (not supported), mono
   default: lame picks based on compression ration and input channels */
@@ -107,14 +111,11 @@ extern "C"
   
 }
 
-typedef enum tagLAME_BITRATE
-{
-  LAME_BITRATE_320 = 3,
-  LAME_BITRATE_256 = 5,
-  LAME_BITRATE_192 = 7,
-  LAME_BITRATE_160 = 9,
-  LAME_BITRATE_128 = 11
-}LAME_BITRATE;
+
+typedef struct LAME_BITRATE_MAPPING_t {
+  int   nBitRate;
+  float fLameRate;
+} LAME_BITRATE_MAPPING_t;
 
 /*
   1. create
@@ -135,9 +136,10 @@ class CLameWrapper: public CAudioEncoderBase
   
     void Init();
     void PrintConfig();
-    std::string GetVersion();
-    void SetCompressionRatio(LAME_BITRATE p_nCompressionRatio);
-    void SetBitrate(int p_nBitrate);
+    std::string GetVersion();    
+    void SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings);
+    //void SetCompressionRatio(LAME_BITRATE p_nCompressionRatio);
+    //void SetBitrate(int p_nBitrate);
   
     int   EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead);
     int   Flush();
@@ -157,14 +159,19 @@ class CLameWrapper: public CAudioEncoderBase
     LamePrintConfig_t m_LamePrintConfig;
   
     LameSetCompressionRatio_t     m_LameSetCompressionRatio;
+    LameGetCompressionRatio_t     m_LameGetCompressionRatio;
     LameSetBrate_t                m_LameSetBrate;
+    LameGetBrate_t                m_LameGetBrate;
     LameSetMode_t                 m_LameSetMode;
   
     LameEncodeBufferInterleaved_t m_LameEncodeBufferInterleaved;
     LameEncodeFlush_t             m_LameEncodeFlush;
   
     LameClose_t   m_LameClose;
-  
+    
+    int m_nBitRate;
+    int m_nSampleRate;
+    int m_nChannels;
   
     // id3
     Id3TagInit_t        m_Id3TagInit;

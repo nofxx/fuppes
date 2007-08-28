@@ -130,6 +130,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
   //mm_pSessionInfo = pSessionInfo;  
     
   
+  CAudioDetails AudioDetails;
   // init decoder
   if(!m_pDecoder)
   {  
@@ -138,8 +139,8 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
     
     m_pDecoder = CTranscodingMgr::Shared()->CreateAudioDecoder(sExt, &nBufferLength);
     
-    // init decoder
-    if(!m_pDecoder || !m_pDecoder->LoadLib() || !m_pDecoder->OpenFile(pSessionInfo->m_sInFileName, &m_AudioDetails)) {
+    // init decoder    
+    if(!m_pDecoder || !m_pDecoder->LoadLib() || !m_pDecoder->OpenFile(pSessionInfo->m_sInFileName, &AudioDetails)) {
       delete m_pDecoder;
       m_pDecoder = NULL;     
       
@@ -164,13 +165,9 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
       return false;
     }
     
-    #warning todo: set encoder bitrate from config
-    //m_pLameWrapper->SetBitrate(LAME_BITRATE_320);
-    m_pAudioEncoder->SetBitrate(pDeviceSettings->TargetBitRate(sExt));
-    //m_pAudioEncoder->SetAudioDetails(&m_AudioDetails);
-    m_pAudioEncoder->SetSessionInfo(pSessionInfo);
-    //m_pAudioEncoder->Init();
-    
+    m_pAudioEncoder->SetAudioDetails(&AudioDetails);
+    m_pAudioEncoder->SetTranscodingSettings(pDeviceSettings->FileSettings(sExt)->pTranscodingSettings);    
+    m_pAudioEncoder->SetSessionInfo(pSessionInfo);   
          
     pSessionInfo->m_nGuessContentLength = m_pAudioEncoder->GuessContentLength(m_pDecoder->NumPcmSamples());
     //cout << "guess content: " << pSessionInfo->m_nGuessContentLength << endl;

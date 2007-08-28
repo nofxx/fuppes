@@ -408,8 +408,13 @@ void CConfigFile::ParseTranscodingSettings(CXMLNode* pTCNode, CFileSettings* pFi
     else if(pTmp->Name().compare("transcoder") == 0) {
       pFileSet->pTranscodingSettings->sTranscoder = pTmp->Value();
     }
-    
-    //pFileSet->pTranscodingSettings
+     
+    else if(pTmp->Name().compare("bitrate") == 0) {
+      pFileSet->pTranscodingSettings->nBitRate = atoi(pTmp->Value().c_str());
+    }
+    else if(pTmp->Name().compare("samplerate") == 0) {
+      pFileSet->pTranscodingSettings->nSampleRate = atoi(pTmp->Value().c_str());
+    }
     
   }
 }

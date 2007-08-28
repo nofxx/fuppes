@@ -30,8 +30,6 @@
 #ifndef _WAVENCODER_H
 #define _WAVENCODER_H
 
-#include <fstream>
-
 #include "WrapperBase.h"
 
 class CWavEncoder: public CAudioEncoderBase
@@ -42,8 +40,8 @@ class CWavEncoder: public CAudioEncoderBase
     
     bool LoadLib() { return true; }
     void Init() { m_sBuffer = NULL; }
-  
-    void SetBitrate(int p_nBitrate) {}
+    
+    void SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings);
   
     int   EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead);
     int   Flush() { return 0; }
@@ -53,12 +51,12 @@ class CWavEncoder: public CAudioEncoderBase
   
   private:
     unsigned char*   m_sBuffer; //[1024 * 1024];
+      
+    int nSampleRate;
+    int nChannels;
   
     void WriteFileHeader();
-    unsigned char headbuf[44]; 
-  
-  std::fstream f;  
-  
+    unsigned char headbuf[44];  
 };
 
 #endif // _WAVENCODER_H

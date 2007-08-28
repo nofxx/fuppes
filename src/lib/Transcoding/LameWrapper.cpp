@@ -33,9 +33,21 @@ const std::string LOGNAME = "LameWrapper";
 
 using namespace std;
 
+struct LAME_BITRATE_MAPPING_t LAME_BITRATE_MAPPINGS[] = {  
+  {320, 3.0},
+  {256, 5.0},
+  {192, 7.0},
+  {160, 9.0},
+  {128, 11.0},
+  {0, 0}
+};
+
 CLameWrapper::CLameWrapper()
 {
   m_LibHandle = NULL;
+  m_nBitRate = 0;
+  m_nSampleRate = 0;
+  m_nChannels = 2;
 }
 
 CLameWrapper::~CLameWrapper()
@@ -119,11 +131,21 @@ bool CLameWrapper::LoadLib()
   m_LameSetCompressionRatio = (LameSetCompressionRatio_t)FuppesGetProcAddress(m_LibHandle, "lame_set_compression_ratio");
   if(!m_LameSetCompressionRatio) {
     CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_set_compression_ratio'", __FILE__, __LINE__);   
-  }  
+  }
+  
+  m_LameGetCompressionRatio = (LameGetCompressionRatio_t)FuppesGetProcAddress(m_LibHandle, "lame_get_compression_ratio");
+  if(!m_LameGetCompressionRatio) {
+    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_get_compression_ratio'", __FILE__, __LINE__);   
+  }
   
   m_LameSetBrate = (LameSetBrate_t)FuppesGetProcAddress(m_LibHandle, "lame_set_brate");
   if(!m_LameSetBrate) {
     CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_set_brate'", __FILE__, __LINE__);   
+  }
+  
+  m_LameGetBrate = (LameGetBrate_t)FuppesGetProcAddress(m_LibHandle, "lame_get_brate");
+  if(!m_LameGetBrate) {
+    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_get_brate'", __FILE__, __LINE__);   
   }
   
   m_LameSetMode = (LameSetMode_t)FuppesGetProcAddress(m_LibHandle, "lame_set_mode");
@@ -270,19 +292,51 @@ std::string CLameWrapper::GetVersion()
     return "unknown";
 }
 
-void CLameWrapper::SetCompressionRatio(LAME_BITRATE p_nCompressionRatio)
+void CLameWrapper::SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings)
+{
+  cout << "ts br: " << pTranscodingSettings->BitRate() << endl;
+  
+  if(pTranscodingSettings->BitRate() > 0 && m_LameSetCompressionRatio) {
+        
+    LAME_BITRATE_MAPPING_t* mapping = LAME_BITRATE_MAPPINGS;
+    float fBitrate = 11.0; // 128 kbit
+    
+    while(mapping->nBitRate > 0) {      
+      if(mapping->nBitRate == pTranscodingSettings->BitRate()) {
+        fBitrate = mapping->fLameRate;
+        break;
+      }      
+      mapping++;
+    }
+    
+    cout << "lame br: " << fBitrate << endl;
+    
+    cout << "set br: " << m_LameSetCompressionRatio(m_LameGlobalFlags, fBitrate) << endl;
+    m_nBitRate = pTranscodingSettings->BitRate();
+  }
+  
+  if(m_nBitRate == 0) {
+    m_nBitRate = 128;
+  }  
+  
+  #warning todo
+  if(pTranscodingSettings->SampleRate() > 0) {
+    m_nSampleRate = pTranscodingSettings->SampleRate();
+  }
+  else {
+    m_nSampleRate = 44100;
+  }
+  
+  m_nChannels = 2;
+}
+
+/*void CLameWrapper::SetCompressionRatio(LAME_BITRATE p_nCompressionRatio)
 {
   if(m_LameSetCompressionRatio) {
     m_LameSetCompressionRatio(m_LameGlobalFlags, p_nCompressionRatio);
   }
-}
+}*/
 
-void CLameWrapper::SetBitrate(int p_nBitrate)
-{
-  if(m_LameSetBrate) {
-    m_LameSetBrate(m_LameGlobalFlags, p_nBitrate);
-  }
-}
 
 int CLameWrapper::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead)
 {
@@ -297,9 +351,10 @@ int CLameWrapper::Flush()
 unsigned int CLameWrapper::GuessContentLength(unsigned int p_nNumPcmSamples)
 {
   //#warning todo
-  float bitrate = 128000.0;
-  float samplerate = 44100.0;
-
+  float bitrate    = m_nBitRate * 1000.0; //
+  float samplerate = m_nSampleRate * 1.0; //.0;
+ 
+  
  /* float duration = p_nNumPcmSamples / samplerate;
   cout << "duration: " << duration << " s" << endl;
   
@@ -310,7 +365,7 @@ unsigned int CLameWrapper::GuessContentLength(unsigned int p_nNumPcmSamples)
   
   cout << "size + const: " << size + 1218 << endl;*/
   
-  //cout << "lame: " << p_nNumPcmSamples << " :: " << (unsigned int)p_nNumPcmSamples * (bitrate/8.0)/samplerate + 4 * 1152 * (bitrate/8.0)/samplerate + 512 << endl;
+  cout << "lame: " << p_nNumPcmSamples << " :: " << (unsigned int)p_nNumPcmSamples * (bitrate/8.0)/samplerate + 4 * 1152 * (bitrate/8.0)/samplerate + 512 << endl;
   
   return (unsigned int)p_nNumPcmSamples * (bitrate/8.0)/samplerate + 4 * 1152 * (bitrate/8.0)/samplerate + 512;
 }

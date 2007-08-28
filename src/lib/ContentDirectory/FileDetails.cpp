@@ -195,7 +195,7 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pM
 	
 	// title
 	sTmp = pFile.tag()->title();
-  pMusicTrack->mAudioItem.sTitle = sTmp.to8Bit(true);  
+  pMusicTrack->mAudioItem.sTitle = TrimWhiteSpace(sTmp.to8Bit(true));  
   
 	// duration	
 	long length = pFile.audioProperties()->length();  
@@ -222,28 +222,28 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pM
 	
 	// artist
   sTmp = pFile.tag()->artist();
-  pMusicTrack->sArtist = sTmp.to8Bit(true);  
+  pMusicTrack->sArtist = TrimWhiteSpace(sTmp.to8Bit(true));  
   if(pMusicTrack->sArtist.empty()) {
     pMusicTrack->sArtist = "unknown";
   }   
     
   // album
   sTmp = pFile.tag()->album();
-  pMusicTrack->sAlbum = sTmp.to8Bit(true);  
+  pMusicTrack->sAlbum = TrimWhiteSpace(sTmp.to8Bit(true));  
   if(pMusicTrack->sAlbum.empty()) {
     pMusicTrack->sAlbum = "unknown";
   }  
   
   // genre
 	sTmp = pFile.tag()->genre();
-  pMusicTrack->mAudioItem.sGenre = sTmp.to8Bit(true);   
+  pMusicTrack->mAudioItem.sGenre = TrimWhiteSpace(sTmp.to8Bit(true));   
   if(pMusicTrack->mAudioItem.sGenre.empty()) {
     pMusicTrack->mAudioItem.sGenre = "unknown";
   }
 
   // description/comment
 	sTmp = pFile.tag()->comment();
-	pMusicTrack->mAudioItem.sDescription = sTmp.to8Bit(true);
+	pMusicTrack->mAudioItem.sDescription = TrimWhiteSpace(sTmp.to8Bit(true));
 
   // track no.
 	nTmp = pFile.tag()->track();

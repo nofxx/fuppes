@@ -286,6 +286,8 @@ bool CContentDatabase::Open()
     sqlite3_close(m_pDbHandle);
     return false;
   }
+  //JM: Tell sqlite3 to retry queries for up to 1 second if the database is locked.
+  sqlite3_busy_timeout(m_pDbHandle, 1000);
   //cout << "OPENED" << endl; fflush(stdout);
 	return true;
 }
