@@ -26,6 +26,7 @@
 #ifdef HAVE_LAME
 
 #include "../SharedLog.h"
+#include "../SharedConfig.h"
 #include <iostream>
 #include <sstream>
 
@@ -61,36 +62,19 @@ CLameWrapper::~CLameWrapper()
 
 bool CLameWrapper::LoadLib()
 { 
-	#ifdef WIN32
-  string sLibName[1];
-	sLibName[0] = "lame_enc.dll";
-	#else
-	string sLibName[3];
-	sLibName[0] = "libmp3lame.so.0";
-	sLibName[1] = "libmp3lame.so";
-	sLibName[2] = "libmp3lame.dylib";
-	#endif
-
-  /*string* sLib = sLibName;
-	cout << sizeof(sLibName) << endl;
-	fuppesSleep(2000);
-	while(sLib) {
-	  cout << *sLib << endl;
-	  sLib++;
-		fuppesSleep(2000);
-	}*/
-
-  //cout << "LAME" << endl;
-
   #ifdef WIN32
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening lame_enc.dll");
-  m_LibHandle = FuppesLoadLibrary("lame_enc.dll");
-  #else
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libmp3lame.so");
-  m_LibHandle = FuppesLoadLibrary("libmp3lame.so.0");
-  if(!m_LibHandle)
-    m_LibHandle = FuppesLoadLibrary("/opt/local/lib/libmp3lame.dylib");
+  std::string sLibName = "lame_enc.dll";
+  #else  
+  std::string sLibName = "libmp3lame.so.0";
   #endif
+  
+  if(!CSharedConfig::Shared()->LameLibName().empty()) {
+    sLibName = CSharedConfig::Shared()->LameLibName();
+  }  
+  
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening " + sLibName);
+  m_LibHandle = FuppesLoadLibrary(sLibName);  
+  
   
   if(!m_LibHandle) {
     CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot open library", __FILE__, __LINE__);

@@ -30,6 +30,7 @@ const std::string LOGNAME = "FLACDecoder";
 #include <sstream>
 #include <iostream>
 #include "../Common/Common.h"
+#include "../SharedConfig.h"
 
 using namespace std;
 
@@ -155,14 +156,20 @@ CFLACDecoder::~CFLACDecoder()
 }
 
 bool CFLACDecoder::LoadLib()
-{  
-  #ifdef WIN32  
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libFLAC.dll");
-  m_LibHandle = FuppesLoadLibrary("libFLAC.dll");
-  #else
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libFLAC.so");
-  m_LibHandle = FuppesLoadLibrary("libFLAC.so");   
+{ 
+  #ifdef WIN32
+  std::string sLibName = "libFLAC-8.dll";
+  #else  
+  std::string sLibName = "libFLAC.so";
   #endif
+  
+  if(!CSharedConfig::Shared()->FlacLibName().empty()) {
+    sLibName = CSharedConfig::Shared()->FlacLibName();
+  }  
+  
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening " + sLibName);
+  m_LibHandle = FuppesLoadLibrary(sLibName);
+  
   if(!m_LibHandle) {
     std::stringstream sLog;
     sLog << "cannot open library";

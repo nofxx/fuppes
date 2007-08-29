@@ -31,6 +31,7 @@
 #include "MpcWrapper.h"
 #ifdef HAVE_MUSEPACK
 
+#include "../SharedConfig.h"
 #include <iostream>
 #include <sstream>
 using namespace std;
@@ -130,12 +131,19 @@ CMpcDecoder::~CMpcDecoder()
 bool CMpcDecoder::LoadLib()
 {
   #ifdef WIN32
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening mpcdec.dll");
-  m_LibHandle = FuppesLoadLibrary("mpcdec.dll");
-  #else
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libmpcdec.so");
-  m_LibHandle = FuppesLoadLibrary("libmpcdec.so");   
+  std::string sLibName = "libmpcdec-5.dll";
+  #else  
+  std::string sLibName = "libmpcdec.so";
   #endif
+  
+  if(!CSharedConfig::Shared()->MpcLibName().empty()) {
+    sLibName = CSharedConfig::Shared()->MpcLibName();
+  }  
+  
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening " + sLibName);
+  m_LibHandle = FuppesLoadLibrary(sLibName);  
+  
+  
   if(!m_LibHandle)
   {
     stringstream sLog;

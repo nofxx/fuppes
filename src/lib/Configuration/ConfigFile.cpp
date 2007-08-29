@@ -119,7 +119,24 @@ int CConfigFile::Load(std::string p_sFileName, std::string* p_psErrorMsg)
       }
       else if(pTmpNode->ChildNode(i)->Name().compare("transcode_flac") == 0) {
         m_bTranscodeFlac = (pTmpNode->ChildNode(i)->Value().compare("true") == 0);
-      }      
+      }
+	  
+	  else if(pTmpNode->ChildNode(i)->Name().compare("lame_libname") == 0) {
+		m_sLameLibName = pTmpNode->ChildNode(i)->Value();
+	  }
+	  else if(pTmpNode->ChildNode(i)->Name().compare("twolame_libname") == 0) {
+		m_sTwoLameLibName = pTmpNode->ChildNode(i)->Value();
+	  }
+	  else if(pTmpNode->ChildNode(i)->Name().compare("vorbis_libname") == 0) {
+		m_sVorbisLibName = pTmpNode->ChildNode(i)->Value();
+	  }
+	  else if(pTmpNode->ChildNode(i)->Name().compare("flac_libname") == 0) {
+		m_sFlacLibName = pTmpNode->ChildNode(i)->Value();
+	  }
+	  else if(pTmpNode->ChildNode(i)->Name().compare("mpc_libname") == 0) {
+		m_sMpcLibName = pTmpNode->ChildNode(i)->Value();
+	  }
+	  
     }
   }
   // end transcoding

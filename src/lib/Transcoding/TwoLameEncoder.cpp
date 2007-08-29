@@ -46,15 +46,19 @@ CTwoLameEncoder::~CTwoLameEncoder()
 
 bool CTwoLameEncoder::LoadLib()
 { 
-  #ifdef WIN32  
-  CSharedLog::Shared()->Log(L_EXTENDED, "loading twolame.dll", __FILE__, __LINE__);
-  m_LibHandle = FuppesLoadLibrary("twolame.dll");
-  #else
-  CSharedLog::Shared()->Log(L_EXTENDED, "loading libtwolame.so", __FILE__, __LINE__);  
-  m_LibHandle = FuppesLoadLibrary("libtwolame.so");
-  if(!m_LibHandle)
-    m_LibHandle = FuppesLoadLibrary("libmp3lame.so.0");
+  #ifdef WIN32
+  std::string sLibName = "twolame.dll";
+  #else  
+  std::string sLibName = "libtwolame.so";
   #endif
+  
+  if(!CSharedConfig::Shared()->TwoLameLibName().empty()) {
+    sLibName = CSharedConfig::Shared()->TwoLameLibName();
+  }  
+  
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening " + sLibName);
+  m_LibHandle = FuppesLoadLibrary(sLibName);   
+  
   
   if(!m_LibHandle) {
     CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot open library", __FILE__, __LINE__);

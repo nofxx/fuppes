@@ -33,6 +33,9 @@
 
 #define MAX_MEMO_LENGTH 29996
 
+#define ID_TRAY_POPUP_SEND_ALIVE 5
+#define ID_TRAY_POPUP_SEND_BYEBYE 6
+#define ID_TRAY_POPUP_SEND_MSEARCH 7
 
 using namespace std;
 
@@ -90,7 +93,12 @@ CMainForm::CMainForm(HINSTANCE hInstance)
   AppendMenu(hPopup, MF_SEPARATOR, 0, "" ); 
   AppendMenu(hPopup, MF_STRING, 2, "Rebuild database");  
   AppendMenu(hPopup, MF_STRING, 3, "Rebuild virtual containers");  
-    
+
+  AppendMenu(hPopup, MF_SEPARATOR, 0, "" ); 
+  AppendMenu(hPopup, MF_STRING, ID_TRAY_POPUP_SEND_ALIVE, "Send \"Notify-Alive\"");  
+  AppendMenu(hPopup, MF_STRING, ID_TRAY_POPUP_SEND_BYEBYE, "Send \"Notify-ByeBye\""); 
+  AppendMenu(hPopup, MF_STRING, ID_TRAY_POPUP_SEND_MSEARCH, "Send \"M-Search\""); 
+      
   AppendMenu(hPopup, MF_SEPARATOR, 0, "" );    
   AppendMenu(hPopup, MF_STRING, 1, "Quit" );    
   pForm = this; 
@@ -354,6 +362,18 @@ void CMainForm::OnTrayIconLButtonUp()
       ShellExecute(hWnd, "open", szAddr, NULL, NULL, SW_NORMAL);
       sTmp.str("");
       break;
+    
+    case ID_TRAY_POPUP_SEND_ALIVE:
+      fuppes_send_alive();
+      break;
+      
+    case ID_TRAY_POPUP_SEND_BYEBYE:
+      fuppes_send_byebye();
+      break;
+    
+    case ID_TRAY_POPUP_SEND_MSEARCH:
+      fuppes_send_msearch();
+      break;      
   }
 }
 

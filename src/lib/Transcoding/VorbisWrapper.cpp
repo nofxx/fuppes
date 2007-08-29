@@ -26,6 +26,7 @@
 
 #ifdef HAVE_VORBIS
 
+#include "../SharedConfig.h"
 #include <sstream>
 #include <iostream>
 
@@ -58,15 +59,18 @@ CVorbisDecoder::~CVorbisDecoder()
 bool CVorbisDecoder::LoadLib()
 {
   #ifdef WIN32
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening vorbisfile.dll");
-  m_LibHandle = FuppesLoadLibrary("vorbisfile.dll");  
-  #else
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening libvorbisfile");
-  m_LibHandle = FuppesLoadLibrary("libvorbisfile.so");
-	if(!m_LibHandle) {
-    m_LibHandle = FuppesLoadLibrary("libvorbisfile.dylib");
-	}
+  std::string sLibName = "libvorbisfile-3.dll";
+  #else  
+  std::string sLibName = "libvorbisfile.so";
   #endif
+  
+  if(!CSharedConfig::Shared()->VorbisLibName().empty()) {
+    sLibName = CSharedConfig::Shared()->VorbisLibName();
+  }  
+  
+  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening " + sLibName);
+  m_LibHandle = FuppesLoadLibrary(sLibName);   
+  
   if(!m_LibHandle)
   {
     stringstream sLog;

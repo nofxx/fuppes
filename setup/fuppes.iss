@@ -1,6 +1,6 @@
 [Setup]
 AppName=Free UPnP Entertainment Service
-AppVerName=Free UPnP Entertainment Service 0.7.2a-20070529
+AppVerName=Free UPnP Entertainment Service SVN-507
 AppPublisher=Ulrich Völkel
 AppPublisherURL=http://sourceforge.net/projects/fuppes
 AppSupportURL=http://sourceforge.net/projects/fuppes
@@ -9,7 +9,7 @@ DefaultDirName={pf}\Free UPnP Entertainment Service\
 DefaultGroupName=Free UPnP Entertainment Service
 LicenseFile=..\setup\license-eng.rtf
 OutputDir=..\setup
-OutputBaseFilename=fuppes-0.7.2a-20070529-win32-setup
+OutputBaseFilename=fuppes-SVN-507-win32-setup
 SolidCompression=true
 ShowTasksTreeLines=true
 SourceDir=..\win32
@@ -28,25 +28,6 @@ Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:Ad
 Name: quicklaunchicon; Description: {cm:CreateQuickLaunchIcon}; GroupDescription: {cm:AdditionalIcons}; Flags: unchecked
 
 [Files]
-Source: ..\win32\fuppes.exe; DestDir: {app}; Flags: ignoreversion
-Source: ..\win32\fuppescmd.exe; DestDir: {app}
-Source: ..\win32\fuppes.dll; DestDir: {app}
-Source: ..\win32\vorbisfile.dll; DestDir: {app}
-Source: ..\win32\avcodec-51.dll; DestDir: {app}
-Source: ..\win32\avformat-51.dll; DestDir: {app}
-Source: ..\win32\avutil-49.dll; DestDir: {app}
-Source: ..\win32\libFLAC.dll; DestDir: {app}
-Source: ..\win32\libiconv-2.dll; DestDir: {app}
-Source: ..\win32\libMagick-10.dll; DestDir: {app}
-Source: ..\win32\libMagick++-10.dll; DestDir: {app}
-Source: ..\win32\libpcre-0.dll; DestDir: {app}
-Source: ..\win32\libWand-10.dll; DestDir: {app}
-Source: ..\win32\libxml2-2.dll; DestDir: {app}
-Source: ..\win32\mpcdec.dll; DestDir: {app}
-Source: ..\win32\ogg.dll; DestDir: {app}
-Source: ..\win32\sqlite3.dll; DestDir: {app}
-Source: ..\win32\taglib.dll; DestDir: {app}
-Source: ..\win32\vorbis.dll; DestDir: {app}
 Source: ..\vfolder.cfg; DestDir: {app}
 Source: ..\setup\ImageMagick-License.txt; DestDir: {app}
 Source: ..\AUTHORS; DestDir: {app}; Flags: ignoreversion; DestName: AUTHORS.txt
@@ -58,6 +39,27 @@ Source: ..\COPYING-MUSEPACK; DestDir: {app}; Flags: ignoreversion; DestName: COP
 Source: ..\COPYING-OGG; DestDir: {app}; Flags: ignoreversion; DestName: COPYING-OGG.txt
 Source: ..\COPYING-VORBIS; DestDir: {app}; Flags: ignoreversion; DestName: COPYING-VORBIS.txt
 Source: ..\COPYING-FLAC; DestDir: {app}; Flags: ignoreversion; DestName: COPYING-FLAC.txt
+Source: ..\win32\libxml2-2.dll; DestDir: {app}
+Source: ..\win32\avcodec-51.dll; DestDir: {app}
+Source: ..\win32\avformat-51.dll; DestDir: {app}
+Source: ..\win32\avutil-49.dll; DestDir: {app}
+Source: ..\win32\fuppes.exe; DestDir: {app}
+Source: ..\win32\fuppescmd.exe; DestDir: {app}
+Source: ..\win32\libFLAC-8.dll; DestDir: {app}
+Source: ..\win32\libfuppes-0.dll; DestDir: {app}
+Source: ..\win32\libiconv-2.dll; DestDir: {app}
+Source: ..\win32\libMagick-10.dll; DestDir: {app}
+Source: ..\win32\libMagick++-10.dll; DestDir: {app}
+Source: ..\win32\libmpcdec-5.dll; DestDir: {app}
+Source: ..\win32\libogg-0.dll; DestDir: {app}
+Source: ..\win32\libpcre-0.dll; DestDir: {app}
+Source: ..\win32\libsqlite3-0.dll; DestDir: {app}
+Source: ..\win32\libtag-1.dll; DestDir: {app}
+Source: ..\win32\libtiff-3.dll; DestDir: {app}
+Source: ..\win32\libvorbis-0.dll; DestDir: {app}
+Source: ..\win32\libvorbisenc-2.dll; DestDir: {app}
+Source: ..\win32\libvorbisfile-3.dll; DestDir: {app}
+Source: ..\win32\libWand-10.dll; DestDir: {app}
 
 [Icons]
 Name: {group}\FUPPES; Filename: {app}\fuppes.exe; IconIndex: 0
