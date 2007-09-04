@@ -95,6 +95,9 @@ class CAudioDecoderBase
     virtual void CloseFile() = 0;    
     virtual long DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead) = 0;  
     virtual unsigned int NumPcmSamples() = 0;
+  
+  protected:
+    fuppesLibHandle  m_LibHandle;
 };
 
 class CTranscoderBase

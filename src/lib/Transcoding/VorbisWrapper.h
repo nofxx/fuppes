@@ -63,7 +63,7 @@ extern "C"
   /* ogg_int64_t ov_pcm_total(OggVorbis_File *vf,int i); */
   typedef ogg_int64_t (*OvPcmTotal_t)(OggVorbis_File*, int);
 }
-#endif
+#endif // __cplusplus
 
 class CVorbisDecoder: public CAudioDecoderBase
 {
@@ -83,18 +83,13 @@ class CVorbisDecoder: public CAudioDecoderBase
      */
     long DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead);
   
-    
     void CloseFile();   
-    
-  
-  private:
-    fuppesLibHandle  m_LibHandle;      
-          
+
+  private:          
     OggVorbis_File m_VorbisFile;
     FILE*          m_pVorbisFileHandle;
     vorbis_info*   m_pVorbisInfo;
-    int            m_nEndianess;
-  
+    int            m_nEndianess;  
     
     OvOpen_t       m_OvOpen;
     OvInfo_t       m_OvInfo;

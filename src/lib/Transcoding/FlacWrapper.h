@@ -115,7 +115,7 @@ extern "C"
   
   #endif
 }
-#endif
+#endif // __cplusplus
 
 typedef struct flac_data_s {
   #ifdef HAVE_FLAC_FILEDECODER
@@ -157,7 +157,6 @@ class CFLACDecoder: public CAudioDecoderBase
     flac_data_t* m_pFLACData;    
   
   private:
-    fuppesLibHandle  m_LibHandle;  
     bool             m_bEOF;
   
     #ifdef HAVE_FLAC_FILEDECODER

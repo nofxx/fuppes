@@ -1,4 +1,8 @@
-Version 0.7.3a
+Version
+  * AAC decoder
+  * fixed Deadlock on FreeBSD
+
+Version SVN-507 2007-08-29
   * PS3 transcoding
   * include metadata in lame encoded files (id3v2 tag)
   * initial WAV-encoder

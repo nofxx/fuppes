@@ -306,6 +306,7 @@ have_vorbis=no
 have_tremor=no
 have_mpc=no
 have_flac=no
+have_faad=no
 
 # transcoding
 AC_ARG_ENABLE(transcoding,
@@ -447,7 +448,24 @@ if test "x$transcoding" = "xyes"; then
         have_decoder=yes
 	    AC_DEFINE([HAVE_FLAC], [1], [])
       fi
-	fi
+	  fi
+
+    # faad
+	  AH_TEMPLATE([HAVE_FAAD], [])
+    AC_ARG_WITH(flac-dir, AC_HELP_STRING([--with-faad-dir=path],
+            [include path of faad.h]),
+            [if test "x$withval" != "x"; then
+               FAAD_H_DIR="$withval/"
+               CXXFLAGS="$CXXFLAGS -I$withval"
+             fi], [FAAD_H_DIR=""])
+    AC_SUBST(FAAD_H_DIR)
+
+    AC_CHECK_HEADERS(${FAAD_H_DIR}faad.h, have_faad=yes, have_faad=no)
+    if test "x$have_faad" = "xyes"; then      
+      FUPPES_LIBS="$FUPPES_LIBS -lfaad"
+      have_decoder=yes
+      AC_DEFINE([HAVE_FAAD], [1], [])
+    fi
 		
   fi # have_encoder
 
@@ -591,39 +609,45 @@ if test "x$transcoding" = "xyes"; then
     echo "  audio transcoding enabled"  
     echo "    encoder:"
     if test "x$have_lame" = "xyes"; then
-      echo "      lame   : yes"
+      echo "      lame       : yes"
     else
-      echo "      lame   : no"
+      echo "      lame       : no"
     fi
     
     if test "x$have_twolame" = "xyes"; then
-      echo "      twolame: yes"
+      echo "      twolame    : yes"
     else  
-      echo "      twolame: no"
+      echo "      twolame    : no"
     fi
     
       
     echo "    decoder:"
     if test "x$have_vorbis" = "xyes"; then
-      echo "      vorbis : yes (libvorbisfile)"
+      echo "      vorbis     : yes (libvorbisfile)"
 		else
       if test "x$have_tremor" = "xyes"; then
-        echo "      vorbis : yes (tremor)"
+        echo "      vorbis     : yes (tremor)"
       else
-        echo "      vorbis : no"      
+        echo "      vorbis     : no"      
       fi
     fi
 
     if test "x$have_mpc" = "xyes"; then
-      echo "      mpc    : yes"
+      echo "      mpc        : yes"
     else
-      echo "      mpc    : no"      
+      echo "      mpc        : no"      
     fi     
     
     if test "x$have_flac" = "xyes"; then
-      echo "      flac   : yes"
+      echo "      flac       : yes"
     else
-      echo "      flac   : no"      
+      echo "      flac       : no"      
+    fi 
+
+    if test "x$have_faad" = "xyes"; then
+      echo "      faad (aac) : yes"
+    else
+      echo "      fadd (aac) : no"      
     fi 
   
   fi

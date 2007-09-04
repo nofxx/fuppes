@@ -66,7 +66,7 @@ extern "C"
      Call this iteratively to decode the mpc stream. */
   typedef mpc_uint32_t (*MpcDecoderDecode_t)(mpc_decoder*, MPC_SAMPLE_FORMAT*, mpc_uint32_t*, mpc_uint32_t*);  
 }
-#endif
+#endif // __cplusplus
 
 typedef struct reader_data_t {
     FILE *file;
@@ -93,9 +93,7 @@ class CMpcDecoder: public CAudioDecoderBase
     mpc_decoder    m_Decoder;
     mpc_reader     m_Reader;
     mpc_streaminfo m_StreamInfo;
-    
-    fuppesLibHandle m_LibHandle;
-  
+
     MpcStreaminfoInit_t               m_MpcStreaminfoInit;
     MpcStreaminfoRead_t               m_MpcStreaminfoRead;
     MpcStreaminfoGetLengthSamples_t   m_MpcStreaminfoGetLengthSamples;
