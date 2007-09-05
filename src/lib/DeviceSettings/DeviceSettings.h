@@ -138,6 +138,8 @@ struct CTranscodingSettings {
     unsigned int BitRate() { return nBitRate; }
     unsigned int SampleRate() { return nSampleRate; }
   
+    int LameQuality() { return nLameQuality; }
+  
     std::string  Extension() { return sExt; }
     TRANSCODING_HTTP_RESPONSE   TranscodingHTTPResponse() { return nTranscodingResponse; }
   
@@ -156,7 +158,12 @@ struct CTranscodingSettings {
     int                         nReleaseDelay;
   
     unsigned int  nBitRate;
-    unsigned int  nSampleRate;  
+    unsigned int  nSampleRate;
+  
+    int           nLameQuality;
+  
+    std::string     sACodecCondition;
+    std::string     sVCodecCondition;
 };
 
 struct CFileSettings {
@@ -181,8 +188,8 @@ struct CFileSettings {
   std::string   sMimeType;
   std::string   sDLNA;
   
-  bool Enabled() { return bEnabled; }
-  void Enabled(bool p_bEnabled) { bEnabled = p_bEnabled; }
+  bool Enabled() { return bEnabled; }  
+  bool ExtractMetadata() { return bExtractMetadata; }
   
   CTranscodingSettings* pTranscodingSettings;
   CImageSettings*       pImageSettings;
@@ -194,6 +201,7 @@ struct CFileSettings {
   
   private:
     bool  bEnabled;
+    bool  bExtractMetadata;
 };
 
 typedef std::map<std::string, CFileSettings*>::iterator FileSettingsIterator_t;
@@ -211,15 +219,15 @@ class CDeviceSettings
     bool HasIP(std::string p_sIPAddress);	
     /*std::list<std::string> m_slUserAgents;
 		std::list<std::string> m_slIPAddresses;*/
-		
 
-    OBJECT_TYPE   ObjectType(std::string p_sExt);
-    std::string   ObjectTypeAsStr(std::string p_sExt);
-    bool          DoTranscode(std::string p_sExt);
-    TRANSCODING_TYPE GetTranscodingType(std::string p_sExt);
-    TRANSCODER_TYPE  GetTranscoderType(std::string p_sExt);
-    DECODER_TYPE     GetDecoderType(std::string p_sExt);
-    ENCODER_TYPE     GetEncoderType(std::string p_sExt);
+    OBJECT_TYPE       ObjectType(std::string p_sExt);
+    std::string       ObjectTypeAsStr(std::string p_sExt);
+
+    bool              DoTranscode(std::string p_sExt, std::string p_sACodec = "", std::string p_sVCodec = "");
+    TRANSCODING_TYPE  GetTranscodingType(std::string p_sExt);
+    TRANSCODER_TYPE   GetTranscoderType(std::string p_sExt);
+    DECODER_TYPE      GetDecoderType(std::string p_sExt);
+    ENCODER_TYPE      GetEncoderType(std::string p_sExt);
   
     std::string   MimeType(std::string p_sExt);
     std::string   DLNA(std::string p_sExt);

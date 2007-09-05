@@ -130,7 +130,6 @@ void CSSDPCtrl::send_msearch()
 {
   CMSearchSession* pSession = new CMSearchSession(m_sIPAddress, this, m_pNotifyMsgFactory);
   m_LastMulticastEp = pSession->GetLocalEndPoint();
-  m_SessionList.push_back(pSession);
   pSession->Start();  
   CleanupSessions();  
 }

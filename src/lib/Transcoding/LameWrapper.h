@@ -65,6 +65,18 @@ extern "C"
   typedef int (*LameSetMode_t)(lame_global_flags*, MPEG_mode);
   
   
+  /* quality=0..9.  0=best (very slow).  9=worst.
+  recommended:  2     near-best quality, not too slow
+                5     good quality, fast
+                7     ok quality, really fast */
+  
+  /* int CDECL lame_set_quality(lame_global_flags *, int); */
+  typedef int (*LameSetQuality_t)(lame_global_flags*, int);
+  
+  /* int CDECL lame_get_quality(const lame_global_flags *); */
+  typedef int (*LameGetQuality_t)(const lame_global_flags*);  
+  
+  
   /* int lame_encode_buffer(lame_global_flags* gf, 
                             short int leftpcm[],
                             short int rightpcm[],
@@ -148,6 +160,8 @@ class CLameWrapper: public CAudioEncoderBase
     
     unsigned int GuessContentLength(unsigned int p_nNumPcmSamples);
     
+    void GetMp3Tail(char* p_szBuffer);
+  
   private:
     fuppesLibHandle  m_LibHandle;
     LameGlobalFlags* m_LameGlobalFlags;
@@ -163,6 +177,8 @@ class CLameWrapper: public CAudioEncoderBase
     LameSetBrate_t                m_LameSetBrate;
     LameGetBrate_t                m_LameGetBrate;
     LameSetMode_t                 m_LameSetMode;
+    LameSetQuality_t              m_LameSetQuality;
+    LameGetQuality_t              m_LameGetQuality;
   
     LameEncodeBufferInterleaved_t m_LameEncodeBufferInterleaved;
     LameEncodeFlush_t             m_LameEncodeFlush;
@@ -172,6 +188,8 @@ class CLameWrapper: public CAudioEncoderBase
     int m_nBitRate;
     int m_nSampleRate;
     int m_nChannels;
+  
+    char szMp3Tail[128];
   
     // id3
     Id3TagInit_t        m_Id3TagInit;

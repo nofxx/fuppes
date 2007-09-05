@@ -759,7 +759,7 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName, SMusicTrack
   m_pTranscodingSessionInfo->m_sAlbum  = p_sTrackDetails.sAlbum;
   m_pTranscodingSessionInfo->m_sGenre  = p_sTrackDetails.mAudioItem.sGenre;
   m_pTranscodingSessionInfo->m_sOriginalTrackNumber = p_sTrackDetails.sOriginalTrackNumber;
-    
+  
   
   m_pTranscodingCacheObj = CTranscodingCache::Shared()->GetCacheObject(m_pTranscodingSessionInfo->m_sInFileName);
   m_pTranscodingCacheObj->Init(m_pTranscodingSessionInfo, DeviceSettings());

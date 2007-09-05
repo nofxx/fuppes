@@ -186,7 +186,7 @@ std::string ExtractFileExt(std::string p_sFileName)
     } while(rxExt.SearchAgain());
     
   }
-  return sResult;
+  return ToLower(sResult);
 }
 
 std::string ExtractFilePath(std::string p_sFileName)

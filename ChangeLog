@@ -1,6 +1,9 @@
 Version
   * AAC decoder
   * fixed Deadlock on FreeBSD
+  * lame quality configurable
+  * id3v1 tag in transcoded files
+  * new file settings flag "extract_metadata"
 
 Version SVN-507 2007-08-29
   * PS3 transcoding

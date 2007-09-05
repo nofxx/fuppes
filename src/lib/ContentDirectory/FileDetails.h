@@ -35,7 +35,7 @@ struct FileType_t
   std::string sDLNA;
 };
 
-struct TranscodingSetting_t
+/*struct TranscodingSetting_t
 {
   std::string sExt;  
   std::string sTargetExt;  
@@ -43,7 +43,7 @@ struct TranscodingSetting_t
   OBJECT_TYPE nTargetObjectType;
   int         nBitrate;
   int         nSamplerate;
-};
+};*/
 
 struct SAudioItem
 { 
@@ -69,6 +69,7 @@ struct SAudioItem
     std::string sAlbum;
     int         nOriginalTrackNumber;
     std::string sOriginalTrackNumber;
+    int         nYear;
     /*std::string sPlaylist;
     std::string sStorageMedium;
     std::string sContributor;*/

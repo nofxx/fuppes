@@ -55,6 +55,7 @@ class CTranscodeSessionInfo
     std::string   m_sAlbum;
     std::string   m_sGenre;
     std::string   m_sOriginalTrackNumber;
+    int           m_nYear;
   
     //void SetTranscodeToTmpFile(std::string p_sTmpFileName);
   

@@ -201,7 +201,9 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 				"  DATE TEXT, "
 				"  IV_HEIGHT INTEGER, "
 				"  IV_WIDTH INTEGER, "
-        "  SIZE INTEGER DEFAULT 0 "          
+        "  A_CODEC, "
+        "  V_CODEC, "
+        "  SIZE INTEGER DEFAULT 0 "     
 				");"))   
 			return false;    
     
@@ -699,13 +701,15 @@ unsigned int InsertVideoFile(CContentDatabase* pDb, std::string p_sFileName)
 	stringstream sSql;
 	sSql << 
 	  "insert into OBJECT_DETAILS " <<
-		"(IV_WIDTH, IV_HEIGHT, AV_DURATION, SIZE, AV_BITRATE) " <<
+		"(IV_WIDTH, IV_HEIGHT, AV_DURATION, SIZE, AV_BITRATE, A_CODEC, V_CODEC) " <<
 		"values (" <<
 		VideoItem.nWidth << ", " <<
 		VideoItem.nHeight << "," <<
 		"'" << VideoItem.sDuration << "', " <<
 		VideoItem.nSize << ", " <<
-		VideoItem.nBitrate << ");";
+		VideoItem.nBitrate << ", " <<
+    "'" << VideoItem.sACodec << "', " <<
+    "'" << VideoItem.sVCodec << "' );";
 	
 	//cout << sSql.str() << endl;
 

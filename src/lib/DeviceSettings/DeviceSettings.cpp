@@ -59,11 +59,12 @@ CImageSettings::CImageSettings(CImageSettings* pImageSettings)
 
 CTranscodingSettings::CTranscodingSettings() 
 {
-  bEnabled = true;
+  bEnabled             = true;
   nTranscodingResponse = RESPONSE_STREAM;
-  nBitRate = 0; //0;
-  nSampleRate = 0; //0;
-  nReleaseDelay = -1;
+  nBitRate             = 0;
+  nSampleRate          = 0;
+  nReleaseDelay        = -1;
+  nLameQuality         = -1;
 }
 
 CTranscodingSettings::CTranscodingSettings(CTranscodingSettings* pTranscodingSettings)
@@ -74,6 +75,7 @@ CTranscodingSettings::CTranscodingSettings(CTranscodingSettings* pTranscodingSet
   nBitRate      = pTranscodingSettings->nBitRate;
   nSampleRate   = pTranscodingSettings->nSampleRate;
   nReleaseDelay = pTranscodingSettings->nReleaseDelay;
+  nLameQuality  = pTranscodingSettings->nLameQuality;
   
   sDecoder      = pTranscodingSettings->sDecoder;
   sEncoder      = pTranscodingSettings->sEncoder;
@@ -82,14 +84,18 @@ CTranscodingSettings::CTranscodingSettings(CTranscodingSettings* pTranscodingSet
   sExt        = pTranscodingSettings->sExt;
   sDLNA       = pTranscodingSettings->sDLNA;
   sMimeType   = pTranscodingSettings->sMimeType;
+  
+  sACodecCondition = pTranscodingSettings->sACodecCondition;
+  sVCodecCondition = pTranscodingSettings->sVCodecCondition;  
 }
 
 
 CFileSettings::CFileSettings() 
 {
-  pTranscodingSettings = NULL;
-  pImageSettings       = NULL;
-  bEnabled = true;
+  pTranscodingSettings  = NULL;
+  pImageSettings        = NULL;
+  bEnabled              = true; 
+  bExtractMetadata      = true;
 }
 
 CFileSettings::CFileSettings(CFileSettings* pFileSettings)
@@ -108,6 +114,8 @@ CFileSettings::CFileSettings(CFileSettings* pFileSettings)
   sMimeType = pFileSettings->sMimeType;
   sDLNA     = pFileSettings->sDLNA;
   nType     = pFileSettings->nType;
+  
+  bExtractMetadata = pFileSettings->bExtractMetadata;
 }
 
 std::string CFileSettings::ObjectTypeAsStr() 
@@ -388,7 +396,7 @@ OBJECT_TYPE CDeviceSettings::ObjectType(std::string p_sExt)
 }
 
 
-bool CDeviceSettings::DoTranscode(std::string p_sExt)
+bool CDeviceSettings::DoTranscode(std::string p_sExt, std::string p_sACodec, std::string p_sVCodec)
 {
   m_FileSettingsIterator = m_FileSettings.find(p_sExt);
   if(m_FileSettingsIterator != m_FileSettings.end()) {
@@ -398,10 +406,17 @@ bool CDeviceSettings::DoTranscode(std::string p_sExt)
         (!m_FileSettingsIterator->second->pTranscodingSettings->sDecoder.empty() ||
          !m_FileSettingsIterator->second->pTranscodingSettings->sEncoder.empty() ||
          !m_FileSettingsIterator->second->pTranscodingSettings->sTranscoder.empty())
-        ) ||
-       
-       (m_FileSettingsIterator->second->pImageSettings &&
-        m_FileSettingsIterator->second->pImageSettings->Enabled())) {
+        )) {
+      
+      if(!p_sACodec.empty() && !p_sVCodec.empty()) {
+        
+      }
+      else {
+        return true;
+      }
+    }
+    else if (m_FileSettingsIterator->second->pImageSettings &&
+        m_FileSettingsIterator->second->pImageSettings->Enabled()) {
       return true;
     }
     else {

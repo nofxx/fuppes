@@ -346,6 +346,10 @@ void CConfigFile::ParseFileSettings(CXMLNode* pFileSettings, CDeviceSettings* pD
   pFileSet = pDevSet->FileSettings(ToLower(pFileSettings->Attribute("ext")));
   pFileSet->sExt = ToLower(pFileSettings->Attribute("ext"));
   
+  if(pFileSettings->Attribute("extract_metadata").compare("false") == 0) {
+    pFileSet->bExtractMetadata = false;
+  }
+  
   for(i = 0; i < pFileSettings->ChildCount(); i++) {    
     
     pTmp = pFileSettings->ChildNode(i);  
@@ -432,6 +436,9 @@ void CConfigFile::ParseTranscodingSettings(CXMLNode* pTCNode, CFileSettings* pFi
     else if(pTmp->Name().compare("samplerate") == 0) {
       pFileSet->pTranscodingSettings->nSampleRate = atoi(pTmp->Value().c_str());
     }
+    else if(pTmp->Name().compare("lame_quality") == 0) {
+      pFileSet->pTranscodingSettings->nLameQuality = atoi(pTmp->Value().c_str());
+    }
     
   }
 }
@@ -471,9 +478,9 @@ void CConfigFile::ParseImageSettings(CXMLNode* pISNode, CFileSettings* pFileSet)
     }    
     else if(pTmp->Name().compare("dcraw") == 0) {
       if(pTmp->Attribute("enabled").compare("false") != 0) {
-        pFileSet->pImageSettings->bDcraw = true;
-        pFileSet->pImageSettings->sDcrawParams = pChild->Value();
+        pFileSet->pImageSettings->bDcraw = true;        
       }
+      pFileSet->pImageSettings->sDcrawParams = pTmp->Value();
     }
     /*else if(pTmp->Name().compare("scale") == 0) {
       for(j = 0; j < pTmp->ChildCount(); j++) {

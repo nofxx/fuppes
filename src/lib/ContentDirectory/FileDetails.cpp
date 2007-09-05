@@ -133,7 +133,7 @@ CFileDetails::CFileDetails()
 
 OBJECT_TYPE CFileDetails::GetObjectType(std::string p_sFileName)
 {
-  string sExt = ToLower(ExtractFileExt(p_sFileName));
+  string sExt = ExtractFileExt(p_sFileName);
   
   return CDeviceIdentificationMgr::Shared()->DefaultDevice()->ObjectType(sExt);
 }
@@ -183,6 +183,10 @@ bool CFileDetails::IsSupportedFileExtension(std::string p_sFileExtension)
 bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pMusicTrack)
 {
   #ifdef HAVE_TAGLIB  
+  string sExt = ExtractFileExt(p_sFileName);  
+  if(!CDeviceIdentificationMgr::Shared()->DefaultDevice()->FileSettings(sExt)->ExtractMetadata())
+    return false;  
+  
   TagLib::FileRef pFile(p_sFileName.c_str());
   
 	if (pFile.isNull()) {
@@ -264,6 +268,10 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pM
 bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageItem)
 {
   #ifdef HAVE_IMAGEMAGICK	
+  string sExt = ExtractFileExt(p_sFileName);  
+  if(!CDeviceIdentificationMgr::Shared()->DefaultDevice()->FileSettings(sExt)->ExtractMetadata())
+    return false;
+  
 	Magick::Image image;
   try {
     image.read(p_sFileName);
@@ -290,7 +298,10 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
 bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoItem)
 {
   #ifdef HAVE_LIBAVFORMAT
-	//av_register_all();
+	string sExt = ExtractFileExt(p_sFileName);  
+  if(!CDeviceIdentificationMgr::Shared()->DefaultDevice()->FileSettings(sExt)->ExtractMetadata())
+    return false;  
+  
 	AVFormatContext *pFormatCtx;
 	
 	if(av_open_input_file(&pFormatCtx, p_sFileName.c_str(), NULL, 0, NULL) != 0) {

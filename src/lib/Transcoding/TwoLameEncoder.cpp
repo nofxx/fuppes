@@ -26,6 +26,7 @@
 #ifdef HAVE_TWOLAME
  
 #include "../SharedLog.h"
+#include "../SharedConfig.h"
 #include <iostream>
 #include <sstream>
 
@@ -56,7 +57,7 @@ bool CTwoLameEncoder::LoadLib()
     sLibName = CSharedConfig::Shared()->TwoLameLibName();
   }  
   
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "try opening " + sLibName);
+  CSharedLog::Shared()->Log(L_EXTENDED, "try opening " + sLibName, __FILE__, __LINE__);
   m_LibHandle = FuppesLoadLibrary(sLibName);   
   
   

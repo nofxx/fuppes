@@ -137,6 +137,16 @@ bool CLameWrapper::LoadLib()
     CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_set_mode'", __FILE__, __LINE__);   
   } 
   
+  m_LameSetQuality = (LameSetQuality_t)FuppesGetProcAddress(m_LibHandle, "lame_set_quality");
+  if(!m_LameSetQuality) {
+    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_set_quality'", __FILE__, __LINE__);   
+  }
+  
+  m_LameGetQuality = (LameGetQuality_t)FuppesGetProcAddress(m_LibHandle, "lame_get_quality");
+  if(!m_LameGetQuality) {
+    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_get_quality'", __FILE__, __LINE__);   
+  }
+  
   m_LameEncodeBufferInterleaved = (LameEncodeBufferInterleaved_t)FuppesGetProcAddress(m_LibHandle, "lame_encode_buffer_interleaved");
   if(!m_LameEncodeBufferInterleaved)
   {
@@ -231,25 +241,32 @@ bool CLameWrapper::LoadLib()
 void CLameWrapper::Init()
 {
   m_Id3TagInit(m_LameGlobalFlags);  
-
+  
+  bool bCreateId3v1 = false;
+  
   if(!m_pSessionInfo->m_sTitle.empty()) {
     m_Id3TagSetTitle(m_LameGlobalFlags, m_pSessionInfo->m_sTitle.c_str());
+    bCreateId3v1 = true;
   }
   
   if(!m_pSessionInfo->m_sArtist.empty()) {
     m_Id3TagSetArtist(m_LameGlobalFlags, m_pSessionInfo->m_sArtist.c_str());
+    bCreateId3v1 = true;
   }
 
   if(!m_pSessionInfo->m_sAlbum.empty()) {
     m_Id3TagSetAlbum(m_LameGlobalFlags, m_pSessionInfo->m_sAlbum.c_str());
+    bCreateId3v1 = true;
   }
   
   if(!m_pSessionInfo->m_sGenre.empty()) {
     m_Id3TagSetGenre(m_LameGlobalFlags, m_pSessionInfo->m_sGenre.c_str());
+    bCreateId3v1 = true;
   }
   
   if(!m_pSessionInfo->m_sOriginalTrackNumber.empty()) {
     m_Id3TagSetTrack(m_LameGlobalFlags, m_pSessionInfo->m_sOriginalTrackNumber.c_str());
+    bCreateId3v1 = true;
   }
   
   m_Id3TagV2Only(m_LameGlobalFlags);
@@ -257,8 +274,42 @@ void CLameWrapper::Init()
   //m_Id3TagPadV2(m_LameGlobalFlags); 
   
   
-  m_LameSetMode(m_LameGlobalFlags, STEREO);
+
+  //http://de.wikipedia.org/wiki/Liste_der_ID3-Genres
+      
+  /*Offset 	Länge 	Bedeutung
+        0 	3 	Kennung "TAG" zur Kennzeichnung eines ID3v1-Blocks
+        3 	30 	Songtitel
+       33 	30 	Künstler/Interpret
+       63 	30 	Album
+       93 	4 	Erscheinungsjahr
+       97 	29 	Beliebiger Kommentar
+      126   1   Track no.
+      127 	1 	Genre */ 
   
+  if(bCreateId3v1) {
+    sprintf(szMp3Tail, "TAG");    
+    sprintf(&szMp3Tail[3],  "%30s", m_pSessionInfo->m_sTitle.c_str());
+    sprintf(&szMp3Tail[33], "%30s", m_pSessionInfo->m_sArtist.c_str());
+    sprintf(&szMp3Tail[63], "%30s", m_pSessionInfo->m_sAlbum.c_str());
+    sprintf(&szMp3Tail[93], "    ");
+    sprintf(&szMp3Tail[97], "%29s", "");
+    sprintf(&szMp3Tail[126], "%n", 0);
+    sprintf(&szMp3Tail[127], "%n", 0);
+  }
+  else {    
+    const string sFakeMp3Tail = 
+      "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
+      "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
+      "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
+      "qqqqqqqqqqqqqqqqqqo=";
+    
+    string sBinFake = Base64Decode(sFakeMp3Tail);      
+    memcpy(szMp3Tail, sBinFake.c_str(), 128);                 
+  }
+  
+
+  m_LameSetMode(m_LameGlobalFlags, STEREO);  
   m_LameInitParams(m_LameGlobalFlags);  
 }
 
@@ -278,6 +329,7 @@ std::string CLameWrapper::GetVersion()
 
 void CLameWrapper::SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings)
 {
+  // bitrate
   if(pTranscodingSettings->BitRate() > 0 && m_LameSetCompressionRatio) {
         
     LAME_BITRATE_MAPPING_t* mapping = LAME_BITRATE_MAPPINGS;
@@ -299,13 +351,19 @@ void CLameWrapper::SetTranscodingSettings(CTranscodingSettings* pTranscodingSett
     m_nBitRate = 128;
   }  
   
-  #warning todo
+  // samplerate
   if(pTranscodingSettings->SampleRate() > 0) {
     m_nSampleRate = pTranscodingSettings->SampleRate();
   }
   else {
     m_nSampleRate = 44100;
   }
+    
+  // quality
+  if((pTranscodingSettings->LameQuality() != -1) && m_LameSetQuality) {
+    m_LameSetQuality(m_LameGlobalFlags, pTranscodingSettings->LameQuality());
+  }
+  
   
   m_nChannels = 2;
 }
