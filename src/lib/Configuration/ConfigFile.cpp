@@ -121,22 +121,24 @@ int CConfigFile::Load(std::string p_sFileName, std::string* p_psErrorMsg)
         m_bTranscodeFlac = (pTmpNode->ChildNode(i)->Value().compare("true") == 0);
       }
 	  
-	  else if(pTmpNode->ChildNode(i)->Name().compare("lame_libname") == 0) {
-		m_sLameLibName = pTmpNode->ChildNode(i)->Value();
-	  }
-	  else if(pTmpNode->ChildNode(i)->Name().compare("twolame_libname") == 0) {
-		m_sTwoLameLibName = pTmpNode->ChildNode(i)->Value();
-	  }
-	  else if(pTmpNode->ChildNode(i)->Name().compare("vorbis_libname") == 0) {
-		m_sVorbisLibName = pTmpNode->ChildNode(i)->Value();
-	  }
-	  else if(pTmpNode->ChildNode(i)->Name().compare("flac_libname") == 0) {
-		m_sFlacLibName = pTmpNode->ChildNode(i)->Value();
-	  }
-	  else if(pTmpNode->ChildNode(i)->Name().compare("mpc_libname") == 0) {
-		m_sMpcLibName = pTmpNode->ChildNode(i)->Value();
-	  }
-	  
+      else if(pTmpNode->ChildNode(i)->Name().compare("lame_libname") == 0) {
+        m_sLameLibName = pTmpNode->ChildNode(i)->Value();
+      }
+      else if(pTmpNode->ChildNode(i)->Name().compare("twolame_libname") == 0) {
+        m_sTwoLameLibName = pTmpNode->ChildNode(i)->Value();
+      }
+      else if(pTmpNode->ChildNode(i)->Name().compare("vorbis_libname") == 0) {
+        m_sVorbisLibName = pTmpNode->ChildNode(i)->Value();
+      }
+      else if(pTmpNode->ChildNode(i)->Name().compare("flac_libname") == 0) {
+        m_sFlacLibName = pTmpNode->ChildNode(i)->Value();
+      }
+      else if(pTmpNode->ChildNode(i)->Name().compare("mpc_libname") == 0) {
+        m_sMpcLibName = pTmpNode->ChildNode(i)->Value();
+      }
+      else if(pTmpNode->ChildNode(i)->Name().compare("faad_libname") == 0) {
+        m_sFaadLibName = pTmpNode->ChildNode(i)->Value();	  
+      }
     }
   }
   // end transcoding
@@ -421,13 +423,40 @@ void CConfigFile::ParseTranscodingSettings(CXMLNode* pTCNode, CFileSettings* pFi
       pFileSet->pTranscodingSettings->sOutParams = pTmp->Value();
     }                           
     else if(pTmp->Name().compare("encoder") == 0) {
-      pFileSet->pTranscodingSettings->sEncoder = pTmp->Value();
+      
+      if(pTmp->Value().compare("lame") == 0)
+        pFileSet->pTranscodingSettings->nEncoderType = ET_LAME;
+      else if(pTmp->Value().compare("twolame") == 0)
+        pFileSet->pTranscodingSettings->nEncoderType = ET_TWOLAME;
+      else if(pTmp->Value().compare("wav") == 0)
+        pFileSet->pTranscodingSettings->nEncoderType = ET_WAV;
+      else if(pTmp->Value().compare("pcm") == 0)
+        pFileSet->pTranscodingSettings->nEncoderType = ET_PCM;
+      else
+        pFileSet->pTranscodingSettings->nEncoderType = ET_NONE;
+      
     }
     else if(pTmp->Name().compare("decoder") == 0) {
-      pFileSet->pTranscodingSettings->sDecoder = pTmp->Value();
+      
+      if(pTmp->Value().compare("vorbis") == 0)
+        pFileSet->pTranscodingSettings->nDecoderType = DT_OGG_VORBIS;
+      else if(pTmp->Value().compare("flac") == 0)
+        pFileSet->pTranscodingSettings->nDecoderType = DT_FLAC;
+      else if(pTmp->Value().compare("mpc") == 0)
+        pFileSet->pTranscodingSettings->nDecoderType = DT_MUSEPACK;
+      else if(pTmp->Value().compare("aac") == 0)
+        pFileSet->pTranscodingSettings->nDecoderType = DT_AAC;
+      else
+        pFileSet->pTranscodingSettings->nDecoderType = DT_NONE;
+      
     }
     else if(pTmp->Name().compare("transcoder") == 0) {
-      pFileSet->pTranscodingSettings->sTranscoder = pTmp->Value();
+      
+      if(pTmp->Value().compare("ffmpeg") == 0)
+        pFileSet->pTranscodingSettings->nTranscoderType = TTYP_FFMPEG;
+      else
+        pFileSet->pTranscodingSettings->nTranscoderType = TTYP_NONE;    
+      
     }
      
     else if(pTmp->Name().compare("bitrate") == 0) {

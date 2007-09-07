@@ -80,11 +80,12 @@ class CConfigFile
     bool         TranscodeMusePack() { return m_bTranscodeMusePack; }
     bool         TranscodeFlac() { return m_bTranscodeFlac; }
   
-	std::string	 LameLibName() { return m_sLameLibName; }
-	std::string  TwoLameLibName() { return m_sTwoLameLibName; }
-	std::string  VorbisLibName() { return m_sVorbisLibName; }
-	std::string  MpcLibName() { return m_sMpcLibName; }
-	std::string  FlacLibName() { return m_sFlacLibName; }
+    std::string	 LameLibName() { return m_sLameLibName; }
+    std::string  TwoLameLibName() { return m_sTwoLameLibName; }
+    std::string  VorbisLibName() { return m_sVorbisLibName; }
+    std::string  MpcLibName() { return m_sMpcLibName; }
+    std::string  FlacLibName() { return m_sFlacLibName; }
+    std::string  FaadLibName() { return m_sFaadLibName; }
   
     bool WriteDefaultConfig(std::string p_sFileName);
   
@@ -119,11 +120,12 @@ class CConfigFile
     bool                      m_bTranscodeMusePack;
     bool                      m_bTranscodeFlac;  
 	
-	std::string				  m_sLameLibName;
-	std::string				  m_sTwoLameLibName;
-	std::string				  m_sVorbisLibName;
-	std::string				  m_sMpcLibName;
-	std::string				  m_sFlacLibName;
+    std::string				  m_sLameLibName;
+    std::string				  m_sTwoLameLibName;
+    std::string				  m_sVorbisLibName;
+    std::string				  m_sMpcLibName;
+    std::string				  m_sFlacLibName;
+    std::string         m_sFaadLibName;
 };
 
 #endif // _CONFIGFILE_H

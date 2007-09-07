@@ -70,6 +70,7 @@ class CTranscodingCacheObject
     unsigned int Transcode(CDeviceSettings* pDeviceSettings);
     int Append(char** p_pszBinBuffer, unsigned int p_nBinBufferSize);
   
+    void GetId3v1(char buffer[128]);
   //private:
     unsigned int m_nRefCount;
     

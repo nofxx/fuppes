@@ -60,20 +60,9 @@ class CTranscodingMgr
   
     void PrintTranscodingSettings(std::string* p_sHTMLVersion = NULL);
     
-    
-    /** create an appropriate audio encoder
-     * @param  p_sFileExt    the target file extension     
-     * @return the encoder object
-     */
-    CAudioEncoderBase* CreateAudioEncoder(std::string p_sFileExt);
+    CAudioEncoderBase* CreateAudioEncoder(ENCODER_TYPE p_nEncoderType);
   
-    /** create an appropriate audio decoder
-     * @param  p_sFileExt    the source file extension
-     * @param  p_nBufferSize the buffer size needed     
-     * @return the decoder object
-     */
-    CAudioDecoderBase* CreateAudioDecoder(std::string p_sFileExt, unsigned int* p_nBufferSize);
-  
+    CAudioDecoderBase* CreateAudioDecoder(DECODER_TYPE p_nDecoderType, unsigned int* p_nBufferSize);
   
     CTranscoderBase* CreateTranscoder(TRANSCODER_TYPE p_nTranscoderType);
   

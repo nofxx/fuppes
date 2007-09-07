@@ -61,7 +61,13 @@ bool CVorbisDecoder::LoadLib()
   #ifdef WIN32
   std::string sLibName = "libvorbisfile-3.dll";
   #else  
+  
+  #ifndef HAVE_TREMOR
   std::string sLibName = "libvorbisfile.so";
+  #elif HAVE_TREMOR
+  std::string sLibName = "libvorbisidec.so";
+  #endif  
+
   #endif
   
   if(!CSharedConfig::Shared()->VorbisLibName().empty()) {
@@ -74,7 +80,7 @@ bool CVorbisDecoder::LoadLib()
   if(!m_LibHandle)
   {
     stringstream sLog;
-    sLog << "cannot open library";
+    sLog << "cannot open library " << sLibName;
     CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
     return false;
   } 
@@ -135,7 +141,8 @@ bool CVorbisDecoder::LoadLib()
 
 bool CVorbisDecoder::OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetails)
 {
-  if ((m_pVorbisFileHandle = fopen(p_sFileName.c_str(), "r")) == NULL)
+  
+  if ((m_pVorbisFileHandle = fopen(p_sFileName.c_str(), "rb")) == NULL)
   {
     fprintf(stderr, "Cannot open %s\n", p_sFileName.c_str()); 
     return false;

@@ -37,6 +37,33 @@
 #ifdef __cplusplus
 extern "C"
 {
+  /* NeAACDecHandle NeAACDecOpen(void); */
+  typedef NeAACDecHandle (*NeAACDecOpen_t)(void);
+
+  /* NeAACDecConfigurationPtr NeAACDecGetCurrentConfiguration(NeAACDecHandle hDecoder); */
+  typedef NeAACDecConfigurationPtr (*NeAACDecGetCurrentConfiguration_t)(NeAACDecHandle);
+
+  /* unsigned char NeAACDecSetConfiguration(NeAACDecHandle hDecoder, NeAACDecConfigurationPtr config); */
+  typedef unsigned char (*NeAACDecSetConfiguration_t)(NeAACDecHandle, NeAACDecConfigurationPtr);
+  
+  /* long NeAACDecInit(NeAACDecHandle hDecoder,
+                              unsigned char *buffer,
+                              unsigned long buffer_size,
+                              unsigned long *samplerate,
+                              unsigned char *channels); */
+  typedef long (*NeAACDecInit_t)(NeAACDecHandle, unsigned char*,
+                              unsigned long, unsigned long*,
+                              unsigned char*);
+  
+  /* void NEAACDECAPI NeAACDecClose(NeAACDecHandle hDecoder); */
+  typedef void (*NeAACDecClose_t)(NeAACDecHandle);
+
+  /* void* NeAACDecDecode(NeAACDecHandle hDecoder,
+                                 NeAACDecFrameInfo *hInfo,
+                                 unsigned char *buffer,
+                                 unsigned long buffer_size);*/
+  typedef void* (*NeAACDecDecode_t)(NeAACDecHandle, NeAACDecFrameInfo*,
+                                 unsigned char*, unsigned long);  
   
 }
 #endif // __cplusplus
@@ -54,6 +81,24 @@ class CAACDecoder: public CAudioDecoderBase
     long DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead);
 
     unsigned int NumPcmSamples();
+  
+  private:
+    
+    NeAACDecHandle            AACDecoder;
+    NeAACDecFrameInfo         AACFrameInfo;
+    NeAACDecConfigurationPtr  AACConfig;
+    
+    unsigned char*  m_Buffer;
+    FILE*           m_pFileHandle;
+    int             m_nFileLength;
+    unsigned int    m_nOffset;
+  
+    NeAACDecOpen_t                      m_NeAACDecOpen;
+    NeAACDecGetCurrentConfiguration_t   m_NeAACDecGetCurrentConfiguration;
+    NeAACDecSetConfiguration_t          m_NeAACDecSetConfiguration;
+    NeAACDecInit_t                      m_NeAACDecInit;
+    NeAACDecDecode_t                    m_NeAACDecDecode;
+    NeAACDecClose_t                     m_NeAACDecClose;
 };
 
 #endif // _AACDECODER_H

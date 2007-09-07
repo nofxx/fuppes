@@ -95,7 +95,8 @@ typedef enum DECODER_TYPE {
   DT_NONE,
   DT_OGG_VORBIS,
   DT_FLAC,
-  DT_MUSEPACK
+  DT_MUSEPACK,
+  DT_AAC
 } DECODER_TYPE;
 
 typedef enum TRANSCODING_HTTP_RESPONSE {
@@ -125,9 +126,9 @@ struct CTranscodingSettings {
     std::string   sMimeType;
     std::string   sDLNA;
   
-    std::string   sDecoder;     // vorbis | flac | mpc
+    /*std::string   sDecoder;     // vorbis | flac | mpc
     std::string   sEncoder;     // lame | twolame | pcm | wav
-    std::string   sTranscoder;  // ffmpeg
+    std::string   sTranscoder;  // ffmpeg*/
   
     std::string   sOutParams;
   
@@ -146,6 +147,10 @@ struct CTranscodingSettings {
     int ReleaseDelay() { return nReleaseDelay; }
   
     std::list<CFFmpegSettings*>   pFFmpegSettings;
+  
+    TRANSCODER_TYPE TranscoderType() { return nTranscoderType; }
+    DECODER_TYPE    DecoderType() { return nDecoderType; }
+    ENCODER_TYPE    EncoderType() { return nEncoderType; }
   
   private:
     bool          bEnabled;

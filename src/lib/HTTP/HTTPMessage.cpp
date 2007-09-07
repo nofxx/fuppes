@@ -371,34 +371,20 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
   /* read (transcoded) data from memory */
   else
   {    
+    bool bTranscode = (m_pTranscodingSessionInfo != NULL);
     
     // id3v1 request
-    if(m_pTranscodingSessionInfo) {
-
-      if(m_pTranscodingSessionInfo->m_nGuessContentLength > 0) {
-
-      #warning todo: new option "fake mp3 tail"
-      if(/*((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 127) ||*/
-         ((m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 128)) {       
-           
-        const string sFakeMp3Tail = 
-          "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
-          "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
-          "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
-          "qqqqqqqqqqqqqqqqqqo=";    
-    
-        string sBinFake = Base64Decode(sFakeMp3Tail);      
-        memcpy(p_sContentChunk, sBinFake.c_str(), 128);
-        return 128;
-      }
-      }
-    }
-    
+    #warning todo: new option "fake mp3 tail"
+    if(bTranscode &&
+       (m_pTranscodingSessionInfo->m_nGuessContentLength > 0) && 
+       (m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 128) {
+        
+      m_pTranscodingCacheObj->GetId3v1(p_sContentChunk);
+      return 128;      
+    }    
     
     unsigned int nRest = 0;
-    unsigned int nDelayCount = 0;  
-    bool bTranscode = (m_pTranscodingSessionInfo != NULL);
-
+    unsigned int nDelayCount = 0;
     
     #ifndef DISABLE_TRANSCODING
     if(bTranscode) {

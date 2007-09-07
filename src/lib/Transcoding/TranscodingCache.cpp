@@ -30,6 +30,10 @@
 #include "../SharedLog.h"
 #include "../ContentDirectory/FileDetails.h"
 
+#ifdef HAVE_LAME
+#include "LameWrapper.h"
+#endif
+
 #include <iostream>
 #include <fstream>
 
@@ -88,13 +92,13 @@ CTranscodingCacheObject::~CTranscodingCacheObject()
 
 bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceSettings* pDeviceSettings)
 {
-  std::string sExt = ToLower(ExtractFileExt(pSessionInfo->m_sInFileName));
+  std::string sExt = ExtractFileExt(pSessionInfo->m_sInFileName);
   
   ReleaseCount(pDeviceSettings->ReleaseDelay(sExt));
   
   if(pDeviceSettings->GetTranscodingType(sExt) == TT_THREADED_TRANSCODER ||
      pDeviceSettings->GetTranscodingType(sExt) == TT_TRANSCODER) {
-    
+       
     if(m_bInitialized) {
       return true;
     }     
@@ -137,7 +141,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
     // create decoder
     nBufferLength = 32768;    
     
-    m_pDecoder = CTranscodingMgr::Shared()->CreateAudioDecoder(sExt, &nBufferLength);
+    m_pDecoder = CTranscodingMgr::Shared()->CreateAudioDecoder(pDeviceSettings->GetDecoderType(sExt), &nBufferLength);
     
     // init decoder    
     if(!m_pDecoder || !m_pDecoder->LoadLib() || !m_pDecoder->OpenFile(pSessionInfo->m_sInFileName, &AudioDetails)) {
@@ -156,7 +160,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
   // init encoder
   if(!m_pAudioEncoder) {
     
-    m_pAudioEncoder = CTranscodingMgr::Shared()->CreateAudioEncoder(pDeviceSettings->Extension(sExt)); //(CFileDetails::Shared()->GetTargetExtension(sExt));
+    m_pAudioEncoder = CTranscodingMgr::Shared()->CreateAudioEncoder(pDeviceSettings->GetEncoderType(sExt));
     if(!m_pAudioEncoder->LoadLib()) {      
       delete m_pAudioEncoder;
       m_pAudioEncoder = NULL;
@@ -242,7 +246,7 @@ unsigned int CTranscodingCacheObject::Transcode(CDeviceSettings* pDeviceSettings
   
   if(!m_bThreaded) {
     //m_sOutFileName = "/tmp/fuppes.jpg";
-    std::string sExt = ToLower(ExtractFileExt(m_sInFileName));
+    std::string sExt = ExtractFileExt(m_sInFileName);
     m_pTranscoder->Transcode(pDeviceSettings->FileSettings(sExt), m_sInFileName, &m_sOutFileName);
     
     m_bIsComplete    = true;
@@ -323,10 +327,18 @@ fuppesThreadCallback TranscodeThread(void *arg)
   /* Transcoding loop */
   while(((samplesRead = pCacheObj->m_pDecoder->DecodeInterleaved((char*)pCacheObj->m_pPcmOut, pCacheObj->nBufferLength, &nBytesRead)) >= 0) && !pCacheObj->m_bBreakTranscoding)
   {    
+    if(samplesRead == 0)
+      continue;
+    
+    cout << samplesRead << endl;
+    
     /* encode */
     nLameRet = pCacheObj->m_pAudioEncoder->EncodeInterleaved(pCacheObj->m_pPcmOut, samplesRead, nBytesRead);
     if(nLameRet == 0)
       continue;
+    
+    cout << "tmp size: " << nTmpSize << " lame ret: " << nLameRet << endl;
+    fflush(stdout);
     
     /* (re-)allocate temporary buffer ... */
     if(!szTmpBuff)
@@ -430,6 +442,27 @@ fuppesThreadCallback TranscodeThread(void *arg)
 }
 
 
+void CTranscodingCacheObject::GetId3v1(char buffer[128])
+{ 
+  #ifdef HAVE_LAME
+  CLameWrapper* pLame = dynamic_cast<CLameWrapper*>(m_pAudioEncoder);
+  if(!pLame) {
+  #endif
+    const string sFakeMp3Tail = 
+          "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
+          "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
+          "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
+          "qqqqqqqqqqqqqqqqqqo="; 
+  
+    string sResult = Base64Decode(sFakeMp3Tail);
+    memcpy(buffer, sFakeMp3Tail.c_str(), 128);
+  #ifdef HAVE_LAME
+  }
+  else {
+    pLame->GetMp3Tail(buffer);
+  }
+  #endif
+}
 
 fuppesThreadCallback ReleaseLoop(void* arg);
 

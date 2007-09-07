@@ -80,7 +80,7 @@ bool CLameWrapper::LoadLib()
     CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot open library", __FILE__, __LINE__);
 		cout << "[WARNING :: LameWrapper] cannot open library" << endl;
     return false;
-  }   
+  }
    
   
   // lame_init()
@@ -240,40 +240,40 @@ bool CLameWrapper::LoadLib()
 
 void CLameWrapper::Init()
 {
-  m_Id3TagInit(m_LameGlobalFlags);  
+  if(m_Id3TagInit) {
+    m_Id3TagInit(m_LameGlobalFlags);
+  }
   
   bool bCreateId3v1 = false;
   
-  if(!m_pSessionInfo->m_sTitle.empty()) {
+  if(m_Id3TagSetTitle && !m_pSessionInfo->m_sTitle.empty()) {
     m_Id3TagSetTitle(m_LameGlobalFlags, m_pSessionInfo->m_sTitle.c_str());
     bCreateId3v1 = true;
   }
   
-  if(!m_pSessionInfo->m_sArtist.empty()) {
+  if(m_Id3TagSetArtist && !m_pSessionInfo->m_sArtist.empty()) {
     m_Id3TagSetArtist(m_LameGlobalFlags, m_pSessionInfo->m_sArtist.c_str());
     bCreateId3v1 = true;
   }
 
-  if(!m_pSessionInfo->m_sAlbum.empty()) {
+  if(m_Id3TagSetAlbum && !m_pSessionInfo->m_sAlbum.empty()) {
     m_Id3TagSetAlbum(m_LameGlobalFlags, m_pSessionInfo->m_sAlbum.c_str());
     bCreateId3v1 = true;
   }
   
-  if(!m_pSessionInfo->m_sGenre.empty()) {
+  if(m_Id3TagSetGenre && !m_pSessionInfo->m_sGenre.empty()) {
     m_Id3TagSetGenre(m_LameGlobalFlags, m_pSessionInfo->m_sGenre.c_str());
     bCreateId3v1 = true;
   }
   
-  if(!m_pSessionInfo->m_sOriginalTrackNumber.empty()) {
+  if(m_Id3TagSetTrack && !m_pSessionInfo->m_sOriginalTrackNumber.empty()) {
     m_Id3TagSetTrack(m_LameGlobalFlags, m_pSessionInfo->m_sOriginalTrackNumber.c_str());
     bCreateId3v1 = true;
   }
   
-  m_Id3TagV2Only(m_LameGlobalFlags);
-  //m_Id3TagAddV2(m_LameGlobalFlags);
-  //m_Id3TagPadV2(m_LameGlobalFlags); 
-  
-  
+  if(m_Id3TagV2Only) {
+    m_Id3TagV2Only(m_LameGlobalFlags);
+  } 
 
   //http://de.wikipedia.org/wiki/Liste_der_ID3-Genres
       
@@ -294,8 +294,8 @@ void CLameWrapper::Init()
     sprintf(&szMp3Tail[63], "%30s", m_pSessionInfo->m_sAlbum.c_str());
     sprintf(&szMp3Tail[93], "    ");
     sprintf(&szMp3Tail[97], "%29s", "");
-    sprintf(&szMp3Tail[126], "%n", 0);
-    sprintf(&szMp3Tail[127], "%n", 0);
+    sprintf(&szMp3Tail[126], "%d", 0);
+    sprintf(&szMp3Tail[127], "%d", 0);
   }
   else {    
     const string sFakeMp3Tail = 
@@ -308,8 +308,9 @@ void CLameWrapper::Init()
     memcpy(szMp3Tail, sBinFake.c_str(), 128);                 
   }
   
-
-  m_LameSetMode(m_LameGlobalFlags, STEREO);  
+  if(m_LameSetMode) {
+    m_LameSetMode(m_LameGlobalFlags, STEREO);
+  }  
   m_LameInitParams(m_LameGlobalFlags);  
 }
 
@@ -343,8 +344,10 @@ void CLameWrapper::SetTranscodingSettings(CTranscodingSettings* pTranscodingSett
       mapping++;
     }
     
-    if(m_LameSetCompressionRatio(m_LameGlobalFlags, fBitrate) == 0)
-      m_nBitRate = pTranscodingSettings->BitRate();
+    if(m_LameSetCompressionRatio) {
+      if(m_LameSetCompressionRatio(m_LameGlobalFlags, fBitrate) == 0)
+        m_nBitRate = pTranscodingSettings->BitRate();
+    }
   }
   
   if(m_nBitRate == 0) {
@@ -406,6 +409,11 @@ unsigned int CLameWrapper::GuessContentLength(unsigned int p_nNumPcmSamples)
   //cout << "lame: " << p_nNumPcmSamples << " :: " << (unsigned int)p_nNumPcmSamples * (bitrate/8.0)/samplerate + 4 * 1152 * (bitrate/8.0)/samplerate + 512 << endl;
   
   return (unsigned int)p_nNumPcmSamples * (bitrate/8.0)/samplerate + 4 * 1152 * (bitrate/8.0)/samplerate + 512;
+}
+
+void CLameWrapper::GetMp3Tail(char* p_szBuffer)
+{
+  memcpy(p_szBuffer, szMp3Tail, 128);
 }
 
 #endif // HAVE_LAME

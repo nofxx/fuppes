@@ -123,12 +123,13 @@ class CSharedConfig
     bool UseTaglib()      { return m_pConfigFile->UseTaglib(); }
     bool UseLibAvFormat() { return m_pConfigFile->UseLibAvFormat(); }
 
-	std::string LameLibName() { return m_pConfigFile->LameLibName(); }
-	std::string TwoLameLibName() { return m_pConfigFile->TwoLameLibName(); }
-	std::string VorbisLibName() { return m_pConfigFile->VorbisLibName(); }
-	std::string MpcLibName() { return m_pConfigFile->MpcLibName(); }
-	std::string FlacLibName() { return m_pConfigFile->FlacLibName(); }
-	
+    std::string LameLibName() { return m_pConfigFile->LameLibName(); }
+    std::string TwoLameLibName() { return m_pConfigFile->TwoLameLibName(); }
+    std::string VorbisLibName() { return m_pConfigFile->VorbisLibName(); }
+    std::string MpcLibName() { return m_pConfigFile->MpcLibName(); }
+    std::string FlacLibName() { return m_pConfigFile->FlacLibName(); }
+    std::string FaadLibName() { return m_pConfigFile->FaadLibName(); }
+  
     std::string TempDir() { return m_sTempDir; }
     std::string CreateTempFileName();
   

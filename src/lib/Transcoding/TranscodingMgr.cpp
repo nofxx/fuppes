@@ -54,6 +54,9 @@
   #include "FlacWrapper.h"
   #endif
 
+  #ifdef HAVE_FAAD
+  #include "AACDecoder.h"
+  #endif
 
   // transcoder
   #ifdef HAVE_LIBAVFORMAT
@@ -371,60 +374,84 @@ void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
 }
 
 
-CAudioEncoderBase* CTranscodingMgr::CreateAudioEncoder(std::string p_sFileExt)
+CAudioEncoderBase* CTranscodingMgr::CreateAudioEncoder(ENCODER_TYPE p_nEncoderType)
 {
-  #ifndef DISABLE_TRANSCODING
-  CAudioEncoderBase* pResult = NULL;
-
-  if(p_sFileExt.compare("mp3") == 0) {    
-
-    if(m_bUseLame) {
+  CAudioEncoderBase* pResult = NULL;  
+  #ifndef DISABLE_TRANSCODING 
+  
+  switch(p_nEncoderType) {
+    
+    case ET_LAME:
       #ifdef HAVE_LAME
       pResult = (CAudioEncoderBase*)(new CLameWrapper());
       #endif
-    }
-    else {
+      break;
+    
+    case ET_TWOLAME:
       #ifdef HAVE_TWOLAME
       pResult = (CAudioEncoderBase*)(new CTwoLameEncoder());
       #endif
-    }
-
-    return pResult;
-  }
-  else if(p_sFileExt.compare("wav") == 0) {  
-    pResult = (CAudioEncoderBase*)(new CWavEncoder());    
-    return pResult;
+      break;
+    
+    case ET_WAV:
+      pResult = (CAudioEncoderBase*)(new CWavEncoder());
+      break;
+    
+    case ET_PCM:
+      pResult = (CAudioEncoderBase*)(new CPcmEncoder());
+      break;
+    
+    default:
+      break;
   }
   #endif
 
-  return NULL;
+  return pResult;
 }
 
-CAudioDecoderBase* CTranscodingMgr::CreateAudioDecoder(std::string p_sFileExt, unsigned int* p_nBufferSize)
+CAudioDecoderBase* CTranscodingMgr::CreateAudioDecoder(DECODER_TYPE p_nDecoderType, unsigned int* p_nBufferSize)
 {
   CAudioDecoderBase* pResult = NULL;
 
   #ifndef DISABLE_TRANSCODING
 
-  #ifdef HAVE_VORBIS
-  if(p_sFileExt.compare("ogg") == 0) {
-    pResult = (CAudioDecoderBase*)(new CVorbisDecoder());    
-  }
-  #endif
-
-  #ifdef HAVE_MUSEPACK
-  if(p_sFileExt.compare("mpc") == 0) {
-    pResult = (CAudioDecoderBase*)(new CMpcDecoder());
-    *p_nBufferSize = MPC_DECODER_BUFFER_LENGTH * 4;
-  }
-  #endif
-
-  #ifdef HAVE_FLAC
-  if(p_sFileExt.compare("flac") == 0) {
-    pResult = (CAudioDecoderBase*)(new CFLACDecoder());
-  }
-  #endif
-
+  cout << "type: " << p_nDecoderType << endl;
+  
+  switch(p_nDecoderType) {
+    
+    case DT_OGG_VORBIS:
+      #ifdef HAVE_VORBIS
+      cout << "vorbis" << endl;
+      pResult = (CAudioDecoderBase*)(new CVorbisDecoder());
+      #endif
+      break;
+    
+    case DT_MUSEPACK:
+      #ifdef HAVE_MUSEPACK
+      cout << "mpc" << endl;
+      pResult = (CAudioDecoderBase*)(new CMpcDecoder());
+      *p_nBufferSize = MPC_DECODER_BUFFER_LENGTH * 4;
+      #endif
+      break;
+  
+    case DT_FLAC:
+      #ifdef HAVE_FLAC
+      cout << "flac" << endl;
+      pResult = (CAudioDecoderBase*)(new CFLACDecoder());
+      #endif
+      break;
+    
+    case DT_AAC:
+      #ifdef HAVE_FAAD
+      cout << "aac" << endl;
+      pResult = (CAudioDecoderBase*)(new CAACDecoder());
+      #endif
+      break;
+    
+    default:
+      break;
+  } 
+  
   #endif
 
   return pResult;

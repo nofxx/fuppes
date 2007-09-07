@@ -59,8 +59,13 @@ CImageSettings::CImageSettings(CImageSettings* pImageSettings)
 
 CTranscodingSettings::CTranscodingSettings() 
 {
-  bEnabled             = true;
-  nTranscodingResponse = RESPONSE_STREAM;
+  bEnabled              = true;
+  nTranscodingResponse  = RESPONSE_STREAM;
+  nTranscodingType      = TT_NONE;
+  nTranscoderType       = TTYP_NONE;
+  nDecoderType          = DT_NONE;
+  nEncoderType          = ET_NONE;
+
   nBitRate             = 0;
   nSampleRate          = 0;
   nReleaseDelay        = -1;
@@ -72,14 +77,15 @@ CTranscodingSettings::CTranscodingSettings(CTranscodingSettings* pTranscodingSet
   bEnabled = pTranscodingSettings->bEnabled;
   nTranscodingResponse = pTranscodingSettings->nTranscodingResponse;
   
+  nTranscodingType  = pTranscodingSettings->nTranscodingType;
+  nTranscoderType   = pTranscodingSettings->nTranscoderType;
+  nDecoderType      = pTranscodingSettings->nDecoderType;
+  nEncoderType      = pTranscodingSettings->nEncoderType;
+
   nBitRate      = pTranscodingSettings->nBitRate;
   nSampleRate   = pTranscodingSettings->nSampleRate;
   nReleaseDelay = pTranscodingSettings->nReleaseDelay;
   nLameQuality  = pTranscodingSettings->nLameQuality;
-  
-  sDecoder      = pTranscodingSettings->sDecoder;
-  sEncoder      = pTranscodingSettings->sEncoder;
-  sTranscoder   = pTranscodingSettings->sTranscoder;
   
   sExt        = pTranscodingSettings->sExt;
   sDLNA       = pTranscodingSettings->sDLNA;
@@ -403,9 +409,9 @@ bool CDeviceSettings::DoTranscode(std::string p_sExt, std::string p_sACodec, std
     if(
        (m_FileSettingsIterator->second->pTranscodingSettings &&
         m_FileSettingsIterator->second->pTranscodingSettings->Enabled() &&
-        (!m_FileSettingsIterator->second->pTranscodingSettings->sDecoder.empty() ||
-         !m_FileSettingsIterator->second->pTranscodingSettings->sEncoder.empty() ||
-         !m_FileSettingsIterator->second->pTranscodingSettings->sTranscoder.empty())
+        (!m_FileSettingsIterator->second->pTranscodingSettings->DecoderType() != DT_NONE ||
+         !m_FileSettingsIterator->second->pTranscodingSettings->EncoderType() != ET_NONE ||
+         !m_FileSettingsIterator->second->pTranscodingSettings->TranscoderType() != TTYP_NONE)
         )) {
       
       if(!p_sACodec.empty() && !p_sVCodec.empty()) {
@@ -437,11 +443,11 @@ TRANSCODING_TYPE CDeviceSettings::GetTranscodingType(std::string p_sExt)
        m_FileSettingsIterator->second->pTranscodingSettings->Enabled()) {
          
        CTranscodingSettings* pTranscodingSettings = m_FileSettingsIterator->second->pTranscodingSettings;
-         
-       if(!pTranscodingSettings->sTranscoder.empty()) {
+
+       if(pTranscodingSettings->TranscoderType() != TTYP_NONE) {
          return TT_THREADED_TRANSCODER;
        }
-       else if(!pTranscodingSettings->sDecoder.empty() && !pTranscodingSettings->sEncoder.empty()) {
+       else if(!pTranscodingSettings->DecoderType() != DT_NONE && !pTranscodingSettings->EncoderType() != ET_NONE) {
          return TT_THREADED_DECODER_ENCODER;
        }
        else {
@@ -470,13 +476,7 @@ TRANSCODER_TYPE CDeviceSettings::GetTranscoderType(std::string p_sExt)
 
        CTranscodingSettings* pTranscodingSettings = m_FileSettingsIterator->second->pTranscodingSettings;
 
-       if(!pTranscodingSettings->sTranscoder.empty() && 
-          pTranscodingSettings->sTranscoder.compare("ffmpeg") == 0) {
-         return TTYP_FFMPEG;
-       }
-       else {
-         return TTYP_NONE;
-       }         
+       return pTranscodingSettings->TranscoderType();   
     }
     else if(m_FileSettingsIterator->second->pImageSettings &&
             m_FileSettingsIterator->second->pImageSettings->Enabled()) {
@@ -500,19 +500,7 @@ DECODER_TYPE CDeviceSettings::GetDecoderType(std::string p_sExt)
 
        CTranscodingSettings* pTranscodingSettings = m_FileSettingsIterator->second->pTranscodingSettings;
 
-       if(!pTranscodingSettings->sDecoder.empty()) {
-        
-         if(pTranscodingSettings->sDecoder.compare("vorbis") == 0) {
-           return DT_OGG_VORBIS;
-         }
-         else {
-           return DT_NONE;
-         }
-         
-       }
-       else {
-         return DT_NONE;
-       }         
+       return pTranscodingSettings->DecoderType();
     }   
     else {
       return DT_NONE;
@@ -531,20 +519,7 @@ ENCODER_TYPE CDeviceSettings::GetEncoderType(std::string p_sExt)
        m_FileSettingsIterator->second->pTranscodingSettings->Enabled()) {
 
        CTranscodingSettings* pTranscodingSettings = m_FileSettingsIterator->second->pTranscodingSettings;
-
-       if(!pTranscodingSettings->sEncoder.empty()) {
-        
-         if(pTranscodingSettings->sEncoder.compare("lame") == 0) {
-           return ET_LAME;
-         }
-         else {
-           return ET_NONE;
-         }
-         
-       }
-       else {
-         return ET_NONE;
-       }         
+       return pTranscodingSettings->EncoderType();
     }   
     else {
       return ET_NONE;
