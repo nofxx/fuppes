@@ -1,5 +1,5 @@
 /***************************************************************************
- *            AACDecoder.h
+ *            FaadWrapper.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -28,8 +28,8 @@
 #ifndef DISABLE_TRANSCODING
 #ifdef  HAVE_FAAD
  
-#ifndef _AACDECODER_H
-#define _AACDECODER_H
+#ifndef _FAADWRAPPER_H
+#define _FAADWRAPPER_H
 
 #include "WrapperBase.h"
 #include <faad.h>
@@ -37,43 +37,43 @@
 #ifdef __cplusplus
 extern "C"
 {
-  /* NeAACDecHandle NeAACDecOpen(void); */
-  typedef NeAACDecHandle (*NeAACDecOpen_t)(void);
+  /* faacDecHandle faacDecOpen(void); */
+  typedef faacDecHandle (*faacDecOpen_t)(void);
 
-  /* NeAACDecConfigurationPtr NeAACDecGetCurrentConfiguration(NeAACDecHandle hDecoder); */
-  typedef NeAACDecConfigurationPtr (*NeAACDecGetCurrentConfiguration_t)(NeAACDecHandle);
+  /* faacDecConfigurationPtr faacDecGetCurrentConfiguration(faacDecHandle hDecoder); */
+  typedef faacDecConfigurationPtr (*faacDecGetCurrentConfiguration_t)(faacDecHandle);
 
-  /* unsigned char NeAACDecSetConfiguration(NeAACDecHandle hDecoder, NeAACDecConfigurationPtr config); */
-  typedef unsigned char (*NeAACDecSetConfiguration_t)(NeAACDecHandle, NeAACDecConfigurationPtr);
+  /* unsigned char faacDecSetConfiguration(NeAACDecHandle hDecoder, faacDecConfigurationPtr config); */
+  typedef unsigned char (*faacDecSetConfiguration_t)(faacDecHandle, faacDecConfigurationPtr);
   
-  /* long NeAACDecInit(NeAACDecHandle hDecoder,
+  /* long faacDecInit(faacDecHandle hDecoder,
                               unsigned char *buffer,
                               unsigned long buffer_size,
                               unsigned long *samplerate,
                               unsigned char *channels); */
-  typedef long (*NeAACDecInit_t)(NeAACDecHandle, unsigned char*,
+  typedef long (*faacDecInit_t)(faacDecHandle, unsigned char*,
                               unsigned long, unsigned long*,
                               unsigned char*);
   
-  /* void NEAACDECAPI NeAACDecClose(NeAACDecHandle hDecoder); */
-  typedef void (*NeAACDecClose_t)(NeAACDecHandle);
+  /* void faacDecClose(faacDecHandle hDecoder); */
+  typedef void (*faacDecClose_t)(faacDecHandle);
 
-  /* void* NeAACDecDecode(NeAACDecHandle hDecoder,
-                                 NeAACDecFrameInfo *hInfo,
+  /* void* faacDecDecode(faacDecHandle hDecoder,
+                                 faacDecFrameInfo *hInfo,
                                  unsigned char *buffer,
                                  unsigned long buffer_size);*/
-  typedef void* (*NeAACDecDecode_t)(NeAACDecHandle, NeAACDecFrameInfo*,
+  typedef void* (*faacDecDecode_t)(faacDecHandle, faacDecFrameInfo*,
                                  unsigned char*, unsigned long);  
   
 }
 #endif // __cplusplus
 
 
-class CAACDecoder: public CAudioDecoderBase
+class CFaadWrapper: public CAudioDecoderBase
 {
   public:
-    CAACDecoder();
-    virtual ~CAACDecoder();
+    CFaadWrapper();
+    virtual ~CFaadWrapper();
   
     bool LoadLib();
     bool OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetails);
@@ -84,23 +84,27 @@ class CAACDecoder: public CAudioDecoderBase
   
   private:
     
-    NeAACDecHandle            AACDecoder;
-    NeAACDecFrameInfo         AACFrameInfo;
-    NeAACDecConfigurationPtr  AACConfig;
+    faacDecHandle            AACDecoder;
+    faacDecFrameInfo         AACFrameInfo;
+    faacDecConfigurationPtr  AACConfig;
     
     unsigned char*  m_Buffer;
     FILE*           m_pFileHandle;
-    int             m_nFileLength;
-    unsigned int    m_nOffset;
+    int             m_nFileLength;    
   
-    NeAACDecOpen_t                      m_NeAACDecOpen;
-    NeAACDecGetCurrentConfiguration_t   m_NeAACDecGetCurrentConfiguration;
-    NeAACDecSetConfiguration_t          m_NeAACDecSetConfiguration;
-    NeAACDecInit_t                      m_NeAACDecInit;
-    NeAACDecDecode_t                    m_NeAACDecDecode;
-    NeAACDecClose_t                     m_NeAACDecClose;
+    unsigned long   m_nBufferSize;
+    int             m_nBytesConsumed;
+    bool            m_bIsMp4;
+    void*           m_pSampleBuffer;
+  
+    faacDecOpen_t                      m_faacDecOpen;
+    faacDecGetCurrentConfiguration_t   m_faacDecGetCurrentConfiguration;
+    faacDecSetConfiguration_t          m_faacDecSetConfiguration;
+    faacDecInit_t                      m_faacDecInit;
+    faacDecDecode_t                    m_faacDecDecode;
+    faacDecClose_t                     m_faacDecClose;
 };
 
-#endif // _AACDECODER_H
+#endif // _FAADWRAPPER_H
 #endif // HAVE_FAAD
 #endif // DISABLE_TRANSCODING

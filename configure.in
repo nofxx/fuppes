@@ -1,9 +1,9 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl $Id: $
 
-AC_INIT([fuppes], [0.7.3a], [fuppes@ulrich-voelkel.de])
+AC_INIT([fuppes], [SVN-507], [fuppes@ulrich-voelkel.de])
 AM_CONFIG_HEADER(src/config.h)
-AM_INIT_AUTOMAKE(fuppes, 0.7.2a, fuppes@ulrich-voelkel.de)
+AM_INIT_AUTOMAKE(fuppes, SVN-507, fuppes@ulrich-voelkel.de)
 
 AC_PROG_CC
 AC_PROG_CXX
@@ -461,10 +461,23 @@ if test "x$transcoding" = "xyes"; then
     AC_SUBST(FAAD_H_DIR)
 
     AC_CHECK_HEADERS(${FAAD_H_DIR}faad.h, have_faad=yes, have_faad=no)
-    if test "x$have_faad" = "xyes"; then      
-      FUPPES_LIBS="$FUPPES_LIBS -lfaad"
-      have_decoder=yes
-      AC_DEFINE([HAVE_FAAD], [1], [])
+    if test "x$have_faad" = "xyes"; then    
+      AC_RUN_IFELSE(
+        [AC_LANG_PROGRAM(
+          [[#include <string.h>
+            #include <faad.h>]],
+          [[if(strcmp(FAAD2_VERSION, "2.0     ") != 0) {
+              printf("faad2 version 2.0 needed. found %s ", FAAD2_VERSION);
+              return 1;
+            }
+            else {
+              printf("faad2 version 2.0 found.");
+              return 0;
+            }]])],
+        [FUPPES_LIBS="$FUPPES_LIBS -lfaad"
+         have_decoder=yes
+         AC_DEFINE([HAVE_FAAD], [1], [])],
+        [have_faad=no])      
     fi
 		
   fi # have_encoder

@@ -444,8 +444,8 @@ void CConfigFile::ParseTranscodingSettings(CXMLNode* pTCNode, CFileSettings* pFi
         pFileSet->pTranscodingSettings->nDecoderType = DT_FLAC;
       else if(pTmp->Value().compare("mpc") == 0)
         pFileSet->pTranscodingSettings->nDecoderType = DT_MUSEPACK;
-      else if(pTmp->Value().compare("aac") == 0)
-        pFileSet->pTranscodingSettings->nDecoderType = DT_AAC;
+      else if(pTmp->Value().compare("faad") == 0)
+        pFileSet->pTranscodingSettings->nDecoderType = DT_FAAD;
       else
         pFileSet->pTranscodingSettings->nDecoderType = DT_NONE;
       

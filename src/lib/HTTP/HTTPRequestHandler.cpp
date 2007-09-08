@@ -263,12 +263,11 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
       bResult = false;      
     }
     else
-    {    
-      //if(CFileDetails::IsTranscodingExtension(sExt)) {
+    {      
       if(pRequest->DeviceSettings()->DoTranscode(sExt)) {
         CSharedLog::Shared()->Log(L_EXTENDED, "transcode " + sPath, __FILE__, __LINE__);        
      
-        sMimeType = pRequest->DeviceSettings()->MimeType(sExt); // CFileDetails::GetMimeType(sPath, true);
+        sMimeType = pRequest->DeviceSettings()->MimeType(sExt);
         if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {          
           //
           SMusicTrack trackDetails;
@@ -298,12 +297,17 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
           // mark the head response as chunked so
           // the correct header will be build
           pResponse->SetIsBinary(true);
-          #warning todo: set encoding depending on decoder/encoder combination
-          pResponse->SetTransferEncoding(HTTP_TRANSFER_ENCODING_CHUNKED);
+          
+          if(pRequest->DeviceSettings()->TranscodingHTTPResponse(sExt) == RESPONSE_CHUNKED) {
+            pResponse->SetTransferEncoding(HTTP_TRANSFER_ENCODING_CHUNKED);
+          }
+          else if(pRequest->DeviceSettings()->TranscodingHTTPResponse(sExt) == RESPONSE_STREAM) {
+            pResponse->SetTransferEncoding(HTTP_TRANSFER_ENCODING_NONE);
+          }          
         }
       }
       else {
-        sMimeType = pRequest->DeviceSettings()->MimeType(sExt); //pDb->GetResult()->GetValue("MIME_TYPE");
+        sMimeType = pRequest->DeviceSettings()->MimeType(sExt);
         pResponse->LoadContentFromFile(sPath);
       }      
       

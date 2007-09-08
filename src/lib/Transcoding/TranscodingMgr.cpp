@@ -55,7 +55,7 @@
   #endif
 
   #ifdef HAVE_FAAD
-  #include "AACDecoder.h"
+  #include "FaadWrapper.h"
   #endif
 
   // transcoder
@@ -414,21 +414,16 @@ CAudioDecoderBase* CTranscodingMgr::CreateAudioDecoder(DECODER_TYPE p_nDecoderTy
   CAudioDecoderBase* pResult = NULL;
 
   #ifndef DISABLE_TRANSCODING
-
-  cout << "type: " << p_nDecoderType << endl;
-  
   switch(p_nDecoderType) {
     
     case DT_OGG_VORBIS:
       #ifdef HAVE_VORBIS
-      cout << "vorbis" << endl;
       pResult = (CAudioDecoderBase*)(new CVorbisDecoder());
       #endif
       break;
     
     case DT_MUSEPACK:
       #ifdef HAVE_MUSEPACK
-      cout << "mpc" << endl;
       pResult = (CAudioDecoderBase*)(new CMpcDecoder());
       *p_nBufferSize = MPC_DECODER_BUFFER_LENGTH * 4;
       #endif
@@ -436,15 +431,13 @@ CAudioDecoderBase* CTranscodingMgr::CreateAudioDecoder(DECODER_TYPE p_nDecoderTy
   
     case DT_FLAC:
       #ifdef HAVE_FLAC
-      cout << "flac" << endl;
       pResult = (CAudioDecoderBase*)(new CFLACDecoder());
       #endif
       break;
     
-    case DT_AAC:
+    case DT_FAAD:
       #ifdef HAVE_FAAD
-      cout << "aac" << endl;
-      pResult = (CAudioDecoderBase*)(new CAACDecoder());
+      pResult = (CAudioDecoderBase*)(new CFaadWrapper());
       #endif
       break;
     

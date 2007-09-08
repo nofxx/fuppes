@@ -123,8 +123,8 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/VorbisWrapper.cpp\
   lib/Transcoding/MpcWrapper.cpp\
   lib/Transcoding/FlacWrapper.cpp\
-  lib/Transcoding/AACDecoder.h\
-  lib/Transcoding/AACDecoder.cpp\
+  lib/Transcoding/FaadWrapper.h\
+  lib/Transcoding/FaadWrapper.cpp\
   lib/Transcoding/ImageMagickWrapper.h\
   lib/Transcoding/ImageMagickWrapper.cpp
 
