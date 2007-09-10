@@ -28,17 +28,6 @@
       <comment>wenn ein transcoding object nicht referenziert wird den status
 aller verf&#xFC;gbaren devices abfragen und wenn die ensprechende object id von keinem ger&#xE4;t verwendet wird (z.b. wegen stop oder skip) transcodieren w&#xE4;hrend des release delays pausieren (evtl. sogar ganz abbrechen) andernfalls fortsetzen.</comment>
     </item>
-    <item>
-      <attribute id="1186701555" priority="1" done="0" start_date="732898" enddate="99999999" notify="0" endtime="-60" last_edited="1186701555"/>
-      <summary>transcoding lib names configurable</summary>
-      <comment>nt</comment>
-    </item>
-    <item>
-      <attribute id="1187858964" priority="1" done="0" start_date="732911" enddate="99999999" notify="0" endtime="-60" last_edited="1187858964"/>
-      <summary>"extract metadata" option in config</summary>
-      <comment>add an "extract metadata" option to the "file" nodes to exclude some file types (e.g. .NEF) from metadata extraction.
-Extraction from .NEF is painfully slow and most of the time not needed because it is converted anyway.</comment>
-    </item>
   </category>
   <category title="Business" place="1"/>
   <category title="Unfiled" place="2"/>

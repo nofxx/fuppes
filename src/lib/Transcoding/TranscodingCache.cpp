@@ -323,23 +323,18 @@ fuppesThreadCallback TranscodeThread(void *arg)
   int   nBytesRead = 0;
   
   pCacheObj->m_pAudioEncoder->Init();
-  
+    
   /* Transcoding loop */
   while(((samplesRead = pCacheObj->m_pDecoder->DecodeInterleaved((char*)pCacheObj->m_pPcmOut, pCacheObj->nBufferLength, &nBytesRead)) >= 0) && !pCacheObj->m_bBreakTranscoding)
   {    
     if(samplesRead == 0)
       continue;
     
-    cout << samplesRead << endl;
-    
     /* encode */
     nLameRet = pCacheObj->m_pAudioEncoder->EncodeInterleaved(pCacheObj->m_pPcmOut, samplesRead, nBytesRead);
     if(nLameRet == 0)
       continue;
-    
-    cout << "tmp size: " << nTmpSize << " lame ret: " << nLameRet << endl;
-    fflush(stdout);
-    
+        
     /* (re-)allocate temporary buffer ... */
     if(!szTmpBuff)
       szTmpBuff = (char*)malloc(nLameRet * sizeof(char));

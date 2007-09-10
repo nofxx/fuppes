@@ -438,6 +438,7 @@ CAudioDecoderBase* CTranscodingMgr::CreateAudioDecoder(DECODER_TYPE p_nDecoderTy
     case DT_FAAD:
       #ifdef HAVE_FAAD
       pResult = (CAudioDecoderBase*)(new CFaadWrapper());
+      *p_nBufferSize = FAAD_MIN_STREAMSIZE * FAAD_MAX_CHANNELS;
       #endif
       break;
     
