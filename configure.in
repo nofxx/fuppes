@@ -464,20 +464,11 @@ if test "x$transcoding" = "xyes"; then
     if test "x$have_faad" = "xyes"; then    
       AC_RUN_IFELSE(
         [AC_LANG_PROGRAM(
-          [[#include <string.h>
-            #include <faad.h>]],
-          [[if(strcmp(FAAD2_VERSION, "2.0     ") != 0) {
-              printf("faad2 version 2.0 needed. found %s ", FAAD2_VERSION);
-              return 1;
-            }
-            else {
-              printf("faad2 version 2.0 found.");
-              return 0;
-            }]])],
-        [FUPPES_LIBS="$FUPPES_LIBS -lfaad"
-         have_decoder=yes
+          [[#include <faad.h>]],
+          [[(void) faacDecOpen]])],
+        [have_decoder=yes
          AC_DEFINE([HAVE_FAAD], [1], [])],
-        [have_faad=no])      
+        [have_faad=no])
     fi
 		
   fi # have_encoder
@@ -658,9 +649,9 @@ if test "x$transcoding" = "xyes"; then
     fi 
 
     if test "x$have_faad" = "xyes"; then
-      echo "      faad (aac) : yes"
+      echo "      faad       : yes"
     else
-      echo "      fadd (aac) : no"      
+      echo "      fadd       : no"      
     fi 
   
   fi

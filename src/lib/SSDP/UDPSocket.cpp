@@ -85,7 +85,7 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
 	/* Set local endpoint */
   m_LocalEndpoint.sin_family = AF_INET;	
 	if(p_bDoMulticast) {
-    m_LocalEndpoint.sin_addr.s_addr  = INADDR_ANY;
+    m_LocalEndpoint.sin_addr.s_addr  = inet_addr(p_sIPAddress.c_str()); //INADDR_ANY;
     m_LocalEndpoint.sin_port		     = htons(MULTICAST_PORT);
 	}
   else {
@@ -112,7 +112,7 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
 		struct ip_mreq stMreq; /* Multicast interface structure */
 			
 		stMreq.imr_multiaddr.s_addr = inet_addr(MULTICAST_IP); 
-		stMreq.imr_interface.s_addr  = INADDR_ANY; 	
+		stMreq.imr_interface.s_addr = inet_addr(p_sIPAddress.c_str()); //INADDR_ANY; 	
 		ret = setsockopt(m_Socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&stMreq,sizeof(stMreq)); 	
 		if(ret == -1) {      
       CSharedLog::Shared()->Log(L_ERROR, "failed to setsockopt: multicast", __FILE__, __LINE__);

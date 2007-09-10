@@ -204,7 +204,7 @@ long CFaadWrapper::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_n
     cout << "frm info: samples: " << AACFrameInfo.samples << " bytes: " << AACFrameInfo.bytesconsumed << endl;
        
     if(AACFrameInfo.error > 0) {
-      cout << "error :: " << faacDecGetErrorMessage(AACFrameInfo.error) << endl;
+      cout << "error :: " << endl; //faacDecGetErrorMessage(AACFrameInfo.error) << endl;
       return -1;
     }
     
