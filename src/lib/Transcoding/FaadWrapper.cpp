@@ -91,6 +91,7 @@ int CFaadWrapper::adts_parse(int *bitrate, float *length)
   return 1;
 }
 
+#ifdef HAVE_MP4FF_H
 uint32_t read_callback(void *user_data, void *buffer, uint32_t length)
 {
     return fread(buffer, 1, length, (FILE*)user_data);
@@ -100,6 +101,7 @@ uint32_t seek_callback(void *user_data, uint64_t position)
 {
     return fseek((FILE*)user_data, position, SEEK_SET);
 }
+#endif // HAVE_MP4FF_H
 
 int CFaadWrapper::write_audio_16bit(char* p_PcmOut, void *sample_buffer, unsigned int samples)
 {
@@ -156,6 +158,7 @@ int CFaadWrapper::DecodeAACfile(char* p_PcmOut)
     return -1;
 }
 
+#ifdef HAVE_MP4FF_H
 int CFaadWrapper::GetAACTrack(mp4ff_t *infile)
 {
   // find AAC track
@@ -184,6 +187,7 @@ int CFaadWrapper::GetAACTrack(mp4ff_t *infile)
   // can't decode this
   return -1;
 }
+#endif // HAVE_MP4FF_H
 
 unsigned long srates[] =
 {
@@ -191,6 +195,7 @@ unsigned long srates[] =
     12000, 11025, 8000
 };
 
+#ifdef HAVE_MP4FF_H
 int CFaadWrapper::DecodeMP4file(char* p_PcmOut)
 {
   void *sample_buffer;
@@ -270,16 +275,19 @@ int CFaadWrapper::DecodeMP4file(char* p_PcmOut)
   else
     return -1;
 }
+#endif // HAVE_MP4FF_H
 
 CFaadWrapper::CFaadWrapper()
 {
   numSamples = 0;
   hDecoder = NULL;
-  mp4cb = NULL;  
-  infile = NULL;
   m_pFileHandle = NULL;
   m_LibHandle = NULL;
+  #ifdef HAVE_MP4FF_H
   m_mp4ffLibHandle = NULL;
+  mp4cb = NULL;  
+  infile = NULL;
+  #endif // HAVE_MP4FF_H
 }
 
 CFaadWrapper::~CFaadWrapper()
@@ -287,17 +295,21 @@ CFaadWrapper::~CFaadWrapper()
   if(hDecoder)
     m_faacDecClose(hDecoder);
   
+  #ifdef HAVE_MP4FF_H
   if(infile)
     m_mp4ff_close(infile);
   
   if(mp4cb)
     free(mp4cb);
-
+  #endif // HAVE_MP4FF_H
+  
   if(m_LibHandle)
     FuppesCloseLibrary(m_LibHandle);
   
+  #ifdef HAVE_MP4FF_H
   if(m_mp4ffLibHandle)
     FuppesCloseLibrary(m_mp4ffLibHandle);
+  #endif // HAVE_MP4FF_H
   
   CloseFile();
 }
@@ -375,7 +387,7 @@ bool CFaadWrapper::LoadLib()
   }
 
 
-  
+  #ifdef HAVE_MP4FF_H
   
   #ifdef WIN32 
   sLibName = "mp4ff.dll"; 
@@ -445,6 +457,8 @@ bool CFaadWrapper::LoadLib()
     return false; 
   }
   
+  #endif // HAVE_MP4FF_H
+  
 	return true;
 }
 
@@ -479,8 +493,10 @@ bool CFaadWrapper::OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetail
     printf("is mp4\n");
     m_bIsMp4 = true;
     first_time = true;
-    fseek(m_pFileHandle, 0, SEEK_SET);    
+    fseek(m_pFileHandle, 0, SEEK_SET);
+    #ifdef HAVE_MP4FF_H
     return InitMp4Decoder();
+    #endif // HAVE_MP4FF_H
   }  
   else {
     m_bIsMp4 = false;
@@ -498,7 +514,11 @@ void CFaadWrapper::CloseFile()
 long CFaadWrapper::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead)
 {
   if(m_bIsMp4) {
+    #ifdef HAVE_MP4FF_H
     return DecodeMP4file(p_PcmOut);
+    #else
+    return -1;
+    #endif // HAVE_MP4FF_H
   }
   else {
     return DecodeAACfile(p_PcmOut);
@@ -610,6 +630,7 @@ bool CFaadWrapper::InitAACDecoder()
   }
 }
 
+#ifdef HAVE_MP4FF_H
 bool CFaadWrapper::InitMp4Decoder()
 {
        
@@ -697,6 +718,7 @@ bool CFaadWrapper::InitMp4Decoder()
 
   return true;
 }
+#endif // HAVE_MP4FF_H
 
 #endif // HAVE_FAAD
 #endif // DISABLE_TRANSCODING

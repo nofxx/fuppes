@@ -46,7 +46,10 @@
 #include <string>
 
 #include <faad.h>
+
+#ifdef HAVE_MP4FF_H
 #include <mp4ff.h>
+#endif
 
 #include "WrapperBase.h"
 
@@ -100,7 +103,7 @@ extern "C"
   typedef char (*AudioSpecificConfig_t)(unsigned char*, unsigned long, mp4AudioSpecificConfig*);
   
   
-  
+  #ifdef HAVE_MP4FF_H
   
   /* int32_t mp4ff_read_sample(mp4ff_t *f, const int track, const int sample,
                           unsigned char **audio_buffer,  unsigned int *bytes); */  
@@ -130,6 +133,7 @@ extern "C"
   /* int32_t mp4ff_get_sample_duration(const mp4ff_t *f, const int32_t track, const int32_t sample); */
   typedef int32_t (*mp4ff_get_sample_duration_t)(const mp4ff_t*, const int32_t, const int32_t);  
   
+  #endif // HAVE_MP4FF_H
 } 
 #endif // __cplusplus 
 
@@ -163,19 +167,27 @@ class CFaadWrapper: public CAudioDecoderBase
   
     bool first_time;
   
+    #ifdef HAVE_MP4FF_H
     mp4ff_callback_t*         mp4cb;
     mp4ff_t*                  infile;
+    #endif
   
     bool            InitAACDecoder();
+    #ifdef HAVE_MP4FF_H
     bool            InitMp4Decoder();
+    #endif // HAVE_MP4FF_H
     
     void            FillBuffer();
   
     int             adts_parse(int *bitrate, float *length);
+    #ifdef HAVE_MP4FF_H
     int             GetAACTrack(mp4ff_t *infile);
+    #endif // HAVE_MP4FF_H
   
     int DecodeAACfile(char* p_PcmOut);  
+    #ifdef HAVE_MP4FF_H
     int DecodeMP4file(char* p_PcmOut);
+    #endif
   
     int write_audio_16bit(char* p_PcmOut, void *sample_buffer, unsigned int samples);
   
@@ -201,8 +213,10 @@ class CFaadWrapper: public CAudioDecoderBase
     faacDecClose_t                      m_faacDecClose;
     AudioSpecificConfig_t               m_AudioSpecificConfig;
   
+    
+    #ifdef HAVE_MP4FF_H
     fuppesLibHandle  m_mp4ffLibHandle;
-
+  
     mp4ff_read_sample_t                 m_mp4ff_read_sample;
     mp4ff_time_scale_t                  m_mp4ff_time_scale;
     mp4ff_num_samples_t                 m_mp4ff_num_samples;
@@ -211,7 +225,7 @@ class CFaadWrapper: public CAudioDecoderBase
     mp4ff_get_decoder_config_t          m_mp4ff_get_decoder_config;
     mp4ff_total_tracks_t                m_mp4ff_total_tracks;
     mp4ff_get_sample_duration_t         m_mp4ff_get_sample_duration;
-  
+    #endif // HAVE_MP4FF_H
 };
 
 #endif // _FAAD_WRAPPER_H
