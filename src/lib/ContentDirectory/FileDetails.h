@@ -74,6 +74,9 @@ struct SAudioItem
     std::string sStorageMedium;
     std::string sContributor;*/
     std::string sDate;
+    
+    std::string sACodec;
+    std::string sVCodec;
   };
 
 

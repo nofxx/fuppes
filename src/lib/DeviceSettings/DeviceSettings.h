@@ -136,8 +136,12 @@ struct CTranscodingSettings {
     std::string DLNA() { return sDLNA; }
     bool Enabled() { return bEnabled; }
   
-    unsigned int BitRate() { return nBitRate; }
-    unsigned int SampleRate() { return nSampleRate; }
+    unsigned int AudioBitRate() { return nAudioBitRate; }
+    unsigned int AudioSampleRate() { return nAudioSampleRate; }
+    unsigned int VideoBitRate() { return nVideoBitRate; }
+  
+    std::string  AudioCodec(std::string p_sACodec = "");
+    std::string  VideoCodec(std::string p_sVCodec = "");
   
     int LameQuality() { return nLameQuality; }
   
@@ -152,6 +156,8 @@ struct CTranscodingSettings {
     DECODER_TYPE    DecoderType() { return nDecoderType; }
     ENCODER_TYPE    EncoderType() { return nEncoderType; }
   
+    bool  DoTranscode(std::string p_sACodec, std::string p_sVCodec);
+  
   private:
     bool          bEnabled;
   
@@ -162,13 +168,17 @@ struct CTranscodingSettings {
     ENCODER_TYPE                nEncoderType;
     int                         nReleaseDelay;
   
-    unsigned int  nBitRate;
-    unsigned int  nSampleRate;
+    unsigned int  nAudioBitRate;
+    unsigned int  nAudioSampleRate;
+  
+    unsigned int  nVideoBitRate;
   
     int           nLameQuality;
   
     std::string     sACodecCondition;
     std::string     sVCodecCondition;
+    std::string     sACodec;
+    std::string     sVCodec;
 };
 
 struct CFileSettings {
@@ -178,20 +188,16 @@ struct CFileSettings {
   CFileSettings();
   CFileSettings(CFileSettings* pFileSettings);
   
-  std::string   MimeType();
+  std::string   MimeType(std::string p_sACodec = "", std::string p_sVCodec = "");
   std::string   DLNA();
   
-  unsigned int  TargetSampleRate();
-  unsigned int  TargetBitRate();
+  unsigned int  TargetAudioSampleRate();
+  unsigned int  TargetAudioBitRate();
   
-  std::string   Extension();
+  std::string   Extension(std::string p_sACodec = "", std::string p_sVCodec = "");
   
   TRANSCODING_HTTP_RESPONSE   TranscodingHTTPResponse();
-  
-  std::string   sExt;
-  OBJECT_TYPE   nType;
-  std::string   sMimeType;
-  std::string   sDLNA;
+
   
   bool Enabled() { return bEnabled; }  
   bool ExtractMetadata() { return bExtractMetadata; }
@@ -207,6 +213,11 @@ struct CFileSettings {
   private:
     bool  bEnabled;
     bool  bExtractMetadata;
+  
+    std::string   sExt;
+    OBJECT_TYPE   nType;
+    std::string   sMimeType;
+    std::string   sDLNA;  
 };
 
 typedef std::map<std::string, CFileSettings*>::iterator FileSettingsIterator_t;
@@ -230,18 +241,18 @@ class CDeviceSettings
 
     bool              DoTranscode(std::string p_sExt, std::string p_sACodec = "", std::string p_sVCodec = "");
     TRANSCODING_TYPE  GetTranscodingType(std::string p_sExt);
-    TRANSCODER_TYPE   GetTranscoderType(std::string p_sExt);
+    TRANSCODER_TYPE   GetTranscoderType(std::string p_sExt, std::string p_sACodec = "", std::string p_sVCodec = "");
     DECODER_TYPE      GetDecoderType(std::string p_sExt);
     ENCODER_TYPE      GetEncoderType(std::string p_sExt);
   
-    std::string   MimeType(std::string p_sExt);
+    std::string   MimeType(std::string p_sExt, std::string p_sACodec = "", std::string p_sVCodec = "");
     std::string   DLNA(std::string p_sExt);
   
-    unsigned int  TargetSampleRate(std::string p_sExt);
-    unsigned int  TargetBitRate(std::string p_sExt);
+    unsigned int  TargetAudioSampleRate(std::string p_sExt);
+    unsigned int  TargetAudioBitRate(std::string p_sExt);
     
     bool          Exists(std::string p_sExt);
-    std::string   Extension(std::string p_sExt);
+    std::string   Extension(std::string p_sExt, std::string p_sACodec = "", std::string p_sVCodec = "");
     TRANSCODING_HTTP_RESPONSE TranscodingHTTPResponse(std::string p_sExt);
   
     int ReleaseDelay(std::string p_sExt);

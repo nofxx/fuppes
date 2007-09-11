@@ -28,78 +28,120 @@
 
 #include "../SharedConfig.h"
 
+#include <iostream>
+#include <sstream>
+
+using namespace std;
+
 CFFmpegWrapper::~CFFmpegWrapper()
 {
   this->Break();
 }
 
+bool CFFmpegWrapper::Init(std::string p_sACodec, std::string p_sVCodec)
+{
+  m_sACodec = p_sACodec;
+  m_sVCodec = p_sVCodec;
+}
+
 bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile)
 {
-  *p_psOutFile = CSharedConfig::Shared()->CreateTempFileName() + pFileSettings->Extension();
+  *p_psOutFile = CSharedConfig::Shared()->CreateTempFileName() + "." + pFileSettings->Extension(m_sACodec, m_sVCodec);
   
-  /*char* szArgs[] = {"ffmpeg", "-y",
-    "-i", "/home/ulrich/Desktop/Mary Fahl - Going Home.wmv",
-    "-vcodec", "mpeg1video", //"libxvid",
-    "-acodec", "mp2", //"libmp3lame",
-    //"-ar", "44100",
-    //"-ab", "192000",
-    "/tmp/fuppes.mpg"};*/
+  int nArgs = 0;
+  char* szArgs[20];   
+  
+  szArgs[nArgs] = (char*)malloc(strlen("ffmpeg") * sizeof(char));
+  strcpy(szArgs[nArgs], "ffmpeg");
+  nArgs++;
+  
+  szArgs[nArgs] = (char*)malloc(strlen("-y") * sizeof(char));
+  strcpy(szArgs[nArgs], "-y");
+  nArgs++;
+  
+  szArgs[nArgs] = (char*)malloc(strlen("-i") * sizeof(char));
+  strcpy(szArgs[nArgs], "-i");
+  nArgs++;
+  
+  szArgs[nArgs] = (char*)malloc((strlen(p_sInFile.c_str())  + 1) * sizeof(char));
+  strcpy(szArgs[nArgs], p_sInFile.c_str());  
+  nArgs++;
+
+  // Video settings
+  
+  string VCodec = pFileSettings->pTranscodingSettings->VideoCodec(m_sVCodec);
+  
+  szArgs[nArgs] = (char*)malloc(strlen("-vcodec") * sizeof(char));
+  strcpy(szArgs[nArgs], "-vcodec");
+  nArgs++;  
+  
+  szArgs[nArgs] = (char*)malloc((strlen(VCodec.c_str()) + 1) * sizeof(char));
+  strcpy(szArgs[nArgs], VCodec.c_str());
+  nArgs++;  
+  
+  if(pFileSettings->pTranscodingSettings->VideoBitRate() > 0) {
+    stringstream sBitRate;
+    sBitRate << pFileSettings->pTranscodingSettings->VideoBitRate();
+  
+    szArgs[nArgs] = (char*)malloc(strlen("-b") * sizeof(char));
+    strcpy(szArgs[nArgs], "-b");
+    nArgs++;  
+  
+    szArgs[nArgs] = (char*)malloc((strlen(sBitRate.str().c_str()) + 1) * sizeof(char));
+    strcpy(szArgs[nArgs], sBitRate.str().c_str());
+    nArgs++;
+  }
     
-  char* szArgs[14];
+  // Audio settings
+    
+  string ACodec = pFileSettings->pTranscodingSettings->AudioCodec(m_sACodec);
   
-  szArgs[0] = (char*)malloc(strlen("ffmpeg") * sizeof(char));
-  strcpy(szArgs[0], "ffmpeg");
+  szArgs[nArgs] = (char*)malloc(strlen("-acodec") * sizeof(char));
+  strcpy(szArgs[nArgs], "-acodec");
+  nArgs++;  
   
-  szArgs[1] = (char*)malloc(strlen("-y") * sizeof(char));
-  strcpy(szArgs[1], "-y");
-  
-  szArgs[2] = (char*)malloc(strlen("-i") * sizeof(char));
-  strcpy(szArgs[2], "-i");
-  
-  szArgs[3] = (char*)malloc(p_sInFile.length() * sizeof(char));
-  strcpy(szArgs[3], p_sInFile.c_str());
-  
-  szArgs[4] = (char*)malloc(strlen("-vcodec") * sizeof(char));
-  strcpy(szArgs[4], "-vcodec");
-  
-  /*szArgs[5] = (char*)malloc(strlen("mpeg1video") * sizeof(char));
-  strcpy(szArgs[5], "mpeg1video");*/
-  
-  szArgs[5] = (char*)malloc(strlen("mpeg1video") * sizeof(char));
-  strcpy(szArgs[5], "mpeg1video");
-  
-  szArgs[6] = (char*)malloc(strlen("-acodec") * sizeof(char));
-  strcpy(szArgs[6], "-acodec");
-  
-  szArgs[7] = (char*)malloc(strlen("mp2") * sizeof(char));
-  strcpy(szArgs[7], "mp2");
+  szArgs[nArgs] = (char*)malloc((strlen(ACodec.c_str()) + 1) * sizeof(char));
+  strcpy(szArgs[nArgs], ACodec.c_str());
+  nArgs++;
   
   
+  if(pFileSettings->pTranscodingSettings->AudioBitRate() > 0) {
+    stringstream sBitRate;
+    sBitRate << pFileSettings->pTranscodingSettings->AudioBitRate();
+    
+    szArgs[nArgs] = (char*)malloc(strlen("-ar") * sizeof(char));
+    strcpy(szArgs[nArgs], "-ar");
+    nArgs++;  
+  
+    szArgs[nArgs] = (char*)malloc((strlen(sBitRate.str().c_str()) + 1) * sizeof(char));
+    strcpy(szArgs[nArgs], sBitRate.str().c_str());
+    nArgs++;    
+  }
+  
+  /*  
   szArgs[8] = (char*)malloc(strlen("-ac") * sizeof(char));
   strcpy(szArgs[8], "-ac");
   
   szArgs[9] = (char*)malloc(strlen("2") * sizeof(char));
-  strcpy(szArgs[9], "2");
+  strcpy(szArgs[9], "2");*/
   
+
+  szArgs[nArgs] = (char*)malloc((strlen(p_psOutFile->c_str()) + 1) * sizeof(char));
+  strcpy(szArgs[nArgs], p_psOutFile->c_str());  
+  nArgs++;
   
+
   
-  szArgs[10] = (char*)malloc(strlen("-ar") * sizeof(char));
-  strcpy(szArgs[10], "-ar");
+  szArgs[nArgs] = (char*)malloc(sizeof(char));
+  szArgs[nArgs] = '\0';
+
+  ffmpeg_main(nArgs, szArgs);
   
-  szArgs[11] = (char*)malloc(strlen("32000") * sizeof(char));
-  strcpy(szArgs[11], "32000");
+  for(int i = 0; i < nArgs; i++) {
+    free(szArgs[i]);
+  }
   
-  
-  
-  szArgs[12] = (char*)malloc(p_psOutFile->length() * sizeof(char));
-  strcpy(szArgs[12], p_psOutFile->c_str());
-  
-  szArgs[13] = (char*)malloc(sizeof(char));
-  szArgs[13] = '\0';
-  
-  ffmpeg_main(13, szArgs);
-  
-   return true;  
+  return true;  
 }
 
 void CFFmpegWrapper::Break()

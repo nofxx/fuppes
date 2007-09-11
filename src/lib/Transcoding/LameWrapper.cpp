@@ -331,13 +331,13 @@ std::string CLameWrapper::GetVersion()
 void CLameWrapper::SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings)
 {
   // bitrate
-  if(pTranscodingSettings->BitRate() > 0 && m_LameSetCompressionRatio) {
+  if(pTranscodingSettings->AudioBitRate() > 0 && m_LameSetCompressionRatio) {
         
     LAME_BITRATE_MAPPING_t* mapping = LAME_BITRATE_MAPPINGS;
     float fBitrate = 11.0; // 128 kbit
     
     while(mapping->nBitRate > 0) {      
-      if(mapping->nBitRate == pTranscodingSettings->BitRate()) {
+      if(mapping->nBitRate == pTranscodingSettings->AudioBitRate()) {
         fBitrate = mapping->fLameRate;
         break;
       }      
@@ -346,7 +346,7 @@ void CLameWrapper::SetTranscodingSettings(CTranscodingSettings* pTranscodingSett
     
     if(m_LameSetCompressionRatio) {
       if(m_LameSetCompressionRatio(m_LameGlobalFlags, fBitrate) == 0)
-        m_nBitRate = pTranscodingSettings->BitRate();
+        m_nBitRate = pTranscodingSettings->AudioBitRate();
     }
   }
   
@@ -355,8 +355,8 @@ void CLameWrapper::SetTranscodingSettings(CTranscodingSettings* pTranscodingSett
   }  
   
   // samplerate
-  if(pTranscodingSettings->SampleRate() > 0) {
-    m_nSampleRate = pTranscodingSettings->SampleRate();
+  if(pTranscodingSettings->AudioSampleRate() > 0) {
+    m_nSampleRate = pTranscodingSettings->AudioSampleRate();
   }
   else {
     m_nSampleRate = 44100;

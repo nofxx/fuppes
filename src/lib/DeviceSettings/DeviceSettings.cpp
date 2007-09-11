@@ -66,10 +66,14 @@ CTranscodingSettings::CTranscodingSettings()
   nDecoderType          = DT_NONE;
   nEncoderType          = ET_NONE;
 
-  nBitRate             = 0;
-  nSampleRate          = 0;
-  nReleaseDelay        = -1;
-  nLameQuality         = -1;
+  nAudioBitRate         = 0;
+  nAudioSampleRate      = 0;
+  nVideoBitRate         = 0;
+  nReleaseDelay         = -1; 
+  nLameQuality          = -1;
+  
+  sACodec = "copy";
+  sVCodec = "copy";
 }
 
 CTranscodingSettings::CTranscodingSettings(CTranscodingSettings* pTranscodingSettings)
@@ -82,8 +86,9 @@ CTranscodingSettings::CTranscodingSettings(CTranscodingSettings* pTranscodingSet
   nDecoderType      = pTranscodingSettings->nDecoderType;
   nEncoderType      = pTranscodingSettings->nEncoderType;
 
-  nBitRate      = pTranscodingSettings->nBitRate;
-  nSampleRate   = pTranscodingSettings->nSampleRate;
+  nAudioBitRate       = pTranscodingSettings->nAudioBitRate;
+  nAudioSampleRate    = pTranscodingSettings->nAudioSampleRate;
+  nVideoBitRate       = pTranscodingSettings->nVideoBitRate;
   nReleaseDelay = pTranscodingSettings->nReleaseDelay;
   nLameQuality  = pTranscodingSettings->nLameQuality;
   
@@ -91,8 +96,73 @@ CTranscodingSettings::CTranscodingSettings(CTranscodingSettings* pTranscodingSet
   sDLNA       = pTranscodingSettings->sDLNA;
   sMimeType   = pTranscodingSettings->sMimeType;
   
-  sACodecCondition = pTranscodingSettings->sACodecCondition;
-  sVCodecCondition = pTranscodingSettings->sVCodecCondition;  
+  sACodec           = pTranscodingSettings->sACodec;
+  sVCodec           = pTranscodingSettings->sVCodec;
+  sACodecCondition  = pTranscodingSettings->sACodecCondition;
+  sVCodecCondition  = pTranscodingSettings->sVCodecCondition;  
+}
+
+bool CTranscodingSettings::DoTranscode(std::string p_sACodec, std::string p_sVCodec)
+{
+  if(!bEnabled) {
+    return false;
+  }
+
+  if(sACodecCondition.empty() && sVCodecCondition.empty()) { 
+    return true;
+  }  
+
+  if(sACodecCondition.substr(0, 1).compare(" ") != 0) {
+    sACodecCondition = " " + sACodecCondition + " ";
+  }
+  
+  if(sVCodecCondition.substr(0, 1).compare(" ") != 0) {
+    sVCodecCondition = " " + sVCodecCondition + " ";
+  }
+  
+  string sReg = "[ |,]" + p_sACodec + "[ |,]";
+  RegEx rxACodec(sReg.c_str(), PCRE_CASELESS);
+  if(rxACodec.Search(sACodecCondition.c_str())) {       
+    return true;
+  }
+
+  sReg = "[ |,]" + p_sVCodec + "[ |,]";  
+  RegEx rxVCodec(sReg.c_str(), PCRE_CASELESS);
+  if(rxVCodec.Search(sVCodecCondition.c_str())) {            
+    return true;
+  }  
+
+  return false;
+}
+
+std::string  CTranscodingSettings::AudioCodec(std::string p_sACodec)
+{
+  //if(p_sACodec.empty()) {
+    return sACodec;
+  //}
+  
+  /*size_t pos = sACodecCondition.find(p_sACodec);
+  if(pos != string::npos) {
+    return sACodec;
+  }
+  else {
+    return "copy";
+  }*/
+}
+
+std::string  CTranscodingSettings::VideoCodec(std::string p_sVCodec)
+{
+  if(p_sVCodec.empty()) {
+    return sVCodec;
+  }
+  
+  size_t pos = sVCodecCondition.find(p_sVCodec);
+  if(pos != string::npos) {
+    return sVCodec;
+  }
+  else {
+    return "copy";
+  }
 }
 
 
@@ -182,10 +252,18 @@ std::string CFileSettings::ObjectTypeAsStr()
   }
 }
 
-std::string CFileSettings::MimeType()
+std::string CFileSettings::MimeType(std::string p_sACodec, std::string p_sVCodec)
 {
   if(pTranscodingSettings && pTranscodingSettings->Enabled()) {
-    return pTranscodingSettings->MimeType();
+    if(pTranscodingSettings->DoTranscode(p_sACodec, p_sVCodec)) {
+      
+      /*if(pTranscodingSettings->VideoCodec(p_sVCodec).compare("copy") == 0)
+        return sMimeType;
+      else        */
+        return pTranscodingSettings->MimeType();
+    }
+    else
+      return sMimeType;
   }
   else if(pImageSettings && pImageSettings->Enabled()) {
     if(!pImageSettings->MimeType().empty()) {
@@ -210,31 +288,40 @@ std::string CFileSettings::DLNA()
   }
 }
 
-unsigned int  CFileSettings::TargetSampleRate()
+unsigned int  CFileSettings::TargetAudioSampleRate()
 {
   if(pTranscodingSettings && pTranscodingSettings->Enabled()) {
-    return pTranscodingSettings->SampleRate();
+    return pTranscodingSettings->AudioSampleRate();
   }
   else {
     return 0;
   }
 }
 
-unsigned int  CFileSettings::TargetBitRate()
+unsigned int  CFileSettings::TargetAudioBitRate()
 {
   if(pTranscodingSettings && pTranscodingSettings->Enabled()) {
-    return pTranscodingSettings->BitRate();
+    return pTranscodingSettings->AudioBitRate();
   }
   else {
     return 0;
   }
 }
 
-std::string CFileSettings::Extension()
+std::string CFileSettings::Extension(std::string p_sACodec, std::string p_sVCodec)
 {
   // if transcoding is enabled it MUST have an extension
   if(pTranscodingSettings && pTranscodingSettings->Enabled()) {
-    return pTranscodingSettings->Extension();
+    if(pTranscodingSettings->DoTranscode(p_sACodec, p_sVCodec)) {
+    
+      /*if(pTranscodingSettings->VideoCodec(p_sVCodec).compare("copy") == 0)
+        return sExt;
+      else*/
+        return pTranscodingSettings->Extension();
+      
+    }
+    else
+       return sExt;
   }
   // image settings MAY have an extension
   else if(pImageSettings && pImageSettings->Enabled()) {
@@ -414,8 +501,8 @@ bool CDeviceSettings::DoTranscode(std::string p_sExt, std::string p_sACodec, std
          !m_FileSettingsIterator->second->pTranscodingSettings->TranscoderType() != TTYP_NONE)
         )) {
       
-      if(!p_sACodec.empty() && !p_sVCodec.empty()) {
-        
+      if(!p_sACodec.empty() || !p_sVCodec.empty()) {
+        return m_FileSettingsIterator->second->pTranscodingSettings->DoTranscode(p_sACodec, p_sVCodec);
       }
       else {
         return true;
@@ -467,7 +554,7 @@ TRANSCODING_TYPE CDeviceSettings::GetTranscodingType(std::string p_sExt)
   }
 }
 
-TRANSCODER_TYPE CDeviceSettings::GetTranscoderType(std::string p_sExt)
+TRANSCODER_TYPE CDeviceSettings::GetTranscoderType(std::string p_sExt, std::string p_sACodec, std::string p_sVCodec)
 {
   m_FileSettingsIterator = m_FileSettings.find(p_sExt);
   if(m_FileSettingsIterator != m_FileSettings.end()) {
@@ -532,13 +619,13 @@ ENCODER_TYPE CDeviceSettings::GetEncoderType(std::string p_sExt)
 
 
 
-std::string CDeviceSettings::MimeType(std::string p_sExt)
+std::string CDeviceSettings::MimeType(std::string p_sExt, std::string p_sACodec, std::string p_sVCodec)
 {
   FileSettingsIterator_t  iter;
   
   iter = m_FileSettings.find(p_sExt);
   if(iter != m_FileSettings.end())
-    return iter->second->MimeType();
+    return iter->second->MimeType(p_sACodec, p_sVCodec);
   else  
     return "";
 }
@@ -554,24 +641,24 @@ std::string CDeviceSettings::DLNA(std::string p_sExt)
     return "";
 }
 
-unsigned int CDeviceSettings::TargetSampleRate(std::string p_sExt)
+unsigned int CDeviceSettings::TargetAudioSampleRate(std::string p_sExt)
 {
   FileSettingsIterator_t  iter;
   
   iter = m_FileSettings.find(p_sExt);
   if(iter != m_FileSettings.end())
-    return iter->second->TargetSampleRate();
+    return iter->second->TargetAudioSampleRate();
   else  
     return 0;
 }
 
-unsigned int CDeviceSettings::TargetBitRate(std::string p_sExt)
+unsigned int CDeviceSettings::TargetAudioBitRate(std::string p_sExt)
 {
   FileSettingsIterator_t  iter;
   
   iter = m_FileSettings.find(p_sExt);
   if(iter != m_FileSettings.end())
-    return iter->second->TargetBitRate();
+    return iter->second->TargetAudioBitRate();
   else  
     return 0;
 }
@@ -584,13 +671,13 @@ bool CDeviceSettings::Exists(std::string p_sExt)
   return (iter != m_FileSettings.end());
 }
 
-std::string CDeviceSettings::Extension(std::string p_sExt)
+std::string CDeviceSettings::Extension(std::string p_sExt, std::string p_sACodec, std::string p_sVCodec)
 {
   FileSettingsIterator_t  iter;
   
   iter = m_FileSettings.find(p_sExt);
   if(iter != m_FileSettings.end())
-    return iter->second->Extension();
+    return iter->second->Extension(p_sACodec, p_sVCodec);
   else  
     return p_sExt;
 }

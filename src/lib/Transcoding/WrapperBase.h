@@ -58,6 +58,9 @@ class CTranscodeSessionInfo
     int           m_nYear;
   
     //void SetTranscodeToTmpFile(std::string p_sTmpFileName);
+        
+    std::string   sACodec;
+    std::string   sVCodec;
   
   private:
     std::string   m_sOutFileName;  
@@ -105,7 +108,7 @@ class CTranscoderBase
 {
   public:
 	  virtual ~CTranscoderBase() {};
-    virtual bool Transcode(std::string p_sInFileParams, std::string p_sInFile, std::string p_sOutFileParams, std::string* p_psOutFile) = 0;
+    virtual bool Init(std::string p_sACodec, std::string p_sVCodec) {} ;
     virtual bool Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile) = 0;
     virtual bool Threaded() = 0;
 };

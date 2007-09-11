@@ -458,12 +458,29 @@ void CConfigFile::ParseTranscodingSettings(CXMLNode* pTCNode, CFileSettings* pFi
         pFileSet->pTranscodingSettings->nTranscoderType = TTYP_NONE;    
       
     }
-     
-    else if(pTmp->Name().compare("bitrate") == 0) {
-      pFileSet->pTranscodingSettings->nBitRate = atoi(pTmp->Value().c_str());
+    
+    else if(pTmp->Name().compare("video_codec") == 0) {
+      pFileSet->pTranscodingSettings->sVCodecCondition = pTmp->Attribute("vcodec");
+      pFileSet->pTranscodingSettings->sVCodec = pTmp->Value();
     }
-    else if(pTmp->Name().compare("samplerate") == 0) {
-      pFileSet->pTranscodingSettings->nSampleRate = atoi(pTmp->Value().c_str());
+    
+    else if(pTmp->Name().compare("video_bitrate") == 0) {
+      pFileSet->pTranscodingSettings->nVideoBitRate = atoi(pTmp->Value().c_str());
+    }
+    
+    
+    else if(pTmp->Name().compare("audio_codec") == 0) {
+      pFileSet->pTranscodingSettings->sACodecCondition = pTmp->Attribute("acodec");
+      pFileSet->pTranscodingSettings->sACodec = pTmp->Value();
+    }       
+       
+    //<out_params>-ac 2</out_params>    
+     
+    else if((pTmp->Name().compare("bitrate") == 0) || pTmp->Name().compare("audio_bitrate") == 0) {
+      pFileSet->pTranscodingSettings->nAudioBitRate = atoi(pTmp->Value().c_str());
+    }
+    else if((pTmp->Name().compare("samplerate") == 0) || pTmp->Name().compare("audio_samplerate") == 0) {
+      pFileSet->pTranscodingSettings->nAudioSampleRate = atoi(pTmp->Value().c_str());
     }
     else if(pTmp->Name().compare("lame_quality") == 0) {
       pFileSet->pTranscodingSettings->nLameQuality = atoi(pTmp->Value().c_str());

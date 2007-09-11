@@ -307,6 +307,7 @@ have_tremor=no
 have_mpc=no
 have_flac=no
 have_faad=no
+have_mp4ff=no
 
 # transcoding
 AC_ARG_ENABLE(transcoding,
@@ -452,6 +453,7 @@ if test "x$transcoding" = "xyes"; then
 
     # faad
 	  AH_TEMPLATE([HAVE_FAAD], [])
+    AH_TEMPLATE([HAVE_MP4FF_H], [])
     AC_ARG_WITH(flac-dir, AC_HELP_STRING([--with-faad-dir=path],
             [include path of faad.h]),
             [if test "x$withval" != "x"; then
@@ -469,6 +471,13 @@ if test "x$transcoding" = "xyes"; then
         [have_decoder=yes
          AC_DEFINE([HAVE_FAAD], [1], [])],
         [have_faad=no])
+
+      AC_CHECK_HEADERS(${FAAD_H_DIR}mp4ff.h, have_mp4ff=yes, have_mp4ff=no)
+      if test "x$have_mp4ff" = "xyes"; then
+        AC_DEFINE([HAVE_MP4FF_H], [1], [])
+      else
+        echo "mp4ff.h not found. AAC decoder is build without MP4 support"
+      fi
     fi
 		
   fi # have_encoder
@@ -649,7 +658,11 @@ if test "x$transcoding" = "xyes"; then
     fi 
 
     if test "x$have_faad" = "xyes"; then
-      echo "      faad       : yes"
+      if test "x$have_mp4ff" = "xyes"; then
+        echo "      faad       : yes (aac/mp4)"
+      else
+        echo "      faad       : yes (aac/NO mp4)"
+      fi
     else
       echo "      fadd       : no"      
     fi 

@@ -413,7 +413,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
     "  d.IV_HEIGHT, d.IV_WIDTH, " <<
     "  o.TITLE, d.AV_DURATION, d.A_ALBUM, d.A_ARTIST, d.A_GENRE, " <<
   	"  d.A_TRACK_NO, d.AV_BITRATE, d.A_SAMPLERATE, d.A_CHANNELS, " <<
-	  "  d.AV_DURATION, d.SIZE " <<
+	  "  d.AV_DURATION, d.SIZE, d.A_CODEC, d.V_CODEC " <<
     "from " <<
     "  OBJECTS o, MAP_OBJECTS m" <<
     "  left join OBJECT_DETAILS d on (d.ID = o.DETAIL_ID) " <<
@@ -659,7 +659,7 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
                                                   CUPnPBrowseSearchBase*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {                 
-  string sExt = ToLower(ExtractFileExt(pSQLResult->GetValue("PATH")));
+  string sExt = ExtractFileExt(pSQLResult->GetValue("PATH"));
 
                                                     
   // title
@@ -774,10 +774,10 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST pSQLResult->GetValue("A_SAMPLERATE").c_str());
     }
     //else if(bTranscode && CFileDetails::Shared()->GetTargetSamplerate(sOrigExt) > 0) {
-    else if(bTranscode && pUPnPBrowse->DeviceSettings()->TargetSampleRate(sExt) > 0) {
+    else if(bTranscode && pUPnPBrowse->DeviceSettings()->TargetAudioSampleRate(sExt) > 0) {
       char szSamplerate[20];
       //sprintf(szSamplerate, "%d", CFileDetails::Shared()->GetTargetSamplerate(sOrigExt));
-      sprintf(szSamplerate, "%d", pUPnPBrowse->DeviceSettings()->TargetSampleRate(sExt));
+      sprintf(szSamplerate, "%d", pUPnPBrowse->DeviceSettings()->TargetAudioSampleRate(sExt));
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST szSamplerate);
     }
   }
@@ -788,10 +788,10 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("AV_BITRATE").c_str());
     }
     //else if(bTranscode && CFileDetails::Shared()->GetTargetBitrate(sOrigExt) > 0) {
-    else if(bTranscode && pUPnPBrowse->DeviceSettings()->TargetBitRate(sExt) > 0) {
+    else if(bTranscode && pUPnPBrowse->DeviceSettings()->TargetAudioBitRate(sExt) > 0) {
       char szBitrate[20];
       //sprintf(szBitrate, "%d", CFileDetails::Shared()->GetTargetBitrate(sOrigExt));
-      sprintf(szBitrate, "%d", pUPnPBrowse->DeviceSettings()->TargetBitRate(sExt));
+      sprintf(szBitrate, "%d", pUPnPBrowse->DeviceSettings()->TargetAudioBitRate(sExt));
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST szBitrate);
     }
   }
@@ -840,7 +840,7 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
                                                   CUPnPBrowseSearchBase*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {
-  string sExt = ToLower(ExtractFileExt(pSQLResult->GetValue("PATH")));
+  string sExt = ExtractFileExt(pSQLResult->GetValue("PATH"));
                                                     
   // title
 	//xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
@@ -897,14 +897,22 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
                                                   CUPnPBrowseSearchBase*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {                                                     
-  string sExt = ToLower(ExtractFileExt(pSQLResult->GetValue("PATH")));
+  string sExt = ExtractFileExt(pSQLResult->GetValue("PATH"));
                                                     
   // title
 	//xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
   xmlTextWriterStartElement(pWriter, BAD_CAST "dc:title");
     // trim filename
-    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength, true);    
+    string sFileName;
+    
+    if(pUPnPBrowse->DeviceSettings()->DoTranscode(sExt, pSQLResult->GetValue("A_CODEC"), pSQLResult->GetValue("V_CODEC"))) {
+      sFileName = "*T* ";
+    }
+                                                    
+    sFileName += pSQLResult->GetValue("FILE_NAME");
+    sFileName = TrimFileName(sFileName, pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength, true);    
     sFileName = TruncateFileExt(sFileName);
+                                                    
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);
 
@@ -921,12 +929,10 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   //string sMimeType = pSQLResult->GetValue("MIME_TYPE");
   
          
-  string sMimeType = pUPnPBrowse->DeviceSettings()->MimeType(sExt);
-                                                    
-                                                    
+  string sMimeType = pUPnPBrowse->DeviceSettings()->MimeType(sExt, pSQLResult->GetValue("A_CODEC"), pSQLResult->GetValue("V_CODEC"));                                                    
   string sTmp = "http-get:*:" + sMimeType + ":*";
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
-
+                                                    
 
   // duration
   /*if(pUPnPBrowse->IncludeProperty("res@duration") && !pSQLResult->IsNull("AV_DURATION")) {
@@ -950,8 +956,9 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->GetValue("SIZE").c_str());
   }*/
   
-  sExt = pUPnPBrowse->DeviceSettings()->Extension(sExt);
-                                                                                                    
+  sExt = pUPnPBrowse->DeviceSettings()->Extension(sExt, pSQLResult->GetValue("A_CODEC"), pSQLResult->GetValue("V_CODEC"));
+                                                   
+                                                    
   sTmp = "http://" + m_sHTTPServerURL + "/MediaServer/VideoItems/" + p_sObjectID + "." + sExt;  
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.c_str());
   xmlTextWriterEndElement(pWriter);  

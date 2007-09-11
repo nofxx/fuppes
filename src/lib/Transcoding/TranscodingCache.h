@@ -111,6 +111,8 @@ class CTranscodingCacheObject
   
     bool Threaded() { return m_bThreaded; }
   
+    CDeviceSettings* DeviceSettings() { return m_pDeviceSettings; }
+  
    private:
     // the buffer's size
     unsigned int m_nBufferSize;
@@ -119,6 +121,8 @@ class CTranscodingCacheObject
   
     unsigned int m_nReleaseCnt;
     unsigned int m_nReleaseCntBak;
+  
+    CDeviceSettings* m_pDeviceSettings;
 };
 
 class CTranscodingCache

@@ -740,11 +740,13 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName, SMusicTrack
   m_pTranscodingSessionInfo->m_pszBinBuffer        = &m_pszBinContent;*/
   m_pTranscodingSessionInfo->m_nGuessContentLength = 0;
   
-  m_pTranscodingSessionInfo->m_sTitle = p_sTrackDetails.mAudioItem.sTitle;
-  m_pTranscodingSessionInfo->m_sArtist = p_sTrackDetails.sArtist;
-  m_pTranscodingSessionInfo->m_sAlbum  = p_sTrackDetails.sAlbum;
-  m_pTranscodingSessionInfo->m_sGenre  = p_sTrackDetails.mAudioItem.sGenre;
+  m_pTranscodingSessionInfo->m_sTitle   = p_sTrackDetails.mAudioItem.sTitle;
+  m_pTranscodingSessionInfo->m_sArtist  = p_sTrackDetails.sArtist;
+  m_pTranscodingSessionInfo->m_sAlbum   = p_sTrackDetails.sAlbum;
+  m_pTranscodingSessionInfo->m_sGenre   = p_sTrackDetails.mAudioItem.sGenre;
   m_pTranscodingSessionInfo->m_sOriginalTrackNumber = p_sTrackDetails.sOriginalTrackNumber;
+  m_pTranscodingSessionInfo->sACodec    = p_sTrackDetails.sACodec;
+  m_pTranscodingSessionInfo->sVCodec    = p_sTrackDetails.sVCodec;
   
   
   m_pTranscodingCacheObj = CTranscodingCache::Shared()->GetCacheObject(m_pTranscodingSessionInfo->m_sInFileName);

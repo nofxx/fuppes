@@ -102,15 +102,18 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
     if(m_bInitialized) {
       return true;
     }     
-    
+       
+    m_pDeviceSettings = pDeviceSettings;    
     m_pTranscoder = CTranscodingMgr::Shared()->CreateTranscoder(pDeviceSettings->GetTranscoderType(sExt));
+       
     if(!m_pTranscoder) {
       return false;
     }
+     
+    m_pTranscoder->Init(pSessionInfo->sACodec, pSessionInfo->sVCodec);
        
     m_bInitialized = true;        
     m_bThreaded = m_pTranscoder->Threaded();
-        
     return true;
   }
   
@@ -131,7 +134,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
   
   
   CSharedLog::Shared()->Log(L_EXTENDED, "Init " + pSessionInfo->m_sInFileName, __FILE__, __LINE__);  
-  //mm_pSessionInfo = pSessionInfo;  
+  m_pDeviceSettings = pDeviceSettings;
     
   
   CAudioDetails AudioDetails;
@@ -223,7 +226,7 @@ unsigned int CTranscodingCacheObject::GetBufferSize()
     if(m_bIsComplete) {
       m_nBufferSize = nFileSize;
     }
-    
+
     return nFileSize;
   }
   else {
@@ -299,10 +302,10 @@ fuppesThreadCallback TranscodeThread(void *arg)
   //CSharedLog::Shared()->Log(L_EXTENDED, "TranscodeThread :: " + pCacheObj->m_pSessionInfo->m_sInFileName, __FILE__, __LINE__);   
   
   
-  if(pCacheObj->m_pTranscoder != NULL) {
-    pCacheObj->m_sOutFileName = "/tmp/fuppes.mpg";
+  if(pCacheObj->m_pTranscoder != NULL) {   
     
-    pCacheObj->m_pTranscoder->Transcode(string(""), pCacheObj->m_sInFileName, string(""), &pCacheObj->m_sOutFileName);    
+    std::string sExt = ExtractFileExt(pCacheObj->m_sInFileName);    
+    pCacheObj->m_pTranscoder->Transcode(pCacheObj->DeviceSettings()->FileSettings(sExt), pCacheObj->m_sInFileName, &pCacheObj->m_sOutFileName);    
     
     pCacheObj->Lock();
     pCacheObj->m_bIsComplete = true;

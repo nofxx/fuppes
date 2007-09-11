@@ -264,10 +264,10 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
     }
     else
     {      
-      if(pRequest->DeviceSettings()->DoTranscode(sExt)) {
+      if(pRequest->DeviceSettings()->DoTranscode(sExt, pDb->GetResult()->GetValue("A_CODEC"), pDb->GetResult()->GetValue("V_CODEC"))) {
         CSharedLog::Shared()->Log(L_EXTENDED, "transcode " + sPath, __FILE__, __LINE__);        
      
-        sMimeType = pRequest->DeviceSettings()->MimeType(sExt);
+        sMimeType = pRequest->DeviceSettings()->MimeType(sExt, pDb->GetResult()->GetValue("A_CODEC"), pDb->GetResult()->GetValue("V_CODEC"));
         if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {          
           //
           SMusicTrack trackDetails;
@@ -291,6 +291,13 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
             trackDetails.sOriginalTrackNumber = pDb->GetResult()->GetValue("A_TRACK_NO");
           }          
           
+          if(!pDb->GetResult()->IsNull("A_CODEC")) {
+            trackDetails.sACodec = pDb->GetResult()->GetValue("A_CODEC");
+          }
+          if(!pDb->GetResult()->IsNull("V_CODEC")) {
+            trackDetails.sVCodec = pDb->GetResult()->GetValue("V_CODEC");
+          }
+          
           pResponse->TranscodeContentFromFile(sPath, trackDetails);
         }
         else if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) {
@@ -307,7 +314,7 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
         }
       }
       else {
-        sMimeType = pRequest->DeviceSettings()->MimeType(sExt);
+        sMimeType = pRequest->DeviceSettings()->MimeType(sExt, pDb->GetResult()->GetValue("A_CODEC"), pDb->GetResult()->GetValue("V_CODEC"));
         pResponse->LoadContentFromFile(sPath);
       }      
       

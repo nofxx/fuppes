@@ -85,7 +85,7 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
 	/* Set local endpoint */
   m_LocalEndpoint.sin_family = AF_INET;	
 	if(p_bDoMulticast) {
-    m_LocalEndpoint.sin_addr.s_addr  = inet_addr(p_sIPAddress.c_str()); //INADDR_ANY;
+    m_LocalEndpoint.sin_addr.s_addr  = INADDR_ANY;
     m_LocalEndpoint.sin_port		     = htons(MULTICAST_PORT);
 	}
   else {

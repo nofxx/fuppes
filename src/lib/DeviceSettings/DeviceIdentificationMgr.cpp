@@ -114,8 +114,8 @@ void CDeviceIdentificationMgr::PrintSetting(CDeviceSettings* pSettings) {
     
     cout << "    ext: " << pSettings->m_FileSettingsIterator->first << endl; 
     //cout << "    ext: " << pFileSet->sExt << endl;
-    cout << "    dlna: " << pFileSet->sDLNA << endl;
-    cout << "    mime-type: " << pFileSet->sMimeType << endl;
+    cout << "    dlna: " << pFileSet->DLNA() << endl;
+    cout << "    mime-type: " << pFileSet->MimeType() << endl;
     cout << "    upnp-type: " << pFileSet->ObjectType() << endl;
           
     if(pFileSet->pTranscodingSettings) {
