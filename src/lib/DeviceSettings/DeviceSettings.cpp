@@ -155,9 +155,8 @@ std::string  CTranscodingSettings::VideoCodec(std::string p_sVCodec)
   if(p_sVCodec.empty()) {
     return sVCodec;
   }
-  
-  size_t pos = sVCodecCondition.find(p_sVCodec);
-  if(pos != string::npos) {
+    
+  if(DoTranscode("", p_sVCodec)) {
     return sVCodec;
   }
   else {

@@ -46,10 +46,11 @@ class CFFmpegWrapper: public CTranscoderBase
     bool Threaded() { return true; }
   
   private:
-    void Break();
-  
+    
     std::string m_sACodec;
     std::string m_sVCodec;
+  
+    CFFmpeg* pFFmpeg;
 };
 
 #endif // HAVE_LIBAVFORMAT

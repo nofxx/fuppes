@@ -135,7 +135,7 @@ libfuppes_la_SOURCES += \
   lib/Transcoding/ffmpeg/cmdutils.h\
   lib/Transcoding/ffmpeg/cmdutils.c\
   lib/Transcoding/ffmpeg/ffmpeg.h\
-  lib/Transcoding/ffmpeg/ffmpeg.c
+  lib/Transcoding/ffmpeg/ffmpeg.cpp
 endif
 
 libfuppes_la_SOURCES += \
