@@ -129,6 +129,7 @@ class CSharedConfig
     std::string MpcLibName() { return m_pConfigFile->MpcLibName(); }
     std::string FlacLibName() { return m_pConfigFile->FlacLibName(); }
     std::string FaadLibName() { return m_pConfigFile->FaadLibName(); }
+	std::string Mp4ffLibName() { return m_pConfigFile->Mp4ffLibName(); }
   
     std::string TempDir() { return m_sTempDir; }
     std::string CreateTempFileName();

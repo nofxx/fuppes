@@ -322,7 +322,7 @@ CFaadWrapper::~CFaadWrapper()
 bool CFaadWrapper::LoadLib()
 {
   #ifdef WIN32 
-  std::string sLibName = "faad.dll"; 
+  std::string sLibName = "libfaad-0.dll"; 
   #else   
   std::string sLibName = "libfaad.so.0"; 
   #endif 
@@ -395,15 +395,14 @@ bool CFaadWrapper::LoadLib()
   #ifdef HAVE_MP4FF_H
   
   #ifdef WIN32 
-  sLibName = "mp4ff.dll"; 
+  sLibName = "libmp4ff-0.dll"; 
   #else   
   sLibName = "libmp4ff.so.0"; 
   #endif 
-   
-  #warning todo
-  /*if(!CSharedConfig::Shared()->Libmp4ffLibName().empty()) { 
-    sLibName = CSharedConfig::Shared()->FaadLibName();  
-  } */
+
+  if(!CSharedConfig::Shared()->Mp4ffLibName().empty()) { 
+    sLibName = CSharedConfig::Shared()->Mp4ffLibName();  
+  }
    
   CSharedLog::Shared()->Log(L_EXTENDED, "try opening " + sLibName, __FILE__, __LINE__); 
   m_mp4ffLibHandle = FuppesLoadLibrary(sLibName);  

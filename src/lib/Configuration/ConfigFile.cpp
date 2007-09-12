@@ -139,6 +139,9 @@ int CConfigFile::Load(std::string p_sFileName, std::string* p_psErrorMsg)
       else if(pTmpNode->ChildNode(i)->Name().compare("faad_libname") == 0) {
         m_sFaadLibName = pTmpNode->ChildNode(i)->Value();	  
       }
+      else if(pTmpNode->ChildNode(i)->Name().compare("mp4ff_libname") == 0) {
+        m_sMp4ffLibName = pTmpNode->ChildNode(i)->Value();	  
+      }	  
     }
   }
   // end transcoding

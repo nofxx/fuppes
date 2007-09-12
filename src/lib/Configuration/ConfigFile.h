@@ -86,6 +86,7 @@ class CConfigFile
     std::string  MpcLibName() { return m_sMpcLibName; }
     std::string  FlacLibName() { return m_sFlacLibName; }
     std::string  FaadLibName() { return m_sFaadLibName; }
+	std::string  Mp4ffLibName() { return m_sMp4ffLibName; }
   
     bool WriteDefaultConfig(std::string p_sFileName);
   
@@ -109,23 +110,24 @@ class CConfigFile
     std::vector<std::string>  m_lAllowedIps;
   
     // content_directory
-    std::string               m_sLocalCharset;
-    bool                      m_bUseImageMagick;
-    bool                      m_bUseTaglib;
-    bool                      m_bUseLibAvFormat;
+    std::string             m_sLocalCharset;
+    bool                    m_bUseImageMagick;
+    bool                    m_bUseTaglib;
+    bool                    m_bUseLibAvFormat;
 
     // transcoding
-    std::string               m_sAudioEncoder;
-    bool                      m_bTranscodeVorbis;
-    bool                      m_bTranscodeMusePack;
-    bool                      m_bTranscodeFlac;  
+    std::string             m_sAudioEncoder;
+    bool                    m_bTranscodeVorbis;
+    bool                    m_bTranscodeMusePack;
+    bool                    m_bTranscodeFlac;  
 	
-    std::string				  m_sLameLibName;
-    std::string				  m_sTwoLameLibName;
-    std::string				  m_sVorbisLibName;
-    std::string				  m_sMpcLibName;
-    std::string				  m_sFlacLibName;
-    std::string         m_sFaadLibName;
+    std::string				m_sLameLibName;
+    std::string				m_sTwoLameLibName;
+    std::string				m_sVorbisLibName;
+    std::string				m_sMpcLibName;
+    std::string				m_sFlacLibName;
+    std::string         	m_sFaadLibName;
+	std::string				m_sMp4ffLibName;
 };
 
 #endif // _CONFIGFILE_H
