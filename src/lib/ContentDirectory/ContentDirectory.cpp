@@ -898,14 +898,15 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
                                                   std::string p_sObjectID)
 {                                                     
   string sExt = ExtractFileExt(pSQLResult->GetValue("PATH"));
-                                                    
+    
+  bool bTranscode = pUPnPBrowse->DeviceSettings()->DoTranscode(sExt, pSQLResult->GetValue("A_CODEC"), pSQLResult->GetValue("V_CODEC"));
+
   // title
-	//xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "title", BAD_CAST "http://purl.org/dc/elements/1.1/");
   xmlTextWriterStartElement(pWriter, BAD_CAST "dc:title");
     // trim filename
     string sFileName;
     
-    if(pUPnPBrowse->DeviceSettings()->DoTranscode(sExt, pSQLResult->GetValue("A_CODEC"), pSQLResult->GetValue("V_CODEC"))) {
+    if(bTranscode) {
       sFileName = "*T* ";
     }
                                                     
@@ -935,26 +936,37 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
                                                     
 
   // duration
-  /*if(pUPnPBrowse->IncludeProperty("res@duration") && !pSQLResult->IsNull("AV_DURATION")) {
+  if(pUPnPBrowse->IncludeProperty("res@duration") && !pSQLResult->IsNull("AV_DURATION")) {
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->GetValue("AV_DURATION").c_str());
   }
       
 	// resolution 
 	if(pUPnPBrowse->IncludeProperty("res@resolution") && !pSQLResult->IsNull("IV_WIDTH") && !pSQLResult->IsNull("IV_HEIGHT")) {
-    sTmp << pSQLResult->GetValue("IV_WIDTH") << "x" << pSQLResult->GetValue("IV_HEIGHT");
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.str().c_str());
-    sTmp.str("");
+    sTmp = pSQLResult->GetValue("IV_WIDTH") + "x" + pSQLResult->GetValue("IV_HEIGHT");
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.c_str());
 	}
 
 	// bitrate
-  if(pUPnPBrowse->IncludeProperty("res@bitrate") && !pSQLResult->IsNull("AV_BITRATE")) {
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("AV_BITRATE").c_str());
+  if(pUPnPBrowse->IncludeProperty("res@bitrate")) {
+    
+    if(bTranscode) {
+      int nBitRate =
+        pUPnPBrowse->DeviceSettings()->FileSettings(sExt)->pTranscodingSettings->VideoBitRate();
+      if(nBitRate > 0) {
+        stringstream sBitRate;
+        sBitRate << nBitRate;
+        xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST sBitRate.str().c_str());
+      }      
+    }
+    else if(!pSQLResult->IsNull("AV_BITRATE")) {
+      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("AV_BITRATE").c_str());
+    }
   }
       
   // size
-  if(pUPnPBrowse->IncludeProperty("res@size") && !pSQLResult->IsNull("SIZE")) {
+  if(!bTranscode && pUPnPBrowse->IncludeProperty("res@size") && !pSQLResult->IsNull("SIZE")) {
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->GetValue("SIZE").c_str());
-  }*/
+  }
   
   sExt = pUPnPBrowse->DeviceSettings()->Extension(sExt, pSQLResult->GetValue("A_CODEC"), pSQLResult->GetValue("V_CODEC"));
                                                    
