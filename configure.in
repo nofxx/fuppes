@@ -452,9 +452,9 @@ if test "x$transcoding" = "xyes"; then
 	  fi
 
     # faad
-	  AH_TEMPLATE([HAVE_FAAD], [])
+	AH_TEMPLATE([HAVE_FAAD], [])
     AH_TEMPLATE([HAVE_MP4FF_H], [])
-    AC_ARG_WITH(flac-dir, AC_HELP_STRING([--with-faad-dir=path],
+    AC_ARG_WITH(faad-dir, AC_HELP_STRING([--with-faad-dir=path],
             [include path of faad.h]),
             [if test "x$withval" != "x"; then
                FAAD_H_DIR="$withval/"

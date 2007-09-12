@@ -68,6 +68,16 @@ extern "C"
 #undef time //needed because HAVE_AV_CONFIG_H is defined on top
 #include <time.h>
 
+#ifdef WIN32
+//#ifdef __MINGW32__
+__declspec(dllimport) void __stdcall Sleep(unsigned long dwMilliseconds);
+// #  include <windows.h>
+#  define usleep(t)    Sleep((t) / 1000)
+#  include <fcntl.h>
+#  define lseek(f,p,w) _lseeki64((f), (p), (w))
+//#endif
+#endif
+
 //#include "version.h"
 #include "cmdutils.h"
 
@@ -1208,7 +1218,7 @@ static int output_packet(AVInputStream *ist, int ist_index,
         if (ist->st->codec->rate_emu) {
             int64_t pts = av_rescale((int64_t) ist->frame * ist->st->codec->time_base.num, 1000000, ist->st->codec->time_base.den);
             int64_t now = av_gettime() - ist->start;
-            if (pts > now)
+            if (pts > now)			
                 usleep(pts - now);
 
             ist->frame++;

@@ -346,6 +346,8 @@ bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoIt
   // filesize
 	pVideoItem->nSize = pFormatCtx->file_size;
 	
+	char* codec_name;
+	char buf1[32];
 	
 	for(int i = 0; i < pFormatCtx->nb_streams; i++) 
   {
@@ -355,15 +357,44 @@ bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoIt
 		pCodec = avcodec_find_decoder(pStream->codec->codec_id);
 		if(pCodec)
 		{			
+			codec_name = (char*)pCodec->name;
+         if (pStream->codec->codec_id == CODEC_ID_MP3) {
+             if (pStream->codec->sub_id == 2)
+                 codec_name = "mp2";
+             else if (pStream->codec->sub_id == 1)
+                 codec_name = "mp1";
+         }
+     } else if (pStream->codec->codec_id == CODEC_ID_MPEG2TS) {
+         // fake mpeg2 transport stream codec (currently not registered) 
+         codec_name = "mpeg2ts";
+     } else if (pStream->codec->codec_name[0] != '\0') {
+         codec_name = pStream->codec->codec_name;
+     } else {
+         // output avi tags 
+         if(   isprint(pStream->codec->codec_tag&0xFF) && isprint((pStream->codec->codec_tag>>8)&0xFF)
+            && isprint((pStream->codec->codec_tag>>16)&0xFF) && isprint((pStream->codec->codec_tag>>24)&0xFF)){
+             snprintf(buf1, sizeof(buf1), "%c%c%c%c / 0x%04X",
+                      pStream->codec->codec_tag & 0xff,
+                      (pStream->codec->codec_tag >> 8) & 0xff,
+                      (pStream->codec->codec_tag >> 16) & 0xff,
+                      (pStream->codec->codec_tag >> 24) & 0xff,
+                       pStream->codec->codec_tag);
+         } else {
+             snprintf(buf1, sizeof(buf1), "0x%04x", pStream->codec->codec_tag);
+         }
+         codec_name = buf1;
+     }		
+		
+		
 			switch(pStream->codec->codec_type)
 			{
 			  case CODEC_TYPE_VIDEO:
 					pVideoItem->nWidth  = pStream->codec->width;
 					pVideoItem->nHeight = pStream->codec->height;        
-          pVideoItem->sVCodec = pCodec->name;
+          pVideoItem->sVCodec = codec_name;
 					break;
 			  case CODEC_TYPE_AUDIO:
-          pVideoItem->sACodec = pCodec->name;
+          pVideoItem->sACodec = codec_name;
           
 					break;
 				case CODEC_TYPE_DATA:
@@ -373,7 +404,7 @@ bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoIt
 				default:
 					break;
 			}
-		}
+		
 	}
 	
 	//dump_avformat(pFormatCtx, 0, p_sFileName.c_str(), false);

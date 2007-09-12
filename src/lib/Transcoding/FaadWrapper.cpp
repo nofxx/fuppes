@@ -38,6 +38,11 @@
 #ifndef DISABLE_TRANSCODING
 #ifdef HAVE_FAAD
 
+#ifdef _WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
+
 #include "../SharedLog.h" 
 #include "../SharedConfig.h" 
 
