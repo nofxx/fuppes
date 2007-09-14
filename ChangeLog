@@ -1,10 +1,12 @@
-Version
-  * AAC decoder
+Version SVN-523 2007-09-14
+  * AAC/MP4 decoder
   * fixed Deadlock on FreeBSD
   * lame quality configurable
   * id3v1 tag in transcoded files
   * new file settings flag "extract_metadata"
   * fixed segfault in LAME wrapper if id3_tag functions are missing
+  * ImageMagick support on windows
+  * video transcoding configurable
 
 Version SVN-507 2007-08-29
   * PS3 transcoding
