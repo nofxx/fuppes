@@ -85,7 +85,7 @@ static int shift_signed(MPC_SAMPLE_FORMAT val, int shift)
 }
 #endif
 
-static void convertLE32to16(MPC_SAMPLE_FORMAT* sample_buffer, char *xmms_buffer, unsigned int status)
+static void convertLE32to16(MPC_SAMPLE_FORMAT* sample_buffer, char *xmms_buffer, unsigned int status, unsigned int* nBytesConsumed)
 {
   unsigned int m_bps = 16; //output on 16 bits
   unsigned n;
@@ -114,6 +114,8 @@ static void convertLE32to16(MPC_SAMPLE_FORMAT* sample_buffer, char *xmms_buffer,
       shift += 8;
     } while (shift < m_bps);
   }
+  
+  *nBytesConsumed = n;
 }
 
 /* constructor */
@@ -274,7 +276,9 @@ long CMpcDecoder::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nB
   else                    // status>0
   {
     #warning todo: bytes read
-    convertLE32to16(sample_buffer, p_PcmOut, status);
+    unsigned int nBytesConsumed = 0;
+    *p_nBytesRead = nBytesConsumed;
+    convertLE32to16(sample_buffer, p_PcmOut, status, &nBytesConsumed);
     return status;
   }
 }

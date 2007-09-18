@@ -50,12 +50,12 @@ FLAC__StreamDecoderWriteStatus FLAC_StreamDecoderWriteCallback(const FLAC__Strea
 {  
   if (frame->header.number_type == FLAC__FRAME_NUMBER_TYPE_FRAME_NUMBER)
   {
-    ((CFLACDecoder*)client_data)->m_pPcmOut        = (char*)buffer;    
-    ((CFLACDecoder*)client_data)->m_nBytesReturned = frame->header.blocksize;    
+    ((CFLACDecoder*)client_data)->m_pPcmOut       = (char*)buffer;    
+    ((CFLACDecoder*)client_data)->m_nSamplesRead  = frame->header.blocksize;    
   }
 	else if (frame->header.number_type == FLAC__FRAME_NUMBER_TYPE_SAMPLE_NUMBER)
   {
-    ((CFLACDecoder*)client_data)->m_nBytesReturned = frame->header.blocksize;   
+    ((CFLACDecoder*)client_data)->m_nSamplesRead  = frame->header.blocksize;   
     
     int i;
     int j;
@@ -72,12 +72,14 @@ FLAC__StreamDecoderWriteStatus FLAC_StreamDecoderWriteCallback(const FLAC__Strea
       
         // flac fix from Qball Cow 2006-12-06
         FLAC__uint16 sample = buffer[i][j];
-        unsigned char *uc = (unsigned char *)&sample;
+        //unsigned char *uc = (unsigned char *)&sample;
       
-        ((CFLACDecoder*)client_data)->m_pPcmOut[k++] = *(uc++);
-        ((CFLACDecoder*)client_data)->m_pPcmOut[k++] = *(uc);          
+        ((CFLACDecoder*)client_data)->m_pPcmOut[k++] = sample; //*(uc++);
+        ((CFLACDecoder*)client_data)->m_pPcmOut[k++] = sample >> 8; //*(uc);          
       }
     }
+
+    ((CFLACDecoder*)client_data)->m_nBytesConsumed = k;
     
     return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;    
   }
@@ -387,25 +389,28 @@ long CFLACDecoder::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_n
   if(m_FLACFileDecoderGetState(m_pFLACFileDecoder) == FLAC__FILE_DECODER_END_OF_FILE) {    
     m_FLACFileDecoderFinish(m_pFLACFileDecoder);
     m_bEOF = true;
-    return m_nBytesReturned;        
+    return m_nSamplesRead;        
   }
   #else
   if(m_FLAC_StreamDecoderGetState(m_pFLAC_StreamDecoder) == FLAC__STREAM_DECODER_END_OF_STREAM) {    
     m_FLAC_StreamDecoderFinish(m_pFLAC_StreamDecoder);
     m_bEOF = true;
-    return m_nBytesReturned;
+    return m_nSamplesRead;
   }  
   #endif 
   
   #ifdef HAVE_FLAC_FILEDECODER
-  if(m_FLACFileDecoderProcessSingle(m_pFLACFileDecoder))  
+  if(m_FLACFileDecoderProcessSingle(m_pFLACFileDecoder)) {
   #else
-  if(m_FLAC_StreamDecoderProcessSingle(m_pFLAC_StreamDecoder))
+  if(m_FLAC_StreamDecoderProcessSingle(m_pFLAC_StreamDecoder)) {
   #endif
     
   #warning todo: bytes read  
     
-    return m_nBytesReturned;
+    *p_nBytesRead = m_nBytesConsumed;
+    
+    return m_nSamplesRead;
+  }
   else
     return -1;
 }

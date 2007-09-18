@@ -50,8 +50,9 @@ class CWavEncoder: public CAudioEncoderBase
     unsigned int GuessContentLength(unsigned int p_nNumPcmSamples);
   
   private:
-    unsigned char*   m_sBuffer; //[1024 * 1024];
-      
+    unsigned char*  m_sBuffer; //[1024 * 1024];
+    unsigned int    m_nBufferSize;    
+  
     int nSampleRate;
     int nChannels;
   

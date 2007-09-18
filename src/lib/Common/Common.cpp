@@ -485,9 +485,12 @@ std::string ToUTF8(std::string p_sValue, std::string p_sEncoding)
 void fuppesSleep(unsigned int p_nMilliseconds)
 {
   #ifdef WIN32
-    Sleep(p_nMilliseconds);
+  Sleep(p_nMilliseconds);
   #else
+  if(p_nMilliseconds < 1000)
     usleep(p_nMilliseconds * 1000);
+  else
+    sleep(p_nMilliseconds / 1000);  
   #endif
 }
 

@@ -170,7 +170,8 @@ class CHTTPMessage: public CMessageBase
   
   public:
     char*         m_pszBinContent;
-    unsigned int  m_nBinContentLength; 
+    unsigned int  m_nBinContentLength;
+    unsigned int  m_nBinBufferSize;
     bool          m_bIsBinary;
   
 	  std::string   m_sUserAgent;

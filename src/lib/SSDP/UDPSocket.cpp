@@ -154,6 +154,9 @@ void CUDPSocket::TeardownSocket()
 /* SendMulticast */
 void CUDPSocket::SendMulticast(std::string p_sMessage)
 {
+  u_char loop=0; 
+  setsockopt(m_Socket, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop)); 
+  
 	/* Create remote end point */
 	sockaddr_in remote_ep;	
 	remote_ep.sin_family      = AF_INET;

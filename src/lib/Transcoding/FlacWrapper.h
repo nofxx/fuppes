@@ -152,7 +152,8 @@ class CFLACDecoder: public CAudioDecoderBase
     unsigned int NumPcmSamples();
   
     char* m_pPcmOut;
-    long  m_nBytesReturned;
+    long  m_nBytesConsumed;
+    long  m_nSamplesRead;
       
     flac_data_t* m_pFLACData;    
   

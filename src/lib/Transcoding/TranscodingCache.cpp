@@ -293,6 +293,8 @@ int CTranscodingCacheObject::Append(char** p_pszBinBuffer, unsigned int p_nBinBu
   memcpy(*p_pszBinBuffer, m_szBuffer, m_nBufferSize);    
   Unlock();
     
+  fuppesSleep(100);
+  
   return m_nBufferSize;  
 }
 
@@ -323,18 +325,21 @@ fuppesThreadCallback TranscodeThread(void *arg)
   unsigned int nAppendCount = 0;
   char* szTmpBuff = NULL;
   unsigned int nTmpSize = 0;
-  int   nBytesRead = 0;
+  int   nBytesConsumed = 0;
   
   pCacheObj->m_pAudioEncoder->Init();
     
   /* Transcoding loop */
-  while(((samplesRead = pCacheObj->m_pDecoder->DecodeInterleaved((char*)pCacheObj->m_pPcmOut, pCacheObj->nBufferLength, &nBytesRead)) >= 0) && !pCacheObj->m_bBreakTranscoding)
+  while(((samplesRead = pCacheObj->m_pDecoder->DecodeInterleaved((char*)pCacheObj->m_pPcmOut, pCacheObj->nBufferLength, &nBytesConsumed)) >= 0) && !pCacheObj->m_bBreakTranscoding)
   {    
+    cout << "samples: " << samplesRead << " consumed: " << nBytesConsumed << endl;
+    
     if(samplesRead == 0)
       continue;
     
     /* encode */
-    nLameRet = pCacheObj->m_pAudioEncoder->EncodeInterleaved(pCacheObj->m_pPcmOut, samplesRead, nBytesRead);
+    nLameRet = pCacheObj->m_pAudioEncoder->EncodeInterleaved(pCacheObj->m_pPcmOut, samplesRead, nBytesConsumed);
+    nBytesConsumed = 0;
     if(nLameRet == 0)
       continue;
         

@@ -122,7 +122,11 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
     return FUPPES_FALSE;
 
 	#ifdef HAVE_IMAGEMAGICK
-  Magick::InitializeMagick(*argv);
+	#ifdef WIN32  
+	if(argc > 0) {
+	  Magick::InitializeMagick(*argv);
+	}
+	#endif
   #endif    
     
   #ifdef HAVE_LIBAVFORMAT

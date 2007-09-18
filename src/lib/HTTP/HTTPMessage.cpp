@@ -44,6 +44,7 @@ CHTTPMessage::CHTTPMessage()
 	m_sHTTPContentType    = "";
   m_nBinContentLength   = 0; 
   m_nBinContentPosition = 0;
+  m_nBinBufferSize      = 0;
   m_nContentLength      = 0;
   m_pszBinContent       = NULL;
  // m_TranscodeThread     = (fuppesThread)NULL;  

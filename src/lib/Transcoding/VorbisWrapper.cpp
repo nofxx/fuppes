@@ -185,19 +185,19 @@ void CVorbisDecoder::CloseFile()
 long CVorbisDecoder::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead)
 { 
   int bitstream = 0; 
-  int bytesRead = m_OvRead(&m_VorbisFile, p_PcmOut, p_nBufferSize, m_nEndianess, 2, 1, &bitstream);  
+  int nBytesConsumed = m_OvRead(&m_VorbisFile, p_PcmOut, p_nBufferSize, 0, 2, 1, &bitstream);  
   
   // eof
-  if(bytesRead == 0)
+  if(nBytesConsumed == 0)
   {    
     return -1;
   }
-  else if(bytesRead < 0) 
+  else if(nBytesConsumed < 0) 
   {
     // error in the stream
-    if(bytesRead == OV_HOLE)
+    if(nBytesConsumed == OV_HOLE)
       CSharedLog::Shared()->Log(L_EXTENDED_ERR,"OV_HOLE", __FILE__, __LINE__);
-    else if(bytesRead == OV_EBADLINK)    
+    else if(nBytesConsumed == OV_EBADLINK)    
       CSharedLog::Shared()->Log(L_EXTENDED_ERR,"OV_EBADLINK", __FILE__, __LINE__);
     else {
       CSharedLog::Shared()->Log(L_EXTENDED_ERR,"unknown stream error", __FILE__, __LINE__);      
@@ -209,10 +209,10 @@ long CVorbisDecoder::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p
     if(bitstream != 0)
       return -1;
     
-    *p_nBytesRead = bytesRead;
+    *p_nBytesRead = nBytesConsumed;
     
     // calc samples and return
-    long samplesRead = bytesRead / m_pVorbisInfo->channels / sizeof(short int);
+    long samplesRead = nBytesConsumed / m_pVorbisInfo->channels / sizeof(short int);
     return samplesRead;
   }  
 }

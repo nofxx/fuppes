@@ -30,20 +30,28 @@ using namespace std;
 
 CWavEncoder::CWavEncoder()
 {  
+  m_sBuffer = NULL;
 }
 
 CWavEncoder::~CWavEncoder()
 {
+  if(m_sBuffer != NULL) {
+    free(m_sBuffer);
+  }
 }
 
 int CWavEncoder::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead)
 {
   int nOffset = 0;
   
+  //cout << "WAV: " << p_nBytesRead << endl;
+  
   if(m_sBuffer != NULL) {
-    free(m_sBuffer);
-    
-    m_sBuffer = (unsigned char*)malloc(p_nBytesRead);
+    //free(m_sBuffer);
+    if(m_nBufferSize < p_nBytesRead) {
+      m_sBuffer = (unsigned char*)realloc(m_sBuffer, p_nBytesRead);
+      m_nBufferSize = p_nBytesRead;
+    }
   }
   else {
     // first call. let's write the wav header
@@ -51,6 +59,7 @@ int CWavEncoder::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p
     //f.write((const char*)headbuf, 44);
     
     m_sBuffer = (unsigned char*)malloc(p_nBytesRead + 44);
+    m_nBufferSize = p_nBytesRead + 44;
     nOffset = 44;
     memcpy(m_sBuffer, headbuf, 44);
   }
