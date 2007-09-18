@@ -44,9 +44,10 @@ fuppesThreadCallback TranscodeThread(void *arg);
 CTranscodingCacheObject::CTranscodingCacheObject()
 {
   m_nRefCount       = 0;    
-  m_szBuffer        = NULL;
+  m_sBuffer         = NULL;
   m_pPcmOut         = NULL;
-  m_nBufferSize     = 0;  
+  m_nBufferSize     = 0;
+  m_nValidBytes     = 0;
   m_bIsTranscoding  = false;  
   m_TranscodeThread = (fuppesThread)NULL; 
   m_pAudioEncoder   = NULL;
@@ -59,7 +60,8 @@ CTranscodingCacheObject::CTranscodingCacheObject()
   
   m_bThreaded       = false;
   m_nReleaseCnt     = 0;
-  m_nReleaseCntBak  = 0;
+  m_nReleaseCntBak  = 0;  
+  
   
   fuppesThreadInitMutex(&m_Mutex);
 }
@@ -79,7 +81,9 @@ CTranscodingCacheObject::~CTranscodingCacheObject()
   }
     
   fuppesThreadDestroyMutex(&m_Mutex);  
-  free(m_szBuffer);
+  if(m_sBuffer) {
+    free(m_sBuffer);
+  }
   
   if(m_pPcmOut)
     delete[] m_pPcmOut;
@@ -142,9 +146,9 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
   if(!m_pDecoder)
   {  
     // create decoder
-    nBufferLength = 32768;    
+    nPcmBufferSize = 32768;    
     
-    m_pDecoder = CTranscodingMgr::Shared()->CreateAudioDecoder(pDeviceSettings->GetDecoderType(sExt), &nBufferLength);
+    m_pDecoder = CTranscodingMgr::Shared()->CreateAudioDecoder(pDeviceSettings->GetDecoderType(sExt), &nPcmBufferSize);
     
     // init decoder    
     if(!m_pDecoder || !m_pDecoder->LoadLib() || !m_pDecoder->OpenFile(pSessionInfo->m_sInFileName, &AudioDetails)) {
@@ -156,7 +160,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
     }
 
     // create pcm buffer
-    m_pPcmOut = new short int[nBufferLength];
+    m_pPcmOut = new short int[nPcmBufferSize];
   }  
   
   
@@ -168,7 +172,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
       delete m_pAudioEncoder;
       m_pAudioEncoder = NULL;
       
-      cout << "error initializing audio encoder" << endl;      
+      cout << "error initializing audio encoder" << endl;  
       return false;
     }
     
@@ -183,6 +187,15 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
   m_bThreaded = true;
   m_bInitialized = true;
 
+  
+  if(pSessionInfo->m_nGuessContentLength > 0) {    
+    m_nBufferSize = pSessionInfo->m_nGuessContentLength;    
+    m_sBuffer = (char*)malloc(m_nBufferSize * sizeof(char*));
+    if(!m_sBuffer) {      
+      m_nBufferSize = 0;
+    }
+  }
+  
   return true;
 }
 
@@ -201,12 +214,12 @@ void CTranscodingCacheObject::Unlock()
   fuppesThreadUnlockMutex(&m_Mutex);
 }
 
-unsigned int CTranscodingCacheObject::GetBufferSize()
+unsigned int CTranscodingCacheObject::GetValidBytes()
 {
   if(m_pTranscoder != NULL) {
     
-    if(m_bIsComplete && m_nBufferSize > 0) {
-      return m_nBufferSize;
+    if(m_bIsComplete && m_nValidBytes > 0) {
+      return m_nValidBytes;
     }
     
     unsigned int nFileSize = 0;
@@ -224,13 +237,13 @@ unsigned int CTranscodingCacheObject::GetBufferSize()
     }*/
     
     if(m_bIsComplete) {
-      m_nBufferSize = nFileSize;
+      m_nValidBytes = nFileSize;
     }
 
     return nFileSize;
   }
-  else {
-    return m_nBufferSize;
+  else {    
+    return m_nValidBytes;
   }
 }
 
@@ -248,13 +261,12 @@ unsigned int CTranscodingCacheObject::Transcode(CDeviceSettings* pDeviceSettings
 {  
   
   if(!m_bThreaded) {
-    //m_sOutFileName = "/tmp/fuppes.jpg";
     std::string sExt = ExtractFileExt(m_sInFileName);
     m_pTranscoder->Transcode(pDeviceSettings->FileSettings(sExt), m_sInFileName, &m_sOutFileName);
     
     m_bIsComplete    = true;
     m_bIsTranscoding = false;
-    return GetBufferSize();
+    return GetValidBytes();
   }
   
   
@@ -263,47 +275,34 @@ unsigned int CTranscodingCacheObject::Transcode(CDeviceSettings* pDeviceSettings
   {
     m_bIsTranscoding = true;
     fuppesThreadStartArg(m_TranscodeThread, TranscodeThread, *this);
-    while(m_bIsTranscoding && (GetBufferSize() == 0))
+    while(m_bIsTranscoding && (GetValidBytes() == 0))
       fuppesSleep(100);
     
-    return GetBufferSize();
+    return GetValidBytes();
   }
   
   /* transcoding is already running */
   if(m_bIsTranscoding)
   {    
-    unsigned int nSize = GetBufferSize();
-    while(m_bIsTranscoding && (nSize == GetBufferSize()))
+    unsigned int nSize = GetValidBytes();
+    while(m_bIsTranscoding && (nSize == GetValidBytes()))
       fuppesSleep(100);
     if(m_bIsTranscoding)
-      return GetBufferSize();
+      return GetValidBytes();
   }
   
   /* object is already transcoded completely */  
   if(m_bIsComplete) 
-    return GetBufferSize();
+    return GetValidBytes();
 
 	return 0;
 }
 
-int CTranscodingCacheObject::Append(char** p_pszBinBuffer, unsigned int p_nBinBufferSize)
-{
-  Lock();
-  *p_pszBinBuffer = (char*)realloc(*p_pszBinBuffer, sizeof(char)*(m_nBufferSize));  
-  memcpy(*p_pszBinBuffer, m_szBuffer, m_nBufferSize);    
-  Unlock();
-    
-  fuppesSleep(100);
-  
-  return m_nBufferSize;  
-}
-
 fuppesThreadCallback TranscodeThread(void *arg)
 {  
-  CTranscodingCacheObject* pCacheObj = (CTranscodingCacheObject*)arg;     
-  //CSharedLog::Shared()->Log(L_EXTENDED, "TranscodeThread :: " + pCacheObj->m_pSessionInfo->m_sInFileName, __FILE__, __LINE__);   
+  CTranscodingCacheObject* pCacheObj = (CTranscodingCacheObject*)arg;  
   
-  
+  // threaded transcoder
   if(pCacheObj->m_pTranscoder != NULL) {   
     
     std::string sExt = ExtractFileExt(pCacheObj->m_sInFileName);    
@@ -315,133 +314,131 @@ fuppesThreadCallback TranscodeThread(void *arg)
     
     fuppesThreadExit();
     return 0;
-  }
+  }  
   
+  // threaded de-/encoder 
+  long          samplesRead     = 0;    
+  int           nEncRet         = 0;  
+  unsigned int  nAppendCount    = 0;
+  char*         szTmpBuff       = NULL;
+  unsigned int  nTmpBuffSize    = 0;
+  unsigned int  nTmpValidBytes  = 0;
+    
+  int           nBytesConsumed  = 0;
   
+  #define APPEND_BUFFER_SIZE 65536 // 64 kb
   
-  
-  long  samplesRead  = 0;    
-  int   nLameRet     = 0;  
-  unsigned int nAppendCount = 0;
-  char* szTmpBuff = NULL;
-  unsigned int nTmpSize = 0;
-  int   nBytesConsumed = 0;
+  szTmpBuff    = (char*)malloc(APPEND_BUFFER_SIZE * sizeof(char*));
+  nTmpBuffSize = APPEND_BUFFER_SIZE;
   
   pCacheObj->m_pAudioEncoder->Init();
     
-  /* Transcoding loop */
-  while(((samplesRead = pCacheObj->m_pDecoder->DecodeInterleaved((char*)pCacheObj->m_pPcmOut, pCacheObj->nBufferLength, &nBytesConsumed)) >= 0) && !pCacheObj->m_bBreakTranscoding)
-  {    
-    cout << "samples: " << samplesRead << " consumed: " << nBytesConsumed << endl;
-    
-    if(samplesRead == 0)
-      continue;
-    
-    /* encode */
-    nLameRet = pCacheObj->m_pAudioEncoder->EncodeInterleaved(pCacheObj->m_pPcmOut, samplesRead, nBytesConsumed);
+  // transcode loop
+  while(((samplesRead = pCacheObj->m_pDecoder->DecodeInterleaved((char*)pCacheObj->m_pPcmOut, pCacheObj->nPcmBufferSize, &nBytesConsumed)) > 0) && !pCacheObj->m_bBreakTranscoding)
+  {
+    // encode
+    nEncRet = pCacheObj->m_pAudioEncoder->EncodeInterleaved(pCacheObj->m_pPcmOut, samplesRead, nBytesConsumed);
     nBytesConsumed = 0;
-    if(nLameRet == 0)
-      continue;
         
-    /* (re-)allocate temporary buffer ... */
-    if(!szTmpBuff)
-      szTmpBuff = (char*)malloc(nLameRet * sizeof(char));
-    else
-      szTmpBuff = (char*)realloc(szTmpBuff, (nTmpSize + nLameRet) * sizeof(char));
-    
-    /* ... store encoded frames ... */
-    memcpy(&szTmpBuff[nTmpSize], pCacheObj->m_pAudioEncoder->GetEncodedBuffer(), nLameRet);    
-    
-    /* ... and set new temporary buffer size */
-    nTmpSize += nLameRet;
-    
-    nAppendCount++;
-    
-    #define APPEND_BUFFER_SIZE 65536 // 64 kb
-    
-    /* append frames to the cache-object's buffer */
-    if(((nAppendCount % 50) == 0) || (nTmpSize >= APPEND_BUFFER_SIZE))
-    {      
-      pCacheObj->Lock();
-      
-      if(!pCacheObj->m_szBuffer)
-        pCacheObj->m_szBuffer = (char*)malloc(nTmpSize * sizeof(char));
-      else
-        pCacheObj->m_szBuffer = (char*)realloc(pCacheObj->m_szBuffer, (pCacheObj->GetBufferSize() + nTmpSize) * sizeof(char));
-      
-      memcpy(&pCacheObj->m_szBuffer[pCacheObj->GetBufferSize()], szTmpBuff, nTmpSize);
-      
-      //cout << "buffer size: " << pCacheObj->m_nBufferSize << " + " << nTmpSize << " = "; fflush(stdout);
-      pCacheObj->SetBufferSize(pCacheObj->GetBufferSize()+ nTmpSize);
-      //cout << pCacheObj->m_nBufferSize << endl; fflush(stdout);
-            
-      pCacheObj->Unlock();
-
-      free(szTmpBuff);
-      szTmpBuff = NULL;
-      nTmpSize = 0;
-      //nAppendCount = 0;
+    // reallocate temporary buffer ...
+    if((nTmpValidBytes + nEncRet) > nTmpBuffSize) { 
+      cout << "realloc tmp buff" << endl;
+      szTmpBuff = (char*)realloc(szTmpBuff, (nTmpBuffSize + nEncRet) * sizeof(char));
+      nTmpBuffSize += nEncRet;
     }
     
-  }  
+    // ... store encoded frames ...
+    memcpy(&szTmpBuff[nTmpValidBytes], pCacheObj->m_pAudioEncoder->GetEncodedBuffer(), nEncRet);    
+    
+    // ... and set new temporary valid bytes count
+    nTmpValidBytes += nEncRet;
+    
+    
+    nAppendCount++;  
+    
+    
+    // append frames to the cache-object's buffer
+    if(((nAppendCount % 50) == 0) || (nTmpBuffSize >= APPEND_BUFFER_SIZE)) {      
+      
+      pCacheObj->Lock();
+      
+      // create new buffer
+      if(!pCacheObj->m_sBuffer) {
+        pCacheObj->m_sBuffer = (char*)malloc(nTmpValidBytes * sizeof(char));
+      }
+      // enlarge buffer if neccessary
+      else if(pCacheObj->m_nBufferSize < (pCacheObj->m_nValidBytes + nTmpValidBytes)) {
+        pCacheObj->m_sBuffer = (char*)realloc(pCacheObj->m_sBuffer, (pCacheObj->m_nValidBytes + nTmpValidBytes) * sizeof(char));
+      }
+      
+      // copy data
+      memcpy(&pCacheObj->m_sBuffer[pCacheObj->m_nValidBytes], szTmpBuff, nTmpValidBytes);
+      pCacheObj->m_nValidBytes += nTmpValidBytes;
+                       
+      pCacheObj->Unlock();
+
+      // reset valid bytes count
+      nTmpValidBytes = 0;
+    }
+    
+  } // while decode
   
-  /* transcoding loop exited */
+  
+  // transcoding loop exited
   if(!pCacheObj->m_bBreakTranscoding)
   {
-       
-  //cout << "transcoding loop exited. now flushing" << endl;
- 
-    
-    /* append remaining frames */
-    pCacheObj->Lock();
-    
-    if(!pCacheObj->m_szBuffer)
-        pCacheObj->m_szBuffer = (char*)malloc(nTmpSize * sizeof(char));
-      else
-        pCacheObj->m_szBuffer = (char*)realloc(pCacheObj->m_szBuffer, (pCacheObj->GetBufferSize() + nTmpSize) * sizeof(char));
+    // append remaining frames
+    if(nTmpValidBytes > 0) {
+      pCacheObj->Lock();
       
-    memcpy(&pCacheObj->m_szBuffer[pCacheObj->GetBufferSize()], szTmpBuff, nTmpSize);      
-    pCacheObj->SetBufferSize(pCacheObj->GetBufferSize()+ nTmpSize);
-    
-    pCacheObj->Unlock();
+      if(!pCacheObj->m_sBuffer) {
+        pCacheObj->m_sBuffer = (char*)malloc(nTmpValidBytes * sizeof(char));
+        pCacheObj->m_nBufferSize = nTmpValidBytes;
+      }
+      else if ((pCacheObj->m_nValidBytes + nTmpValidBytes) > pCacheObj->m_nBufferSize) {
+        pCacheObj->m_sBuffer = (char*)realloc(pCacheObj->m_sBuffer, (pCacheObj->m_nValidBytes + nTmpValidBytes) * sizeof(char));
+        pCacheObj->m_nBufferSize = pCacheObj->m_nValidBytes + nTmpValidBytes;
+      }
+        
+      memcpy(&pCacheObj->m_sBuffer[pCacheObj->m_nValidBytes], szTmpBuff, nTmpValidBytes);      
+      pCacheObj->m_nValidBytes += nTmpValidBytes;
+      nTmpValidBytes = 0;
+      
+      pCacheObj->Unlock();
+    }
 
+    // flush and end transcoding
 
-    /* flush and end transcoding */
-
-    /* flush mp3 */
-    nTmpSize = pCacheObj->m_pAudioEncoder->Flush();
+    // flush mp3
+    nTmpValidBytes = pCacheObj->m_pAudioEncoder->Flush();
     pCacheObj->Lock();
     
-    if(!pCacheObj->m_szBuffer)
-        pCacheObj->m_szBuffer = (char*)malloc(nTmpSize * sizeof(char));
-      else
-        pCacheObj->m_szBuffer = (char*)realloc(pCacheObj->m_szBuffer, (pCacheObj->GetBufferSize() + nTmpSize) * sizeof(char));
+    if(!pCacheObj->m_sBuffer) {
+      pCacheObj->m_sBuffer = (char*)malloc(nTmpValidBytes * sizeof(char));
+      pCacheObj->m_nBufferSize = nTmpValidBytes;
+    }
+    else if ((pCacheObj->m_nValidBytes + nTmpValidBytes) > pCacheObj->m_nBufferSize) {
+      pCacheObj->m_sBuffer = (char*)realloc(pCacheObj->m_sBuffer, (pCacheObj->m_nValidBytes + nTmpValidBytes) * sizeof(char));
+      pCacheObj->m_nBufferSize = pCacheObj->m_nValidBytes + nTmpValidBytes;
+    }
     
-    memcpy(&pCacheObj->m_szBuffer[pCacheObj->GetBufferSize()], pCacheObj->m_pAudioEncoder->GetEncodedBuffer(), nTmpSize);
-    pCacheObj->SetBufferSize(pCacheObj->GetBufferSize() + nTmpSize);
+    memcpy(&pCacheObj->m_sBuffer[pCacheObj->m_nValidBytes], pCacheObj->m_pAudioEncoder->GetEncodedBuffer(), nTmpValidBytes);
+    pCacheObj->m_nValidBytes += nTmpValidBytes;
 
     pCacheObj->m_bIsComplete = true;          
     pCacheObj->Unlock();    
   }
-
-  //cout << "flushed" << endl;
-  
+    
   pCacheObj->Lock();
-  pCacheObj->m_bIsTranscoding = false;
-  //pCacheObj->m_pSessionInfo->m_bIsTranscoding = false;
+  pCacheObj->m_bIsTranscoding = false;  
   pCacheObj->Unlock();
   
-  /* delete temporary buffer */
+  // delete temporary buffer
   if(szTmpBuff)
-    free(szTmpBuff);
-  
-  /*stringstream sLog;
-  sLog << "transcoding \"" << pCacheObj->m_pSessionInfo->m_sInFileName << "\" done. (" << pCacheObj->m_nBufferSize << " bytes)";  
-  CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__); */  
-  
-  //cout << "transcoding done. (" << pCacheObj->m_nBufferSize << " bytes)" << endl;
+    free(szTmpBuff);  
   
   fuppesThreadExit();  
+  return 0;
 }
 
 

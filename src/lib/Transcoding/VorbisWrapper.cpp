@@ -108,8 +108,7 @@ bool CVorbisDecoder::LoadLib()
   {
     stringstream sLog;
     sLog << "cannot load symbol 'ov_comment'";
-    CSharedLog::Shared()->Warning(LOGNAME, sLog.str());
-    //return false;
+    CSharedLog::Shared()->Warning(LOGNAME, sLog.str());    
   }  
   
   m_OvRead = (OvRead_t)FuppesGetProcAddress(m_LibHandle, "ov_read");
@@ -160,9 +159,9 @@ bool CVorbisDecoder::OpenFile(std::string p_sFileName, CAudioDetails* pAudioDeta
 
   m_pVorbisInfo = m_OvInfo(&m_VorbisFile, -1);
      
-  pAudioDetails->nChannels   = m_pVorbisInfo->channels;
-  pAudioDetails->nSampleRate = m_pVorbisInfo->rate;
-  pAudioDetails->nPcmSize    = m_OvPcmTotal(&m_VorbisFile, -1);
+  pAudioDetails->nNumChannels   = m_pVorbisInfo->channels;
+  pAudioDetails->nSampleRate    = m_pVorbisInfo->rate;
+  pAudioDetails->nNumPcmSamples = m_OvPcmTotal(&m_VorbisFile, -1);
 
   /*char **ptr = m_OvComment(&m_VorbisFile,-1)->user_comments;
   while(*ptr)
@@ -170,8 +169,6 @@ bool CVorbisDecoder::OpenFile(std::string p_sFileName, CAudioDetails* pAudioDeta
     fprintf(stderr,"%s\n",*ptr);
     ++ptr;
   }
-  fprintf(stderr,"\nBitstream is %d channel, %ldHz\n", m_pVorbisInfo->channels, m_pVorbisInfo->rate);
-  //fprintf(stderr,"\nDecoded length: %ld samples\n", (long)ov_pcm_total(&m_VorbisFile, -1));
   fprintf(stderr,"Encoded by: %s\n\n", m_OvComment(&m_VorbisFile,-1)->vendor); */
   
   return true;
@@ -185,7 +182,7 @@ void CVorbisDecoder::CloseFile()
 long CVorbisDecoder::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead)
 { 
   int bitstream = 0; 
-  int nBytesConsumed = m_OvRead(&m_VorbisFile, p_PcmOut, p_nBufferSize, 0, 2, 1, &bitstream);  
+  int nBytesConsumed = m_OvRead(&m_VorbisFile, p_PcmOut, p_nBufferSize, m_nEndianess, 2, 1, &bitstream);  
   
   // eof
   if(nBytesConsumed == 0)
@@ -218,8 +215,7 @@ long CVorbisDecoder::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p
 }
 
 unsigned int CVorbisDecoder::NumPcmSamples()
-{
-  //cout << __FILE__ << " guess: " << m_OvPcmTotal(&m_VorbisFile, -1) << endl;
+{  
   return m_OvPcmTotal(&m_VorbisFile, -1);  
 }
 

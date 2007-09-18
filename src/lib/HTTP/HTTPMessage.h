@@ -125,7 +125,7 @@ class CHTTPMessage: public CMessageBase
     HTTP_VERSION      GetVersion()          { return m_nHTTPVersion;      }
     //std::string       GetContent()          { return m_sContent;          }
     unsigned int      GetBinContentLength();
-    char*             GetBinContent()       { return m_pszBinContent;     }
+    char*             GetBinContent()       { return m_sBuffer;     }
 	
     bool              IsBinary()            { return m_bIsBinary;         }  
     void              SetIsBinary(bool p_bIsBinary) { m_bIsBinary = p_bIsBinary; }
@@ -138,7 +138,7 @@ class CHTTPMessage: public CMessageBase
     std::string 		  GetHeaderAsString();		  
 	  std::string			  GetMessageAsString();
 
-    unsigned int      GetBinContentChunk(char* p_sContentChunk, unsigned int p_nSize, unsigned int p_nOffset = 200);
+    unsigned int      GetBinContentChunk(char** p_psContentChunk, unsigned int p_nSize, unsigned int p_nOffset);
 
     unsigned int      GetRangeStart() { return m_nRangeStart; }
     unsigned int      GetRangeEnd() { return m_nRangeEnd; }
@@ -169,9 +169,15 @@ class CHTTPMessage: public CMessageBase
 	  void              DeviceSettings(CDeviceSettings* pSettings) { m_pDeviceSettings = pSettings; }
   
   public:
-    char*         m_pszBinContent;
+    // buffer
+    char*         m_sBuffer;
+    // the buffer's size
+    unsigned int  m_nBufferSize;  
+    // buffer bytes consumed
+    unsigned int  m_nBytesConsumed;
+  
     unsigned int  m_nBinContentLength;
-    unsigned int  m_nBinBufferSize;
+    
     bool          m_bIsBinary;
   
 	  std::string   m_sUserAgent;

@@ -43,11 +43,8 @@ CWavEncoder::~CWavEncoder()
 int CWavEncoder::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead)
 {
   int nOffset = 0;
-  
-  //cout << "WAV: " << p_nBytesRead << endl;
-  
+
   if(m_sBuffer != NULL) {
-    //free(m_sBuffer);
     if(m_nBufferSize < p_nBytesRead) {
       m_sBuffer = (unsigned char*)realloc(m_sBuffer, p_nBytesRead);
       m_nBufferSize = p_nBytesRead;
@@ -56,7 +53,6 @@ int CWavEncoder::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p
   else {
     // first call. let's write the wav header
     WriteFileHeader();
-    //f.write((const char*)headbuf, 44);
     
     m_sBuffer = (unsigned char*)malloc(p_nBytesRead + 44);
     m_nBufferSize = p_nBytesRead + 44;
@@ -64,7 +60,6 @@ int CWavEncoder::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p
     memcpy(m_sBuffer, headbuf, 44);
   }
 
-  //f.write((const char*)p_PcmIn, p_nBytesRead);  
   memcpy(&m_sBuffer[nOffset], p_PcmIn, p_nBytesRead);
   
   return p_nBytesRead;
@@ -88,16 +83,16 @@ void CWavEncoder::WriteFileHeader()
   int bits = 16;
   
   unsigned int size = 0x7fffffff;
-  if(m_pAudioDetails->nPcmSize > 0) {
-    size = m_pAudioDetails->nPcmSize;
+  if(nNumSamples > 0) {
+    size = nNumSamples;
   }
-  int channels    = m_pAudioDetails->nChannels; //ov_info(vf,0)->channels;
-  int samplerate  = m_pAudioDetails->nSampleRate; //ov_info(vf,0)->rate;
-  int bytespersec = channels*samplerate*bits/8;
-  int align = channels*bits/8;
-  int samplesize = bits;
+  int channels    = nNumChannels;
+  int samplerate  = nSampleRate;  
+  int bytespersec = channels * samplerate * bits / 8;
+  int align       = channels * bits / 8;
+  int samplesize  = bits;
 
-  unsigned int knownlength = m_pAudioDetails->nPcmSize;
+  unsigned int knownlength = nNumSamples;
   
   if(knownlength && knownlength*bits/8*channels < size)
       size = (unsigned int)(knownlength*bits/8*channels+44) ;
@@ -119,7 +114,18 @@ void CWavEncoder::WriteFileHeader()
 
 void CWavEncoder::SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings)
 {
-  #warning todo
+  //#warning todo
+}
+
+void CWavEncoder::SetAudioDetails(CAudioDetails* pAudioDetails)
+{
+  CAudioEncoderBase::SetAudioDetails(pAudioDetails);
+  
+  nSampleRate  = m_pAudioDetails->nSampleRate;
+  nNumChannels = m_pAudioDetails->nNumChannels;
+  nNumSamples  = m_pAudioDetails->nNumPcmSamples;
+  
+  cout << "sr: " << nSampleRate << " Hz - channels: " << nNumChannels << " - samples: " << nNumSamples << endl;
 }
 
 unsigned int CWavEncoder::GuessContentLength(unsigned int p_nNumPcmSamples)
@@ -127,9 +133,19 @@ unsigned int CWavEncoder::GuessContentLength(unsigned int p_nNumPcmSamples)
   if(p_nNumPcmSamples == 0) {
     return 0;
   }
-  else {
-    #warning todo: (knownlength*bits/8*channels+44) ;
-    return (p_nNumPcmSamples * 4) + 44;
+  else {    
+    nNumSamples = p_nNumPcmSamples;
+    
+    unsigned int  knownlength = nNumSamples;
+    unsigned int  size        = nNumSamples;
+    int           bits        = 16;
+    int           channels    = nNumChannels;
+        
+    if(knownlength*bits/8*channels < size) {
+      size = (unsigned int)(knownlength*bits/8*channels+44);
+    }
+
+    return size;
   }
 }
 

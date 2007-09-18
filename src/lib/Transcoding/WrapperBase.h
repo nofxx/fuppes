@@ -31,10 +31,10 @@
 
 struct CAudioDetails
 {
-  int   nChannels;
-  int   nSampleRate;
-  int   nBitRate;
-  unsigned int nPcmSize;  
+  int           nNumChannels;
+  int           nSampleRate;
+  int           nBitRate;
+  unsigned int  nNumPcmSamples;  
 };
 
 
@@ -73,7 +73,8 @@ class CAudioEncoderBase
     virtual ~CAudioEncoderBase() {};
 		virtual bool LoadLib() = 0;
   
-    void SetAudioDetails(CAudioDetails* pAudioDetails) { m_pAudioDetails = pAudioDetails; }
+    #warning todo: copy values
+    virtual void SetAudioDetails(CAudioDetails* pAudioDetails) { m_pAudioDetails = pAudioDetails; }
     virtual void SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings) = 0;
     void SetSessionInfo(CTranscodeSessionInfo* pSessionInfo) { m_pSessionInfo = pSessionInfo; }    
     

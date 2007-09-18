@@ -42,21 +42,22 @@ class CTranscodingCacheObject
     ~CTranscodingCacheObject();
   
     bool Init(CTranscodeSessionInfo* pSessionInfo, CDeviceSettings* pDeviceSettings);
-  
-    //void Retain();
-    //void Release();
-  
+
     bool IsReleased();
   
     void Lock();
     void Unlock();
   
     // the buffer that stores the transcoded bytes
-    char* m_szBuffer; 
+    char* m_sBuffer; 
+    // valid bytes in buffer
+    unsigned int m_nValidBytes;
     
+    // the buffer's size
+    unsigned int m_nBufferSize;  
   
-    unsigned int GetBufferSize();
-    void SetBufferSize(unsigned int p_nBufferSize) { m_nBufferSize = p_nBufferSize; }
+  
+    unsigned int GetValidBytes();
   
     bool TranscodeToFile();
   
@@ -68,7 +69,7 @@ class CTranscodingCacheObject
     bool  m_bInitialized;
   
     unsigned int Transcode(CDeviceSettings* pDeviceSettings);
-    int Append(char** p_pszBinBuffer, unsigned int p_nBinBufferSize);
+    //int Append(char** p_pszBinBuffer, unsigned int p_nBinBufferSize);
   
     void GetId3v1(char buffer[128]);
   //private:
@@ -101,8 +102,8 @@ class CTranscodingCacheObject
   
     //CTranscodeSessionInfo* m_pSessionInfo;          
   
-    unsigned int nBufferLength;  
-    short int* m_pPcmOut;
+    unsigned int nPcmBufferSize;  
+    short int*   m_pPcmOut;
     
 //  private:
     std::string m_sInFileName;
@@ -114,8 +115,7 @@ class CTranscodingCacheObject
     CDeviceSettings* DeviceSettings() { return m_pDeviceSettings; }
   
    private:
-    // the buffer's size
-    unsigned int m_nBufferSize;
+
   
     bool m_bThreaded;
   

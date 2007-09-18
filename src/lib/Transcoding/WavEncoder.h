@@ -41,6 +41,7 @@ class CWavEncoder: public CAudioEncoderBase
     bool LoadLib() { return true; }
     void Init() { m_sBuffer = NULL; }
     
+    void SetAudioDetails(CAudioDetails* pAudioDetails);
     void SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings);
   
     int   EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead);
@@ -54,7 +55,8 @@ class CWavEncoder: public CAudioEncoderBase
     unsigned int    m_nBufferSize;    
   
     int nSampleRate;
-    int nChannels;
+    int nNumChannels;
+    int nNumSamples;    
   
     void WriteFileHeader();
     unsigned char headbuf[44];  

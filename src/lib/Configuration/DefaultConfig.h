@@ -534,7 +534,7 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
                 xmlTextWriterEndElement(pWriter);
               xmlTextWriterEndElement(pWriter);*/
               
-            xmlTextWriterEndElement(pWriter);
+            //xmlTextWriterEndElement(pWriter);
           xmlTextWriterEndElement(pWriter);  
   
           // asf

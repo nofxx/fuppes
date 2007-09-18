@@ -104,6 +104,8 @@ void FLAC_StreamDecoderMetadataCallback(const FLAC__StreamDecoder* decoder,
   ((CFLACDecoder*)client_data)->m_pFLACData->total_samples   = metadata->data.stream_info.total_samples;
   ((CFLACDecoder*)client_data)->m_pFLACData->channels        = metadata->data.stream_info.channels;
   ((CFLACDecoder*)client_data)->m_pFLACData->bits_per_sample = metadata->data.stream_info.bits_per_sample;  
+  ((CFLACDecoder*)client_data)->m_pFLACData->sample_rate     = metadata->data.stream_info.sample_rate;  
+  
   
   fuppesSleep(1);
 }
@@ -362,6 +364,12 @@ bool CFLACDecoder::OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetail
     return false; 
   }  
   #endif // #ifndef HAVE_FLAC_FILEDECODER
+  
+    
+  pAudioDetails->nNumChannels   = m_pFLACData->channels;
+  pAudioDetails->nBitRate       = m_pFLACData->bits_per_sample;    
+  pAudioDetails->nNumPcmSamples = m_pFLACData->total_samples;
+  pAudioDetails->nSampleRate    = m_pFLACData->sample_rate;
   
   m_bEOF = false;
   return true;

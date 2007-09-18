@@ -684,20 +684,20 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   
   // set chunk size
   if(nRequestSize > nReqChunkSize) {    
-    szChunk       = new char[nReqChunkSize];
+    //szChunk       = new char[nReqChunkSize];
     bChunkLoop    = true;
   }
   else {  
-    szChunk       = new char[nRequestSize];
+    //szChunk       = new char[nRequestSize];
     nReqChunkSize = nRequestSize;
     bChunkLoop    = false;
   }
 
   
   
-  // send loop
+  // send loop 
   while((nErr != -1) && 
-        ((nRet = p_Response->GetBinContentChunk(szChunk, nReqChunkSize, nOffset)) > 0)
+        ((nRet = p_Response->GetBinContentChunk(&szChunk, nReqChunkSize, nOffset)) > 0)
         )
   {
     // send HTTP header when the first package is ready
@@ -784,6 +784,6 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   }
   
   
-  delete [] szChunk;    
+  //delete [] szChunk;    
   return true;  
 }

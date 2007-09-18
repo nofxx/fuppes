@@ -982,11 +982,12 @@ void ParseM3UPlaylist(CSelectResult* pResult)
       
       //cout << sFileName << endl;
       
+      if(bIsLocalFile && IsRelativeFileName(sFileName)) {
+        sFileName = ExtractFilePath(pResult->GetValue("PATH")) + sFileName;
+      }
+      
       if(bIsLocalFile && FileExists(sFileName))
-      {
-        if(IsRelativeFileName(sFileName))
-          sFileName = ExtractFilePath(pResult->GetValue("PATH")) + sFileName;
-        
+      {       
         nObjectID = GetObjectIDFromFileName(sFileName);      
         
         if(nObjectID == 0) {

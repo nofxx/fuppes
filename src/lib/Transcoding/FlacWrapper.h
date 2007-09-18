@@ -130,7 +130,7 @@ typedef struct flac_data_s {
   
   char *buffer;
   int buffer_size;  
-  int sample_rate;
+  unsigned int sample_rate;
   long position;
   long duration;
 } flac_data_t;
