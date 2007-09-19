@@ -47,7 +47,7 @@ int CWavEncoder::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p
 
   if(m_sBuffer != NULL) {
     if(m_nBufferSize < p_nBytesRead) {
-      m_sBuffer = (unsigned char*)realloc(m_sBuffer, p_nBytesRead);
+      m_sBuffer = (unsigned char*)realloc(m_sBuffer, p_nBytesRead * sizeof(unsigned char*));
       m_nBufferSize = p_nBytesRead;
     }
   }
@@ -55,7 +55,7 @@ int CWavEncoder::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p
     // first call. let's write the wav header
     WriteFileHeader();
     
-    m_sBuffer = (unsigned char*)malloc(p_nBytesRead + 44);
+    m_sBuffer = (unsigned char*)malloc(p_nBytesRead * sizeof(unsigned char*) + 44);
     m_nBufferSize = p_nBytesRead + 44;
     nOffset = 44;
     memcpy(m_sBuffer, headbuf, 44);

@@ -39,7 +39,7 @@ class CWavEncoder: public CAudioEncoderBase
     virtual ~CWavEncoder();
     
     bool LoadLib() { return true; }
-    void Init() { m_sBuffer = NULL; }
+    void Init() {}
     
     void SetAudioDetails(CAudioDetails* pAudioDetails);
     void SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings);

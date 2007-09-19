@@ -4,6 +4,7 @@ Version SVN-5
     removed lot's of memory re-/allocations  
   * fixed sleep-bug thanks to Tim Rightnour
   * fixed playlist creation bug thanks again to Tim Rightnour
+  * fixed malformed default configuration
   * minor fixes
 
 Version SVN-523 2007-09-14

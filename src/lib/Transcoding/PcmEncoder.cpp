@@ -28,8 +28,11 @@ using namespace std;
 
 #ifndef DISABLE_TRANSCODING
 
-CPcmEncoder::CPcmEncoder()
+CPcmEncoder::CPcmEncoder():CAudioEncoderBase()
 {
+  m_sBuffer = NULL;  
+  m_nBufferSize = 0;
+  m_nInEndianess = E_LITTLE_ENDIAN;
 }
 
 CPcmEncoder::~CPcmEncoder()
@@ -41,25 +44,52 @@ CPcmEncoder::~CPcmEncoder()
 
 void CPcmEncoder::SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings)
 {
-  #warning todo
+}
+
+void CPcmEncoder::SetAudioDetails(CAudioDetails* pAudioDetails)
+{
+  CAudioEncoderBase::SetAudioDetails(pAudioDetails);
+  
+  nSampleRate  = m_pAudioDetails->nSampleRate;
+  nNumChannels = m_pAudioDetails->nNumChannels;
+  nNumSamples  = m_pAudioDetails->nNumPcmSamples;  
 }
 
 int CPcmEncoder::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead)
 {
-  cout << "CPcmEncoder::EncodeInterleaved - " << p_nNumSamples << " - " << sizeof(p_PcmIn) << endl;
-  fflush(stdout);
+  if(!m_sBuffer) {
+    m_sBuffer = (unsigned char*)malloc(p_nBytesRead * sizeof(unsigned char*));
+    m_nBufferSize = p_nBytesRead;
+  }  
   
-  if(m_sBuffer != NULL) {
-    free(m_sBuffer);
+  if(m_nBufferSize < p_nBytesRead) {
+    m_sBuffer = (unsigned char*)realloc(m_sBuffer, p_nBytesRead * sizeof(unsigned char*));
   }
-  
-  //f.write((const char*)p_PcmIn, p_nBytesRead);
-  
-  m_sBuffer = (unsigned char*)malloc(p_nBytesRead);
   
   memcpy(m_sBuffer, p_PcmIn, p_nBytesRead);
   
   return p_nBytesRead;
+}
+
+unsigned int CPcmEncoder::GuessContentLength(unsigned int p_nNumPcmSamples)
+{
+  if(p_nNumPcmSamples == 0) {
+    return 0;
+  }
+  else {    
+    nNumSamples = p_nNumPcmSamples;
+    
+    unsigned int  knownlength = nNumSamples;
+    unsigned int  size        = nNumSamples;
+    int           bits        = 16;
+    int           channels    = nNumChannels;
+        
+    if(knownlength*bits/8*channels < size) {
+      size = (unsigned int)(knownlength*bits/8*channels);
+    }
+
+    return size;
+  }
 }
 
 #endif // DISABLE_TRANSCODING

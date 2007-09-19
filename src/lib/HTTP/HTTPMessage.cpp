@@ -354,15 +354,14 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
   {    
     bool bTranscode = (m_pTranscodingSessionInfo != NULL);
     
-    // id3v1 request
-    #warning todo: new option "fake mp3 tail"
-    if(bTranscode &&
+    // id3v1 request    
+    if(bTranscode && m_pTranscodingCacheObj->IsMp3Encoding() &&
        (m_pTranscodingSessionInfo->m_nGuessContentLength > 0) && 
        (m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 128) {
              
       m_pTranscodingCacheObj->GetId3v1(p_sContentChunk);
       return 128;      
-    }    
+    }
     
     unsigned int nRest = 0;
     unsigned int nDelayCount = 0;

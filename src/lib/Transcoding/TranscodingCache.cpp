@@ -474,6 +474,17 @@ void CTranscodingCacheObject::GetId3v1(char buffer[128])
   #endif
 }
 
+bool CTranscodingCacheObject::IsMp3Encoding()
+{
+  CLameWrapper* pLame = dynamic_cast<CLameWrapper*>(m_pAudioEncoder);
+  if(!pLame) {
+    return false;
+  }
+  else {
+    return true;
+  }
+}
+
 fuppesThreadCallback ReleaseLoop(void* arg);
 
 CTranscodingCache* CTranscodingCache::m_pInstance = 0;

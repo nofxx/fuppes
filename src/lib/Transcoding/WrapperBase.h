@@ -31,6 +31,22 @@
 
 struct CAudioDetails
 {
+  CAudioDetails()
+  {
+    nNumChannels    = 0;
+    nSampleRate     = 0;
+    nBitRate        = 0;
+    nNumPcmSamples  = 0;
+  }
+  
+  CAudioDetails(CAudioDetails* pAudioDetails)
+  {
+    nNumChannels    = pAudioDetails->nNumChannels;
+    nSampleRate     = pAudioDetails->nSampleRate;
+    nBitRate        = pAudioDetails->nBitRate;
+    nNumPcmSamples  = pAudioDetails->nNumPcmSamples;
+  }
+  
   int           nNumChannels;
   int           nSampleRate;
   int           nBitRate;
@@ -86,13 +102,17 @@ class CAudioEncoderBase
         m_nInEndianess = E_LITTLE_ENDIAN;
       else
         m_nInEndianess = E_BIG_ENDIAN;
+                               
+      m_pAudioDetails = NULL;
     };    
     
-    virtual ~CAudioEncoderBase() {};
+    virtual ~CAudioEncoderBase() { if(m_pAudioDetails) delete m_pAudioDetails; };
 		virtual bool LoadLib() = 0;
   
-    #warning todo: copy values
-    virtual void SetAudioDetails(CAudioDetails* pAudioDetails) { m_pAudioDetails = pAudioDetails; }
+    virtual void SetAudioDetails(CAudioDetails* pAudioDetails) { 
+      if(!m_pAudioDetails)
+       m_pAudioDetails = new CAudioDetails(pAudioDetails);
+    }
     virtual void SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings) = 0;
     void SetSessionInfo(CTranscodeSessionInfo* pSessionInfo) { m_pSessionInfo = pSessionInfo; }    
     

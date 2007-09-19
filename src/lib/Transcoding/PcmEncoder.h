@@ -39,19 +39,24 @@ class CPcmEncoder: public CAudioEncoderBase
     virtual ~CPcmEncoder();
     
     bool LoadLib() { return true; }
-    void Init() { m_sBuffer = NULL; }
+    void Init() { }
   
+    void SetAudioDetails(CAudioDetails* pAudioDetails);
     void SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings);
   
     int   EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead);
     int   Flush() { return 0; }
     unsigned char* GetEncodedBuffer() { return m_sBuffer; }
   
-    #warning todo
-    unsigned int GuessContentLength(unsigned int p_nNumPcmSamples) { return 0; }
+    unsigned int GuessContentLength(unsigned int p_nNumPcmSamples);
   
   private:
     unsigned char*   m_sBuffer; //[1024 * 1024];  
+    unsigned int     m_nBufferSize;
+  
+    int nSampleRate;
+    int nNumChannels;
+    int nNumSamples;    
 };
 
 #endif // _PCMENCODER_H
