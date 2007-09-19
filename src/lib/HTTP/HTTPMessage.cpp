@@ -326,7 +326,7 @@ unsigned int CHTTPMessage::GetBinContentLength()
   }
 }
 
-unsigned int CHTTPMessage::GetBinContentChunk(char** p_psContentChunk, unsigned int p_nSize, unsigned int p_nOffset)
+unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned int p_nSize, unsigned int p_nOffset)
 {
   // read from file
   if(m_pTranscodingSessionInfo == NULL && m_fsFile.is_open()) {    
@@ -335,26 +335,15 @@ unsigned int CHTTPMessage::GetBinContentChunk(char** p_psContentChunk, unsigned 
       m_fsFile.seekg(p_nOffset, ios::beg);
       m_nBinContentPosition = p_nOffset;
     }
-  
-    if(!m_sBuffer) {
-      m_sBuffer         = (char*)malloc(sizeof(char*) * p_nSize);
-      m_nBufferSize     = p_nSize;      
-    }
-    else if(m_nBufferSize < p_nSize) {
-      m_sBuffer         = (char*)realloc(m_sBuffer, sizeof(char*) * p_nSize);
-      m_nBufferSize     = p_nSize;
-    }
-    
+      
     unsigned int nRead = 0;
     if((m_nBinContentLength - p_nOffset) < p_nSize)
       nRead = m_nBinContentLength - p_nOffset;
     else
       nRead = p_nSize;
 
-    m_fsFile.read(m_sBuffer, nRead);   
-    
-    *p_psContentChunk = m_sBuffer;    
-  
+    m_fsFile.read(p_sContentChunk, nRead);   
+      
     m_nBinContentPosition += nRead;
     m_nBytesConsumed  = nRead;
     return nRead;
@@ -371,8 +360,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char** p_psContentChunk, unsigned 
        (m_pTranscodingSessionInfo->m_nGuessContentLength > 0) && 
        (m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 128) {
              
-      m_pTranscodingCacheObj->GetId3v1(m_sBuffer);
-      *p_psContentChunk = m_sBuffer;
+      m_pTranscodingCacheObj->GetId3v1(p_sContentChunk);
       return 128;      
     }    
     
@@ -407,7 +395,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char** p_psContentChunk, unsigned 
       nRest = m_nBinContentLength - m_nBinContentPosition;
     #endif
     
-
+    
     #ifndef DISABLE_TRANSCODING
     while(bTranscode && 
           !m_pTranscodingCacheObj->m_bIsComplete && 
@@ -420,8 +408,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char** p_psContentChunk, unsigned 
       else {
         nRest = 0;
       }
-           
-
+      
       stringstream sLog;
       sLog << "we are sending faster then we can transcode!" << endl;
       sLog << "  try     : " << (nDelayCount + 1) << "/20" << endl;
@@ -456,7 +443,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char** p_psContentChunk, unsigned 
     #else
     nRest = m_nBinContentLength - m_nBinContentPosition;         
     #endif
-    
+      
    
     if(nRest > p_nSize) {
       nRest = p_nSize;
@@ -469,20 +456,9 @@ unsigned int CHTTPMessage::GetBinContentChunk(char** p_psContentChunk, unsigned 
       if(m_fsFile.fail() != 1) { 
         fsTmp.seekg(m_nBinContentPosition, ios::beg);   
           
-        if(!m_sBuffer) {
-          m_sBuffer         = (char*)malloc(sizeof(char*) * nRest);
-          m_nBufferSize     = nRest;      
-        }
-        else if(m_nBufferSize < nRest) {
-          m_sBuffer         = (char*)realloc(m_sBuffer, sizeof(char*) * nRest);
-          m_nBufferSize     = nRest;
-        }
-          
-        fsTmp.read(m_sBuffer, nRest);
+        fsTmp.read(p_sContentChunk, nRest);
         fsTmp.close();
 
-        *p_psContentChunk = m_sBuffer;
-          
         m_nBinContentPosition += nRest;
         return nRest;
       }
@@ -490,8 +466,16 @@ unsigned int CHTTPMessage::GetBinContentChunk(char** p_psContentChunk, unsigned 
           return 0;
       }
     }
-    else {
-      *p_psContentChunk = &m_pTranscodingCacheObj->m_sBuffer[m_nBinContentPosition];
+    else {      
+      if(bTranscode) {        
+        m_pTranscodingCacheObj->Lock();        
+        memcpy(p_sContentChunk, &m_pTranscodingCacheObj->m_sBuffer[m_nBinContentPosition], nRest);
+        m_pTranscodingCacheObj->Unlock();
+      }
+      else {        
+        memcpy(p_sContentChunk, &m_sBuffer[m_nBinContentPosition], nRest);
+      }
+      
       m_nBinContentPosition += nRest; 
       return nRest;
     }

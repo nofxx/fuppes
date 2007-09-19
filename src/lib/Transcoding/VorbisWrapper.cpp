@@ -39,15 +39,8 @@ using namespace std;
 
 const std::string LOGNAME = "VorbisWrapper";
 
-CVorbisDecoder::CVorbisDecoder()
+CVorbisDecoder::CVorbisDecoder():CAudioDecoderBase()
 {
-  /* determine endianness (clever trick courtesy of Nicholas Devillard,
-   * (http://www.eso.org/~ndevilla/endian/) */
-  int testvar = 1;
-  if(*(char *)&testvar)
-    m_nEndianess = 0;  // little endian
-  else
-    m_nEndianess = 1;  // big endian  
 }
 
 CVorbisDecoder::~CVorbisDecoder()
@@ -182,7 +175,7 @@ void CVorbisDecoder::CloseFile()
 long CVorbisDecoder::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead)
 { 
   int bitstream = 0; 
-  int nBytesConsumed = m_OvRead(&m_VorbisFile, p_PcmOut, p_nBufferSize, m_nEndianess, 2, 1, &bitstream);  
+  int nBytesConsumed = m_OvRead(&m_VorbisFile, p_PcmOut, p_nBufferSize, m_nOutEndianess, 2, 1, &bitstream);  
   
   // eof
   if(nBytesConsumed == 0)

@@ -62,6 +62,8 @@ CTranscodingCacheObject::CTranscodingCacheObject()
   m_nReleaseCnt     = 0;
   m_nReleaseCntBak  = 0;  
   
+  m_bLocked = false;
+  
   
   fuppesThreadInitMutex(&m_Mutex);
 }
@@ -182,6 +184,13 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
          
     pSessionInfo->m_nGuessContentLength = m_pAudioEncoder->GuessContentLength(m_pDecoder->NumPcmSamples());
     //cout << "guess content: " << pSessionInfo->m_nGuessContentLength << endl;
+    
+    // make sure decoder delivers correct endianess
+    // lame needs machine dependent endianess
+    // wav and pcm encoder currently support only litte-endian
+    if(m_pDecoder->OutEndianess() != m_pAudioEncoder->InEndianess()) {
+      m_pDecoder->SetOutputEndianness(m_pAudioEncoder->InEndianess());
+    }
   }  
   
   m_bThreaded = true;
@@ -189,7 +198,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
 
   
   if(pSessionInfo->m_nGuessContentLength > 0) {    
-    m_nBufferSize = pSessionInfo->m_nGuessContentLength;    
+    m_nBufferSize = pSessionInfo->m_nGuessContentLength;  
     m_sBuffer = (char*)malloc(m_nBufferSize * sizeof(char*));
     if(!m_sBuffer) {      
       m_nBufferSize = 0;
@@ -207,10 +216,12 @@ bool CTranscodingCacheObject::IsReleased()
 void CTranscodingCacheObject::Lock()
 {
   fuppesThreadLockMutex(&m_Mutex);
+  m_bLocked = true;
 }
 
 void CTranscodingCacheObject::Unlock()
 {
+  m_bLocked = false;
   fuppesThreadUnlockMutex(&m_Mutex);
 }
 
@@ -231,10 +242,7 @@ unsigned int CTranscodingCacheObject::GetValidBytes()
       nFileSize = streamoff(fsFile.tellg()); 
       fsFile.seekg(0, ios::beg);
       fsFile.close();
-    }
-    /*else {
-      cout << __FILE__ << " error opening " << m_sOutFileName << endl;
-    }*/
+    }    
     
     if(m_bIsComplete) {
       m_nValidBytes = nFileSize;
@@ -334,15 +342,14 @@ fuppesThreadCallback TranscodeThread(void *arg)
   pCacheObj->m_pAudioEncoder->Init();
     
   // transcode loop
-  while(((samplesRead = pCacheObj->m_pDecoder->DecodeInterleaved((char*)pCacheObj->m_pPcmOut, pCacheObj->nPcmBufferSize, &nBytesConsumed)) > 0) && !pCacheObj->m_bBreakTranscoding)
+  while(((samplesRead = pCacheObj->m_pDecoder->DecodeInterleaved((char*)pCacheObj->m_pPcmOut, pCacheObj->nPcmBufferSize, &nBytesConsumed)) >= 0) && !pCacheObj->m_bBreakTranscoding)
   {
     // encode
     nEncRet = pCacheObj->m_pAudioEncoder->EncodeInterleaved(pCacheObj->m_pPcmOut, samplesRead, nBytesConsumed);
     nBytesConsumed = 0;
         
     // reallocate temporary buffer ...
-    if((nTmpValidBytes + nEncRet) > nTmpBuffSize) { 
-      cout << "realloc tmp buff" << endl;
+    if((nTmpValidBytes + nEncRet) > nTmpBuffSize) {
       szTmpBuff = (char*)realloc(szTmpBuff, (nTmpBuffSize + nEncRet) * sizeof(char));
       nTmpBuffSize += nEncRet;
     }
@@ -353,22 +360,26 @@ fuppesThreadCallback TranscodeThread(void *arg)
     // ... and set new temporary valid bytes count
     nTmpValidBytes += nEncRet;
     
-    
     nAppendCount++;  
     
     
     // append frames to the cache-object's buffer
     if(((nAppendCount % 50) == 0) || (nTmpBuffSize >= APPEND_BUFFER_SIZE)) {      
       
+      if(pCacheObj->Locked())
+        continue;
+      
       pCacheObj->Lock();
       
       // create new buffer
-      if(!pCacheObj->m_sBuffer) {
-        pCacheObj->m_sBuffer = (char*)malloc(nTmpValidBytes * sizeof(char));
+      if(!pCacheObj->m_sBuffer) {        
+        pCacheObj->m_sBuffer = (char*)malloc(nTmpValidBytes * sizeof(char));        
+        pCacheObj->m_nBufferSize = nTmpValidBytes;        
       }
       // enlarge buffer if neccessary
-      else if(pCacheObj->m_nBufferSize < (pCacheObj->m_nValidBytes + nTmpValidBytes)) {
-        pCacheObj->m_sBuffer = (char*)realloc(pCacheObj->m_sBuffer, (pCacheObj->m_nValidBytes + nTmpValidBytes) * sizeof(char));
+      else if(pCacheObj->m_nBufferSize < (pCacheObj->m_nValidBytes + nTmpValidBytes)) {        
+        pCacheObj->m_sBuffer = (char*)realloc(pCacheObj->m_sBuffer, (pCacheObj->m_nValidBytes + nTmpValidBytes) * sizeof(char));        
+        pCacheObj->m_nBufferSize = pCacheObj->m_nValidBytes + nTmpValidBytes;        
       }
       
       // copy data
@@ -382,7 +393,6 @@ fuppesThreadCallback TranscodeThread(void *arg)
     }
     
   } // while decode
-  
   
   // transcoding loop exited
   if(!pCacheObj->m_bBreakTranscoding)

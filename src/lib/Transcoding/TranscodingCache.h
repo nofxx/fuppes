@@ -47,6 +47,7 @@ class CTranscodingCacheObject
   
     void Lock();
     void Unlock();
+    bool Locked() { return m_bLocked; }
   
     // the buffer that stores the transcoded bytes
     char* m_sBuffer; 
@@ -116,7 +117,8 @@ class CTranscodingCacheObject
   
    private:
 
-  
+    bool m_bLocked;
+    
     bool m_bThreaded;
   
     unsigned int m_nReleaseCnt;

@@ -77,10 +77,6 @@ class CVorbisDecoder: public CAudioDecoderBase
   
     unsigned int NumPcmSamples();
   
-    /**
-     * @param   p_PcmOut[]
-     * @return  number of decoded samples
-     */
     long DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead);
   
     void CloseFile();   
@@ -88,8 +84,7 @@ class CVorbisDecoder: public CAudioDecoderBase
   private:          
     OggVorbis_File m_VorbisFile;
     FILE*          m_pVorbisFileHandle;
-    vorbis_info*   m_pVorbisInfo;
-    int            m_nEndianess;  
+    vorbis_info*   m_pVorbisInfo;     
     
     OvOpen_t       m_OvOpen;
     OvInfo_t       m_OvInfo;

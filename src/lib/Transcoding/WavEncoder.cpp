@@ -28,9 +28,10 @@ using namespace std;
 
 #ifndef DISABLE_TRANSCODING
 
-CWavEncoder::CWavEncoder()
-{  
-  m_sBuffer = NULL;
+CWavEncoder::CWavEncoder():CAudioEncoderBase()
+{ 
+  m_sBuffer = NULL;  
+  m_nInEndianess = E_LITTLE_ENDIAN;
 }
 
 CWavEncoder::~CWavEncoder()
@@ -125,7 +126,7 @@ void CWavEncoder::SetAudioDetails(CAudioDetails* pAudioDetails)
   nNumChannels = m_pAudioDetails->nNumChannels;
   nNumSamples  = m_pAudioDetails->nNumPcmSamples;
   
-  cout << "sr: " << nSampleRate << " Hz - channels: " << nNumChannels << " - samples: " << nNumSamples << endl;
+  cout << "samplerate: " << nSampleRate << "Hz - channels: " << nNumChannels << " samples: " << nNumSamples << endl;
 }
 
 unsigned int CWavEncoder::GuessContentLength(unsigned int p_nNumPcmSamples)

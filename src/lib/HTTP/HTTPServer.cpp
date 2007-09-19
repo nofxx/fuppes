@@ -684,11 +684,11 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   
   // set chunk size
   if(nRequestSize > nReqChunkSize) {    
-    //szChunk       = new char[nReqChunkSize];
+    szChunk       = new char[nReqChunkSize];
     bChunkLoop    = true;
   }
   else {  
-    //szChunk       = new char[nRequestSize];
+    szChunk       = new char[nRequestSize];
     nReqChunkSize = nRequestSize;
     bChunkLoop    = false;
   }
@@ -697,7 +697,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   
   // send loop 
   while((nErr != -1) && 
-        ((nRet = p_Response->GetBinContentChunk(&szChunk, nReqChunkSize, nOffset)) > 0)
+        ((nRet = p_Response->GetBinContentChunk(szChunk, nReqChunkSize, nOffset)) > 0)
         )
   {
     // send HTTP header when the first package is ready
@@ -721,8 +721,9 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       }     
       
       // send chunk
+      //p_Response->LockBuffer();
       nErr = fuppesSocketSend(p_Session->GetConnection(), szChunk, nRet);    
-      
+      //p_Response->UnlockBuffer();
       
       if(p_Response->GetTransferEncoding() == HTTP_TRANSFER_ENCODING_CHUNKED) {
         char* szCRLF = "\r\n";
@@ -784,6 +785,6 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   }
   
   
-  //delete [] szChunk;    
+  delete [] szChunk;    
   return true;  
 }

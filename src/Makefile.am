@@ -43,9 +43,16 @@ libfuppes_la_SOURCES = \
   lib/UPnPActions/UPnPSearch.h\
 	lib/MediaServer.h\
   lib/ContentDirectory/FileDetails.h\
+  lib/ContentDirectory/FileDetails.cpp\
   lib/ContentDirectory/PlaylistFactory.h\
+  lib/ContentDirectory/PlaylistFactory.cpp\
+  lib/ContentDirectory/PlaylistParser.h\
+  lib/ContentDirectory/PlaylistParser.cpp\
   lib/ContentDirectory/ContentDatabase.h\
+  lib/ContentDirectory/ContentDatabase.cpp\
   lib/ContentDirectory/ContentDirectory.h\
+  lib/ContentDirectory/ContentDirectory.cpp\
+  lib/ContentDirectory/ContentDirectoryDescription.cpp\
   lib/ConnectionManager/ConnectionManager.h\
   lib/GENA/SubscriptionMgr.h\
   lib/GENA/EventNotification.h\
@@ -91,11 +98,6 @@ libfuppes_la_SOURCES = \
   lib/UPnPActions/UPnPBrowse.cpp\
   lib/UPnPActions/UPnPSearch.cpp\
 	lib/MediaServer.cpp\
-  lib/ContentDirectory/FileDetails.cpp\
-  lib/ContentDirectory/PlaylistFactory.cpp\
-  lib/ContentDirectory/ContentDatabase.cpp\
-	lib/ContentDirectory/ContentDirectory.cpp\
-  lib/ContentDirectory/ContentDirectoryDescription.cpp\
 	lib/ContentDirectory/FileAlterationMonitor.cpp\
 	lib/ContentDirectory/FileAlterationMonitor.h\
 	lib/ContentDirectory/VirtualContainerMgr.cpp\

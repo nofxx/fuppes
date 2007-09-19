@@ -67,9 +67,27 @@ class CTranscodeSessionInfo
     bool          m_bTranscodeToFile;
 };
 
+typedef enum ENDIANESS
+{
+  E_LITTLE_ENDIAN = 0,
+  E_BIG_ENDIAN = 1
+} ENDIANESS;
+
 class CAudioEncoderBase
 {
-  public:    
+  public:
+    CAudioEncoderBase() {
+      // default input endianness is machine dependent
+      
+      /* determine endianness (clever trick courtesy of Nicholas Devillard,
+       * (http://www.eso.org/~ndevilla/endian/) */
+      int testvar = 1;
+      if(*(char *)&testvar)
+        m_nInEndianess = E_LITTLE_ENDIAN;
+      else
+        m_nInEndianess = E_BIG_ENDIAN;
+    };    
+    
     virtual ~CAudioEncoderBase() {};
 		virtual bool LoadLib() = 0;
   
@@ -86,23 +104,44 @@ class CAudioEncoderBase
   
     virtual unsigned int GuessContentLength(unsigned int p_nNumPcmSamples) = 0;
   
+    ENDIANESS   InEndianess() { return m_nInEndianess; }
+  
   protected:
     CAudioDetails* m_pAudioDetails;
     CTranscodeSessionInfo* m_pSessionInfo;
+    
+    ENDIANESS        m_nInEndianess;
 };
+
 
 class CAudioDecoderBase
 {
   public:
+    CAudioDecoderBase() {
+      // default output endianness is machine dependent
+      
+      /* determine endianness (clever trick courtesy of Nicholas Devillard,
+       * (http://www.eso.org/~ndevilla/endian/) */
+      int testvar = 1;
+      if(*(char *)&testvar)
+        m_nOutEndianess = E_LITTLE_ENDIAN;
+      else
+        m_nOutEndianess = E_BIG_ENDIAN;
+    };
+    
 	  virtual ~CAudioDecoderBase() {};
     virtual bool LoadLib() = 0;
     virtual bool OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetails) = 0;      
-    virtual void CloseFile() = 0;    
+    virtual void CloseFile() = 0;
+    virtual void SetOutputEndianness(ENDIANESS p_nEndianess) { m_nOutEndianess = p_nEndianess; }
     virtual long DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead) = 0;  
     virtual unsigned int NumPcmSamples() = 0;
   
+    ENDIANESS   OutEndianess() { return m_nOutEndianess; }
+  
   protected:
     fuppesLibHandle  m_LibHandle;
+    ENDIANESS        m_nOutEndianess;
 };
 
 class CTranscoderBase

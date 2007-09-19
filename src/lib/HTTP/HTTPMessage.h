@@ -138,7 +138,7 @@ class CHTTPMessage: public CMessageBase
     std::string 		  GetHeaderAsString();		  
 	  std::string			  GetMessageAsString();
 
-    unsigned int      GetBinContentChunk(char** p_psContentChunk, unsigned int p_nSize, unsigned int p_nOffset);
+    unsigned int      GetBinContentChunk(char* p_sContentChunk, unsigned int p_nSize, unsigned int p_nOffset);
 
     unsigned int      GetRangeStart() { return m_nRangeStart; }
     unsigned int      GetRangeEnd() { return m_nRangeEnd; }
@@ -186,8 +186,8 @@ class CHTTPMessage: public CMessageBase
     #ifndef DISABLE_TRANSCODING
     CTranscodingCacheObject* m_pTranscodingCacheObj;
     #endif
-    //fuppesThreadMutex TranscodeMutex;
-    
+    //fuppesThreadMutex TranscodeMutex;    
+  
 private:
     bool             BuildFromString(std::string p_sMessage);
 

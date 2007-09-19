@@ -65,20 +65,19 @@ FLAC__StreamDecoderWriteStatus FLAC_StreamDecoderWriteCallback(const FLAC__Strea
     {
       for(i = 0; i < ((CFLACDecoder*)client_data)->m_pFLACData->channels; i++) 
       {
-        /*int sample;
-        sample = buffer[i][j];
-        ((CFLACDecoder*)client_data)->m_pPcmOut[k++] = sample && 0xFF;
-        ((CFLACDecoder*)client_data)->m_pPcmOut[k++] = sample >> 8;*/
-      
-        // flac fix from Qball Cow 2006-12-06
         FLAC__uint16 sample = buffer[i][j];
-        //unsigned char *uc = (unsigned char *)&sample;
-      
-        ((CFLACDecoder*)client_data)->m_pPcmOut[k++] = sample; //*(uc++);
-        ((CFLACDecoder*)client_data)->m_pPcmOut[k++] = sample >> 8; //*(uc);          
+        
+        if(((CFLACDecoder*)client_data)->OutEndianess() == E_LITTLE_ENDIAN) {          
+          ((CFLACDecoder*)client_data)->m_pPcmOut[k++] = sample;
+          ((CFLACDecoder*)client_data)->m_pPcmOut[k++] = sample >> 8;
+        }
+        else if(((CFLACDecoder*)client_data)->OutEndianess() == E_BIG_ENDIAN) {          
+          ((CFLACDecoder*)client_data)->m_pPcmOut[k++] = sample >> 8;
+          ((CFLACDecoder*)client_data)->m_pPcmOut[k++] = sample;
+        }
       }
     }
-
+    
     ((CFLACDecoder*)client_data)->m_nBytesConsumed = k;
     
     return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;    
@@ -126,7 +125,7 @@ void FLAC_StreamDecoderErrorCallback(const FLAC__StreamDecoder* decoder,
 
 
 
-CFLACDecoder::CFLACDecoder()
+CFLACDecoder::CFLACDecoder():CAudioDecoderBase()
 {
   #ifdef HAVE_FLAC_FILEDECODER
   m_pFLACFileDecoder = NULL;

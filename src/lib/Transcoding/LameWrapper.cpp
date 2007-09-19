@@ -43,7 +43,7 @@ struct LAME_BITRATE_MAPPING_t LAME_BITRATE_MAPPINGS[] = {
   {0, 0}
 };
 
-CLameWrapper::CLameWrapper()
+CLameWrapper::CLameWrapper():CAudioEncoderBase()
 {
   m_LibHandle = NULL;
   m_nBitRate = 0;
