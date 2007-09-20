@@ -154,7 +154,11 @@ void CUDPSocket::TeardownSocket()
 /* SendMulticast */
 void CUDPSocket::SendMulticast(std::string p_sMessage)
 {
-  u_char loop=0; 
+  #ifdef WIN32
+  const char loop = 0;
+  #else
+  u_char loop = 0; 
+  #endif
   setsockopt(m_Socket, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop)); 
   
 	/* Create remote end point */
