@@ -114,12 +114,18 @@ int CFaadWrapper::write_audio_16bit(char* p_PcmOut, void *sample_buffer, unsigne
   unsigned int i;
   short *sample_buffer16 = (short*)sample_buffer;
   char *data = (char*)malloc(samples * 16 * sizeof(char)/8);
-
-  #warning todo: endianess
-  
-  for (i = 0; i < samples; i++) {
-    data[i*2] = (char)(sample_buffer16[i] & 0xFF);
-    data[i*2+1] = (char)((sample_buffer16[i] >> 8) & 0xFF);
+ 
+  if(m_nOutEndianess == E_LITTLE_ENDIAN) {  
+    for (i = 0; i < samples; i++) {
+      data[i*2] = (char)(sample_buffer16[i] & 0xFF);
+      data[i*2+1] = (char)((sample_buffer16[i] >> 8) & 0xFF);
+    }
+  }
+  else if(m_nOutEndianess == E_BIG_ENDIAN) {
+    for (i = 0; i < samples; i++) {
+      data[i*2] = (char)((sample_buffer16[i] >> 8) & 0xFF);
+      data[i*2+1] = (char)(sample_buffer16[i] & 0xFF);
+    }
   }
 
   memcpy(p_PcmOut, data, samples * 16 * sizeof(char)/8);

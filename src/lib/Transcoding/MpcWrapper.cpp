@@ -85,7 +85,7 @@ static int shift_signed(MPC_SAMPLE_FORMAT val, int shift)
 }
 #endif
 
-static void convertLE32to16(MPC_SAMPLE_FORMAT* sample_buffer, char *xmms_buffer, unsigned int status, unsigned int* nBytesConsumed)
+void CMpcDecoder::convertLE32to16(MPC_SAMPLE_FORMAT* sample_buffer, char *xmms_buffer, unsigned int status, unsigned int* nBytesConsumed)
 {
   unsigned int m_bps = 16; //output on 16 bits
   unsigned n;
@@ -107,11 +107,28 @@ static void convertLE32to16(MPC_SAMPLE_FORMAT* sample_buffer, char *xmms_buffer,
       val = clip_min;
     else if (val > clip_max)  
       val = clip_max;
-  
+
     unsigned shift = 0;
+    if(m_nOutEndianess == E_BIG_ENDIAN) {
+      shift = 8;
+    }
+    
+    unsigned offset = 0;
     do {
-      xmms_buffer[n * 2 + (shift / 8)] = (unsigned char)((val >> shift) & 0xFF);
+      //xmms_buffer[n * 2 + (shift / 8)] = (unsigned char)((val >> shift) & 0xFF);
+      
+      if(m_nOutEndianess == E_LITTLE_ENDIAN) {
+        xmms_buffer[n * 2 + offset] = (unsigned char)((val >> shift) & 0xFF);
+      }
+      else if(m_nOutEndianess == E_BIG_ENDIAN) {
+        if(offset % 2 == 0) 
+          xmms_buffer[n * 2 + offset] = (unsigned char)((val >> shift) & 0xFF);
+        else
+          xmms_buffer[n * 2 + offset] = (unsigned char)(val & 0xFF);
+      }
+      
       shift += 8;
+      offset++;
     } while (shift < m_bps);
   }
   

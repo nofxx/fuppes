@@ -235,6 +235,11 @@ bool CSharedConfig::SetNetInterface(std::string p_sNetInterface)
 	
 bool CSharedConfig::SetHTTPPort(unsigned int p_nHTTPPort)
 {
+  if(p_nHTTPPort > 0 && p_nHTTPPort <= 1024) {
+    CSharedLog::Shared()->UserError("please set port to \"0\" or a number greater \"1024\"");
+    return false;
+  }
+  
   m_pConfigFile->HttpPort(p_nHTTPPort);
   m_nHTTPPort = p_nHTTPPort;
 }

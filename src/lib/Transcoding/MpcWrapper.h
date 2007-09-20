@@ -99,7 +99,9 @@ class CMpcDecoder: public CAudioDecoderBase
     MpcStreaminfoGetLengthSamples_t   m_MpcStreaminfoGetLengthSamples;
     MpcDecoderSetup_t                 m_MpcDecoderSetup;
     MpcDecoderInitialize_t            m_MpcDecoderInitialize;
-    MpcDecoderDecode_t                m_MpcDecoderDecode;    
+    MpcDecoderDecode_t                m_MpcDecoderDecode; 
+  
+    void convertLE32to16(MPC_SAMPLE_FORMAT* sample_buffer, char *xmms_buffer, unsigned int status, unsigned int* nBytesConsumed);
 };
 
 #endif // _MPCWRAPPER_H
