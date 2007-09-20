@@ -45,34 +45,6 @@
 using namespace std;
 
 static bool g_bIsRebuilding;
- 
-/*int SelectCallback(void *pDatabase, int argc, char **argv, char **azColName)
-{
-  //for(int i = 0; i<argc; i++){
-   // printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-  //}
-    
-  CContentDatabase::Shared()->Lock();
-    
-  // build new result set
-  CSelectResult* pResult = new CSelectResult();
-  for(int i = 0; i < argc; i++) {
-    string sFieldName = azColName[i];
-    pResult->m_FieldValues[sFieldName] = argv[i] ? argv[i] : "NULL";        
-  }  
-  ((CContentDatabase*)pDatabase)->m_ResultList.push_back(pResult);
-  ((CContentDatabase*)pDatabase)->m_nRowsReturned++;
-		  
-  // select first entry
-  if(((CContentDatabase*)pDatabase)->m_nRowsReturned == 1) {
-    ((CContentDatabase*)pDatabase)->m_ResultListIterator = ((CContentDatabase*)pDatabase)->m_ResultList.begin();
-  }
-
-  CContentDatabase::Shared()->Unlock();
-
-  return 0;
-}*/
-
 
 std::string CSelectResult::GetValue(std::string p_sFieldName)
 {
@@ -1038,10 +1010,11 @@ fuppesThreadCallback BuildLoop(void* arg)
       nObjId = pDb->GetObjId();      
       
       sSql << 
-        "insert into OBJECTS (OBJECT_ID, TYPE, PATH, FILE_NAME) values " <<
+        "insert into OBJECTS (OBJECT_ID, TYPE, PATH, FILE_NAME, TITLE) values " <<
         "(" << nObjId << 
         ", " << CONTAINER_STORAGE_FOLDER << 
         ", '" << SQLEscape(CSharedConfig::Shared()->GetSharedDir(i)) << "'" <<
+        ", '" << SQLEscape(sFileName) << "'" <<
         ", '" << SQLEscape(sFileName) << "');";
         
 		  pDb->Insert(sSql.str());
