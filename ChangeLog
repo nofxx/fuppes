@@ -1,3 +1,7 @@
+Version SVN-5
+  * fixed UPnPBrowse for virtual devices
+	* speedup database creation (items and vfolders)
+
 Version SVN-530 2007-09-20
   * fixed WAV and PCM encoder
   * speedup transcoding

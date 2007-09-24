@@ -341,6 +341,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
       "where " <<
       "  m.OBJECT_ID = o.OBJECT_ID and " <<
       "  o.OBJECT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " <<
+			"  o." << sDevice << " and " <<
       "  m." << sDevice;
 
     pDb->Select(sSql.str());
@@ -420,6 +421,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
     "where " <<
     "  o.OBJECT_ID = m.OBJECT_ID and " <<
     "  m.PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " << 
+		"  o." << sDevice << " and " <<
     "  m." << sDevice <<
     "order by " <<
     "  o.TYPE, o.FILE_NAME ";
@@ -1094,7 +1096,7 @@ void CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_ps
   
   // get total matches     
   sSql << pSearch->BuildSQL(true);
-  //cout << "SEARCH GET TOTAL MATCHES: " << endl << sSql.str() << endl << endl;
+  cout << "SEARCH GET TOTAL MATCHES: " << endl << sSql.str() << endl << endl;
   pDb->Select(sSql.str());
   if(!pDb->Eof()) {
     nTotalMatches = atoi(pDb->GetResult()->GetValue("COUNT").c_str());
@@ -1104,7 +1106,7 @@ void CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_ps
   // get items     
 	int nNumberReturned = 0;
   sSql << pSearch->BuildSQL(false);
-  //cout << "SEARCH GET ITEMS: " << endl << sSql.str() << endl << endl;
+  cout << "SEARCH GET ITEMS: " << endl << sSql.str() << endl << endl;
 	pDb->Select(sSql.str());
 	
 	

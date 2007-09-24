@@ -81,29 +81,23 @@ CContentDatabase* CContentDatabase::Shared()
 
 CContentDatabase::CContentDatabase(bool p_bShared)
 { 
-  m_sDbFileName = CSharedConfig::Shared()->GetDbFileName();
-  
-  m_nRowsReturned = 0;
-  //m_bIsRebuilding = false;
-  m_RebuildThread = (fuppesThread)NULL;	
-  m_bShared       = p_bShared;		
-	//m_pFileSystemMonitor = NULL;
-  m_bInTransaction = false;
-  m_nLockCount = -1;
+	m_pDbHandle 			= NULL;
+	m_nRowsReturned 	= 0;  
+  m_RebuildThread 	= (fuppesThread)NULL;	
+  m_bShared       	= p_bShared;	
+  m_bInTransaction 	= false;
+  m_nLockCount 			= -1;
   
 	if(m_bShared) {            
-	  g_bIsRebuilding = false;
-    fuppesThreadInitMutex(&m_Mutex);
-    m_nLockCount = 0;
-    
-    //m_pFileAlterationMonitor = CFileAlterationMgr::Shared()->CreateMonitor(this);    
+		m_sDbFileName 	= CSharedConfig::Shared()->GetDbFileName();	
+		g_bIsRebuilding = false;
+		m_nLockCount 		= 0;
+    fuppesThreadInitMutex(&m_Mutex);        
   }
     
-  if(FileExists(m_sDbFileName)) {
-    if(!Open()) {
-      cout << "FAILED OPENING DB FILE" << endl;
-    }
-  }
+  if(!Open()) {
+    cout << "FAILED OPENING DB FILE" << endl;
+  }  
 }
  
 CContentDatabase::~CContentDatabase()
@@ -116,9 +110,6 @@ CContentDatabase::~CContentDatabase()
 	  fuppesThreadClose(m_RebuildThread);
 		m_RebuildThread = (fuppesThread)NULL;
 	}
-	
-	/*if(m_pFileAlterationMonitor != NULL)
-	  delete m_pFileAlterationMonitor;*/
 
   ClearResult();  
   Close();
@@ -131,6 +122,10 @@ std::string CContentDatabase::GetLibVersion()
 
 bool CContentDatabase::Init(bool* p_bIsNewDB)
 {   
+  if(!m_bShared) {
+		return false;
+	}
+
   bool bIsNewDb = !FileExists(m_sDbFileName);
   *p_bIsNewDB = bIsNewDb;
   
@@ -142,8 +137,8 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
     }
   }
   
-  if(bIsNewDb)
-  {
+  if(bIsNewDb) {
+	
     if(!Execute("CREATE TABLE OBJECTS ( "
 				"  ID INTEGER PRIMARY KEY AUTOINCREMENT, "
 				"  OBJECT_ID INTEGER NOT NULL, "
@@ -203,11 +198,11 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 
     if(!Execute("CREATE INDEX IDX_OBJECT_DETAILS_ID ON OBJECT_DETAILS(ID);"))
       return false;
-
-    if(!Execute("PRAGMA temp_store = MEMORY;"))
-      return false;
   }
 
+	Execute("PRAGMA temp_store = MEMORY;");
+	Execute("PRAGMA synchronous = OFF;");
+	
   return true;
 }
 
@@ -255,7 +250,11 @@ void CContentDatabase::ClearResult()
 
 bool CContentDatabase::Open()
 {  
-  //cout << "OPEN" << endl; fflush(stdout);
+  if(!m_bShared) {	
+		m_pDbHandle = CContentDatabase::Shared()->m_pDbHandle;		
+		return (m_pDbHandle != NULL);
+	}	
+
   if(sqlite3_open(m_sDbFileName.c_str(), &m_pDbHandle) != SQLITE_OK) {
     fprintf(stderr, "Can't create/open database: %s\n", sqlite3_errmsg(m_pDbHandle));
     sqlite3_close(m_pDbHandle);
@@ -263,15 +262,16 @@ bool CContentDatabase::Open()
   }
   //JM: Tell sqlite3 to retry queries for up to 1 second if the database is locked.
   sqlite3_busy_timeout(m_pDbHandle, 1000);
-  //cout << "OPENED" << endl; fflush(stdout);
+	
 	return true;
 }
 
 void CContentDatabase::Close()
 {
-  //cout << "CLOSE" << endl; fflush(stdout);
-  sqlite3_close(m_pDbHandle);
-  //cout << "CLOSED" << endl; fflush(stdout);
+  if(m_bShared) {
+    sqlite3_close(m_pDbHandle);
+    m_pDbHandle = NULL;
+	}
 }
 
 void CContentDatabase::BeginTransaction()
