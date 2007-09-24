@@ -95,11 +95,13 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 	string sOp;
 	string sVal;
 	string sCloseBr;
-	string sLogOp = " and ";
+	string sLogOp;
+  string sPrevLog;
 	bool   bNumericProp = false;
 	bool   bLikeOp  = false;
   bool   bBuildOK = false;
   bool   bVirtualSearch = false;
+  bool   bFirst = true;
   
   stringstream sSql;
 
@@ -153,14 +155,9 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
       "  m.PARENT_ID in (" << m_sParentIds << ") ";        
   }
   
+	m_sSearchCriteria = StringReplace(m_sSearchCriteria, "&quot;", "\"");
+  m_sSearchCriteria = StringReplace(m_sSearchCriteria, "@", ":");
 
-  // xbox 360 uses &quot; instead of "
-	//if(GetDeviceSettings()->m_bXBox360Support) {
-	  m_sSearchCriteria = StringReplace(m_sSearchCriteria, "&quot;", "\"");
-	//}
-
-
-  //cout << m_sSearchCriteria << endl;
 
   RegEx rxSearch("(\\(*) *([\\w+:*\\w*]+) ([=|!=|<|<=|>|>=|contains|doesNotContain|derivedfrom|exists]+) (\".*?[^\\\\]\"|true|false) *(\\)*) *([and|or]*)");
 	if(rxSearch.Search(m_sSearchCriteria.c_str())) {
@@ -169,7 +166,7 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 		
 		  // contains "and" on first loop
 			// so we just append it when criterias can be found
-		  sSql << " " << sLogOp << endl;
+		  //sSql << " " << sLogOp << endl;
 		
 		  sOpenBr  = rxSearch.Match(1);
 			sProp    = rxSearch.Match(2);
@@ -199,8 +196,9 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 				  sProp = "d.A_ARTIST";
 					bNumericProp = false;
 				}
-        else if(sProp.compare("protocolInfo") == 0) {
-				  sProp = "o.MIME_TYPE";
+        else if(sProp.compare("res:protocolInfo") == 0) {
+				  continue;
+          sProp = "o.MIME_TYPE";
 					bNumericProp = false;
 				}        
 				else {
@@ -264,8 +262,14 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 				
 			} // != exists
 		
-		  if(bBuildOK)
-  			sSql << sOpenBr << sProp << " " << sOp << " " << sVal << sCloseBr << " ";
+		  if(bBuildOK) {
+        if(bFirst) {
+          sSql << " and ";
+          bFirst = false;
+        }        
+  			sSql << sPrevLog << sOpenBr << sProp << " " << sOp << " " << sVal << sCloseBr << " ";
+        sPrevLog = sLogOp;
+      }
 			else {
 			  cout << "error parsing search request!" << endl <<
           "please file a bugreport containing the following lines: " << endl << endl <<
@@ -277,11 +281,7 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 			
 		}	while (rxSearch.SearchAgain());
 	}
-	else {
-	  //cout << "no match" << endl;
-	}
 
-	
   
   // order by and limit are not needed
   // in a count request  
@@ -290,8 +290,7 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
     // order by
     #warning: todo 'sort'
     sSql << " order by o.TITLE ";
-    
-    
+        
     // limit
 	  if((m_nRequestedCount > 0) || (m_nStartingIndex > 0)) {
       sSql << " limit " << m_nStartingIndex << ", ";
@@ -301,11 +300,6 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
         sSql << m_nRequestedCount;
     }
   }
-	
-  //cout << "SEARCH QUERY: " << endl << sSql.str() << endl << endl;	
 
   return sSql.str();
 }
-
-
-
