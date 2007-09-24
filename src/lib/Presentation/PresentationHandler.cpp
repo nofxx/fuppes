@@ -487,7 +487,8 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
       #else
       "<td>false</td>" <<
       #endif
-    "</tr>" <<    
+    "</tr>" <<
+    #ifndef WIN32
     "<tr>" <<
       "<td>uuid</td>" <<
       #ifdef HAVE_UUID
@@ -495,7 +496,8 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
       #else
       "<td>false</td>" <<
       #endif
-    "</tr>" <<       
+    "</tr>" <<
+    #endif
     "<tr>" <<
       "<td>taglib</td>" <<
       #ifdef HAVE_TAGLIB
@@ -515,6 +517,14 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
     "<tr>" <<
       "<td>libavformat (ffmpeg)</td>" <<
       #ifdef HAVE_LIBAVFORMAT
+      "<td>true</td>" <<
+      #else
+      "<td>false</td>" <<
+      #endif    
+    "</tr>" <<   
+    "<tr>" <<
+      "<td>video transcoding (experimental)</td>" <<
+      #ifdef ENABLE_VIDEO_TRANSCODING
       "<td>true</td>" <<
       #else
       "<td>false</td>" <<
@@ -556,6 +566,18 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
       "<td>flac</td>" <<
       #ifdef HAVE_FLAC
       "<td>true</td>" <<
+      #else
+      "<td>false</td>" <<
+      #endif     
+    "</tr>" <<    
+    "<tr>" <<
+      "<td>flac</td>" <<
+      #ifdef HAVE_FAAD
+      #ifdef HAVE_MP4FF_H
+      "<td>true (aac/mp4)</td>" <<
+      #else
+      "<td>true (aac/NO mp4)</td>" <<
+      #endif
       #else
       "<td>false</td>" <<
       #endif     

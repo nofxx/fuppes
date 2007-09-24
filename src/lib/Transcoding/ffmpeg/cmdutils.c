@@ -148,7 +148,7 @@ void print_error(const char *filename, int err)
     case AVERROR_NOFMT:
         fprintf(stderr, "%s: Unknown format\n", filename);
         break;
-    case AVERROR(EIO):
+    /*case AVERROR(EIO):
         fprintf(stderr, "%s: I/O error occured\n"
                 "Usually that means that input file is truncated and/or corrupted.\n",
                 filename);
@@ -158,7 +158,7 @@ void print_error(const char *filename, int err)
         break;
     case AVERROR(ENOENT):
         fprintf(stderr, "%s: no such file or directory\n", filename);
-        break;
+        break; */
     default:
         fprintf(stderr, "%s: Error while opening file\n", filename);
         break;
