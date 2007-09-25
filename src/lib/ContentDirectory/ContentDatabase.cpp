@@ -95,8 +95,9 @@ CContentDatabase::CContentDatabase(bool p_bShared)
     fuppesThreadInitMutex(&m_Mutex);        
   }
     
-  if(!Open()) {
-    cout << "FAILED OPENING DB FILE" << endl;
+  if(!m_bShared) {
+    if(!Open())
+      cout << "FAILED OPENING DB FILE" << endl;
   }  
 }
  
@@ -125,17 +126,11 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
   if(!m_bShared) {
 		return false;
 	}
-
-  bool bIsNewDb = !FileExists(m_sDbFileName);
-  *p_bIsNewDB = bIsNewDb;
   
-  if(bIsNewDb) {
-    if(sqlite3_open(m_sDbFileName.c_str(), &m_pDbHandle) != SQLITE_OK) {
-      fprintf(stderr, "Can't create/open database: %s\n", sqlite3_errmsg(m_pDbHandle));
-      sqlite3_close(m_pDbHandle);
-      return false;
-    }
-  }
+  bool bIsNewDb = !FileExists(m_sDbFileName);
+  *p_bIsNewDB = bIsNewDb;  
+  
+  Open();
   
   if(bIsNewDb) {
 	
@@ -255,6 +250,10 @@ bool CContentDatabase::Open()
 		return (m_pDbHandle != NULL);
 	}	
 
+  if(m_pDbHandle != NULL) {
+    return true;
+  }
+  
   if(sqlite3_open(m_sDbFileName.c_str(), &m_pDbHandle) != SQLITE_OK) {
     fprintf(stderr, "Can't create/open database: %s\n", sqlite3_errmsg(m_pDbHandle));
     sqlite3_close(m_pDbHandle);
@@ -555,7 +554,7 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
   {    
     CSharedLog::Shared()->Log(L_EXTENDED, "read directory: " + p_sDirectory, __FILE__, __LINE__, false);
     
-    while((pDirEnt = readdir(pDir)))
+    while((pDirEnt = readdir(pDir)) != NULL)
     {
       if(((string(".").compare(pDirEnt->d_name) != 0) && 
          (string("..").compare(pDirEnt->d_name) != 0)))
@@ -572,15 +571,10 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
           sTmpFileName = SQLEscape(sTmpFileName);
           
           stringstream sSql;
-          /*sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME) values ";
-          sSql << "(" << CONTAINER_STORAGE_FOLDER << ", ";
-          sSql << p_nParentId << ", ";
-          sSql << "'" << SQLEscape(sTmp.str()) << "', ";
-          sSql << "'" << sTmpFileName << "');";*/
           
           unsigned int nObjId = pDb->GetObjId();
           
-          //pDb->BeginTransaction();
+          pDb->BeginTransaction();
           
           sSql << "insert into objects ( " <<
             "  OBJECT_ID, TYPE, " <<
@@ -600,7 +594,7 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
                   "values (" << nObjId << ", " << p_nParentId << ")";          
           pDb->Insert(sSql.str());
           
-          //pDb->Commit();
+          pDb->Commit();
           
           // recursively scan subdirectories
           DbScanDir(pDb, sTmp, nObjId);          

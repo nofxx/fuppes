@@ -28,6 +28,11 @@
       <comment>wenn ein transcoding object nicht referenziert wird den status
 aller verf&#xFC;gbaren devices abfragen und wenn die ensprechende object id von keinem ger&#xE4;t verwendet wird (z.b. wegen stop oder skip) transcodieren w&#xE4;hrend des release delays pausieren (evtl. sogar ganz abbrechen) andernfalls fortsetzen.</comment>
     </item>
+    <item>
+      <attribute id="1190725213" priority="1" done="0" start_date="732944" enddate="99999999" notify="0" endtime="-60" last_edited="1190725213"/>
+      <summary>fix PLS parsing</summary>
+      <comment></comment>
+    </item>
   </category>
   <category title="Business" place="1"/>
   <category title="Unfiled" place="2"/>

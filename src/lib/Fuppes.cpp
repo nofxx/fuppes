@@ -54,6 +54,19 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
   fuppesThreadInitMutex(&m_OnTimerMutex);
   fuppesThreadInitMutex(&m_RemoteDevicesMutex);
     
+  
+  // init database 
+  bool bIsNewDB = false;   
+  if(!CContentDatabase::Shared()->Init(&bIsNewDB)) {    
+    if(bIsNewDB) {
+      CSharedLog::Shared()->Log(L_ERROR, "unable to create database file", __FILE__, __LINE__);
+    }
+    throw EException("unable to create database file", __FILE__, __LINE__);
+  }
+  if(bIsNewDB) {
+    CContentDatabase::Shared()->BuildDB();
+  }  
+  
   /* init HTTP-server */
   try {
     m_pHTTPServer = new CHTTPServer(m_sIPAddress);
@@ -80,19 +93,6 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
   }
   catch(EException ex) {
     throw;
-  }
-  
-  // init database 
-  bool bIsNewDB = false;   
-  if(!CContentDatabase::Shared()->Init(&bIsNewDB)) {    
-    if(bIsNewDB) {
-      CSharedLog::Shared()->Log(L_ERROR, "unable to create database file", __FILE__, __LINE__);
-    }
-    throw EException("unable to create database file", __FILE__, __LINE__);
-  } 
-  
-  if(bIsNewDB) {
-    CContentDatabase::Shared()->BuildDB();
   }
 	  
   /* Create MediaServer */

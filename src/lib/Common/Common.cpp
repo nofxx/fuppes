@@ -28,11 +28,11 @@
 #include "../SharedConfig.h"
 
 #include <cstdio>
-#ifdef WIN32
-#include <sys/stat.h>
-#else
+
+#ifndef WIN32
 #include <dirent.h>
 #endif
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <fstream>
 #include <iostream>
@@ -54,12 +54,15 @@ using namespace std;
 
 bool FileExists(std::string p_sFileName)
 {
-  std::fstream fFile;
+  //std::fstream fFile;
   bool bResult = false;
   
-  fFile.open(p_sFileName.c_str(), std::ios::in);  
-  bResult = fFile.is_open(); // (fFile.fail() != 1) && 
-  fFile.close();
+  //fFile.open(p_sFileName.c_str(), std::ios::in);  
+  //bResult = fFile.is_open(); // (fFile.fail() != 1) &&   
+  //fFile.close();
+  
+  struct stat Stat;  
+  bResult = (stat(p_sFileName.c_str(), &Stat) == 0);  
   
   return bResult;
 }

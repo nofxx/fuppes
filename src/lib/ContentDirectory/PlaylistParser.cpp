@@ -63,9 +63,7 @@ bool CPlaylistParser::LoadPlaylist(std::string p_sFileName)
   }
   
   m_sListPath = ExtractFilePath(p_sFileName);
-  
-  cout << "list path: " << m_sListPath << endl;
-  
+   
   fsPlaylist.seekg(0, ios::end); 
   int nSize = streamoff(fsPlaylist.tellg()); 
   fsPlaylist.seekg(0, ios::beg);
@@ -80,11 +78,11 @@ bool CPlaylistParser::LoadPlaylist(std::string p_sFileName)
   bool bResult = true;
   
   if(sResult.length() > strlen("#EXTM3U") && sResult.substr(0, strlen("#EXTM3U")).compare("#EXTM3U") == 0) {
-    cout << "M3U" << endl;
+    //cout << "M3U" << endl;
     bResult = ParseM3U(sResult);
   }
   else if(sResult.length() > strlen("[playlist]") && sResult.substr(0, strlen("[playlist]")).compare("[playlist]") == 0) {
-    cout << "PLS" << endl;
+    //cout << "PLS" << endl;
     bResult = ParsePLS(sResult);
   }
   else {
@@ -136,9 +134,7 @@ bool CPlaylistParser::ParseM3U(std::string p_sContent)
       #warning todo: parse metadata
       continue;
     }
-          
-    cout << "filename: " << rxLines.Match(1) << endl;
-    
+        
     pEntry = new PlaylistEntry_t();
     if(IsURL(rxLines.Match(1))) {       
       pEntry->sFileName = rxLines.Match(1);
@@ -148,35 +144,7 @@ bool CPlaylistParser::ParseM3U(std::string p_sContent)
       pEntry->sFileName = FormatFileName(rxLines.Match(1));
       pEntry->bIsLocalFile = true;
     }
-    m_lEntries.push_back(pEntry);
-    
-    cout << "format filename: " << pEntry->sFileName << endl;
-    
-    //bIsLocalFile = IsLocalFile(sFileName);
-    
-   
-    /*if(bIsLocalFile && IsRelativeFileName(sFileName)) {
-      sFileName = ExtractFilePath(pResult->GetValue("PATH")) + sFileName;
-    }
-    
-    if(bIsLocalFile && FileExists(sFileName))
-    {       
-      nObjectID = GetObjectIDFromFileName(sFileName);      
-      
-      if(nObjectID == 0) {
-        //cout << "file does not exist in db" << endl;        
-        nObjectID = InsertFile(pDb, nPlaylistID, sFileName);       
-      }            
-      else {
-        nPlsPosi++;
-        MapPlaylistItem(nPlaylistID, nObjectID, nPlsPosi);
-      }
-      
-    } *//* if(bIsLocalFile && FileExists(sFileName)) */
-   /* else if(!bIsLocalFile)
-    {
-      nObjectID = InsertURL(nPlaylistID, sFileName);
-    }*/       
+    m_lEntries.push_back(pEntry);     
     
   }while(rxLines.SearchAgain());  
     
@@ -197,8 +165,7 @@ std::string CPlaylistParser::FormatFileName(std::string p_sValue)
   
   #ifdef WIN32  
   if(p_sValue.substr(0, 2).compare(".\\") == 0) {
-    p_sValue = p_sValue.substr(2, p_sValue.length());
-    
+    p_sValue = p_sValue.substr(2, p_sValue.length());    
   }
   
   if(p_sValue.substr(1, 2).compare(":") != 0) {

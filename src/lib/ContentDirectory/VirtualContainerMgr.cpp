@@ -490,16 +490,14 @@ void CVirtualContainerMgr::CreateItemMappings(CXMLNode* pNode,
   CContentDatabase* pIns = new CContentDatabase;
   stringstream sSql;
   stringstream sObjType;
-  //OBJECT_TYPE nObjectType;                                                
+  bool bIncludeMap = false;  
                                                 
   if(pNode->Attribute("type").compare("audioItem") == 0 ||
-     pNode->Attribute("filter").compare("contains(audioItem)") == 0 ) {
-    //nObjectType = ITEM_AUDIO_ITEM_MUSIC_TRACK;
+     pNode->Attribute("filter").compare("contains(audioItem)") == 0 ) {    
     sObjType << " in (" << ITEM_AUDIO_ITEM << ", " <<  ITEM_AUDIO_ITEM_MUSIC_TRACK << ")";
   }
   else if(pNode->Attribute("type").compare("imageItem") == 0 ||
-          pNode->Attribute("filter").compare("contains(imageItem)") == 0 ) {
-    //nObjectType = ITEM_IMAGE_ITEM_PHOTO;
+          pNode->Attribute("filter").compare("contains(imageItem)") == 0 ) {    
     sObjType << " in (" << ITEM_IMAGE_ITEM << ", " <<  ITEM_IMAGE_ITEM_PHOTO << ")";
   }
   else if(pNode->Attribute("type").compare("videoItem") == 0 ||
@@ -507,29 +505,42 @@ void CVirtualContainerMgr::CreateItemMappings(CXMLNode* pNode,
     sObjType << " in (" << ITEM_VIDEO_ITEM << ", " <<  ITEM_VIDEO_ITEM_MOVIE << ")";
   }                     
     
+  if(p_sFilter.length() > 10 && p_sFilter.compare(1, 10, "m.PARENT_ID", 1, 10) == 0) {
+    bIncludeMap = true;
+  }
+                                                
   sSql.str("");
   sSql << 
     "select " << 
-    "  o.DETAIL_ID, o.TITLE, o.TYPE, o.FILE_NAME, o.PATH, o.MIME_TYPE, d.A_ARTIST " <<
+    "  o.DETAIL_ID, o.TITLE, o.TYPE, o.FILE_NAME, " <<
+    "  o.PATH, o.MIME_TYPE, d.A_ARTIST " <<
     "from " <<
-    "  OBJECTS o, MAP_OBJECTS m " <<
+    "  OBJECTS o ";
+
+  if(bIncludeMap) {
+    sSql << ", MAP_OBJECTS m ";
+  }
+  sSql <<                                                
     "left join " <<
     "  OBJECT_DETAILS d on (d.ID = o.DETAIL_ID) " <<
-    "where " <<
-    "  m.OBJECT_ID = o.OBJECT_ID and " <<
-    "  m.DEVICE is NULL and " <<
-    "  o.DEVICE is NULL and " <<
-    "  o.TYPE " << sObjType.str(); 
+    "where ";
+                                                
+  if(bIncludeMap) {
+    sSql << 
+      "  m.OBJECT_ID = o.OBJECT_ID and " <<
+      "  m.DEVICE is NULL and ";
+  }
 
+  sSql <<
+    "  o.DEVICE is NULL and " <<
+    "  o.TYPE " << sObjType.str();
 
   if(p_sFilter.length() > 0) {
     sSql << " and " << p_sFilter;
   }
-        
-  //cout << "CreateItemMappings: " << sSql.str() << endl;
     
-  pDb->Select(sSql.str());
-  //pIns->BeginTransaction();
+    
+  pDb->Select(sSql.str());  
   while(!pDb->Eof()) {
       
     sSql.str("");
@@ -558,8 +569,7 @@ void CVirtualContainerMgr::CreateItemMappings(CXMLNode* pNode,
     
     
     pDb->Next();
-  }
-  //pIns->Commit();
+  }  
         
   delete pIns;
   delete pDb;
