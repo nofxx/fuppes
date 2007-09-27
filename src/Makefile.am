@@ -1,7 +1,13 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id: $
 
-INCLUDES = ${FUPPES_CFLAGS} ${LIBXML_CFLAGS} ${PCRE_CFLAGS} ${VORBISFILE_CFLAGS} ${TAGLIB_CFLAGS}
+INCLUDES = \
+  ${FUPPES_CFLAGS}\
+  ${LIBXML_CFLAGS}\
+  ${PCRE_CFLAGS}\
+  ${VORBISFILE_CFLAGS}\
+  ${TAGLIB_CFLAGS}\
+  -D_FILE_OFFSET_BITS=64
 
 lib_LTLIBRARIES = libfuppes.la
 
@@ -135,7 +141,7 @@ libfuppes_la_SOURCES += \
   lib/Transcoding/FFmpegWrapper.h\
   lib/Transcoding/FFmpegWrapper.cpp\
   lib/Transcoding/ffmpeg/cmdutils.h\
-  lib/Transcoding/ffmpeg/cmdutils.c\
+  lib/Transcoding/ffmpeg/cmdutils.cpp\
   lib/Transcoding/ffmpeg/ffmpeg.h\
   lib/Transcoding/ffmpeg/ffmpeg.cpp
 endif

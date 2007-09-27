@@ -53,14 +53,10 @@ bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFi
   int nArgs = 0;
   char* szArgs[20];   
   
-  cout << "acodec: " << m_sACodec << " vcodec: " << m_sVCodec << endl;
+  //cout << "acodec: " << m_sACodec << " vcodec: " << m_sVCodec << endl;
   
   szArgs[nArgs] = (char*)malloc(strlen("ffmpeg") * sizeof(char));
   strcpy(szArgs[nArgs], "ffmpeg");
-  nArgs++;
-  
-  szArgs[nArgs] = (char*)malloc(strlen("-y") * sizeof(char));
-  strcpy(szArgs[nArgs], "-y");
   nArgs++;
   
   szArgs[nArgs] = (char*)malloc(strlen("-i") * sizeof(char));
@@ -74,7 +70,7 @@ bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFi
   // Video settings
   
   string VCodec = pFileSettings->pTranscodingSettings->VideoCodec(m_sVCodec);
-  cout << "out vcodec: " << VCodec << endl;
+  //cout << "out vcodec: " << VCodec << endl;
   
   szArgs[nArgs] = (char*)malloc(strlen("-vcodec") * sizeof(char));
   strcpy(szArgs[nArgs], "-vcodec");
@@ -101,7 +97,7 @@ bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFi
     
   string ACodec = pFileSettings->pTranscodingSettings->AudioCodec(m_sACodec);
   
-  cout << "out acodec: " << ACodec << endl;  
+  //cout << "out acodec: " << ACodec << endl;  
   
   szArgs[nArgs] = (char*)malloc(strlen("-acodec") * sizeof(char));
   strcpy(szArgs[nArgs], "-acodec");
@@ -137,7 +133,7 @@ bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFi
     szArgs[nArgs] = (char*)malloc((strlen(sBitRate.str().c_str()) + 1) * sizeof(char));
     strcpy(szArgs[nArgs], sBitRate.str().c_str());
     nArgs++;    
-  }  
+  }
 
   
   szArgs[nArgs] = (char*)malloc(strlen("-ac") * sizeof(char));
@@ -156,10 +152,10 @@ bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFi
   
 
   
-  szArgs[nArgs] = (char*)malloc(sizeof(char));
-  szArgs[nArgs] = '\0';
+  /*szArgs[nArgs] = (char*)malloc(sizeof(char));
+  szArgs[nArgs] = '\0';*/
 
-  ffmpeg_main(nArgs, szArgs);
+  pFFmpeg->ffmpeg_main(nArgs, szArgs);
   
   for(int i = 0; i < nArgs; i++) {
     free(szArgs[i]);

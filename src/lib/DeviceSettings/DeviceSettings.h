@@ -72,6 +72,7 @@ typedef struct {
 
 typedef enum TRANSCODING_TYPE {
   TT_NONE,
+  TT_RENAME,
   TT_THREADED_DECODER_ENCODER,
   TT_TRANSCODER,
   TT_THREADED_TRANSCODER  
@@ -152,6 +153,7 @@ struct CTranscodingSettings {
   
     std::list<CFFmpegSettings*>   pFFmpegSettings;
   
+    TRANSCODING_TYPE TranscodingType() { return nTranscodingType; }
     TRANSCODER_TYPE TranscoderType() { return nTranscoderType; }
     DECODER_TYPE    DecoderType() { return nDecoderType; }
     ENCODER_TYPE    EncoderType() { return nEncoderType; }

@@ -50,27 +50,21 @@
 #include <iconv.h>
 #endif
 
+#include <errno.h>
+
 using namespace std;
 
 bool FileExists(std::string p_sFileName)
 {
-  //std::fstream fFile;
-  bool bResult = false;
-  
-  //fFile.open(p_sFileName.c_str(), std::ios::in);  
-  //bResult = fFile.is_open(); // (fFile.fail() != 1) &&   
-  //fFile.close();
-  
   struct stat Stat;  
-  bResult = (stat(p_sFileName.c_str(), &Stat) == 0);  
-  
-  return bResult;
+  return (stat(p_sFileName.c_str(), &Stat) == 0);    
 }
 
 bool IsFile(std::string p_sFileName)
-{
+{ 
   return FileExists(p_sFileName);
 }
+
 #ifdef WIN32
 bool DirectoryExists(std::string p_sDirName)
 {
@@ -232,24 +226,17 @@ std::string ToUpper(std::string p_sInput)
 
 bool ExtractFolderFromPath(std::string p_sPath, std::string* p_sFolder)
 {
-  #ifdef WIN32
-  if(p_sPath[p_sPath.length() - 1] == '\\') {
+  if(p_sPath.substr(p_sPath.length() - 1, 1).compare(upnpPathDelim) == 0) {
     p_sPath = p_sPath.substr(0, p_sPath.length() - 1);
   }
-  RegEx rxDirName("\\\\([^\\\\|\\.]*)$", PCRE_CASELESS);
-  #else
-  if(p_sPath[p_sPath.length() - 1] == '/') {
-    p_sPath = p_sPath.substr(0, p_sPath.length() - 1);
-  }
-  RegEx rxDirName("/([^/|\\.]*)$", PCRE_CASELESS);
-  #endif
-  
-  const char* pszDir = p_sPath.c_str();
-  if(rxDirName.Search(pszDir)) {
-    *p_sFolder = rxDirName.Match(1);
+    
+  string::size_type pos;
+  if((pos = p_sPath.find_last_of(upnpPathDelim)) != string::npos) {
+    pos++;
+    *p_sFolder = p_sPath.substr(pos, p_sPath.length() - pos);
     return true;
   }
-  else  {
+  else {  
     return false;
   }
 }

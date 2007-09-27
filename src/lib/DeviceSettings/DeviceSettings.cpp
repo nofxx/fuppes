@@ -104,11 +104,11 @@ CTranscodingSettings::CTranscodingSettings(CTranscodingSettings* pTranscodingSet
 
 bool CTranscodingSettings::DoTranscode(std::string p_sACodec, std::string p_sVCodec)
 {
-  if(!bEnabled) {
+  if(!bEnabled || nTranscodingType == TT_NONE || nTranscodingType == TT_RENAME) {
     return false;
   }
 
-  if(sACodecCondition.empty() && sVCodecCondition.empty()) { 
+  if(sACodecCondition.empty() && sVCodecCondition.empty()) {    
     return true;
   }  
 
@@ -254,11 +254,8 @@ std::string CFileSettings::ObjectTypeAsStr()
 std::string CFileSettings::MimeType(std::string p_sACodec, std::string p_sVCodec)
 {
   if(pTranscodingSettings && pTranscodingSettings->Enabled()) {
-    if(pTranscodingSettings->DoTranscode(p_sACodec, p_sVCodec)) {
-      
-      /*if(pTranscodingSettings->VideoCodec(p_sVCodec).compare("copy") == 0)
-        return sMimeType;
-      else        */
+    if(pTranscodingSettings->DoTranscode(p_sACodec, p_sVCodec) || 
+       (pTranscodingSettings->TranscodingType() == TT_RENAME && !pTranscodingSettings->MimeType().empty())) {      
         return pTranscodingSettings->MimeType();
     }
     else
@@ -311,7 +308,8 @@ std::string CFileSettings::Extension(std::string p_sACodec, std::string p_sVCode
 {
   // if transcoding is enabled it MUST have an extension
   if(pTranscodingSettings && pTranscodingSettings->Enabled()) {
-    if(pTranscodingSettings->DoTranscode(p_sACodec, p_sVCodec)) {
+    if(pTranscodingSettings->DoTranscode(p_sACodec, p_sVCodec) ||
+       (pTranscodingSettings->TranscodingType() == TT_RENAME && !pTranscodingSettings->Extension().empty())) {
     
       /*if(pTranscodingSettings->VideoCodec(p_sVCodec).compare("copy") == 0)
         return sExt;
@@ -664,9 +662,8 @@ unsigned int CDeviceSettings::TargetAudioBitRate(std::string p_sExt)
 
 bool CDeviceSettings::Exists(std::string p_sExt)
 {
-  FileSettingsIterator_t  iter;
-  
-  iter = m_FileSettings.find(p_sExt);
+  FileSettingsIterator_t  iter;  
+  iter = m_FileSettings.find(p_sExt);  
   return (iter != m_FileSettings.end());
 }
 

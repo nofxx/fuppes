@@ -19,10 +19,89 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+/*  
+ *  Modified to use it with FUPPES - Free UPnP Entertainment Service
+ *  Wrapped the ffmpeg command line tool in a C++ class
+ *  Copyright (C) 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ */
+
 #ifndef _CMD_UTILS_H
 #define _CMD_UTILS_H
 
-typedef struct {
+class CFFmpeg;
+
+typedef void (CFFmpeg::*func_ptr)(const char*);
+
+typedef int (CFFmpeg::*func2_ptr)(const char *, const char *);
+
+struct OptionDef {
+  
+    OptionDef()
+    {
+      name = NULL;
+      flags = 0;
+      help = NULL;
+      argname = NULL;
+    }
+  
+    OptionDef(const char *_name, 
+              int _flags, 
+              func_ptr _u,
+              const char *_help,
+              const char *_argname)
+    {
+      if(_name) {      
+        name = (const char*)malloc(sizeof(char*) * strlen(_name) + 1);
+        strcpy((char*)name, _name);        
+      }
+      else {
+        name = NULL;
+      }
+        
+      flags = _flags;
+      u.func_arg = _u;
+      
+      if(_help) {      
+        help = (const char*)malloc(sizeof(char*) * strlen(_help) + 1);
+        strcpy((char*)help, _help);        
+      }
+       
+      if(_argname) {      
+        argname = (const char*)malloc(sizeof(char*) * strlen(_argname) + 1);
+        strcpy((char*)argname, _argname);        
+      }      
+
+    }
+  
+    OptionDef(const char *_name, 
+              int _flags, 
+              func2_ptr _u,
+              const char *_help,
+              const char *_argname)
+    {
+      if(_name) {      
+        name = (const char*)malloc(sizeof(char*) * strlen(_name) + 1);
+        strcpy((char*)name, _name);        
+      }
+      else {
+        name = NULL;
+      }
+        
+      flags = _flags;
+      u.func2_arg = _u;
+      
+      if(_help) {      
+        help = (const char*)malloc(sizeof(char*) * strlen(_help) + 1);
+        strcpy((char*)help, _help);        
+      }
+       
+      if(_argname) {      
+        argname = (const char*)malloc(sizeof(char*) * strlen(_argname) + 1);
+        strcpy((char*)argname, _argname);        
+      }      
+
+    }  
+  
     const char *name;
     int flags;
 #define HAS_ARG    0x0001
@@ -38,20 +117,21 @@ typedef struct {
 #define OPT_FUNC2  0x0400
 #define OPT_INT64  0x0800
      union {
-        void (*func_arg)(const char *); //FIXME passing error code as int return would be nicer then exit() in the func
+        //void (CFFmpeg::*func_arg)(const char *); //FIXME passing error code as int return would be nicer then exit() in the func
+        func_ptr func_arg;
         int *int_arg;
         char **str_arg;
         float *float_arg;
-        int (*func2_arg)(const char *, const char *);
+        //int (*func2_arg)(const char *, const char *);
+        func2_ptr func2_arg;
         int64_t *int64_arg;
     } u;
     const char *help;
     const char *argname;
-} OptionDef;
+} ;
 
-void show_help_options(const OptionDef *options, const char *msg, int mask, int value);
-void parse_options(int argc, char **argv, const OptionDef *options);
-void parse_arg_file(const char *filename);
-void print_error(const char *filename, int err);
+//void show_help_options(const OptionDef *options, const char *msg, int mask, int value);
+void parse_options(int argc, char **argv, OptionDef **options, CFFmpeg* pFFmpeg);
+void parse_arg_file(const char *filename, CFFmpeg* pFFmpeg);
 
 #endif /* _CMD_UTILS_H */

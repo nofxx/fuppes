@@ -194,10 +194,10 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
     if(!Execute("CREATE INDEX IDX_OBJECT_DETAILS_ID ON OBJECT_DETAILS(ID);"))
       return false;
   }
-
-	Execute("PRAGMA temp_store = MEMORY;");
-	Execute("PRAGMA synchronous = OFF;");
 	
+  Execute("pragma temp_store = MEMORY");
+  Execute("pragma synchronous = OFF;");  
+  
   return true;
 }
 
@@ -562,13 +562,14 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
         sTmp = p_sDirectory + pDirEnt->d_name;        
         string sTmpFileName = pDirEnt->d_name;        
   #endif  
+                
         string sExt = ExtractFileExt(sTmp);
-
+        
         /* directory */
         if(IsDirectory(sTmp))
         {				
-          sTmpFileName = ToUTF8(sTmpFileName);
-          sTmpFileName = SQLEscape(sTmpFileName);
+          sTmpFileName = ToUTF8(sTmpFileName);          
+          sTmpFileName = SQLEscape(sTmpFileName);         
           
           stringstream sSql;
           
@@ -977,14 +978,26 @@ void ParsePLSPlaylist(CSelectResult* pResult)
 
 fuppesThreadCallback BuildLoop(void* arg)
 {
-  CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] create database. this may take a while.", __FILE__, __LINE__, false);
+  time_t now;
+  char nowtime[26];
+  time(&now);
+  ctime_r(&now, nowtime);
+  nowtime[24] = '\0';
+  string sNowtime = nowtime;
+  CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] create database at " + sNowtime, __FILE__, __LINE__, false);
     
   CContentDatabase* pDb = new CContentDatabase();
   
   pDb->Execute("delete from OBJECTS");
   pDb->Execute("delete from OBJECT_DETAILS");
   pDb->Execute("delete from MAP_OBJECTS");
-    
+  pDb->Execute("drop index IDX_OBJECTS_OBJECT_ID");
+  pDb->Execute("drop index IDX_MAP_OBJECTS_OBJECT_ID");
+  pDb->Execute("drop index IDX_MAP_OBJECTS_PARENT_ID");
+  pDb->Execute("drop index IDX_OBJECTS_DETAIL_ID");
+  pDb->Execute("drop index IDX_OBJECT_DETAILS_ID");  
+  pDb->Execute("vacuum");  
+  
   int i;
   unsigned int nObjId;
   stringstream sSql;
@@ -1028,6 +1041,16 @@ fuppesThreadCallback BuildLoop(void* arg)
   } // for
   CSharedLog::Shared()->Log(L_NORMAL, "[DONE] read shared directories", __FILE__, __LINE__, false);
     
+  if( !pDb->Execute("CREATE INDEX IDX_OBJECTS_OBJECT_ID ON OBJECTS(OBJECT_ID);") )
+        CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
+  if( !pDb->Execute("CREATE INDEX IDX_MAP_OBJECTS_OBJECT_ID ON MAP_OBJECTS(OBJECT_ID);") )
+        CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
+  if( !pDb->Execute("CREATE INDEX IDX_MAP_OBJECTS_PARENT_ID ON MAP_OBJECTS(PARENT_ID);") )
+        CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
+  if( !pDb->Execute("CREATE INDEX IDX_OBJECTS_DETAIL_ID ON OBJECTS(DETAIL_ID);") )
+        CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
+  if( !pDb->Execute("CREATE INDEX IDX_OBJECT_DETAILS_ID ON OBJECT_DETAILS(ID);") )
+        CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
   
   CSharedLog::Shared()->Log(L_NORMAL, "parse playlists", __FILE__, __LINE__, false);
   BuildPlaylists();
@@ -1045,7 +1068,11 @@ fuppesThreadCallback BuildLoop(void* arg)
   delete pITunes;
   CSharedLog::Shared()->Log(L_NORMAL, "[DONE] parse iTunes databases", __FILE__, __LINE__, false);  
   
-  CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] database created", __FILE__, __LINE__, false);
+  time(&now);
+  ctime_r(&now, nowtime);
+  nowtime[24] = '\0';
+  sNowtime = nowtime;
+  CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] database created at " + sNowtime, __FILE__, __LINE__, false);
   
   g_bIsRebuilding = false;
   fuppesThreadExit();

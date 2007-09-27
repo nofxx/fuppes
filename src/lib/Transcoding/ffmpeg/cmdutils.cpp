@@ -19,6 +19,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+/*  
+ *  Modified to use it with FUPPES - Free UPnP Entertainment Service
+ *  Wrapped the ffmpeg command line tool in a C++ class
+ *  Copyright (C) 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ */
+
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -34,49 +40,19 @@
 #include "avstring.h"
 #endif
 
-#undef exit
+#include "ffmpeg.h"
 
-void show_help_options(const OptionDef *options, const char *msg, int mask, int value)
-{
-    const OptionDef *po;
-    int first;
-
-    first = 1;
-    for(po = options; po->name != NULL; po++) {
-        char buf[64];
-        if ((po->flags & mask) == value) {
-            if (first) {
-                printf("%s", msg);
-                first = 0;
-            }
-            #ifdef HAVE_AVSTRING_H
-            av_strlcpy(buf, po->name, sizeof(buf));
-            if (po->flags & HAS_ARG) {
-                av_strlcat(buf, " ", sizeof(buf));
-                av_strlcat(buf, po->argname, sizeof(buf));
-            }
-            #else
-            pstrcpy(buf, sizeof(buf), po->name);
-            if (po->flags & HAS_ARG) {
-                pstrcat(buf, sizeof(buf), " ");
-                pstrcat(buf, sizeof(buf), po->argname);
-            }
-            #endif
-            printf("-%-17s  %s\n", buf, po->help);
-        }
-    }
-}
-
-static const OptionDef* find_option(const OptionDef *po, const char *name){
-    while (po->name != NULL) {
-        if (!strcmp(name, po->name))
+OptionDef* find_option(OptionDef **po, const char *name) {
+  
+    while ((*po)->name != NULL) {
+        if (!strcmp(name, (*po)->name))
             break;
-        po++;
+      po++;      
     }
-    return po;
+    return *po;
 }
 
-void parse_options(int argc, char **argv, const OptionDef *options)
+void parse_options(int argc, char **argv, OptionDef **options, CFFmpeg* pFFmpeg)
 {
     const char *opt, *arg;
     int optindex, handleoptions=1;
@@ -96,7 +72,7 @@ void parse_options(int argc, char **argv, const OptionDef *options)
             if (!po->name)
                 po= find_option(options, "default");
             if (!po->name) {
-unknown_opt:
+                unknown_opt: 
                 fprintf(stderr, "%s: unrecognized option '%s'\n", argv[0], opt);
                 exit(1);
             }
@@ -110,7 +86,7 @@ unknown_opt:
             }
             if (po->flags & OPT_STRING) {
                 char *str;
-                str = av_strdup(arg);
+                str = _av_strdup(arg);
                 *po->u.str_arg = str;
             } else if (po->flags & OPT_BOOL) {
                 *po->u.int_arg = 1;
@@ -121,13 +97,23 @@ unknown_opt:
             } else if (po->flags & OPT_FLOAT) {
                 *po->u.float_arg = atof(arg);
             } else if (po->flags & OPT_FUNC2) {
-                if(po->u.func2_arg(opt+1, arg)<0)
+                //if(po->u.func2_arg(opt+1, arg)<0)
+              
+                /*func2_ptr func2_arg;
+                func2_arg = po->u.func2_arg;
+                if((pFFmpeg->*func2_arg)(opt+1, arg)<0)*/                
+                if((pFFmpeg->*(po->u.func2_arg))(opt+1, arg)<0)
                     goto unknown_opt;
             } else {
-                po->u.func_arg(arg);
+                //po->u.func_arg(arg);
+              
+                /*void (CFFmpeg::*func_arg)(const char *);
+                func_arg = po->u.func_arg;                
+                (pFFmpeg->*func_arg)(arg);*/              
+                (pFFmpeg->*(po->u.func_arg))(arg);
             }
         } else {
-            parse_arg_file(opt);
+            parse_arg_file(opt, pFFmpeg);
         }
     }
 }

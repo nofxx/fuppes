@@ -401,12 +401,15 @@ void CConfigFile::ParseTranscodingSettings(CXMLNode* pTCNode, CFileSettings* pFi
     pFileSet->pTranscodingSettings = new CTranscodingSettings();
   }
   
+  bool bExt = false;
+  
   // read transcoding settings
   for(i = 0; i < pTCNode->ChildCount(); i++) {
     pTmp = pTCNode->ChildNode(i);
     
     if(pTmp->Name().compare("ext") == 0) {
       pFileSet->pTranscodingSettings->sExt = pTmp->Value();
+      bExt = true;
     }
     else if(pTmp->Name().compare("mime_type") == 0) {
       pFileSet->pTranscodingSettings->sMimeType = pTmp->Value();
@@ -455,10 +458,12 @@ void CConfigFile::ParseTranscodingSettings(CXMLNode* pTCNode, CFileSettings* pFi
     }
     else if(pTmp->Name().compare("transcoder") == 0) {
       
-      if(pTmp->Value().compare("ffmpeg") == 0)
-        pFileSet->pTranscodingSettings->nTranscoderType = TTYP_FFMPEG;
-      else
-        pFileSet->pTranscodingSettings->nTranscoderType = TTYP_NONE;    
+      if(pTmp->Value().compare("ffmpeg") == 0) {
+        pFileSet->pTranscodingSettings->nTranscoderType   = TTYP_FFMPEG;        
+      }
+      else {
+        pFileSet->pTranscodingSettings->nTranscoderType   = TTYP_NONE;            
+      }
       
     }
     
@@ -490,6 +495,33 @@ void CConfigFile::ParseTranscodingSettings(CXMLNode* pTCNode, CFileSettings* pFi
     }
     
   }
+  
+  
+  
+  // no de/encoders selected but extension available => rename file
+  if((pFileSet->pTranscodingSettings->nDecoderType == DT_NONE) &&
+     (pFileSet->pTranscodingSettings->nEncoderType == ET_NONE) &&
+     (pFileSet->pTranscodingSettings->nTranscoderType == TTYP_NONE) && bExt) {
+       
+    pFileSet->pTranscodingSettings->nTranscodingType  = TT_RENAME; 
+  }
+  
+  // de- and encoder selected => threaded de/encoder
+  else if(pFileSet->pTranscodingSettings->nDecoderType != DT_NONE &&
+     pFileSet->pTranscodingSettings->nEncoderType != ET_NONE) {  
+    pFileSet->pTranscodingSettings->nTranscodingType  = TT_THREADED_DECODER_ENCODER;
+  }
+  
+  // transcoder selected => threaded transcoder
+  else if(pFileSet->pTranscodingSettings->nTranscoderType != TTYP_NONE) {
+    pFileSet->pTranscodingSettings->nTranscodingType  = TT_THREADED_TRANSCODER;
+  }
+  
+  else {
+    pFileSet->pTranscodingSettings->nTranscodingType  = TT_NONE;
+  }
+  
+  
 }
 
 void CConfigFile::ParseImageSettings(CXMLNode* pISNode, CFileSettings* pFileSet)
