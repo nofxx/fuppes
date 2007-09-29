@@ -29,10 +29,6 @@
 #include "../Transcoding/TranscodingMgr.h"
 #include "../DeviceSettings/DeviceIdentificationMgr.h"
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
-
 #ifdef HAVE_TAGLIB
 #include <fileref.h>
 //#include <tstring.h>
@@ -343,9 +339,9 @@ bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoIt
 	else
 	  pVideoItem->nBitrate = 0;
 
-  // filesize
-	pVideoItem->nSize = pFormatCtx->file_size;
-	
+  // filesize  
+	pVideoItem->nSize = pFormatCtx->file_size;	
+  
 	char* codec_name;
 	char buf1[32];
 	

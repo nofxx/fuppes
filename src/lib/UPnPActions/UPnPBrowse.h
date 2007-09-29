@@ -24,6 +24,10 @@
 #ifndef _UPNPBROWSE_H
 #define _UPNPBROWSE_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include "UPnPAction.h"
 
 typedef enum UPNP_BROWSE_FLAG

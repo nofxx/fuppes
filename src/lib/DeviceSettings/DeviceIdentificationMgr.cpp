@@ -48,25 +48,26 @@ CDeviceIdentificationMgr::~CDeviceIdentificationMgr()
 }
 
 void CDeviceIdentificationMgr::IdentifyDevice(CHTTPMessage* pDeviceMessage)
-{
+{  
 	CDeviceSettings* pSettings;
 	for(m_SettingsIt = m_Settings.begin(); m_SettingsIt != m_Settings.end(); m_SettingsIt++)
 	{
 	  pSettings = *m_SettingsIt;		
 		
 		if(pSettings->HasIP(pDeviceMessage->GetRemoteIPAddress())) {
-		  pDeviceMessage->DeviceSettings(pSettings);
+		  pDeviceMessage->DeviceSettings(pSettings);      
 			break;
 		}
 		
 		if(pSettings->HasUserAgent(pDeviceMessage->m_sUserAgent)) {
-		  pDeviceMessage->DeviceSettings(pSettings);
+		  pDeviceMessage->DeviceSettings(pSettings);      
 			break;
 		}		
 	}
 	
-	if(!pDeviceMessage->DeviceSettings())
-  	pDeviceMessage->DeviceSettings(m_pDefaultSettings);
+	if(!pDeviceMessage->DeviceSettings()) {
+  	pDeviceMessage->DeviceSettings(m_pDefaultSettings);    
+  }
 
   CSharedLog::Shared()->Log(L_EXTENDED, pDeviceMessage->DeviceSettings()->m_sDeviceName, __FILE__, __LINE__);
 }

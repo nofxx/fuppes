@@ -24,6 +24,10 @@
 #ifndef _UPNPACTIONFACTORY_H
 #define _UPNPACTIONFACTORY_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <string>
 #include "UPnPAction.h"
 #include "UPnPBrowse.h"

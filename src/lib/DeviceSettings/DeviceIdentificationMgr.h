@@ -24,6 +24,10 @@
 #ifndef _DEVICEIDENTIFICATIONMGR_H
 #define _DEVICEIDENTIFICATIONMGR_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include "DeviceSettings.h"
 #include "../HTTP/HTTPMessage.h"
 #include <list>

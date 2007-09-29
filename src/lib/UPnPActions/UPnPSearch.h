@@ -24,6 +24,10 @@
 #ifndef _UPNPSEARCH_H
 #define _UPNPSEARCH_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include "UPnPAction.h"
 
 class CUPnPSearch: public CUPnPBrowseSearchBase

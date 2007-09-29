@@ -21,6 +21,14 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+
+#ifndef _HTTPPARSER_H
+#define _HTTPPARSER_H
+
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include "HTTPMessage.h"
 
 class CHTTPParser
@@ -37,3 +45,5 @@ class CHTTPParser
 		void ParseCommonValues();
 		
 };
+
+#endif // _HTTPPARSER_H

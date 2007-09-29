@@ -24,6 +24,11 @@
 #ifndef _FILEDETAILS_H
 #define _FILEDETAILS_H
 
+
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include "ContentDatabase.h"
 #include <string>
 
@@ -123,10 +128,10 @@ struct SVideoItem
 	std::string  sVCodec;
   std::string  sACodec;
   
-  int nHeight;
-	int nWidth;
-	unsigned int nSize;
-	int nBitrate;
+  int   nHeight;
+	int   nWidth;
+	off_t nSize;
+	int   nBitrate;
 };
   
   struct sMovie

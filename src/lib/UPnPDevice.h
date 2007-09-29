@@ -24,6 +24,10 @@
 #ifndef _UPNPDEVICE_H
 #define _UPNPDEVICE_H
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <string>
 #include <vector>
 #include <libxml/xmlwriter.h>

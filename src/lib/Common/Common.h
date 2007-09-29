@@ -24,6 +24,12 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
+#include <sys/types.h>
+
 #include <string>
 #include <sstream>
 #include <assert.h>
@@ -98,7 +104,6 @@ std::string ToUTF8(std::string p_sValue, std::string p_sEncoding = "");
 void fuppesSleep(unsigned int p_nMilliseconds);
 
 
-
 #ifdef WIN32
   typedef SOCKET fuppesSocket;  
 #else
@@ -141,6 +146,16 @@ void fuppesThreadUnlockMutex(fuppesThreadMutex* p_ThreadMutex);
 fuppesLibHandle   FuppesLoadLibrary(std::string p_sLibName);
 fuppesProcHandle  FuppesGetProcAddress(fuppesLibHandle p_LibHandle, std::string p_sProcName);
 bool              FuppesCloseLibrary(fuppesLibHandle p_LibHandle);
+
+
+
+
+#ifdef WIN32
+  typedef long long int fuppes_off_t;  
+#else
+  typedef off_t fuppes_off_t;
+#endif
+
 
 
 

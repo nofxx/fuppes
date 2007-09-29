@@ -54,8 +54,8 @@ CHTTPMessage::CHTTPMessage()
   m_nHTTPConnection     = HTTP_CONNECTION_UNKNOWN;
   m_pUPnPAction         = NULL;
 	m_pDeviceSettings			= NULL;
-  m_pTranscodingSessionInfo = NULL;
   #ifndef DISABLE_TRANSCODING
+  m_pTranscodingSessionInfo = NULL;  
   m_pTranscodingCacheObj = NULL;
   #endif
   m_nTransferEncoding    = HTTP_TRANSFER_ENCODING_NONE;  
@@ -73,13 +73,13 @@ CHTTPMessage::~CHTTPMessage()
   #ifndef DISABLE_TRANSCODING
   if(m_pTranscodingCacheObj) {
     CTranscodingCache::Shared()->ReleaseCacheObject(m_pTranscodingCacheObj);
-  }  
-  #endif
+  }    
 
   if(m_pTranscodingSessionInfo) {    
     delete m_pTranscodingSessionInfo;
-  }
-  
+  }  
+  #endif
+
   if(m_fsFile.is_open())
     m_fsFile.close();
 }
@@ -220,6 +220,7 @@ std::string CHTTPMessage::GetHeaderAsString()
           sResult << "Content-Length: " << m_nBinContentLength << "\r\n";
         }
       }
+      #ifndef DISABLE_TRANSCODING
       // transcoding
       else if(this->IsTranscoding() && (m_nTransferEncoding != HTTP_TRANSFER_ENCODING_CHUNKED)) {
         
@@ -251,6 +252,7 @@ std::string CHTTPMessage::GetHeaderAsString()
         
         
       }
+      #endif // DISABLE_TRANSCODING
       
     } // if(m_bIsBinary)
     /* end Content length */        
@@ -316,20 +318,25 @@ std::string CHTTPMessage::GetMessageAsString()
   return sResult.str();
 }
 
-unsigned int CHTTPMessage::GetBinContentLength()
+fuppes_off_t CHTTPMessage::GetBinContentLength()
 {
-  if(m_pTranscodingSessionInfo) {    
-    return m_pTranscodingSessionInfo->m_nGuessContentLength;      
-  }
-  else {
+  #ifndef DISABLE_TRANSCODING
+  if(m_pTranscodingSessionInfo)
+    return m_pTranscodingSessionInfo->m_nGuessContentLength;  
+  else 
+  #endif  
     return m_nBinContentLength;
-  }
+  
 }
 
-unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned int p_nSize, unsigned int p_nOffset)
+unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned int p_nSize, fuppes_off_t p_nOffset)
 {
   // read from file
+  #ifndef DISABLE_TRANSCODING
   if(m_pTranscodingSessionInfo == NULL && m_fsFile.is_open()) {    
+  #else
+  if(m_fsFile.is_open()) {    
+  #endif
     
     if((p_nOffset > 0) && (p_nOffset != m_nBinContentPosition)) {
       m_fsFile.seekg(p_nOffset, ios::beg);
@@ -351,10 +358,16 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
   
   // read (transcoded) data from memory
   else
-  {    
+  { 
+    #ifndef DISABLE_TRANSCODING
     bool bTranscode = (m_pTranscodingSessionInfo != NULL);
+    #else
+    bool bTranscode = false;
+    #endif
     
-    // id3v1 request    
+    
+    #ifndef DISABLE_TRANSCODING
+    // id3v1 request
     if(bTranscode && m_pTranscodingCacheObj->IsMp3Encoding() &&
        (m_pTranscodingSessionInfo->m_nGuessContentLength > 0) && 
        (m_pTranscodingSessionInfo->m_nGuessContentLength - p_nOffset) == 128) {
@@ -362,6 +375,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
       m_pTranscodingCacheObj->GetId3v1(p_sContentChunk);
       return 128;      
     }
+    #endif
     
     unsigned int nRest = 0;
     unsigned int nDelayCount = 0;
@@ -447,8 +461,9 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     if(nRest > p_nSize) {
       nRest = p_nSize;
     }
-             
-    if(bTranscode && m_pTranscodingCacheObj->TranscodeToFile()) {
+      
+    #ifndef DISABLE_TRANSCODING
+    if(bTranscode && m_pTranscodingCacheObj->TranscodeToFile()) {   
     
       fstream fsTmp;        
       fsTmp.open(m_pTranscodingCacheObj->m_sOutFileName.c_str(), ios::binary|ios::in);
@@ -465,19 +480,25 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
           return 0;
       }
     }
-    else {      
+    else {   
+    #endif      
+      
+      #ifndef DISABLE_TRANSCODING
       if(bTranscode) {        
         m_pTranscodingCacheObj->Lock();        
         memcpy(p_sContentChunk, &m_pTranscodingCacheObj->m_sBuffer[m_nBinContentPosition], nRest);
         m_pTranscodingCacheObj->Unlock();
       }
-      else {        
+      else
+      #endif
         memcpy(p_sContentChunk, &m_sBuffer[m_nBinContentPosition], nRest);
-      }
+      
       
       m_nBinContentPosition += nRest; 
       return nRest;
+    #ifndef DISABLE_TRANSCODING
     }
+    #endif
 
   }
   return 0;
@@ -717,9 +738,11 @@ bool CHTTPMessage::IsTranscoding()
 
 void CHTTPMessage::BreakTranscoding()
 {
+  #ifndef DISABLE_TRANSCODING
   if(m_pTranscodingSessionInfo) {                            
     m_pTranscodingSessionInfo->m_bBreakTranscoding = true;   
   }
+  #endif
 }
 
 

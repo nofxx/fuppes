@@ -24,6 +24,10 @@
 #ifndef _UPNPBASE_H
 #define _UPNPBASE_H
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <string>
 
 typedef enum {

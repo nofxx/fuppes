@@ -463,10 +463,12 @@ CTranscoderBase* CTranscodingMgr::CreateTranscoder(TRANSCODER_TYPE p_nTranscoder
   #endif
   #endif
   
+  #ifndef DISABLE_TRANSCODING
   #ifdef HAVE_IMAGEMAGICK
   if(p_nTranscoderType == TTYP_IMAGE_MAGICK) {
     pResult = new CImageMagickWrapper();
   }
+  #endif
   #endif
   
   return pResult;

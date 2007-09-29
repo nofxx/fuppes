@@ -284,12 +284,12 @@ class CFFmpeg {
       bit_buffer= NULL;
       
       
-      int o = 0;
+      opt_counter = 0;
       
       //options = (OptionDef)malloc(sizeof(OptionDef) * 20);
       
-      options[o++] = new OptionDef("f", HAS_ARG, (void(CFFmpeg::*)(const char*))&CFFmpeg::opt_format, "force format", "fmt");
-      options[o++] = new OptionDef("i", HAS_ARG, (void(CFFmpeg::*)(const char*))&CFFmpeg::opt_input_file, "input file name", "filename");
+      options[opt_counter++] = new OptionDef("f", HAS_ARG, (void(CFFmpeg::*)(const char*))&CFFmpeg::opt_format, "force format", "fmt");
+      options[opt_counter++] = new OptionDef("i", HAS_ARG, (void(CFFmpeg::*)(const char*))&CFFmpeg::opt_input_file, "input file name", "filename");
       //options[o++] = (OptionDef) { "y", OPT_BOOL, {(void(CFFmpeg::*)(const char*))&this->file_overwrite}, "overwrite output files" };
       /*options[o++] = (OptionDef) { "map", HAS_ARG | OPT_EXPERT, {(void(*)(const char*))opt_map}, "set input stream mapping", "file:stream[:syncfile:syncstream]" };
       options[o++] = (OptionDef) { "map_meta_data", HAS_ARG | OPT_EXPERT, {(void(*)(const char*))opt_map_meta_data}, "set meta data information of outfile from infile", "outfile:infile" };
@@ -328,8 +328,8 @@ class CFFmpeg {
       // video options 
       //options[o++] = (OptionDef) { "vframes", OPT_INT | HAS_ARG | OPT_VIDEO, {(void(*)(const char*))&max_frames[CODEC_TYPE_VIDEO]}, "set the number of video frames to record", "number" };
       //options[o++] = (OptionDef) { "dframes", OPT_INT | HAS_ARG, {(void(*)(const char*))&max_frames[CODEC_TYPE_DATA]}, "set the number of data frames to record", "number" };
-      options[o++] = new OptionDef( "r", HAS_ARG | OPT_VIDEO, (void(CFFmpeg::*)(const char*))&CFFmpeg::opt_frame_rate, "set frame rate (Hz value, fraction or abbreviation)", "rate" );
-      options[o++] = new OptionDef( "s", HAS_ARG | OPT_VIDEO, (void(CFFmpeg::*)(const char*))&CFFmpeg::opt_frame_size, "set frame size (WxH or abbreviation)", "size" );
+      options[opt_counter++] = new OptionDef( "r", HAS_ARG | OPT_VIDEO, (void(CFFmpeg::*)(const char*))&CFFmpeg::opt_frame_rate, "set frame rate (Hz value, fraction or abbreviation)", "rate" );
+      options[opt_counter++] = new OptionDef( "s", HAS_ARG | OPT_VIDEO, (void(CFFmpeg::*)(const char*))&CFFmpeg::opt_frame_size, "set frame size (WxH or abbreviation)", "size" );
       /*options[o++] = (OptionDef) { "aspect", HAS_ARG | OPT_VIDEO, {(void(*)(const char*))opt_frame_aspect_ratio}, "set aspect ratio (4:3, 16:9 or 1.3333, 1.7777)", "aspect" };
       options[o++] = (OptionDef) { "pix_fmt", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void(*)(const char*))&CFFmpeg::opt_frame_pix_fmt}, "set pixel format, 'list' as argument shows all the pixel formats supported", "format" };
       options[o++] = (OptionDef) { "croptop", HAS_ARG | OPT_VIDEO, {(void(*)(const char*))opt_frame_crop_top}, "set top crop band size (in pixels)", "size" };
@@ -348,7 +348,7 @@ class CFFmpeg {
       options[o++] = (OptionDef) { "qdiff", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void(*)(const char*))opt_qdiff}, "max difference between the quantizer scale (VBR)", "q" };
       options[o++] = (OptionDef) { "rc_eq", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void(*)(const char*))opt_video_rc_eq}, "set rate control equation", "equation" };
       options[o++] = (OptionDef) { "rc_override", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void(*)(const char*))opt_video_rc_override_string}, "rate control override for specific intervals", "override" };*/
-      options[o++] = new OptionDef ("vcodec", HAS_ARG | OPT_VIDEO, (void(CFFmpeg::*)(const char*))&CFFmpeg::opt_video_codec, "force video codec ('copy' to copy stream)", "codec" );
+      options[opt_counter++] = new OptionDef ("vcodec", HAS_ARG | OPT_VIDEO, (void(CFFmpeg::*)(const char*))&CFFmpeg::opt_video_codec, "force video codec ('copy' to copy stream)", "codec" );
       /*options[o++] = (OptionDef) { "me_threshold", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void(*)(const char*))opt_me_threshold}, "motion estimaton threshold",  "" };
       options[o++] = (OptionDef) { "strict", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void(*)(const char*))opt_strict}, "how strictly to follow the standards", "strictness" };
       options[o++] = (OptionDef) { "sameq", OPT_BOOL | OPT_VIDEO, {(void(*)(const char*))&same_quality}, "use same video quality as source (implies VBR)" };
@@ -370,10 +370,10 @@ class CFFmpeg {
       // audio options 
       //options[o++] = (OptionDef) { "aframes", OPT_INT | HAS_ARG | OPT_AUDIO, {(void(*)(const char*))&max_frames[CODEC_TYPE_AUDIO]}, "set the number of audio frames to record", "number" };
       //options[o++] = (OptionDef) { "aq", OPT_FLOAT | HAS_ARG | OPT_AUDIO, {(void(*)(const char*))&audio_qscale}, "set audio quality (codec-specific)", "quality", };
-      options[o++] = new OptionDef( "ar", HAS_ARG | OPT_AUDIO, (void(CFFmpeg::*)(const char*))&CFFmpeg::opt_audio_rate, "set audio sampling rate (in Hz)", "rate" );
-      options[o++] = new OptionDef( "ac", HAS_ARG | OPT_AUDIO, (void(CFFmpeg::*)(const char*))&CFFmpeg::opt_audio_channels, "set number of audio channels", "channels" );
+      options[opt_counter++] = new OptionDef( "ar", HAS_ARG | OPT_AUDIO, (void(CFFmpeg::*)(const char*))&CFFmpeg::opt_audio_rate, "set audio sampling rate (in Hz)", "rate" );
+      options[opt_counter++] = new OptionDef( "ac", HAS_ARG | OPT_AUDIO, (void(CFFmpeg::*)(const char*))&CFFmpeg::opt_audio_channels, "set number of audio channels", "channels" );
       //options[o++] = (OptionDef) { "an", OPT_BOOL | OPT_AUDIO, {(void(*)(const char*))&audio_disable}, "disable audio" };
-      options[o++] = new OptionDef( "acodec", HAS_ARG | OPT_AUDIO, (void(CFFmpeg::*)(const char*))&CFFmpeg::opt_audio_codec, "force audio codec ('copy' to copy stream)", "codec" );
+      options[opt_counter++] = new OptionDef( "acodec", HAS_ARG | OPT_AUDIO, (void(CFFmpeg::*)(const char*))&CFFmpeg::opt_audio_codec, "force audio codec ('copy' to copy stream)", "codec" );
       /*options[o++] = (OptionDef) { "atag", HAS_ARG | OPT_EXPERT | OPT_AUDIO, {(void(*)(const char*))opt_audio_tag}, "force audio tag/fourcc", "fourcc/tag" };
       options[o++] = (OptionDef) { "vol", OPT_INT | HAS_ARG | OPT_AUDIO, {(void(*)(const char*))&audio_volume}, "change audio volume (256=normal)" , "volume" }; //
       options[o++] = (OptionDef) { "newaudio", OPT_AUDIO, {(void(*)(const char*))opt_new_audio_stream}, "add a new audio stream to the current output stream" };
@@ -396,8 +396,8 @@ class CFFmpeg {
       options[o++] = (OptionDef) { "absf", HAS_ARG | OPT_AUDIO | OPT_EXPERT, {(void(*)(const char*))opt_audio_bsf}, "", "bitstream filter" };
       options[o++] = (OptionDef) { "vbsf", HAS_ARG | OPT_VIDEO | OPT_EXPERT, {(void(*)(const char*))opt_video_bsf}, "", "bitstream filter" };*/
 
-      options[o++] = new OptionDef( "default", OPT_FUNC2 | HAS_ARG | OPT_AUDIO | OPT_VIDEO | OPT_EXPERT, (int(CFFmpeg::*)(const char*, const char*))&CFFmpeg::opt_default, "generic catch all option", "" );      
-      options[o++] = new OptionDef();           
+      options[opt_counter++] = new OptionDef( "default", OPT_FUNC2 | HAS_ARG | OPT_AUDIO | OPT_VIDEO | OPT_EXPERT, (int(CFFmpeg::*)(const char*, const char*))&CFFmpeg::opt_default, "generic catch all option", "" );      
+      options[opt_counter++] = new OptionDef();           
 
       
       
@@ -406,6 +406,11 @@ class CFFmpeg {
     ~CFFmpeg() 
     { 
       free(opt_names); 
+      
+      for(int i = opt_counter - 1; i >= 0; i--) {
+        delete options[i];
+      }
+      
     }
   
     int ffmpeg_main(int argc, char **argv);
@@ -1663,6 +1668,8 @@ void opt_pass(const char *pass_str)
 
     int bit_buffer_size; //= 1024*256;
     uint8_t *bit_buffer; //= NULL;
+
+    int opt_counter;
 
 };
 

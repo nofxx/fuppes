@@ -21,6 +21,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifndef DISABLE_TRANSCODING
+
 #include "ImageMagickWrapper.h"
 
 #ifdef HAVE_IMAGEMAGICK
@@ -107,3 +109,5 @@ bool CImageMagickWrapper::Transcode(CFileSettings* pFileSettings, std::string p_
 }
 
 #endif // HAVE_IMAGEMAGICK
+
+#endif // DISABLE_TRANSCODING

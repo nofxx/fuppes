@@ -21,6 +21,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
  
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include "ContentDatabase.h"
 #include "../SharedConfig.h"
 #include "../SharedLog.h"
@@ -664,8 +668,11 @@ unsigned int InsertVideoFile(CContentDatabase* pDb, std::string p_sFileName)
 {
   struct SVideoItem VideoItem;
 	if(!CFileDetails::Shared()->GetVideoDetails(p_sFileName, &VideoItem))
-	  return 0;
-		
+	  return 0;  
+  
+  /*char szSize[200];
+  sprintf(&szSize[0], "%" PRId64, VideoItem.nSize);*/
+    
 	stringstream sSql;
 	sSql << 
 	  "insert into OBJECT_DETAILS " <<
@@ -677,10 +684,8 @@ unsigned int InsertVideoFile(CContentDatabase* pDb, std::string p_sFileName)
 		VideoItem.nSize << ", " <<
 		VideoItem.nBitrate << ", " <<
     "'" << VideoItem.sACodec << "', " <<
-    "'" << VideoItem.sVCodec << "' );";
-	
-	//cout << sSql.str() << endl;
-
+    "'" << VideoItem.sVCodec << "' );";	
+  
   return pDb->Insert(sSql.str());
 } 
 

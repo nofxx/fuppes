@@ -65,11 +65,17 @@ struct OptionDef {
         help = (const char*)malloc(sizeof(char*) * strlen(_help) + 1);
         strcpy((char*)help, _help);        
       }
-       
+      else {
+        help = NULL;
+      }
+      
       if(_argname) {      
         argname = (const char*)malloc(sizeof(char*) * strlen(_argname) + 1);
         strcpy((char*)argname, _argname);        
-      }      
+      }
+      else {
+        argname = NULL;
+      }
 
     }
   
@@ -94,13 +100,34 @@ struct OptionDef {
         help = (const char*)malloc(sizeof(char*) * strlen(_help) + 1);
         strcpy((char*)help, _help);        
       }
-       
+      else {
+        help = NULL;
+      }
+      
       if(_argname) {      
         argname = (const char*)malloc(sizeof(char*) * strlen(_argname) + 1);
         strcpy((char*)argname, _argname);        
-      }      
+      }
+      else {
+        argname = NULL; 
+      }
 
-    }  
+    }
+  
+    ~OptionDef()
+    {
+      if(name) {
+        free((char*)name);
+      }
+      
+      if(help) {
+        free((char*)help);
+      }
+      
+      if(argname) {
+        free((char*)argname);
+      }
+    }
   
     const char *name;
     int flags;

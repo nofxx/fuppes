@@ -24,6 +24,8 @@
 #ifndef IMAGEMAGICKWRAPPER_H
 #define IMAGEMAGICKWRAPPER_H
 
+#ifndef DISABLE_TRANSCODING
+
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
@@ -43,5 +45,7 @@ class CImageMagickWrapper: public CTranscoderBase
 };
 
 #endif // HAVE_IMAGEMAGICK
+
+#endif // DISABLE_TRANSCODING
 
 #endif // IMAGEMAGICKWRAPPER_H

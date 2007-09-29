@@ -44,9 +44,9 @@ bool CHTTPRequestHandler::HandleRequest(CHTTPMessage* pRequest, CHTTPMessage* pR
 {
   /*cout << "CHTTPRequestHandler::HandleRequest()" << endl;    
   cout << "Type: " << pRequest->GetMessageType() << endl;  */
-  bool bResult;
+  bool bResult; 
   
-  pResponse->DeviceSettings(pRequest->DeviceSettings());
+  pResponse->DeviceSettings(pRequest->DeviceSettings());  
   
   switch(pRequest->GetMessageType())
   {

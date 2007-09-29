@@ -46,7 +46,7 @@ bool CHTTPParser::Parse(CHTTPMessage* pMessage)
 		sType    = rxResponse.Match(2);
 		nVersion = atoi(rxResponse.Match(1));
 	}
-	else {
+	else {    
 		return false;
 	}
   
@@ -55,8 +55,9 @@ bool CHTTPParser::Parse(CHTTPMessage* pMessage)
 	  pMessage->SetVersion(HTTP_VERSION_1_0);
 	else if(nVersion == 1)
 	  pMessage->SetVersion(HTTP_VERSION_1_1);
-	else
+	else {    
 	  return false;
+  }
     
   // set message type
   sType = ToUpper(sType);
@@ -96,9 +97,8 @@ bool CHTTPParser::Parse(CHTTPMessage* pMessage)
 	}
   
 	
-	ParseCommonValues();
-	CDeviceIdentificationMgr::Shared()->IdentifyDevice(m_pMessage);
-	
+	ParseCommonValues();  
+	CDeviceIdentificationMgr::Shared()->IdentifyDevice(pMessage); 
   return true;
 }
 

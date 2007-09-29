@@ -24,6 +24,10 @@
 #ifndef _UPNPSERVICE_H
 #define _UPNPSERVICE_H
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include "UPnPBase.h"
 #include "HTTP/HTTPMessage.h"
 

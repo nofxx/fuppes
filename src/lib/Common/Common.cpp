@@ -21,6 +21,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+
+#ifndef HAVE_CONFIG_H
+#define ICONV_SECOND_ARG const char**
+#endif
+
 #include "Common.h"
 #include "RegEx.h"
 #include "md5.h"
@@ -40,12 +45,6 @@
 #include <cctype>
 #include <fcntl.h>
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#else
-#define ICONV_SECOND_ARG const char**
-#endif
-
 #ifdef HAVE_ICONV
 #include <iconv.h>
 #endif
@@ -57,7 +56,7 @@ using namespace std;
 bool FileExists(std::string p_sFileName)
 {
   struct stat Stat;  
-  return (stat(p_sFileName.c_str(), &Stat) == 0);    
+  return (stat(p_sFileName.c_str(), &Stat) == 0 && S_ISREG(Stat.st_mode));
 }
 
 bool IsFile(std::string p_sFileName)

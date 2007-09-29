@@ -24,6 +24,10 @@
 #ifndef _UPNPACTION_H
 #define _UPNPACTION_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include "../UPnPBase.h"
 #include "../DeviceSettings/DeviceSettings.h"
 #include <string>

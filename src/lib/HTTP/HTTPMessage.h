@@ -24,6 +24,11 @@
 #ifndef _HTTPMESSAGE_H
 #define _HTTPMESSAGE_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
+#include "../Common/Common.h"
 #include "../DeviceSettings/DeviceSettings.h"
 #include "../MessageBase.h"
 #include "../UPnPActions/UPnPAction.h"
@@ -32,6 +37,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+
 
 using namespace std;
 
@@ -124,7 +130,7 @@ class CHTTPMessage: public CMessageBase
     HTTP_MESSAGE_TYPE GetMessageType()      { return m_nHTTPMessageType;  }
     HTTP_VERSION      GetVersion()          { return m_nHTTPVersion;      }
     //std::string       GetContent()          { return m_sContent;          }
-    unsigned int      GetBinContentLength();
+    fuppes_off_t      GetBinContentLength();
     char*             GetBinContent()       { return m_sBuffer;     }
 	
     bool              IsBinary()            { return m_bIsBinary;         }  
@@ -138,10 +144,10 @@ class CHTTPMessage: public CMessageBase
     std::string 		  GetHeaderAsString();		  
 	  std::string			  GetMessageAsString();
 
-    unsigned int      GetBinContentChunk(char* p_sContentChunk, unsigned int p_nSize, unsigned int p_nOffset);
+    unsigned int      GetBinContentChunk(char* p_sContentChunk, unsigned int p_nSize, fuppes_off_t p_nOffset);
 
-    unsigned int      GetRangeStart() { return m_nRangeStart; }
-    unsigned int      GetRangeEnd() { return m_nRangeEnd; }
+    fuppes_off_t      GetRangeStart() { return m_nRangeStart; }
+    fuppes_off_t      GetRangeEnd() { return m_nRangeEnd; }
     void              SetRangeStart(unsigned int p_nRangeStart) { m_nRangeStart = p_nRangeStart; }
     void              SetRangeEnd(unsigned int p_nRangeEnd) { m_nRangeEnd = p_nRangeEnd; }
     HTTP_CONNECTION   GetHTTPConnection() { return m_nHTTPConnection; }
@@ -176,14 +182,14 @@ class CHTTPMessage: public CMessageBase
     // buffer bytes consumed
     unsigned int  m_nBytesConsumed;
   
-    unsigned int  m_nBinContentLength;
+    fuppes_off_t  m_nBinContentLength;
     
     bool          m_bIsBinary;
   
 	  std::string   m_sUserAgent;
 	
-    CTranscodeSessionInfo* m_pTranscodingSessionInfo;  
     #ifndef DISABLE_TRANSCODING
+    CTranscodeSessionInfo* m_pTranscodingSessionInfo;    
     CTranscodingCacheObject* m_pTranscodingCacheObj;
     #endif
     //fuppesThreadMutex TranscodeMutex;    
@@ -218,12 +224,13 @@ private:
   
 	  CUPnPAction*       m_pUPnPAction;
     std::fstream       m_fsFile;
-    unsigned int       m_nRangeStart;
-    unsigned int       m_nRangeEnd;
-	
-	  CDeviceSettings*   m_pDeviceSettings;
-
-    unsigned int       m_nBinContentPosition;
+    fuppes_off_t       m_nRangeStart;
+    fuppes_off_t       m_nRangeEnd;
+    fuppes_off_t       m_nBinContentPosition;  
+  
+  
+  
+	  CDeviceSettings*   m_pDeviceSettings;    
 
 
     bool ParsePOSTMessage(std::string p_sMessage);

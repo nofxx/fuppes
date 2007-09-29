@@ -735,6 +735,11 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
     }
     
   }
+                                                    
+  // size
+  if(!bTranscode && pUPnPBrowse->IncludeProperty("res@size") && !pSQLResult->IsNull("SIZE")) {
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->GetValue("SIZE").c_str());
+  }                                                    
 
   sExt = pUPnPBrowse->DeviceSettings()->Extension(sExt);
                                                     
