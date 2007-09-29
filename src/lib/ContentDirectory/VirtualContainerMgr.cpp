@@ -88,11 +88,17 @@ fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
   CVirtualContainerMgr* pMgr = (CVirtualContainerMgr*)arg;
     
   time_t now;
-  char nowtime[26];
+  char nowtime[25];
   time(&now);
+	#ifndef WIN32
   ctime_r(&now, nowtime);
-  nowtime[24] = '\0';
-  string sNowtime = nowtime;
+	nowtime[24] = '\0';
+	string sNowtime = nowtime;
+	#else	
+  char timeStr[9];  
+  _strtime(timeStr);	
+	string sNowtime = timeStr;	
+	#endif
   CSharedLog::Shared()->Log(L_NORMAL, "[VirtualContainer] create virtual container layout started at " + sNowtime, __FILE__, __LINE__);
   
   CXMLDocument* pDoc = new CXMLDocument();
@@ -133,9 +139,14 @@ fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
   delete pIns;
 
   time(&now); 
+	#ifndef WIN32
   ctime_r(&now, nowtime);
-  nowtime[24] = '\0';
-  sNowtime = nowtime;
+	nowtime[24] = '\0';
+	sNowtime = nowtime;
+	#else	  
+  _strtime(timeStr);	
+	sNowtime = timeStr;	
+	#endif
   CSharedLog::Shared()->Log(L_NORMAL, "[VirtualContainer] virtual container layout created at " + sNowtime, __FILE__, __LINE__);
 
   g_bIsRebuilding = false;
@@ -324,6 +335,7 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
     "where " <<
     "  VALUE is not NULL and " <<
     "  o.DETAIL_ID = d.ID and " <<
+		"  o.DEVICE is NULL and " <<
     "  o.TYPE > " << ITEM;
 
   string sTmp;
@@ -661,6 +673,7 @@ void CVirtualContainerMgr::CreateSingleVFolderFolder(CXMLNode* pNode,
     "from " <<
     "  OBJECTS " <<
     "where " <<
+		"  DEVICE is NULL and " <<
     "  OBJECT_ID = " << p_nObjectId;
                 
   //cout << sSql.str() << endl; fflush(stdout);

@@ -982,15 +982,22 @@ void ParsePLSPlaylist(CSelectResult* pResult)
 
 
 fuppesThreadCallback BuildLoop(void* arg)
-{
+{  
   time_t now;
-  char nowtime[26];
+  char nowtime[25];
   time(&now);
+	#ifndef WIN32
   ctime_r(&now, nowtime);
-  nowtime[24] = '\0';
-  string sNowtime = nowtime;
+	nowtime[24] = '\0';
+	string sNowtime = nowtime;
+	#else		
+  char timeStr[9];    
+  _strtime(timeStr);	
+	string sNowtime = timeStr;	
+	#endif  
   CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] create database at " + sNowtime, __FILE__, __LINE__, false);
-    
+  
+		
   CContentDatabase* pDb = new CContentDatabase();
   
   pDb->Execute("delete from OBJECTS");
@@ -1072,12 +1079,18 @@ fuppesThreadCallback BuildLoop(void* arg)
   }
   delete pITunes;
   CSharedLog::Shared()->Log(L_NORMAL, "[DONE] parse iTunes databases", __FILE__, __LINE__, false);  
-  
+  	
   time(&now);
+	#ifndef WIN32
   ctime_r(&now, nowtime);
-  nowtime[24] = '\0';
-  sNowtime = nowtime;
+	nowtime[24] = '\0';
+	sNowtime = nowtime;
+	#else	  
+  _strtime(timeStr);	
+	sNowtime = timeStr;	
+	#endif
   CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] database created at " + sNowtime, __FILE__, __LINE__, false);
+	
   
   g_bIsRebuilding = false;
   fuppesThreadExit();

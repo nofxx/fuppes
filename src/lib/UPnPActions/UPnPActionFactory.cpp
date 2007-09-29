@@ -61,9 +61,10 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent, C
   CUPnPAction* pAction = NULL;  
   string sNs   = (char*)pTmpNode->nsDef->href;
 	string sName = (char*)pTmpNode->name;
-			
-	if(sNs.compare("urn:schemas-upnp-org:service:ContentDirectory:1") == 0)
-	{    
+
+
+	// ContentDirectory
+	if(sNs.compare("urn:schemas-upnp-org:service:ContentDirectory:1") == 0)	{
     if(sName.compare("Browse") == 0) {
       pAction = new CUPnPBrowse(p_sContent);
       pAction->DeviceSettings(pDeviceSettings);
@@ -91,21 +92,41 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent, C
       pAction->DeviceSettings(pDeviceSettings);
     }
 	}
+	
+	// Connection Manager
 	else if(sNs.compare("urn:schemas-upnp-org:service:ConnectionManager:1") == 0)
 	{
-	  pAction = new CUPnPAction(UPNP_SERVICE_CONNECTION_MANAGER, UPNP_UNKNOWN, p_sContent);
-    pAction->DeviceSettings(pDeviceSettings);
+		if(sName.compare("GetProtocolInfo") == 0) {
+		  pAction = new CUPnPAction(UPNP_SERVICE_CONNECTION_MANAGER, CMA_GET_PROTOCOL_INFO, p_sContent);
+		}
+		else if(sName.compare("PrepareForConnection") == 0) {
+			pAction = new CUPnPAction(UPNP_SERVICE_CONNECTION_MANAGER, CMA_PREPARE_FOR_CONNECTION, p_sContent);
+		}
+		else if(sName.compare("ConnectionComplete") == 0) {
+			pAction = new CUPnPAction(UPNP_SERVICE_CONNECTION_MANAGER, CMA_CONNECTION_COMPLETE, p_sContent);
+		}
+		else if(sName.compare("GetCurrentConnectionIDs") == 0) {
+			pAction = new CUPnPAction(UPNP_SERVICE_CONNECTION_MANAGER, CMA_GET_CURRENT_CONNECTION_IDS, p_sContent);
+		}
+		else if(sName.compare("GetCurrentConnectionInfo") == 0) {
+			pAction = new CUPnPAction(UPNP_SERVICE_CONNECTION_MANAGER, CMA_GET_CURRENT_CONNECTION_INFO, p_sContent);
+		}
+		else {	
+			pAction = new CUPnPAction(UPNP_SERVICE_CONNECTION_MANAGER, CMA_UNKNOWN, p_sContent);			
+		}
+		pAction->DeviceSettings(pDeviceSettings);
 	}
+	
+	// XMSMediaReceiverRegistrar
 	else if(sNs.compare("urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1") == 0)
 	{
 	  if(sName.compare("IsAuthorized") == 0) {
-	    pAction = new CUPnPAction(UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR, UPNP_IS_AUTHORIZED, p_sContent);
-      pAction->DeviceSettings(pDeviceSettings);
+	    pAction = new CUPnPAction(UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR, UPNP_IS_AUTHORIZED, p_sContent);      
 	  }
 	  else if(sName.compare("IsValidated") == 0) {
-	    pAction = new CUPnPAction(UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR, UPNP_IS_VALIDATED, p_sContent);
-      pAction->DeviceSettings(pDeviceSettings);
+	    pAction = new CUPnPAction(UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR, UPNP_IS_VALIDATED, p_sContent);      
 	  }
+		pAction->DeviceSettings(pDeviceSettings);
 	}
 	
 	if(!pAction) {

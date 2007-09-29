@@ -151,7 +151,11 @@ bool              FuppesCloseLibrary(fuppesLibHandle p_LibHandle);
 
 
 #ifdef WIN32
-  typedef long long int fuppes_off_t;  
+  #if SIZEOF_UNSIGNED_LONG_INT == 8
+  typedef unsigned long int fuppes_off_t;  
+	#elif SIZEOF_UNSIGNED_LONG_LONG_INT == 8
+	typedef unsigned long long int fuppes_off_t;  
+	#endif	
 #else
   typedef off_t fuppes_off_t;
 #endif
