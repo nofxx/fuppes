@@ -596,7 +596,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   
   // send binary
   //unsigned int nOffset      = 0;
-  off_t         nOffset       = 0;
+  fuppes_off_t  nOffset       = 0;
   char*         szChunk       = NULL;
   unsigned int  nRequestSize  = MAX_BUFFER_SIZE;
   int           nErr          = 0;    

@@ -167,7 +167,7 @@ class CHTTPMessage: public CMessageBase
   
  
     bool             LoadContentFromFile(std::string);
-    bool             TranscodeContentFromFile(std::string p_sFileName, SMusicTrack p_sTrackDetails);
+    bool             TranscodeContentFromFile(std::string p_sFileName, SAudioItem p_sTrackDetails);
     void             BreakTranscoding();  
     bool             IsTranscoding();
   

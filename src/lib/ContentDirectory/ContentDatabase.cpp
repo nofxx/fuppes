@@ -619,28 +619,29 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
 
 unsigned int InsertAudioFile(CContentDatabase* pDb, std::string p_sFileName, std::string* p_sTitle)
 {
-	struct SMusicTrack TrackInfo; 
+	struct SAudioItem TrackInfo; 
 	if(!CFileDetails::Shared()->GetMusicTrackDetails(p_sFileName, &TrackInfo))
 	  return 0;
 		
 	stringstream sSql;
 	sSql << 
 	  "insert into OBJECT_DETAILS " <<
-		"(A_ARTIST, A_ALBUM, A_TRACK_NO, A_GENRE, AV_DURATION, DATE, A_CHANNELS, AV_BITRATE, A_SAMPLERATE) " <<
+		"(A_ARTIST, A_ALBUM, A_TRACK_NO, A_GENRE, AV_DURATION, DATE, A_CHANNELS, AV_BITRATE, A_SAMPLERATE, SIZE) " <<
 		"values (" <<
 		//"'" << SQLEscape(TrackInfo.mAudioItem.sTitle) << "', " <<
 		"'" << SQLEscape(TrackInfo.sArtist) << "', " <<
 		"'" << SQLEscape(TrackInfo.sAlbum) << "', " <<
 		TrackInfo.nOriginalTrackNumber << ", " <<
-		"'" << SQLEscape(TrackInfo.mAudioItem.sGenre) << "', " <<
-		"'" << TrackInfo.mAudioItem.sDuration << "', " <<
+		"'" << SQLEscape(TrackInfo.sGenre) << "', " <<
+		"'" << TrackInfo.sDuration << "', " <<
 		"'" << TrackInfo.sDate << "', " <<
-		TrackInfo.mAudioItem.nNrAudioChannels << ", " <<
-		TrackInfo.mAudioItem.nBitrate << ", " <<
-		TrackInfo.mAudioItem.nSampleRate << ")";
+		TrackInfo.nNrAudioChannels << ", " <<
+		TrackInfo.nBitrate << ", " <<
+		TrackInfo.nSampleRate << ", " <<
+    TrackInfo.nSize << " )";
 		
 	//cout << sSql.str() << endl;
-  *p_sTitle = TrackInfo.mAudioItem.sTitle;
+  *p_sTitle = TrackInfo.sTitle;
 	
   return pDb->Insert(sSql.str());
 }
@@ -984,7 +985,7 @@ void ParsePLSPlaylist(CSelectResult* pResult)
 fuppesThreadCallback BuildLoop(void* arg)
 {  
   time_t now;
-  char nowtime[25];
+  char nowtime[26];
   time(&now);
 	#ifndef WIN32
   ctime_r(&now, nowtime);

@@ -24,7 +24,6 @@
 #ifndef _FILEDETAILS_H
 #define _FILEDETAILS_H
 
-
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
@@ -40,16 +39,6 @@ struct FileType_t
   std::string sDLNA;
 };
 
-/*struct TranscodingSetting_t
-{
-  std::string sExt;  
-  std::string sTargetExt;  
-  std::string sTargetMimeType;
-  OBJECT_TYPE nTargetObjectType;
-  int         nBitrate;
-  int         nSamplerate;
-};*/
-
 struct SAudioItem
 { 
   std::string sTitle;
@@ -62,27 +51,26 @@ struct SAudioItem
   std::string sRelation;
   std::string sRights;*/
 	
+  std::string sArtist;
+  std::string sAlbum;
+  int         nOriginalTrackNumber;
+  std::string sOriginalTrackNumber;
+  int         nYear;
+  /*std::string sPlaylist;
+  std::string sStorageMedium;
+  std::string sContributor;*/
+  std::string sDate;
+  
+  std::string sACodec;
+  std::string sVCodec;
+  
 	int nNrAudioChannels;
 	int nBitrate;
 	int nSampleRate;
+  int nBitsPerSample;
+  
+  fuppes_off_t nSize;
 };
-
-  struct SMusicTrack
-  {
-    SAudioItem  mAudioItem;
-    std::string sArtist;
-    std::string sAlbum;
-    int         nOriginalTrackNumber;
-    std::string sOriginalTrackNumber;
-    int         nYear;
-    /*std::string sPlaylist;
-    std::string sStorageMedium;
-    std::string sContributor;*/
-    std::string sDate;
-    
-    std::string sACodec;
-    std::string sVCodec;
-  };
 
 
 struct SImageItem {
@@ -129,19 +117,20 @@ struct SVideoItem
   std::string  sACodec;
   
   int   nHeight;
-	int   nWidth;
-	off_t nSize;
+	int   nWidth;	
 	int   nBitrate;
+  
+  fuppes_off_t nSize;
 };
   
-  struct sMovie
+  /*struct sMovie
   {
     std::string sStorageMedium;
     int         nDVDRegionCode;
     std::string sChannelName;
     std::string sScheduledStartTime;
     std::string sScheduledEndTime;
-  };
+  };*/
 
 class CFileDetails
 {
@@ -153,7 +142,7 @@ class CFileDetails
     OBJECT_TYPE GetObjectType(std::string p_sFileName);    
     std::string GetContainerTypeAsStr(OBJECT_TYPE p_nContainerType);
   
-    bool GetMusicTrackDetails(std::string p_sFileName, SMusicTrack* pMusicTrack);
+    bool GetMusicTrackDetails(std::string p_sFileName, SAudioItem* pMusicTrack);
     bool GetImageDetails(std::string p_sFileName, SImageItem* pImageItem);
 	  bool GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoItem);
 	

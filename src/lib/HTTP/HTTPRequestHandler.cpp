@@ -270,9 +270,9 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
         sMimeType = pRequest->DeviceSettings()->MimeType(sExt, pDb->GetResult()->GetValue("A_CODEC"), pDb->GetResult()->GetValue("V_CODEC"));
         if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {          
           //
-          SMusicTrack trackDetails;
+          SAudioItem trackDetails;
           if(!pDb->GetResult()->IsNull("TITLE")) {
-            trackDetails.mAudioItem.sTitle = pDb->GetResult()->GetValue("TITLE");
+            trackDetails.sTitle = pDb->GetResult()->GetValue("TITLE");
           }
           
           if(!pDb->GetResult()->IsNull("A_ARTIST")) {
@@ -284,7 +284,7 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
           }
           
           if(!pDb->GetResult()->IsNull("A_GENRE")) {
-            trackDetails.mAudioItem.sGenre = pDb->GetResult()->GetValue("A_GENRE");
+            trackDetails.sGenre = pDb->GetResult()->GetValue("A_GENRE");
           }
           
           if(!pDb->GetResult()->IsNull("A_TRACK_NO")) {

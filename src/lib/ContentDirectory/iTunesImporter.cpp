@@ -69,7 +69,7 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
 {
   int i;
   CXMLNode* pNode;
-  SMusicTrack track;
+  SAudioItem track;
   string sFileName;
  
   pNode = pDict->FindNodeByValue("key", "Track Type", false);
@@ -90,7 +90,7 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
     }
     else if(pNode->Value().compare("Name") == 0) {
       //cout << "Name: " << pDict->ChildNode(i + 1)->Value() << endl;
-      track.mAudioItem.sTitle = pDict->ChildNode(i + 1)->Value();
+      track.sTitle = pDict->ChildNode(i + 1)->Value();
     }
     else if(pNode->Value().compare("Artist") == 0) {
       track.sArtist = pDict->ChildNode(i + 1)->Value();
@@ -99,7 +99,7 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
       track.sAlbum = pDict->ChildNode(i + 1)->Value();
     }
     else if(pNode->Value().compare("Genre") == 0) {
-      track.mAudioItem.sGenre = pDict->ChildNode(i + 1)->Value();
+      track.sGenre = pDict->ChildNode(i + 1)->Value();
     }
     else if(pNode->Value().compare("Total Time") == 0) {
     }
@@ -112,10 +112,10 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
       track.sDate = pDict->ChildNode(i + 1)->Value();
     }
     else if(pNode->Value().compare("Bit Rate") == 0) {
-      track.mAudioItem.nBitrate = atoi(pDict->ChildNode(i + 1)->Value().c_str());
+      track.nBitrate = atoi(pDict->ChildNode(i + 1)->Value().c_str());
     }
     else if(pNode->Value().compare("Sample Rate") == 0) {
-      track.mAudioItem.nSampleRate = atoi(pDict->ChildNode(i + 1)->Value().c_str());
+      track.nSampleRate = atoi(pDict->ChildNode(i + 1)->Value().c_str());
     }
     else if(pNode->Value().compare("Location") == 0) {
       sFileName = pDict->ChildNode(i + 1)->Value();
@@ -150,12 +150,12 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
 		"'" << SQLEscape(track.sArtist) << "', " <<
 		"'" << SQLEscape(track.sAlbum) << "', " <<
 		track.nOriginalTrackNumber << ", " <<
-		"'" << SQLEscape(track.mAudioItem.sGenre) << "', " <<
-		"'" << track.mAudioItem.sDuration << "', " <<
+		"'" << SQLEscape(track.sGenre) << "', " <<
+		"'" << track.sDuration << "', " <<
 		"'" << track.sDate << "', " <<
-		track.mAudioItem.nNrAudioChannels << ", " <<
-		track.mAudioItem.nBitrate << ", " <<
-		track.mAudioItem.nSampleRate << ")";
+		track.nNrAudioChannels << ", " <<
+		track.nBitrate << ", " <<
+		track.nSampleRate << ")";
     
   unsigned int nDetailId = pDb->Insert(sSql.str());
   
@@ -168,7 +168,7 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
           ITEM_AUDIO_ITEM_MUSIC_TRACK << ", " <<
           "'" << SQLEscape(sFileName) << "', " <<
           "'" << SQLEscape(sFileName) << "', " <<
-          "'" << SQLEscape(track.mAudioItem.sTitle) << "', " <<
+          "'" << SQLEscape(track.sTitle) << "', " <<
           "'n/a', " <<
           "'" << "obsolete" << "') ";
 

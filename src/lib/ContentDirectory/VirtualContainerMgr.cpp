@@ -88,7 +88,7 @@ fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
   CVirtualContainerMgr* pMgr = (CVirtualContainerMgr*)arg;
     
   time_t now;
-  char nowtime[25];
+  char nowtime[26];
   time(&now);
 	#ifndef WIN32
   ctime_r(&now, nowtime);
