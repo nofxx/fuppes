@@ -83,21 +83,19 @@ void CWavEncoder::WriteFileHeader()
 {
   int bits = 16;
   
-  unsigned int size = 0x7fffffff;
-  if(nNumSamples > 0) {
-    size = nNumSamples;
-  }
+  unsigned int size = -1;
+
   int channels    = nNumChannels;
   int samplerate  = nSampleRate;  
   int bytespersec = channels * samplerate * bits / 8;
   int align       = channels * bits / 8;
   int samplesize  = bits;
-
+  
   unsigned int knownlength = nNumSamples;
   
   if(knownlength && knownlength*bits/8*channels < size)
-      size = (unsigned int)(knownlength*bits/8*channels+44) ;
-
+      size = (unsigned int)(knownlength*bits/8*channels+44);
+  
     memcpy(headbuf, "RIFF", 4);
     WRITE_U32(headbuf+4, size-8);
     memcpy(headbuf+8, "WAVE", 4);
@@ -126,7 +124,7 @@ void CWavEncoder::SetAudioDetails(CAudioDetails* pAudioDetails)
   nNumChannels = m_pAudioDetails->nNumChannels;
   nNumSamples  = m_pAudioDetails->nNumPcmSamples;
   
-  cout << "samplerate: " << nSampleRate << "Hz - channels: " << nNumChannels << " samples: " << nNumSamples << endl;
+  //cout << "samplerate: " << nSampleRate << "Hz - channels: " << nNumChannels << " samples: " << nNumSamples << endl;
 }
 
 unsigned int CWavEncoder::GuessContentLength(unsigned int p_nNumPcmSamples)
@@ -138,7 +136,7 @@ unsigned int CWavEncoder::GuessContentLength(unsigned int p_nNumPcmSamples)
     nNumSamples = p_nNumPcmSamples;
     
     unsigned int  knownlength = nNumSamples;
-    unsigned int  size        = nNumSamples;
+    unsigned int  size        = -1;
     int           bits        = 16;
     int           channels    = nNumChannels;
         

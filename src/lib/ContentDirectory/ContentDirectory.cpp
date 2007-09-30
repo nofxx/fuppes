@@ -710,30 +710,23 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   }
 
   // sampleFrequency
-  if(pUPnPBrowse->IncludeProperty("res@sampleFrequency")) {
-    
+  if(pUPnPBrowse->IncludeProperty("res@sampleFrequency")) {    
     if(!bTranscode && !pSQLResult->IsNull("A_SAMPLERATE")) {		  
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST pSQLResult->GetValue("A_SAMPLERATE").c_str());
     }    
-    else if(bTranscode && pUPnPBrowse->DeviceSettings()->TargetAudioSampleRate(sExt) > 0) {
-      char szSamplerate[20];      
-      sprintf(szSamplerate, "%d", pUPnPBrowse->DeviceSettings()->TargetAudioSampleRate(sExt));
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST szSamplerate);
+    else if(bTranscode && pUPnPBrowse->DeviceSettings()->TargetAudioSampleRate(sExt) > 0) {      
+      xmlTextWriterWriteFormatAttribute(pWriter, BAD_CAST "sampleFrequency", "%d", pUPnPBrowse->DeviceSettings()->TargetAudioSampleRate(sExt));
     }
   }
 
 	// bitrate
-  if(pUPnPBrowse->IncludeProperty("res@bitrate")) {
-    
+  if(pUPnPBrowse->IncludeProperty("res@bitrate")) {    
     if(!bTranscode && !pSQLResult->IsNull("AV_BITRATE")) {
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("AV_BITRATE").c_str());
     }    
-    else if(bTranscode && pUPnPBrowse->DeviceSettings()->TargetAudioBitRate(sExt) > 0) {
-      char szBitrate[20];      
-      sprintf(szBitrate, "%d", pUPnPBrowse->DeviceSettings()->TargetAudioBitRate(sExt));
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST szBitrate);
+    else if(bTranscode && pUPnPBrowse->DeviceSettings()->TargetAudioBitRate(sExt) > 0) {      
+      xmlTextWriterWriteFormatAttribute(pWriter, BAD_CAST "bitrate", "%d", pUPnPBrowse->DeviceSettings()->TargetAudioBitRate(sExt));
     }
-    
   }
                                                     
   // size

@@ -434,10 +434,16 @@ void CConfigFile::ParseTranscodingSettings(CXMLNode* pTCNode, CFileSettings* pFi
         pFileSet->pTranscodingSettings->nEncoderType = ET_LAME;
       else if(pTmp->Value().compare("twolame") == 0)
         pFileSet->pTranscodingSettings->nEncoderType = ET_TWOLAME;
-      else if(pTmp->Value().compare("wav") == 0)
+      else if(pTmp->Value().compare("wav") == 0) {
         pFileSet->pTranscodingSettings->nEncoderType = ET_WAV;
-      else if(pTmp->Value().compare("pcm") == 0)
+        pFileSet->pTranscodingSettings->nAudioSampleRate = 44100;
+        pFileSet->pTranscodingSettings->nAudioBitRate = 176400;
+      }
+      else if(pTmp->Value().compare("pcm") == 0) {
         pFileSet->pTranscodingSettings->nEncoderType = ET_PCM;
+        pFileSet->pTranscodingSettings->nAudioSampleRate = 44100;
+        pFileSet->pTranscodingSettings->nAudioBitRate = 176400;
+      }
       else
         pFileSet->pTranscodingSettings->nEncoderType = ET_NONE;
       

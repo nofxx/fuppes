@@ -79,7 +79,7 @@ unsigned int CPcmEncoder::GuessContentLength(unsigned int p_nNumPcmSamples)
   else {    
     nNumSamples = p_nNumPcmSamples;
     
-    unsigned int  knownlength = nNumSamples;
+    unsigned int  knownlength = -1;
     unsigned int  size        = nNumSamples;
     int           bits        = 16;
     int           channels    = nNumChannels;
