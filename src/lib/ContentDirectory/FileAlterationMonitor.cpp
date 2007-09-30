@@ -25,6 +25,7 @@
 
 #ifdef HAVE_INOTIFY
 #include <sys/ioctl.h>
+#include <sys/inotify.h>
 #endif
 
 #include <iostream>
@@ -44,7 +45,7 @@ CFileAlterationMonitor* CFileAlterationMgr::CreateMonitor(IFileAlterationMonitor
 {
   #if defined(HAVE_GAMIN)
   return new CGaminMonitor(pEventHandler);
-  #else defined(HAVE_INOTIFY)
+  #elseif defined(HAVE_INOTIFY)
   return new CInotifyMonitor(pEventHandler);
   #else
   return NULL;
@@ -52,8 +53,8 @@ CFileAlterationMonitor* CFileAlterationMgr::CreateMonitor(IFileAlterationMonitor
 }
 
 #ifdef HAVE_INOTIFY
-CInotifyMonitor::CInotifyMonitor(IFileSystemMonitor* pEventHandler):
-  CFileSystemMonitor(pEventHandler)
+CInotifyMonitor::CInotifyMonitor(IFileAlterationMonitor* pEventHandler):
+  CFileAlterationMonitor(pEventHandler)
 {
   int inotify_fd = inotify_init();
 	if (inotify_fd < 0)	{
@@ -101,6 +102,11 @@ CInotifyMonitor::CInotifyMonitor(IFileSystemMonitor* pEventHandler):
 	
 	inotify_rm_watch(inotify_fd, wd);
 	
+}
+
+bool CInotifyMonitor::AddDirectory(std::string p_sDirectory)
+{
+  return false;
 }
 #endif // HAVE_INOTIFY
 
