@@ -42,8 +42,10 @@ CFileAlterationMgr* CFileAlterationMgr::Shared()
 
 CFileAlterationMonitor* CFileAlterationMgr::CreateMonitor(IFileAlterationMonitor* pEventHandler)
 {
-  #ifdef HAVE_GAMIN
+  #if defined(HAVE_GAMIN)
   return new CGaminMonitor(pEventHandler);
+  #else defined(HAVE_INOTIFY)
+  return new CInotifyMonitor(pEventHandler);
   #else
   return NULL;
   #endif

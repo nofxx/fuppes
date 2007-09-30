@@ -301,7 +301,6 @@ use_twolame=yes
 
 use_tremor=no
 
-have_encoder=no
 have_lame=no
 have_twolame=no
 
@@ -354,7 +353,6 @@ if test "x$transcoding" = "xyes"; then
     AC_CHECK_HEADERS([${LAME_H_DIR}lame/lame.h], have_lame=yes, have_lame=no)
     if test "x$have_lame" = "xyes"; then    
       LAME_LIBS="-lmp3lame"
-      have_encoder=yes
 			AC_DEFINE([HAVE_LAME], [1], [])
     fi
   fi
@@ -364,7 +362,6 @@ if test "x$transcoding" = "xyes"; then
   if test "x$use_twolame" = "xyes"; then
     PKG_CHECK_MODULES(TWOLAME, twolame >= 0.3.8, have_twolame=yes, have_twolame=no)
     if test "x$have_twolame" = "xyes"; then
-      have_encoder=yes
 			AC_DEFINE([HAVE_TWOLAME], [1], [])
     fi
   fi
@@ -374,7 +371,7 @@ if test "x$transcoding" = "xyes"; then
   # if encoder was found check for further libs
   #
   have_decoder=no
-  if test "x$have_encoder" = "xyes"; then
+  
 
     
     # tremor
@@ -484,13 +481,11 @@ if test "x$transcoding" = "xyes"; then
       fi
     fi
 		
-  fi # have_encoder
-
 fi # transcoding = yes
 
 
 
-# has to be if not else
+
 if test "x$transcoding" = "xno"; then
   ENABLE_TRANSCODING="false"
   CXXFLAGS="$CXXFLAGS -DDISABLE_TRANSCODING"
@@ -524,19 +519,19 @@ AC_ARG_ENABLE(default-http-port,
 # end HTTP Port
 
 # inotify
-#have_inotify=no
-#use_inotify=yes
-#AH_TEMPLATE([HAVE_INOTIFY], [inotify support])
-#AC_ARG_ENABLE(inotify, 
-#            [  --disable-inotify  Disable inotify support],
-#            [ use_inotify=no; ] )
-#
-#if test "x$use_inotify" = "xyes"; then
-#  AC_CHECK_HEADERS(sys/inotify.h, 
-#      have_inotify=yes
-#      AC_DEFINE([HAVE_INOTIFY], [1], []), 
-#      have_inotify=no)
-#fi
+have_inotify=no
+use_inotify=yes
+AH_TEMPLATE([HAVE_INOTIFY], [inotify support])
+AC_ARG_ENABLE(inotify, 
+            [  --disable-inotify  Disable inotify support],
+            [ use_inotify=no; ] )
+
+if test "x$use_inotify" = "xyes"; then
+  AC_CHECK_HEADERS(sys/inotify.h, 
+      have_inotify=yes
+      AC_DEFINE([HAVE_INOTIFY], [1], []), 
+      have_inotify=no)
+fi
 # end inotify
 
 
@@ -597,19 +592,7 @@ echo ""
 #echo $host
 
 if test "x$transcoding" = "xyes"; then
-
-  # no encoder
-  if test "x$have_encoder" = "xno"; then
-    echo "transcoding disabled"
-    echo ""
-    echo "no encoding library was found"
-    echo "If you want transcoding install LAME and/or TwoLAME"
-    echo "and run ./configure again"
-    echo ""
-    
-    transcoding=no    
-  fi
-
+  
   # no decoder
   if test "x$have_decoder" = "xno"; then 
     if test "x$have_encoder" = "xyes"; then 
@@ -624,9 +607,9 @@ if test "x$transcoding" = "xyes"; then
     
     transcoding=no
   fi
+fi
     
-    
-  if test "x$transcoding" = "xyes"; then
+if test "x$transcoding" = "xyes"; then
   
     echo "  audio transcoding enabled"  
     echo "    encoder:"
@@ -642,6 +625,8 @@ if test "x$transcoding" = "xyes"; then
       echo "      twolame    : no"
     fi
     
+    echo "      wav        : yes"
+    echo "      pcm        : yes"
       
     echo "    decoder:"
     if test "x$have_vorbis" = "xyes"; then
@@ -675,8 +660,6 @@ if test "x$transcoding" = "xyes"; then
     else
       echo "      fadd       : no"      
     fi 
-  
-  fi
   
 else # transcoding = yes  
   echo "  audio transcoding disabled"  
@@ -715,11 +698,11 @@ fi
 #fi
 
 # inotify
-#if test "x$have_inotify" = "xyes"; then
-#  echo "  inotify    : enabled"
-#else
-#  echo "  inotify    : disabled"
-#fi
+if test "x$have_inotify" = "xyes"; then
+  echo "  inotify    : enabled"
+else
+  echo "  inotify    : disabled"
+fi
 
 # taglib
 if test "x$have_taglib" = "xyes"; then

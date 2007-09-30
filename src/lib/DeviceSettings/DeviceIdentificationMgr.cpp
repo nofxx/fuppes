@@ -99,13 +99,27 @@ CDeviceSettings* CDeviceIdentificationMgr::GetSettingsForInitialization(std::str
   return pSettings;
 }
 
-void CDeviceIdentificationMgr::PrintSetting(CDeviceSettings* pSettings) {
+void CDeviceIdentificationMgr::PrintSetting(CDeviceSettings* pSettings, std::string* p_sOut) {
   
-  CFileSettings  * pFileSet;
+  CFileSettings* pFileSet;
+  stringstream sTmp;
   
-  cout << "device: " << pSettings->m_sDeviceName << endl;
-  cout << "  release delay: " << pSettings->nDefaultReleaseDelay << endl;
-  cout << "  file_settings: " << endl;  
+  if(!p_sOut) {  
+    cout << "device: " << pSettings->m_sDeviceName << endl;
+    cout << "  release delay: " << pSettings->nDefaultReleaseDelay << endl;
+    cout << "  file_settings: " << endl;
+  }
+  else {
+    *p_sOut += "<table>";
+    *p_sOut += "<tr><th colspan=\"2\">device: " + pSettings->m_sDeviceName + "</th></tr>";
+    
+    sTmp << pSettings->nDefaultReleaseDelay << endl;
+    *p_sOut += "<tr><td>release delay</td>";
+    *p_sOut += "<td>" + sTmp.str() + "</td></tr>";
+    sTmp.str("");
+    
+    *p_sOut += "<tr><th colspan=\"2\">file settings</th></tr>";
+  }
   
   for(pSettings->m_FileSettingsIterator = pSettings->m_FileSettings.begin();
       pSettings->m_FileSettingsIterator != pSettings->m_FileSettings.end();
@@ -113,43 +127,110 @@ void CDeviceIdentificationMgr::PrintSetting(CDeviceSettings* pSettings) {
           
     pFileSet = pSettings->m_FileSettingsIterator->second;
     
-    cout << "    ext: " << pSettings->m_FileSettingsIterator->first << endl; 
-    //cout << "    ext: " << pFileSet->sExt << endl;
-    cout << "    dlna: " << pFileSet->DLNA() << endl;
-    cout << "    mime-type: " << pFileSet->MimeType() << endl;
-    cout << "    upnp-type: " << pFileSet->ObjectType() << endl;
-          
+    if(!p_sOut) {        
+      cout << "    ext: " << pSettings->m_FileSettingsIterator->first << endl; 
+      cout << "    dlna: " << pFileSet->DLNA() << endl;
+      cout << "    mime-type: " << pFileSet->MimeType() << endl;
+      cout << "    upnp-type: " << pFileSet->ObjectType() << endl;
+    }
+    else {  
+      *p_sOut += "<tr><th colspan=\"2\">ext: " + pSettings->m_FileSettingsIterator->first + " </th></tr>";
+      *p_sOut += "<tr><td>dlna</td>";
+      *p_sOut += "<td>" + pFileSet->DLNA() + "</td></tr>";
+      *p_sOut += "<tr><td>mime/type</td>";
+      *p_sOut += "<td>" + pFileSet->MimeType() + "</td></tr>";
+      *p_sOut += "<tr><td>upnp type</td>";
+      *p_sOut += "<td>" + pFileSet->ObjectTypeAsStr() + "</td></tr>";
+    }
+
+
     if(pFileSet->pTranscodingSettings) {
-      cout << "  transcode: " << endl;
-      
-      cout << "    ext: " << pFileSet->pTranscodingSettings->sExt << endl;
-      cout << "    dlna: " << pFileSet->pTranscodingSettings->sDLNA << endl;
-      cout << "    mime-type: " << pFileSet->pTranscodingSettings->sMimeType << endl;      
-      cout << "    release delay: " << pFileSet->ReleaseDelay() << endl;
+      if(!p_sOut) {
+        cout << "  transcode: " << endl;
+        cout << "    ext: " << pFileSet->pTranscodingSettings->sExt << endl;
+        cout << "    dlna: " << pFileSet->pTranscodingSettings->sDLNA << endl;
+        cout << "    mime-type: " << pFileSet->pTranscodingSettings->sMimeType << endl;      
+        cout << "    release delay: " << pFileSet->ReleaseDelay() << endl;
+      }
+      else {
+        *p_sOut += "<tr><th colspan=\"2\">transcode</th></tr>";
+        *p_sOut += "<tr><td>ext</td>";
+        *p_sOut += "<td>" + pFileSet->pTranscodingSettings->sExt + "</td></tr>";  
+        *p_sOut += "<tr><td>dlna</td>";
+        *p_sOut += "<td>" + pFileSet->pTranscodingSettings->DLNA() + "</td></tr>";
+        *p_sOut += "<tr><td>mime/type</td>";
+        *p_sOut += "<td>" + pFileSet->pTranscodingSettings->MimeType() + "</td></tr>";
+        
+        sTmp << pFileSet->ReleaseDelay();
+        *p_sOut += "<tr><td>release delay</td>";
+        *p_sOut += "<td>" + sTmp.str() + "</td></tr>";
+        sTmp.str("");
+      }
     }
     else if(pFileSet->pImageSettings) {
-      cout << "  resize: " << endl;
-      
-      cout << "    height: " << pFileSet->pImageSettings->nHeight << endl;
-      cout << "    width: " << pFileSet->pImageSettings->nWidth << endl;
-      cout << "    greater: " << pFileSet->pImageSettings->bGreater << endl;
-      cout << "    less: " << pFileSet->pImageSettings->bLess << endl;
+      if(!p_sOut) {
+        cout << "  resize: " << endl;
+        cout << "    height: " << pFileSet->pImageSettings->nHeight << endl;
+        cout << "    width: " << pFileSet->pImageSettings->nWidth << endl;
+        cout << "    greater: " << pFileSet->pImageSettings->bGreater << endl;
+        cout << "    less: " << pFileSet->pImageSettings->bLess << endl;
+      }
+      else {
+        *p_sOut += "<tr><th colspan=\"2\">resize</th></tr>";
+        sTmp << pFileSet->pImageSettings->nHeight;
+        *p_sOut += "<tr><td>height</td>";
+        *p_sOut += "<td>" + sTmp.str() + "</td></tr>";
+        sTmp.str("");
+        sTmp << pFileSet->pImageSettings->nWidth;
+        *p_sOut += "<tr><td>width</td>";
+        *p_sOut += "<td>" + sTmp.str() + "</td></tr>";
+        sTmp.str("");
+        
+        *p_sOut += "<tr><td>greater</td>";
+        if(pFileSet->pImageSettings->bGreater)
+          *p_sOut += "<td>true</td></tr>";
+        else
+          *p_sOut += "<td>false</td></tr>";
+        
+        *p_sOut += "<tr><td>less</td>";
+        if(pFileSet->pImageSettings->bLess)
+          *p_sOut += "<td>true</td></tr>";
+        else
+          *p_sOut += "<td>false</td></tr>";
+      }
     }
     else {
-      cout << "  no transcoding/resizing" << endl;
+      if(!p_sOut) {
+        cout << "  no transcoding/resizing" << endl;
+      }
+      else {
+        *p_sOut += "<tr><td colspan=\"2\">no transcoding/resizing</td></tr>";
+      }
     }
           
-    cout << endl;
+    if(!p_sOut) {
+      cout << endl;
+    }
+    else {
+      *p_sOut += "<tr><td colspan=\"2\">&nbsp;</td></tr>";
+    }
   }
+  
+  if(p_sOut) {
+    *p_sOut += "</table>";
+  }
+  
 }
 
-void CDeviceIdentificationMgr::PrintSettings()
+void CDeviceIdentificationMgr::PrintSettings(std::string* p_sOut)
 {
   CDeviceSettings* pSettings;
   
-  cout << "device settings" << endl;
+  if(!p_sOut) {
+    cout << "device settings" << endl;
+  }
   
-  PrintSetting(m_pDefaultSettings);
+  PrintSetting(m_pDefaultSettings, p_sOut);
   
   for(m_SettingsIt = m_Settings.begin(); 
       m_SettingsIt != m_Settings.end(); 
@@ -157,7 +238,7 @@ void CDeviceIdentificationMgr::PrintSettings()
 
     pSettings = *m_SettingsIt;
       
-    PrintSetting(pSettings);    
+    PrintSetting(pSettings, p_sOut);    
   }
   
 }

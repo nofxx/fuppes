@@ -136,6 +136,8 @@ class CContentDatabase: public IFileAlterationMonitor
     unsigned int GetObjId();
   
 		fuppesThreadMutex m_Mutex;
+  
+    void FamEvent(FAM_EVENT_TYPE p_nEventType, std::string p_sPath);
   private:    
 		void Lock();
     void Unlock();

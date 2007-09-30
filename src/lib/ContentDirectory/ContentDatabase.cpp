@@ -96,6 +96,7 @@ CContentDatabase::CContentDatabase(bool p_bShared)
 		m_sDbFileName 	= CSharedConfig::Shared()->GetDbFileName();	
 		g_bIsRebuilding = false;
 		m_nLockCount 		= 0;
+    m_pFileAlterationMonitor = CFileAlterationMgr::Shared()->CreateMonitor(this);
     fuppesThreadInitMutex(&m_Mutex);        
   }
     
@@ -109,6 +110,9 @@ CContentDatabase::~CContentDatabase()
 {                            
 	if(m_bShared) {                  
     fuppesThreadDestroyMutex(&m_Mutex);
+    if(m_pFileAlterationMonitor) {
+      delete m_pFileAlterationMonitor;
+    }
   }
 	
 	if(m_bShared && (m_RebuildThread != (fuppesThread)NULL)) {
@@ -1095,4 +1099,8 @@ fuppesThreadCallback BuildLoop(void* arg)
   
   g_bIsRebuilding = false;
   fuppesThreadExit();
+}
+    
+void CContentDatabase::FamEvent(FAM_EVENT_TYPE p_nEventType, std::string p_sPath)
+{
 }

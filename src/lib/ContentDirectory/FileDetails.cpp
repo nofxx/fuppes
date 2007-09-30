@@ -72,6 +72,40 @@ OBJECT_TYPE CFileDetails::GetObjectType(std::string p_sFileName)
   return CDeviceIdentificationMgr::Shared()->DefaultDevice()->ObjectType(sExt);
 }
 
+std::string CFileDetails::GetObjectTypeAsStr(OBJECT_TYPE p_nObjectType)
+{
+  if(p_nObjectType < ITEM) {
+    return GetContainerTypeAsStr(p_nObjectType);
+  }
+  
+  switch(p_nObjectType) {
+    
+    case ITEM:
+      return "object.item";      
+    case ITEM_IMAGE_ITEM :
+      return "object.item.imageItem";    
+    case ITEM_IMAGE_ITEM_PHOTO :
+      return "object.item.imageItem.photo";
+  
+    case ITEM_AUDIO_ITEM :
+      return "object.item.audioItem";
+    case ITEM_AUDIO_ITEM_MUSIC_TRACK :
+      return "object.item.audioItem.musicTrack";
+    case ITEM_AUDIO_ITEM_AUDIO_BROADCAST :
+      return "object.item.audioItem.audioBroadcast";
+  
+    case ITEM_VIDEO_ITEM :
+      return "object.item.videoItem";
+    case ITEM_VIDEO_ITEM_MOVIE :
+      return "object.item.videoItem.movie";
+    case ITEM_VIDEO_ITEM_VIDEO_BROADCAST :
+      return "object.item.videoItem.videoBroadcast";
+      
+    default:
+      return "unknown";
+  }
+}
+
 std::string CFileDetails::GetContainerTypeAsStr(OBJECT_TYPE p_nContainerType)
 {
   switch(p_nContainerType) {

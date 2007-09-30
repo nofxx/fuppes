@@ -35,8 +35,19 @@
 
 #include <string>
 
+typedef enum {
+  FAM_FILE_NEW,
+  FAM_DIR_NEW,
+  FAM_FILE_MOD,
+  FAM_DIR_MOD,
+  FAM_FILE_DEL,
+  FAM_DIR_DEL  
+}FAM_EVENT_TYPE;
+
 class IFileAlterationMonitor
 {
+  public:
+    virtual void FamEvent(FAM_EVENT_TYPE p_nEventType, std::string p_sPath) = 0;
 };
 
 class CFileAlterationMonitor
@@ -68,6 +79,8 @@ class CInotifyMonitor: public CFileAlterationMonitor
 {
   public:
     CInotifyMonitor(IFileAlterationMonitor* pEventHandler);
+  
+    bool AddDirectory(std::string p_sDirectory);
 };
 #endif
 

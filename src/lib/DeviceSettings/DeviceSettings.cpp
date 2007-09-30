@@ -215,7 +215,7 @@ std::string CFileSettings::ObjectTypeAsStr()
     case ITEM_VIDEO_ITEM :
       return "object.item.videoItem";
     case ITEM_VIDEO_ITEM_MOVIE :
-      return "object.item.videoItem"; //.movie";
+      return "object.item.videoItem.movie";
     case ITEM_VIDEO_ITEM_VIDEO_BROADCAST :
       return "object.item.videoItem.videoBroadcast";
     //ITEM_VIDEO_ITEM_MUSIC_VIDEO_CLIP = 302,  

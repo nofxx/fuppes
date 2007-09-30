@@ -140,6 +140,7 @@ class CFileDetails
   public:
     static CFileDetails* Shared();
     OBJECT_TYPE GetObjectType(std::string p_sFileName);    
+    std::string GetObjectTypeAsStr(OBJECT_TYPE p_nObjectType);
     std::string GetContainerTypeAsStr(OBJECT_TYPE p_nContainerType);
   
     bool GetMusicTrackDetails(std::string p_sFileName, SAudioItem* pMusicTrack);

@@ -428,7 +428,7 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
   std::stringstream sSQL;
   sSQL << "select TYPE, count(*) as VALUE from OBJECTS group by TYPE;";
   pDb->Select(sSQL.str());
-  int nType = 0;  
+  OBJECT_TYPE nType = OBJECT_TYPE_UNKNOWN;  
   
   // Database status
   sResult << "<h1>database status</h1>" << endl;  
@@ -449,9 +449,8 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
   {
     sResult << "<tr>" << endl;
     
-    nType = atoi(pDb->GetResult()->GetValue("TYPE").c_str());
-    //sResult << "<td>" << CFileDetails::Shared()->GetObjectTypeAsString(nType) << "</td>" << endl;
-    sResult << "<td>" << nType << "</td>" << endl;
+    nType = (OBJECT_TYPE)atoi(pDb->GetResult()->GetValue("TYPE").c_str());
+    sResult << "<td>" << CFileDetails::Shared()->GetObjectTypeAsStr(nType) << "</td>" << endl;
     sResult << "<td>" << pDb->GetResult()->GetValue("VALUE") << "</td>" << endl;
     pDb->Next();
     
@@ -461,8 +460,7 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
   sResult <<
       "</tbody>" << endl <<   
     "</table>" << endl;
-  
-  //pDb->ClearResult();
+
   delete pDb;
   // end Database status
   
@@ -590,8 +588,15 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
   sResult << "<p>" << endl;
   sResult << "UUID: " << CSharedConfig::Shared()->GetFuppesInstance(0)->GetUUID() << "<br />";    
   sResult << "</p>" << endl;
-  
   // end system status
+  
+  
+  // device settings
+  sResult << "<h1>device settings</h1>" << endl;
+  string sDeviceSettings;
+  CDeviceIdentificationMgr::Shared()->PrintSettings(&sDeviceSettings);
+  sResult << sDeviceSettings << endl;
+  // end device settings
   
   return sResult.str();  
 }

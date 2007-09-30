@@ -625,19 +625,12 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
 		}
 		else if(p_Response->IsTranscoding()) {
      
-      // partial id3v1 request
-      #warning todo: "fake id3 tail"
-      if((p_Request->GetRangeEnd() - p_Request->GetRangeStart()) == 127) {
-        nRequestSize = 128;
-      }
-      
-      else if(p_Request->GetRangeEnd() > p_Request->GetRangeStart())
+      if(p_Request->GetRangeEnd() > p_Request->GetRangeStart())
         nRequestSize = p_Request->GetRangeEnd() - p_Request->GetRangeStart() + 1;
       // RANGE: BYTES=n-
 			// the request does NOT conatin a range and value
 			else
         nRequestSize = p_Response->GetBinContentLength() - p_Request->GetRangeStart() + 1;
-      
     }    
     
 		// set HTTP 206 partial content
