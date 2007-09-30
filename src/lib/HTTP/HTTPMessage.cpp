@@ -246,7 +246,11 @@ std::string CHTTPMessage::GetHeaderAsString()
                     
           if(m_pTranscodingSessionInfo->m_nGuessContentLength > 0) {
             sResult << "Content-Length: " << m_pTranscodingSessionInfo->m_nGuessContentLength << "\r\n";
-          }         
+          }
+          /*else {
+            unsigned int nSize = -1;
+            sResult << "Content-Length: " << nSize << "\r\n";
+          }*/
           
         }
         

@@ -53,20 +53,52 @@ CFileAlterationMonitor* CFileAlterationMgr::CreateMonitor(IFileAlterationMonitor
 }
 
 #ifdef HAVE_INOTIFY
+
+fuppesThreadCallback WatchLoop(void* arg);
+
 CInotifyMonitor::CInotifyMonitor(IFileAlterationMonitor* pEventHandler):
   CFileAlterationMonitor(pEventHandler)
 {
-  int inotify_fd = inotify_init();
-	if (inotify_fd < 0)	{
-		cout << "error inotify_init()" << endl;
+    
+  m_MonitorThread = (fuppesThread)NULL;
+    
+  m_nInotifyFd = inotify_init();
+	if (m_nInotifyFd < 0)	{
+		throw EException("inotify_init", __FILE__, __LINE__);    
 	}
 	
-	int wd = inotify_add_watch(inotify_fd, "/home/ulrich/Desktop/test/", IN_CREATE);
-	cout << "wd: " << wd << endl;	
-	
-	usleep(1000 * 100);
-	
-	int rc = 0;
+	fuppesThreadStart(m_MonitorThread, WatchLoop);	
+}
+
+CInotifyMonitor::~CInotifyMonitor()
+{
+  std::list<int>::iterator iter;
+  
+  for(iter = m_lWatches.begin(); iter != m_lWatches.end(); iter++) {
+    //inotify_rm_watch(m_nInotifyFd, iter);
+  }
+  
+  fuppesThreadCancel(m_MonitorThread);
+  fuppesThreadClose(m_MonitorThread);
+}
+  
+bool CInotifyMonitor::AddDirectory(std::string p_sDirectory)
+{
+  int wd = inotify_add_watch(m_nInotifyFd, p_sDirectory.c_str(), IN_CREATE);
+  if(wd < 0) {
+    return false;
+  }
+  
+  m_lWatches.push_back(wd);
+	cout << "wd: " << wd << endl;	  
+  return true;
+}
+  
+fuppesThreadCallback WatchLoop(void* arg)    
+{
+  CInotifyMonitor* pInotify = (CInotifyMonitor*)arg;
+  
+  int rc = 0;
 	struct timeval  timeout;
 	timeout.tv_sec  = 10;
 	timeout.tv_usec = 0;
@@ -74,40 +106,33 @@ CInotifyMonitor::CInotifyMonitor(IFileAlterationMonitor* pEventHandler):
 	
 	fd_set read_fd;
 	FD_ZERO(&read_fd);
-	FD_SET(inotify_fd, &read_fd);
+	FD_SET(pInotify->m_nInotifyFd, &read_fd);
 	
 	struct inotify_event event;
 	
 	int bytes_to_read = 0;
 	
-	while (true)
-	{
-	  rc = select(inotify_fd + 1, &read_fd, NULL, NULL, timeout_ptr); 
+	while (true) {
+	  rc = select(pInotify->m_nInotifyFd + 1, &read_fd, NULL, NULL, timeout_ptr); 
 	  if(rc > 0) {
-  	  cout << "select: " << rc << endl;
-  	  
+  	  cout << "select: " << rc << endl;  	  
 	    do {
-		    rc = ioctl(inotify_fd, FIONREAD, &bytes_to_read);
+		    rc = ioctl(pInotify->m_nInotifyFd, FIONREAD, &bytes_to_read);
 	    } while (!rc && bytes_to_read < sizeof(struct inotify_event));
   	  
   	  cout << "bytes to read: " << bytes_to_read << endl;
   	  
-	    rc = read(inotify_fd, &event, bytes_to_read); // sizeof(struct inotify_event));
+	    rc = read(pInotify->m_nInotifyFd, &event, bytes_to_read); // sizeof(struct inotify_event));
 	    if(rc > 0) {
 	      cout << "read: " << rc << endl;
 	      cout << event.name << " :: " << event.mask << endl;
 	    }
 	  }
 	}
-	
-	inotify_rm_watch(inotify_fd, wd);
-	
+  
+  fuppesThreadExit();
 }
-
-bool CInotifyMonitor::AddDirectory(std::string p_sDirectory)
-{
-  return false;
-}
+  
 #endif // HAVE_INOTIFY
 
 

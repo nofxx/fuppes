@@ -28,12 +28,15 @@
 #include "../../config.h"
 #endif
 
+#include "../Common/Common.h"
+
 #undef HAVE_GAMIN
 #ifdef HAVE_GAMIN
 #include <fam.h>
 #endif
 
 #include <string>
+#include <list>
 
 typedef enum {
   FAM_FILE_NEW,
@@ -77,10 +80,19 @@ class CFileAlterationMgr
 #ifdef HAVE_INOTIFY
 class CInotifyMonitor: public CFileAlterationMonitor
 {
+  friend fuppesThreadCallback WatchLoop(void* arg);
+  
   public:
     CInotifyMonitor(IFileAlterationMonitor* pEventHandler);
+    virtual ~CInotifyMonitor();
   
-    bool AddDirectory(std::string p_sDirectory);
+    bool  AddDirectory(std::string p_sDirectory);
+    
+  private:
+    fuppesThread    m_MonitorThread;  
+    std::list<int>  m_lWatches;
+  
+    int   m_nInotifyFd;
 };
 #endif
 
