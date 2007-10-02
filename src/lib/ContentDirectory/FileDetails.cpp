@@ -36,7 +36,8 @@
 #endif
 
 #ifdef HAVE_IMAGEMAGICK
-#include <Magick++.h>
+//#include <Magick++.h>
+#include <wand/MagickWand.h>
 #endif
 
 #ifdef HAVE_LIBAVFORMAT
@@ -245,11 +246,40 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
   if(!CDeviceIdentificationMgr::Shared()->DefaultDevice()->FileSettings(sExt)->ExtractMetadata())
     return false;
   
-	Magick::Image image;
-  try {
+	MagickBooleanType status;
+  MagickWand* magick_wand;
+  
+  magick_wand = NewMagickWand();	
+  status = MagickReadImage(magick_wand, p_sFileName.c_str());	
+	
+	if (status == MagickFalse) {
+	
+		ExceptionType severity; 
+		char* description;
+		description = MagickGetException(magick_wand, &severity);
+		(void)fprintf(stderr,"%s %s %lu %s\n", GetMagickModule(), description);
+		description = (char*)MagickRelinquishMemory(description);	
+	
+		magick_wand = DestroyMagickWand(magick_wand);
+		return false;
+	}
+		
+	pImageItem->nWidth  = MagickGetImageWidth(magick_wand);
+	pImageItem->nHeight = MagickGetImageHeight(magick_wand);
+	
+	magick_wand = DestroyMagickWand(magick_wand);
+	return true;
+	
+	/*Magick::Image image;	
+  try {		
     image.read(p_sFileName);
   }
-  catch(Magick::WarningCorruptImage &ex) {
+	catch(...) {  //Magick::Exception &ex) {
+		cout << __FILE__ << " " << __LINE__ << " :: ex" << endl << endl;
+    return false;
+	}*/
+	
+  /*catch(Magick::WarningCorruptImage &ex) {
     cout << "WARNING: image \"" << p_sFileName << "\" corrupt" << endl;
     cout << ex.what() << endl << endl;
     return false;
@@ -257,11 +287,11 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
   catch(exception &ex) {
     cout << __FILE__ << " " << __LINE__ << " :: " << ex.what() << endl << endl;
     return false;
-  }
-  
-  pImageItem->nWidth  = image.baseColumns();
-  pImageItem->nHeight = image.baseRows();
-
+  }*/
+  	
+  /*pImageItem->nWidth  = image.baseColumns();
+  pImageItem->nHeight = image.baseRows();*/
+	
 	return true;
 	#else
 	return false;

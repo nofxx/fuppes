@@ -97,13 +97,7 @@ fuppesThreadCallback AsyncThread(void* arg)
   
 	pClient->m_sAsyncResult = buffer; //sReceived;
 	CHTTPMessage Message;
-	if(!Message.SetMessage(buffer)) {
-	  CSharedLog::Shared()->Log(L_EXTENDED_ERR, "error parsing response", __FILE__, __LINE__);
-		
-    /*upnpSocketClose(pClient->m_Socket);  
-    pClient->m_bAsyncDone = true;
-    fuppesThreadExit();*/
-	}
+	Message.SetMessage(buffer);
 		
 	if(pClient->m_pAsyncReceiveHandler != NULL) {
 	  pClient->m_pAsyncReceiveHandler->OnAsyncReceiveMsg(&Message);

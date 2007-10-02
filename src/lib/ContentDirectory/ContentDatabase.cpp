@@ -623,7 +623,7 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
 
 unsigned int InsertAudioFile(CContentDatabase* pDb, std::string p_sFileName, std::string* p_sTitle)
 {
-	struct SAudioItem TrackInfo; 
+	SAudioItem TrackInfo; 
 	if(!CFileDetails::Shared()->GetMusicTrackDetails(p_sFileName, &TrackInfo))
 	  return 0;
 		
@@ -652,7 +652,7 @@ unsigned int InsertAudioFile(CContentDatabase* pDb, std::string p_sFileName, std
 
 unsigned int InsertImageFile(CContentDatabase* pDb, std::string p_sFileName)
 {
-  struct SImageItem ImageItem;
+  SImageItem ImageItem;
 	if(!CFileDetails::Shared()->GetImageDetails(p_sFileName, &ImageItem))
 	  return 0;
 		
@@ -671,7 +671,7 @@ unsigned int InsertImageFile(CContentDatabase* pDb, std::string p_sFileName)
 
 unsigned int InsertVideoFile(CContentDatabase* pDb, std::string p_sFileName)
 {
-  struct SVideoItem VideoItem;
+  SVideoItem VideoItem;
 	if(!CFileDetails::Shared()->GetVideoDetails(p_sFileName, &VideoItem))
 	  return 0;  
   
@@ -1008,11 +1008,13 @@ fuppesThreadCallback BuildLoop(void* arg)
   pDb->Execute("delete from OBJECTS");
   pDb->Execute("delete from OBJECT_DETAILS");
   pDb->Execute("delete from MAP_OBJECTS");
-  pDb->Execute("drop index IDX_OBJECTS_OBJECT_ID");
-  pDb->Execute("drop index IDX_MAP_OBJECTS_OBJECT_ID");
-  pDb->Execute("drop index IDX_MAP_OBJECTS_PARENT_ID");
-  pDb->Execute("drop index IDX_OBJECTS_DETAIL_ID");
-  pDb->Execute("drop index IDX_OBJECT_DETAILS_ID");  
+	
+	pDb->Execute("drop index IDX_OBJECTS_OBJECT_ID");
+	pDb->Execute("drop index IDX_MAP_OBJECTS_OBJECT_ID");
+	pDb->Execute("drop index IDX_MAP_OBJECTS_PARENT_ID");
+	pDb->Execute("drop index IDX_OBJECTS_DETAIL_ID");
+	pDb->Execute("drop index IDX_OBJECT_DETAILS_ID");
+	
   pDb->Execute("vacuum");  
   
   int i;
@@ -1057,17 +1059,18 @@ fuppesThreadCallback BuildLoop(void* arg)
     }
   } // for
   CSharedLog::Shared()->Log(L_NORMAL, "[DONE] read shared directories", __FILE__, __LINE__, false);
-    
-  if( !pDb->Execute("CREATE INDEX IDX_OBJECTS_OBJECT_ID ON OBJECTS(OBJECT_ID);") )
-        CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
-  if( !pDb->Execute("CREATE INDEX IDX_MAP_OBJECTS_OBJECT_ID ON MAP_OBJECTS(OBJECT_ID);") )
-        CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
-  if( !pDb->Execute("CREATE INDEX IDX_MAP_OBJECTS_PARENT_ID ON MAP_OBJECTS(PARENT_ID);") )
-        CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
-  if( !pDb->Execute("CREATE INDEX IDX_OBJECTS_DETAIL_ID ON OBJECTS(DETAIL_ID);") )
-        CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
-  if( !pDb->Execute("CREATE INDEX IDX_OBJECT_DETAILS_ID ON OBJECT_DETAILS(ID);") )
-        CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
+ 
+	if( !pDb->Execute("CREATE INDEX IDX_OBJECTS_OBJECT_ID ON OBJECTS(OBJECT_ID);") )
+		CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
+	if( !pDb->Execute("CREATE INDEX IDX_MAP_OBJECTS_OBJECT_ID ON MAP_OBJECTS(OBJECT_ID);") )
+		CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
+	if( !pDb->Execute("CREATE INDEX IDX_MAP_OBJECTS_PARENT_ID ON MAP_OBJECTS(PARENT_ID);") )
+		CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
+	if( !pDb->Execute("CREATE INDEX IDX_OBJECTS_DETAIL_ID ON OBJECTS(DETAIL_ID);") )
+		CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
+	if( !pDb->Execute("CREATE INDEX IDX_OBJECT_DETAILS_ID ON OBJECT_DETAILS(ID);") )
+		CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
+	
   
   CSharedLog::Shared()->Log(L_NORMAL, "parse playlists", __FILE__, __LINE__, false);
   BuildPlaylists();

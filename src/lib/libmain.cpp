@@ -42,7 +42,8 @@
 #endif
 
 #ifdef HAVE_IMAGEMAGICK
-#include <Magick++.h>
+//#include <Magick++.h>
+#include <wand/MagickWand.h>
 #endif
 
 #ifdef HAVE_LIBAVFORMAT
@@ -123,9 +124,10 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
 
 	#ifdef HAVE_IMAGEMAGICK
 	#ifdef WIN32  
-	if(argc > 0) {
+	MagickWandGenesis();
+	/*if(argc > 0) {
 	  Magick::InitializeMagick(*argv);
-	}
+	}*/
 	#endif
   #endif    
     
@@ -184,7 +186,7 @@ int fuppes_cleanup()
   xmlCleanupParser();
     
   #ifdef HAVE_IMAGEMAGICK	  
-	//MagickWandTerminus();
+	MagickWandTerminus();
   #endif
     
   // cleanup winsockets
