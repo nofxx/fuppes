@@ -181,6 +181,9 @@ int main(int argc, char* argv[])
     else if(input == "r") {
       fuppes_rebuild_db();
     }
+    else if(input == "u") {
+      fuppes_update_db();
+    }
     else if(input == "v") {
       fuppes_rebuild_vcontainers();
     }

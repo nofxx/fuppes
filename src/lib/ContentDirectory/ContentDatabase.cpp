@@ -53,6 +53,8 @@ static bool g_bFullRebuild;
 static bool g_bAddNew;
 static bool g_bRemoveMissing;
 
+unsigned int g_nObjId = 0;
+
 std::string CSelectResult::GetValue(std::string p_sFieldName)
 {
   return m_FieldValues[p_sFieldName];
@@ -157,7 +159,6 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 				"  ID INTEGER PRIMARY KEY AUTOINCREMENT, "
 				"  OBJECT_ID INTEGER NOT NULL, "
         "  DETAIL_ID INTEGER DEFAULT NULL, "
-        //"  PARENT_ID INTEGER NOT NULL, "
 				"  TYPE INTEGER NOT NULL, "
         "  DEVICE TEXT DEFAULT NULL, "  
 				"  PATH TEXT NOT NULL, "
@@ -543,6 +544,12 @@ void CContentDatabase::UpdateDB()
   g_bFullRebuild = false;
   g_bAddNew = true;
   g_bRemoveMissing = true;  
+    
+  Select("select max(OBJECT_ID) as VALUE from OBJECTS where DEVICE is NULL");
+  if(!Eof()) {  
+    g_nObjId = GetResult()->GetValueAsUInt("VALUE");
+  }
+  ClearResult();
   
   BuildDB();
 }
@@ -558,6 +565,12 @@ void CContentDatabase::AddNew()
   g_bFullRebuild = false;
   g_bAddNew = true;
   g_bRemoveMissing = false;  
+  
+  Select("select max(OBJECT_ID) as VALUE from OBJECTS where DEVICE is NULL");
+  if(!Eof()) {  
+    g_nObjId = GetResult()->GetValueAsUInt("VALUE");
+  } 
+  ClearResult();
   
   BuildDB();
 }
@@ -582,8 +595,6 @@ bool CContentDatabase::IsRebuilding()
 {
   return g_bIsRebuilding;
 }
-
-unsigned int g_nObjId = 0;
 
 unsigned int CContentDatabase::GetObjId()
 {
@@ -1122,7 +1133,7 @@ fuppesThreadCallback BuildLoop(void* arg)
 
       bInsert = true;
       if(g_bAddNew) {
-        if((nObjId = GetObjectIDFromFileName(pDb, sFileName)) > 0) {
+        if((nObjId = GetObjectIDFromFileName(pDb, CSharedConfig::Shared()->GetSharedDir(i))) > 0) {
           bInsert = false;
         }
       }
@@ -1156,7 +1167,7 @@ fuppesThreadCallback BuildLoop(void* arg)
   } // for
   CSharedLog::Shared()->Log(L_NORMAL, "[DONE] read shared directories", __FILE__, __LINE__, false);
  
-	if( !pDb->Execute("CREATE INDEX IDX_OBJECTS_OBJECT_ID ON OBJECTS(OBJECT_ID);") )
+	/*if( !pDb->Execute("CREATE INDEX IDX_OBJECTS_OBJECT_ID ON OBJECTS(OBJECT_ID);") )
 		CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
 	if( !pDb->Execute("CREATE INDEX IDX_MAP_OBJECTS_OBJECT_ID ON MAP_OBJECTS(OBJECT_ID);") )
 		CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
@@ -1165,7 +1176,7 @@ fuppesThreadCallback BuildLoop(void* arg)
 	if( !pDb->Execute("CREATE INDEX IDX_OBJECTS_DETAIL_ID ON OBJECTS(DETAIL_ID);") )
 		CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
 	if( !pDb->Execute("CREATE INDEX IDX_OBJECT_DETAILS_ID ON OBJECT_DETAILS(ID);") )
-		CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
+		CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);*/
 	
   
   CSharedLog::Shared()->Log(L_NORMAL, "parse playlists", __FILE__, __LINE__, false);

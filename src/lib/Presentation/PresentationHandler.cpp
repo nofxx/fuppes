@@ -96,7 +96,7 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
     sContent = this->GetOptionsHTML(sImgPath);
     sPageName = "Options";
   }
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html?rebuild=db") == 0)
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html?db=rebuild") == 0)
   {
     CSharedConfig::Shared()->Refresh();
     if(!CContentDatabase::Shared()->IsRebuilding())
@@ -107,6 +107,18 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
     sContent = this->GetOptionsHTML(sImgPath);
     sPageName = "Options";
   }
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html?db=update") == 0)
+  {
+    CSharedConfig::Shared()->Refresh();
+    if(!CContentDatabase::Shared()->IsRebuilding())
+      CContentDatabase::Shared()->UpdateDB();
+    
+    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send options.html");
+    nPresentationPage = PRESENTATION_PAGE_OPTIONS;
+    sContent = this->GetOptionsHTML(sImgPath);
+    sPageName = "Options";
+  }
+  
   
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/status.html") == 0)
   {
@@ -408,10 +420,12 @@ std::string CPresentationHandler::GetOptionsHTML(std::string p_sImgPath)
 
   //((CFuppes*)m_vFuppesInstances[0])->GetContentDirectory()->BuildDB();
   sResult << "<h1>database options</h1>" << endl;
-  if(!CContentDatabase::Shared()->IsRebuilding())  
-    sResult << "<a href=\"/presentation/options.html?rebuild=db\">rebuild database</a>" << endl;
+  if(!CContentDatabase::Shared()->IsRebuilding())  {
+    sResult << "<a href=\"/presentation/options.html?db=rebuild\">rebuild database</a><br />" << endl;
+    sResult << "<a href=\"/presentation/options.html?db=update\">update database</a>" << endl;
+  }
   else
-    sResult << "database rebuild in progress" << endl;
+    sResult << "database rebuild/update in progress" << endl;
   
   return sResult.str();
 }
