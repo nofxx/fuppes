@@ -1,6 +1,6 @@
 [Setup]
 AppName=Free UPnP Entertainment Service
-AppVerName=Free UPnP Entertainment Service SVN-530
+AppVerName=Free UPnP Entertainment Service SVN-549
 AppPublisher=Ulrich Völkel
 AppPublisherURL=http://sourceforge.net/projects/fuppes
 AppSupportURL=http://sourceforge.net/projects/fuppes
@@ -9,7 +9,7 @@ DefaultDirName={pf}\Free UPnP Entertainment Service\
 DefaultGroupName=Free UPnP Entertainment Service
 LicenseFile=..\setup\license-eng.rtf
 OutputDir=..\setup
-OutputBaseFilename=fuppes-SVN-530-win32-setup
+OutputBaseFilename=fuppes-SVN-549-win32-setup
 SolidCompression=true
 ShowTasksTreeLines=true
 SourceDir=C:\src\fuppes\trunk\setup

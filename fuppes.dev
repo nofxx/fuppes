@@ -15,7 +15,7 @@ CppCompiler=_@@_
 Linker=../../../mingw/lib/libuser32.a_@@_../../../mingw/lib/libshell32.a_@@_../../root/lib/libfuppes.dll.a_@@_
 IsCpp=1
 Icon=fuppes.ico
-ExeOutput=win32
+ExeOutput=..\win32
 ObjectOutput=
 OverrideBuildCmd=0
 OverrideOutputName=fuppes.exe
@@ -52,20 +52,20 @@ BuildCmd=
 
 [VersionInfo]
 Major=0
-Minor=7
-Release=2
-Build=513
+Minor=9
+Release=0
+Build=6
 LanguageID=1033
 CharsetID=1252
-CompanyName=Computertechnik Ulrich Völkel
-FileVersion=0.7.2
+CompanyName=Ulrich Völkel
+FileVersion=0.9
 FileDescription=A free UPnP A/V Media Server
 InternalName=fuppes
-LegalCopyright=Computertechnik Ulrich Völkel
+LegalCopyright=Ulrich Völkel
 LegalTrademarks=
 OriginalFilename=fuppes.exe
 ProductName=Free UPnP Entertainment Service
-ProductVersion=0.7.2
+ProductVersion=0.9
 AutoIncBuildNr=1
 
 [Unit10]

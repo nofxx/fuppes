@@ -33,9 +33,16 @@
 
 #define MAX_MEMO_LENGTH 29996
 
-#define ID_TRAY_POPUP_SEND_ALIVE 5
-#define ID_TRAY_POPUP_SEND_BYEBYE 6
-#define ID_TRAY_POPUP_SEND_MSEARCH 7
+#define ID_TRAY_POPUP_QUIT 1
+#define ID_TRAY_POPUP_SHOW_WEBINF 2
+
+#define ID_TRAY_POPUP_REBUILD_DB 3
+#define ID_TRAY_POPUP_UPDATE_DB 4
+#define ID_TRAY_POPUP_REBUILD_VFOLDER 5
+
+#define ID_TRAY_POPUP_SEND_ALIVE 6
+#define ID_TRAY_POPUP_SEND_BYEBYE 7
+#define ID_TRAY_POPUP_SEND_MSEARCH 8
 
 using namespace std;
 
@@ -89,10 +96,11 @@ CMainForm::CMainForm(HINSTANCE hInstance)
                       
   // create popup menu                
   hPopup = CreatePopupMenu();
-  AppendMenu(hPopup, MF_STRING, 4, "Show webinterface");    
+  AppendMenu(hPopup, MF_STRING, ID_TRAY_POPUP_SHOW_WEBINF, "Show webinterface");    
   AppendMenu(hPopup, MF_SEPARATOR, 0, "" ); 
-  AppendMenu(hPopup, MF_STRING, 2, "Rebuild database");  
-  AppendMenu(hPopup, MF_STRING, 3, "Rebuild virtual containers");  
+  AppendMenu(hPopup, MF_STRING, ID_TRAY_POPUP_REBUILD_DB, "Rebuild database");  
+	AppendMenu(hPopup, MF_STRING, ID_TRAY_POPUP_UPDATE_DB, "Update database");
+  AppendMenu(hPopup, MF_STRING, ID_TRAY_POPUP_REBUILD_VFOLDER, "Rebuild virtual containers");  
 
   AppendMenu(hPopup, MF_SEPARATOR, 0, "" ); 
   AppendMenu(hPopup, MF_STRING, ID_TRAY_POPUP_SEND_ALIVE, "Send \"Notify-Alive\"");  
@@ -100,7 +108,7 @@ CMainForm::CMainForm(HINSTANCE hInstance)
   AppendMenu(hPopup, MF_STRING, ID_TRAY_POPUP_SEND_MSEARCH, "Send \"M-Search\""); 
       
   AppendMenu(hPopup, MF_SEPARATOR, 0, "" );    
-  AppendMenu(hPopup, MF_STRING, 1, "Quit" );    
+  AppendMenu(hPopup, MF_STRING, ID_TRAY_POPUP_QUIT, "Quit" );    
   pForm = this; 
   
   OnCreate();
@@ -341,22 +349,29 @@ void CMainForm::OnTrayIconLButtonUp()
 	
 	switch(ret)
 	{
-    case 1:
+    case ID_TRAY_POPUP_QUIT:
       if(MessageBox(hWnd, "Shutdown FUPPES?", GetAppShortName(), MB_ICONQUESTION | MB_YESNO) == IDYES) {
          PostMessage(hWnd, WM_DESTROY, 0, 0);
       }
       break;
-    case 2:
+    case ID_TRAY_POPUP_REBUILD_DB:
       if(MessageBox(hWnd, "Rebuild database?", GetAppShortName(), MB_ICONQUESTION | MB_YESNO) == IDYES) {
         fuppes_rebuild_db();
       }
       break;
-    case 3:
+    case ID_TRAY_POPUP_UPDATE_DB:
+      if(MessageBox(hWnd, "Update database?", GetAppShortName(), MB_ICONQUESTION | MB_YESNO) == IDYES) {
+        fuppes_update_db();
+      }
+      break;			
+			
+    case ID_TRAY_POPUP_REBUILD_VFOLDER:
       if(MessageBox(hWnd, "Rebuild virtual containers?", GetAppShortName(), MB_ICONQUESTION | MB_YESNO) == IDYES) {
         fuppes_rebuild_vcontainers();
       }
-      break;      
-    case 4:
+      break;
+			
+    case ID_TRAY_POPUP_SHOW_WEBINF:
       char szAddr[128];
       fuppes_get_http_server_address(szAddr, 127);
       ShellExecute(hWnd, "open", szAddr, NULL, NULL, SW_NORMAL);

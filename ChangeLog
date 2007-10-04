@@ -1,4 +1,4 @@
-Version SVN-5
+Version SVN-549 2007-10-04
   * fixed UPnPBrowse for virtual devices
 	* speedup database creation (items and vfolders)
 	* fixed virtual folder creation
