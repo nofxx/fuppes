@@ -135,7 +135,7 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   av_register_all();
   #endif
     
-  return FUPPES_OK;
+  return FUPPES_TRUE;
 }
 
 void fuppes_set_error_callback(void(*p_err_cb)(const char* sz_err))
@@ -162,7 +162,7 @@ int fuppes_start()
   try {
     pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUUID());
     CSharedConfig::Shared()->AddFuppesInstance(pFuppes);
-    return FUPPES_OK;
+    return FUPPES_TRUE;
   }
   catch(EException ex) {
     CSharedLog::Shared()->UserError(ex.What());    
@@ -178,7 +178,7 @@ int fuppes_stop()
     
   delete pFuppes;
   pFuppes = 0;
-  return FUPPES_OK;
+  return FUPPES_TRUE;
 }
 
 int fuppes_cleanup()
@@ -194,13 +194,13 @@ int fuppes_cleanup()
   WSACleanup();
   #endif
 
-  return FUPPES_OK;
+  return FUPPES_TRUE;
 }
 
 int fuppes_is_started()
 {
   if(pFuppes != 0)
-    return FUPPES_OK;
+    return FUPPES_TRUE;
   else
     return FUPPES_FALSE;
 }
@@ -222,7 +222,22 @@ void fuppes_inc_loglevel()
 
 void fuppes_rebuild_db()
 {
-  CContentDatabase::Shared()->BuildDB();
+  CContentDatabase::Shared()->RebuildDB();
+}
+
+void fuppes_update_db()
+{
+  CContentDatabase::Shared()->UpdateDB();
+}
+
+void fuppes_update_db_add_new()
+{
+  CContentDatabase::Shared()->AddNew();
+}
+
+void fuppes_update_db_remove_missing()
+{
+  CContentDatabase::Shared()->RemoveMissing();
 }
 
 void fuppes_rebuild_vcontainers()

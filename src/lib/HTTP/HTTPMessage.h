@@ -148,8 +148,8 @@ class CHTTPMessage: public CMessageBase
 
     fuppes_off_t      GetRangeStart() { return m_nRangeStart; }
     fuppes_off_t      GetRangeEnd() { return m_nRangeEnd; }
-    void              SetRangeStart(unsigned int p_nRangeStart) { m_nRangeStart = p_nRangeStart; }
-    void              SetRangeEnd(unsigned int p_nRangeEnd) { m_nRangeEnd = p_nRangeEnd; }
+    void              SetRangeStart(fuppes_off_t p_nRangeStart) { m_nRangeStart = p_nRangeStart; }
+    void              SetRangeEnd(fuppes_off_t p_nRangeEnd) { m_nRangeEnd = p_nRangeEnd; }
     HTTP_CONNECTION   GetHTTPConnection() { return m_nHTTPConnection; }
   
     bool              PostVarExists(std::string p_sPostVarName);
@@ -160,7 +160,7 @@ class CHTTPMessage: public CMessageBase
     void             SetVersion(HTTP_VERSION p_nHTTPVersion)              { m_nHTTPVersion     = p_nHTTPVersion;     }
     void             SetContentType(std::string p_sContentType)           { m_sHTTPContentType = p_sContentType;     }
   	void						 SetContent(std::string p_sContent)                   { m_sContent         = p_sContent;         }
-    void             SetBinContent(char* p_szBinContent, unsigned int p_nBinContenLength);  
+    void             SetBinContent(char* p_szBinContent, fuppes_off_t p_nBinContenLength);  
     
     std::string  GetGENASubscriptionID() { return m_sGENASubscriptionID; }
     void         SetGENASubscriptionID(std::string p_sSubscriptionID) { m_sGENASubscriptionID = p_sSubscriptionID; }

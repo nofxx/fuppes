@@ -146,6 +146,12 @@ libfuppes_la_SOURCES += \
   lib/Transcoding/ffmpeg/ffmpeg.cpp
 endif
 
+if HAVE_INOTIFY
+libfuppes_la_SOURCES += \
+  lib/ContentDirectory/inotify-cxx-0.7.2/inotify-cxx.h \
+  lib/ContentDirectory/inotify-cxx-0.7.2/inotify-cxx.cpp
+endif
+
 libfuppes_la_SOURCES += \
 	lib/DeviceSettings/DeviceSettings.cpp\
 	lib/DeviceSettings/DeviceIdentificationMgr.cpp\

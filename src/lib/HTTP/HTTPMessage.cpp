@@ -115,7 +115,7 @@ bool CHTTPMessage::SetHeader(std::string p_sHeader)
   return Parser.Parse(this);
 }
 
-void CHTTPMessage::SetBinContent(char* p_szBinContent, unsigned int p_nBinContenLength)
+void CHTTPMessage::SetBinContent(char* p_szBinContent, fuppes_off_t p_nBinContenLength)
 { 
   m_bIsBinary = true;
 
@@ -630,7 +630,7 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
      sMatch2 = rxRANGE.Match(2);
 
     if(sMatch1.substr(0,1) != "-")
-      m_nRangeStart = atoi(rxRANGE.Match(1));      
+      m_nRangeStart = atoll(rxRANGE.Match(1));
     else
       m_nRangeStart = 0;
     
@@ -640,12 +640,12 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
     if(sMatch1.substr(0, 1) == "-")
     {
       sSub = sMatch1.substr(1, sMatch1.length());
-      m_nRangeEnd   = atoi(sSub.c_str());
+      m_nRangeEnd   = atoll(sSub.c_str());
     }
     else if(rxRANGE.SubStrings() > 2)
     {
       sSub = sMatch2.substr(1, sMatch2.length());
-      m_nRangeEnd   = atoi(sSub.c_str());
+      m_nRangeEnd   = atoll(sSub.c_str());
     }
   }
   
@@ -776,7 +776,7 @@ bool CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
   if(rxContentLength.Search(p_sMessage.c_str()))
   {
     string sContentLength = rxContentLength.Match(1);    
-    m_nContentLength = std::atoi(sContentLength.c_str());
+    m_nContentLength = std::atoll(sContentLength.c_str());
   }
   
   if((unsigned int)m_nContentLength >= p_sMessage.length())                      

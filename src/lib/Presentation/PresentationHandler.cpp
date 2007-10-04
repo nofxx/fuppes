@@ -100,7 +100,7 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
   {
     CSharedConfig::Shared()->Refresh();
     if(!CContentDatabase::Shared()->IsRebuilding())
-      CContentDatabase::Shared()->BuildDB();
+      CContentDatabase::Shared()->RebuildDB();
     
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "send options.html");
     nPresentationPage = PRESENTATION_PAGE_OPTIONS;

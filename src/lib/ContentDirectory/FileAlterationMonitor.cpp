@@ -43,13 +43,17 @@ CFileAlterationMgr* CFileAlterationMgr::Shared()
 
 CFileAlterationMonitor* CFileAlterationMgr::CreateMonitor(IFileAlterationMonitor* pEventHandler)
 {
+  CFileAlterationMonitor* pResult = NULL;
+  
   #if defined(HAVE_GAMIN)
-  return new CGaminMonitor(pEventHandler);
-  #elseif defined(HAVE_INOTIFY)
-  return new CInotifyMonitor(pEventHandler);
-  #else
-  return NULL;
+  pResult = new CGaminMonitor(pEventHandler);
   #endif
+  
+  #if defined(HAVE_INOTIFY)
+  pResult = new CInotifyMonitor(pEventHandler);
+  #endif
+  
+  return pResult;
 }
 
 #ifdef HAVE_INOTIFY
@@ -59,20 +63,24 @@ fuppesThreadCallback WatchLoop(void* arg);
 CInotifyMonitor::CInotifyMonitor(IFileAlterationMonitor* pEventHandler):
   CFileAlterationMonitor(pEventHandler)
 {
+ 
+  cout << "inotify constructor" << endl;
     
-  m_MonitorThread = (fuppesThread)NULL;
+  /*m_MonitorThread = (fuppesThread)NULL;
     
   m_nInotifyFd = inotify_init();
 	if (m_nInotifyFd < 0)	{
 		throw EException("inotify_init", __FILE__, __LINE__);    
-	}
+	}*/
+    
+  m_pInotify = new Inotify();
 	
 	fuppesThreadStart(m_MonitorThread, WatchLoop);	
 }
 
 CInotifyMonitor::~CInotifyMonitor()
 {
-  std::list<int>::iterator iter;
+  std::list<InotifyWatch*>::iterator iter;
   
   for(iter = m_lWatches.begin(); iter != m_lWatches.end(); iter++) {
     //inotify_rm_watch(m_nInotifyFd, iter);
@@ -84,13 +92,23 @@ CInotifyMonitor::~CInotifyMonitor()
   
 bool CInotifyMonitor::AddDirectory(std::string p_sDirectory)
 {
-  int wd = inotify_add_watch(m_nInotifyFd, p_sDirectory.c_str(), IN_CREATE);
+  /*int wd = inotify_add_watch(m_nInotifyFd, p_sDirectory.c_str(), IN_CREATE);
   if(wd < 0) {
     return false;
   }
   
   m_lWatches.push_back(wd);
-	cout << "wd: " << wd << endl;	  
+	cout << "wd: " << wd << endl;	  */
+  
+  InotifyWatch* pWatch = new InotifyWatch(p_sDirectory, IN_CREATE | IN_MODIFY | IN_DELETE | IN_MOVE);
+  try {
+    m_pInotify->Add(pWatch);
+  }
+  catch(InotifyException &ex) {
+    cout << "exception: " << ex.GetMessage() << endl;
+  }
+  m_lWatches.push_back(pWatch);
+  
   return true;
 }
   
@@ -98,7 +116,34 @@ fuppesThreadCallback WatchLoop(void* arg)
 {
   CInotifyMonitor* pInotify = (CInotifyMonitor*)arg;
   
-  int rc = 0;
+  cout << "watch loop" << endl;
+    
+  InotifyEvent event;
+  
+  while(true) {
+  
+    cout << "wait for events" << endl;
+    
+    try {    
+      pInotify->m_pInotify->WaitForEvents();
+    }
+    catch(InotifyException &ex) {
+      cout << "exception" << ex.GetMessage() << endl;
+    }
+    
+    cout << "got " << pInotify->m_pInotify->GetEventCount() << " events" << endl;
+    
+    while(pInotify->m_pInotify->GetEvent(&event)) {
+      cout << "event: " << event.GetName() << endl;
+      string sDump;
+      event.DumpTypes(sDump);
+      cout << sDump << endl << endl;
+    }    
+  }
+  
+  
+  
+  /*int rc = 0;
 	struct timeval  timeout;
 	timeout.tv_sec  = 10;
 	timeout.tv_usec = 0;
@@ -112,6 +157,8 @@ fuppesThreadCallback WatchLoop(void* arg)
 	
 	int bytes_to_read = 0;
 	
+  cout << "inotify loop" << endl;
+  
 	while (true) {
 	  rc = select(pInotify->m_nInotifyFd + 1, &read_fd, NULL, NULL, timeout_ptr); 
 	  if(rc > 0) {
@@ -128,7 +175,7 @@ fuppesThreadCallback WatchLoop(void* arg)
 	      cout << event.name << " :: " << event.mask << endl;
 	    }
 	  }
-	}
+	}*/
   
   fuppesThreadExit();
 }

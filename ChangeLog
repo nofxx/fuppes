@@ -3,6 +3,9 @@ Version SVN-5
 	* speedup database creation (items and vfolders)
 	* fixed virtual folder creation
   * fixed size calculation in WAV and PCM encoder
+	* large file support
+	* minor bugfixes and enhancements
+	* database update: add new files and/or remove missing files
 
 Version SVN-530 2007-09-20
   * fixed WAV and PCM encoder

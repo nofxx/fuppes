@@ -64,7 +64,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
     throw EException("unable to create database file", __FILE__, __LINE__);
   }
   if(bIsNewDB) {
-    CContentDatabase::Shared()->BuildDB();
+    CContentDatabase::Shared()->RebuildDB();
   }  
   
   /* init HTTP-server */

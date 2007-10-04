@@ -35,6 +35,10 @@
 #include <fam.h>
 #endif
 
+#ifdef HAVE_INOTIFY
+#include "inotify-cxx-0.7.2/inotify-cxx.h"
+#endif
+
 #include <string>
 #include <list>
 
@@ -90,9 +94,10 @@ class CInotifyMonitor: public CFileAlterationMonitor
     
   private:
     fuppesThread    m_MonitorThread;  
-    std::list<int>  m_lWatches;
+    std::list<InotifyWatch*>  m_lWatches;
   
-    int   m_nInotifyFd;
+    //int   m_nInotifyFd;
+    Inotify*        m_pInotify;
 };
 #endif
 

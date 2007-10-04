@@ -49,6 +49,9 @@
 using namespace std;
 
 static bool g_bIsRebuilding;
+static bool g_bFullRebuild;
+static bool g_bAddNew;
+static bool g_bRemoveMissing;
 
 std::string CSelectResult::GetValue(std::string p_sFieldName)
 {
@@ -93,10 +96,18 @@ CContentDatabase::CContentDatabase(bool p_bShared)
   m_nLockCount 			= -1;
   
 	if(m_bShared) {            
-		m_sDbFileName 	= CSharedConfig::Shared()->GetDbFileName();	
-		g_bIsRebuilding = false;
-		m_nLockCount 		= 0;
+		m_sDbFileName 	  = CSharedConfig::Shared()->GetDbFileName();	
+		g_bIsRebuilding   = false;
+    g_bFullRebuild    = true;
+    g_bAddNew         = false;
+    g_bRemoveMissing  = false;    
+    m_nLockCount 		  = 0;
+    
     m_pFileAlterationMonitor = CFileAlterationMgr::Shared()->CreateMonitor(this);
+    if(m_pFileAlterationMonitor) {
+      m_pFileAlterationMonitor->AddDirectory("/home/ulrich/Desktop/test");
+    }
+    
     fuppesThreadInitMutex(&m_Mutex);        
   }
     
@@ -487,6 +498,8 @@ void ParsePLSPlaylist(CSelectResult* pResult);
 unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::string p_sFileName);
 unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL);
 
+unsigned int GetObjectIDFromFileName(CContentDatabase* pDb, std::string p_sFileName);
+
 void CContentDatabase::BuildDB()
 {     
   if(CContentDatabase::Shared()->IsRebuilding())
@@ -503,6 +516,67 @@ void CContentDatabase::BuildDB()
 	fuppesThreadStart(m_RebuildThread, BuildLoop);
   g_bIsRebuilding = true;  
 }
+
+void CContentDatabase::RebuildDB()
+{     
+  if(CContentDatabase::Shared()->IsRebuilding())
+	  return;
+	
+	if(!m_bShared)
+	  return;
+	
+  g_bFullRebuild = true;
+  g_bAddNew = false;
+  g_bRemoveMissing = false;
+  
+  BuildDB();
+}
+
+void CContentDatabase::UpdateDB()
+{
+  if(CContentDatabase::Shared()->IsRebuilding())
+    return;
+  
+  if(!m_bShared)
+    return;
+  
+  g_bFullRebuild = false;
+  g_bAddNew = true;
+  g_bRemoveMissing = true;  
+  
+  BuildDB();
+}
+
+void CContentDatabase::AddNew()
+{
+  if(CContentDatabase::Shared()->IsRebuilding())
+    return;
+  
+  if(!m_bShared)
+    return;
+  
+  g_bFullRebuild = false;
+  g_bAddNew = true;
+  g_bRemoveMissing = false;  
+  
+  BuildDB();
+}
+
+void CContentDatabase::RemoveMissing()
+{
+  if(CContentDatabase::Shared()->IsRebuilding())
+    return;
+  
+  if(!m_bShared)
+    return;
+  
+  g_bFullRebuild = false;
+  g_bAddNew = false;
+  g_bRemoveMissing = true;  
+  
+  BuildDB();
+}
+
 
 bool CContentDatabase::IsRebuilding()
 {
@@ -572,46 +646,52 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
   #endif  
                 
         string sExt = ExtractFileExt(sTmp);
+        unsigned int nObjId = 0;
         
         /* directory */
         if(IsDirectory(sTmp))
         {				
           sTmpFileName = ToUTF8(sTmpFileName);          
-          sTmpFileName = SQLEscape(sTmpFileName);         
+          sTmpFileName = SQLEscape(sTmpFileName);        
           
           stringstream sSql;
           
-          unsigned int nObjId = pDb->GetObjId();
+          if(g_bAddNew) {
+            nObjId = GetObjectIDFromFileName(pDb, sTmp);
+          }
           
-          pDb->BeginTransaction();
-          
-          sSql << "insert into objects ( " <<
-            "  OBJECT_ID, TYPE, " <<
-            "  PATH, FILE_NAME, TITLE) " <<
-            "values ( " << 
-               nObjId << ", " <<  
-               CONTAINER_STORAGE_FOLDER << 
-               ", '" << SQLEscape(sTmp) << "', '" <<
-               sTmpFileName << "', '" <<
-               sTmpFileName <<
-            "');";
+          if(nObjId == 0) {
+            nObjId = pDb->GetObjId();          
+            pDb->BeginTransaction();          
+                
+            sSql << "insert into objects ( " <<
+              "  OBJECT_ID, TYPE, " <<
+              "  PATH, FILE_NAME, TITLE) " <<
+              "values ( " << 
+                 nObjId << ", " <<  
+                 CONTAINER_STORAGE_FOLDER << 
+                 ", '" << SQLEscape(sTmp) << "', '" <<
+                 sTmpFileName << "', '" <<
+                 sTmpFileName <<
+              "');";
 
-          pDb->Insert(sSql.str());          
-          
-          sSql.str("");
-          sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID) " <<
-                  "values (" << nObjId << ", " << p_nParentId << ")";          
-          pDb->Insert(sSql.str());
-          
-          pDb->Commit();
-          
+            pDb->Insert(sSql.str());          
+            
+            sSql.str("");
+            sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID) " <<
+                    "values (" << nObjId << ", " << p_nParentId << ")";          
+            pDb->Insert(sSql.str());
+            
+            pDb->Commit();
+          }
+            
           // recursively scan subdirectories
           DbScanDir(pDb, sTmp, nObjId);          
         }
         else if(IsFile(sTmp) && CFileDetails::Shared()->IsSupportedFileExtension(sExt))
         {
           InsertFile(pDb, p_nParentId, sTmp);
-        }           
+        }         
        
       }
     }  /* while */  
@@ -696,35 +776,42 @@ unsigned int InsertVideoFile(CContentDatabase* pDb, std::string p_sFileName)
 
 unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::string p_sFileName)
 {
+  unsigned int nObjId = 0;
+
+  if(g_bAddNew) {
+    nObjId = GetObjectIDFromFileName(pDb, p_sFileName);
+    if(nObjId > 0) {
+      return nObjId;
+    }
+  } 
+  
   OBJECT_TYPE nObjectType = CFileDetails::Shared()->GetObjectType(p_sFileName);  
   if(nObjectType == OBJECT_TYPE_UNKNOWN)
     return false;
-  
-  //pDb->BeginTransaction();
-      
-  // we insert file details first to get the details ID
+    
+  // we insert file details first to get the detail ID
   unsigned int nDetailId = 0;
   string sTitle;
   switch(nObjectType)
   {
     case ITEM_AUDIO_ITEM:
     case ITEM_AUDIO_ITEM_MUSIC_TRACK:     
-		  nDetailId = InsertAudioFile(pDb, p_sFileName, &sTitle); 
+      nDetailId = InsertAudioFile(pDb, p_sFileName, &sTitle); 
       break;
     case ITEM_IMAGE_ITEM:
-		case ITEM_IMAGE_ITEM_PHOTO:
-		  nDetailId = InsertImageFile(pDb, p_sFileName);
-			break;
-		case ITEM_VIDEO_ITEM:
-		case ITEM_VIDEO_ITEM_MOVIE:
-		  nDetailId = InsertVideoFile(pDb, p_sFileName);
-		  break;
+    case ITEM_IMAGE_ITEM_PHOTO:
+      nDetailId = InsertImageFile(pDb, p_sFileName);
+      break;
+    case ITEM_VIDEO_ITEM:
+    case ITEM_VIDEO_ITEM_MOVIE:
+      nDetailId = InsertVideoFile(pDb, p_sFileName);
+      break;
 
     default:
-		  break;
+      break;
   }  
               
-  
+
   // insert object  
   string sTmpFileName =  p_sFileName;
   
@@ -742,20 +829,18 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
   }
   
   
-  unsigned int nObjId = pDb->GetObjId();
+  nObjId = pDb->GetObjId();
   
   stringstream sSql;
   sSql << "insert into objects (" <<
     "  OBJECT_ID, DETAIL_ID, TYPE, " <<
-    "  PATH, FILE_NAME, " <<
-    "  TITLE, MIME_TYPE) values (" <<
+    "  PATH, FILE_NAME, TITLE) values (" <<
        nObjId << ", " <<
        nDetailId << ", " <<   
        nObjectType << ", " <<
        "'" << SQLEscape(p_sFileName) << "', " << 
        "'" << sTmpFileName << "', " << 
-       "'" << sTitle << "', " << 
-       "'" << "obsolete" << "');";
+       "'" << sTitle << "')";
                
   pDb->Insert(sSql.str());  
   sSql.str("");
@@ -988,10 +1073,10 @@ void ParsePLSPlaylist(CSelectResult* pResult)
 
 fuppesThreadCallback BuildLoop(void* arg)
 {  
+	#ifndef WIN32
   time_t now;
   char nowtime[26];
-  time(&now);
-	#ifndef WIN32
+  time(&now);  
   ctime_r(&now, nowtime);
 	nowtime[24] = '\0';
 	string sNowtime = nowtime;
@@ -1005,15 +1090,17 @@ fuppesThreadCallback BuildLoop(void* arg)
 		
   CContentDatabase* pDb = new CContentDatabase();
   
-  pDb->Execute("delete from OBJECTS");
-  pDb->Execute("delete from OBJECT_DETAILS");
-  pDb->Execute("delete from MAP_OBJECTS");
-	
-	pDb->Execute("drop index IDX_OBJECTS_OBJECT_ID");
+  if(g_bFullRebuild) {
+    pDb->Execute("delete from OBJECTS");
+    pDb->Execute("delete from OBJECT_DETAILS");
+    pDb->Execute("delete from MAP_OBJECTS");
+  }
+
+	/*pDb->Execute("drop index IDX_OBJECTS_OBJECT_ID");
 	pDb->Execute("drop index IDX_MAP_OBJECTS_OBJECT_ID");
 	pDb->Execute("drop index IDX_MAP_OBJECTS_PARENT_ID");
 	pDb->Execute("drop index IDX_OBJECTS_DETAIL_ID");
-	pDb->Execute("drop index IDX_OBJECT_DETAILS_ID");
+	pDb->Execute("drop index IDX_OBJECT_DETAILS_ID");*/
 	
   pDb->Execute("vacuum");  
   
@@ -1021,6 +1108,7 @@ fuppesThreadCallback BuildLoop(void* arg)
   unsigned int nObjId;
   stringstream sSql;
   string sFileName;
+  bool bInsert = true;
   
   CSharedLog::Shared()->Log(L_NORMAL, "read shared directories", __FILE__, __LINE__, false);
 
@@ -1032,25 +1120,33 @@ fuppesThreadCallback BuildLoop(void* arg)
       
       ExtractFolderFromPath(CSharedConfig::Shared()->GetSharedDir(i), &sFileName);
 
-      //pDb->BeginTransaction();      
-      nObjId = pDb->GetObjId();      
+      bInsert = true;
+      if(g_bAddNew) {
+        if((nObjId = GetObjectIDFromFileName(pDb, sFileName)) > 0) {
+          bInsert = false;
+        }
+      }
       
-      sSql << 
-        "insert into OBJECTS (OBJECT_ID, TYPE, PATH, FILE_NAME, TITLE) values " <<
-        "(" << nObjId << 
-        ", " << CONTAINER_STORAGE_FOLDER << 
-        ", '" << SQLEscape(CSharedConfig::Shared()->GetSharedDir(i)) << "'" <<
-        ", '" << SQLEscape(sFileName) << "'" <<
-        ", '" << SQLEscape(sFileName) << "');";
+      
+      if(bInsert) {      
+        nObjId = pDb->GetObjId();      
+      
+        sSql << 
+          "insert into OBJECTS (OBJECT_ID, TYPE, PATH, FILE_NAME, TITLE) values " <<
+          "(" << nObjId << 
+          ", " << CONTAINER_STORAGE_FOLDER << 
+          ", '" << SQLEscape(CSharedConfig::Shared()->GetSharedDir(i)) << "'" <<
+          ", '" << SQLEscape(sFileName) << "'" <<
+          ", '" << SQLEscape(sFileName) << "');";
         
-		  pDb->Insert(sSql.str());
+        pDb->Insert(sSql.str());
     
-      sSql.str("");
-      sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID) " <<
-        "values (" << nObjId << ", 0)";
+        sSql.str("");
+        sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID) " <<
+          "values (" << nObjId << ", 0)";
       
-      pDb->Insert(sSql.str());      
-      //pDb->Commit();
+        pDb->Insert(sSql.str());      
+      }
       
       DbScanDir(pDb, CSharedConfig::Shared()->GetSharedDir(i), nObjId);      
     }
@@ -1088,8 +1184,8 @@ fuppesThreadCallback BuildLoop(void* arg)
   delete pITunes;
   CSharedLog::Shared()->Log(L_NORMAL, "[DONE] parse iTunes databases", __FILE__, __LINE__, false);  
   	
-  time(&now);
 	#ifndef WIN32
+  time(&now);
   ctime_r(&now, nowtime);
 	nowtime[24] = '\0';
 	sNowtime = nowtime;

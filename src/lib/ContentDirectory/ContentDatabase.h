@@ -128,9 +128,12 @@ class CContentDatabase: public IFileAlterationMonitor
 
 
     void BeginTransaction();
-    void Commit();  
-  
-    void BuildDB();
+    void Commit();    
+    
+    void RebuildDB();
+    void UpdateDB();
+    void AddNew();
+    void RemoveMissing();
     bool IsRebuilding();// { return m_bIsRebuilding; };
 	
     unsigned int GetObjId();
@@ -139,6 +142,8 @@ class CContentDatabase: public IFileAlterationMonitor
   
     void FamEvent(FAM_EVENT_TYPE p_nEventType, std::string p_sPath);
   private:    
+    void BuildDB();
+    
 		void Lock();
     void Unlock();
     void ClearResult();

@@ -122,10 +122,10 @@ int main(int argc, char* argv[])
   #endif
 
   // initialize libfuppes
-	if(fuppes_init(argc, argv, NULL) != FUPPES_OK) {
+	if(fuppes_init(argc, argv, NULL) != FUPPES_TRUE) {
 	  return -1;
 	}
-  if(fuppes_start() != FUPPES_OK) {
+  if(fuppes_start() != FUPPES_TRUE) {
     return -1;
   }
     
@@ -161,11 +161,11 @@ int main(int argc, char* argv[])
       
       nRes = fuppes_getch();
       if ((nRes > -1) && (nRes != 10) && (nRes != 13))
-        input = nRes;        
+        input += nRes;        
     }
     while ((nRes != 10) && (nRes != 13) && !g_bExitApp);
     #endif
-
+    
     if (input == "m") {
       fuppes_send_msearch();
     }

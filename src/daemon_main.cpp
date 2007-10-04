@@ -39,7 +39,7 @@ void SignalHandler(int p_nSignal)
 
 int main(int argc, char* argv[])
 {
-  if(fuppes_init(argc, argv, NULL) != FUPPES_OK)
+  if(fuppes_init(argc, argv, NULL) != FUPPES_TRUE)
     return 1;
 
   pid_t pid;

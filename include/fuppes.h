@@ -28,8 +28,8 @@
 extern "C" {
 #endif
 
-#define FUPPES_OK    0
-#define FUPPES_FALSE 1
+#define FUPPES_FALSE 0
+#define FUPPES_TRUE  1
 
 /**
  *  initialize libfuppes
@@ -85,7 +85,12 @@ void fuppes_print_device_settings();
   
 void fuppes_set_loglevel(int n_log_level);
 void fuppes_inc_loglevel();
+  
 void fuppes_rebuild_db();
+void fuppes_update_db();
+void fuppes_update_db_add_new();
+void fuppes_update_db_remove_missing();
+  
 void fuppes_rebuild_vcontainers();
 
 void fuppes_get_http_server_address(char* sz_addr, int n_buff_size);
