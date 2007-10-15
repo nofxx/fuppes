@@ -314,7 +314,7 @@ fuppes_applet_do_start_stop (BonoboUIComponent *component,
 	  fuppes_init(0, NULL, log_callback);
     fuppes_set_notify_callback(fuppes_notify_callback);
     fuppes_set_error_callback(fuppes_error_callback);
-	  if(fuppes_start() == FUPPES_OK) {
+	  if(fuppes_start() == FUPPES_TRUE) {
       gtk_tooltips_set_tip (g_applet->tooltips, GTK_WIDGET (g_applet), _("FUPPES UPnP Server (started)"), NULL);
     }
   }
