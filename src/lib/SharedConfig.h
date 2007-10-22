@@ -119,6 +119,8 @@ class CSharedConfig
     void AddFuppesInstance(CFuppes* pFuppes);
   
   	
+		CConfigFile* ConfigFile() { return m_pConfigFile; }
+		
     bool UseImageMagick() { return m_pConfigFile->UseImageMagick(); }
     bool UseTaglib()      { return m_pConfigFile->UseTaglib(); }
     bool UseLibAvFormat() { return m_pConfigFile->UseLibAvFormat(); }

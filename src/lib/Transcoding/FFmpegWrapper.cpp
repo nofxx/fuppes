@@ -55,11 +55,11 @@ bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFi
   
   //cout << "acodec: " << m_sACodec << " vcodec: " << m_sVCodec << endl;
   
-  szArgs[nArgs] = (char*)malloc(strlen("ffmpeg") * sizeof(char));
+  szArgs[nArgs] = (char*)malloc((strlen("ffmpeg") + 1) * sizeof(char));
   strcpy(szArgs[nArgs], "ffmpeg");
   nArgs++;
   
-  szArgs[nArgs] = (char*)malloc(strlen("-i") * sizeof(char));
+  szArgs[nArgs] = (char*)malloc((strlen("-i") + 1) * sizeof(char));
   strcpy(szArgs[nArgs], "-i");
   nArgs++;
   
@@ -72,7 +72,7 @@ bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFi
   string VCodec = pFileSettings->pTranscodingSettings->VideoCodec(m_sVCodec);
   //cout << "out vcodec: " << VCodec << endl;
   
-  szArgs[nArgs] = (char*)malloc(strlen("-vcodec") * sizeof(char));
+  szArgs[nArgs] = (char*)malloc((strlen("-vcodec") + 1) * sizeof(char));
   strcpy(szArgs[nArgs], "-vcodec");
   nArgs++;  
   
@@ -84,7 +84,7 @@ bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFi
     stringstream sBitRate;
     sBitRate << pFileSettings->pTranscodingSettings->VideoBitRate();
   
-    szArgs[nArgs] = (char*)malloc(strlen("-b") * sizeof(char));
+    szArgs[nArgs] = (char*)malloc((strlen("-b") + 1) * sizeof(char));
     strcpy(szArgs[nArgs], "-b");
     nArgs++;  
   
@@ -99,7 +99,7 @@ bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFi
   
   //cout << "out acodec: " << ACodec << endl;  
   
-  szArgs[nArgs] = (char*)malloc(strlen("-acodec") * sizeof(char));
+  szArgs[nArgs] = (char*)malloc((strlen("-acodec") + 1) * sizeof(char));
   strcpy(szArgs[nArgs], "-acodec");
   nArgs++;  
   
@@ -112,7 +112,7 @@ bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFi
     stringstream sSampleRate;
     sSampleRate << pFileSettings->pTranscodingSettings->AudioSampleRate();
     
-    szArgs[nArgs] = (char*)malloc(strlen("-ar") * sizeof(char));
+    szArgs[nArgs] = (char*)malloc((strlen("-ar") + 1) * sizeof(char));
     strcpy(szArgs[nArgs], "-ar");
     nArgs++;  
   
@@ -126,7 +126,7 @@ bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFi
     stringstream sBitRate;
     sBitRate << pFileSettings->pTranscodingSettings->AudioBitRate();
     
-    szArgs[nArgs] = (char*)malloc(strlen("-ab") * sizeof(char));
+    szArgs[nArgs] = (char*)malloc((strlen("-ab") + 1) * sizeof(char));
     strcpy(szArgs[nArgs], "-ab");
     nArgs++;  
   
@@ -136,11 +136,11 @@ bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFi
   }
 
   
-  szArgs[nArgs] = (char*)malloc(strlen("-ac") * sizeof(char));
+  szArgs[nArgs] = (char*)malloc((strlen("-ac") + 1) * sizeof(char));
   strcpy(szArgs[nArgs], "-ac");
   nArgs++;
   
-  szArgs[nArgs] = (char*)malloc(strlen("2") * sizeof(char));
+  szArgs[nArgs] = (char*)malloc((strlen("2") + 1) * sizeof(char));
   strcpy(szArgs[nArgs], "2");
   nArgs++;  
     
@@ -150,10 +150,6 @@ bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFi
   strcpy(szArgs[nArgs], p_psOutFile->c_str());  
   nArgs++;
   
-
-  
-  /*szArgs[nArgs] = (char*)malloc(sizeof(char));
-  szArgs[nArgs] = '\0';*/
 
   pFFmpeg->ffmpeg_main(nArgs, szArgs);
   

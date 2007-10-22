@@ -34,7 +34,12 @@ CMediaServer::CMediaServer(std::string p_sHTTPServerURL, IUPnPDevice* pOnTimerHa
 {
   m_sFriendlyName = CSharedConfig::Shared()->FriendlyName();
 
-  m_sManufacturer     = "Ulrich Völkel";
+	if(!CSharedConfig::Shared()->ConfigFile()->MediaServerSettings()->Manufacturer.empty()) {
+  	m_sManufacturer = CSharedConfig::Shared()->ConfigFile()->MediaServerSettings()->Manufacturer;
+	}
+	else {
+		m_sManufacturer = "Ulrich Voelkel";
+	}
   m_sManufacturerURL  = "http://www.ulrich-voelkel.de";      
   m_sModelDescription = "Free UPnP Media Server licensed under the terms of the GPL";
 

@@ -237,45 +237,37 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
       xmlTextWriterWriteString(writer, BAD_CAST m_sUPC.c_str());
 			xmlTextWriterEndElement(writer);		
 		
+			// DLNA
+		  if(pRequest->DeviceSettings()->Xbox360Support()) {
+				xmlTextWriterStartElementNS(writer, BAD_CAST "dlna", BAD_CAST "X_DLNADOC", BAD_CAST "urn:schemas-dlna-org:device-1-0");
+      	xmlTextWriterWriteString(writer, BAD_CAST "DMS-1.00");
+				xmlTextWriterEndElement(writer);
+			}
+		
       // iconList
       if(pRequest->DeviceSettings()->EnableDeviceIcon()) {
   
-      xmlTextWriterStartElement(writer, BAD_CAST "iconList");
-        xmlTextWriterStartElement(writer, BAD_CAST "icon");
-          xmlTextWriterStartElement(writer, BAD_CAST "mimetype");
-          xmlTextWriterWriteString(writer, BAD_CAST "image/png");
-          xmlTextWriterEndElement(writer);
-          xmlTextWriterStartElement(writer, BAD_CAST "width");
-          xmlTextWriterWriteString(writer, BAD_CAST "50");
-          xmlTextWriterEndElement(writer);
-          xmlTextWriterStartElement(writer, BAD_CAST "height");
-          xmlTextWriterWriteString(writer, BAD_CAST "50");
-          xmlTextWriterEndElement(writer);
-          xmlTextWriterStartElement(writer, BAD_CAST "height");
-          xmlTextWriterWriteString(writer, BAD_CAST "32");
-          xmlTextWriterEndElement(writer);
-          xmlTextWriterStartElement(writer, BAD_CAST "url");
-          xmlTextWriterWriteString(writer, BAD_CAST "/presentation/images/fuppes-small.png");
-          xmlTextWriterEndElement(writer);
-        xmlTextWriterEndElement(writer);
-			xmlTextWriterEndElement(writer);
+				xmlTextWriterStartElement(writer, BAD_CAST "iconList");
+					xmlTextWriterStartElement(writer, BAD_CAST "icon");
+						xmlTextWriterStartElement(writer, BAD_CAST "mimetype");
+						xmlTextWriterWriteString(writer, BAD_CAST "image/png");
+						xmlTextWriterEndElement(writer);
+						xmlTextWriterStartElement(writer, BAD_CAST "width");
+						xmlTextWriterWriteString(writer, BAD_CAST "50");
+						xmlTextWriterEndElement(writer);
+						xmlTextWriterStartElement(writer, BAD_CAST "height");
+						xmlTextWriterWriteString(writer, BAD_CAST "50");
+						xmlTextWriterEndElement(writer);
+						xmlTextWriterStartElement(writer, BAD_CAST "height");
+						xmlTextWriterWriteString(writer, BAD_CAST "32");
+						xmlTextWriterEndElement(writer);
+						xmlTextWriterStartElement(writer, BAD_CAST "url");
+						xmlTextWriterWriteString(writer, BAD_CAST "/presentation/images/fuppes-small.png");
+						xmlTextWriterEndElement(writer);
+					xmlTextWriterEndElement(writer);
+				xmlTextWriterEndElement(writer);
         
-      }
-  
-  
-      /*
-  <iconList>
-  <icon>
-    <mimetype>image/format</mimetype>
-    <width>horizontal pixels</width>
-    <height>vertical pixels</height>
-    <depth>color depth</depth>
-    <url>URL to icon</url>
-  </icon>
-  XML to declare other icons, if any, go here
-</iconList>*/
-
-  
+      } // icon list
   
   
 		  // serviceList

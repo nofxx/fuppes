@@ -75,12 +75,9 @@ int CConfigFile::Load(std::string p_sFileName, std::string* p_psErrorMsg)
   CXMLNode* pTmpNode;
   int i;
   
-  // shared objects
-  ReadSharedObjects();
-  
-  // network
+  ReadMediaServerSettings();
+	ReadSharedObjects();
   ReadNetworkSettings();
-
 
   // content_directory
   pTmpNode = m_pDoc->RootNode()->FindNodeByName("content_directory", false);
@@ -156,6 +153,55 @@ int CConfigFile::Load(std::string p_sFileName, std::string* p_psErrorMsg)
   return CF_OK;
 }
 
+void CConfigFile::ReadMediaServerSettings()
+{
+	CXMLNode* pTmpNode;
+  int i;  
+		
+	pTmpNode = m_pDoc->RootNode()->FindNodeByName("media_server", false);
+  if(!pTmpNode) {
+			return;
+	}
+		
+	for(i = 0; i < pTmpNode->ChildCount(); i++) {
+		// friendly_name
+		if(pTmpNode->ChildNode(i)->Name().compare("friendly_name") == 0) {
+			m_MediaServerSettings.FriendlyName = 
+						pTmpNode->ChildNode(i)->Value();
+    }
+		// manufacturer
+		else if(pTmpNode->ChildNode(i)->Name().compare("manufacturer") == 0) {
+			m_MediaServerSettings.Manufacturer = 
+						pTmpNode->ChildNode(i)->Value();
+    }
+		// manufacturer_url
+		else if(pTmpNode->ChildNode(i)->Name().compare("manufacturer_url") == 0) {
+			m_MediaServerSettings.ManufacturerURL = 
+						pTmpNode->ChildNode(i)->Value();
+    }
+		// model_name
+		else if(pTmpNode->ChildNode(i)->Name().compare("model_name") == 0) {
+			m_MediaServerSettings.ModelName = 
+						pTmpNode->ChildNode(i)->Value();
+    }
+		// model_number
+		else if(pTmpNode->ChildNode(i)->Name().compare("model_number") == 0) {
+			m_MediaServerSettings.ModelNumber = 
+						pTmpNode->ChildNode(i)->Value();
+    }
+		// model_url
+		else if(pTmpNode->ChildNode(i)->Name().compare("model_url") == 0) {
+			m_MediaServerSettings.ModelURL = 
+						pTmpNode->ChildNode(i)->Value();
+    }
+		// serial_number
+		else if(pTmpNode->ChildNode(i)->Name().compare("serial_number") == 0) {
+			m_MediaServerSettings.SerialNumber = 
+						pTmpNode->ChildNode(i)->Value();
+    }
+	} // for
+}
+
 void CConfigFile::ReadSharedObjects()
 {
   CXMLNode* pTmpNode;
@@ -165,16 +211,18 @@ void CConfigFile::ReadSharedObjects()
   m_lSharedITunes.clear();
   
   pTmpNode = m_pDoc->RootNode()->FindNodeByName("shared_objects", false);
-  if(pTmpNode != NULL) {
-    for(i = 0; i < pTmpNode->ChildCount(); i++) {
-      if(pTmpNode->ChildNode(i)->Name().compare("dir") == 0) {
-        m_lSharedDirs.push_back(pTmpNode->ChildNode(i)->Value());
-      }
-      else if(pTmpNode->ChildNode(i)->Name().compare("itunes") == 0) {
-        m_lSharedITunes.push_back(pTmpNode->ChildNode(i)->Value());
-      }
-    }
-  } 
+  if(!pTmpNode) {
+		return;
+	}
+		
+	for(i = 0; i < pTmpNode->ChildCount(); i++) {
+		if(pTmpNode->ChildNode(i)->Name().compare("dir") == 0) {
+			m_lSharedDirs.push_back(pTmpNode->ChildNode(i)->Value());
+		}
+		else if(pTmpNode->ChildNode(i)->Name().compare("itunes") == 0) {
+			m_lSharedITunes.push_back(pTmpNode->ChildNode(i)->Value());
+		}
+	}
 }
 
 void CConfigFile::ReadNetworkSettings()

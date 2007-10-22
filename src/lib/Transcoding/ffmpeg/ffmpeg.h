@@ -38,16 +38,19 @@ extern "C"
   #include <ctype.h>
   #include <string.h>
   #include <avformat.h>
+	#include <avutil.h>
   #include <fifo.h> 
+#ifdef HAVE_LIBSWSCALE
   #include <swscale.h>
+#endif
   #include <math.h>
   #include <stdlib.h>
   #include <limits.h>
   #include <opt.h>
-  #include <mem.h>
+  //#include <mem.h>
   
   #ifdef HAVE_AVSTRING_H
-  #include "avstring.h"
+  #include <avstring.h>
   #endif
 } 
 #endif // __cplusplus 
@@ -182,7 +185,7 @@ class CFFmpeg {
       max_frames[3] = INT_MAX;
       
       frame_rate = (AVRational) {25,1};
-      
+
       video_qscale = 0;
       video_qdiff = 3;
       
@@ -272,8 +275,10 @@ class CFFmpeg {
       pgmyuv_compatibility_hack=0;
       dts_delta_threshold = 10;
 
+			#ifdef HAVE_LIBSWSCALE
       sws_flags = SWS_BICUBIC;      
-        
+			#endif
+				
       video_bitstream_filters=NULL;
       audio_bitstream_filters=NULL;      
       
@@ -459,7 +464,11 @@ void opt_verbose(const char *arg)
 
 void opt_frame_rate(const char *arg)
 {
+#ifdef HAVE_AV_PARSE_VIDEO_FUNCTS
     if (av_parse_video_frame_rate(&frame_rate, arg) < 0) {
+#else
+		if (parse_frame_rate(&frame_rate.num, &frame_rate.den, arg) < 0) {
+#endif
         fprintf(stderr, "Incorrect frame rate\n");
         return;
     }
@@ -539,7 +548,11 @@ void opt_frame_crop_right(const char *arg)
 
 void opt_frame_size(const char *arg)
 {
+#ifdef HAVE_AV_PARSE_VIDEO_FUNCTS
     if (av_parse_video_frame_size(&frame_width, &frame_height, arg) < 0) {
+#else
+		if (parse_image_size(&frame_width, &frame_height, arg) < 0) {
+#endif
         fprintf(stderr, "Incorrect frame size\n");
         return;
     }
@@ -635,7 +648,7 @@ void opt_frame_pad_right(const char *arg)
     }
 }
 
-void list_pix_fmts(void)
+/*void list_pix_fmts(void)
 {
     int i;
     char pix_fmt_str[128];
@@ -643,14 +656,14 @@ void list_pix_fmts(void)
         avcodec_pix_fmt_string (pix_fmt_str, sizeof(pix_fmt_str), i);
         fprintf(stdout, "%s\n", pix_fmt_str);
     }
-}
+}*/
 
 void opt_frame_pix_fmt(const char *arg)
 {
     if (strcmp(arg, "list"))
         frame_pix_fmt = avcodec_get_pix_fmt(arg);
     else {
-        list_pix_fmts();
+        //list_pix_fmts();
         return;
     }
 }
@@ -876,7 +889,7 @@ void opt_input_file(const char *filename)
     ap->channels = audio_channels;
     ap->time_base.den = frame_rate.num;
     ap->time_base.num = frame_rate.den;
-    ap->width = frame_width + frame_padleft + frame_padright;
+	ap->width = frame_width + frame_padleft + frame_padright;
     ap->height = frame_height + frame_padtop + frame_padbottom;
     ap->pix_fmt = frame_pix_fmt;
     ap->channel = video_channel;
@@ -1558,7 +1571,7 @@ void opt_pass(const char *pass_str)
     int frame_leftBand; //  = 0;
     int frame_rightBand; // = 0;
     int max_frames[4]; // = {INT_MAX, INT_MAX, INT_MAX, INT_MAX};
-    AVRational frame_rate; // = (AVRational) {25,1};
+	AVRational frame_rate; // = (AVRational) {25,1};
     float video_qscale; // = 0;
     int video_qdiff; // = 3;
     uint16_t *intra_matrix; // = NULL;

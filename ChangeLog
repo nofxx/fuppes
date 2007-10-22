@@ -1,3 +1,13 @@
+Version SVN-5
+	* fixed ffmpeg compilation for 
+    older ffmpeg versions (patch from Klaus S. Madsen)
+    and with missing libswscale
+	* fixed FAAD decoder for Ubuntu (patch from Klaus S. Madsen)
+  * fixed stupid buffer overflow in 
+	  FFmepgWrapper (patch from 	Jared D. McNeill)
+	* MediaServer description values configurable
+	* libnotify support without gnome-panel-applet (#1814615)
+
 Version SVN-549 2007-10-04
   * fixed UPnPBrowse for virtual devices
 	* speedup database creation (items and vfolders)

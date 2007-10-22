@@ -16,64 +16,9 @@ AC_SYS_LARGEFILE
 
 dnl Checks for programs.
 
-# pkg-config macro
-AC_DEFUN([PKG_CHECK_MODULES], [
-  succeeded=no
-
-  if test -z "$PKG_CONFIG"; then
-    AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-  fi
-
-  if test "$PKG_CONFIG" = "no" ; then
-     echo "*** The pkg-config script could not be found. Make sure it is"
-     echo "*** in your path, or set the PKG_CONFIG environment variable"
-     echo "*** to the full path to pkg-config."
-     echo "*** Or see http://www.freedesktop.org/software/pkgconfig to get pkg-config."
-  else
-     #PKG_CONFIG_MIN_VERSION=0.9.0
-     #if $PKG_CONFIG --atleast-pkgconfig-version $PKG_CONFIG_MIN_VERSION; then
-        AC_MSG_CHECKING(for $2)
-
-        if $PKG_CONFIG --exists "$2" ; then
-            AC_MSG_RESULT(yes)
-            succeeded=yes
-
-            AC_MSG_CHECKING($1_CFLAGS)
-            $1_CFLAGS=`$PKG_CONFIG --cflags "$2"`
-            AC_MSG_RESULT($$1_CFLAGS)
-
-            AC_MSG_CHECKING($1_LIBS)
-            $1_LIBS=`$PKG_CONFIG --libs "$2"`
-            AC_MSG_RESULT($$1_LIBS)
-        else
-            $1_CFLAGS=""
-            $1_LIBS=""
-            AC_MSG_RESULT([no])
-        fi
-
-        AC_SUBST($1_CFLAGS)
-        AC_SUBST($1_LIBS)
-     #else
-     #   echo "*** Your version of pkg-config is too old. You need version $PKG_CONFIG_MIN_VERSION or newer."
-     #   echo "*** See http://www.freedesktop.org/software/pkgconfig";
-     #fi
-  fi
-
-  if test $succeeded = yes; then
-     ifelse([$3], , :, [$3])
-  else
-     ifelse([$4], , AC_MSG_ERROR([Library requirements ($2) not met; consider 
-adjusting the PKG_CONFIG_PATH environment variable if your libraries are in a 
-nonstandard prefix so pkg-config can find them.]), [$4])
-  fi
-])
-# end pkg-config macro
-
 
 FUPPES_CFLAGS=""
 FUPPES_LIBS=""
-
-LDFLAGS="$LDFLAGS"
 
 build_daemon=true
 case $host in 
@@ -98,10 +43,12 @@ AC_CHECK_LIB(pthread, pthread_create, LDFLAGS="$LDFLAGS -lpthread")
 # uuid
 have_uuid=no
 AH_TEMPLATE([HAVE_UUID], [])
-AC_CHECK_LIB(uuid, uuid_generate, have_uuid=yes, have_uuid=no)
+#AC_CHECK_LIB(uuid, uuid_generate, have_uuid=yes, have_uuid=no)
+PKG_CHECK_MODULES(UUID, uuid >= 0, have_uuid=yes, have_uuid=no)
 if test "x$have_uuid" = "xyes"; then
   AC_DEFINE([HAVE_UUID], [1], [])
-  LDFLAGS="$LDFLAGS -luuid"
+	CXXFLAGS="$CXXFLAGS $UUID_CFLAGS"
+  LDFLAGS="$LDFLAGS $UUID_LIBS"
 fi
 
 # gamin
@@ -237,6 +184,8 @@ fi
 #
 AH_TEMPLATE([HAVE_LIBAVFORMAT], [])
 AH_TEMPLATE([HAVE_AVSTRING_H], [])
+AH_TEMPLATE([HAVE_LIBSWSCALE], [])
+AH_TEMPLATE([HAVE_AV_PARSE_VIDEO_FUNCTS], [])
 use_libavformat=yes
 have_avstring_h=no
 AC_ARG_ENABLE(libavformat, 
@@ -249,18 +198,29 @@ if test "x$use_libavformat" = "xyes"; then
   LIBAVFORMAT_CFLAGS=""
   LIBAVFORMAT_LIBS=""
   PKG_CHECK_MODULES(LIBAVFORMAT, libavformat, have_libavformat=yes, have_libavformat=no)
-  PKG_CHECK_MODULES(LIBSWSCALE, libswscale, have_libswscale=yes, have_libswscale=no)
 
   if test "x$have_libavformat" = "xyes"; then
+		
 		AC_DEFINE([HAVE_LIBAVFORMAT], [1], [])
+		PKG_CHECK_MODULES(LIBSWSCALE, libswscale, have_libswscale=yes, have_libswscale=no)
+		if test "x$have_libswscale" = "xyes"; then
+      AC_DEFINE([HAVE_LIBSWSCALE], [1], [])
+    fi
+
+
     FUPPES_CFLAGS="$FUPPES_CFLAGS -D__STDC_CONSTANT_MACROS $LIBAVFORMAT_CFLAGS $LIBSWSCALE_CFLAGS"
 		FUPPES_LIBS="$FUPPES_LIBS $LIBAVFORMAT_LIBS $LIBSWSCALE_LIBS"
 
-    
     AC_CHECK_HEADERS(ffmpeg/avstring.h, have_avstring_h=yes, have_avstring_h=no)
     if test "x$have_avstring_h" = "xyes"; then
       AC_DEFINE([HAVE_AVSTRING_H], [1], [])
     fi
+
+		have_av_parse_video_functs=no
+		AC_CHECK_LIB(avcodec, av_parse_video_frame_rate, have_av_parse_video_functs="yes", have_av_parse_video_functs="no")
+		if test "x$have_av_parse_video_functs" = "xyes"; then
+			AC_DEFINE([HAVE_AV_PARSE_VIDEO_FUNCTS], [1], [])
+		fi
 
   else
     AC_MSG_NOTICE([*** libavformat (FFmpeg) support disabled ***]);
@@ -537,26 +497,39 @@ AM_CONDITIONAL([HAVE_INOTIFY], [test "x$have_inotify" = "xyes"])
 
 
 
-# GNOME panel applet incl. libnotify
+# GNOME panel applet
 use_gnome_applet=no
 have_libpanelapplet=no
-have_libnotify=no
 AC_ARG_ENABLE(gnome-panel-applet, 
             [  --enable-gnome-panel-applet  build a panel applet for GNOME desktop],
             [ use_gnome_applet=yes; ] )
             
 if test "x$use_gnome_applet" = "xyes"; then
   PKG_CHECK_MODULES(LIBPANELAPPLET, libpanelapplet-2.0, have_libpanelapplet=yes, have_libpanelapplet=no)
-  PKG_CHECK_MODULES(LIBNOTIFY, libnotify >= 0.4.2, have_libnotify=yes, have_libnotify=no)
-  if test "x$have_libnotify" = "xyes"; then
-    LIBNOTIFY_CFLAGS="-DHAVE_LIBNOTIFY $LIBNOTIFY_CFLAGS"
-  fi
 fi
 AM_CONDITIONAL(GNOMEAPPLET, test "x$have_libpanelapplet" = "xyes")
 
 # end GNOME panel applet
 
+# libnotify
+use_libnotify=$have_libpanelapplet
+have_libnotify=no
 
+AC_ARG_ENABLE(libnotify, 
+            [  --enable-libnotify  libnotify support],
+            [ use_libnotify=yes; ] )
+
+if test "x$use_libnotify" = "xyes"; then
+  PKG_CHECK_MODULES(LIBNOTIFY, libnotify >= 0.4.2, have_libnotify=yes, have_libnotify=no)
+  if test "x$have_libnotify" = "xyes"; then
+    AC_DEFINE([HAVE_LIBNOTIFY], [1], [])
+	  CXXFLAGS="$CXXFLAGS $LIBNOTIFY_CFLAGS"
+	  LDFLAGS="$LDFLAGS $LIBNOTIFY_LIBS"
+  fi
+fi
+
+AH_TEMPLATE([HAVE_LIBNOTIFY], [])
+AM_CONDITIONAL(LIBNOTIFY, test "x$have_libnotify" = "xyes")
 
 
 
@@ -575,7 +548,7 @@ AC_SUBST(FLAC_LIBS)
 AC_SUBST(FUPPES_LIBS)
 AC_SUBST(FUPPES_CFLAGS)
 
-AC_SUBST(LDFLAGS)
+# AC_SUBST(LDFLAGS)
 
 AC_OUTPUT([
 Makefile

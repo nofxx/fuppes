@@ -394,9 +394,12 @@ bool CFaadWrapper::LoadLib()
   } 
 
   m_AudioSpecificConfig = (AudioSpecificConfig_t)FuppesGetProcAddress(m_LibHandle, "AudioSpecificConfig"); 
-  if(!m_AudioSpecificConfig) { 
-    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot load symbol 'AudioSpecificConfig'", __FILE__, __LINE__);    
-    return false; 
+  if(!m_AudioSpecificConfig) {
+		m_AudioSpecificConfig = (AudioSpecificConfig_t)FuppesGetProcAddress(m_LibHandle, "faacDecAudioSpecificConfig"); 
+		if(!m_AudioSpecificConfig) {  
+  	  CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot load symbol '(faacDec)AudioSpecificConfig'", __FILE__, __LINE__);    
+      return false;
+		}
   }
 
 

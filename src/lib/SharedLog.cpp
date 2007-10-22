@@ -34,6 +34,12 @@
   #endif
 #endif
 
+#ifdef HAVE_LIBNOTIFY
+#include <libnotify/notify.h>
+#include <libnotify/notification.h>
+#include <libnotify/notify-enum-types.h>
+#endif
+
 using namespace std;
 
 CSharedLog* CSharedLog::m_Instance = 0;
@@ -59,10 +65,19 @@ CSharedLog::CSharedLog()
   m_err_cb = NULL;
   m_notify_cb = NULL;
   m_user_input_cb = NULL;
+		
+	#ifdef HAVE_LIBNOTIFY
+  if(!notify_init("fuppes"))
+    printf("notify_init() failed\n");
+  #endif        
 }
 
 CSharedLog::~CSharedLog()
 {
+	#ifdef HAVE_LIBNOTIFY
+  notify_uninit();
+  #endif		
+		
   #ifdef HAVE_SYSLOG_H
   if(m_bUseSyslog)
     closelog();
@@ -196,8 +211,23 @@ void CSharedLog::UserNotify(std::string p_sTitle, std::string p_sNotifyMsg)
     m_notify_cb(p_sTitle.c_str(), p_sNotifyMsg.c_str());
   }
   else {
+		#ifdef HAVE_LIBNOTIFY
+		NotifyNotification* pNotification; 
+  	pNotification = notify_notification_new(p_sTitle.c_str(), p_sNotifyMsg.c_str(), NULL, NULL);
+  
+  	//NOTIFY_URGENCY_LOW 	 Low urgency. Used for unimportant notifications.
+  	//NOTIFY_URGENCY_NORMAL 	Normal urgency. Used for most standard notifications.
+  	//NOTIFY_URGENCY_CRITICAL 	Critical urgency. Used for very important notifications.  
+  	//notify_notification_set_urgency(pNotification, NOTIFY_URGENCY_LOW);
+  
+  	GError* pError = NULL;
+  	if(!notify_notification_show(pNotification,  &pError)) {
+    	//
+  	}			
+		#else
     cout << p_sNotifyMsg << endl;
-  }  
+		#endif
+  }
 }
 
 std::string CSharedLog::UserInput(std::string p_sMessage)

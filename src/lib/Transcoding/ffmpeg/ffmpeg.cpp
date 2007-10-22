@@ -503,8 +503,10 @@ void do_video_out(AVFormatContext *s,
     if (ost->video_resample) {
         padding_src = NULL;
         final_picture = &ost->pict_tmp;
+#ifdef HAVE_LIBSWSCALE
         sws_scale(ost->img_resample_ctx, formatted_picture->data, formatted_picture->linesize,
               0, ost->resample_height, resampling_dst->data, resampling_dst->linesize);
+#endif
     }
 
     if (ost->video_pad) {
@@ -1369,6 +1371,7 @@ int av_encode(AVFormatContext **output_files,
                         return -1;
                     }
                     pFFmpeg->sws_flags = av_get_int(pFFmpeg->sws_opts, "sws_flags", NULL);
+#ifdef HAVE_LIBSWSCALE
                     ost->img_resample_ctx = sws_getContext(
                             icodec->width - (pFFmpeg->frame_leftBand + pFFmpeg->frame_rightBand),
                             icodec->height - (pFFmpeg->frame_topBand + pFFmpeg->frame_bottomBand),
@@ -1377,6 +1380,7 @@ int av_encode(AVFormatContext **output_files,
                             codec->height - (pFFmpeg->frame_padtop + pFFmpeg->frame_padbottom),
                             codec->pix_fmt,
                             pFFmpeg->sws_flags, NULL, NULL, NULL);
+#endif
                     if (ost->img_resample_ctx == NULL) {
                         fprintf(stderr, "Cannot get resampling context\n");
                         return -1;
@@ -1643,9 +1647,10 @@ int av_encode(AVFormatContext **output_files,
                 continue;
         }
 
-        if (pFFmpeg->do_pkt_dump) {
+        /*if (pFFmpeg->do_pkt_dump) {
             av_pkt_dump_log(NULL, AV_LOG_DEBUG, &pkt, pFFmpeg->do_hex_dump);
-        }
+        }*/
+				
         /* the following test is needed in case new streams appear
            dynamically in stream : we ignore them */
         if (pkt.stream_index >= file_table[file_index].nb_streams)
@@ -1749,8 +1754,10 @@ int av_encode(AVFormatContext **output_files,
                 av_fifo_free(&ost->fifo); /* works even if fifo is not
                                              initialized but set to zero */
                 av_free(ost->pict_tmp.data[0]);
+#ifdef HAVE_LIBSWSCALE
                 if (ost->video_resample)
                     sws_freeContext(ost->img_resample_ctx);
+#endif
                 if (ost->audio_resample)
                     audio_resample_close(ost->resample);
                 av_free(ost);
@@ -2229,7 +2236,9 @@ int CFFmpeg::ffmpeg_main(int argc, char* argv[])
         avctx_opts[i]= avcodec_alloc_context2((CodecType)i);
     }
     avformat_opts = av_alloc_format_context();
+#ifdef HAVE_LIBSWSCALE
     sws_opts = sws_getContext(16,16,0, 16,16,0, sws_flags, NULL,NULL,NULL);
+#endif
 
     
     /* parse options */
