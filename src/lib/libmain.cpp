@@ -43,7 +43,7 @@
 
 #ifdef HAVE_IMAGEMAGICK
 //#include <Magick++.h>
-#include <wand/MagickWand.h>
+#include <wand/magick-wand.h>
 #endif
 
 #ifdef HAVE_LIBAVFORMAT

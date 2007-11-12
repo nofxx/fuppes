@@ -105,7 +105,7 @@ typedef enum TRANSCODING_HTTP_RESPONSE {
   RESPONSE_CHUNKED
 } TRANSCODING_HTTP_RESPONSE;
 
-struct CFFmpegSettings {
+/*struct CFFmpegSettings {
   
   private:
     std::string   sVcodec;
@@ -114,7 +114,7 @@ struct CFFmpegSettings {
     int           nVFrameRate;
     int           nABitRate;
     int           nASampleRate;
-};
+};*/
 
 struct CTranscodingSettings {
   
@@ -144,6 +144,8 @@ struct CTranscodingSettings {
     std::string  AudioCodec(std::string p_sACodec = "");
     std::string  VideoCodec(std::string p_sVCodec = "");
   
+    std::string  FFmpegParams() { return sFFmpegParams; }
+  
     int LameQuality() { return nLameQuality; }
   
     std::string  Extension() { return sExt; }
@@ -151,7 +153,7 @@ struct CTranscodingSettings {
   
     int ReleaseDelay() { return nReleaseDelay; }
   
-    std::list<CFFmpegSettings*>   pFFmpegSettings;
+    //std::list<CFFmpegSettings*>   pFFmpegSettings;
   
     TRANSCODING_TYPE TranscodingType() { return nTranscodingType; }
     TRANSCODER_TYPE TranscoderType() { return nTranscoderType; }
@@ -181,6 +183,8 @@ struct CTranscodingSettings {
     std::string     sVCodecCondition;
     std::string     sACodec;
     std::string     sVCodec;
+  
+    std::string     sFFmpegParams;
 };
 
 struct CFileSettings {

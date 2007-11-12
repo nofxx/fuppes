@@ -143,14 +143,43 @@ bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFi
   szArgs[nArgs] = (char*)malloc((strlen("2") + 1) * sizeof(char));
   strcpy(szArgs[nArgs], "2");
   nArgs++;  
-    
+
+
+/*  szArgs[nArgs] = (char*)malloc((strlen("-s") + 1) * sizeof(char));
+  strcpy(szArgs[nArgs], "-s");
+  nArgs++;
+  
+  szArgs[nArgs] = (char*)malloc((strlen("640x360") + 1) * sizeof(char));
+  strcpy(szArgs[nArgs], "640x360");
+  nArgs++;      */
   
 
   szArgs[nArgs] = (char*)malloc((strlen(p_psOutFile->c_str()) + 1) * sizeof(char));
   strcpy(szArgs[nArgs], p_psOutFile->c_str());  
   nArgs++;
   
-
+  string  sParams = pFileSettings->pTranscodingSettings->FFmpegParams();
+  int     nChar = ' ';
+  char*   sChar = NULL;
+  string  sArg;  
+  
+  while((sChar = strchr(sParams.c_str(), nChar)) || !sParams.empty()) {    
+    
+    if(sChar) {
+      sArg = sParams.substr(0, sChar - sParams.c_str());      
+      sParams = sParams.substr(sChar - sParams.c_str() + 1, sParams.length());
+    }
+    else {
+      sArg = sParams;      
+      sParams = "";
+    }
+    
+    szArgs[nArgs] = (char*)malloc((strlen(sArg.c_str()) + 1) * sizeof(char));
+    strcpy(szArgs[nArgs], sArg.c_str());  
+    nArgs++;    
+  }  
+  
+  
   pFFmpeg->ffmpeg_main(nArgs, szArgs);
   
   for(int i = 0; i < nArgs; i++) {
