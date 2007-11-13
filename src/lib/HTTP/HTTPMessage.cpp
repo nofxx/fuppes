@@ -711,7 +711,9 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName, SAudioItem 
   
   
   m_pTranscodingCacheObj = CTranscodingCache::Shared()->GetCacheObject(m_pTranscodingSessionInfo->m_sInFileName);
-  m_pTranscodingCacheObj->Init(m_pTranscodingSessionInfo, DeviceSettings());
+  if(!m_pTranscodingCacheObj->Init(m_pTranscodingSessionInfo, DeviceSettings())) {
+		return false;
+	}
     
   m_pTranscodingCacheObj->Transcode(DeviceSettings()); 
   

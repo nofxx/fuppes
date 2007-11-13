@@ -232,7 +232,7 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
   std::string       sPath;
   std::string       sMimeType;
   CContentDatabase* pDb         = new CContentDatabase();  
-  bool              bResult     = false;  
+  bool              bResult     = true;  
   
   
   string sDevice = " and o.DEVICE is NULL ";
@@ -260,7 +260,7 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
     
     if(!FileExists(sPath)) {
       CSharedLog::Shared()->Log(L_WARNING, "file: " + sPath + " not found", __FILE__, __LINE__);
-      bResult = false;      
+      bResult = false;
     }
     else
     {      
@@ -298,19 +298,20 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
             trackDetails.sVCodec = pDb->GetResult()->GetValue("V_CODEC");
           }
           
-          pResponse->TranscodeContentFromFile(sPath, trackDetails);
+          bResult = pResponse->TranscodeContentFromFile(sPath, trackDetails);
         }
         else if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) {
           // mark the head response as chunked so
           // the correct header will be build
           pResponse->SetIsBinary(true);
-          
+          bResult = true;
+						
           if(pRequest->DeviceSettings()->TranscodingHTTPResponse(sExt) == RESPONSE_CHUNKED) {
             pResponse->SetTransferEncoding(HTTP_TRANSFER_ENCODING_CHUNKED);
           }
           else if(pRequest->DeviceSettings()->TranscodingHTTPResponse(sExt) == RESPONSE_STREAM) {
             pResponse->SetTransferEncoding(HTTP_TRANSFER_ENCODING_NONE);
-          }          
+          }
         }
       }
       else {
@@ -323,7 +324,7 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
       // CHTTPServer will change the type
       pResponse->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
       pResponse->SetContentType(sMimeType);
-      bResult = true;
+      //bResult = true;
     }
   }
   else // eof
