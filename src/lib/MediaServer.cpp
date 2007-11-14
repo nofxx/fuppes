@@ -32,7 +32,7 @@ using namespace std;
 CMediaServer::CMediaServer(std::string p_sHTTPServerURL, IUPnPDevice* pOnTimerHandler):
   CUPnPDevice(UPNP_DEVICE_MEDIA_SERVER, p_sHTTPServerURL, pOnTimerHandler)
 {
-  m_sFriendlyName = CSharedConfig::Shared()->FriendlyName();
+  /*m_sFriendlyName = CSharedConfig::Shared()->FriendlyName();
 
 	if(!CSharedConfig::Shared()->ConfigFile()->MediaServerSettings()->Manufacturer.empty()) {
   	m_sManufacturer = CSharedConfig::Shared()->ConfigFile()->MediaServerSettings()->Manufacturer;
@@ -48,7 +48,7 @@ CMediaServer::CMediaServer(std::string p_sHTTPServerURL, IUPnPDevice* pOnTimerHa
   m_sModelNumber = CSharedConfig::Shared()->GetAppVersion();
 
   m_sModelURL        = "http://fuppes.sourceforge.net";
-  m_sSerialNumber    = "012345678910";
+  m_sSerialNumber    = "012345678910";*/
   m_sUUID  			     = CSharedConfig::Shared()->GetUUID();
   m_sUPC				     = "";
   m_sPresentationURL = "index.html";      

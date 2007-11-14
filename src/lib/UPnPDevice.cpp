@@ -163,7 +163,7 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
       xmlTextWriterEndElement(writer);
 		
 			// friendlyName
-			if(pRequest->DeviceSettings()->Xbox360Support()) {
+			/*if(pRequest->DeviceSettings()->Xbox360Support()) {
 			  stringstream sName;
 				sName << m_sFriendlyName << " : 1 : Windows Media Connect";
 			
@@ -175,25 +175,31 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 				xmlTextWriterStartElement(writer, BAD_CAST "friendlyName");
 				xmlTextWriterWriteString(writer, BAD_CAST m_sFriendlyName.c_str());
         xmlTextWriterEndElement(writer);
-			}
+			}*/
+			xmlTextWriterStartElement(writer, BAD_CAST "friendlyName");
+			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->FriendlyName.c_str());
+      xmlTextWriterEndElement(writer);
 			
 			/* manufacturer */
 			xmlTextWriterStartElement(writer, BAD_CAST "manufacturer");
-      xmlTextWriterWriteString(writer, BAD_CAST m_sManufacturer.c_str());
+      //xmlTextWriterWriteString(writer, BAD_CAST m_sManufacturer.c_str());
+			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->Manufacturer.c_str());	
 			xmlTextWriterEndElement(writer);
 			
       /* manufacturerURL */
 			xmlTextWriterStartElement(writer, BAD_CAST "manufacturerURL");
-      xmlTextWriterWriteString(writer, BAD_CAST m_sManufacturerURL.c_str());
+      //xmlTextWriterWriteString(writer, BAD_CAST m_sManufacturerURL.c_str());
+			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->ManufacturerURL.c_str());
 			xmlTextWriterEndElement(writer);
 			
       /* modelDescription */
 			xmlTextWriterStartElement(writer, BAD_CAST "modelDescription");
-      xmlTextWriterWriteString(writer, BAD_CAST m_sModelDescription.c_str());
+      //xmlTextWriterWriteString(writer, BAD_CAST m_sModelDescription.c_str());
+			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->ModelDescription.c_str());
 			xmlTextWriterEndElement(writer);
 			
 			// modelName
-			if(pRequest->DeviceSettings()->Xbox360Support()) {
+			/*if(pRequest->DeviceSettings()->Xbox360Support()) {
 			  xmlTextWriterStartElement(writer, BAD_CAST "modelName");
         xmlTextWriterWriteString(writer, BAD_CAST "Windows Media Connect compatible (fuppes)");
 			  xmlTextWriterEndElement(writer);
@@ -202,26 +208,33 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 			  xmlTextWriterStartElement(writer, BAD_CAST "modelName");
         xmlTextWriterWriteString(writer, BAD_CAST m_sModelName.c_str());
 			  xmlTextWriterEndElement(writer);
-			}
+			}*/
 			
+			xmlTextWriterStartElement(writer, BAD_CAST "modelName");
+			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->ModelName.c_str());
+			xmlTextWriterEndElement(writer);
+		
 			/* modelNumber */
 			xmlTextWriterStartElement(writer, BAD_CAST "modelNumber");
-      if(pRequest->DeviceSettings()->Xbox360Support()) {
+      /*if(pRequest->DeviceSettings()->Xbox360Support()) {
         xmlTextWriterWriteString(writer, BAD_CAST "2.0");
 			}
 			else {
         xmlTextWriterWriteString(writer, BAD_CAST m_sModelNumber.c_str());
-			} 
+			}*/
+			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->ModelNumber.c_str());
 			xmlTextWriterEndElement(writer);
       
 			/* modelURL */
 			xmlTextWriterStartElement(writer, BAD_CAST "modelURL");
-      xmlTextWriterWriteString(writer, BAD_CAST m_sModelURL.c_str());
+      //xmlTextWriterWriteString(writer, BAD_CAST m_sModelURL.c_str());
+			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->ModelURL.c_str());
 			xmlTextWriterEndElement(writer);
 			
 			/* serialNumber */
 			xmlTextWriterStartElement(writer, BAD_CAST "serialNumber");
-      xmlTextWriterWriteString(writer, BAD_CAST m_sSerialNumber.c_str());
+      //xmlTextWriterWriteString(writer, BAD_CAST m_sSerialNumber.c_str());
+			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->SerialNumber.c_str());
 			xmlTextWriterEndElement(writer);
 			
 			/* UDN */

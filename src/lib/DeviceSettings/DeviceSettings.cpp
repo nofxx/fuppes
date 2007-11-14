@@ -23,6 +23,7 @@
 
 #include "DeviceSettings.h"
 #include "../Common/RegEx.h"
+#include "../SharedConfig.h"
 #include <iostream>
 
 #define DEFAULT_RELEASE_DELAY 4
@@ -368,6 +369,15 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
   m_DisplaySettings.nMaxFileNameLength     = 0;
   
   nDefaultReleaseDelay = DEFAULT_RELEASE_DELAY;
+		
+	m_MediaServerSettings.FriendlyName = CSharedConfig::Shared()->FriendlyName();
+	m_MediaServerSettings.Manufacturer = "Ulrich Voelkel";
+	m_MediaServerSettings.ManufacturerURL = "http://www.ulrich-voelkel.de"; 	
+	m_MediaServerSettings.ModelName = "Free UPnP Entertainment Service " + CSharedConfig::Shared()->GetAppVersion();
+	m_MediaServerSettings.ModelNumber = CSharedConfig::Shared()->GetAppVersion();
+	m_MediaServerSettings.ModelURL = "http://fuppes.ulrich-voelkel.de";
+	m_MediaServerSettings.ModelDescription = "Free UPnP Media Server licensed under the terms of the GPL";
+	m_MediaServerSettings.SerialNumber = "0123456789";
 }
 
 CDeviceSettings::CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSettings)
@@ -388,9 +398,17 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSe
   m_DisplaySettings.bShowChildCountInTitle = pSettings->m_DisplaySettings.bShowChildCountInTitle;
   m_DisplaySettings.nMaxFileNameLength     = pSettings->m_DisplaySettings.nMaxFileNameLength; 
   
-  
   nDefaultReleaseDelay = pSettings->nDefaultReleaseDelay;
   
+	m_MediaServerSettings.FriendlyName = pSettings->MediaServerSettings()->FriendlyName;
+	m_MediaServerSettings.Manufacturer = pSettings->MediaServerSettings()->Manufacturer;
+	m_MediaServerSettings.ManufacturerURL = pSettings->MediaServerSettings()->ManufacturerURL;
+	m_MediaServerSettings.ModelName = pSettings->MediaServerSettings()->ModelName;
+	m_MediaServerSettings.ModelNumber = pSettings->MediaServerSettings()->ModelNumber;
+	m_MediaServerSettings.ModelURL = pSettings->MediaServerSettings()->ModelURL;
+	m_MediaServerSettings.ModelDescription = pSettings->MediaServerSettings()->ModelDescription;
+	m_MediaServerSettings.SerialNumber = pSettings->MediaServerSettings()->SerialNumber;
+		
   for(pSettings->m_FileSettingsIterator = pSettings->m_FileSettings.begin();
       pSettings->m_FileSettingsIterator != pSettings->m_FileSettings.end();
       pSettings->m_FileSettingsIterator++) {

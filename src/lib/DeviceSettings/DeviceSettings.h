@@ -228,6 +228,18 @@ struct CFileSettings {
 
 typedef std::map<std::string, CFileSettings*>::iterator FileSettingsIterator_t;
 
+struct CMediaServerSettings
+{
+	std::string		FriendlyName;
+	std::string 	Manufacturer;
+	std::string 	ManufacturerURL;
+	std::string 	ModelName;
+	std::string 	ModelNumber;
+	std::string 	ModelURL;
+	std::string		ModelDescription;
+	std::string 	SerialNumber;	
+};
+
 class CDeviceSettings
 {
   friend class CConfigFile;
@@ -264,10 +276,11 @@ class CDeviceSettings
     int ReleaseDelay(std::string p_sExt);
     
     DisplaySettings_t* DisplaySettings() { return &m_DisplaySettings; }
-  
     CFileSettings* FileSettings(std::string p_sExt);
     void AddExt(CFileSettings* pFileSettings, std::string p_sExt);
     
+		CMediaServerSettings* MediaServerSettings() { return &m_MediaServerSettings; }
+		
     bool         EnableDeviceIcon() { return m_bEnableDeviceIcon; }  
     bool         Xbox360Support() { return m_bXBox360Support; }    
 		bool         ShowPlaylistAsContainer() { return m_bShowPlaylistAsContainer; }		
@@ -280,7 +293,8 @@ class CDeviceSettings
     std::string m_sVirtualFolderDevice;
     
     DisplaySettings_t m_DisplaySettings;
-
+		CMediaServerSettings m_MediaServerSettings;
+		
 		bool m_bShowPlaylistAsContainer;
 		bool m_bXBox360Support;
     bool m_bDLNAEnabled;  

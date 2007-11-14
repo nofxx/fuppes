@@ -24,6 +24,7 @@
 #include "ConfigFile.h"
 #include "../DeviceSettings/DeviceIdentificationMgr.h"
 #include "DefaultConfig.h"
+#include "../SharedConfig.h"
 
 #include <sstream>
 #include <iostream>
@@ -75,7 +76,6 @@ int CConfigFile::Load(std::string p_sFileName, std::string* p_psErrorMsg)
   CXMLNode* pTmpNode;
   int i;
   
-  ReadMediaServerSettings();
 	ReadSharedObjects();
   ReadNetworkSettings();
 
@@ -153,54 +153,7 @@ int CConfigFile::Load(std::string p_sFileName, std::string* p_psErrorMsg)
   return CF_OK;
 }
 
-void CConfigFile::ReadMediaServerSettings()
-{
-	CXMLNode* pTmpNode;
-  int i;  
-		
-	pTmpNode = m_pDoc->RootNode()->FindNodeByName("media_server", false);
-  if(!pTmpNode) {
-			return;
-	}
-		
-	for(i = 0; i < pTmpNode->ChildCount(); i++) {
-		// friendly_name
-		if(pTmpNode->ChildNode(i)->Name().compare("friendly_name") == 0) {
-			m_MediaServerSettings.FriendlyName = 
-						pTmpNode->ChildNode(i)->Value();
-    }
-		// manufacturer
-		else if(pTmpNode->ChildNode(i)->Name().compare("manufacturer") == 0) {
-			m_MediaServerSettings.Manufacturer = 
-						pTmpNode->ChildNode(i)->Value();
-    }
-		// manufacturer_url
-		else if(pTmpNode->ChildNode(i)->Name().compare("manufacturer_url") == 0) {
-			m_MediaServerSettings.ManufacturerURL = 
-						pTmpNode->ChildNode(i)->Value();
-    }
-		// model_name
-		else if(pTmpNode->ChildNode(i)->Name().compare("model_name") == 0) {
-			m_MediaServerSettings.ModelName = 
-						pTmpNode->ChildNode(i)->Value();
-    }
-		// model_number
-		else if(pTmpNode->ChildNode(i)->Name().compare("model_number") == 0) {
-			m_MediaServerSettings.ModelNumber = 
-						pTmpNode->ChildNode(i)->Value();
-    }
-		// model_url
-		else if(pTmpNode->ChildNode(i)->Name().compare("model_url") == 0) {
-			m_MediaServerSettings.ModelURL = 
-						pTmpNode->ChildNode(i)->Value();
-    }
-		// serial_number
-		else if(pTmpNode->ChildNode(i)->Name().compare("serial_number") == 0) {
-			m_MediaServerSettings.SerialNumber = 
-						pTmpNode->ChildNode(i)->Value();
-    }
-	} // for
-}
+
 
 void CConfigFile::ReadSharedObjects()
 {
@@ -337,7 +290,8 @@ void CConfigFile::SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode, bo
       }
       else if(pTmp->Name().compare("show_device_icon") == 0) {
         pSettings->m_bEnableDeviceIcon = (pTmp->Value().compare("true") == 0);
-      }      
+      }
+			// file_settings
       else if(pTmp->Name().compare("file_settings") == 0) {
         
         for(k = 0; k < pTmp->ChildCount(); k++) {
@@ -347,6 +301,11 @@ void CConfigFile::SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode, bo
           ParseFileSettings(pTmp->ChildNode(k), pSettings);
         }
       }
+      // description_values
+			else if(pTmp->Name().compare("description_values") == 0) {
+				ParseDescriptionValues(pTmp, pSettings);
+			}
+				
     }
     
     // now that we got "default" initialized let's
@@ -634,6 +593,76 @@ void CConfigFile::ParseImageSettings(CXMLNode* pISNode, CFileSettings* pFileSet)
     //}
 
   }
+}
+
+void ReplaceDescriptionVars(std::string* p_sValue)
+{
+	string sValue = *p_sValue;
+		
+	string::size_type pos;
+		
+	// version (%v)
+	while((pos = sValue.find("%v")) != string::npos) {
+		sValue = sValue.replace(pos, 2, CSharedConfig::Shared()->GetAppVersion());
+	}
+		
+	// short name (%s)
+	while((pos = sValue.find("%s")) != string::npos) {
+		sValue = sValue.replace(pos, 2, CSharedConfig::Shared()->GetAppName());
+	}	
+		
+  *p_sValue = sValue;
+}
+
+void CConfigFile::ParseDescriptionValues(CXMLNode* pDescrValues, CDeviceSettings* pDevSet)
+{
+	for(int i = 0; i < pDescrValues->ChildCount(); i++) {
+		// friendly_name
+		if(pDescrValues->ChildNode(i)->Name().compare("friendly_name") == 0) {
+			pDevSet->MediaServerSettings()->FriendlyName = 
+						pDescrValues->ChildNode(i)->Value();
+			ReplaceDescriptionVars(&pDevSet->MediaServerSettings()->FriendlyName);
+    }
+		// manufacturer
+		else if(pDescrValues->ChildNode(i)->Name().compare("manufacturer") == 0) {
+			pDevSet->MediaServerSettings()->Manufacturer = 
+						pDescrValues->ChildNode(i)->Value();
+    }
+		// manufacturer_url
+		else if(pDescrValues->ChildNode(i)->Name().compare("manufacturer_url") == 0) {
+			pDevSet->MediaServerSettings()->ManufacturerURL = 
+						pDescrValues->ChildNode(i)->Value();
+    }
+		// model_name
+		else if(pDescrValues->ChildNode(i)->Name().compare("model_name") == 0) {
+			pDevSet->MediaServerSettings()->ModelName = 
+						pDescrValues->ChildNode(i)->Value();
+			ReplaceDescriptionVars(&pDevSet->MediaServerSettings()->ModelName);
+    }
+		// model_number
+		else if(pDescrValues->ChildNode(i)->Name().compare("model_number") == 0) {
+			pDevSet->MediaServerSettings()->ModelNumber = 
+						pDescrValues->ChildNode(i)->Value();
+			ReplaceDescriptionVars(&pDevSet->MediaServerSettings()->ModelNumber);
+    }
+		// model_url
+		else if(pDescrValues->ChildNode(i)->Name().compare("model_url") == 0) {
+			pDevSet->MediaServerSettings()->ModelURL = 
+						pDescrValues->ChildNode(i)->Value();
+    }
+		// model_description
+		else if(pDescrValues->ChildNode(i)->Name().compare("model_description") == 0) {
+			pDevSet->MediaServerSettings()->ModelDescription = 
+						pDescrValues->ChildNode(i)->Value();
+			ReplaceDescriptionVars(&pDevSet->MediaServerSettings()->ModelDescription);
+    }
+		// serial_number
+		else if(pDescrValues->ChildNode(i)->Name().compare("serial_number") == 0) {
+			pDevSet->MediaServerSettings()->SerialNumber = 
+						pDescrValues->ChildNode(i)->Value();
+			ReplaceDescriptionVars(&pDevSet->MediaServerSettings()->SerialNumber);
+    }		
+	} // for
 }
 
 void CConfigFile::AddSharedDir(std::string p_sDirName)

@@ -35,17 +35,6 @@ typedef enum CONFIG_FILE_ERROR {
   CF_CONFIG_DEPRECATED  
 } CONFIG_FILE_ERROR;
 
-struct CMediaServerSettings
-{
-	std::string		FriendlyName;
-	std::string 	Manufacturer;
-	std::string 	ManufacturerURL;
-	std::string 	ModelName;
-	std::string 	ModelNumber;
-	std::string 	ModelURL;
-	std::string 	SerialNumber;	
-};
-
 class CConfigFile
 {
   public:
@@ -100,20 +89,18 @@ class CConfigFile
 		std::string  Mp4ffLibName() { return m_sMp4ffLibName; }
   
     bool WriteDefaultConfig(std::string p_sFileName);
-  
-		CMediaServerSettings* MediaServerSettings() { return &m_MediaServerSettings; }
 		
   private:
     CXMLDocument* m_pDoc;
-  
-		void ReadMediaServerSettings();
+		
     void ReadSharedObjects();
     void ReadNetworkSettings();
     void SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode, bool p_bDefaultInitialized = false);
     void ParseFileSettings(CXMLNode* pFileSettings, CDeviceSettings* pDevSet);
     void ParseTranscodingSettings(CXMLNode* pTCNode, CFileSettings* pFileSet);
     void ParseImageSettings(CXMLNode* pISNode, CFileSettings* pFileSet);
-  
+		void ParseDescriptionValues(CXMLNode* pDescrValues, CDeviceSettings* pDevSet);
+		
     // shared objects
     std::vector<std::string>  m_lSharedDirs;
     std::vector<std::string>  m_lSharedITunes;
@@ -142,8 +129,6 @@ class CConfigFile
     std::string				m_sFlacLibName;
     std::string      	m_sFaadLibName;
 		std::string				m_sMp4ffLibName;
-		
-		CMediaServerSettings	m_MediaServerSettings;
 };
 
 #endif // _CONFIGFILE_H
