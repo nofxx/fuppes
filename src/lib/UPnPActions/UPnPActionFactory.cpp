@@ -166,11 +166,11 @@ bool CUPnPActionFactory::ParseBrowseAction(CUPnPBrowse* pAction)
   /* Object ID */
   string sRxObjId;
   if(!pAction->DeviceSettings()->Xbox360Support()) {
-    sRxObjId = "<ObjectID>(.+)</ObjectID>";
+    sRxObjId = "<ObjectID.*>(.+)</ObjectID>";
   }
   else {
     // Xbox 360 does a browse using ContainerID instead of ObjectID for Pictures
-    sRxObjId = "<ContainerID>(.+)</ContainerID>";
+    sRxObjId = "<ContainerID.*>(.+)</ContainerID>";
   }    
   RegEx rxObjId(sRxObjId.c_str());
   if (rxObjId.Search(pAction->GetContent().c_str()))
@@ -178,7 +178,7 @@ bool CUPnPActionFactory::ParseBrowseAction(CUPnPBrowse* pAction)
   
   /* Browse flag */
   pAction->m_nBrowseFlag = UPNP_BROWSE_FLAG_UNKNOWN;    
-  RegEx rxBrowseFlag("<BrowseFlag>(.+)</BrowseFlag>");
+  RegEx rxBrowseFlag("<BrowseFlag.*>(.+)</BrowseFlag>");
   if(rxBrowseFlag.Search(pAction->GetContent().c_str()))
   {
     string sMatch = rxBrowseFlag.Match(1);
@@ -189,19 +189,19 @@ bool CUPnPActionFactory::ParseBrowseAction(CUPnPBrowse* pAction)
   }  
   
   /* Filter */
-  RegEx rxFilter("<Filter>(.+)</Filter>");
+  RegEx rxFilter("<Filter.*>(.+)</Filter>");
   if(rxFilter.Search(pAction->GetContent().c_str()))  
     pAction->m_sFilter = rxFilter.Match(1);  
   else
     pAction->m_sFilter = "";
 
   /* Starting index */
-  RegEx rxStartIdx("<StartingIndex>(.+)</StartingIndex>");
+  RegEx rxStartIdx("<StartingIndex.*>(.+)</StartingIndex>");
   if(rxStartIdx.Search(pAction->GetContent().c_str()))  
     pAction->m_nStartingIndex = atoi(rxStartIdx.Match(1));
 
   /* Requested count */
-  RegEx rxReqCnt("<RequestedCount>(.+)</RequestedCount>");
+  RegEx rxReqCnt("<RequestedCount.*>(.+)</RequestedCount>");
   if(rxReqCnt.Search(pAction->GetContent().c_str()))  
     pAction->m_nRequestedCount = atoi(rxReqCnt.Match(1));  
   
@@ -229,29 +229,29 @@ bool CUPnPActionFactory::ParseSearchAction(CUPnPSearch* pAction)
 	</s:Envelope> */
   
   // Container ID
-  RegEx rxContainerID("<ContainerID>(.+)</ContainerID>");
+  RegEx rxContainerID("<ContainerID.*>(.+)</ContainerID>");
   if (rxContainerID.Search(pAction->GetContent().c_str()))
     pAction->m_sContainerID = rxContainerID.Match(1);
 	
 	// Search Criteria
-	RegEx rxSearchCriteria("<SearchCriteria>(.+)</SearchCriteria>");
+	RegEx rxSearchCriteria("<SearchCriteria.*>(.+)</SearchCriteria>");
 	if(rxSearchCriteria.Search(pAction->GetContent().c_str()))
 	  pAction->m_sSearchCriteria = rxSearchCriteria.Match(1);
 	
   // Filter
-  RegEx rxFilter("<Filter>(.+)</Filter>");
+  RegEx rxFilter("<Filter.*>(.+)</Filter>");
   if(rxFilter.Search(pAction->GetContent().c_str()))  
     pAction->m_sFilter = rxFilter.Match(1);  
   else
     pAction->m_sFilter = "";
 
   // Starting index
-  RegEx rxStartIdx("<StartingIndex>(.+)</StartingIndex>");
+  RegEx rxStartIdx("<StartingIndex.*>(.+)</StartingIndex>");
   if(rxStartIdx.Search(pAction->GetContent().c_str()))  
     pAction->m_nStartingIndex = atoi(rxStartIdx.Match(1));
 
   // Requested count
-  RegEx rxReqCnt("<RequestedCount>(.+)</RequestedCount>");
+  RegEx rxReqCnt("<RequestedCount.*>(.+)</RequestedCount>");
   if(rxReqCnt.Search(pAction->GetContent().c_str()))  
     pAction->m_nRequestedCount = atoi(rxReqCnt.Match(1)); 
 
