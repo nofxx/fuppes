@@ -193,10 +193,11 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 			xmlTextWriterEndElement(writer);
 			
       /* modelDescription */
-			xmlTextWriterStartElement(writer, BAD_CAST "modelDescription");
-      //xmlTextWriterWriteString(writer, BAD_CAST m_sModelDescription.c_str());
-			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->ModelDescription.c_str());
-			xmlTextWriterEndElement(writer);
+			if(pRequest->DeviceSettings()->MediaServerSettings()->UseModelDescription) {
+				xmlTextWriterStartElement(writer, BAD_CAST "modelDescription");      
+				xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->ModelDescription.c_str());
+				xmlTextWriterEndElement(writer);
+			}
 			
 			// modelName
 			/*if(pRequest->DeviceSettings()->Xbox360Support()) {
@@ -230,28 +231,29 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
       //xmlTextWriterWriteString(writer, BAD_CAST m_sModelURL.c_str());
 			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->ModelURL.c_str());
 			xmlTextWriterEndElement(writer);
-			
+		
 			/* serialNumber */
-			xmlTextWriterStartElement(writer, BAD_CAST "serialNumber");
-      //xmlTextWriterWriteString(writer, BAD_CAST m_sSerialNumber.c_str());
-			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->SerialNumber.c_str());
-			xmlTextWriterEndElement(writer);
-			
+		  if(pRequest->DeviceSettings()->MediaServerSettings()->UseSerialNumber) {
+				xmlTextWriterStartElement(writer, BAD_CAST "serialNumber");
+				xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->SerialNumber.c_str());
+				xmlTextWriterEndElement(writer);
+			}
+		
 			/* UDN */
 			xmlTextWriterStartElement(writer, BAD_CAST "UDN");
-
-      sTmp << "uuid:" << m_sUUID;
-      xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
-      sTmp.str("");
+      string sUDN = "uuid:" + m_sUUID;
+      xmlTextWriterWriteString(writer, BAD_CAST sUDN.c_str());
 			xmlTextWriterEndElement(writer);
-			
+		
 			/* UPC */
-			xmlTextWriterStartElement(writer, BAD_CAST "UPC");
-      xmlTextWriterWriteString(writer, BAD_CAST m_sUPC.c_str());
-			xmlTextWriterEndElement(writer);		
+		  if(pRequest->DeviceSettings()->MediaServerSettings()->UseUPC) {
+				xmlTextWriterStartElement(writer, BAD_CAST "UPC");
+				xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->UPC.c_str());
+				xmlTextWriterEndElement(writer);
+			}
 		
 			// DLNA
-		  if(pRequest->DeviceSettings()->Xbox360Support()) {
+		  if(pRequest->DeviceSettings()->MediaServerSettings()->UseDLNA) {
 				xmlTextWriterStartElementNS(writer, BAD_CAST "dlna", BAD_CAST "X_DLNADOC", BAD_CAST "urn:schemas-dlna-org:device-1-0");
       	xmlTextWriterWriteString(writer, BAD_CAST "DMS-1.00");
 				xmlTextWriterEndElement(writer);

@@ -93,7 +93,9 @@ class CTranscodingCacheObject
   
     void ResetReleaseCount() 
       { m_nReleaseCnt = m_nReleaseCntBak; }
-        
+ 
+		unsigned int ReleaseCountOrig() { return m_nReleaseCntBak; }
+		
     fuppesThreadMutex  m_Mutex;
 
     CAudioEncoderBase* m_pAudioEncoder;

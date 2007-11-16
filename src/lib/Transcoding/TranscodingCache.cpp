@@ -547,6 +547,12 @@ void CTranscodingCache::ReleaseCacheObject(CTranscodingCacheObject* pCacheObj)
     fuppesThreadStart(m_ReleaseThread, ReleaseLoop);
   }
 
+	stringstream sLog;
+	sLog << "release object \"" << pCacheObj->m_sInFileName << "\"" << endl <<
+				"ref count: " << pCacheObj->m_nRefCount << endl <<
+				"delay: " << pCacheObj->ReleaseCountOrig();
+		
+	CSharedLog::Shared()->Log(L_EXTENDED, sLog.str(), __FILE__, __LINE__);
   pCacheObj->m_nRefCount--;
   
   #warning todo: pause transcoding if ref count == 0
@@ -576,6 +582,12 @@ fuppesThreadCallback ReleaseLoop(void* arg)
         TmpIterator = pCache->m_CachedObjectsIterator;
         TmpIterator++;
 
+				stringstream sLog;
+				sLog << "delete object \"" << pCacheObj->m_sInFileName << "\"" << endl <<
+				"delay: " << pCacheObj->ReleaseCountOrig();
+		
+				CSharedLog::Shared()->Log(L_EXTENDED, sLog.str(), __FILE__, __LINE__);						 
+						 
         pCache->m_CachedObjects.erase(pCache->m_CachedObjectsIterator);
         delete pCacheObj;
         pCache->m_CachedObjectsIterator = TmpIterator;

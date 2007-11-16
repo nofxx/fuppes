@@ -38,7 +38,9 @@ class CDeviceIdentificationMgr
 	  static CDeviceIdentificationMgr* Shared();
     ~CDeviceIdentificationMgr();
 
-    void IdentifyDevice(CHTTPMessage* pDeviceMessage);
+		void Initialize();
+		
+		void IdentifyDevice(CHTTPMessage* pDeviceMessage);
     CDeviceSettings* GetSettingsForInitialization(std::string p_sDeviceName);
     void PrintSettings(std::string* p_sOut = NULL);
   

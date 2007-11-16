@@ -50,7 +50,7 @@ CMediaServer::CMediaServer(std::string p_sHTTPServerURL, IUPnPDevice* pOnTimerHa
   m_sModelURL        = "http://fuppes.sourceforge.net";
   m_sSerialNumber    = "012345678910";*/
   m_sUUID  			     = CSharedConfig::Shared()->GetUUID();
-  m_sUPC				     = "";
+  //m_sUPC				     = "";
   m_sPresentationURL = "index.html";      
 }
   

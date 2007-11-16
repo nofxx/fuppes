@@ -237,7 +237,12 @@ struct CMediaServerSettings
 	std::string 	ModelNumber;
 	std::string 	ModelURL;
 	std::string		ModelDescription;
-	std::string 	SerialNumber;	
+	bool					UseModelDescription;
+	std::string 	SerialNumber;
+	bool					UseSerialNumber;
+	std::string		UPC;
+	bool					UseUPC;
+	bool					UseDLNA;
 };
 
 class CDeviceSettings

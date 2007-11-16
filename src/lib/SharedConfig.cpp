@@ -44,6 +44,7 @@
 #include "SharedLog.h"
 
 #include "Transcoding/TranscodingMgr.h"
+#include "DeviceSettings/DeviceIdentificationMgr.h"
 
 #include <sys/types.h>
 #include <fcntl.h>
@@ -102,10 +103,13 @@ bool CSharedConfig::SetupConfig()
     m_sConfigDir = string(getenv("HOME")) + "/.fuppes/";
     #endif  
   } 
-  else if((m_sConfigDir.length() > 1) && (m_sConfigDir.substr(m_sConfigDir.length() - 1).compare(upnpPathDelim) != 0)) {
+  else if((m_sConfigDir.length() > 1) && 
+					(m_sConfigDir.substr(m_sConfigDir.length() - 1).compare(upnpPathDelim) != 0)) {
     m_sConfigDir += upnpPathDelim;
   }
   
+	cout << "config dir: " << m_sConfigDir << endl;
+		
   // build file names
   if(m_sConfigFileName.empty()) {
     m_sConfigFileName = m_sConfigDir + "fuppes.cfg";
@@ -155,11 +159,15 @@ bool CSharedConfig::SetupConfig()
   // read OS information
   GetOSInfo();
   
+	// init device settings when 
+	// os and network info is available
+	CDeviceIdentificationMgr::Shared()->Initialize();		
+		
   // transcoding mgr must be initialized
   // by the main thread so let's do it
   // when everytihng else is correct
   CTranscodingMgr::Shared();
-
+		
   return true;
 }
 

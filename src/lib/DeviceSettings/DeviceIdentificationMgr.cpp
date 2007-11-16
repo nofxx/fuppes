@@ -23,6 +23,7 @@
  
 #include "DeviceIdentificationMgr.h"
 #include "../SharedLog.h"
+#include "../SharedConfig.h"
 #include <iostream>
 
 using namespace std;
@@ -45,6 +46,44 @@ CDeviceIdentificationMgr::~CDeviceIdentificationMgr()
 {
   #warning todo: cleanup
   delete m_pDefaultSettings;
+}
+
+void ReplaceDescriptionVars(std::string* p_sValue)
+{
+	string sValue = *p_sValue;
+	string::size_type pos;
+		
+	// version (%v)
+	while((pos = sValue.find("%v")) != string::npos) {
+		sValue = sValue.replace(pos, 2, CSharedConfig::Shared()->GetAppVersion());
+	}
+	// short name (%s)
+	while((pos = sValue.find("%s")) != string::npos) {
+		sValue = sValue.replace(pos, 2, CSharedConfig::Shared()->GetAppName());
+	}	
+	// hostname (%h)
+	while((pos = sValue.find("%h")) != string::npos) {
+		sValue = sValue.replace(pos, 2, CSharedConfig::Shared()->GetHostname());
+	}
+		
+  *p_sValue = sValue;
+}
+
+void CDeviceIdentificationMgr::Initialize()
+{
+	CDeviceSettings* pSettings;
+	for(m_SettingsIt = m_Settings.begin(); 
+			m_SettingsIt != m_Settings.end(); 
+			m_SettingsIt++)
+	{
+	  pSettings = *m_SettingsIt;
+
+		ReplaceDescriptionVars(&pSettings->MediaServerSettings()->FriendlyName);
+		ReplaceDescriptionVars(&pSettings->MediaServerSettings()->ModelName);
+		ReplaceDescriptionVars(&pSettings->MediaServerSettings()->ModelNumber);
+		ReplaceDescriptionVars(&pSettings->MediaServerSettings()->ModelDescription);
+		ReplaceDescriptionVars(&pSettings->MediaServerSettings()->SerialNumber);
+	}
 }
 
 void CDeviceIdentificationMgr::IdentifyDevice(CHTTPMessage* pDeviceMessage)

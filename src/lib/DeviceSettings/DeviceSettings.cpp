@@ -359,17 +359,17 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
 {
   m_sDeviceName = p_sDeviceName;
   m_sVirtualFolderDevice = "default";
-	
+
   m_bShowPlaylistAsContainer = false;
 	m_bXBox360Support					 = false;
 	m_bDLNAEnabled             = false; 
   m_bEnableDeviceIcon        = false;
-  
+
   m_DisplaySettings.bShowChildCountInTitle = false;
   m_DisplaySettings.nMaxFileNameLength     = 0;
-  
+
   nDefaultReleaseDelay = DEFAULT_RELEASE_DELAY;
-		
+
 	m_MediaServerSettings.FriendlyName = CSharedConfig::Shared()->FriendlyName();
 	m_MediaServerSettings.Manufacturer = "Ulrich Voelkel";
 	m_MediaServerSettings.ManufacturerURL = "http://www.ulrich-voelkel.de"; 	
@@ -377,7 +377,11 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
 	m_MediaServerSettings.ModelNumber = CSharedConfig::Shared()->GetAppVersion();
 	m_MediaServerSettings.ModelURL = "http://fuppes.ulrich-voelkel.de";
 	m_MediaServerSettings.ModelDescription = "Free UPnP Media Server licensed under the terms of the GPL";
+	m_MediaServerSettings.UseModelDescription = true;
 	m_MediaServerSettings.SerialNumber = "0123456789";
+	m_MediaServerSettings.UseSerialNumber = true;
+	m_MediaServerSettings.UseUPC = false;
+	m_MediaServerSettings.UseDLNA = false;
 }
 
 CDeviceSettings::CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSettings)
@@ -407,7 +411,12 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSe
 	m_MediaServerSettings.ModelNumber = pSettings->MediaServerSettings()->ModelNumber;
 	m_MediaServerSettings.ModelURL = pSettings->MediaServerSettings()->ModelURL;
 	m_MediaServerSettings.ModelDescription = pSettings->MediaServerSettings()->ModelDescription;
+	m_MediaServerSettings.UseModelDescription = pSettings->MediaServerSettings()->UseModelDescription;
 	m_MediaServerSettings.SerialNumber = pSettings->MediaServerSettings()->SerialNumber;
+	m_MediaServerSettings.UseSerialNumber = pSettings->MediaServerSettings()->UseSerialNumber;
+	m_MediaServerSettings.UPC = pSettings->MediaServerSettings()->UPC;
+	m_MediaServerSettings.UseUPC = pSettings->MediaServerSettings()->UseUPC;
+	m_MediaServerSettings.UseDLNA = pSettings->MediaServerSettings()->UseDLNA;	
 		
   for(pSettings->m_FileSettingsIterator = pSettings->m_FileSettings.begin();
       pSettings->m_FileSettingsIterator != pSettings->m_FileSettings.end();

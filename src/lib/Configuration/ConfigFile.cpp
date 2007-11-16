@@ -24,7 +24,6 @@
 #include "ConfigFile.h"
 #include "../DeviceSettings/DeviceIdentificationMgr.h"
 #include "DefaultConfig.h"
-#include "../SharedConfig.h"
 
 #include <sstream>
 #include <iostream>
@@ -595,25 +594,6 @@ void CConfigFile::ParseImageSettings(CXMLNode* pISNode, CFileSettings* pFileSet)
   }
 }
 
-void ReplaceDescriptionVars(std::string* p_sValue)
-{
-	string sValue = *p_sValue;
-		
-	string::size_type pos;
-		
-	// version (%v)
-	while((pos = sValue.find("%v")) != string::npos) {
-		sValue = sValue.replace(pos, 2, CSharedConfig::Shared()->GetAppVersion());
-	}
-		
-	// short name (%s)
-	while((pos = sValue.find("%s")) != string::npos) {
-		sValue = sValue.replace(pos, 2, CSharedConfig::Shared()->GetAppName());
-	}	
-		
-  *p_sValue = sValue;
-}
-
 void CConfigFile::ParseDescriptionValues(CXMLNode* pDescrValues, CDeviceSettings* pDevSet)
 {
 	for(int i = 0; i < pDescrValues->ChildCount(); i++) {
@@ -621,7 +601,6 @@ void CConfigFile::ParseDescriptionValues(CXMLNode* pDescrValues, CDeviceSettings
 		if(pDescrValues->ChildNode(i)->Name().compare("friendly_name") == 0) {
 			pDevSet->MediaServerSettings()->FriendlyName = 
 						pDescrValues->ChildNode(i)->Value();
-			ReplaceDescriptionVars(&pDevSet->MediaServerSettings()->FriendlyName);
     }
 		// manufacturer
 		else if(pDescrValues->ChildNode(i)->Name().compare("manufacturer") == 0) {
@@ -637,31 +616,47 @@ void CConfigFile::ParseDescriptionValues(CXMLNode* pDescrValues, CDeviceSettings
 		else if(pDescrValues->ChildNode(i)->Name().compare("model_name") == 0) {
 			pDevSet->MediaServerSettings()->ModelName = 
 						pDescrValues->ChildNode(i)->Value();
-			ReplaceDescriptionVars(&pDevSet->MediaServerSettings()->ModelName);
     }
 		// model_number
 		else if(pDescrValues->ChildNode(i)->Name().compare("model_number") == 0) {
 			pDevSet->MediaServerSettings()->ModelNumber = 
 						pDescrValues->ChildNode(i)->Value();
-			ReplaceDescriptionVars(&pDevSet->MediaServerSettings()->ModelNumber);
     }
 		// model_url
 		else if(pDescrValues->ChildNode(i)->Name().compare("model_url") == 0) {
 			pDevSet->MediaServerSettings()->ModelURL = 
 						pDescrValues->ChildNode(i)->Value();
-    }
+    }		
 		// model_description
 		else if(pDescrValues->ChildNode(i)->Name().compare("model_description") == 0) {
 			pDevSet->MediaServerSettings()->ModelDescription = 
 						pDescrValues->ChildNode(i)->Value();
-			ReplaceDescriptionVars(&pDevSet->MediaServerSettings()->ModelDescription);
+				
+			if(pDescrValues->ChildNode(i)->Attribute("enabled").compare("true") == 0)
+				pDevSet->MediaServerSettings()->UseModelDescription = true;
+			else if(pDescrValues->ChildNode(i)->Attribute("enabled").compare("false") == 0)
+				pDevSet->MediaServerSettings()->UseModelDescription = false;
     }
 		// serial_number
 		else if(pDescrValues->ChildNode(i)->Name().compare("serial_number") == 0) {
 			pDevSet->MediaServerSettings()->SerialNumber = 
 						pDescrValues->ChildNode(i)->Value();
-			ReplaceDescriptionVars(&pDevSet->MediaServerSettings()->SerialNumber);
-    }		
+				
+			if(pDescrValues->ChildNode(i)->Attribute("enabled").compare("true") == 0)
+				pDevSet->MediaServerSettings()->UseSerialNumber = true;
+			else if(pDescrValues->ChildNode(i)->Attribute("enabled").compare("false") == 0)
+				pDevSet->MediaServerSettings()->UseSerialNumber = false;
+    }
+		// upc
+		else if(pDescrValues->ChildNode(i)->Name().compare("upc") == 0) {
+			pDevSet->MediaServerSettings()->UPC = 
+						pDescrValues->ChildNode(i)->Value();
+				
+			if(pDescrValues->ChildNode(i)->Attribute("enabled").compare("true") == 0)
+				pDevSet->MediaServerSettings()->UseUPC = true;
+			else if(pDescrValues->ChildNode(i)->Attribute("enabled").compare("false") == 0)
+				pDevSet->MediaServerSettings()->UseUPC = false;
+    }
 	} // for
 }
 
