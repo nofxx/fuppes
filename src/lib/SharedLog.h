@@ -26,6 +26,8 @@
 
 #include "Common/Common.h"
 #include <string>
+#include <stdarg.h>
+
 
 #define L_NORMAL   0
 
@@ -79,6 +81,10 @@ public:
   void  Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber, bool p_bPrintLine = true);
   void  Syslog(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber);
 
+		
+	static void Log(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* format, ...);
+	static void Print(const char* format, ...);
+		
   /** set the level of log verbosity
    *  @param  p_nLogLevel  0 = no log, 1 = std log, 2 = extended log, 3 = debug log
    */
@@ -97,14 +103,11 @@ private:
   bool               m_bShowExtendedLog;
   bool               m_bShowDebugLog;
   int                m_nLogLevel;
-  bool               m_bUseSyslog;
   
   void(*m_log_cb)(const char* sz_log);
   void(*m_err_cb)(const char* sz_err);
   void(*m_notify_cb)(const char* sz_title, const char* sz_msg);
   void(*m_user_input_cb)(const char* sz_msg, char* sz_result, unsigned int n_buffer_size);
-  
-
 };
 
 #endif // _SHAREDLOG_H 

@@ -54,7 +54,7 @@ CSharedLog* CSharedLog::Shared()
 
 CSharedLog::CSharedLog()
 {
-  m_bUseSyslog = false;
+  //m_bUseSyslog = false;
 
   SetLogLevel(1, false);
   #ifndef DISABLELOG
@@ -78,10 +78,10 @@ CSharedLog::~CSharedLog()
   notify_uninit();
   #endif		
 		
-  #ifdef HAVE_SYSLOG_H
+  /*#ifdef HAVE_SYSLOG_H
   if(m_bUseSyslog)
     closelog();
-  #endif
+  #endif*/
   
   #ifndef DISABLELOG
   fuppesThreadDestroyMutex(&m_Mutex);
@@ -90,7 +90,7 @@ CSharedLog::~CSharedLog()
 
 void CSharedLog::SetUseSyslog(bool p_bUseSyslog)
 {
-  #ifdef HAVE_SYSLOG_H
+ /* #ifdef HAVE_SYSLOG_H
   m_bUseSyslog = p_bUseSyslog;
     
   if(m_bUseSyslog)
@@ -99,7 +99,7 @@ void CSharedLog::SetUseSyslog(bool p_bUseSyslog)
     closelog();
   #else
   m_bUseSyslog = false;
-  #endif
+  #endif*/
 }
 
 void CSharedLog::SetLogLevel(int p_nLogLevel, bool p_bPrintLogLevel)
@@ -413,6 +413,7 @@ void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, 
       break;
   }
   
+		/*
   #ifdef HAVE_SYSLOG_H
   std::stringstream sLog;
   
@@ -443,15 +444,39 @@ void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, 
     }
   }  
   #endif 
-  
+  */
 }
 
 void CSharedLog::Syslog(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber)
 {
-  #ifdef HAVE_SYSLOG_H 
+  /*#ifdef HAVE_SYSLOG_H 
   if(m_bUseSyslog)
   { 
     Log(nLogLevel, p_sMessage, p_szFileName, p_nLineNumber);
   }
-  #endif
+  #endif*/
+}
+
+
+void CSharedLog::Log(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* format, ...)
+{
+	va_list args;
+	char buffer[1024];
+  va_start(args, format);
+	vsnprintf(buffer, 1024, format, args);
+  va_end(args);
+		
+	cout << p_sFileName << " :: " << p_nLineNumber << endl;
+	cout << buffer << endl << endl;
+}
+
+void CSharedLog::Print(const char* format, ...)
+{
+	va_list args;
+	char buffer[1024];
+  va_start(args, format);
+	vsnprintf(buffer, 1024, format, args);
+  va_end(args);
+		
+	cout << buffer << endl;
 }
