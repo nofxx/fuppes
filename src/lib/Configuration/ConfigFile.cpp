@@ -279,8 +279,22 @@ void CConfigFile::SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode, bo
       // xbox360
       else if(pTmp->Name().compare("xbox360") == 0) {
         pSettings->m_bXBox360Support = (pTmp->Value().compare("true") == 0);
-      }     
-      // dlna
+				// xbox implies	media_receiver_registrar
+				if(pSettings->m_bXBox360Support)
+					pSettings->MediaServerSettings()->UseXMSMediaReceiverRegistrar = true;
+      }
+			// media_receiver_registrar
+			else if(pTmp->Name().compare("enable_xms_media_receiver_registrar") == 0) {
+        pSettings->MediaServerSettings()->UseXMSMediaReceiverRegistrar = (pTmp->Value().compare("true") == 0);
+      }
+      // enable_url_base
+			else if(pTmp->Name().compare("enable_url_base") == 0) {
+				if(pTmp->Value().compare("true") == 0)
+					pSettings->MediaServerSettings()->UseURLBase = true;
+				else if(pTmp->Value().compare("false") == 0)				
+					pSettings->MediaServerSettings()->UseURLBase = false;
+			}
+			// dlna
       else if(pTmp->Name().compare("enable_dlna") == 0) {
         pSettings->m_bDLNAEnabled = (pTmp->Value().compare("true") == 0);
       }
@@ -306,7 +320,7 @@ void CConfigFile::SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode, bo
 			}
 				
     }
-    
+			
     // now that we got "default" initialized let's
     // set up the other devices
     if(pDevice->Attribute("name").compare("default") == 0) {
@@ -597,6 +611,7 @@ void CConfigFile::ParseImageSettings(CXMLNode* pISNode, CFileSettings* pFileSet)
 void CConfigFile::ParseDescriptionValues(CXMLNode* pDescrValues, CDeviceSettings* pDevSet)
 {
 	for(int i = 0; i < pDescrValues->ChildCount(); i++) {
+			
 		// friendly_name
 		if(pDescrValues->ChildNode(i)->Name().compare("friendly_name") == 0) {
 			pDevSet->MediaServerSettings()->FriendlyName = 

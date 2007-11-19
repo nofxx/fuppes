@@ -243,6 +243,9 @@ struct CMediaServerSettings
 	std::string		UPC;
 	bool					UseUPC;
 	bool					UseDLNA;
+
+	bool					UseURLBase;
+	bool					UseXMSMediaReceiverRegistrar;
 };
 
 class CDeviceSettings

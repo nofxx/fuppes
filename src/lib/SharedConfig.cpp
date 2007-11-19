@@ -107,8 +107,6 @@ bool CSharedConfig::SetupConfig()
 					(m_sConfigDir.substr(m_sConfigDir.length() - 1).compare(upnpPathDelim) != 0)) {
     m_sConfigDir += upnpPathDelim;
   }
-  
-	cout << "config dir: " << m_sConfigDir << endl;
 		
   // build file names
   if(m_sConfigFileName.empty()) {

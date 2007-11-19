@@ -121,7 +121,6 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 {		
 	xmlTextWriterPtr writer;
 	xmlBufferPtr buf;
-	std::stringstream sTmp;	
 	
 	buf    = xmlBufferCreate();   
 	writer = xmlNewTextWriterMemory(buf, 0);    
@@ -145,54 +144,39 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 		/* end specVersion */
 		xmlTextWriterEndElement(writer);
 
-		/* url base */
-		sTmp << "http://" << m_sHTTPServerURL << "/";
-		xmlTextWriterStartElement(writer, BAD_CAST "URLBase");
-		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
-		sTmp.str("");
-		xmlTextWriterEndElement(writer);
+		// url base
+		if(pRequest->DeviceSettings()->MediaServerSettings()->UseURLBase) {
+			string sUrl = "http://" + m_sHTTPServerURL + "/";
+			xmlTextWriterStartElement(writer, BAD_CAST "URLBase");
+			xmlTextWriterWriteString(writer, BAD_CAST sUrl.c_str());
+			xmlTextWriterEndElement(writer);
+		}
 
-		/* device */
+		// device
 		xmlTextWriterStartElement(writer, BAD_CAST "device");
 		
-		  /* deviceType */
-			sTmp << "urn:schemas-upnp-org:device:" << GetUPnPDeviceTypeAsString() << ":1";
-			xmlTextWriterStartElement(writer, BAD_CAST "deviceType");
-			xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
-			sTmp.str("");
-      xmlTextWriterEndElement(writer);
-		
+			// UDN
+			string sUDN = "uuid:" + m_sUUID;
+			xmlTextWriterStartElement(writer, BAD_CAST "UDN");      
+      xmlTextWriterWriteString(writer, BAD_CAST sUDN.c_str());
+			xmlTextWriterEndElement(writer);
+		  
 			// friendlyName
-			/*if(pRequest->DeviceSettings()->Xbox360Support()) {
-			  stringstream sName;
-				sName << m_sFriendlyName << " : 1 : Windows Media Connect";
-			
-				xmlTextWriterStartElement(writer, BAD_CAST "friendlyName");
-			  xmlTextWriterWriteString(writer, BAD_CAST sName.str().c_str());
-        xmlTextWriterEndElement(writer);
-			}
-			else {
-				xmlTextWriterStartElement(writer, BAD_CAST "friendlyName");
-				xmlTextWriterWriteString(writer, BAD_CAST m_sFriendlyName.c_str());
-        xmlTextWriterEndElement(writer);
-			}*/
 			xmlTextWriterStartElement(writer, BAD_CAST "friendlyName");
 			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->FriendlyName.c_str());
       xmlTextWriterEndElement(writer);
 			
-			/* manufacturer */
+			// manufacturer
 			xmlTextWriterStartElement(writer, BAD_CAST "manufacturer");
-      //xmlTextWriterWriteString(writer, BAD_CAST m_sManufacturer.c_str());
 			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->Manufacturer.c_str());	
 			xmlTextWriterEndElement(writer);
 			
-      /* manufacturerURL */
+      // manufacturerURL
 			xmlTextWriterStartElement(writer, BAD_CAST "manufacturerURL");
-      //xmlTextWriterWriteString(writer, BAD_CAST m_sManufacturerURL.c_str());
 			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->ManufacturerURL.c_str());
 			xmlTextWriterEndElement(writer);
 			
-      /* modelDescription */
+      // modelDescription
 			if(pRequest->DeviceSettings()->MediaServerSettings()->UseModelDescription) {
 				xmlTextWriterStartElement(writer, BAD_CAST "modelDescription");      
 				xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->ModelDescription.c_str());
@@ -200,52 +184,34 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 			}
 			
 			// modelName
-			/*if(pRequest->DeviceSettings()->Xbox360Support()) {
-			  xmlTextWriterStartElement(writer, BAD_CAST "modelName");
-        xmlTextWriterWriteString(writer, BAD_CAST "Windows Media Connect compatible (fuppes)");
-			  xmlTextWriterEndElement(writer);
-			}
-			else {
-			  xmlTextWriterStartElement(writer, BAD_CAST "modelName");
-        xmlTextWriterWriteString(writer, BAD_CAST m_sModelName.c_str());
-			  xmlTextWriterEndElement(writer);
-			}*/
-			
 			xmlTextWriterStartElement(writer, BAD_CAST "modelName");
 			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->ModelName.c_str());
 			xmlTextWriterEndElement(writer);
 		
-			/* modelNumber */
+			// modelNumber
 			xmlTextWriterStartElement(writer, BAD_CAST "modelNumber");
-      /*if(pRequest->DeviceSettings()->Xbox360Support()) {
-        xmlTextWriterWriteString(writer, BAD_CAST "2.0");
-			}
-			else {
-        xmlTextWriterWriteString(writer, BAD_CAST m_sModelNumber.c_str());
-			}*/
 			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->ModelNumber.c_str());
 			xmlTextWriterEndElement(writer);
       
-			/* modelURL */
+			// modelURL
 			xmlTextWriterStartElement(writer, BAD_CAST "modelURL");
-      //xmlTextWriterWriteString(writer, BAD_CAST m_sModelURL.c_str());
 			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->ModelURL.c_str());
 			xmlTextWriterEndElement(writer);
 		
-			/* serialNumber */
+			// serialNumber
 		  if(pRequest->DeviceSettings()->MediaServerSettings()->UseSerialNumber) {
 				xmlTextWriterStartElement(writer, BAD_CAST "serialNumber");
 				xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->SerialNumber.c_str());
 				xmlTextWriterEndElement(writer);
 			}
 		
-			/* UDN */
-			xmlTextWriterStartElement(writer, BAD_CAST "UDN");
-      string sUDN = "uuid:" + m_sUUID;
-      xmlTextWriterWriteString(writer, BAD_CAST sUDN.c_str());
-			xmlTextWriterEndElement(writer);
+			// deviceType
+			string sType = "urn:schemas-upnp-org:device:" + GetUPnPDeviceTypeAsString() + ":1";
+			xmlTextWriterStartElement(writer, BAD_CAST "deviceType");
+			xmlTextWriterWriteString(writer, BAD_CAST sType.c_str());			
+      xmlTextWriterEndElement(writer);
 		
-			/* UPC */
+			// UPC
 		  if(pRequest->DeviceSettings()->MediaServerSettings()->UseUPC) {
 				xmlTextWriterStartElement(writer, BAD_CAST "UPC");
 				xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->UPC.c_str());
@@ -294,7 +260,7 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 				
 			  if(pTmp->GetUPnPDeviceType() == UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR)
 				{
-				  if(!pRequest->DeviceSettings()->Xbox360Support())
+				  if(!pRequest->DeviceSettings()->MediaServerSettings()->UseXMSMediaReceiverRegistrar)
 			      continue;
 				
 				  stringstream sDescription;
@@ -314,39 +280,34 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 				/* service */
 				xmlTextWriterStartElement(writer, BAD_CAST "service");
 				
-					/* serviceType */
-					sTmp << "urn:schemas-upnp-org:service:" << pTmp->GetUPnPDeviceTypeAsString() << ":1";
+					// serviceType
+					string sTmp = "urn:schemas-upnp-org:service:" + pTmp->GetUPnPDeviceTypeAsString() + ":1";
 					xmlTextWriterStartElement(writer, BAD_CAST "serviceType");
-      		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
-					sTmp.str("");
+      		xmlTextWriterWriteString(writer, BAD_CAST sTmp.c_str());
 					xmlTextWriterEndElement(writer);
         
-					/* serviceId */
-					sTmp << "urn:upnp-org:serviceId:" << pTmp->GetUPnPDeviceTypeAsString();
+					// serviceId
+					sTmp = "urn:upnp-org:serviceId:" + pTmp->GetUPnPDeviceTypeAsString();
 					xmlTextWriterStartElement(writer, BAD_CAST "serviceId");
-      		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
-					sTmp.str("");
+      		xmlTextWriterWriteString(writer, BAD_CAST sTmp.c_str());					
 					xmlTextWriterEndElement(writer);
 				
-					/* SCPDURL */
-					sTmp << "/UPnPServices/" << pTmp->GetUPnPDeviceTypeAsString() << "/description.xml";
+					// SCPDURL
+					sTmp = "/UPnPServices/" + pTmp->GetUPnPDeviceTypeAsString() + "/description.xml";
 					xmlTextWriterStartElement(writer, BAD_CAST "SCPDURL");
-      		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
-					sTmp.str("");
+      		xmlTextWriterWriteString(writer, BAD_CAST sTmp.c_str());					
 					xmlTextWriterEndElement(writer);					
 
-					/* controlURL */
-					sTmp << "/UPnPServices/" << pTmp->GetUPnPDeviceTypeAsString() << "/control/";
+					// controlURL
+					sTmp = "/UPnPServices/" + pTmp->GetUPnPDeviceTypeAsString() + "/control/";
 					xmlTextWriterStartElement(writer, BAD_CAST "controlURL");
-      		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
-					sTmp.str("");
-					xmlTextWriterEndElement(writer);					
+      		xmlTextWriterWriteString(writer, BAD_CAST sTmp.c_str());					
+					xmlTextWriterEndElement(writer);
 
-					/* eventSubURL */
-					sTmp << "/UPnPServices/" << pTmp->GetUPnPDeviceTypeAsString() << "/event/";
+					// eventSubURL
+					sTmp = "/UPnPServices/" + pTmp->GetUPnPDeviceTypeAsString() + "/event/";
 					xmlTextWriterStartElement(writer, BAD_CAST "eventSubURL");
-      		xmlTextWriterWriteString(writer, BAD_CAST sTmp.str().c_str());
-					sTmp.str("");
+      		xmlTextWriterWriteString(writer, BAD_CAST sTmp.c_str());					
 					xmlTextWriterEndElement(writer);
 				
 				/* end service */

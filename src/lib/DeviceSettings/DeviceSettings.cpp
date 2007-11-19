@@ -382,6 +382,9 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
 	m_MediaServerSettings.UseSerialNumber = true;
 	m_MediaServerSettings.UseUPC = false;
 	m_MediaServerSettings.UseDLNA = false;
+		
+	m_MediaServerSettings.UseURLBase = true;
+	m_MediaServerSettings.UseXMSMediaReceiverRegistrar = false;
 }
 
 CDeviceSettings::CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSettings)
@@ -417,6 +420,9 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSe
 	m_MediaServerSettings.UPC = pSettings->MediaServerSettings()->UPC;
 	m_MediaServerSettings.UseUPC = pSettings->MediaServerSettings()->UseUPC;
 	m_MediaServerSettings.UseDLNA = pSettings->MediaServerSettings()->UseDLNA;	
+	
+	m_MediaServerSettings.UseURLBase = pSettings->MediaServerSettings()->UseURLBase;
+	m_MediaServerSettings.UseXMSMediaReceiverRegistrar = pSettings->MediaServerSettings()->UseXMSMediaReceiverRegistrar;
 		
   for(pSettings->m_FileSettingsIterator = pSettings->m_FileSettings.begin();
       pSettings->m_FileSettingsIterator != pSettings->m_FileSettings.end();
