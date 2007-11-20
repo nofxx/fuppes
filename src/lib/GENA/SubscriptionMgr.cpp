@@ -217,7 +217,7 @@ void CSubscriptionCache::AddSubscription(CSubscription* pSubscription)
 
 bool CSubscriptionCache::RenewSubscription(std::string pSID)
 {
-  CSharedLog::Shared()->Log(L_EXTENDED, "renew subscription \"" + pSID + "\"", __FILE__, __LINE__);  
+  CSharedLog::Shared()->Log(L_EXT, "renew subscription \"" + pSID + "\"", __FILE__, __LINE__);  
   
   bool bResult = false;
   
@@ -225,13 +225,13 @@ bool CSubscriptionCache::RenewSubscription(std::string pSID)
   m_SubscriptionsIterator = m_Subscriptions.find(pSID);
   if(m_SubscriptionsIterator != m_Subscriptions.end())
   {    
-    CSharedLog::Shared()->Log(L_EXTENDED, "renew subscription \"" + pSID + "\" done", __FILE__, __LINE__, false);
+    CSharedLog::Shared()->Log(L_EXT, "renew subscription \"" + pSID + "\" done", __FILE__, __LINE__);
     m_Subscriptions[pSID]->Renew();
     bResult = true;
   }
   else
   {
-    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "renew subscription \"" + pSID + "\" faild", __FILE__, __LINE__, false);
+    CSharedLog::Shared()->Log(L_EXT, "renew subscription \"" + pSID + "\" failed", __FILE__, __LINE__);
     bResult = false;
   }
   
@@ -241,7 +241,7 @@ bool CSubscriptionCache::RenewSubscription(std::string pSID)
 
 bool CSubscriptionCache::DeleteSubscription(std::string pSID)
 {
-  CSharedLog::Shared()->Log(L_EXTENDED, "delete subscription \"" + pSID + "\"", __FILE__, __LINE__);  
+  CSharedLog::Shared()->Log(L_EXT, "delete subscription \"" + pSID + "\"", __FILE__, __LINE__);  
     
   bool bResult = false;
   CSubscription* pSubscription;
@@ -250,7 +250,7 @@ bool CSubscriptionCache::DeleteSubscription(std::string pSID)
   m_SubscriptionsIterator = m_Subscriptions.find(pSID);  
   if(m_SubscriptionsIterator != m_Subscriptions.end())
   { 
-    CSharedLog::Shared()->Log(L_EXTENDED, "delete subscription \"" + pSID + "\" done", __FILE__, __LINE__, false);    
+    CSharedLog::Shared()->Log(L_EXT, "delete subscription \"" + pSID + "\" done", __FILE__, __LINE__);    
     pSubscription = (*m_SubscriptionsIterator).second;
     m_Subscriptions.erase(pSID);
     delete pSubscription;
@@ -258,7 +258,7 @@ bool CSubscriptionCache::DeleteSubscription(std::string pSID)
   }
   else
   {
-    CSharedLog::Shared()->Log(L_EXTENDED, "delete subscription \"" + pSID + "\" faild", __FILE__, __LINE__, false);        
+    CSharedLog::Shared()->Log(L_EXT, "delete subscription \"" + pSID + "\" faild", __FILE__, __LINE__);
     bResult = false;
   }
   
@@ -285,7 +285,7 @@ CSubscriptionMgr::CSubscriptionMgr(bool p_bSingelton)
   
   // start main loop in singleton instance only
   if(p_bSingelton && !m_MainLoop) {
-    CSharedLog::Shared()->Log(L_DEBUG, "start CSubscriptionMgr MainLoop", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_DBG, "start CSubscriptionMgr MainLoop", __FILE__, __LINE__);
     fuppesThreadStartArg(m_MainLoop, MainLoop, *this);
   }
 }
@@ -303,14 +303,14 @@ CSubscriptionMgr::~CSubscriptionMgr()
 
 bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {
-  CSharedLog::Shared()->Log(L_DEBUG, pRequest->GetHeader(), __FILE__, __LINE__); 
+  CSharedLog::Shared()->Log(L_DBG, pRequest->GetHeader(), __FILE__, __LINE__); 
   
   CSubscription* pSubscription = new CSubscription();
   try {    
     this->ParseSubscription(pRequest, pSubscription);
   } 
   catch (EException ex) {
-    CSharedLog::Shared()->Log(L_EXTENDED_ERR, ex.What(), __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, ex.What(), __FILE__, __LINE__);
     
     delete pSubscription;
     return false;

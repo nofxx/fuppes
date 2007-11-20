@@ -51,14 +51,14 @@ CVirtualContainerMgr::CVirtualContainerMgr()
 	m_nIdCounter    = 0;
   m_RebuildThread = (fuppesThread)NULL;
   if(!FileExists(CSharedConfig::Shared()->GetVFolderConfigFileName())) {
-    CSharedLog::Shared()->Log(L_NORMAL, "no vfolder.cfg file available", __FILE__, __LINE__);
+    CSharedLog::Log(L_NORM, __FILE__, __LINE__, "no vfolder.cfg file available");
     m_bVFolderCfgValid = false;
   }
   else {
     CXMLDocument* pDoc = new CXMLDocument();
     if(pDoc->Load(CSharedConfig::Shared()->GetVFolderConfigFileName())) {
       if(pDoc->RootNode()->Attribute("version").compare(VFOLDER_CFG_VERSION) != 0) {
-        CSharedLog::Shared()->Log(L_NORMAL, "vfolder.cfg has wrong version", __FILE__, __LINE__);    
+        CSharedLog::Log(L_NORM, __FILE__, __LINE__, "vfolder.cfg has wrong version");
         m_bVFolderCfgValid = false;
       }
     }
@@ -99,11 +99,11 @@ fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
   _strtime(timeStr);	
 	string sNowtime = timeStr;	
 	#endif
-  CSharedLog::Shared()->Log(L_NORMAL, "[VirtualContainer] create virtual container layout started at " + sNowtime, __FILE__, __LINE__);
+  CSharedLog::Shared()->Log(L_NORM, "[VirtualContainer] create virtual container layout started at " + sNowtime, __FILE__, __LINE__);
   
   CXMLDocument* pDoc = new CXMLDocument();
   if(!pDoc->Load(CSharedConfig::Shared()->GetVFolderConfigFileName())) {    
-    CSharedLog::Shared()->Log(L_ERROR, "[VirtualContainer] error loading " + CSharedConfig::Shared()->GetVFolderConfigFileName(), __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_NORM, "[VirtualContainer] error loading " + CSharedConfig::Shared()->GetVFolderConfigFileName(), __FILE__, __LINE__);
     delete pDoc;
     g_bIsRebuilding = false;
     fuppesThreadExit();
@@ -147,7 +147,7 @@ fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
   _strtime(timeStr);	
 	sNowtime = timeStr;	
 	#endif
-  CSharedLog::Shared()->Log(L_NORMAL, "[VirtualContainer] virtual container layout created at " + sNowtime, __FILE__, __LINE__);
+  CSharedLog::Shared()->Log(L_NORM, "[VirtualContainer] virtual container layout created at " + sNowtime, __FILE__, __LINE__);
 
   g_bIsRebuilding = false;
   fuppesThreadExit();
@@ -156,7 +156,7 @@ fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
 void CVirtualContainerMgr::RebuildContainerList()
 {
   if(CContentDatabase::Shared()->IsRebuilding()) {
-    CSharedLog::Shared()->Log(L_NORMAL, "database rebuild in progress", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_NORM, "database rebuild in progress", __FILE__, __LINE__);
     return;
   }
  
@@ -198,32 +198,32 @@ void CVirtualContainerMgr::CreateChildItems(CXMLNode* pParentNode,
       
     if(pNode->Name().compare("vfolder") == 0) {
       //cout << "create single vfolder: " << pNode->Attribute("name") << " :: " << p_sFilter << endl; fflush(stdout);
-      CSharedLog::Shared()->Log(L_EXTENDED, "create single vfolder: " + pNode->Attribute("name") + " :: " + p_sFilter, __FILE__, __LINE__);
+      CSharedLog::Shared()->Log(L_EXT, "create single vfolder: " + pNode->Attribute("name") + " :: " + p_sFilter, __FILE__, __LINE__);
       CreateSingleVFolder(pNode, pIns, p_sDevice, p_nParentId, pDetails, p_bContainerDetails);
     }
     else if(pNode->Name().compare("vfolders") == 0) {      
       if(pNode->Attribute("property").length() > 0) {
         //cout << "create vfolders from property: " << pNode->Attribute("property") << " :: " << p_sFilter << endl;  fflush(stdout);      
-        CSharedLog::Shared()->Log(L_EXTENDED, "create vfolders from property: " + pNode->Attribute("property") + " :: " + p_sFilter, __FILE__, __LINE__);
+        CSharedLog::Shared()->Log(L_EXT, "create vfolders from property: " + pNode->Attribute("property") + " :: " + p_sFilter, __FILE__, __LINE__);
         CreateVFoldersFromProperty(pNode, pIns, p_sDevice, p_nParentId, pDetails, p_bContainerDetails, p_sFilter);
       }
       else if(pNode->Attribute("split").length() > 0) {
-        CSharedLog::Shared()->Log(L_EXTENDED, "create split vfolders :: " + p_sFilter, __FILE__, __LINE__);
+        CSharedLog::Shared()->Log(L_EXT, "create split vfolders :: " + p_sFilter, __FILE__, __LINE__);
         CreateVFoldersSplit(pNode, pIns, p_sDevice, p_nParentId, pDetails, p_bContainerDetails, p_sFilter);
       }
     }
     else if(pNode->Name().compare("items") == 0) {
       //cout << "create item mappings for type: " << pNode->Attribute("type") << " :: " << p_sFilter << endl;
-      CSharedLog::Shared()->Log(L_EXTENDED, "create item mappings for type: " + pNode->Attribute("type") + " :: " + p_sFilter, __FILE__, __LINE__);
+      CSharedLog::Shared()->Log(L_EXT, "create item mappings for type: " + pNode->Attribute("type") + " :: " + p_sFilter, __FILE__, __LINE__);
       CreateItemMappings(pNode, pIns, p_sDevice, p_nParentId, p_sFilter);
     }
     else if(pNode->Name().compare("folders") == 0) {
       //cout << "create folder mappings for filter: " << pNode->Attribute("filter") << " :: " << p_sFilter << endl;
-      CSharedLog::Shared()->Log(L_EXTENDED, "create folder mappings - filter: " + pNode->Attribute("filter") + " :: " + p_sFilter, __FILE__, __LINE__);
+      CSharedLog::Shared()->Log(L_EXT, "create folder mappings - filter: " + pNode->Attribute("filter") + " :: " + p_sFilter, __FILE__, __LINE__);
       CreateFolderMappings(pNode, pIns, p_sDevice, p_nParentId, p_sFilter);
     }
     else if(pNode->Name().compare("shared_dirs") == 0) {
-      CSharedLog::Shared()->Log(L_EXTENDED, "create shared dir mappings :: " + p_sFilter, __FILE__, __LINE__);
+      CSharedLog::Shared()->Log(L_EXT, "create shared dir mappings :: " + p_sFilter, __FILE__, __LINE__);
       MapSharedDirsTo(pNode, pIns, p_sDevice, p_nParentId);
     }
     

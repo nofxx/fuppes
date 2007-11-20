@@ -1018,7 +1018,6 @@ void CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_ps
   
   // get total matches     
   sSql = pSearch->BuildSQL(true);  
-  CSharedLog::Shared()->Log(L_DEBUG, sSql, __FILE__, __LINE__);  
   pDb->Select(sSql);
   if(!pDb->Eof()) {
     nTotalMatches = atoi(pDb->GetResult()->GetValue("COUNT").c_str());
@@ -1026,7 +1025,6 @@ void CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_ps
      
   // get items     	
   sSql = pSearch->BuildSQL(false);
-  CSharedLog::Shared()->Log(L_DEBUG, sSql, __FILE__, __LINE__);
 	pDb->Select(sSql);	
 	
   // build result
@@ -1116,10 +1114,9 @@ void CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_ps
 	
 	string output;
 	output = (const char*)buf->content;	
-  CSharedLog::Shared()->Log(L_DEBUG, output, __FILE__, __LINE__);
+  CSharedLog::Log(L_DBG, __FILE__, __LINE__, output.c_str());
   
 	xmlBufferFree(buf);
-  
 	delete pDb;
 	
   *p_psResult = output;

@@ -55,7 +55,6 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
   /* Create socket */
 	m_Socket = socket(AF_INET, SOCK_DGRAM, 0);
 	if(m_Socket == -1) {
-    CSharedLog::Shared()->Log(L_ERROR, "failed to create socket", __FILE__, __LINE__);    
     throw EException("failed to create socket", __FILE__, __LINE__);    
   }
   
@@ -68,8 +67,7 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
   int flag = 1;
   ret = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
   #endif
-  if(ret == -1) {    
-    CSharedLog::Shared()->Log(L_ERROR, "failed to setsockopt: SO_REUSEADDR", __FILE__, __LINE__);
+  if(ret == -1) {
     throw EException("failed to setsockopt: SO_REUSEADDR", __FILE__, __LINE__);
   }
 
@@ -97,7 +95,6 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
 	/* Bind socket */
 	ret = bind(m_Socket, (struct sockaddr*)&m_LocalEndpoint, sizeof(m_LocalEndpoint)); 
   if(ret == -1) {
-    CSharedLog::Shared()->Log(L_ERROR, "failed to bind socket", __FILE__, __LINE__);
     throw EException("failed to bind socket", __FILE__, __LINE__);
   }
 	
@@ -115,7 +112,6 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
 		stMreq.imr_interface.s_addr = inet_addr(p_sIPAddress.c_str()); //INADDR_ANY; 	
 		ret = setsockopt(m_Socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&stMreq,sizeof(stMreq)); 	
 		if(ret == -1) {      
-      CSharedLog::Shared()->Log(L_ERROR, "failed to setsockopt: multicast", __FILE__, __LINE__);
       throw EException("failed to setsockopt: multicast", __FILE__, __LINE__);      
     }
 	}
@@ -127,7 +123,7 @@ void CUDPSocket::SetTTL(int p_nTTL)
 {
   int ret = setsockopt(m_Socket, IPPROTO_IP, IP_TTL, (char *)&p_nTTL, sizeof(p_nTTL)); 	
   if (ret == -1)
-    CSharedLog::Shared()->Log(L_ERROR, "setsockopt: TTL", __FILE__, __LINE__); 
+    CSharedLog::Log(L_DBG, __FILE__, __LINE__, "setsockopt: TTL");
 }
 
 /* TeardownSocket */
@@ -257,11 +253,9 @@ fuppesThreadCallback UDPReceiveLoop(void *arg)
   #endif // FUPPES_TARGET_WIN32
 
   CUDPSocket* udp_sock = (CUDPSocket*)arg;
-  
-  char szLog[200];
-  sprintf(szLog, "listening on %s:%d", udp_sock->GetIPAddress().c_str(), udp_sock->GetPort());  
-	CSharedLog::Shared()->Log(L_EXTENDED, szLog, __FILE__, __LINE__);
-  
+
+	CSharedLog::Log(L_EXT, __FILE__, __LINE__, 
+      "listening on %s:%d", udp_sock->GetIPAddress().c_str(), udp_sock->GetPort());
   
 	char buffer[4096];	
 	int  bytes_received = 0;
@@ -277,7 +271,7 @@ fuppesThreadCallback UDPReceiveLoop(void *arg)
 			pthread_testcancel();
 			fuppesSleep(100);
 			#else
-      CSharedLog::Shared()->Log(L_EXTENDED_ERR, "error :: recvfrom()", __FILE__, __LINE__);
+      CSharedLog::Log(L_DBG, __FILE__, __LINE__, "error :: recvfrom()");
       #endif
 			continue;
     }
@@ -295,11 +289,11 @@ fuppesThreadCallback UDPReceiveLoop(void *arg)
 		  	udp_sock->CallOnReceive(&pSSDPMessage);
       }
       else {
-        CSharedLog::Shared()->Log(L_EXTENDED_ERR, "parsing UDP-message", __FILE__, __LINE__);
+        CSharedLog::Log(L_DBG, __FILE__, __LINE__, "error parsing UDP-message");
       }
 		}
 	}
   
-  CSharedLog::Shared()->Log(L_EXTENDED, "exiting ReceiveLoop()", __FILE__, __LINE__);
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "exiting ReceiveLoop()");
   fuppesThreadExit();
 }

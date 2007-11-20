@@ -191,7 +191,7 @@ bool CMpcDecoder::LoadLib()
   
   m_MpcStreaminfoGetLengthSamples = (MpcStreaminfoGetLengthSamples_t)FuppesGetProcAddress(m_LibHandle, "mpc_streaminfo_get_length_samples");
   if(!m_MpcStreaminfoGetLengthSamples) {
-    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'mpc_streaminfo_get_length_samples'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'mpc_streaminfo_get_length_samples'", __FILE__, __LINE__);
   }  
   
   m_MpcDecoderSetup = (MpcDecoderSetup_t)FuppesGetProcAddress(m_LibHandle, "mpc_decoder_setup");

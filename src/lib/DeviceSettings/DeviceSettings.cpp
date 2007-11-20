@@ -370,7 +370,7 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
 
   nDefaultReleaseDelay = DEFAULT_RELEASE_DELAY;
 
-	m_MediaServerSettings.FriendlyName = CSharedConfig::Shared()->FriendlyName();
+	m_MediaServerSettings.FriendlyName = "FUPPES %v (%h)";
 	m_MediaServerSettings.Manufacturer = "Ulrich Voelkel";
 	m_MediaServerSettings.ManufacturerURL = "http://www.ulrich-voelkel.de"; 	
 	m_MediaServerSettings.ModelName = "Free UPnP Entertainment Service " + CSharedConfig::Shared()->GetAppVersion();

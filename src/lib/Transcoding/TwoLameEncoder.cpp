@@ -57,12 +57,12 @@ bool CTwoLameEncoder::LoadLib()
     sLibName = CSharedConfig::Shared()->TwoLameLibName();
   }  
   
-  CSharedLog::Shared()->Log(L_EXTENDED, "try opening " + sLibName, __FILE__, __LINE__);
+  CSharedLog::Shared()->Log(L_EXT, "try opening " + sLibName, __FILE__, __LINE__);
   m_LibHandle = FuppesLoadLibrary(sLibName);   
   
   
   if(!m_LibHandle) {
-    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot open library", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot open library", __FILE__, __LINE__);
     return false;
   }
    
@@ -70,35 +70,35 @@ bool CTwoLameEncoder::LoadLib()
   // twolame_init()
   m_TwoLameInit = (TwoLameInit_t)FuppesGetProcAddress(m_LibHandle, "twolame_init");
   if(!m_TwoLameInit) {        
-    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot load symbol 'twolame_init'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'twolame_init'", __FILE__, __LINE__);
     return false;
   }
   
   // twolame_set_num_channels()
   m_TwoLameSetNumChannels = (TwoLameSetNumChannels_t)FuppesGetProcAddress(m_LibHandle, "twolame_set_num_channels");
   if(!m_TwoLameSetNumChannels) {
-    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot load symbol 'twolame_set_num_channels'", __FILE__, __LINE__);    
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'twolame_set_num_channels'", __FILE__, __LINE__);    
     return false;
   } 
   
   // twolame_set_out_samplerate()
   m_TwoLameSetOutSamplerate = (TwoLameSetOutSamplerate_t)FuppesGetProcAddress(m_LibHandle, "twolame_set_out_samplerate");
   if(!m_TwoLameSetOutSamplerate) {
-    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot load symbol 'twolame_set_out_samplerate'", __FILE__, __LINE__);    
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'twolame_set_out_samplerate'", __FILE__, __LINE__);    
     return false;
   } 
   
     // twolame_set_in_samplerate()
   m_TwoLameSetInSamplerate = (TwoLameSetInSamplerate_t)FuppesGetProcAddress(m_LibHandle, "twolame_set_in_samplerate");
   if(!m_TwoLameSetInSamplerate) {
-    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot load symbol 'twolame_set_in_samplerate'", __FILE__, __LINE__);    
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'twolame_set_in_samplerate'", __FILE__, __LINE__);    
     return false;
   } 
   
   // twolame_set_bitrate()
   m_TwoLameSetBitrate = (TwoLameSetBitrate_t)FuppesGetProcAddress(m_LibHandle, "twolame_set_bitrate");
   if(!m_TwoLameSetBitrate) {
-    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot load symbol 'twolame_set_bitrate'", __FILE__, __LINE__);    
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'twolame_set_bitrate'", __FILE__, __LINE__);    
     return false;
   }
 
@@ -106,28 +106,28 @@ bool CTwoLameEncoder::LoadLib()
   // twolame_init_params()
   m_TwoLameInitParams = (TwoLameInitParams_t)FuppesGetProcAddress(m_LibHandle, "twolame_init_params");
   if(!m_TwoLameInitParams) {
-    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot load symbol 'twolame_init_params'", __FILE__, __LINE__);    
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'twolame_init_params'", __FILE__, __LINE__);    
     return false;
   } 
   
   // twolame_encode_buffer_interleaved()
   m_TwoLameEncodeBufferInterleaved = (TwoLameEncodeBufferInterleaved_t)FuppesGetProcAddress(m_LibHandle, "twolame_encode_buffer_interleaved");
   if(!m_TwoLameEncodeBufferInterleaved) {
-    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot load symbol 'twolame_encode_buffer_interleaved'", __FILE__, __LINE__);    
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'twolame_encode_buffer_interleaved'", __FILE__, __LINE__);    
     return false;
   } 
     
   // twolame_encode_flush()
   m_TwoLameEncodeFlush = (TwoLameEncodeFlush_t)FuppesGetProcAddress(m_LibHandle, "twolame_encode_flush");
   if(!m_TwoLameEncodeFlush) {
-    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot load symbol 'twolame_encode_flush'", __FILE__, __LINE__);    
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'twolame_encode_flush'", __FILE__, __LINE__);    
     return false;
   } 
   
   // twolame_close()
   m_TwoLameClose = (TwoLameClose_t)FuppesGetProcAddress(m_LibHandle, "twolame_close");
   if(!m_TwoLameClose) {
-    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot load symbol 'twolame_close'", __FILE__, __LINE__);    
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'twolame_close'", __FILE__, __LINE__);    
     return false;
   } 
   
@@ -145,13 +145,13 @@ bool CTwoLameEncoder::LoadLib()
   // twolame_get_version()
   m_TwoLameGetVersionName = (TwoLameGetVersionName_t)FuppesGetProcAddress(m_LibHandle, "twolame_get_version_name");
   if(!m_TwoLameGetVersionName) {        
-    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'twolame_get_version_name'", __FILE__, __LINE__);    
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'twolame_get_version_name'", __FILE__, __LINE__);    
   }
   
   // twolame_print_config()
   m_TwoLamePrintConfig = (TwoLamePrintConfig_t)FuppesGetProcAddress(m_LibHandle, "twolame_print_config");
   if(!m_TwoLamePrintConfig) {
-    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'twolame_print_config'", __FILE__, __LINE__);    
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'twolame_print_config'", __FILE__, __LINE__);    
   }
   
     

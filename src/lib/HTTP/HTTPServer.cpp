@@ -123,7 +123,7 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
   // bind the socket
 	nRet = bind(m_Socket, (struct sockaddr*)&local_ep, sizeof(local_ep));	
   if(nRet == -1)
-    throw EException("failed to bind socket to : " + p_sIPAddress, __FILE__, __LINE__);
+    throw EException(__FILE__, __LINE__, "failed to bind socket to : %s:%d", p_sIPAddress.c_str(), CSharedConfig::Shared()->GetHTTPPort());
   
   // fetch local end point to get port number on random ports
 	socklen_t size = sizeof(local_ep);
@@ -148,7 +148,6 @@ void CHTTPServer::Start()
   // listen on socket
   int nRet = listen(m_Socket, 0);
   if(nRet == -1) {
-    CSharedLog::Shared()->Log(L_ERROR, "failed to listen on socket", __FILE__, __LINE__);
     throw EException("failed to listen on socket", __FILE__, __LINE__);
   }
 
@@ -156,7 +155,7 @@ void CHTTPServer::Start()
   fuppesThreadStart(accept_thread, AcceptLoop);  
   m_bIsRunning = true;
   
-  CSharedLog::Shared()->Log(L_EXTENDED, "HTTPServer started", __FILE__, __LINE__);
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "HTTPServer started");
 } // Start()
 
 
@@ -181,7 +180,7 @@ void CHTTPServer::Stop()
   fuppesSocketClose(m_Socket);
   m_bIsRunning = false;
   
-  CSharedLog::Shared()->Log(L_EXTENDED, "HTTPServer stopped", __FILE__, __LINE__);
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "HTTPServer stopped");
 } // Stop()
 
 std::string CHTTPServer::GetURL()
@@ -277,7 +276,8 @@ fuppesThreadCallback AcceptLoop(void *arg)
 	socklen_t size = sizeof(remote_ep);
   
   // log  
-	CSharedLog::Shared()->Log(L_EXTENDED, "listening on" + pHTTPServer->GetURL(), __FILE__, __LINE__);
+	CSharedLog::Log(L_EXT, __FILE__, __LINE__,
+    "listening on %s", pHTTPServer->GetURL().c_str());
   
   // loop	
 	while(!pHTTPServer->m_bBreakAccept)
@@ -313,7 +313,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
     pHTTPServer->CleanupSessions();
 	}  
 
-  CSharedLog::Shared()->Log(L_EXTENDED, "exiting accept loop", __FILE__, __LINE__);
+  CSharedLog::Log(L_DBG, __FILE__, __LINE__, "exiting accept loop");
   pHTTPServer->CleanupSessions();
 	fuppesThreadExit();
 } // AcceptLoop
@@ -341,9 +341,8 @@ fuppesThreadCallback SessionLoop(void *arg)
       break;
     }
 
-    sLog << "REQUEST:" << endl << pRequest->GetMessage();    
-    CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__);
-    sLog.str("");
+    CSharedLog::Log(L_DBG, __FILE__, __LINE__,
+        "REQUEST %s", pRequest->GetMessage().c_str());
     // end receive
     
     // check if requesting IP is allowed to access
@@ -365,7 +364,7 @@ fuppesThreadCallback SessionLoop(void *arg)
     // send response
     bResult = SendResponse(pSession, pResponse, pRequest);
     if(!bResult) {
-      CSharedLog::Shared()->Log(L_EXTENDED_ERR, "sending HTTP message", __FILE__, __LINE__);    
+      CSharedLog::Log(L_DBG, __FILE__, __LINE__, " error sending HTTP message");
       break;
     }
     // end send response
@@ -421,7 +420,7 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
       #else
       sLog << "error no. " << errno << " " << strerror(errno) << endl;            
       #endif
-      CSharedLog::Shared()->Log(L_EXTENDED_ERR, sLog.str(), __FILE__, __LINE__);
+      CSharedLog::Log(L_DBG, __FILE__, __LINE__, sLog.str().c_str());
       
       // WIN32 :: WSAEWOULDBLOCK handling
       #ifdef WIN32
@@ -547,9 +546,9 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
   if((nBytesReceived > 0) && !bRecvErr)
   {
     // log
-    stringstream sMsg;
-    sMsg << "bytes received: " << nBytesReceived;
-    CSharedLog::Shared()->Log(L_EXTENDED, sMsg.str(), __FILE__, __LINE__);
+    //stringstream sMsg;
+    //sMsg << "bytes received: " << nBytesReceived;
+    //CSharedLog::Shared()->Log(L_EXTENDED, sMsg.str(), __FILE__, __LINE__);
 
     // create message
     bResult = p_Request->SetMessage(szMsg); 
@@ -570,7 +569,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   if(!p_Response->IsBinary())
   { 
 	  // log
-    CSharedLog::Shared()->Log(L_DEBUG, p_Response->GetMessageAsString(), __FILE__, __LINE__);
+    CSharedLog::Log(L_DBG, __FILE__, __LINE__, p_Response->GetMessageAsString().c_str());
         
     // send
     nRet = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetMessageAsString().c_str(), (int)strlen(p_Response->GetMessageAsString().c_str()));
@@ -584,7 +583,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     if(nRet == -1) {
       stringstream sLog;       
       sLog << "send error :: error no. " << errno << " " << strerror(errno) << endl;
-      CSharedLog::Shared()->Log(L_EXTENDED_ERR, sLog.str(), __FILE__, __LINE__);
+      CSharedLog::Log(L_DBG, __FILE__, __LINE__, sLog.str().c_str());
     }          
     #endif
     
@@ -656,7 +655,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       ))) 
   {
 	  // log
-		CSharedLog::Shared()->Log(L_DEBUG, p_Response->GetHeaderAsString(), __FILE__, __LINE__);    
+		CSharedLog::Log(L_DBG, __FILE__, __LINE__, p_Response->GetHeaderAsString().c_str());
     // send
     nErr = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()));
            
@@ -698,15 +697,13 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     if(nCnt == 0) {      
       // send
       nErr = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()));   
-      CSharedLog::Shared()->Log(L_DEBUG, p_Response->GetHeaderAsString(), __FILE__, __LINE__);      
+      CSharedLog::Log(L_DBG, __FILE__, __LINE__, p_Response->GetHeaderAsString().c_str()); 
     }
 
     
     if(nErr > 0) {
-      sLog << "partial binary (" << nOffset << " - " << nOffset + nRet << ")";
-      CSharedLog::Shared()->Log(L_DEBUG, sLog.str(), __FILE__, __LINE__);
-      sLog.str("");          
-      
+      CSharedLog::Log(L_DBG, __FILE__, __LINE__,
+        "partial binary (%d - %d)", nOffset, nOffset + nRet);
       
       if(p_Response->GetTransferEncoding() == HTTP_TRANSFER_ENCODING_CHUNKED) {
         char szSize[10];
@@ -755,10 +752,10 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
         stringstream sLog;
         #ifdef WIN32
         sLog << "send error :: error no. " << WSAGetLastError() << " " << strerror(WSAGetLastError()) << endl;              
-        CSharedLog::Shared()->Log(L_EXTENDED_ERR, sLog.str(), __FILE__, __LINE__);     
+        CSharedLog::Log(L_EXT, __FILE__, __LINE__, sLog.str().c_str());
         #else          
         sLog << "send error :: error no. " << errno << " " << strerror(errno) << endl;
-        CSharedLog::Shared()->Log(L_EXTENDED_ERR, sLog.str(), __FILE__, __LINE__);
+        CSharedLog::Log(L_EXT, __FILE__, __LINE__, sLog.str().c_str());
         #endif  
       }
       

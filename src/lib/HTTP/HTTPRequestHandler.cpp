@@ -77,7 +77,7 @@ bool CHTTPRequestHandler::HandleRequest(CHTTPMessage* pRequest, CHTTPMessage* pR
 
 bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {
-  CSharedLog::Shared()->Log(L_EXTENDED, "HandleHTTPRequest() :: " + pRequest->GetRequest(), __FILE__, __LINE__);  
+  CSharedLog::Shared()->Log(L_EXT, "HandleHTTPRequest() :: " + pRequest->GetRequest(), __FILE__, __LINE__);  
 
   string sRequest = pRequest->GetRequest();  
   bool   bResult  = false;  
@@ -259,13 +259,13 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
     sExt  = ExtractFileExt(sPath);
     
     if(!FileExists(sPath)) {
-      CSharedLog::Shared()->Log(L_WARNING, "file: " + sPath + " not found", __FILE__, __LINE__);
+      CSharedLog::Shared()->Log(L_EXT, "file: " + sPath + " not found", __FILE__, __LINE__);
       bResult = false;
     }
     else
     {      
       if(pRequest->DeviceSettings()->DoTranscode(sExt, pDb->GetResult()->GetValue("A_CODEC"), pDb->GetResult()->GetValue("V_CODEC"))) {
-        CSharedLog::Shared()->Log(L_EXTENDED, "transcode " + sPath, __FILE__, __LINE__);        
+        CSharedLog::Shared()->Log(L_EXT, "transcode " + sPath, __FILE__, __LINE__);        
      
         sMimeType = pRequest->DeviceSettings()->MimeType(sExt, pDb->GetResult()->GetValue("A_CODEC"), pDb->GetResult()->GetValue("V_CODEC"));
         if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {          
@@ -329,7 +329,7 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
   }
   else // eof
   {
-    CSharedLog::Shared()->Log(L_WARNING, "unknown object id: " + p_sObjectId , __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "unknown object id: " + p_sObjectId , __FILE__, __LINE__);
     bResult = false;
   }
   

@@ -102,11 +102,7 @@ bool CSharedConfig::SetupConfig()
     #else
     m_sConfigDir = string(getenv("HOME")) + "/.fuppes/";
     #endif  
-  } 
-  else if((m_sConfigDir.length() > 1) && 
-					(m_sConfigDir.substr(m_sConfigDir.length() - 1).compare(upnpPathDelim) != 0)) {
-    m_sConfigDir += upnpPathDelim;
-  }
+  }  
 		
   // build file names
   if(m_sConfigFileName.empty()) {
@@ -376,16 +372,16 @@ bool CSharedConfig::ReadConfigFile()
   // write default config
   if(!FileExists(m_sConfigFileName)) {
     if(!m_pConfigFile->WriteDefaultConfig(m_sConfigFileName)) {
-      CSharedLog::Shared()->Log(L_ERROR, string("could not write default configuration to ") + m_sConfigFileName, __FILE__, __LINE__);  
+      CSharedLog::Shared()->Log(L_NORM, string("could not write default configuration to ") + m_sConfigFileName, __FILE__, __LINE__);  
     }
     else {
-      CSharedLog::Shared()->Log(L_NORMAL, string("wrote default configuration to ") + m_sConfigFileName, __FILE__, __LINE__);  
+      CSharedLog::Shared()->Log(L_EXT, string("wrote default configuration to ") + m_sConfigFileName, __FILE__, __LINE__);  
     }
   }
   
   // load config file
   if(m_pConfigFile->Load(m_sConfigFileName, &sErrorMsg) != CF_OK) {
-    CSharedLog::Shared()->Log(L_ERROR, sErrorMsg, __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_NORM, sErrorMsg, __FILE__, __LINE__);
     return false;
   }
   

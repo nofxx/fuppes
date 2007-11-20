@@ -62,14 +62,14 @@ void CSSDPCtrl::Start()
     throw;
   }
   
-  CSharedLog::Shared()->Log(L_EXTENDED, "SSDPController started", __FILE__, __LINE__);
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "SSDPController started");
 }
 
 void CSSDPCtrl::Stop()
 {	
   CleanupSessions();
 	m_Listener.EndReceive();  
-  CSharedLog::Shared()->Log(L_EXTENDED, "SSDPController stopped", __FILE__, __LINE__);
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "SSDPController stopped");
 }
 
 CUDPSocket* CSSDPCtrl::get_socket()
@@ -79,7 +79,7 @@ CUDPSocket* CSSDPCtrl::get_socket()
 
 void CSSDPCtrl::CleanupSessions()
 {
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "CleanupSessions");
+  CSharedLog::Log(L_DBG, __FILE__, __LINE__, "CleanupSessions");
   fuppesThreadLockMutex(&m_SessionTimedOutMutex); 
       
   if(m_HandleMSearchThreadList.size() > 0)
@@ -206,7 +206,7 @@ void CSSDPCtrl::OnUDPSocketReceive(CSSDPMessage* pSSDPMessage)
   sLog << "OnUDPSocketReceive() :: " << inet_ntoa(pSSDPMessage->GetRemoteEndPoint().sin_addr) << ":" << ntohs(pSSDPMessage->GetRemoteEndPoint().sin_port) << endl;
   //sLog << inet_ntoa(m_LastMulticastEp.sin_addr) << ":" << ntohs(m_LastMulticastEp.sin_port);
  
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());
+  CSharedLog::Log(L_DBG, __FILE__, __LINE__, sLog.str().c_str());
   
   if((m_LastMulticastEp.sin_addr.s_addr != pSSDPMessage->GetRemoteEndPoint().sin_addr.s_addr) ||
     (m_LastMulticastEp.sin_port != pSSDPMessage->GetRemoteEndPoint().sin_port))
@@ -224,8 +224,8 @@ void CSSDPCtrl::OnUDPSocketReceive(CSSDPMessage* pSSDPMessage)
           m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pSSDPMessage);
           fuppesThreadUnlockMutex(&m_SessionReceiveMutex);  
         }
-        else
-          CSharedLog::Shared()->Warning(LOGNAME, "receive handler is null");          
+        /*else
+          CSharedLog::Shared()->Warning(LOGNAME, "receive handler is null"); */
         break;
     }
   }
@@ -237,8 +237,7 @@ void CSSDPCtrl::OnSessionReceive(CSSDPMessage* pMessage)
   fuppesThreadLockMutex(&m_SessionReceiveMutex);  
   
   /* logging */
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "OnSessionReceive");
-  CSharedLog::Shared()->DebugLog(LOGNAME, pMessage->GetMessage());
+  CSharedLog::Log(L_DBG, __FILE__, __LINE__, pMessage->GetMessage().c_str());
   
   /* pass message to the main fuppes instance */
   if(NULL != m_pReceiveHandler)
@@ -255,7 +254,7 @@ void CSSDPCtrl::OnSessionTimeOut(CMSearchSession* pSender)
   /* lock timeout mutex */
   fuppesThreadLockMutex(&m_SessionTimedOutMutex); 
   
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, "OnSessionTimeOut()");  
+  //CSharedLog::Shared()->ExtendedLog(LOGNAME, "OnSessionTimeOut()");  
   m_SessionList.push_back(pSender);
   
   /* unlock timeout mutex */

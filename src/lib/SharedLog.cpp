@@ -24,15 +24,7 @@
 #include "SharedLog.h"
 #include <iostream>
 #include <sstream>
-
-#ifdef WIN32
-  #undef HAVE_SYSLOG_H
-#else
-  #include "../config.h"
-  #ifdef HAVE_SYSLOG_H
-  #include <syslog.h>
-  #endif
-#endif
+#include "../config.h"
 
 #ifdef HAVE_LIBNOTIFY
 #include <libnotify/notify.h>
@@ -43,6 +35,8 @@
 using namespace std;
 
 CSharedLog* CSharedLog::m_Instance = 0;
+ofstream*   CSharedLog::m_fsLogFile = NULL;
+std::string CSharedLog::m_sLogFileName = "";
 
 CSharedLog* CSharedLog::Shared()
 {
@@ -54,8 +48,6 @@ CSharedLog* CSharedLog::Shared()
 
 CSharedLog::CSharedLog()
 {
-  //m_bUseSyslog = false;
-
   SetLogLevel(1, false);
   #ifndef DISABLELOG
   fuppesThreadInitMutex(&m_Mutex);  
@@ -70,6 +62,8 @@ CSharedLog::CSharedLog()
   if(!notify_init("fuppes"))
     printf("notify_init() failed\n");
   #endif        
+    
+  m_fsLogFile = NULL;
 }
 
 CSharedLog::~CSharedLog()
@@ -83,23 +77,25 @@ CSharedLog::~CSharedLog()
     closelog();
   #endif*/
   
+  if(m_fsLogFile) {
+    m_fsLogFile->close();
+    delete m_fsLogFile;
+    m_fsLogFile = NULL;
+  }
+  
   #ifndef DISABLELOG
   fuppesThreadDestroyMutex(&m_Mutex);
   #endif
 }
 
-void CSharedLog::SetUseSyslog(bool p_bUseSyslog)
+bool CSharedLog::SetLogFileName(std::string p_sLogFileName)
 {
- /* #ifdef HAVE_SYSLOG_H
-  m_bUseSyslog = p_bUseSyslog;
-    
-  if(m_bUseSyslog)
-    openlog("fuppes", 0, LOG_USER);
-  else
-    closelog();
-  #else
-  m_bUseSyslog = false;
-  #endif*/
+  if(!CSharedLog::m_sLogFileName.empty())
+    return false;
+  
+  CSharedLog::m_sLogFileName = p_sLogFileName;
+  m_fsLogFile = new ofstream();
+  m_fsLogFile->open(CSharedLog::m_sLogFileName.c_str(), ios::out | ios::trunc);
 }
 
 void CSharedLog::SetLogLevel(int p_nLogLevel, bool p_bPrintLogLevel)
@@ -113,25 +109,25 @@ void CSharedLog::SetLogLevel(int p_nLogLevel, bool p_bPrintLogLevel)
   {
     case 0:
       if(p_bPrintLogLevel)
-        std::cout << "log-level: 0 (disabled)" << std::endl;
+        CSharedLog::Print("log-level: 0 (disabled)");
       break;    
     case 1:
       m_bShowLog = true;
       if(p_bPrintLogLevel)
-        std::cout << "log-level: 1 (normal)" << std::endl;
+        CSharedLog::Print("log-level: 1 (normal)");
       break;
     case 2:
       m_bShowLog         = true;
       m_bShowExtendedLog = true;
       if(p_bPrintLogLevel)
-        std::cout << "log-level: 2 (extended)" << std::endl;
+        CSharedLog::Print("log-level: 2 (extended)");
       break;
     case 3:
       m_bShowLog         = true;
       m_bShowExtendedLog = true;
       m_bShowDebugLog    = true;
       if(p_bPrintLogLevel)
-        std::cout << "log-level: 3 (debug)" << std::endl;
+        CSharedLog::Print("log-level: 3 (debug)");
       break;
     default:
       break;
@@ -182,12 +178,8 @@ void CSharedLog::Log(std::string p_sSender, std::string p_sMessage)
     //fuppesThreadLockMutex(&m_Mutex);
     stringstream sLog;
     sLog << "[" << p_sSender << "] " << p_sMessage << std::endl;
-    #ifdef USE_SYSLOG
-    syslog(LOG_INFO, sLog.str().c_str());
-    #else
     cout << sLog.str() << endl;
     fflush(stdout);
-    #endif
     //fuppesThreadUnlockMutex(&m_Mutex);    
   }  
   #endif
@@ -201,7 +193,7 @@ void CSharedLog::UserError(std::string p_sErrMsg)
     m_err_cb(p_sErrMsg.c_str());
   }
   else {
-    cout << "[ERROR] " << endl << p_sErrMsg << endl;
+    CSharedLog::Print("[ERROR] %s", p_sErrMsg.c_str());
   }
 }
 
@@ -225,7 +217,7 @@ void CSharedLog::UserNotify(std::string p_sTitle, std::string p_sNotifyMsg)
     	//
   	}			
 		#else
-    cout << p_sNotifyMsg << endl;
+    CSharedLog::Print(p_sNotifyMsg.c_str());
 		#endif
   }
 }
@@ -260,7 +252,7 @@ void CSharedLog::DebugLog(std::string p_sSender, std::string p_sMessage)
     this->Log(p_sSender, p_sMessage);
 }
 
-void CSharedLog::Log(std::string p_sSender, std::string p_asMessages[], unsigned int p_nCount, std::string p_sSeparator)
+/*void CSharedLog::Log(std::string p_sSender, std::string p_asMessages[], unsigned int p_nCount, std::string p_sSeparator)
 {
   #ifndef DISABLELOG  
   if(m_bShowLog)
@@ -278,7 +270,7 @@ void CSharedLog::Log(std::string p_sSender, std::string p_asMessages[], unsigned
     //fuppesThreadUnlockMutex(&m_Mutex);
   }
   #endif
-}
+}*/
 
 void CSharedLog::Warning(std::string p_sSender, std::string p_sMessage)
 {
@@ -323,13 +315,13 @@ void CSharedLog::Error(std::string p_sSender, std::string p_sMessage)
   {
     //fuppesThreadLockMutex(&m_Mutex);    
     std::cout << "[ERROR :: " << p_sSender << "] " << p_sMessage << std::endl;  
-    fflush(stdout);  
+    fflush(stdout);
     //fuppesThreadUnlockMutex(&m_Mutex);
   }
   #endif
 }
 
-void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber, bool p_bPrintLine)
+void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber)
 {
   #ifdef DISABLELOG
   return;
@@ -341,142 +333,92 @@ void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, 
     return;
   }
   
-  // printLine is always true on debug
-  if(m_nLogLevel == 3)
-    p_bPrintLine = true;
+  CSharedLog::Log(nLogLevel, p_szFileName, p_nLineNumber, p_sMessage.c_str());  
+}
+
+
+
+void CSharedLog::Log(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* p_szFormat, ...)
+{
+	va_list args;
+	char buffer[1024];
+  va_start(args, p_szFormat);
+	vsnprintf(buffer, sizeof(buffer), p_szFormat, args);
+  va_end(args);
+
+  string sLine;
+
+  switch(p_nLogLevel) {
+    case L_NORM:
+      if(CSharedLog::Shared()->m_nLogLevel < 1)
+        return;
+      break;
+      
+    case L_EXT:    
+      if(CSharedLog::Shared()->m_nLogLevel < 2)
+        return;
+      break;
+      
+    case L_DBG:
+      if(CSharedLog::Shared()->m_nLogLevel < 3)
+        return;
+      break;
+  } // switch (m_nLogLevel)
   
-  switch(nLogLevel)
-  {
-    case L_NORMAL:    
-      cout << p_sMessage << endl;
-      break;
-    
-    // ERROR
-    case L_ERROR:
-      if(p_bPrintLine) {
-        cout << "==== " << p_szFileName << " " << p_nLineNumber << " ====" << endl;
-      }
-      
-      cout << p_sMessage << endl;
-      
-      if(p_bPrintLine) {
-        cout << endl;
-      }
-      break;
-    
-      // WARNING
-    case L_WARNING:
-      cout << p_sMessage << endl;
-      break;
-    case L_CRITICAL:
-      cout << p_sMessage << endl;
-      break;
-    
-    // EXTENDED
-    case L_EXTENDED:      
-    case L_EXTENDED_ERR:      
-    case L_EXTENDED_WARN:      
-    
-      if(m_nLogLevel < 2)
-        break;
-      
-      if(p_bPrintLine) {
-        cout << "==== ";
-        if(nLogLevel == L_EXTENDED_ERR)
-          cout << "ERROR ===";
-        else if(nLogLevel == L_EXTENDED_WARN)
-          cout << "WARNING ===";      
-        cout << p_szFileName << " " << p_nLineNumber << " ====" << endl;
-      }
-      
-      cout << p_sMessage << endl;
-      
-      if(p_bPrintLine) {
-        cout << endl;
-      }      
-      break;
-      
-    // DEBUG
-    case L_DEBUG:
-      if(m_nLogLevel < 3)
-        break;     
-      
-      if(p_bPrintLine) {
-        cout << "==== " << p_szFileName << " " << p_nLineNumber << " ====" << endl;
-      }
-      
-      cout << p_sMessage << endl;
-      
-      if(p_bPrintLine) {
-        cout << endl;
-      }
-      break;
-  }
-  
-		/*
-  #ifdef HAVE_SYSLOG_H
-  std::stringstream sLog;
-  
-  if(m_bUseSyslog)
-  {  
-    switch(nLogLevel)
-    {
-      case L_NORMAL:    
-        syslog(LOG_INFO, p_sMessage.c_str());
-        break;    
-      case L_ERROR:      
-        syslog(LOG_ERR, p_sMessage.c_str());
-        break;
-      case L_WARNING:
-        syslog(LOG_WARNING, p_sMessage.c_str());
-        break;
-      case L_CRITICAL:
-        syslog(LOG_WARNING, p_sMessage.c_str());
-        break;
-      case L_EXTENDED:
-      case L_EXTENDED_ERR:
-      case L_EXTENDED_WARN:
-        syslog(LOG_DEBUG, p_sMessage.c_str());
-        break;
-      case L_DEBUG:
-        syslog(LOG_DEBUG, p_sMessage.c_str());
-        break;
+  if(!m_sLogFileName.empty()) {  
+    if(!p_sFileName.empty() && p_nLineNumber > 0) {
+      #ifndef WIN32
+      time_t now;
+      char nowtime[26];
+      time(&now);  
+      ctime_r(&now, nowtime);
+      nowtime[24] = '\0';
+      string sNowtime = nowtime;
+      #else		
+      char timeStr[9];    
+      _strtime(timeStr);	
+      string sNowtime = timeStr;	
+      #endif 
+          
+      *m_fsLogFile << "== " << p_sFileName << " (" << p_nLineNumber <<  ") :: " <<
+        sNowtime << " ==" << endl;
     }
-  }  
-  #endif 
-  */
-}
-
-void CSharedLog::Syslog(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber)
-{
-  /*#ifdef HAVE_SYSLOG_H 
-  if(m_bUseSyslog)
-  { 
-    Log(nLogLevel, p_sMessage, p_szFileName, p_nLineNumber);
+    *m_fsLogFile << buffer << endl << endl;
   }
-  #endif*/
+  else {
+    if(!p_sFileName.empty() && p_nLineNumber > 0) {
+      #ifndef WIN32
+      time_t now;
+      char nowtime[26];
+      time(&now);  
+      ctime_r(&now, nowtime);
+      nowtime[24] = '\0';
+      string sNowtime = nowtime;
+      #else
+      char timeStr[9];
+      _strtime(timeStr);
+      string sNowtime = timeStr;
+      #endif 
+          
+      cout << "== " << p_sFileName << " (" << p_nLineNumber <<  ") :: " <<
+        sNowtime << " ==" << endl;
+    }      
+    cout << buffer << endl << endl;
+  }
 }
 
-
-void CSharedLog::Log(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* format, ...)
+void CSharedLog::Print(const char* p_szFormat, ...)
 {
-	va_list args;
+  va_list args;
 	char buffer[1024];
-  va_start(args, format);
-	vsnprintf(buffer, 1024, format, args);
+  va_start(args, p_szFormat);
+	vsnprintf(buffer, sizeof(buffer), p_szFormat, args);
   va_end(args);
 		
-	cout << p_sFileName << " :: " << p_nLineNumber << endl;
-	cout << buffer << endl << endl;
-}
-
-void CSharedLog::Print(const char* format, ...)
-{
-	va_list args;
-	char buffer[1024];
-  va_start(args, format);
-	vsnprintf(buffer, 1024, format, args);
-  va_end(args);
-		
-	cout << buffer << endl;
+  if(!m_sLogFileName.empty()) {
+    CSharedLog::Log(L_NORM, "", 0, buffer);
+  }  
+  else {
+    cout << buffer << endl;
+  }
 }

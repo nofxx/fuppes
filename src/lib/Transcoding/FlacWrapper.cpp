@@ -84,7 +84,7 @@ FLAC__StreamDecoderWriteStatus FLAC_StreamDecoderWriteCallback(const FLAC__Strea
   }
 	else 
   {
-		CSharedLog::Shared()->Log(L_ERROR, "FLAC__STREAM_DECODER_WRITE_STATUS_ABORT", __FILE__, __LINE__);
+		CSharedLog::Shared()->Log(L_DBG, "FLAC__STREAM_DECODER_WRITE_STATUS_ABORT", __FILE__, __LINE__);
 		//dcd->error_occurred = true;
 		return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
 	}	
@@ -258,43 +258,43 @@ bool CFLACDecoder::LoadLib()
   #ifndef HAVE_FLAC_FILEDECODER
   m_FLAC_StreamDecoderNew = (FLAC_StreamDecoderNew_t)FuppesGetProcAddress(m_LibHandle, "FLAC__stream_decoder_new");  
   if(!m_FLAC_StreamDecoderNew) {
-    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'FLAC__stream_decoder_new'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'FLAC__stream_decoder_new'", __FILE__, __LINE__);
     return false;
   }    
   
   m_FLAC_StreamDecoderInitFile = (FLAC_StreamDecoderInitFile_t)FuppesGetProcAddress(m_LibHandle, "FLAC__stream_decoder_init_file");  
   if(!m_FLAC_StreamDecoderInitFile) {
-    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'FLAC__stream_decoder_init_file'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'FLAC__stream_decoder_init_file'", __FILE__, __LINE__);
     return false;
   }    
   
   m_FLAC_StreamDecoderProcessUntilEndOfMetadata = (FLAC_StreamDecoderProcessUntilEndOfMetadata_t)FuppesGetProcAddress(m_LibHandle, "FLAC__stream_decoder_process_until_end_of_metadata");  
   if(!m_FLAC_StreamDecoderProcessUntilEndOfMetadata) {
-    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'FLAC__stream_decoder_process_until_end_of_metadata'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'FLAC__stream_decoder_process_until_end_of_metadata'", __FILE__, __LINE__);
     return false;
   }    
   
   m_FLAC_StreamDecoderProcessSingle = (FLAC_StreamDecoderProcessSingle_t)FuppesGetProcAddress(m_LibHandle, "FLAC__stream_decoder_process_single");  
   if(!m_FLAC_StreamDecoderProcessSingle) {
-    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'FLAC__stream_decoder_process_single'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'FLAC__stream_decoder_process_single'", __FILE__, __LINE__);
     return false;
   }    
   
   m_FLAC_StreamDecoderGetState = (FLAC_StreamDecoderGetState_t)FuppesGetProcAddress(m_LibHandle, "FLAC__stream_decoder_get_state");  
   if(!m_FLAC_StreamDecoderGetState) {
-    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'FLAC__stream_decoder_get_state'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'FLAC__stream_decoder_get_state'", __FILE__, __LINE__);
     return false;
   }    
   
   m_FLAC_StreamDecoderFinish = (FLAC_StreamDecoderFinish_t)FuppesGetProcAddress(m_LibHandle, "FLAC__stream_decoder_finish");  
   if(!m_FLAC_StreamDecoderFinish) {
-    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'FLAC__stream_decoder_finish'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'FLAC__stream_decoder_finish'", __FILE__, __LINE__);
     return false;
   }    
   
   m_FLAC_StreamDecoderDelete = (FLAC_StreamDecoderDelete_t)FuppesGetProcAddress(m_LibHandle, "FLAC__stream_decoder_delete");  
   if(!m_FLAC_StreamDecoderDelete) {
-    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'FLAC__stream_decoder_delete'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'FLAC__stream_decoder_delete'", __FILE__, __LINE__);
     return false;
   }    
   #endif // #ifndef HAVE_FLAC_FILEDECODER

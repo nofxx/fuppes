@@ -139,7 +139,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
   }
   
   
-  CSharedLog::Shared()->Log(L_EXTENDED, "Init " + pSessionInfo->m_sInFileName, __FILE__, __LINE__);  
+  CSharedLog::Shared()->Log(L_EXT, "Init " + pSessionInfo->m_sInFileName, __FILE__, __LINE__);  
   m_pDeviceSettings = pDeviceSettings;
     
   
@@ -552,7 +552,7 @@ void CTranscodingCache::ReleaseCacheObject(CTranscodingCacheObject* pCacheObj)
 				"ref count: " << pCacheObj->m_nRefCount << endl <<
 				"delay: " << pCacheObj->ReleaseCountOrig();
 		
-	CSharedLog::Shared()->Log(L_EXTENDED, sLog.str(), __FILE__, __LINE__);
+	CSharedLog::Shared()->Log(L_EXT, sLog.str(), __FILE__, __LINE__);
   pCacheObj->m_nRefCount--;
   
   #warning todo: pause transcoding if ref count == 0
@@ -586,7 +586,7 @@ fuppesThreadCallback ReleaseLoop(void* arg)
 				sLog << "delete object \"" << pCacheObj->m_sInFileName << "\"" << endl <<
 				"delay: " << pCacheObj->ReleaseCountOrig();
 		
-				CSharedLog::Shared()->Log(L_EXTENDED, sLog.str(), __FILE__, __LINE__);						 
+				CSharedLog::Shared()->Log(L_EXT, sLog.str(), __FILE__, __LINE__);						 
 						 
         pCache->m_CachedObjects.erase(pCache->m_CachedObjectsIterator);
         delete pCacheObj;

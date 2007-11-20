@@ -108,7 +108,11 @@ void CDeviceIdentificationMgr::IdentifyDevice(CHTTPMessage* pDeviceMessage)
   	pDeviceMessage->DeviceSettings(m_pDefaultSettings);    
   }
 
-  CSharedLog::Shared()->Log(L_EXTENDED, pDeviceMessage->DeviceSettings()->m_sDeviceName, __FILE__, __LINE__);
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__,
+    "device settings \"%s\"\n\tip: %s\n\tuser agent: %s",
+    pDeviceMessage->DeviceSettings()->m_sDeviceName.c_str(),
+    pDeviceMessage->GetRemoteIPAddress().c_str(),
+    pDeviceMessage->m_sUserAgent.c_str());
 }
 
 

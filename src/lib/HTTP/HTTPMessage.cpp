@@ -179,7 +179,7 @@ std::string CHTTPMessage::GetHeaderAsString()
       break;    
     
     default:
-      CSharedLog::Shared()->Log(L_ERROR, "GetHeaderAsString() :: unhandled message type", __FILE__, __LINE__);      
+      CSharedLog::Log(L_DBG, __FILE__, __LINE__, "GetHeaderAsString() :: unhandled message type");
       break;
 	}		  
   
@@ -435,7 +435,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
       sLog << "  rest    : " << nRest << endl;
       sLog << "delaying send-process!";
       
-      CSharedLog::Shared()->Log(L_EXTENDED_WARN, sLog.str(), __FILE__, __LINE__);
+      CSharedLog::Shared()->Log(L_DBG, __FILE__, __LINE__,  sLog.str().c_str());
                                    
       fuppesSleep(500);
                               
@@ -685,7 +685,7 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName, SAudioItem 
   return false;
   #else
   
-  CSharedLog::Shared()->Log(L_EXTENDED, "TranscodeContentFromFile :: " + p_sFileName, __FILE__, __LINE__);
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "TranscodeContentFromFile :: %s", p_sFileName.c_str());
     
   if(m_pTranscodingSessionInfo) {
     delete m_pTranscodingSessionInfo;

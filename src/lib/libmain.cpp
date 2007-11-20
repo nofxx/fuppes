@@ -73,16 +73,13 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   // setup config
   CSharedLog::Shared()->SetCallback(p_log_cb);
 
-  cout << "            FUPPES - " << CSharedConfig::Shared()->GetAppVersion() << endl;
-  cout << "    the Free UPnP Entertainment Service" << endl;
-  cout << "      http://fuppes.ulrich-voelkel.de" << endl << endl;
-  
   // arguments  
   string sConfigDir;
   string sDbFile;
   string sConfigFile;
   string sVFolderFile;
   string sFriendlyName;
+  string sLogFileName;
   int    nLogLevel = 1;
   
   #warning todo: check params
@@ -90,6 +87,9 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   for(int i = 0; i < argc; i++) {
     if((strcmp(argv[i], "--config-dir") == 0) && (argc > i + 1)) {
       sConfigDir = argv[i + 1];
+      if((sConfigDir.length() > 1) && (sConfigDir.substr(sConfigDir.length() - 1).compare(upnpPathDelim) != 0)) {
+        sConfigDir += upnpPathDelim;
+      }
     }
     else if((strcmp(argv[i], "--config-file") == 0) && (argc > i + 1)) {
       sConfigFile = argv[i + 1];
@@ -106,8 +106,12 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
     else if((strcmp(argv[i], "--log-level") == 0) && (argc > i + 1)) {
       nLogLevel = atoi(argv[i + 1]);
     }
+    else if((strcmp(argv[i], "--log-file") == 0) && (argc > i + 1)) {
+      sLogFileName = argv[i + 1];
+    }
   }
   
+  CSharedLog::SetLogFileName(sLogFileName);
   CSharedLog::Shared()->SetLogLevel(nLogLevel, false);
   
   CSharedConfig::Shared()->SetConfigDir(sConfigDir);
@@ -116,6 +120,11 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   CSharedConfig::Shared()->SetVFolderConfigFileName(sVFolderFile);  
   CSharedConfig::Shared()->FriendlyName(sFriendlyName);
     
+
+  CSharedLog::Print("            FUPPES - %s", CSharedConfig::Shared()->GetAppVersion().c_str());
+  CSharedLog::Print("    the Free UPnP Entertainment Service");
+  CSharedLog::Print("      http://fuppes.ulrich-voelkel.de\n");
+
   xmlInitParser();
   
   // init config
@@ -166,7 +175,7 @@ int fuppes_start()
   }
   catch(EException ex) {
     CSharedLog::Shared()->UserError(ex.What());    
-    cout << "[exiting]" << endl;
+    CSharedLog::Print("[exiting]");
     return FUPPES_FALSE;
   }
 }

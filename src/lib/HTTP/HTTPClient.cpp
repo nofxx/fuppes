@@ -65,7 +65,7 @@ fuppesThreadCallback AsyncThread(void* arg)
   
   // connect socket
   if(connect(pClient->m_Socket, (struct sockaddr*)&pClient->m_RemoteEndpoint, sizeof(pClient->m_RemoteEndpoint)) == -1) {
-    CSharedLog::Shared()->Log(L_ERROR, "connect()", __FILE__, __LINE__);
+    CSharedLog::Log(L_DBG, __FILE__, __LINE__, "failed to connect()");
     
     pClient->m_bAsyncDone = true;
     fuppesThreadExit();
@@ -73,7 +73,7 @@ fuppesThreadCallback AsyncThread(void* arg)
   
   // send message
 	if(fuppesSocketSend(pClient->m_Socket, pClient->m_sMessage.c_str(), (int)strlen(pClient->m_sMessage.c_str())) <= 0) {
-    CSharedLog::Shared()->Log(L_ERROR, "send()", __FILE__, __LINE__);    
+    CSharedLog::Log(L_DBG, __FILE__, __LINE__, "failed to send()");
     
     upnpSocketClose(pClient->m_Socket);
     pClient->m_bAsyncDone = true;
@@ -200,7 +200,7 @@ bool CHTTPClient::AsyncGet(std::string p_sGetURL)
   
   // build GET header
   std::string sMsg = BuildGetHeader(sGet, sIPAddress, nPort);  
-  CSharedLog::Shared()->Log(L_EXTENDED, "send GET Header", __FILE__, __LINE__);
+  CSharedLog::Log(L_DBG, __FILE__, __LINE__, "send GET Header \n%s", sMsg.c_str());
 	
   // start async send
   m_sMessage   = sMsg;

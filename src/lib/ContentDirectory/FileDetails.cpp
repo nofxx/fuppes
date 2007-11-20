@@ -159,7 +159,7 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SAudioItem* pMu
   TagLib::FileRef pFile(p_sFileName.c_str());
   
 	if (pFile.isNull()) {
-	  CSharedLog::Shared()->Log(L_EXTENDED_ERR, "taglib error", __FILE__, __LINE__);
+	  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "taglib error");
 		return false;
 	}
 	

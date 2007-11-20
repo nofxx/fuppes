@@ -67,7 +67,7 @@ CUPnPDevice::~CUPnPDevice()
 
 void CUPnPDevice::OnTimer()
 {
-  CSharedLog::Shared()->Log(L_DEBUG, "OnTimer()", __FILE__, __LINE__);
+  CSharedLog::Shared()->Log(L_DBG, "OnTimer()", __FILE__, __LINE__);
   if(m_pEventHandler != NULL)
     m_pEventHandler->OnTimer(this);
 }
@@ -380,7 +380,7 @@ bool CUPnPDevice::ParseDescription(std::string p_sDescription)
   xmlDocPtr pDoc = NULL;
   pDoc = xmlReadMemory(p_sDescription.c_str(), p_sDescription.length(), "", NULL, 0);
   if(!pDoc) {
-    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "xml parser error", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_DBG, "xml parser error", __FILE__, __LINE__);
     return false;    
   }
     

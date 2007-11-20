@@ -132,7 +132,7 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent, C
 	if(!pAction) {
 	  stringstream sLog;
 	  sLog << "unhandled UPnP Action \"" << sName << "\"";
-		CSharedLog::Shared()->Log(L_EXTENDED_ERR, sLog.str(), __FILE__, __LINE__);
+		CSharedLog::Shared()->Log(L_DBG, sLog.str(), __FILE__, __LINE__);
 	}		
 
   /*cout << "[UPnPActionFactory] Browse Action:" << endl;

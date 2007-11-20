@@ -34,6 +34,7 @@
 #include <sstream>
 #include <assert.h>
 #include <exception>
+#include <stdarg.h>
 
 #include <libxml/xmlwriter.h>
 
@@ -61,7 +62,17 @@ class EException: public std::exception
       sRes << p_sException << " (" << p_szFile << ", " << p_nLine << ")";
       m_sException = sRes.str();
     };
-      
+    
+    EException(const std::string p_sFile, int p_nLine, const char* p_szEx, ...) : std::exception()
+    {       
+      va_list args;
+      char buffer[1024];
+      va_start(args, p_szEx);
+      vsnprintf(buffer, sizeof(buffer), p_szEx, args);
+      va_end(args);
+      m_sException = buffer;
+    };
+  
     ~EException() throw() {};
       
     std::string What() { return m_sException; };

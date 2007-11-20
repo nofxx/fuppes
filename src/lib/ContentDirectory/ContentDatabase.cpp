@@ -415,41 +415,31 @@ bool CContentDatabase::Select(std::string p_sStatement)
   
   int nResult = SQLITE_OK;  
   int nTry = 0;
-  do    
-  {
-    //nResult = sqlite3_exec(m_pDbHandle, p_sStatement.c_str(), SelectCallback, this, &szErr);
+  
+  CSharedLog::Log(L_DBG, __FILE__, __LINE__, "SELECT %s", p_sStatement.c_str());
+  
+  do {
     nResult = sqlite3_get_table(m_pDbHandle, p_sStatement.c_str(), &szResult, &nRows, &nCols, &szErr);   
-    if(nTry > 0) {
-      cout << "SQLITE_BUSY" << endl;
-      CSharedLog::Shared()->Log(L_EXTENDED_WARN, "SQLITE_BUSY", __FILE__, __LINE__);
+    if(nTry > 0) {      
+      //CSharedLog::Shared()->Log(L_EXTENDED_WARN, "SQLITE_BUSY", __FILE__, __LINE__);
       fuppesSleep(100);
     }
     nTry++;
   }while(nResult == SQLITE_BUSY);
     
-  if(nResult != SQLITE_OK) {
-    cout << "RESULT: " << nResult << endl;    
-    fprintf(stderr, "CContentDatabase::Select :: SQL error: %s, Statement: %s\n", szErr, p_sStatement.c_str());
+  if(nResult != SQLITE_OK) {    
+    CSharedLog::Log(L_DBG, __FILE__, __LINE__, "SQL error: %s, Statement: %s\n", szErr, p_sStatement.c_str());
     sqlite3_free(szErr);
-    //sqlite3_close(m_pDbHandle);    
     bResult = false;
   }
   else {
-       
-/*  cout << p_sStatement << endl;
-    printf("rows: %d, cols: %d\n", nRows, nCols);
-    cout << szResult[0] << endl;*/
 
    CSelectResult* pResult;
        
     for(int i = 1; i < nRows + 1; i++) {
       pResult = new CSelectResult();
             
-      for(int j = 0; j < nCols; j++) {
-        /*printf("fieldname col %d, %s\n", j, szResult[j]);
-        printf("row num %d\n", i);
-        printf("value %d, %s\n\n", (i * nCols) + j, szResult[(i * nCols) + j]);*/
-        
+      for(int j = 0; j < nCols; j++) {        
         pResult->m_FieldValues[szResult[j]] =  szResult[(i * nCols) + j] ? szResult[(i * nCols) + j] : "NULL";
       }
       
@@ -460,11 +450,7 @@ bool CContentDatabase::Select(std::string p_sStatement)
        
     sqlite3_free_table(szResult);
   }
-  
-  //Close();
 	Unlock();
-	
-  //cout << "SELECT DONE" << endl << endl; fflush(stdout);	
 	
   return bResult;
 }
@@ -645,8 +631,7 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
   
   if((pDir = opendir(p_sDirectory.c_str())) != NULL)
   {    
-    CSharedLog::Shared()->Log(L_EXTENDED, "read directory: " + p_sDirectory, __FILE__, __LINE__, false);
-    
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "read directory: %s",  p_sDirectory.c_str());
     while((pDirEnt = readdir(pDir)) != NULL)
     {
       if(((string(".").compare(pDirEnt->d_name) != 0) && 
@@ -1096,9 +1081,8 @@ fuppesThreadCallback BuildLoop(void* arg)
   _strtime(timeStr);	
 	string sNowtime = timeStr;	
 	#endif  
-  CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] create database at " + sNowtime, __FILE__, __LINE__, false);
-  
-		
+
+  CSharedLog::Print("[ContentDatabase] create database at %s", sNowtime.c_str());
   CContentDatabase* pDb = new CContentDatabase();
   
   if(g_bFullRebuild) {
@@ -1121,7 +1105,7 @@ fuppesThreadCallback BuildLoop(void* arg)
   string sFileName;
   bool bInsert = true;
   
-  CSharedLog::Shared()->Log(L_NORMAL, "read shared directories", __FILE__, __LINE__, false);
+  CSharedLog::Print("read shared directories");
 
   for(i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
   {
@@ -1162,10 +1146,11 @@ fuppesThreadCallback BuildLoop(void* arg)
       DbScanDir(pDb, CSharedConfig::Shared()->GetSharedDir(i), nObjId);      
     }
     else {      
-      CSharedLog::Shared()->Log(L_WARNING, "shared directory: \"" + CSharedConfig::Shared()->GetSharedDir(i) + "\" not found", __FILE__, __LINE__, false);
+      CSharedLog::Log(L_EXT, __FILE__, __LINE__,
+        "shared directory: \" %s \" not found", CSharedConfig::Shared()->GetSharedDir(i).c_str());
     }
   } // for
-  CSharedLog::Shared()->Log(L_NORMAL, "[DONE] read shared directories", __FILE__, __LINE__, false);
+  CSharedLog::Print("[DONE] read shared directories");
  
 	/*if( !pDb->Execute("CREATE INDEX IDX_OBJECTS_OBJECT_ID ON OBJECTS(OBJECT_ID);") )
 		CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);
@@ -1179,21 +1164,21 @@ fuppesThreadCallback BuildLoop(void* arg)
 		CSharedLog::Shared()->Log(L_NORMAL, "Create index failed", __FILE__, __LINE__, false);*/
 	
   
-  CSharedLog::Shared()->Log(L_NORMAL, "parse playlists", __FILE__, __LINE__, false);
+  CSharedLog::Print("parse playlists");
   BuildPlaylists();
-  CSharedLog::Shared()->Log(L_NORMAL, "[DONE] parse playlists", __FILE__, __LINE__, false);
+  CSharedLog::Print("[DONE] parse playlists");
     
   delete pDb;
   
   
   // import iTunes db
-  CSharedLog::Shared()->Log(L_NORMAL, "parse iTunes databases", __FILE__, __LINE__, false);
+  CSharedLog::Print("parse iTunes databases");
   CiTunesImporter* pITunes = new CiTunesImporter();
   for(i = 0; i < CSharedConfig::Shared()->SharedITunesCount(); i++) {
     pITunes->Import(CSharedConfig::Shared()->GetSharedITunes(i));
   }
   delete pITunes;
-  CSharedLog::Shared()->Log(L_NORMAL, "[DONE] parse iTunes databases", __FILE__, __LINE__, false);  
+  CSharedLog::Print("[DONE] parse iTunes databases");
   	
 	#ifndef WIN32
   time(&now);
@@ -1204,9 +1189,8 @@ fuppesThreadCallback BuildLoop(void* arg)
   _strtime(timeStr);	
 	sNowtime = timeStr;	
 	#endif
-  CSharedLog::Shared()->Log(L_NORMAL, "[ContentDatabase] database created at " + sNowtime, __FILE__, __LINE__, false);
-	
-  
+  CSharedLog::Print("[ContentDatabase] database created at %s", sNowtime.c_str());
+
   g_bIsRebuilding = false;
   fuppesThreadExit();
 }

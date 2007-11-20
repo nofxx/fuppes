@@ -124,7 +124,7 @@ bool CVorbisDecoder::LoadLib()
   
   m_OvPcmTotal = (OvPcmTotal_t)FuppesGetProcAddress(m_LibHandle, "ov_pcm_total");
   if(!m_OvPcmTotal) {
-    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'ov_pcm_total'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'ov_pcm_total'", __FILE__, __LINE__);
     return false;
   }  
   
@@ -186,11 +186,11 @@ long CVorbisDecoder::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p
   {
     // error in the stream
     if(nBytesConsumed == OV_HOLE)
-      CSharedLog::Shared()->Log(L_EXTENDED_ERR,"OV_HOLE", __FILE__, __LINE__);
+      CSharedLog::Shared()->Log(L_EXT,"OV_HOLE", __FILE__, __LINE__);
     else if(nBytesConsumed == OV_EBADLINK)    
-      CSharedLog::Shared()->Log(L_EXTENDED_ERR,"OV_EBADLINK", __FILE__, __LINE__);
+      CSharedLog::Shared()->Log(L_EXT,"OV_EBADLINK", __FILE__, __LINE__);
     else {
-      CSharedLog::Shared()->Log(L_EXTENDED_ERR,"unknown stream error", __FILE__, __LINE__);      
+      CSharedLog::Shared()->Log(L_EXT,"unknown stream error", __FILE__, __LINE__);      
     }    
     return -1;
   }

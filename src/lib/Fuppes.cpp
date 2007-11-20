@@ -42,25 +42,20 @@ using namespace std;
  *  @param  p_sIPAddress  IP-address of the network interface 
  *                        this instance should be started on
  *  @param  p_sUUID       UUID this instance should be started with
- *  @param  pPresentationRequestHandler pointer to an object implementing the request handler
  */
 CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
 {
-  CSharedLog::Shared()->Log(L_EXTENDED, "starting UPnP subsystem", __FILE__, __LINE__);  
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "starting UPnP subsystem");
  
-  /* set members */
+  // set member
   m_sIPAddress                  = p_sIPAddress;
   m_sUUID                       = p_sUUID;
   fuppesThreadInitMutex(&m_OnTimerMutex);
   fuppesThreadInitMutex(&m_RemoteDevicesMutex);
-    
-  
+
   // init database 
   bool bIsNewDB = false;   
   if(!CContentDatabase::Shared()->Init(&bIsNewDB)) {    
-    if(bIsNewDB) {
-      CSharedLog::Shared()->Log(L_ERROR, "unable to create database file", __FILE__, __LINE__);
-    }
     throw EException("unable to create database file", __FILE__, __LINE__);
   }
   if(bIsNewDB) {
@@ -125,16 +120,16 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
 	  throw;
 	}
   
-  CSharedLog::Shared()->Log(L_EXTENDED, "UPnP subsystem started", __FILE__, __LINE__);  
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "UPnP subsystem started");
 
   // init virtual containers
 	CVirtualContainerMgr::Shared();
   
   /* if everything is up and running, multicast alive messages
      and search for other devices */       
-  CSharedLog::Shared()->Log(L_EXTENDED, "multicasting alive messages", __FILE__, __LINE__);  
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "multicasting alive messages");
   m_pSSDPCtrl->send_alive();
-  CSharedLog::Shared()->Log(L_EXTENDED, "multicasting m-search", __FILE__, __LINE__);    
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "multicasting m-search");
   m_pSSDPCtrl->send_msearch();
   
   /* start alive timer */
@@ -146,18 +141,18 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
  */
 CFuppes::~CFuppes()
 {  
-  CSharedLog::Shared()->Log(L_EXTENDED, "deleting FUPPES instance", __FILE__, __LINE__);    
+  CSharedLog::Shared()->Log(L_EXT, "deleting FUPPES instance", __FILE__, __LINE__);    
   
   /* multicast notify-byebye */
-  CSharedLog::Shared()->Log(L_EXTENDED, "multicasting byebye messages", __FILE__, __LINE__);
+  CSharedLog::Shared()->Log(L_EXT, "multicasting byebye messages", __FILE__, __LINE__);
   m_pSSDPCtrl->send_byebye();  
   
   /* stop SSDP-controller */
-	CSharedLog::Shared()->Log(L_EXTENDED, "stopping SSDP controller", __FILE__, __LINE__);
+	CSharedLog::Shared()->Log(L_EXT, "stopping SSDP controller", __FILE__, __LINE__);
   m_pSSDPCtrl->Stop();
 
   /* stop HTTP-server */
-	CSharedLog::Shared()->Log(L_EXTENDED, "stopping HTTP server", __FILE__, __LINE__);
+	CSharedLog::Shared()->Log(L_EXT, "stopping HTTP server", __FILE__, __LINE__);
   m_pHTTPServer->Stop();
 
   CleanupTimedOutDevices();  
@@ -197,7 +192,7 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
   // local device must send alive message
   if(pSender->GetIsLocalDevice()) {                                  
     
-    CSharedLog::Shared()->Log(L_EXTENDED, "device: " + pSender->GetUUID() + " send timed alive", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "device: " + pSender->GetUUID() + " send timed alive", __FILE__, __LINE__);
     m_pSSDPCtrl->send_alive();    
   }
   
@@ -205,7 +200,7 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
   else
   {  
 	  if(!pSender->GetFriendlyName().empty()) {      
-      CSharedLog::Shared()->Log(L_NORMAL, "device: " + pSender->GetFriendlyName() + " timed out", __FILE__, __LINE__);
+      CSharedLog::Shared()->Log(L_NORM, "device: " + pSender->GetFriendlyName() + " timed out", __FILE__, __LINE__);
 		}
 
     fuppesThreadLockMutex(&m_RemoteDevicesMutex);
@@ -263,10 +258,9 @@ std::vector<CUPnPDevice*> CFuppes::GetRemoteDevices()
 
 void CFuppes::OnSSDPCtrlReceiveMsg(CSSDPMessage* pMessage)
 {
-//  cout << inet_ntoa(pMessage->GetRemoteEndPoint().sin_addr) << ":" << ntohs(pMessage->GetRemoteEndPoint().sin_port) << endl;
-  
-  CSharedLog::Shared()->Log(L_EXTENDED, "OnSSDPCtrlReceiveMsg()", __FILE__, __LINE__);
-	CSharedLog::Shared()->Log(L_DEBUG, pMessage->GetMessage(), __FILE__, __LINE__, false);
+//  cout << inet_ntoa(pMessage->GetRemoteEndPoint().sin_addr) << ":" << ntohs(pMessage->GetRemoteEndPoint().sin_port) << endl;  
+  CSharedLog::Log(L_DBG, __FILE__, __LINE__,
+      "OnSSDPCtrlReceiveMsg\n%s", pMessage->GetMessage().c_str());
   
   if((m_sIPAddress.compare(inet_ntoa(pMessage->GetRemoteEndPoint().sin_addr)) != 0) || (pMessage->GetUUID().compare(m_sUUID) != 0))
   { 
@@ -305,14 +299,14 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
     
     m_RemoteDevices[pMessage->GetUUID()]->GetTimer()->Reset();
         
-    CSharedLog::Shared()->Log(L_EXTENDED, 
+    CSharedLog::Shared()->Log(L_EXT, 
         "received \"Notify-Alive\" from known device id: " + pMessage->GetUUID(), __FILE__, __LINE__);
   }
 
   // new device
   else {    
     
-    CSharedLog::Shared()->Log(L_EXTENDED, 
+    CSharedLog::Shared()->Log(L_EXT, 
         "received \"Notify-Alive\" from unknown device id: " + pMessage->GetUUID(), __FILE__, __LINE__);
         
     if((pMessage->GetLocation().compare("") == 0) ||
@@ -338,7 +332,7 @@ void CFuppes::OnNewDevice(CUPnPDevice* pSender)
   m_RemoteDeviceIterator = m_RemoteDevices.find(pSender->GetUUID());  
   if(m_RemoteDeviceIterator != m_RemoteDevices.end())	{	  
     
-	  CSharedLog::Shared()->Log(L_NORMAL, 
+	  CSharedLog::Shared()->Log(L_NORM, 
       "new device: " + pSender->GetFriendlyName() + " :: " + pSender->GetUPnPDeviceTypeAsString(), __FILE__, __LINE__);	
 	
 	  pSender->GetTimer()->SetInterval(900); // 900 sec = 15 min
@@ -352,15 +346,14 @@ void CFuppes::OnNewDevice(CUPnPDevice* pSender)
 
 void CFuppes::HandleSSDPByeBye(CSSDPMessage* pMessage)
 {
-  CSharedLog::Shared()->Log(L_EXTENDED, "received \"Notify-ByeBye\" from device: " + pMessage->GetUUID(), __FILE__, __LINE__);
-  
+  CSharedLog::Shared()->Log(L_EXT, "received \"Notify-ByeBye\" from device: " + pMessage->GetUUID(), __FILE__, __LINE__);
 
   fuppesThreadLockMutex(&m_RemoteDevicesMutex);
 
   m_RemoteDeviceIterator = m_RemoteDevices.find(pMessage->GetUUID());    
   if(m_RemoteDeviceIterator != m_RemoteDevices.end()) {    
     
-    CSharedLog::Shared()->Log(L_NORMAL, 
+    CSharedLog::Shared()->Log(L_NORM, 
         "received byebye from " + m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName() + " :: " + m_RemoteDevices[pMessage->GetUUID()]->GetUPnPDeviceTypeAsString(), __FILE__, __LINE__);
     
     CSharedLog::Shared()->UserNotify(m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName(),                                    

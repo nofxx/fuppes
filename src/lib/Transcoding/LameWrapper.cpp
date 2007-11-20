@@ -77,7 +77,7 @@ bool CLameWrapper::LoadLib()
   
   
   if(!m_LibHandle) {
-    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot open library", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot open library", __FILE__, __LINE__);
 		cout << "[WARNING :: LameWrapper] cannot open library" << endl;
     return false;
   }
@@ -95,7 +95,7 @@ bool CLameWrapper::LoadLib()
   // get_lame_version()
   m_LameGetVersion = (LameGetVersion_t)FuppesGetProcAddress(m_LibHandle, "get_lame_version");
   if(!m_LameGetVersion) {
-    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'get_lame_version'", __FILE__, __LINE__);   
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'get_lame_version'", __FILE__, __LINE__);   
   }
   
   m_LameInitParams = (LameInitParams_t)FuppesGetProcAddress(m_LibHandle, "lame_init_params");
@@ -109,42 +109,42 @@ bool CLameWrapper::LoadLib()
   
   m_LamePrintConfig = (LamePrintConfig_t)FuppesGetProcAddress(m_LibHandle, "lame_print_config");
   if(!m_LamePrintConfig) {
-    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_print_config'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'lame_print_config'", __FILE__, __LINE__);
   }  
   
   m_LameSetCompressionRatio = (LameSetCompressionRatio_t)FuppesGetProcAddress(m_LibHandle, "lame_set_compression_ratio");
   if(!m_LameSetCompressionRatio) {
-    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_set_compression_ratio'", __FILE__, __LINE__);   
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'lame_set_compression_ratio'", __FILE__, __LINE__);   
   }
   
   m_LameGetCompressionRatio = (LameGetCompressionRatio_t)FuppesGetProcAddress(m_LibHandle, "lame_get_compression_ratio");
   if(!m_LameGetCompressionRatio) {
-    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_get_compression_ratio'", __FILE__, __LINE__);   
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'lame_get_compression_ratio'", __FILE__, __LINE__);   
   }
   
   m_LameSetBrate = (LameSetBrate_t)FuppesGetProcAddress(m_LibHandle, "lame_set_brate");
   if(!m_LameSetBrate) {
-    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_set_brate'", __FILE__, __LINE__);   
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'lame_set_brate'", __FILE__, __LINE__);   
   }
   
   m_LameGetBrate = (LameGetBrate_t)FuppesGetProcAddress(m_LibHandle, "lame_get_brate");
   if(!m_LameGetBrate) {
-    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_get_brate'", __FILE__, __LINE__);   
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'lame_get_brate'", __FILE__, __LINE__);   
   }
   
   m_LameSetMode = (LameSetMode_t)FuppesGetProcAddress(m_LibHandle, "lame_set_mode");
   if(!m_LameSetMode) {
-    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_set_mode'", __FILE__, __LINE__);   
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'lame_set_mode'", __FILE__, __LINE__);   
   } 
   
   m_LameSetQuality = (LameSetQuality_t)FuppesGetProcAddress(m_LibHandle, "lame_set_quality");
   if(!m_LameSetQuality) {
-    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_set_quality'", __FILE__, __LINE__);   
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'lame_set_quality'", __FILE__, __LINE__);   
   }
   
   m_LameGetQuality = (LameGetQuality_t)FuppesGetProcAddress(m_LibHandle, "lame_get_quality");
   if(!m_LameGetQuality) {
-    CSharedLog::Shared()->Log(L_EXTENDED_WARN, "cannot load symbol 'lame_get_quality'", __FILE__, __LINE__);   
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'lame_get_quality'", __FILE__, __LINE__);   
   }
   
   m_LameEncodeBufferInterleaved = (LameEncodeBufferInterleaved_t)FuppesGetProcAddress(m_LibHandle, "lame_encode_buffer_interleaved");
@@ -168,7 +168,7 @@ bool CLameWrapper::LoadLib()
   // lame_close()
   m_LameClose = (LameClose_t)FuppesGetProcAddress(m_LibHandle, "lame_close");
   if(!m_LameClose) {     
-    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "cannot load symbol 'lame_close'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'lame_close'", __FILE__, __LINE__);
     return false;
   }
   
@@ -176,61 +176,61 @@ bool CLameWrapper::LoadLib()
   // id3
   m_Id3TagInit = (Id3TagInit_t)FuppesGetProcAddress(m_LibHandle, "id3tag_init");
   if(!m_Id3TagInit) {
-    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_init'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'id3tag_init'", __FILE__, __LINE__);
     //return false;
   }
 
   m_Id3TagV1Only = (Id3TagV1Only_t)FuppesGetProcAddress(m_LibHandle, "id3tag_v1_only");
   if(!m_Id3TagV1Only) {
-    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_v1_only'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'id3tag_v1_only'", __FILE__, __LINE__);
     //return false;
   }
 
   m_Id3TagV2Only = (Id3TagV1Only_t)FuppesGetProcAddress(m_LibHandle, "id3tag_v2_only");
   if(!m_Id3TagV2Only) {
-    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_v2_only'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'id3tag_v2_only'", __FILE__, __LINE__);
     //return false;
   }  
   
   m_Id3TagAddV2 = (Id3TagAddV2_t)FuppesGetProcAddress(m_LibHandle, "id3tag_add_v2");
   if(!m_Id3TagAddV2) {
-    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_add_v2'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'id3tag_add_v2'", __FILE__, __LINE__);
     //return false;
   }
   
   m_Id3TagPadV2 = (Id3TagPadV2_t)FuppesGetProcAddress(m_LibHandle, "id3tag_pad_v2");
   if(!m_Id3TagPadV2) {
-    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_pad_v2'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'id3tag_pad_v2'", __FILE__, __LINE__);
     //return false;
   }
   
   m_Id3TagSetTitle = (Id3TagSetTitle_t)FuppesGetProcAddress(m_LibHandle, "id3tag_set_title");
   if(!m_Id3TagSetTitle) {
-    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_set_title'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'id3tag_set_title'", __FILE__, __LINE__);
     //return false;
   }
   
   m_Id3TagSetArtist = (Id3TagSetArtist_t)FuppesGetProcAddress(m_LibHandle, "id3tag_set_artist");
   if(!m_Id3TagSetArtist) {
-    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_set_artist'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'id3tag_set_artist'", __FILE__, __LINE__);
     //return false;
   }
   
   m_Id3TagSetAlbum = (Id3TagSetAlbum_t)FuppesGetProcAddress(m_LibHandle, "id3tag_set_album");
   if(!m_Id3TagSetAlbum) {
-    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_set_album'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'id3tag_set_album'", __FILE__, __LINE__);
     //return false;
   }
   
   m_Id3TagSetTrack = (Id3TagSetAlbum_t)FuppesGetProcAddress(m_LibHandle, "id3tag_set_track");
   if(!m_Id3TagSetTrack) {
-    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_set_track'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'id3tag_set_track'", __FILE__, __LINE__);
     //return false;
   }  
   
   m_Id3TagSetGenre = (Id3TagSetGenre_t)FuppesGetProcAddress(m_LibHandle, "id3tag_set_genre");
   if(!m_Id3TagSetGenre) {
-    CSharedLog::Shared()->Log(L_WARNING, "cannot load symbol 'id3tag_set_genre'", __FILE__, __LINE__);
+    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'id3tag_set_genre'", __FILE__, __LINE__);
     //return false;
   }   
   

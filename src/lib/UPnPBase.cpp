@@ -56,7 +56,7 @@ std::string	CUPnPBase::GetUPnPDeviceTypeAsString()
 	  sResult = "XMSMediaReceiverRegistrar";
 	  break;
     default:
-      CSharedLog::Shared()->Log(L_EXTENDED_ERR, "unhandled UPnP device type", __FILE__, __LINE__);
+      CSharedLog::Shared()->Log(L_DBG, "unhandled UPnP device type", __FILE__, __LINE__);
       sResult = "unknown";
       break;
   }
