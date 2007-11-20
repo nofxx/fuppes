@@ -102,19 +102,13 @@ bool CHTTPParser::Parse(CHTTPMessage* pMessage)
   return true;
 }
 
-
 void CHTTPParser::ParseCommonValues()
 {
-  //cout << m_pMessage->GetHeader() << endl;
-
-  RegEx rxUserAgent("USER-AGENT: *(.*)\\r", PCRE_CASELESS);
+  RegEx rxUserAgent("USER-AGENT: *(.*)\r\n", PCRE_CASELESS);
 	if(rxUserAgent.Search(m_pMessage->GetHeader().c_str())) {
-	 // cout << __FILE__ << " AGENT: " << rxUserAgent.Match(1) << "." <<  endl;
 		m_pMessage->m_sUserAgent = rxUserAgent.Match(1);
 	}
 }
-
-
 
 void CHTTPParser::ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage)
 {

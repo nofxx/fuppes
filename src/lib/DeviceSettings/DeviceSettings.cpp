@@ -23,7 +23,6 @@
 
 #include "DeviceSettings.h"
 #include "../Common/RegEx.h"
-#include "../SharedConfig.h"
 #include <iostream>
 
 #define DEFAULT_RELEASE_DELAY 4
@@ -373,8 +372,8 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
 	m_MediaServerSettings.FriendlyName = "FUPPES %v (%h)";
 	m_MediaServerSettings.Manufacturer = "Ulrich Voelkel";
 	m_MediaServerSettings.ManufacturerURL = "http://www.ulrich-voelkel.de"; 	
-	m_MediaServerSettings.ModelName = "Free UPnP Entertainment Service " + CSharedConfig::Shared()->GetAppVersion();
-	m_MediaServerSettings.ModelNumber = CSharedConfig::Shared()->GetAppVersion();
+	m_MediaServerSettings.ModelName = "Free UPnP Entertainment Service %v";
+	m_MediaServerSettings.ModelNumber = "%v";
 	m_MediaServerSettings.ModelURL = "http://fuppes.ulrich-voelkel.de";
 	m_MediaServerSettings.ModelDescription = "Free UPnP Media Server licensed under the terms of the GPL";
 	m_MediaServerSettings.UseModelDescription = true;

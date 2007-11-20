@@ -52,7 +52,7 @@ void ReplaceDescriptionVars(std::string* p_sValue)
 {
 	string sValue = *p_sValue;
 	string::size_type pos;
-		
+
 	// version (%v)
 	while((pos = sValue.find("%v")) != string::npos) {
 		sValue = sValue.replace(pos, 2, CSharedConfig::Shared()->GetAppVersion());
@@ -71,6 +71,12 @@ void ReplaceDescriptionVars(std::string* p_sValue)
 
 void CDeviceIdentificationMgr::Initialize()
 {
+	ReplaceDescriptionVars(&m_pDefaultSettings->MediaServerSettings()->FriendlyName);
+	ReplaceDescriptionVars(&m_pDefaultSettings->MediaServerSettings()->ModelName);
+	ReplaceDescriptionVars(&m_pDefaultSettings->MediaServerSettings()->ModelNumber);
+	ReplaceDescriptionVars(&m_pDefaultSettings->MediaServerSettings()->ModelDescription);
+	ReplaceDescriptionVars(&m_pDefaultSettings->MediaServerSettings()->SerialNumber);	
+		
 	CDeviceSettings* pSettings;
 	for(m_SettingsIt = m_Settings.begin(); 
 			m_SettingsIt != m_Settings.end(); 
@@ -83,7 +89,7 @@ void CDeviceIdentificationMgr::Initialize()
 		ReplaceDescriptionVars(&pSettings->MediaServerSettings()->ModelNumber);
 		ReplaceDescriptionVars(&pSettings->MediaServerSettings()->ModelDescription);
 		ReplaceDescriptionVars(&pSettings->MediaServerSettings()->SerialNumber);
-	}
+	}	
 }
 
 void CDeviceIdentificationMgr::IdentifyDevice(CHTTPMessage* pDeviceMessage)
