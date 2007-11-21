@@ -126,24 +126,21 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   CSharedLog::Print("      http://fuppes.ulrich-voelkel.de\n");
 
   xmlInitParser();
-  
+
   // init config
   if(!CSharedConfig::Shared()->SetupConfig())
     return FUPPES_FALSE;
 
 	#ifdef HAVE_IMAGEMAGICK
-	#ifdef WIN32  
+	#ifdef WIN32
 	MagickWandGenesis();
-	/*if(argc > 0) {
-	  Magick::InitializeMagick(*argv);
-	}*/
 	#endif
-  #endif    
-    
+  #endif
+
   #ifdef HAVE_LIBAVFORMAT
   av_register_all();
   #endif
-    
+
   return FUPPES_TRUE;
 }
 

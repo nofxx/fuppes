@@ -1,3 +1,4 @@
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            daemon_main.cpp
  *
@@ -60,9 +61,9 @@ int main(int argc, char* argv[])
   // child process
   else if(pid == 0) {
     //cout << "child process" << endl;
-    close(STDIN_FILENO);
-    close(STDOUT_FILENO);
-    close(STDERR_FILENO);
+    //close(STDIN_FILENO);
+    //close(STDOUT_FILENO);
+    //close(STDERR_FILENO);
   }
     
   // install signal handler

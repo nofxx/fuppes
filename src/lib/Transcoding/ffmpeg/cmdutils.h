@@ -114,6 +114,43 @@ struct OptionDef {
 
     }
   
+		// OPT_STRING
+		OptionDef(const char *_name, 
+              int _flags, 
+              char ** _str,
+              const char *_help,
+              const char *_argname)
+    {
+      if(_name) {      
+        name = (const char*)malloc(sizeof(char*) * strlen(_name) + 1);
+        strcpy((char*)name, _name);        
+      }
+      else {
+        name = NULL;
+      }
+        
+      flags = _flags;
+      u.str_arg = _str;
+      
+      if(_help) {      
+        help = (const char*)malloc(sizeof(char*) * strlen(_help) + 1);
+        strcpy((char*)help, _help);        
+      }
+      else {
+        help = NULL;
+      }
+      
+      if(_argname) {      
+        argname = (const char*)malloc(sizeof(char*) * strlen(_argname) + 1);
+        strcpy((char*)argname, _argname);        
+      }
+      else {
+        argname = NULL; 
+      }
+
+    }
+  		
+		
     ~OptionDef()
     {
       if(name) {

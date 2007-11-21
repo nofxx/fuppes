@@ -153,11 +153,6 @@ bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFi
   strcpy(szArgs[nArgs], "640x360");
   nArgs++;      */
   
-
-  szArgs[nArgs] = (char*)malloc((strlen(p_psOutFile->c_str()) + 1) * sizeof(char));
-  strcpy(szArgs[nArgs], p_psOutFile->c_str());  
-  nArgs++;
-  
   string  sParams = pFileSettings->pTranscodingSettings->FFmpegParams();
   int     nChar = ' ';
   char*   sChar = NULL;
@@ -173,13 +168,19 @@ bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFi
       sArg = sParams;      
       sParams = "";
     }
-    
+  
+		cout << sArg << endl;
+			
     szArgs[nArgs] = (char*)malloc((strlen(sArg.c_str()) + 1) * sizeof(char));
     strcpy(szArgs[nArgs], sArg.c_str());  
     nArgs++;    
   }  
   
   
+	szArgs[nArgs] = (char*)malloc((strlen(p_psOutFile->c_str()) + 1) * sizeof(char));
+  strcpy(szArgs[nArgs], p_psOutFile->c_str());  
+  nArgs++;
+	
   pFFmpeg->ffmpeg_main(nArgs, szArgs);
   
   for(int i = 0; i < nArgs; i++) {

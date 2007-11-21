@@ -144,8 +144,7 @@ typedef struct AVMetaDataMap {
 
 
 #define MAX_FILES 1
-
-#define NUM_OPTIONS 20
+#define NUM_OPTIONS 30
 
 class CFFmpeg {
 
@@ -302,10 +301,10 @@ class CFFmpeg {
       options[o++] = (OptionDef) { "fs", HAS_ARG | OPT_INT64, {(void(*)(const char*))&limit_filesize}, "set the limit file size in bytes", "limit_size" };      
       options[o++] = (OptionDef) { "ss", HAS_ARG, {(void(*)(const char*))opt_start_time}, "set the start time offset", "time_off" };
       
-      options[o++] = (OptionDef) { "itsoffset", HAS_ARG, {(void(*)(const char*))opt_input_ts_offset}, "set the input ts offset", "time_off" };
+      options[o++] = (OptionDef) { "itsoffset", HAS_ARG, {(void(*)(const char*))opt_input_ts_offset}, "set the input ts offset", "time_off" };*/
       
-      options[o++] = (OptionDef) { "title", HAS_ARG | OPT_STRING, {(void(*)(const char*))&str_title}, "set the title", "string" };
-      options[o++] = (OptionDef) { "timestamp", HAS_ARG, {(void(*)(const char*))&opt_rec_timestamp}, "set the timestamp", "time" };
+      options[opt_counter++] = new OptionDef("title", HAS_ARG | OPT_STRING, &this->str_title, "set the title", "string" );
+      /*options[o++] = (OptionDef) { "timestamp", HAS_ARG, {(void(*)(const char*))&opt_rec_timestamp}, "set the timestamp", "time" };
       options[o++] = (OptionDef) { "author", HAS_ARG | OPT_STRING, {(void(*)(const char*))&str_author}, "set the author", "string" };
       options[o++] = (OptionDef) { "copyright", HAS_ARG | OPT_STRING, {(void(*)(const char*))&str_copyright}, "set the copyright", "string" };
       options[o++] = (OptionDef) { "comment", HAS_ARG | OPT_STRING, {(void(*)(const char*))&str_comment}, "set the comment", "string" };
@@ -335,8 +334,8 @@ class CFFmpeg {
       //options[o++] = (OptionDef) { "dframes", OPT_INT | HAS_ARG, {(void(*)(const char*))&max_frames[CODEC_TYPE_DATA]}, "set the number of data frames to record", "number" };
       options[opt_counter++] = new OptionDef( "r", HAS_ARG | OPT_VIDEO, (void(CFFmpeg::*)(const char*))&CFFmpeg::opt_frame_rate, "set frame rate (Hz value, fraction or abbreviation)", "rate" );
       options[opt_counter++] = new OptionDef( "s", HAS_ARG | OPT_VIDEO, (void(CFFmpeg::*)(const char*))&CFFmpeg::opt_frame_size, "set frame size (WxH or abbreviation)", "size" );
-      /*options[o++] = (OptionDef) { "aspect", HAS_ARG | OPT_VIDEO, {(void(*)(const char*))opt_frame_aspect_ratio}, "set aspect ratio (4:3, 16:9 or 1.3333, 1.7777)", "aspect" };
-      options[o++] = (OptionDef) { "pix_fmt", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void(*)(const char*))&CFFmpeg::opt_frame_pix_fmt}, "set pixel format, 'list' as argument shows all the pixel formats supported", "format" };
+      options[opt_counter++] = new OptionDef( "aspect", HAS_ARG | OPT_VIDEO, (void(CFFmpeg::*)(const char*))&CFFmpeg::opt_frame_aspect_ratio, "set aspect ratio (4:3, 16:9 or 1.3333, 1.7777)", "aspect" );
+      /*options[o++] = (OptionDef) { "pix_fmt", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void(*)(const char*))&CFFmpeg::opt_frame_pix_fmt}, "set pixel format, 'list' as argument shows all the pixel formats supported", "format" };
       options[o++] = (OptionDef) { "croptop", HAS_ARG | OPT_VIDEO, {(void(*)(const char*))opt_frame_crop_top}, "set top crop band size (in pixels)", "size" };
       options[o++] = (OptionDef) { "cropbottom", HAS_ARG | OPT_VIDEO, {(void(*)(const char*))opt_frame_crop_bottom}, "set bottom crop band size (in pixels)", "size" };
       options[o++] = (OptionDef) { "cropleft", HAS_ARG | OPT_VIDEO, {(void(*)(const char*))opt_frame_crop_left}, "set left crop band size (in pixels)", "size" };

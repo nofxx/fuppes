@@ -309,8 +309,6 @@ void CSharedLog::Log(int p_nLogLevel, const std::string p_sFileName, int p_nLine
 	vsnprintf(buffer, sizeof(buffer) - 1, p_szFormat, args);
   va_end(args);
 
-  string sLine;
-
   switch(p_nLogLevel) {
     case L_NORM:
       if(CSharedLog::Shared()->m_nLogLevel < 1)

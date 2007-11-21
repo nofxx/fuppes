@@ -179,15 +179,15 @@ fuppesThreadCallback HandleMSearchThread(void *arg)
     if(pSession->GetSSDPMessage()->GetMSearchST() == M_SEARCH_ST_ALL)
     {
       fuppesSleep(nSleepMS);
+      Sock.SendUnicast(pSession->m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_USN), pSession->GetSSDPMessage()->GetRemoteEndPoint());
+			fuppesSleep(nSleepMS);
       Sock.SendUnicast(pSession->m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_ROOT_DEVICE), pSession->GetSSDPMessage()->GetRemoteEndPoint());
       fuppesSleep(nSleepMS);
-      Sock.SendUnicast(pSession->m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_CONNECTION_MANAGER), pSession->GetSSDPMessage()->GetRemoteEndPoint());
-      fuppesSleep(nSleepMS);
-      Sock.SendUnicast(pSession->m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_CONTENT_DIRECTORY), pSession->GetSSDPMessage()->GetRemoteEndPoint());
-      fuppesSleep(nSleepMS);
       Sock.SendUnicast(pSession->m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_MEDIA_SERVER), pSession->GetSSDPMessage()->GetRemoteEndPoint());
-      fuppesSleep(nSleepMS);
-      Sock.SendUnicast(pSession->m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_USN), pSession->GetSSDPMessage()->GetRemoteEndPoint());
+			fuppesSleep(nSleepMS);
+      Sock.SendUnicast(pSession->m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_CONTENT_DIRECTORY), pSession->GetSSDPMessage()->GetRemoteEndPoint());
+			fuppesSleep(nSleepMS);
+      Sock.SendUnicast(pSession->m_pNotifyMsgFactory->GetMSearchResponse(MESSAGE_TYPE_CONNECTION_MANAGER), pSession->GetSSDPMessage()->GetRemoteEndPoint());
     }
     else
     {
