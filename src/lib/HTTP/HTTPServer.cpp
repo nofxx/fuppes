@@ -569,7 +569,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   if(!p_Response->IsBinary())
   { 
 	  // log
-    CSharedLog::Log(L_DBG, __FILE__, __LINE__, p_Response->GetMessageAsString().c_str());
+    CSharedLog::Log(L_DBG, __FILE__, __LINE__, "send response %s\n", p_Response->GetMessageAsString().c_str());
         
     // send
     nRet = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetMessageAsString().c_str(), (int)strlen(p_Response->GetMessageAsString().c_str()));
@@ -577,7 +577,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     if(nRet == -1) {
       stringstream sLog;            
       sLog << "send error :: error no. " << WSAGetLastError() << " " << strerror(WSAGetLastError()) << endl;              
-      CSharedLog::Shared()->Log(L_EXTENDED_ERR, sLog.str(), __FILE__, __LINE__);
+      CSharedLog::Log(L_DBG, __FILE__, __LINE__, sLog.str().c_str());
     }
     #else
     if(nRet == -1) {
@@ -655,7 +655,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       ))) 
   {
 	  // log
-		CSharedLog::Log(L_DBG, __FILE__, __LINE__, p_Response->GetHeaderAsString().c_str());
+		CSharedLog::Log(L_DBG, __FILE__, __LINE__, "send header: %s\n", p_Response->GetHeaderAsString().c_str());
     // send
     nErr = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()));
            
@@ -697,25 +697,22 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     if(nCnt == 0) {      
       // send
       nErr = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()));   
-      CSharedLog::Log(L_DBG, __FILE__, __LINE__, p_Response->GetHeaderAsString().c_str()); 
+      CSharedLog::Log(L_DBG, __FILE__, __LINE__, "send header %s\n", p_Response->GetHeaderAsString().c_str());
     }
 
     
     if(nErr > 0) {
       CSharedLog::Log(L_DBG, __FILE__, __LINE__,
-        "partial binary (%d - %d)", nOffset, nOffset + nRet);
+        "send binary data (bytes %llu to %llu from %llu)", nOffset, nOffset + nRet, p_Response->GetBinContentLength());
       
       if(p_Response->GetTransferEncoding() == HTTP_TRANSFER_ENCODING_CHUNKED) {
         char szSize[10];
         sprintf(szSize, "%X\r\n", nRet);
         fuppesSocketSend(p_Session->GetConnection(), szSize, strlen(szSize));
       }     
-      
-      // send chunk
-      //p_Response->LockBuffer();
+
       nErr = fuppesSocketSend(p_Session->GetConnection(), szChunk, nRet);    
-      //p_Response->UnlockBuffer();
-      
+
       if(p_Response->GetTransferEncoding() == HTTP_TRANSFER_ENCODING_CHUNKED) {
         char* szCRLF = "\r\n";
         fuppesSocketSend(p_Session->GetConnection(), szCRLF, strlen(szCRLF));

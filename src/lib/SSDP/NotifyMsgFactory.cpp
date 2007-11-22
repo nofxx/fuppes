@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -52,22 +52,21 @@ std::string CNotifyMsgFactory::notify_alive(MESSAGE_TYPE a_type)
 	stringstream result;
 	
 	result << "NOTIFY * HTTP/1.1\r\n";
-  result << "LOCATION: http://" << m_sHTTPServerURL << "/description.xml\r\n";
   result << "HOST: 239.255.255.250:1900\r\n";
-  result << "SERVER: " << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << " ";
-		result << "UPnP/1.0 ";
-	  result << "libfuppes/0.1\r\n";
-  result << "NTS: ssdp:alive\r\n";
+	result << "CACHE-CONTROL: max-age=1810\r\n";
+	result << "LOCATION: http://" << m_sHTTPServerURL << "/description.xml\r\n";
+  result << "NT: " << type_to_string(a_type) << "\r\n";
+	result << "NTS: ssdp:alive\r\n";
+	result << "SERVER: " << CSharedConfig::Shared()->GetOSName() << "/" << CSharedConfig::Shared()->GetOSVersion() << ", " <<
+    "UPnP/1.0, " << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << "\r\n";  
 	
 	result << "USN: uuid:" << CSharedConfig::Shared()->GetUUID();
 	if(a_type == MESSAGE_TYPE_USN)
 		result << "\r\n";
 	else
 	  result << "::" << type_to_string(a_type) << "\r\n";
-	
-	result << "CACHE-CONTROL: max-age=1800\r\n";
-	result << "NT: " << type_to_string(a_type) << "\r\n";
-	result << "Content-Length: 0\r\n\r\n";      
+		
+	result << "\r\n";
 	
 	return result.str();
 }
@@ -92,7 +91,8 @@ std::string CNotifyMsgFactory::notify_bye_bye(MESSAGE_TYPE a_type)
 		result << "NT: " << type_to_string(a_type) << "\r\n";
   }
 
-	result << "Content-Length: 0\r\n\r\n";      
+	//result << "Content-Length: 0\r\n\r\n";      
+	result << "\r\n";      
 	
 	return result.str();	
 }
@@ -105,9 +105,8 @@ std::string CNotifyMsgFactory::GetMSearchResponse(MESSAGE_TYPE p_MessageType)
   result << "CACHE-CONTROL: max-age=1800\r\n";
   result << "EXT: \r\n";
   result << "LOCATION: http://" << m_sHTTPServerURL << "/description.xml\r\n";
-  result << "SERVER: " << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << " ";
-		result << "UPnP/1.0 ";
-	  result << "libfuppes/0.1\r\n";
+  result << "SERVER: " << CSharedConfig::Shared()->GetOSName() << "/" << CSharedConfig::Shared()->GetOSVersion() << ", " <<
+    "UPnP/1.0, " << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << "\r\n";  
   result << "ST: " << type_to_string(p_MessageType) << "\r\n";  
   result << "NTS: ssdp:alive\r\n";	
 	result << "USN: uuid:" << CSharedConfig::Shared()->GetUUID();
@@ -115,7 +114,8 @@ std::string CNotifyMsgFactory::GetMSearchResponse(MESSAGE_TYPE p_MessageType)
 		result << "\r\n";
 	else
 	  result << "::" << type_to_string(p_MessageType) << "\r\n";
-	result << "Content-Length: 0\r\n\r\n";      
+	//result << "Content-Length: 0\r\n\r\n";
+	result << "\r\n";
 	
 	return result.str();
 }
