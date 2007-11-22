@@ -198,9 +198,10 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 				}
         else if(sProp.compare("res:protocolInfo") == 0) {
 				  continue;
-          sProp = "o.MIME_TYPE";
-					bNumericProp = false;
-				}        
+				}
+				else if(sProp.compare(":refID") == 0) {
+					continue;
+				}
 				else {
 				  bBuildOK = false;
 				}
