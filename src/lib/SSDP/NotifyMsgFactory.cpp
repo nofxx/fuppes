@@ -101,20 +101,26 @@ std::string CNotifyMsgFactory::GetMSearchResponse(MESSAGE_TYPE p_MessageType)
 {	
   stringstream result;
 	
+	char   szTime[30];
+  time_t tTime = time(NULL);
+  strftime(szTime, 30,"%a, %d %b %Y %H:%M:%S GMT" , gmtime(&tTime));   
+		
 	result << "HTTP/1.1 200 OK\r\n";
-  result << "CACHE-CONTROL: max-age=1800\r\n";
+  result << "CACHE-CONTROL: max-age=1810\r\n";
+  result << "DATE: " << szTime << "\r\n";
   result << "EXT: \r\n";
   result << "LOCATION: http://" << m_sHTTPServerURL << "/description.xml\r\n";
   result << "SERVER: " << CSharedConfig::Shared()->GetOSName() << "/" << CSharedConfig::Shared()->GetOSVersion() << ", " <<
     "UPnP/1.0, " << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << "\r\n";  
   result << "ST: " << type_to_string(p_MessageType) << "\r\n";  
-  result << "NTS: ssdp:alive\r\n";	
+  //result << "NTS: ssdp:alive\r\n";	
 	result << "USN: uuid:" << CSharedConfig::Shared()->GetUUID();
 	if(p_MessageType == MESSAGE_TYPE_USN)
 		result << "\r\n";
 	else
 	  result << "::" << type_to_string(p_MessageType) << "\r\n";
-	//result << "Content-Length: 0\r\n\r\n";
+		
+	result << "Content-Length: 0\r\n";
 	result << "\r\n";
 	
 	return result.str();
