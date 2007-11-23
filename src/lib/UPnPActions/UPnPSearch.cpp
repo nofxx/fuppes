@@ -132,6 +132,12 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
       //cout << "PARENT ID LIST: " << m_sParentIds << endl; fflush(stdout);
     }
   }
+	else if(nContainerId == 0) {
+		if(CVirtualContainerMgr::Shared()->HasVirtualChildren(nContainerId, DeviceSettings()->VirtualFolderDevice())) {
+      bVirtualSearch = true;
+      sDevice = " = '" + DeviceSettings()->VirtualFolderDevice() + "' ";
+    }
+	}
   
   
   sSql <<
