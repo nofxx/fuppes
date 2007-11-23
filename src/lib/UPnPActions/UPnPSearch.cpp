@@ -170,10 +170,6 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 	  do {
 		  //cout <<  rxSearch.Match(1) << " X " << rxSearch.Match(2) << " X " << rxSearch.Match(3) << " X " << rxSearch.Match(4) << " X " << rxSearch.Match(5) << " X " << rxSearch.Match(6) << endl;
 		
-		  // contains "and" on first loop
-			// so we just append it when criterias can be found
-		  //sSql << " " << sLogOp << endl;
-		
 		  sOpenBr  = rxSearch.Match(1);
 			sProp    = rxSearch.Match(2);
 		  sOp      = rxSearch.Match(3);
@@ -182,10 +178,14 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 			sLogOp   = rxSearch.Match(6);
 			
 			if(sOp.compare("exists") == 0) {
+				bBuildOK = true;
+				if(sProp.compare(":refID") == 0) {
+					sPrevLog = sLogOp;
+					continue;
+				}
         bBuildOK = false;
 			}
 			else {
-				
 				
 				bBuildOK = true;
 				
@@ -203,9 +203,7 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 					bNumericProp = false;
 				}
         else if(sProp.compare("res:protocolInfo") == 0) {
-				  continue;
-				}
-				else if(sProp.compare(":refID") == 0) {
+				  sPrevLog = sLogOp;
 					continue;
 				}
 				else {
@@ -274,7 +272,7 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
           sSql << " and ";
           bFirst = false;
         }        
-  			sSql << sPrevLog << sOpenBr << sProp << " " << sOp << " " << sVal << sCloseBr << " ";
+  			sSql << sPrevLog << " " << sOpenBr << sProp << " " << sOp << " " << sVal << sCloseBr << " ";
         sPrevLog = sLogOp;
       }
 			else {
