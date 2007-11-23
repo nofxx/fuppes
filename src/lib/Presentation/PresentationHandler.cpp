@@ -27,6 +27,7 @@
 #include "../SharedLog.h"
 #include "../Common/Common.h"
 #include "../ContentDirectory/ContentDatabase.h"
+#include "../ContentDirectory/VirtualContainerMgr.h"
 #include "../ContentDirectory/FileDetails.h"
 #include "../Transcoding/TranscodingMgr.h"
 #include "../HTTP/HTTPParser.h"
@@ -89,112 +90,75 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
     sPageName = "About";
   }
   
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html") == 0)
-  {
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send options.html");
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html") == 0) {
     nPresentationPage = PRESENTATION_PAGE_OPTIONS;
     sContent = this->GetOptionsHTML(sImgPath);
     sPageName = "Options";
   }
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html?db=rebuild") == 0)
-  {
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html?db=rebuild") == 0) {
     CSharedConfig::Shared()->Refresh();
     if(!CContentDatabase::Shared()->IsRebuilding())
       CContentDatabase::Shared()->RebuildDB();
-    
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send options.html");
+
     nPresentationPage = PRESENTATION_PAGE_OPTIONS;
     sContent = this->GetOptionsHTML(sImgPath);
     sPageName = "Options";
   }
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html?db=update") == 0)
-  {
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html?db=update") == 0) {
     CSharedConfig::Shared()->Refresh();
-    if(!CContentDatabase::Shared()->IsRebuilding())
+    if(!CContentDatabase::Shared()->IsRebuilding() && !CVirtualContainerMgr::Shared()->IsRebuilding())
       CContentDatabase::Shared()->UpdateDB();
-    
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send options.html");
+
     nPresentationPage = PRESENTATION_PAGE_OPTIONS;
     sContent = this->GetOptionsHTML(sImgPath);
     sPageName = "Options";
   }
-  
-  
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/status.html") == 0)
-  {
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send status.html");
+	else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html?vcont=rebuild") == 0) {
+    CSharedConfig::Shared()->Refresh();
+    if(!CContentDatabase::Shared()->IsRebuilding() && !CVirtualContainerMgr::Shared()->IsRebuilding())
+      CVirtualContainerMgr::Shared()->RebuildContainerList();
+
+    nPresentationPage = PRESENTATION_PAGE_OPTIONS;
+    sContent = this->GetOptionsHTML(sImgPath);
+    sPageName = "Options";
+  }
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/status.html") == 0) {
     nPresentationPage = PRESENTATION_PAGE_STATUS;
     sContent = this->GetStatusHTML(sImgPath);
     sPageName = "Status";
   }
-  
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/config.html") == 0)
-  {
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send config.html");
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/config.html") == 0) {
     nPresentationPage = PRESENTATION_PAGE_STATUS;
     sContent = this->GetConfigHTML(sImgPath, pMessage);
     sPageName = "Configuration";
-    
-    /*cout << pMessage->GetMessage() << endl;
-    cout << "TYPE: " << pMessage->GetMessageType() << endl;*/
   }        
   
   
-  
-  
-  
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/fuppes-small.png") == 0)
-  {
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send small fuppes logo");
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/fuppes-small.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
     string sImg = Base64Decode(fuppes_small_png);    
-    pResult->SetBinContent((char*)sImg.c_str(), sImg.length());  
-    
-    //cout << sImg.length() << endl;
-  } 
-  
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/header-gradient.png") == 0)
-  {
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send header gradient");
+    pResult->SetBinContent((char*)sImg.c_str(), sImg.length());
+  }  
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/header-gradient.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
     string sImg = Base64Decode(header_gradient_png);    
-    pResult->SetBinContent((char*)sImg.c_str(), sImg.length());  
-    
-    //cout << sImg.length() << endl;
-  }
-  
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/header-gradient-small.png") == 0)
-  {
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send header gradient small");
+    pResult->SetBinContent((char*)sImg.c_str(), sImg.length());
+  }  
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/header-gradient-small.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
     string sImg = Base64Decode(header_gradient_small_png);    
     pResult->SetBinContent((char*)sImg.c_str(), sImg.length());
-    
-    //cout << sImg.length() << endl;
-  }
-  
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/device-type-unknown.png") == 0)
-  {
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send device-type-unknown");
+  }  
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/device-type-unknown.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
     string sImg = Base64Decode(device_type_unknown_png);
     pResult->SetBinContent((char*)sImg.c_str(), sImg.length());
-    
-    //cout << sImg.length() << endl;
-  }
-  
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/device-type-media-server.png") == 0)
-  {
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send device-type-media-server");
+  }  
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/device-type-media-server.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
     string sImg = Base64Decode(device_type_media_server_png);
     pResult->SetBinContent((char*)sImg.c_str(), sImg.length());
-    
-    //cout << sImg.length() << endl;
-  }
-  
-  
-  
+  }  
   
   if(nPresentationPage == PRESENTATION_BINARY_IMAGE)
   {
@@ -216,7 +180,6 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
   }  
   else if(nPresentationPage == PRESENTATION_PAGE_UNKNOWN) 
   {
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send 404");
     pResult->SetMessageType(HTTP_MESSAGE_TYPE_404_NOT_FOUND); 
     pResult->SetContentType("text/html");
   }
@@ -420,12 +383,17 @@ std::string CPresentationHandler::GetOptionsHTML(std::string p_sImgPath)
 
   //((CFuppes*)m_vFuppesInstances[0])->GetContentDirectory()->BuildDB();
   sResult << "<h1>database options</h1>" << endl;
-  if(!CContentDatabase::Shared()->IsRebuilding())  {
+  if(!CContentDatabase::Shared()->IsRebuilding() && !CVirtualContainerMgr::Shared()->IsRebuilding())  {
     sResult << "<a href=\"/presentation/options.html?db=rebuild\">rebuild database</a><br />" << endl;
-    sResult << "<a href=\"/presentation/options.html?db=update\">update database</a>" << endl;
+    sResult << "<a href=\"/presentation/options.html?db=update\">update database</a><br />" << endl;
+		sResult << "<a href=\"/presentation/options.html?vcont=rebuild\">rebuild virtual container</a>" << endl;
   }
-  else
-    sResult << "database rebuild/update in progress" << endl;
+  else {
+		if(CContentDatabase::Shared()->IsRebuilding())
+			sResult << "database rebuild/update in progress" << endl;
+		else if(CVirtualContainerMgr::Shared()->IsRebuilding())
+			sResult << "virtual container rebuild in progress" << endl;
+	}
   
   return sResult.str();
 }
