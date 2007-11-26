@@ -461,11 +461,11 @@ AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h netinet/in.h string.h sys/ioctl.h 
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 
-
 AC_CHECK_SIZEOF(off_t)
 AC_CHECK_SIZEOF(unsigned long long int)
 AC_CHECK_SIZEOF(unsigned long int)
 AC_CHECK_SIZEOF(unsigned int)
+AC_CHECK_SIZEOF(unsigned short)
 
 dnl Checks for library functions.
 

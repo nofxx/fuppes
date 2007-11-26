@@ -64,9 +64,13 @@ class CVirtualContainerMgr
     bool          m_bVFolderCfgValid;
   
     fuppesThread  m_RebuildThread;  
-    //unsigned int  m_nIdCounter;   
-    uint32_t      m_nIdCounter;
-  
+    
+		#if SIZEOF_UNSIGNED_INT == 4
+		unsigned int m_nIdCounter;
+		#elif SIZEOF_UNSIGNED_SHORT == 4
+		unsigned short m_nIdCounter;
+		#endif
+		
     void CreateSingleVFolder(CXMLNode* pFolderNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef);
     void CreateSingleVFolderFolder(CXMLNode* pNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nObjectId, unsigned int p_nParentId, bool p_bCreateRef);
     void CreateVFoldersFromProperty(CXMLNode* pFoldersNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef, std::string p_sFilter = "");
