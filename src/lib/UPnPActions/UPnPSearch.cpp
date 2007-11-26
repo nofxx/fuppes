@@ -178,12 +178,21 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 			sLogOp   = rxSearch.Match(6);
 			
 			if(sOp.compare("exists") == 0) {
-				bBuildOK = true;
+				bBuildOK = false;
+
 				if(sProp.compare(":refID") == 0) {
-					sPrevLog = sLogOp;
-					continue;
+					bBuildOK = true;
+
+					sProp = "o.REF_ID";
+						
+					if(sVal.compare("true") == 0)
+					  sOp = "is not";
+				  else if (sVal.compare("false") == 0)
+						sOp = "is";
+				
+					sVal = "NULL";
 				}
-        bBuildOK = false;
+        
 			}
 			else {
 				

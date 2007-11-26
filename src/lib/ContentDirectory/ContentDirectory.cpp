@@ -316,7 +316,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
     sSql <<
       "select " <<
       "  m.OBJECT_ID, m.PARENT_ID, " <<
-      "  o.TITLE, o.PATH, o.FILE_NAME, o.TYPE, o.MIME_TYPE, " <<
+      "  o.TITLE, o.PATH, o.FILE_NAME, o.TYPE, " <<
       "  d.* " <<
       "from " <<
       "  OBJECTS o, MAP_OBJECTS m " <<
@@ -393,7 +393,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   // get description
   sSql << 
     "select " <<
-    "  o.OBJECT_ID, o.TYPE, o.PATH, o.FILE_NAME, o.MIME_TYPE, " <<
+    "  o.OBJECT_ID, o.TYPE, o.PATH, o.FILE_NAME, " <<
     "  d.IV_HEIGHT, d.IV_WIDTH, " <<
     "  o.TITLE, d.AV_DURATION, d.A_ALBUM, d.A_ARTIST, d.A_GENRE, " <<
   	"  d.A_TRACK_NO, d.AV_BITRATE, d.A_SAMPLERATE, d.A_CHANNELS, " <<
@@ -541,7 +541,9 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
       xmlTextWriterStartElement(pWriter, BAD_CAST "res");
       
       string sTmp;
-      sTmp = "http-get:*:" + pSQLResult->GetValue("MIME_TYPE") + ":*";
+      //sTmp = "http-get:*:" + pSQLResult->GetValue("MIME_TYPE") + ":*";
+			#warning todo
+			sTmp = "http-get:*:todo:*";
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
       
         
@@ -955,7 +957,9 @@ void CContentDirectory::BuildPlaylistItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
   
   std::stringstream sTmp;
-  sTmp << "http-get:*:" << pSQLResult->GetValue("MIME_TYPE") << ":*";
+  //sTmp << "http-get:*:" << pSQLResult->GetValue("MIME_TYPE") << ":*";
+	#warning todo
+	sTmp << "http-get:*:todo:*";
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
   sTmp.str("");
     

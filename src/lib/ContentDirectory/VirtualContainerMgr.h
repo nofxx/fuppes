@@ -54,7 +54,7 @@ class CVirtualContainerMgr
     void RebuildContainerList();
     bool IsRebuilding();
   
-    void CreateChildItems(CXMLNode* pParentNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, std::string p_sFilter = "");
+    void CreateChildItems(CXMLNode* pParentNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef, std::string p_sFilter = "");
   
 	private:
 	  CVirtualContainerMgr();
@@ -67,12 +67,12 @@ class CVirtualContainerMgr
     //unsigned int  m_nIdCounter;   
     uint32_t      m_nIdCounter;
   
-    void CreateSingleVFolder(CXMLNode* pFolderNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails);
-    void CreateSingleVFolderFolder(CXMLNode* pNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nObjectId, unsigned int p_nParentId);
-    void CreateVFoldersFromProperty(CXMLNode* pFoldersNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, std::string p_sFilter = "");
-    void CreateVFoldersSplit(CXMLNode* pFoldersNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, std::string p_sFilter = "");
-    void CreateItemMappings(CXMLNode* pNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, std::string p_sFilter = "");
-    void CreateFolderMappings(CXMLNode* pNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, std::string p_sFilter = "");
+    void CreateSingleVFolder(CXMLNode* pFolderNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef);
+    void CreateSingleVFolderFolder(CXMLNode* pNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nObjectId, unsigned int p_nParentId, bool p_bCreateRef);
+    void CreateVFoldersFromProperty(CXMLNode* pFoldersNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef, std::string p_sFilter = "");
+    void CreateVFoldersSplit(CXMLNode* pFoldersNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef, std::string p_sFilter = "");
+    void CreateItemMappings(CXMLNode* pNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, bool p_bCreateRef, std::string p_sFilter = "");
+    void CreateFolderMappings(CXMLNode* pNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, bool p_bCreateRef, std::string p_sFilter = "");
     void MapSharedDirsTo(CXMLNode* pNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, unsigned int p_nSharedParendId = 0);
   
 		unsigned int GetId() { m_nIdCounter--; return m_nIdCounter; }		

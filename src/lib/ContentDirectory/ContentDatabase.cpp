@@ -165,7 +165,8 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 				"  FILE_NAME TEXT DEFAULT NULL, "
 				"  TITLE TEXT DEFAULT NULL, "
 				"  MD5 TEXT DEFAULT NULL, "
-				"  MIME_TYPE TEXT DEFAULT NULL "				
+				"  MIME_TYPE TEXT DEFAULT NULL, "
+				"  REF_ID INTEGER DEFAULT NULL "
 				//"  UPDATE_ID INTEGER DEFAULT 0"
 				");"))   
 			return false;
