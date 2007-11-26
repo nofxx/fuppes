@@ -94,6 +94,10 @@ class CSharedConfig
     void SetVFolderConfigFileName(std::string p_sVFolderFileName) { m_sVFolderFileName = p_sVFolderFileName; }
     std::string GetVFolderConfigFileName() { return m_sVFolderFileName; }
   
+		void TempDir(std::string p_sTempDir) { m_sTempDir = p_sTempDir; }
+		std::string TempDir() { return m_sTempDir; }
+		
+		
     // shared dir
     int SharedDirCount();
     std::string GetSharedDir(int p_nIdx);  
@@ -133,7 +137,7 @@ class CSharedConfig
     std::string FaadLibName() { return m_pConfigFile->FaadLibName(); }
 	std::string Mp4ffLibName() { return m_pConfigFile->Mp4ffLibName(); }
   
-    std::string TempDir() { return m_sTempDir; }
+    
     std::string CreateTempFileName();
   
   private:

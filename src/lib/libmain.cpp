@@ -80,6 +80,7 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   string sVFolderFile;
   string sFriendlyName;
   string sLogFileName;
+	string sTempDir;
   int    nLogLevel = 1;
   
   #warning todo: check params
@@ -90,6 +91,9 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
       if((sConfigDir.length() > 1) && (sConfigDir.substr(sConfigDir.length() - 1).compare(upnpPathDelim) != 0)) {
         sConfigDir += upnpPathDelim;
       }
+    }
+		else if((strcmp(argv[i], "--temp-dir") == 0) && (argc > i + 1)) {
+      sTempDir = argv[i + 1];
     }
     else if((strcmp(argv[i], "--config-file") == 0) && (argc > i + 1)) {
       sConfigFile = argv[i + 1];
@@ -119,6 +123,7 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   CSharedConfig::Shared()->SetDbFileName(sDbFile);
   CSharedConfig::Shared()->SetVFolderConfigFileName(sVFolderFile);  
   CSharedConfig::Shared()->FriendlyName(sFriendlyName);
+	CSharedConfig::Shared()->TempDir(sTempDir);
     
 
   CSharedLog::Print("            FUPPES - %s", CSharedConfig::Shared()->GetAppVersion().c_str());

@@ -77,7 +77,8 @@ int CConfigFile::Load(std::string p_sFileName, std::string* p_psErrorMsg)
   
 	ReadSharedObjects();
   ReadNetworkSettings();
-
+	ReadGlobalSettings();
+		
   // content_directory
   pTmpNode = m_pDoc->RootNode()->FindNodeByName("content_directory", false);
   if(pTmpNode != NULL) {
@@ -210,6 +211,25 @@ void CConfigFile::ReadNetworkSettings()
       }          
     }     
     
+  }  
+}
+
+void CConfigFile::ReadGlobalSettings()
+{
+	CXMLNode* pTmpNode;
+  
+  pTmpNode = m_pDoc->RootNode()->FindNodeByName("global_settings", false);
+  if(pTmpNode == NULL) {
+    return;
+  }
+
+  for(int i = 0; i < pTmpNode->ChildCount(); i++) {
+
+    if(pTmpNode->ChildNode(i)->Name().compare("temp_dir") == 0) {
+      if(pTmpNode->ChildNode(i)->Value().length() > 0) {
+        m_sTempDir = pTmpNode->ChildNode(i)->Value();
+      }
+    }
   }  
 }
 

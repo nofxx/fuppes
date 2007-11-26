@@ -135,7 +135,13 @@ bool CSharedConfig::SetupConfig()
     else
       m_sTempDir = "/tmp/fuppes/";      
     #endif
-  }  
+  }
+	else {
+		if((m_sTempDir.length() > 1) && 
+			 (m_sTempDir.substr(m_sTempDir.length() - 1).compare(upnpPathDelim) != 0)) {
+      m_sTempDir += upnpPathDelim;
+		}
+	}
 	
 	if(!DirectoryExists(m_sTempDir)) {
     #ifdef WIN32
@@ -384,12 +390,15 @@ bool CSharedConfig::ReadConfigFile()
     CSharedLog::Shared()->Log(L_NORM, sErrorMsg, __FILE__, __LINE__);
     return false;
   }
-  
+
   // get values from config
-  //m_sIP       = m_pConfigFile->IpAddress();
   if(m_pConfigFile->HttpPort() > 0) {
     m_nHTTPPort = m_pConfigFile->HttpPort();
   }
+
+	if(m_sTempDir.empty()) {
+		m_sTempDir = m_pConfigFile->TempDir();
+	}
   
   return true;
 }

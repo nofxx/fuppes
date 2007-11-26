@@ -67,6 +67,9 @@ class CConfigFile
     void AddAllowedIp(std::string p_sIpAddress);
     void RemoveAllowedIp(int p_nIdx);
     
+		// global_settings
+		std::string	TempDir() { return m_sTempDir; }
+		
     // content_directory
     std::string LocalCharset() { return m_sLocalCharset; }
     void        LocalCharset(std::string p_sLocalCharset);
@@ -95,6 +98,7 @@ class CConfigFile
 		
     void ReadSharedObjects();
     void ReadNetworkSettings();
+		void ReadGlobalSettings();
     void SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode, bool p_bDefaultInitialized = false);
     void ParseFileSettings(CXMLNode* pFileSettings, CDeviceSettings* pDevSet);
     void ParseTranscodingSettings(CXMLNode* pTCNode, CFileSettings* pFileSet);
@@ -116,6 +120,9 @@ class CConfigFile
     bool                    m_bUseTaglib;
     bool                    m_bUseLibAvFormat;
 
+		// global_settings
+		std::string							m_sTempDir;
+		
     // transcoding
     std::string             m_sAudioEncoder;
     bool                    m_bTranscodeVorbis;
