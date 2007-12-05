@@ -64,6 +64,17 @@ CFileDetails* CFileDetails::Shared()
 
 CFileDetails::CFileDetails()
 {
+	#ifdef HAVE_LIBDLNA
+	m_dlna = dlna_init();
+  dlna_register_all_media_profiles(m_dlna);
+	#endif
+}
+
+CFileDetails::~CFileDetails()
+{
+	#ifdef HAVE_LIBDLNA
+	dlna_uninit(m_dlna);
+	#endif
 }
 
 OBJECT_TYPE CFileDetails::GetObjectType(std::string p_sFileName)
@@ -415,5 +426,46 @@ bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoIt
 	return true;
 	#else
 	return false;
+	#endif
+}
+
+
+std::string CFileDetails::GetDLNAString(std::string p_sFileName)
+{
+	#ifndef HAVE_LIBDLNA
+	return "";
+	#else
+		
+	string sResult = "";	
+	dlna_profile_t *p;
+  dlna_org_flags_t flags;
+
+  flags = DLNA_ORG_FLAG_STREAMING_TRANSFER_MODE |
+    DLNA_ORG_FLAG_BACKGROUND_TRANSFERT_MODE |
+    DLNA_ORG_FLAG_CONNECTION_STALL |
+    DLNA_ORG_FLAG_DLNA_V15;		
+		
+	p = dlna_guess_media_profile(dlna, p_sFileName.c_str());
+  if(p) {
+    char *protocol_info;
+    
+    /*printf ("ID: %s\n", p->id);
+    printf ("MIME: %s\n", p->mime);
+    printf ("Label: %s\n", p->label);
+    printf ("Class: %d\n", p->class);
+    printf ("UPnP Object Item: %s\n", dlna_profile_upnp_object_item(p));*/
+
+    protocol_info = dlna_write_protocol_info(DLNA_PROTOCOL_INFO_TYPE_HTTP,
+                                             DLNA_ORG_PLAY_SPEED_NORMAL,
+                                             DLNA_ORG_CONVERSION_NONE,
+                                             DLNA_ORG_OPERATION_RANGE,
+                                             flags, p);
+    
+		//printf ("Protocol Info: %s\n", protocol_info);
+		sResult = protocol_info;
+    free (protocol_info);
+  }
+			
+	return sResult;
 	#endif
 }

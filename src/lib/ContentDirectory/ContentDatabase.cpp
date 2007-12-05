@@ -187,7 +187,8 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 				"  IV_WIDTH INTEGER, "
         "  A_CODEC, "
         "  V_CODEC, "
-        "  SIZE INTEGER DEFAULT 0 "     
+        "  SIZE INTEGER DEFAULT 0, "
+				"  DLNA TEXT DEFAULT NULL"
 				");"))   
 			return false;    
     

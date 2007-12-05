@@ -297,7 +297,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
 		int flag = 1;
     int nOpt = setsockopt(nConnection, SOL_SOCKET, SO_NOSIGPIPE, &flag, sizeof(flag));	  
 	  if(nOpt < 0)
-	    CSharedLog::Shared()->Log(L_EXTENDED_ERR, "setsockopt(SO_NOSIGPIPE)", __FILE__, __LINE__);
+	    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "setsockopt(SO_NOSIGPIPE)");
 		#endif
 			
     // start session thread ...

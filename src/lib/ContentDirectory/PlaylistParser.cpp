@@ -144,7 +144,7 @@ bool CPlaylistParser::ParseM3U(std::string p_sContent)
       pEntry->sFileName = FormatFileName(rxLines.Match(1));
       pEntry->bIsLocalFile = true;
     }
-    m_lEntries.push_back(pEntry);     
+    m_lEntries.push_back(pEntry);
     
   }while(rxLines.SearchAgain());  
     
@@ -153,7 +153,39 @@ bool CPlaylistParser::ParseM3U(std::string p_sContent)
 
 bool CPlaylistParser::ParsePLS(std::string p_sContent)
 {
-  return false;
+	PlaylistEntry_t* pEntry;
+	RegEx rxNumEntries("NumberOfEntries=(\\d+)", PCRE_CASELESS);
+		
+	int numEntries = 0;
+		
+	if(rxNumEntries.Search(p_sContent.c_str())) {
+		numEntries = atoi(rxNumEntries.Match(1));
+	}
+		
+	if(numEntries == 0)
+		return false;
+		
+	for(int i = 0; i < numEntries; i++) {
+		
+		stringstream sExpr;
+    sExpr << "File" << i + 1 << "=(.+)\\n";    
+    RegEx rxFile(sExpr.str().c_str(), PCRE_CASELESS);
+    if(!rxFile.Search(p_sContent.c_str()))
+      continue;
+
+    pEntry = new PlaylistEntry_t();
+    if(IsURL(rxFile.Match(1))) {       
+      pEntry->sFileName = rxFile.Match(1);
+      pEntry->bIsLocalFile = false;
+    }
+    else {
+      pEntry->sFileName = FormatFileName(rxFile.Match(1));
+      pEntry->bIsLocalFile = true;
+    }
+    m_lEntries.push_back(pEntry);
+
+	}
+		
 }
 
 std::string CPlaylistParser::FormatFileName(std::string p_sValue)

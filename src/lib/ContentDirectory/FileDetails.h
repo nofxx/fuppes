@@ -31,6 +31,10 @@
 #include "ContentDatabase.h"
 #include <string>
 
+#ifdef HAVE_LIBDLNA
+#include <dlna.h>
+#endif
+
 struct FileType_t
 {
   std::string sExt;
@@ -138,6 +142,8 @@ class CFileDetails
     CFileDetails();
   
   public:
+		~CFileDetails();
+				
     static CFileDetails* Shared();
     OBJECT_TYPE GetObjectType(std::string p_sFileName);    
     std::string GetObjectTypeAsStr(OBJECT_TYPE p_nObjectType);
@@ -149,9 +155,13 @@ class CFileDetails
 	
     bool IsSupportedFileExtension(std::string p_sFileExtension);    
   
+		std::string GetDLNAString(std::string p_sFileName);
+		
   private:
     static CFileDetails* m_Instance; 
-    
+		#ifdef HAVE_LIBDLNA		
+		dlna_t* m_dlna;
+		#endif
 };
 
 #endif // _FILEDETAILS_H
