@@ -7,8 +7,7 @@ INCLUDES = \
   ${PCRE_CFLAGS}\
   ${VORBISFILE_CFLAGS}\
   ${TAGLIB_CFLAGS}\
-  ${SQLITE3_CFLAGS}\
-  -D_FILE_OFFSET_BITS=64
+  ${SQLITE3_CFLAGS}
 
 lib_LTLIBRARIES = libfuppes.la
 
@@ -16,11 +15,25 @@ bin_PROGRAMS = fuppes
 
 fuppes_SOURCES = console_main.cpp
 fuppes_LDADD = ./libfuppes.la
+fuppes_LDFLAGS = \
+	$(FUPPES_LIBS)\
+	${UUID_LIBS}\
+	${LIBXML_LIBS}\
+	${PCRE_LIBS}\
+	${SQLITE3_LIBS}\
+	${TAGLIB_LIBS}
 
 if BUILD_DAEMON
   bin_PROGRAMS += fuppesd
   fuppesd_SOURCES = daemon_main.cpp
   fuppesd_LDADD = ./libfuppes.la
+	fuppesd_LDFLAGS = \
+		$(FUPPES_LIBS)\
+		${UUID_LIBS}\
+		${LIBXML_LIBS}\
+		${PCRE_LIBS}\
+		${SQLITE3_LIBS}\
+		${TAGLIB_LIBS}
 endif
 
 libfuppes_la_SOURCES = \

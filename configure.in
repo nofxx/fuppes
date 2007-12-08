@@ -457,12 +457,12 @@ AM_CONDITIONAL(DISABLE_TRANSCODING, test x$ENABLE_TRANSCODING = xfalse)
 
 AH_TEMPLATE([HAVE_LIBDLNA], [])
 have_libdlna=no
-PKG_CHECK_MODULES(DLNA, libdlna >= 0.2.3, have_libdlna=yes)
-if test "x$have_libdlna" = "xyes"; then
-  FUPPES_CFLAGS="$FUPPES_CFLAGS $DLNA_CFLAGS"
-  FUPPES_LIBS="$FUPPES_LIBS $DLNA_LDFLAGS"
-	AC_DEFINE([HAVE_LIBDLNA], [1], [])
-fi
+PKG_CHECK_MODULES(DLNA, libdlna >= 0.2.3, have_libdlna=yes, have_libdlna=no)
+#if test "x$have_libdlna" = "xyes"; then
+  #FUPPES_CFLAGS="$FUPPES_CFLAGS $DLNA_CFLAGS"
+  #FUPPES_LIBS="$FUPPES_LIBS $DLNA_LDFLAGS"
+	#AC_DEFINE([HAVE_LIBDLNA], [1], [])
+#fi
 
 
 AH_TEMPLATE([HAVE_SIMAGE], [])
