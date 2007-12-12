@@ -670,13 +670,13 @@ void print_report(AVFormatContext **output_files,
     oc = output_files[0];
 
 														 
-		#ifdef FFMPEG_VERSION >= 52
+		#if (FFMPEG_VERSION >= 52)
 		total_size = url_fsize(oc->pb);
 		#else
     total_size = url_fsize(&oc->pb);
 		#endif
     if(total_size<0) // FIXME improve url_fsize() so it works with non seekable output too
-			#ifdef FFMPEG_VERSION >= 52
+			#if (FFMPEG_VERSION >= 52)
 			total_size = url_ftell(oc->pb);
 			#else
 			total_size = url_ftell(&oc->pb);
@@ -1643,7 +1643,7 @@ int av_encode(AVFormatContext **output_files,
             break;
 
         /* finish if limit size exhausted */
-				#ifdef FFMPEG_VERSION >= 52
+				#if (FFMPEG_VERSION >= 52)
         if (pFFmpeg->limit_filesize != 0 && pFFmpeg->limit_filesize < url_ftell(output_files[0]->pb))
 				#else
 				if (pFFmpeg->limit_filesize != 0 && pFFmpeg->limit_filesize < url_ftell(&output_files[0]->pb))

@@ -214,7 +214,7 @@ if test "x$use_libavformat" = "xyes"; then
 		PKG_CHECK_MODULES(LIBAVFORMAT, libavformat >= 51, [have_libavformat51=yes have_libavformat=yes], have_libavformat51=no)
   
 		if test "x$have_libavformat51" = "xno"; then
-			PKG_CHECK_MODULES(LIBAVFORMAT, libavformat >= 50, [have_libavformat50=yes have_libavformat=yes], have_libavformat50=no)
+			PKG_CHECK_MODULES(LIBAVFORMAT, libavformat, [have_libavformat50=yes have_libavformat=yes], have_libavformat50=no)
 		fi
 	fi
 
@@ -240,7 +240,7 @@ if test "x$use_libavformat" = "xyes"; then
 			AC_DEFINE([HAVE_AV_PARSE_VIDEO_FUNCTS], [1], [])
 		elif test "x$have_libavformat51" = "xyes"; then
 			AC_DEFINE([FFMPEG_VERSION], [51], [])
-			AC_DEFINE([HAVE_AV_PARSE_VIDEO_FUNCTS], [1], [])
+			#AC_DEFINE([HAVE_AV_PARSE_VIDEO_FUNCTS], [1], [])
 		elif test "x$have_libavformat50" = "xyes"; then
 			AC_DEFINE([FFMPEG_VERSION], [50], [])
 		fi
