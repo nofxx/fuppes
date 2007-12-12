@@ -24,6 +24,10 @@
 #ifndef _UDPSOCKET_H
 #define _UDPSOCKET_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include "../Common/Common.h"
 
 #ifndef WIN32

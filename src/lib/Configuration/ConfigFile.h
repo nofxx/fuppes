@@ -24,6 +24,10 @@
 #ifndef _CONFIGFILE_H
 #define _CONFIGFILE_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include "../Common/XMLParser.h"
 #include "../DeviceSettings/DeviceSettings.h"
 #include <vector>

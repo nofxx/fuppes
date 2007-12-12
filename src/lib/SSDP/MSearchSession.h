@@ -24,6 +24,10 @@
 #ifndef _MSEARCHSESSION_H
 #define _MSEARCHSESSION_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <string>
 
 #include "UDPSocket.h"

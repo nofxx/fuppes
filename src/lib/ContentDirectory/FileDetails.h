@@ -32,7 +32,9 @@
 #include <string>
 
 #ifdef HAVE_LIBDLNA
-#include <dlna.h>
+extern "C" { 
+	#include <dlna.h>
+}
 #endif
 
 struct FileType_t
@@ -155,7 +157,15 @@ class CFileDetails
 	
     bool IsSupportedFileExtension(std::string p_sFileExtension);    
   
-		std::string GetDLNAString(std::string p_sFileName);
+		#ifdef HAVE_LIBDLNA
+		bool GetDLNAValues(std::string p_sFileName, dlna_profile_t* p_dlnaProfile);
+		#endif
+
+		std::string WriteDLNAProtocolInfo(std::string p_sId, 
+																			std::string p_sMimeType, 
+																			std::string p_sLabel,
+																			int p_nClass,
+																			bool p_bTranscode);
 		
   private:
     static CFileDetails* m_Instance; 

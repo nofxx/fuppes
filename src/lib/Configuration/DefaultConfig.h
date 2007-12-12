@@ -24,6 +24,10 @@
 #ifndef _DEFAULT_CONFIG_H
 #define _DEFAULT_CONFIG_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <libxml/xmlwriter.h>
 #include <string>
 #include <sstream>
@@ -145,7 +149,8 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
     xmlTextWriterStartElement(pWriter, BAD_CAST "device_settings");
       
       xmlTextWriterWriteComment(pWriter, BAD_CAST "\"default\" settings are inhertied by specific devices and can be overwritten");
-  
+			xmlTextWriterWriteComment(pWriter, BAD_CAST "do NOT remove the \"default\" device settings");
+		
       // device (default)
       xmlTextWriterStartElement(pWriter, BAD_CAST "device");
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "name", BAD_CAST "default");   
@@ -581,7 +586,8 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
   
   
       xmlTextWriterWriteComment(pWriter, BAD_CAST "If you have more than one device it is a good idea to set the ip address manually as some devices may have conflicting \"user agents\".");
-  
+			xmlTextWriterWriteComment(pWriter, BAD_CAST "It is safe to remove unneeded devices");
+		
       // device (PS3)
       xmlTextWriterStartElement(pWriter, BAD_CAST "device");
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "name", BAD_CAST "PS3");

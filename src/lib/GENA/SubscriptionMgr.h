@@ -24,6 +24,10 @@
 #ifndef _SUBSCRIPTIONMGR_H
 #define _SUBSCRIPTIONMGR_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <string>
 #include <map>
 #include "../HTTP/HTTPMessage.h"

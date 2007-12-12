@@ -350,7 +350,6 @@ fuppesThreadCallback SessionLoop(void *arg)
     if(CSharedConfig::Shared()->IsAllowedIP(sIP)) {
       // build response
       bResult = pHandler->HandleRequest(pRequest, pResponse);
-//      cout << "HTTPSERV: resonpse
       if(!bResult)
         bResult = pSession->GetHTTPServer()->CallOnReceive(pRequest, pResponse);      
     }

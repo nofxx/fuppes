@@ -24,6 +24,10 @@
 #ifndef _PLAYLISTPARSER_H
 #define _PLAYLISTPARSER_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <string>
 #include <list>
 

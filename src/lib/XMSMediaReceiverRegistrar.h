@@ -24,6 +24,10 @@
 #ifndef _XMSMEDIARECEIVERREGISTRAR_H
 #define _XMSMEDIARECEIVERREGISTRAR_H
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include "UPnPService.h"
 
 class CXMSMediaReceiverRegistrar: public CUPnPService

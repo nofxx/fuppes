@@ -24,6 +24,10 @@
 #ifndef _HTTPCLIENT_H
 #define _HTTPCLIENT_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include "HTTPMessage.h"
 #include "../GENA/EventNotification.h"
 #include "../Common/Common.h"

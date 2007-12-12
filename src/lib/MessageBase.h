@@ -24,6 +24,10 @@
 #ifndef _MESSAGEBASE_H
 #define _MESSAGEBASE_H
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include "Common/Common.h"
 
 #ifndef WIN32

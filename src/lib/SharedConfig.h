@@ -24,6 +24,9 @@
 #ifndef _SHAREDCONFIG_H
 #define _SHAREDCONFIG_H
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
 
 /* OS dependent defines */
 // gcc -dM -E - < /dev/null

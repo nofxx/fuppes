@@ -24,6 +24,10 @@
 #ifndef _UUID_H
 #define _UUID_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 // http://www.opengroup.org/onlinepubs/9629399/apdxa.htm
 #include <string>
 

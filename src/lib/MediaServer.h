@@ -24,6 +24,10 @@
 #ifndef _MEDIASERVER_H
 #define _MEDIASERVER_H
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include "UPnPDevice.h"
 
 class CMediaServer: public CUPnPDevice

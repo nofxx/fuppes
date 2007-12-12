@@ -24,6 +24,10 @@
 #ifndef _PRESENTATIONHANDLER_H
 #define _PRESENTATIONHANDLER_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include "../UPnPDevice.h"
 #include "../HTTP/HTTPMessage.h"
 #include "../Fuppes.h"

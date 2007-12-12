@@ -24,6 +24,10 @@
 #ifndef _STYLESHEET_H
 #define _STYLESHEET_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <sstream>
 
 std::string GetStylesheet(std::string p_sRelativeImagePath)

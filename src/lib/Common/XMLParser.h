@@ -24,6 +24,10 @@
 #ifndef _XMLPARSER_H
 #define _XMLPARSER_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <string>

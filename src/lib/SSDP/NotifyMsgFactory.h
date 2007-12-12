@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -23,6 +23,10 @@
  
 #ifndef _NOTIFYMSGFACTORY_H
 #define _NOTIFYMSGFACTORY_H
+
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
 
 #include <string>
 

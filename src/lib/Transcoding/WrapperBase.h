@@ -24,6 +24,10 @@
 #ifndef _WRAPPERBASE_H
 #define _WRAPPERBASE_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <string>
 #include "../Common/Common.h"
 #include "../SharedLog.h"

@@ -24,6 +24,10 @@
 #ifndef _DEVICESETTINGS_H
 #define _DEVICESETTINGS_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <string>
 #include <list>
 #include <map>

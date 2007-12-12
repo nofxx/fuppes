@@ -24,6 +24,10 @@
 #ifndef _TRANSCODINGMGR_H
 #define _TRANSCODINGMGR_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include "WrapperBase.h"
 #include <string>
 

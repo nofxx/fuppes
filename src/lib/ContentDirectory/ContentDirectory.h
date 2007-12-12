@@ -24,6 +24,10 @@
 #ifndef _CONTENTDIRECTORY_H
 #define _CONTENTDIRECTORY_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include "../UPnPService.h"
 #include "../HTTP/HTTPMessage.h"
 #include "ContentDatabase.h"

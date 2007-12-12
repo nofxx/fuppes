@@ -24,6 +24,10 @@
 #ifndef __FUPPES_H
 #define __FUPPES_H
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <map>
 #include <vector>
 #include <list>

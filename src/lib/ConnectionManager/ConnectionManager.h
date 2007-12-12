@@ -24,6 +24,10 @@
 #ifndef _CONNECTIONMANAGER_H
 #define _CONNECTIONMANAGER_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include "../UPnPService.h"
 #include <string>
 

@@ -24,6 +24,10 @@
 #ifndef _COMMONFUNCTIONS_H
 #define _COMMONFUNCTIONS_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include "../Common/Common.h"
 
 int fuppesSocketSend(fuppesSocket p_Socket, const char* pBuffer, int p_nLength);

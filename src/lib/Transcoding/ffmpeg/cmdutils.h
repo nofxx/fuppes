@@ -28,6 +28,10 @@
 #ifndef _CMD_UTILS_H
 #define _CMD_UTILS_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../../config.h"
+#endif
+
 class CFFmpeg;
 
 typedef void (CFFmpeg::*func_ptr)(const char*);

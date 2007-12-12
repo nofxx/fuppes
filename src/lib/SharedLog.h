@@ -24,6 +24,10 @@
 #ifndef _SHAREDLOG_H
 #define _SHAREDLOG_H
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include "Common/Common.h"
 #include <string>
 #include <stdarg.h>

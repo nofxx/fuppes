@@ -23,6 +23,10 @@
 #ifndef _CONTENTDATABASE_H
 #define _CONTENTDATABASE_H
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <sqlite3.h>
 #include <string>
 #include <map>
