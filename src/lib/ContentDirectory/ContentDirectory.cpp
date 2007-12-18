@@ -29,7 +29,7 @@
 #include "../Common/Common.h"
 #include "../Common/RegEx.h"
 #include "VirtualContainerMgr.h"
- 
+
 #include <iostream>
 #include <sstream>
 #include <libxml/xmlwriter.h>
@@ -852,24 +852,16 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
     
   string sMimeType = pUPnPBrowse->DeviceSettings()->MimeType(sExt, pSQLResult->GetValue("A_CODEC"), pSQLResult->GetValue("V_CODEC"));
   
-  // protocol info
-  string sTmp;
-  if(pUPnPBrowse->DeviceSettings()->DLNAEnabled()) {
-    string sDLNA = pUPnPBrowse->DeviceSettings()->DLNA(sExt);
-    if(!sDLNA.empty()) {
-      sTmp = "http-get:*:" + sMimeType + ":DLNA.ORG_PN=" + sDLNA + ";DLNA.ORG_OP=01;DLNA.ORG_CI=0";
-    }
-    else {
-      sTmp = "http-get:*:" + sMimeType + ":DLNA.ORG_OP=01;DLNA.ORG_CI=0";
-    }
-  }
-  else {
-    sTmp = "http-get:*:" + sMimeType + ":*";
-  }                                                    
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());                                             
   
-                                                    
 
+  // protocol info
+  string sDLNA = pSQLResult->GetValue("DLNA_PROFILE");
+  if(sDLNA.empty())
+    sDLNA = pUPnPBrowse->DeviceSettings()->DLNA(sExt);
+  
+  string sTmp = BuildProtocolInfo(bTranscode, sMimeType, sDLNA, pUPnPBrowse);  
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
+                                                    
   // duration
   if(pUPnPBrowse->IncludeProperty("res@duration") && !pSQLResult->IsNull("AV_DURATION")) {
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->GetValue("AV_DURATION").c_str());
@@ -904,7 +896,6 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   }
   
   sExt = pUPnPBrowse->DeviceSettings()->Extension(sExt, pSQLResult->GetValue("A_CODEC"), pSQLResult->GetValue("V_CODEC"));
-                                                   
                                                     
   sTmp = "http://" + m_sHTTPServerURL + "/MediaServer/VideoItems/" + p_sObjectID + "." + sExt;  
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.c_str());
@@ -1124,4 +1115,55 @@ void CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_ps
 	delete pDb;
 	
   *p_psResult = output;
+}
+
+std::string CContentDirectory::BuildProtocolInfo(bool p_bTranscode,
+                                  std::string p_sMimeType,
+                                  std::string p_sProfileId,
+                                  CUPnPBrowseSearchBase*  pUPnPBrowse)
+{
+  string sTmp;
+  if(pUPnPBrowse->DeviceSettings()->DLNAEnabled()) {
+
+    sTmp = "http-get:*:" + p_sMimeType + ":";
+  
+    dlna_org_conversion_t ci = DLNA_ORG_CONVERSION_NONE;
+    if(p_bTranscode)
+      ci = DLNA_ORG_CONVERSION_TRANSCODED;
+    
+    dlna_org_operation_t op = DLNA_ORG_OPERATION_NONE;
+    if(!p_bTranscode)
+      op = DLNA_ORG_OPERATION_RANGE;
+
+    int flags;
+    flags = 
+      DLNA_ORG_FLAG_STREAMING_TRANSFER_MODE |
+      DLNA_ORG_FLAG_BACKGROUND_TRANSFERT_MODE |
+      DLNA_ORG_FLAG_CONNECTION_STALL |
+      DLNA_ORG_FLAG_DLNA_V15;
+    
+    if(!p_bTranscode) {
+      flags |= DLNA_ORG_FLAG_BYTE_BASED_SEEK;
+    }
+    
+    char dlna_info[448];
+    if(!p_sProfileId.empty()) {
+      sprintf(dlna_info, "%s=%d;%s=%d;%s=%.2x;%s=%s;%s=%.8x%.24x",
+           "DLNA.ORG_PS", DLNA_ORG_PLAY_SPEED_NORMAL, "DLNA.ORG_CI", ci,
+           "DLNA.ORG_OP", op, "DLNA.ORG_PN", p_sProfileId.c_str(),
+           "DLNA.ORG_FLAGS", flags, 0);
+    }
+    else {
+      sprintf(dlna_info, "%s=%d;%s=%d;%s=%.2x;%s=%.8x%.24x",
+           "DLNA.ORG_PS", DLNA_ORG_PLAY_SPEED_NORMAL, "DLNA.ORG_CI", ci,
+           "DLNA.ORG_OP", op, "DLNA.ORG_FLAGS", flags, 0);
+    }
+  
+    sTmp += dlna_info;    
+  }
+  else {
+    sTmp = "http-get:*:" + p_sMimeType + ":*";
+  }
+
+  return sTmp;
 }

@@ -76,7 +76,9 @@ using:
 
   RFC1321-based (RSA-free) MD5 library (as-is) 
   http://sourceforge.net/projects/libmd5-rfc/
-  
+
+  parts of libdlna-0.2.3 (LGPL)
+  http://libdlna.geexbox.org/
 
 win32 binary package comes with:
 

@@ -64,7 +64,7 @@ CFileDetails* CFileDetails::Shared()
 
 CFileDetails::CFileDetails()
 {
-	#ifdef HAVE_LIBDLNA
+	#ifdef DLNA_SUPPORT
 	m_dlna = dlna_init();
   dlna_register_all_media_profiles(m_dlna);
 	#endif
@@ -72,7 +72,7 @@ CFileDetails::CFileDetails()
 
 CFileDetails::~CFileDetails()
 {
-	#ifdef HAVE_LIBDLNA
+	#ifdef DLNA_SUPPORT
 	dlna_uninit(m_dlna);
 	#endif
 }
@@ -429,13 +429,23 @@ bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoIt
 	#endif
 }
 
-
-std::string CFileDetails::GetDLNAString(std::string p_sFileName)
+std::string CFileDetails::GuessDLNAProfileId(std::string p_sFileName)
 {
-	#ifndef HAVE_LIBDLNA
-	return "";
-	#else
-		
+  #ifdef DLNA_SUPPORT
+  string sResult;
+  dlna_profile_t *p;
+  p = dlna_guess_media_profile(m_dlna, p_sFileName.c_str());
+  if(p) {
+    sResult = p->id;
+  }  
+  return sResult;
+  #else
+  return "";
+  #endif
+}
+
+/*std::string CFileDetails::GetDLNAString(std::string p_sFileName)
+{		
 	string sResult = "";	
 	dlna_profile_t *p;
   dlna_org_flags_t flags;
@@ -448,13 +458,13 @@ std::string CFileDetails::GetDLNAString(std::string p_sFileName)
 	p = dlna_guess_media_profile(dlna, p_sFileName.c_str());
   if(p) {
     char *protocol_info;
-    
+  */  
     /*printf ("ID: %s\n", p->id);
     printf ("MIME: %s\n", p->mime);
     printf ("Label: %s\n", p->label);
     printf ("Class: %d\n", p->class);
     printf ("UPnP Object Item: %s\n", dlna_profile_upnp_object_item(p));*/
-
+/*
     protocol_info = dlna_write_protocol_info(DLNA_PROTOCOL_INFO_TYPE_HTTP,
                                              DLNA_ORG_PLAY_SPEED_NORMAL,
                                              DLNA_ORG_CONVERSION_NONE,
@@ -468,4 +478,4 @@ std::string CFileDetails::GetDLNAString(std::string p_sFileName)
 			
 	return sResult;
 	#endif
-}
+}*/

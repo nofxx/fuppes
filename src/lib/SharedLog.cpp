@@ -304,7 +304,7 @@ void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, 
 void CSharedLog::Log(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* p_szFormat, ...)
 {
 	va_list args;
-	char buffer[2048];
+	char buffer[8192];
   va_start(args, p_szFormat);
 	vsnprintf(buffer, sizeof(buffer) - 1, p_szFormat, args);
   va_end(args);
@@ -371,7 +371,7 @@ void CSharedLog::Log(int p_nLogLevel, const std::string p_sFileName, int p_nLine
 void CSharedLog::Print(const char* p_szFormat, ...)
 {
   va_list args;
-	char buffer[1024];
+	char buffer[8192];
   va_start(args, p_szFormat);
 	vsnprintf(buffer, sizeof(buffer) - 1, p_szFormat, args);
   va_end(args);

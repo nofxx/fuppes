@@ -7,6 +7,7 @@ Version SVN-5
 	  FFmepgWrapper (patch from 	Jared D. McNeill)
 	* MediaServer description values configurable
 	* libnotify support without gnome-panel-applet (#1814615)
+  * pass additional ffmpeg arguments (add <ffmpeg_params> node)
 
 Version SVN-549 2007-10-04
   * fixed UPnPBrowse for virtual devices

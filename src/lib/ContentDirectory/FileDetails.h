@@ -30,12 +30,7 @@
 
 #include "ContentDatabase.h"
 #include <string>
-
-#ifdef HAVE_LIBDLNA
-extern "C" { 
-	#include <dlna.h>
-}
-#endif
+#include "libdlna/dlna.h"
 
 struct FileType_t
 {
@@ -155,21 +150,13 @@ class CFileDetails
     bool GetImageDetails(std::string p_sFileName, SImageItem* pImageItem);
 	  bool GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoItem);
 	
-    bool IsSupportedFileExtension(std::string p_sFileExtension);    
-  
-		#ifdef HAVE_LIBDLNA
-		bool GetDLNAValues(std::string p_sFileName, dlna_profile_t* p_dlnaProfile);
-		#endif
+    bool IsSupportedFileExtension(std::string p_sFileExtension);
 
-		std::string WriteDLNAProtocolInfo(std::string p_sId, 
-																			std::string p_sMimeType, 
-																			std::string p_sLabel,
-																			int p_nClass,
-																			bool p_bTranscode);
+    std::string GuessDLNAProfileId(std::string p_sFileName);
 		
   private:
     static CFileDetails* m_Instance; 
-		#ifdef HAVE_LIBDLNA		
+		#ifdef DLNA_SUPPORT
 		dlna_t* m_dlna;
 		#endif
 };

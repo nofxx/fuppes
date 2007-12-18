@@ -105,11 +105,7 @@ CContentDatabase::CContentDatabase(bool p_bShared)
     g_bRemoveMissing  = false;    
     m_nLockCount 		  = 0;
     
-    m_pFileAlterationMonitor = CFileAlterationMgr::Shared()->CreateMonitor(this);
-    if(m_pFileAlterationMonitor) {
-      m_pFileAlterationMonitor->AddDirectory("/home/ulrich/Desktop/test");
-    }
-    
+    m_pFileAlterationMonitor = CFileAlterationMgr::Shared()->CreateMonitor(this);    
     fuppesThreadInitMutex(&m_Mutex);        
   }
     
@@ -188,7 +184,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
         "  A_CODEC, "
         "  V_CODEC, "
         "  SIZE INTEGER DEFAULT 0, "
-				"  DLNA TEXT DEFAULT NULL"
+				"  DLNA_PROFILE TEXT DEFAULT NULL"
 				");"))   
 			return false;    
     
@@ -364,7 +360,7 @@ unsigned int CContentDatabase::Insert(std::string p_sStatement)
       
       default:
         bRetry = false;
-        fprintf(stderr, "CContentDatabase::Insert - insert :: SQL error: %s\n", szErr);          
+        CSharedLog::Log(L_NORM, __FILE__, __LINE__, "CContentDatabase::Insert - insert :: SQL error: %s\nStatement: %s", szErr, p_sStatement.c_str());
         sqlite3_free(szErr);
         nResult = 0;
         break;
@@ -705,10 +701,13 @@ unsigned int InsertAudioFile(CContentDatabase* pDb, std::string p_sFileName, std
 	if(!CFileDetails::Shared()->GetMusicTrackDetails(p_sFileName, &TrackInfo))
 	  return 0;
 		
+  string sDlna = CFileDetails::Shared()->GuessDLNAProfileId(p_sFileName);
+  
 	stringstream sSql;
 	sSql << 
 	  "insert into OBJECT_DETAILS " <<
-		"(A_ARTIST, A_ALBUM, A_TRACK_NO, A_GENRE, AV_DURATION, DATE, A_CHANNELS, AV_BITRATE, A_SAMPLERATE, SIZE) " <<
+		"(A_ARTIST, A_ALBUM, A_TRACK_NO, A_GENRE, AV_DURATION, DATE, " <<
+    "A_CHANNELS, AV_BITRATE, A_SAMPLERATE, SIZE, DLNA_PROFILE) " <<
 		"values (" <<
 		//"'" << SQLEscape(TrackInfo.mAudioItem.sTitle) << "', " <<
 		"'" << SQLEscape(TrackInfo.sArtist) << "', " <<
@@ -720,7 +719,8 @@ unsigned int InsertAudioFile(CContentDatabase* pDb, std::string p_sFileName, std
 		TrackInfo.nNrAudioChannels << ", " <<
 		TrackInfo.nBitrate << ", " <<
 		TrackInfo.nSampleRate << ", " <<
-    TrackInfo.nSize << " )";
+    TrackInfo.nSize << ", " <<
+    "'" << sDlna << "')";
 		
 	//cout << sSql.str() << endl;
   *p_sTitle = TrackInfo.sTitle;
@@ -733,14 +733,17 @@ unsigned int InsertImageFile(CContentDatabase* pDb, std::string p_sFileName)
   SImageItem ImageItem;
 	if(!CFileDetails::Shared()->GetImageDetails(p_sFileName, &ImageItem))
 	  return 0;
-		
+	
+  string sDlna = CFileDetails::Shared()->GuessDLNAProfileId(p_sFileName);
+  
 	stringstream sSql;
 	sSql << 
 	  "insert into OBJECT_DETAILS " <<
-		"(IV_WIDTH, IV_HEIGHT) " <<
+		"(IV_WIDTH, IV_HEIGHT, DLNA_PROFILE) " <<
 		"values (" <<
 		ImageItem.nWidth << ", " <<
-		ImageItem.nHeight << ")";
+		ImageItem.nHeight << ", " <<
+    "'" << sDlna << "')";
 	
 	//cout << sSql.str() << endl;
 	
@@ -753,13 +756,13 @@ unsigned int InsertVideoFile(CContentDatabase* pDb, std::string p_sFileName)
 	if(!CFileDetails::Shared()->GetVideoDetails(p_sFileName, &VideoItem))
 	  return 0;  
   
-  /*char szSize[200];
-  sprintf(&szSize[0], "%" PRId64, VideoItem.nSize);*/
+  string sDlna = CFileDetails::Shared()->GuessDLNAProfileId(p_sFileName);
     
 	stringstream sSql;
 	sSql << 
 	  "insert into OBJECT_DETAILS " <<
-		"(IV_WIDTH, IV_HEIGHT, AV_DURATION, SIZE, AV_BITRATE, A_CODEC, V_CODEC) " <<
+		"(IV_WIDTH, IV_HEIGHT, AV_DURATION, SIZE, " <<
+    "AV_BITRATE, A_CODEC, V_CODEC, DLNA_PROFILE) " <<
 		"values (" <<
 		VideoItem.nWidth << ", " <<
 		VideoItem.nHeight << "," <<
@@ -767,7 +770,8 @@ unsigned int InsertVideoFile(CContentDatabase* pDb, std::string p_sFileName)
 		VideoItem.nSize << ", " <<
 		VideoItem.nBitrate << ", " <<
     "'" << VideoItem.sACodec << "', " <<
-    "'" << VideoItem.sVCodec << "' );";	
+    "'" << VideoItem.sVCodec << "', " <<
+    "'" << sDlna << "');";
   
   return pDb->Insert(sSql.str());
 } 

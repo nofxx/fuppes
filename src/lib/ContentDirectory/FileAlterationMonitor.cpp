@@ -63,19 +63,8 @@ fuppesThreadCallback WatchLoop(void* arg);
 CInotifyMonitor::CInotifyMonitor(IFileAlterationMonitor* pEventHandler):
   CFileAlterationMonitor(pEventHandler)
 {
- 
-  cout << "inotify constructor" << endl;
-    
-  /*m_MonitorThread = (fuppesThread)NULL;
-    
-  m_nInotifyFd = inotify_init();
-	if (m_nInotifyFd < 0)	{
-		throw EException("inotify_init", __FILE__, __LINE__);    
-	}*/
-    
   m_pInotify = new Inotify();
-	
-	fuppesThreadStart(m_MonitorThread, WatchLoop);	
+  m_MonitorThread = (fuppesThread)NULL;
 }
 
 CInotifyMonitor::~CInotifyMonitor()
@@ -91,15 +80,7 @@ CInotifyMonitor::~CInotifyMonitor()
 }
   
 bool CInotifyMonitor::AddDirectory(std::string p_sDirectory)
-{
-  /*int wd = inotify_add_watch(m_nInotifyFd, p_sDirectory.c_str(), IN_CREATE);
-  if(wd < 0) {
-    return false;
-  }
-  
-  m_lWatches.push_back(wd);
-	cout << "wd: " << wd << endl;	  */
-  
+{  
   InotifyWatch* pWatch = new InotifyWatch(p_sDirectory, IN_CREATE | IN_MODIFY | IN_DELETE | IN_MOVE);
   try {
     m_pInotify->Add(pWatch);
@@ -109,15 +90,16 @@ bool CInotifyMonitor::AddDirectory(std::string p_sDirectory)
   }
   m_lWatches.push_back(pWatch);
   
+  if(!m_MonitorThread) {
+    fuppesThreadStart(m_MonitorThread, WatchLoop);
+  }
+
   return true;
 }
   
 fuppesThreadCallback WatchLoop(void* arg)    
 {
   CInotifyMonitor* pInotify = (CInotifyMonitor*)arg;
-  
-  cout << "watch loop" << endl;
-    
   InotifyEvent event;
   
   while(true) {

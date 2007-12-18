@@ -164,7 +164,37 @@ if HAVE_INOTIFY
 libfuppes_la_SOURCES += \
   lib/ContentDirectory/inotify-cxx-0.7.2/inotify-cxx.h \
   lib/ContentDirectory/inotify-cxx-0.7.2/inotify-cxx.cpp
+
+INCLUDES += \
+  -DINOTIFY_THREAD_SAFE
 endif
+
+#if DLNA_SUPPORT
+libfuppes_la_SOURCES += \
+  lib/ContentDirectory/libdlna/dlna.h 
+#\
+#  lib/ContentDirectory/libdlna/dlna_internals.h \
+#  lib/ContentDirectory/libdlna/profiles.h \
+#  lib/ContentDirectory/libdlna/profiles.c \
+#  lib/ContentDirectory/libdlna/containers.h \
+#  lib/ContentDirectory/libdlna/containers.c \
+#  lib/ContentDirectory/libdlna/image_jpeg.c \
+#  lib/ContentDirectory/libdlna/image_png.c \
+#  lib/ContentDirectory/libdlna/av_mpeg1.c \
+#  lib/ContentDirectory/libdlna/av_mpeg2.c \
+#  lib/ContentDirectory/libdlna/av_mpeg4_part2.c \
+#  lib/ContentDirectory/libdlna/av_mpeg4_part10.c \
+#  lib/ContentDirectory/libdlna/av_wmv9.c \
+#  lib/ContentDirectory/libdlna/audio_aac.c \
+#  lib/ContentDirectory/libdlna/audio_ac3.c \
+#  lib/ContentDirectory/libdlna/audio_amr.c \
+#  lib/ContentDirectory/libdlna/audio_atrac3.c \
+#  lib/ContentDirectory/libdlna/audio_g726.c \
+#  lib/ContentDirectory/libdlna/audio_lpcm.c \
+#  lib/ContentDirectory/libdlna/audio_mp2.c \
+#  lib/ContentDirectory/libdlna/audio_mp3.c \
+#  lib/ContentDirectory/libdlna/audio_wma.c
+#endif
 
 libfuppes_la_SOURCES += \
 	lib/DeviceSettings/DeviceSettings.cpp\
