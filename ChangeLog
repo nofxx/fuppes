@@ -1,13 +1,22 @@
-Version SVN-5
+Version SVN-578 2007-12-19
+
+	NOTE: please remove your fuppes.db
+
 	* fixed ffmpeg compilation for 
     older ffmpeg versions (patch from Klaus S. Madsen)
     and with missing libswscale
 	* fixed FAAD decoder for Ubuntu (patch from Klaus S. Madsen)
   * fixed stupid buffer overflow in 
-	  FFmepgWrapper (patch from 	Jared D. McNeill)
+	  FFmepgWrapper (patch from Jared D. McNeill)
 	* MediaServer description values configurable
 	* libnotify support without gnome-panel-applet (#1814615)
+	* fixed #1822462 (ImageMagick includes)
+	* fixed #1815588 (segfault when en-/decoder fails to load)
+	* added optional refId support for virtual folders
+	* support for Yamaha RX-N600
+	* #1838835 temp dir configurable
   * pass additional ffmpeg arguments (add <ffmpeg_params> node)
+
 
 Version SVN-549 2007-10-04
   * fixed UPnPBrowse for virtual devices
