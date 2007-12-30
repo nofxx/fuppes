@@ -1137,11 +1137,12 @@ fuppesThreadCallback BuildLoop(void* arg)
 			sSql << "delete from OBJECTS where OBJECT_ID = " << pDb->GetResult()->GetValue("OBJECT_ID");
 			pDel->Execute(sSql.str());
 			sSql.str("");
-		
-			CSharedLog::Print("[DONE] remove missing");
+			
+			pDb->Next();
 		}
 
 		delete pDel;
+		CSharedLog::Print("[DONE] remove missing");		
 	}
 		
   pDb->Execute("vacuum");  
