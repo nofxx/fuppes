@@ -1090,7 +1090,8 @@ fuppesThreadCallback BuildLoop(void* arg)
 
   CSharedLog::Print("[ContentDatabase] create database at %s", sNowtime.c_str());
   CContentDatabase* pDb = new CContentDatabase();
-  
+  stringstream sSql;
+		
   if(g_bFullRebuild) {
     pDb->Execute("delete from OBJECTS");
     pDb->Execute("delete from OBJECT_DETAILS");
@@ -1102,12 +1103,51 @@ fuppesThreadCallback BuildLoop(void* arg)
 	pDb->Execute("drop index IDX_MAP_OBJECTS_PARENT_ID");
 	pDb->Execute("drop index IDX_OBJECTS_DETAIL_ID");
 	pDb->Execute("drop index IDX_OBJECT_DETAILS_ID");*/
+
+	if(!g_bFullRebuild && g_bRemoveMissing) {
 	
+		CSharedLog::Print("remove missing");
+		
+		pDb->Select("select * from OBJECTS");
+		CContentDatabase* pDel = new CContentDatabase();
+			
+		while(!pDb->Eof()) {
+			
+			if(pDb->GetResult()->GetValueAsUInt("OBJECT_ID") < ITEM) {
+				if(DirectoryExists(pDb->GetResult()->GetValue("PATH"))) {
+					pDb->Next();
+					continue;
+				}
+			}
+			else {
+				if(FileExists(pDb->GetResult()->GetValue("PATH"))) {
+					pDb->Next();
+					continue;
+				}
+			}
+				
+			sSql << "delete from OBJECT_DETAILS where ID = " << pDb->GetResult()->GetValue("OBJECT_ID");
+			pDel->Execute(sSql.str());
+			sSql.str("");
+			
+			sSql << "delete from MAP_OBJECTS where OBJECT_ID = " << pDb->GetResult()->GetValue("OBJECT_ID");
+			pDel->Execute(sSql.str());
+			sSql.str("");
+				
+			sSql << "delete from OBJECTS where OBJECT_ID = " << pDb->GetResult()->GetValue("OBJECT_ID");
+			pDel->Execute(sSql.str());
+			sSql.str("");
+		
+			CSharedLog::Print("[DONE] remove missing");
+		}
+
+		delete pDel;
+	}
+		
   pDb->Execute("vacuum");  
   
   int i;
   unsigned int nObjId;
-  stringstream sSql;
   string sFileName;
   bool bInsert = true;
   

@@ -397,7 +397,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
     "  d.IV_HEIGHT, d.IV_WIDTH, " <<
     "  o.TITLE, d.AV_DURATION, d.A_ALBUM, d.A_ARTIST, d.A_GENRE, " <<
   	"  d.A_TRACK_NO, d.AV_BITRATE, d.A_SAMPLERATE, d.A_CHANNELS, " <<
-	  "  d.AV_DURATION, d.SIZE, d.A_CODEC, d.V_CODEC " <<
+	  "  d.AV_DURATION, d.SIZE, d.A_CODEC, d.V_CODEC, d.DLNA_PROFILE " <<
     "from " <<
     "  OBJECTS o, MAP_OBJECTS m" <<
     "  left join OBJECT_DETAILS d on (d.ID = o.DETAIL_ID) " <<
@@ -682,25 +682,17 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   
   bool bTranscode  = pUPnPBrowse->DeviceSettings()->DoTranscode(sExt);
   string sMimeType = pUPnPBrowse->DeviceSettings()->MimeType(sExt);
-  
-  // protocol info
-  string sTmp;
-  if(pUPnPBrowse->DeviceSettings()->DLNAEnabled()) {
-    string sDLNA = pUPnPBrowse->DeviceSettings()->DLNA(sExt);
-    if(!sDLNA.empty()) {
-      sTmp = "http-get:*:" + sMimeType + ":DLNA.ORG_PN=" + sDLNA + ";DLNA.ORG_OP=01;DLNA.ORG_CI=0";
-    }
-    else {
-      sTmp = "http-get:*:" + sMimeType + ":DLNA.ORG_OP=01;DLNA.ORG_CI=0";
-    }
-  }
-  else {
-    sTmp = "http-get:*:" + sMimeType + ":*";
-  }
-                                                    
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
-  
 
+
+	// protocol info
+  string sDLNA = pSQLResult->GetValue("DLNA_PROFILE");
+  if(sDLNA.empty())
+    sDLNA = pUPnPBrowse->DeviceSettings()->DLNA(sExt);
+  
+  string sTmp = BuildProtocolInfo(bTranscode, sMimeType, sDLNA, pUPnPBrowse);
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
+	
+																											
   // duration
   if(pUPnPBrowse->IncludeProperty("res@duration") && !pSQLResult->IsNull("AV_DURATION")) {	
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->GetValue("AV_DURATION").c_str());
@@ -773,7 +765,8 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
                                                   std::string p_sObjectID)
 {
   string sExt = ExtractFileExt(pSQLResult->GetValue("PATH"));
-                                                    
+  bool bTranscode = pUPnPBrowse->DeviceSettings()->DoTranscode(sExt);
+																											
   // title
   xmlTextWriterStartElement(pWriter, BAD_CAST "dc:title");
     // trim filename
@@ -804,13 +797,22 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
   
   // protocol info
-  string sTmp = "http-get:*:" + pUPnPBrowse->DeviceSettings()->MimeType(sExt) + ":*";
-  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
+  //string sTmp = "http-get:*:" + pUPnPBrowse->DeviceSettings()->MimeType(sExt) + ":*";
+  //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
   
+	// protocol info
+  string sDLNA = pSQLResult->GetValue("DLNA_PROFILE");
+  if(sDLNA.empty())
+    sDLNA = pUPnPBrowse->DeviceSettings()->DLNA(sExt);
+  
+  string sTmp = BuildProtocolInfo(false, pUPnPBrowse->DeviceSettings()->MimeType(sExt), sDLNA, pUPnPBrowse);
+  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
+																											
   // resolution
 	if(pUPnPBrowse->IncludeProperty("res@resolution") &&
      (pSQLResult->GetValue("IV_WIDTH").compare("NULL") != 0) && 
      (pSQLResult->GetValue("IV_HEIGHT").compare("NULL") != 0)) {
+	#warning todo rescaling
     sTmp = pSQLResult->GetValue("IV_WIDTH") + "x" + pSQLResult->GetValue("IV_HEIGHT");
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.c_str());
 	}
