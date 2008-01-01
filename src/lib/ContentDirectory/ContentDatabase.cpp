@@ -1113,7 +1113,7 @@ fuppesThreadCallback BuildLoop(void* arg)
 			
 		while(!pDb->Eof()) {
 			
-			if(pDb->GetResult()->GetValueAsUInt("OBJECT_ID") < ITEM) {
+			if(pDb->GetResult()->GetValueAsUInt("TYPE") < ITEM) {
 				if(DirectoryExists(pDb->GetResult()->GetValue("PATH"))) {
 					pDb->Next();
 					continue;

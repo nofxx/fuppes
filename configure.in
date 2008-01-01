@@ -688,7 +688,7 @@ if test "x$transcoding" = "xyes"; then
         echo "      faad       : yes (aac/NO mp4)"
       fi
     else
-      echo "      fadd       : no"      
+      echo "      faad       : no"      
     fi 
   
 else # transcoding = yes  

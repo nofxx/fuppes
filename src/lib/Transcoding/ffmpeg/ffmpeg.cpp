@@ -708,7 +708,7 @@ void print_report(AVFormatContext **output_files,
                 if(qp>=0 && qp<sizeof(qp_histogram)/sizeof(int))
                     qp_histogram[qp]++;
                 for(j=0; j<32; j++)
-                    snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%X", (int)lrintf(log(qp_histogram[j]+1)/log(2)));
+                    snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%X", (int)lrintf(log(qp_histogram[j]+1.0)/log(2.0)));
             }
             if (enc->flags&CODEC_FLAG_PSNR){
                 int j;
