@@ -3,13 +3,14 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007 Ulrich Völkel <fuppes@ulrich-voelkel.de>
+ *  Copyright (C) 2007 - 2008 Ulrich Völkel <fuppes@ulrich-voelkel.de>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -120,10 +121,13 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
     else if(pNode->Value().compare("Location") == 0) {
       sFileName = pDict->ChildNode(i + 1)->Value();
       //cout << "*" << sFileName << "*" << endl;
-      sFileName = sFileName.substr(string("file://localhost/").length(), sFileName.length());
+      
       //cout << "*" << sFileName << "*" << endl;
       #ifdef WIN32
+			sFileName = sFileName.substr(string("file://localhost/").length(), sFileName.length());
       sFileName = StringReplace(sFileName, "/", "\\");
+			#else
+			sFileName = sFileName.substr(string("file://localhost").length(), sFileName.length());
       #endif
       sFileName = StringReplace(sFileName, "%20", " ");
       //cout << "*" << sFileName << "*" << endl;
