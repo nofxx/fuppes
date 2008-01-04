@@ -3,13 +3,14 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007 - 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -90,7 +91,7 @@ void PrintHelp()
   cout << "s = print device settings" << endl;
   cout << "r = rebuild database" << endl;
   cout << "v = rebuild virtual container layout" << endl;
-  //cout << "c = refresh configuration" << endl;
+  cout << "u = update database" << endl;
   cout << "h = print this help" << endl;
   cout << endl;
   cout << "m = send m-search" << endl;
@@ -138,6 +139,7 @@ int main(int argc, char* argv[])
   cout << "webinterface: " << szHTTP << endl;
   cout << endl;
   cout << "r = rebuild database" << endl;
+	cout << "u = update database" << endl;
   cout << "i = print system info" << endl;
   cout << "h = print help" << endl;
   cout << endl;
