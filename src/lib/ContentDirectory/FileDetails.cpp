@@ -3,13 +3,14 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -33,6 +34,10 @@
 #include <fileref.h>
 #include <tfile.h>
 #include <tag.h>
+#endif
+
+#ifdef HAVE_MPEG4IP
+#include <mp4.h>
 #endif
 
 #ifdef HAVE_IMAGEMAGICK
@@ -162,11 +167,29 @@ bool CFileDetails::IsSupportedFileExtension(std::string p_sFileExtension)
 
 bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SAudioItem* pMusicTrack)
 {
-  #ifdef HAVE_TAGLIB  
-  string sExt = ExtractFileExt(p_sFileName);  
+  string sExt = ExtractFileExt(p_sFileName);
   if(!CDeviceIdentificationMgr::Shared()->DefaultDevice()->FileSettings(sExt)->ExtractMetadata())
-    return false;  
-  
+    return false;
+
+	if(sExt.compare("m4a") == 0 || sExt.compare("mp4") == 0) {
+		#ifdef HAVE_MPEG4IP
+		return GetMusicTrackDetailsMPEG4IP(p_sFileName, pMusicTrack);
+		#else
+		return false;
+		#endif			
+	}
+	else {
+		#ifdef HAVE_TAGLIB  
+		return GetMusicTrackDetailsTaglib(p_sFileName, pMusicTrack);
+		#else
+		return false;
+		#endif
+	}
+}
+
+#ifdef HAVE_TAGLIB
+bool CFileDetails::GetMusicTrackDetailsTaglib(std::string p_sFileName, SAudioItem* pMusicTrack)
+{  
   TagLib::FileRef pFile(p_sFileName.c_str());
   
 	if (pFile.isNull()) {
@@ -244,11 +267,87 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SAudioItem* pMu
   sDate << nTmp;
   pMusicTrack->sDate = sDate.str();
 
-  return true;
-  #else
-	return false;
-	#endif
 }
+#endif
+		
+#ifdef HAVE_MPEG4IP
+bool CFileDetails::GetMusicTrackDetailsMPEG4IP(std::string p_sFileName, SAudioItem* pMusicTrack)
+{
+	MP4FileHandle mp4file = MP4Read(p_sFileName.c_str());
+	if(!mp4file) {
+		return false;
+	}
+
+	char *value;
+	// title
+	MP4GetMetadataName(mp4file, &value);
+	if(value) {
+		pMusicTrack->sTitle = string(value);
+		free(value);
+	}
+	// duration
+	u_int32_t scale = MP4GetTimeScale(mp4file);//scale is ticks in secs, used same value in duration.
+	MP4Duration length = MP4GetDuration(mp4file);
+	int hours, mins, secs;
+	length = length /scale;
+	secs = length % 60;
+	length /= 60;
+	mins = length % 60;
+	hours = length / 60;
+
+	char szDuration[12];
+	sprintf(szDuration, "%02d:%02d:%02d.00", hours, mins, secs);
+	szDuration[11] = '\0';
+	pMusicTrack->sDuration = szDuration;
+	// channels
+	pMusicTrack->nNrAudioChannels = MP4GetTrackAudioChannels(mp4file, 
+																		MP4FindTrackId(mp4file, 0, MP4_AUDIO_TRACK_TYPE));
+	// bitrate
+	pMusicTrack->nBitrate = MP4GetTrackBitRate(mp4file, 
+														MP4FindTrackId(mp4file, 0, MP4_AUDIO_TRACK_TYPE));
+	pMusicTrack->nBitsPerSample = 0;
+
+	// artist
+	MP4GetMetadataArtist(mp4file, &value);
+	if(value) {
+		pMusicTrack->sArtist = string(value);
+		free(value);
+	}
+	// genre
+	MP4GetMetadataGenre(mp4file, &value);
+	if(value) {
+		pMusicTrack->sGenre = string(value);
+		free(value);
+	}
+	// Album
+	MP4GetMetadataAlbum(mp4file, &value);
+	if(value) {
+		pMusicTrack->sAlbum = string(value);
+		free(value);
+	}
+	// description/comment
+	MP4GetMetadataComment(mp4file, &value);
+	if(value) {
+		pMusicTrack->sDescription = string(value);
+		free(value);
+	}
+
+	// track no.
+	u_int16_t track, totaltracks;
+	MP4GetMetadataTrack(mp4file, &track, &totaltracks);
+	pMusicTrack->nOriginalTrackNumber = track;
+
+	// date/year
+	MP4GetMetadataYear(mp4file, &value);
+	if(value)	{
+		pMusicTrack->nYear = atoi(value);
+		free(value);
+	}
+
+	MP4Close(mp4file);
+	return true;
+}
+#endif
 
 bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageItem)
 {

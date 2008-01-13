@@ -3,13 +3,14 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -266,7 +267,7 @@ std::string CSharedConfig::GetSharedDir(int p_nIdx)
   if(sDir.length() > 1 && sDir.substr(sDir.length() - 1).compare(upnpPathDelim) != 0) {
     sDir += upnpPathDelim;
   }
-  return sDir;
+  return sDir.c_str();
 }
 
 void CSharedConfig::AddSharedDirectory(std::string p_sDirectory)
@@ -557,5 +558,5 @@ std::string CSharedConfig::CreateTempFileName()
   stringstream sResult;
   sResult << m_sTempDir << nTmpCnt;
   nTmpCnt++;
-  return sResult.str();
+  return sResult.str().c_str();
 }

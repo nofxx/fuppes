@@ -3,13 +3,14 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006, 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2006 - 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -156,42 +157,4 @@ void CHTTPParser::ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage)
 	}
 	
   m_pMessage->SetContent(sVars.str());
-}
-
-std::string CHTTPParser::URLEncodeValueToPlain(std::string p_sValue)
-{
-  string sResult = p_sValue;
-	string sChar;
-	string sMatch;
-	char cChar;
-		
-	RegEx rxChar("%([A-F|0-9]{2})\\+*");
-	
-	if(rxChar.Search(p_sValue.c_str())) {
-	  sResult = "";
-		while(true) 
-		{
-		  sMatch = rxChar.Match(0);
-		  sChar  = rxChar.Match(1);
-		  
-			cChar = HexToInt(sChar);
-						
-			sResult += p_sValue.substr(0, p_sValue.find(sMatch));
-			sResult += cChar;
-			
-			if(strcmp(&sMatch[sMatch.length() - 1], "+") == 0) // +
-			  sResult += " ";
-			
-			p_sValue = p_sValue.substr(p_sValue.find(sMatch) + sMatch.length(), p_sValue.length());	
-		
-		  if(rxChar.Search(p_sValue.c_str()))
-			  continue;
-				
-			if(p_sValue.length() > 0) 
-			  sResult += p_sValue;
-			break;		
-		} // while bLoop
-	}	
-	
-	return sResult;
 }

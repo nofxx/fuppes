@@ -1,9 +1,9 @@
 /***************************************************************************
- *            HTTPParser.h
+ *            ExternalCmdWrapper.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006 - 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,25 +22,24 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _HTTPPARSER_H
-#define _HTTPPARSER_H
+#ifndef EXTERNALCMDWRAPPER_H
+#define EXTERNALCMDWRAPPER_H
+#ifndef DISABLE_TRANSCODING
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
 
-#include "HTTPMessage.h"
+#include "WrapperBase.h"
 
-class CHTTPParser
-{ 
+class CExternalCmdWrapper: public CTranscoderBase
+{
   public:
-    bool Parse(CHTTPMessage* pMessage);
-		void ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage);
-	
-  private:
-	  CHTTPMessage* m_pMessage;
-		void ParseCommonValues();
-		
+    virtual ~CExternalCmdWrapper() {};
+    
+    bool Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile);
+    bool Threaded() { return true; }
 };
 
-#endif // _HTTPPARSER_H
+#endif // DISABLE_TRANSCODING
+#endif // EXTERNALCMDWRAPPER_H

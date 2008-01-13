@@ -3,13 +3,14 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005 - 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -111,6 +112,7 @@ std::string SQLEscape(std::string p_sValue);
 
 std::string ToUTF8(std::string p_sValue, std::string p_sEncoding = "");
 
+std::string URLEncodeValueToPlain(std::string p_sValue);
 
 void fuppesSleep(unsigned int p_nMilliseconds);
 

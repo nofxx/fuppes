@@ -3,13 +3,14 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -144,36 +145,32 @@ std::string MD5Sum(std::string p_sFileName)
     md5_finish(&state, digest);
   }	
   
-  cout << "md5" << endl;
-  
 	for (di = 0; di < 16; ++di)
 	    sprintf(hex_output + di * 2, "%02x", digest[di]);
-  
-  cout << hex_output << endl;
   
   return hex_output;
 }
 
 std::string StringReplace(std::string p_sIn, std::string p_sSearch, std::string p_sReplace)
 {
-  std::string p_sResult;
+  std::string sResult;
 	if(p_sIn.find(p_sSearch) == std::string::npos)
 	  return p_sIn;
 	
   while(p_sIn.find(p_sSearch) != std::string::npos)
 	{
-	  p_sResult += p_sIn.substr(0, p_sIn.find(p_sSearch)) + p_sReplace;
-		p_sIn      = p_sIn.substr(p_sIn.find(p_sSearch) + p_sSearch.length(), p_sIn.length());
+	  sResult += p_sIn.substr(0, p_sIn.find(p_sSearch)) + p_sReplace;
+		p_sIn   = p_sIn.substr(p_sIn.find(p_sSearch) + p_sSearch.length(), p_sIn.length());
 	}
-	p_sResult += p_sIn;
+	sResult += p_sIn;
 	
-	return p_sResult;
+	return sResult.c_str();
 }
 
 std::string ExtractFileExt(std::string p_sFileName)
 {
   RegEx rxExt("\\.([\\w|\\n]+)$");
-  std::string sResult = "";
+  std::string sResult;
   if(rxExt.Search(p_sFileName.c_str()))
   {
     do
@@ -182,7 +179,7 @@ std::string ExtractFileExt(std::string p_sFileName)
     } while(rxExt.SearchAgain());
     
   }
-  return ToLower(sResult);
+  return ToLower(sResult).c_str();
 }
 
 std::string ExtractFilePath(std::string p_sFileName)
@@ -202,13 +199,12 @@ std::string TruncateFileExt(std::string p_sFileName)
     return p_sFileName;
   
   std::string sResult = p_sFileName.substr(0, p_sFileName.length() - sExt.length() - 1);
-  return sResult;
+  return sResult.c_str();
 }
 
 std::string ToLower(std::string p_sInput)
 {
-  for(unsigned int i = 0; i < p_sInput.length(); i++)
-  {
+  for(unsigned int i = 0; i < p_sInput.length(); i++) {
     p_sInput[i] = tolower(p_sInput[i]);
   }  
   return p_sInput;
@@ -216,8 +212,7 @@ std::string ToLower(std::string p_sInput)
 
 std::string ToUpper(std::string p_sInput)
 {
-  for(unsigned int i = 0; i < p_sInput.length(); i++)
-  {
+  for(unsigned int i = 0; i < p_sInput.length(); i++) {
     p_sInput[i] = toupper(p_sInput[i]);
   }  
   return p_sInput;
@@ -263,14 +258,14 @@ std::string TrimFileName(std::string p_sFileName, unsigned int p_nMaxLength, boo
     sFile = sFile + "." + sExt;
   }
   
-  return sFile;
+  return sFile.c_str();
 }
 
 std::string TrimWhiteSpace(std::string s)
 {
   const std::string drop = " ";
   std::string r = s.erase(s.find_last_not_of(drop)+1);
-  return r.erase(0,r.find_first_not_of(drop));
+  return r.erase(0,r.find_first_not_of(drop)).c_str();
 }
 
 bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPort)
@@ -361,7 +356,7 @@ std::string Base64Decode(const std::string p_sInputString)
       sResult += char_array_3[j];
   }
 
-  return sResult;  
+  return sResult.c_str();
 }
 /* end BASE64 decoding */
 
@@ -468,6 +463,46 @@ std::string ToUTF8(std::string p_sValue, std::string p_sEncoding)
 	
   return p_sValue;
 }
+
+
+std::string URLEncodeValueToPlain(std::string p_sValue)
+{
+  string sResult = p_sValue;
+	string sChar;
+	string sMatch;
+	char cChar;
+		
+	RegEx rxChar("%([A-F|0-9]{2})\\+*");
+	
+	if(rxChar.Search(p_sValue.c_str())) {
+	  sResult = "";
+		while(true) 
+		{
+		  sMatch = rxChar.Match(0);
+		  sChar  = rxChar.Match(1);
+		  
+			cChar = HexToInt(sChar);
+						
+			sResult += p_sValue.substr(0, p_sValue.find(sMatch));
+			sResult += cChar;
+			
+			if(strcmp(&sMatch[sMatch.length() - 1], "+") == 0) // +
+			  sResult += " ";
+			
+			p_sValue = p_sValue.substr(p_sValue.find(sMatch) + sMatch.length(), p_sValue.length());	
+		
+		  if(rxChar.Search(p_sValue.c_str()))
+			  continue;
+				
+			if(p_sValue.length() > 0) 
+			  sResult += p_sValue;
+			break;		
+		} // while bLoop
+	}	
+	
+	return sResult.c_str();
+}
+
 
 
 

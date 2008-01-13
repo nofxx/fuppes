@@ -3,13 +3,14 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007 - 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -498,6 +499,8 @@ void CConfigFile::ParseTranscodingSettings(CXMLNode* pTCNode, CFileSettings* pFi
         pFileSet->pTranscodingSettings->nDecoderType = DT_MUSEPACK;
       else if(pTmp->Value().compare("faad") == 0)
         pFileSet->pTranscodingSettings->nDecoderType = DT_FAAD;
+			else if(pTmp->Value().compare("mad") == 0)
+        pFileSet->pTranscodingSettings->nDecoderType = DT_MAD;
       else
         pFileSet->pTranscodingSettings->nDecoderType = DT_NONE;
       
@@ -505,10 +508,13 @@ void CConfigFile::ParseTranscodingSettings(CXMLNode* pTCNode, CFileSettings* pFi
     else if(pTmp->Name().compare("transcoder") == 0) {
       
       if(pTmp->Value().compare("ffmpeg") == 0) {
-        pFileSet->pTranscodingSettings->nTranscoderType   = TTYP_FFMPEG;        
+        pFileSet->pTranscodingSettings->nTranscoderType   = TTYP_FFMPEG;   
+      }
+			if(pTmp->Value().compare("external") == 0) {
+        pFileSet->pTranscodingSettings->nTranscoderType   = TTYP_EXTERNAL_CMD; 
       }
       else {
-        pFileSet->pTranscodingSettings->nTranscoderType   = TTYP_NONE;            
+        pFileSet->pTranscodingSettings->nTranscoderType   = TTYP_NONE;
       }
       
     }
@@ -526,6 +532,9 @@ void CConfigFile::ParseTranscodingSettings(CXMLNode* pTCNode, CFileSettings* pFi
     }  
     else if(pTmp->Name().compare("ffmpeg_params") == 0) {      
       pFileSet->pTranscodingSettings->sFFmpegParams = pTmp->Value();
+    }
+		else if(pTmp->Name().compare("external_cmd") == 0) {
+      pFileSet->pTranscodingSettings->sExternalCmd = pTmp->Value();
     }
     else if((pTmp->Name().compare("bitrate") == 0) || pTmp->Name().compare("audio_bitrate") == 0) {
       pFileSet->pTranscodingSettings->nAudioBitRate = atoi(pTmp->Value().c_str());

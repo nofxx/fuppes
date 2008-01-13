@@ -3,13 +3,14 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007 - 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -85,7 +86,8 @@ typedef enum TRANSCODING_TYPE {
 typedef enum TRANSCODER_TYPE {
   TTYP_NONE,
   TTYP_IMAGE_MAGICK,
-  TTYP_FFMPEG
+  TTYP_FFMPEG,
+	TTYP_EXTERNAL_CMD
 } TRANSCODER_TYPE;
 
 typedef enum ENCODER_TYPE {
@@ -101,7 +103,8 @@ typedef enum DECODER_TYPE {
   DT_OGG_VORBIS,
   DT_FLAC,
   DT_MUSEPACK,
-  DT_FAAD
+  DT_FAAD,
+	DT_MAD
 } DECODER_TYPE;
 
 typedef enum TRANSCODING_HTTP_RESPONSE {
@@ -166,6 +169,8 @@ struct CTranscodingSettings {
   
     bool  DoTranscode(std::string p_sACodec, std::string p_sVCodec);
   
+		std::string ExternalCmd() { return sExternalCmd; }
+		
   private:
     bool          bEnabled;
   
@@ -189,6 +194,7 @@ struct CTranscodingSettings {
     std::string     sVCodec;
   
     std::string     sFFmpegParams;
+		std::string			sExternalCmd;
 };
 
 struct CFileSettings {

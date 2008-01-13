@@ -129,7 +129,7 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
 			#else
 			sFileName = sFileName.substr(string("file://localhost").length(), sFileName.length());
       #endif
-      sFileName = StringReplace(sFileName, "%20", " ");
+      sFileName = URLEncodeValueToPlain(sFileName); //StringReplace(sFileName, "%20", " ");
       //cout << "*" << sFileName << "*" << endl;
         
     }
@@ -182,7 +182,6 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
   pDb->Commit();
     
   delete pDb;
-    
 }
 
 /*

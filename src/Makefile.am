@@ -24,16 +24,16 @@ fuppes_LDFLAGS = \
 	${TAGLIB_LIBS}
 
 if BUILD_DAEMON
-  bin_PROGRAMS += fuppesd
-  fuppesd_SOURCES = daemon_main.cpp
-  fuppesd_LDADD = ./libfuppes.la
-	fuppesd_LDFLAGS = \
-		$(FUPPES_LIBS)\
-		${UUID_LIBS}\
-		${LIBXML_LIBS}\
-		${PCRE_LIBS}\
-		${SQLITE3_LIBS}\
-		${TAGLIB_LIBS}
+bin_PROGRAMS += fuppesd
+fuppesd_SOURCES = daemon_main.cpp
+fuppesd_LDADD = ./libfuppes.la
+fuppesd_LDFLAGS = \
+	$(FUPPES_LIBS)\
+	${UUID_LIBS}\
+	${LIBXML_LIBS}\
+	${PCRE_LIBS}\
+	${SQLITE3_LIBS}\
+	${TAGLIB_LIBS}
 endif
 
 libfuppes_la_SOURCES = \
@@ -81,11 +81,6 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/WrapperBase.h\
   lib/Transcoding/TranscodingMgr.h\
   lib/Transcoding/TranscodingCache.h\
-  lib/Transcoding/LameWrapper.h\
-  lib/Transcoding/TwoLameEncoder.h\
-  lib/Transcoding/VorbisWrapper.h\
-  lib/Transcoding/MpcWrapper.h\
-  lib/Transcoding/FlacWrapper.h\
 	lib/DeviceSettings/DeviceSettings.h\
 	lib/DeviceSettings/DeviceIdentificationMgr.h\
 	lib/XMSMediaReceiverRegistrar.h\
@@ -136,19 +131,28 @@ libfuppes_la_SOURCES = \
   lib/Presentation/Images/device_type_media_server_png.cpp\
   lib/Transcoding/TranscodingMgr.cpp\
   lib/Transcoding/TranscodingCache.cpp\
+  lib/Transcoding/LameWrapper.h\
   lib/Transcoding/LameWrapper.cpp\
+  lib/Transcoding/TwoLameEncoder.h\
   lib/Transcoding/TwoLameEncoder.cpp\
   lib/Transcoding/WavEncoder.h\
   lib/Transcoding/WavEncoder.cpp\
   lib/Transcoding/PcmEncoder.h\
   lib/Transcoding/PcmEncoder.cpp\
+  lib/Transcoding/VorbisWrapper.h\
   lib/Transcoding/VorbisWrapper.cpp\
+  lib/Transcoding/MpcWrapper.h\
   lib/Transcoding/MpcWrapper.cpp\
+  lib/Transcoding/FlacWrapper.h\
   lib/Transcoding/FlacWrapper.cpp\
   lib/Transcoding/FaadWrapper.h\
   lib/Transcoding/FaadWrapper.cpp\
+  lib/Transcoding/MadDecoder.h\
+  lib/Transcoding/MadDecoder.cpp\
   lib/Transcoding/ImageMagickWrapper.h\
-  lib/Transcoding/ImageMagickWrapper.cpp
+  lib/Transcoding/ImageMagickWrapper.cpp\
+	lib/Transcoding/ExternalCmdWrapper.h\
+  lib/Transcoding/ExternalCmdWrapper.cpp
 
 if VIDEO_TRANSCODING
 libfuppes_la_SOURCES += \

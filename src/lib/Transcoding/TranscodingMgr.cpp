@@ -3,13 +3,14 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006, 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2006-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -58,6 +59,10 @@
   #include "FaadWrapper.h"
   #endif
 
+	#ifdef HAVE_MAD
+  #include "MadDecoder.h"
+  #endif
+
   // transcoder
   #ifdef HAVE_LIBAVFORMAT
   #ifdef ENABLE_VIDEO_TRANSCODING
@@ -68,6 +73,8 @@
   #ifdef HAVE_IMAGEMAGICK
   #include "ImageMagickWrapper.h"
   #endif
+
+	#include "ExternalCmdWrapper.h"
 
 #endif
 
@@ -442,6 +449,13 @@ CAudioDecoderBase* CTranscodingMgr::CreateAudioDecoder(DECODER_TYPE p_nDecoderTy
       #endif
       break;
     
+		case DT_MAD:
+      #ifdef HAVE_MAD
+      pResult = (CAudioDecoderBase*)(new CMadDecoder());
+			*p_nBufferSize = 8192;
+      #endif
+      break;
+			
     default:
       break;
   } 
@@ -454,7 +468,9 @@ CAudioDecoderBase* CTranscodingMgr::CreateAudioDecoder(DECODER_TYPE p_nDecoderTy
 CTranscoderBase* CTranscodingMgr::CreateTranscoder(TRANSCODER_TYPE p_nTranscoderType)
 {
   CTranscoderBase* pResult = NULL;
-  
+
+	#ifndef DISABLE_TRANSCODING	
+
   #ifdef HAVE_LIBAVFORMAT
   #ifdef ENABLE_VIDEO_TRANSCODING
   if(p_nTranscoderType == TTYP_FFMPEG) {     
@@ -462,13 +478,18 @@ CTranscoderBase* CTranscodingMgr::CreateTranscoder(TRANSCODER_TYPE p_nTranscoder
   }
   #endif
   #endif
-  
-  #ifndef DISABLE_TRANSCODING
-  #ifdef HAVE_IMAGEMAGICK
+
+
+	#ifdef HAVE_IMAGEMAGICK
   if(p_nTranscoderType == TTYP_IMAGE_MAGICK) {
     pResult = new CImageMagickWrapper();
   }
   #endif
+		
+	if(p_nTranscoderType == TTYP_EXTERNAL_CMD) {
+		pResult = new CExternalCmdWrapper();
+	}
+		
   #endif
   
   return pResult;
