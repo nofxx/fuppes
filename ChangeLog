@@ -1,12 +1,13 @@
 Version SVN-    2008-
 
 	* fixed DLNA string for audio and image files
-	* extract mp4/m4a metadata (patch from Kurosawa Hiroyuki)
+	* extract mp4/m4a metadata
 	* fixed bug #1837741 - Ogg files don't stream
 	* fixed bug #1862357 - iTunes path not parsed correctly Mac OS X 10.5
 	* fixed bug #1819645 - fuppesd is failing to background fuppes
   * fixed bug #1863196 - unsafe use of std::string
   * fixed bug #1870194 - OS X iTunes xml file paths
+	* fixed bug #1864791 - multicast problem on OS X
 	* mp3 decoder (madlib)
 	* "external command" transcoder
 

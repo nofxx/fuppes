@@ -508,13 +508,13 @@ void CConfigFile::ParseTranscodingSettings(CXMLNode* pTCNode, CFileSettings* pFi
     else if(pTmp->Name().compare("transcoder") == 0) {
       
       if(pTmp->Value().compare("ffmpeg") == 0) {
-        pFileSet->pTranscodingSettings->nTranscoderType   = TTYP_FFMPEG;   
+        pFileSet->pTranscodingSettings->nTranscoderType = TTYP_FFMPEG;   
       }
-			if(pTmp->Value().compare("external") == 0) {
-        pFileSet->pTranscodingSettings->nTranscoderType   = TTYP_EXTERNAL_CMD; 
+			else if(pTmp->Value().compare("external") == 0) {
+        pFileSet->pTranscodingSettings->nTranscoderType = TTYP_EXTERNAL_CMD; 
       }
       else {
-        pFileSet->pTranscodingSettings->nTranscoderType   = TTYP_NONE;
+        pFileSet->pTranscodingSettings->nTranscoderType = TTYP_NONE;
       }
       
     }

@@ -3,13 +3,14 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -68,10 +69,17 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
   ret = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
   #endif
   if(ret == -1) {
-    throw EException("failed to setsockopt: SO_REUSEADDR", __FILE__, __LINE__);
+    throw EException(__FILE__, __LINE__, "failed to setsockopt: SO_REUSEADDR");
   }
 
 	#ifdef FUPPES_TARGET_MAC_OSX
+	// bug #1864791 - avoid locking the multicast port on OS X
+	flag = 1;
+	ret = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEPORT, &flag, sizeof(flag));
+	if(ret == -1) {
+		throw EException(__FILE__, __LINE__, "failed to setsockopt: SO_REUSEPORT");
+	}
+		
 	/* OS X does not support pthread_cancel
 	   so we need to set the socket to non blocking and
 		 constantly poll the cancellation state.
