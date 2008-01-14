@@ -146,7 +146,7 @@ bool CMadDecoder::OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetails
   pAudioDetails->nSampleRate    = m_pVorbisInfo->rate;
   pAudioDetails->nNumPcmSamples = m_OvPcmTotal(&m_VorbisFile, -1);*/
 
-	#define INPUT_BUFFER_SIZE	(5*8192)
+	//#define INPUT_BUFFER_SIZE	(5*8192)
 	unsigned char		InputBuffer[INPUT_BUFFER_SIZE+MAD_BUFFER_GUARD];
 		
 	fseek(m_pFile, 0, SEEK_END);
@@ -253,55 +253,189 @@ bool CMadDecoder::OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetails
 	pAudioDetails->nNumChannels   = stats.channels;
   pAudioDetails->nSampleRate    = stats.freq;
   pAudioDetails->nNumPcmSamples	= m_nNumFrames;
+	
+	m_MadStreamFinish(&m_Stream);
+	m_MadFrameFinish(&m_Frame);
+	if(m_MadSynthFinish)
+		m_MadSynthFinish(&m_Synth);
+		
+	mad_stream_init(&m_Stream);
+	mad_frame_init(&m_Frame);
+	mad_synth_init(&m_Synth);
+		
+	m_OutputPtr = NULL;
+	m_GuardPtr = NULL;
+	m_OutputBufferEnd = NULL;
+	m_nSynthPos = -1;
 		
   return true;
 }
 
 void CMadDecoder::CloseFile()
 {
+	m_MadStreamFinish(&m_Stream);
+	m_MadFrameFinish(&m_Frame);
+	m_MadSynthFinish(&m_Synth);
+		
   fclose(m_pFile);
 }
 
+static signed short MadFixedToSshort(mad_fixed_t Fixed)
+{
+	/* Clipping */
+	if(Fixed>=MAD_F_ONE)
+		return(SHRT_MAX);
+	if(Fixed<=-MAD_F_ONE)
+		return(-SHRT_MAX);
+
+	/* Conversion. */
+	Fixed=Fixed>>(MAD_F_FRACBITS-15);
+	return((signed short)Fixed);
+}
+
+
 long CMadDecoder::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead)
-{ 
-  /*int bitstream = 0; 
-  int nBytesConsumed = m_OvRead(&m_VorbisFile, p_PcmOut, p_nBufferSize, m_nOutEndianess, 2, 1, &bitstream);  
-  
-  // eof
-  if(nBytesConsumed == 0)
-  {    
-    return -1;
-  }
-  else if(nBytesConsumed < 0) 
-  {
-    // error in the stream
-    if(nBytesConsumed == OV_HOLE)
-      CSharedLog::Shared()->Log(L_EXT,"OV_HOLE", __FILE__, __LINE__);
-    else if(nBytesConsumed == OV_EBADLINK)    
-      CSharedLog::Shared()->Log(L_EXT,"OV_EBADLINK", __FILE__, __LINE__);
-    else {
-      CSharedLog::Shared()->Log(L_EXT,"unknown stream error", __FILE__, __LINE__);      
-    }    
-    return -1;
-  }
-  else 
-  {
-    if(bitstream != 0)
-      return -1;
-    
-    *p_nBytesRead = nBytesConsumed;
-    
-    // calc samples and return
-    long samplesRead = nBytesConsumed / m_pVorbisInfo->channels / sizeof(short int);
-    return samplesRead;
-  } */ 
-		
+{
+	if(!m_OutputPtr)
+		m_OutputPtr = p_PcmOut;
+	if(!m_OutputBufferEnd)
+		m_OutputBufferEnd = p_PcmOut + p_nBufferSize;
+	
+	int	i;
+	//unsigned long	FrameCount=0;
+
+
+	while(true) {
+
+		if(m_nSynthPos >= 0) {
+			*p_nBytesRead = 0;
+			m_OutputPtr = p_PcmOut;
+				
+			//cout << "synth: " << m_nSynthPos << " of " << m_Synth.pcm.length << endl;
+				
+			long nSamples = 0;
+				
+			for(i = m_nSynthPos; i < m_Synth.pcm.length; i++) {
+				signed short	Sample;
+
+				#warning todo: endianess
+				/* Left channel */
+				Sample=MadFixedToSshort(m_Synth.pcm.samples[0][i]);
+				*(m_OutputPtr++)=Sample>>8;
+				*(m_OutputPtr++)=Sample&0xff;
+
+				/* Right channel. If the decoded stream is monophonic then
+				 * the right output channel is the same as the left one.
+				 */
+				if(MAD_NCHANNELS(&m_Frame.header)==2)
+					Sample=MadFixedToSshort(m_Synth.pcm.samples[1][i]);
+				*(m_OutputPtr++)=Sample>>8;
+				*(m_OutputPtr++)=Sample&0xff;			
+
+				*p_nBytesRead = (*p_nBytesRead) + 4;
+					
+				nSamples++;
+					
+				/* Flush the output buffer if it is full. */
+				if(m_OutputPtr == m_OutputBufferEnd) {
+					m_nSynthPos = i + 1;
+					cout << "out buffer full " << *p_nBytesRead << " - samples : " << nSamples << " pos " << m_nSynthPos << endl;
+					return nSamples;
+				}
+			}
+
+			cout << "no samples left " << nSamples << " of " << m_Synth.pcm.length << " - pos " << m_nSynthPos << endl;
+			cout << "out buffer: " << *p_nBytesRead << " of " << p_nBufferSize << endl;
+			m_nSynthPos = -1;
+			return nSamples;
+		}
+			
+
+		if(m_Stream.buffer==NULL || m_Stream.error==MAD_ERROR_BUFLEN)	{
+			size_t			ReadSize,	Remaining;
+			unsigned char	*ReadStart;
+
+			// frames left
+			if(m_Stream.next_frame!=NULL) {
+				cout << "frames left" << endl;
+				fflush(stdout);
+				Remaining = m_Stream.bufend - m_Stream.next_frame;
+				memmove(m_InputBuffer, m_Stream.next_frame, Remaining);
+				ReadStart = m_InputBuffer + Remaining;
+				ReadSize  = INPUT_BUFFER_SIZE - Remaining;
+			}
+			else {
+				cout << "buffer is empty" << endl;
+				fflush(stdout);
+				ReadSize  = INPUT_BUFFER_SIZE;
+				ReadStart = m_InputBuffer;
+				Remaining = 0;
+			}
+				
+			// fill buffer
+			cout << "read " << ReadSize << " bytes - remaining: " << Remaining  << endl;
+			fflush(stdout);
+			ReadSize = fread(ReadStart, 1, ReadSize, m_pFile);
+				
+			if(ReadSize<=0) {
+				return -1;
+			}
+
+			// eof
+			if(m_nFileSize == ftell(m_pFile)) {
+				cout << "eof" << endl;
+				fflush(stdout);
+				m_GuardPtr = ReadStart + ReadSize;
+				memset(m_GuardPtr, 0, MAD_BUFFER_GUARD);
+				ReadSize += MAD_BUFFER_GUARD;
+			}
+
+			// fill mad buffer
+			mad_stream_buffer(&m_Stream, m_InputBuffer, ReadSize + Remaining);
+			m_Stream.error = (mad_error)0;
+
+		} // read file and fill buffer 
+
+		// decode
+		/*cout << "decode ";
+		fflush(stdout);*/
+		int nDec = mad_frame_decode(&m_Frame, &m_Stream);
+		/*cout << nDec << endl;
+		fflush(stdout);*/
+		if(nDec > 0) {
+				
+			if(MAD_RECOVERABLE(m_Stream.error))	{
+				cout << "recover" << endl;
+				fflush(stdout);
+				continue;
+			}
+			else {
+				if(m_Stream.error == MAD_ERROR_BUFLEN) {
+					cout << "buflen" << endl;
+					fflush(stdout);
+					continue;
+				}
+				else {
+					cout << "fatal ::" << mad_stream_errorstr(&m_Stream) << endl;						
+					fflush(stdout);
+					return -1;
+				}
+			}
+				
+		}
+				
+		//cout << "synth frame" << endl;
+		//fflush(stdout);
+		mad_synth_frame(&m_Synth,&m_Frame);
+		m_nSynthPos = 0;
+	} // while true
+
 	return -1;	
 }
 
 unsigned int CMadDecoder::NumPcmSamples()
 {  
-  return m_nNumFrames;
+  return 0; //m_nNumFrames;
 }
 
 #endif // HAVE_MAD

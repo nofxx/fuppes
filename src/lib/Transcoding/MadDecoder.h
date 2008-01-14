@@ -82,7 +82,18 @@ class CMadDecoder: public CAudioDecoderBase
 		struct mad_frame		m_Frame;
 		struct mad_synth		m_Synth;
 		
+		#define INPUT_BUFFER_SIZE	(5*8192)
+		//#define INPUT_BUFFER_SIZE 3831977
+		unsigned char				m_InputBuffer[INPUT_BUFFER_SIZE+MAD_BUFFER_GUARD];
+		
 		unsigned int				m_nNumFrames;
+		
+		
+		char*								m_OutputPtr;
+		unsigned char* 			m_GuardPtr;
+		const char*					m_OutputBufferEnd;
+		int									m_nSynthPos;
+			
 		
     MadStreamInit_t			m_MadStreamInit;
 		MadFrameInit_t			m_MadFrameInit;
