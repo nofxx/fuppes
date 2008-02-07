@@ -464,8 +464,9 @@ void CTranscodingCacheObject::GetId3v1(char buffer[128])
           "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
           "qqqqqqqqqqqqqqqqqqo="; 
   
-    string sResult = Base64Decode(sFakeMp3Tail);
-    memcpy(buffer, sFakeMp3Tail.c_str(), 128);
+		//char szFake[128];
+    Base64Decode(sFakeMp3Tail, buffer, sizeof(buffer));
+    //memcpy(buffer, szFake, 128);
   #ifdef HAVE_LAME
   }
   else {

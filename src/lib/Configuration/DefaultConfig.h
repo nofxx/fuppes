@@ -715,7 +715,7 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
   //xmlCleanupParser(); 
   
   CXMLDocument* pDoc = new CXMLDocument();
-  pDoc->Load(p_sFileName);
+  pDoc->LoadFromFile(p_sFileName);
   pDoc->Save();
   delete pDoc;
   

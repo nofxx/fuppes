@@ -3,13 +3,14 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -253,17 +254,29 @@ CXMLDocument::~CXMLDocument()
   }
 }
 
-bool CXMLDocument::Load(std::string p_sFileName)
+bool CXMLDocument::LoadFromFile(std::string p_sFileName)
 {
   m_sFileName = p_sFileName;
   m_pDoc = xmlReadFile(p_sFileName.c_str(), "UTF-8", XML_PARSE_NOBLANKS);  
   return (m_pDoc != NULL);
 }
 
+bool CXMLDocument::LoadFromString(std::string p_sXML)
+{
+	m_sFileName = "";
+	m_pDoc = xmlReadMemory(p_sXML.c_str(), p_sXML.length(), "", NULL, 0);
+	return (m_pDoc != NULL);
+}
+
 bool CXMLDocument::Save()
 {
-  xmlSaveFormatFileEnc(m_sFileName.c_str(), m_pDoc, "UTF-8", 1);
-  return true;
+	if(m_sFileName.length() > 0) {
+		xmlSaveFormatFileEnc(m_sFileName.c_str(), m_pDoc, "UTF-8", 1);
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 
 CXMLNode* CXMLDocument::RootNode()

@@ -3,13 +3,14 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -23,7 +24,7 @@
  
 #include "PlaylistParser.h"
 #include "../Common/RegEx.h"
-#include "../Common/Common.h"
+#include "../Common/XMLParser.h"
 
 #include <fstream>
 #include <iostream>
@@ -85,6 +86,10 @@ bool CPlaylistParser::LoadPlaylist(std::string p_sFileName)
     //cout << "PLS" << endl;
     bResult = ParsePLS(sResult);
   }
+	else if(ToLower(ExtractFileExt(p_sFileName)).compare("rss") == 0) {
+		bResult = ParseRSS(sResult);
+	}
+		
   else {
     return false;
   }
@@ -186,6 +191,78 @@ bool CPlaylistParser::ParsePLS(std::string p_sContent)
 
 	}
 		
+}
+
+bool CPlaylistParser::ParseRSS(std::string p_sContent)
+{
+		
+	CXMLDocument* pDoc = new CXMLDocument();
+	if(!pDoc->LoadFromString(p_sContent)) {
+		delete pDoc;
+		return false;
+	}
+	
+	CXMLNode* pTmp;
+	pTmp = pDoc->RootNode()->FindNodeByName("channel");
+	if(!pTmp) {
+		delete pDoc;
+		return false;
+	}
+	
+	for(int i = 0; i < pTmp->ChildCount(); i++) {
+		if(pTmp->ChildNode(i)->Name().compare("item") != 0) {
+			continue;
+		}
+		
+		CXMLNode* pEnc = pTmp->ChildNode(i)->FindNodeByName("enclosure");
+		if(!pEnc) {
+			continue;
+		}
+		
+		PlaylistEntry_t* pEntry = new PlaylistEntry_t();	
+			
+		pEntry->sFileName = pEnc->Attribute("url");
+		pEntry->nSize = pEnc->AttributeAsUInt("length");
+		pEntry->sMimeType = pEnc->Attribute("type");
+		
+		pEntry->bIsLocalFile = false;
+			
+		if(pTmp->ChildNode(i)->FindNodeByName("title")) {
+			pEntry->sTitle = pTmp->ChildNode(i)->FindNodeByName("title")->Value();
+		}
+			
+		m_lEntries.push_back(pEntry);
+		
+	}
+		
+/*		<channel>
+	<title>Marillion Online Podcast</title>
+	<link>http://www.marillion.com</link>
+	<language>en</language>
+	<copyright>&#x2117; &amp; &#xA9; 2006 Marillion</copyright>
+	<pubDate>Wed, 13 Dec 2006 15:00:00 GMT</pubDate>
+	<itunes:subtitle>Find a Better Way of Life at marillion.com</itunes:subtitle>
+	<itunes:author>Marillion</itunes:author>
+	<itunes:summary>Official insider information for British rock band Marillion. Whether writing in the studio, recording new material, preparing for a live show, or on the road - get the scoop DIRECT from the band members themselves. Find a Better Way of Life at marillion.com</itunes:summary>
+	<description>Official insider information for British rock band Marillion. Whether writing in the studio, recording new material, preparing for a live show, or on the road - get the scoop DIRECT from the band members themselves. Find a Better Way of Life at marillion.com</description>
+				
+		
+		<item>
+		<title>Album Number 14 Begins</title>
+		<itunes:author>Marillion</itunes:author>
+		<itunes:subtitle>Recording is set to begin on the next studio album</itunes:subtitle>
+		<itunes:summary>26 May 2006. Marillion have been jamming song ideas since the beginning of 2006 and have now come up with a short-list of contenders for the next studio album. Coming to you direct from the live room at the Racket Club studio with Mark Kelly, Ian Mosley, Pete Trewavas, Mike Hunter, and the Racket Records Peanut Gallery.</itunes:summary>
+		<enclosure url="http://media.marillion.com/podcast/20060526.mp3" length="3361560" type="audio/mpeg" />
+		<guid>http://media.marillion.com/podcast/20060526.mp3</guid>
+		<pubDate>Fri, 26 May 2006 09:00:00 GMT</pubDate>
+		<itunes:duration>4:00</itunes:duration>
+		<itunes:explicit>yes</itunes:explicit>
+		<itunes:keywords>marillion, studio, new, album, recording, update, racket, hogarth, kelly, mosley, trewavas, rothery</itunes:keywords>
+	</item>	*/
+		
+	delete pDoc;
+		
+	return true;
 }
 
 std::string CPlaylistParser::FormatFileName(std::string p_sValue)

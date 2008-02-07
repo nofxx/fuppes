@@ -105,7 +105,7 @@ std::string MD5Sum(std::string p_sFileName);
 std::string ToLower(std::string p_sInput);
 std::string ToUpper(std::string p_sInput);
 bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPort);
-std::string Base64Decode(const std::string p_sInputString);
+int  Base64Decode(const std::string p_sInputString, char* p_szOutBuffer, int p_nBufSize);
 
 unsigned int HexToInt(std::string sHex);
 std::string SQLEscape(std::string p_sValue);

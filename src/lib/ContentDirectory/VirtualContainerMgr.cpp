@@ -56,7 +56,7 @@ CVirtualContainerMgr::CVirtualContainerMgr()
   }
   else {
     CXMLDocument* pDoc = new CXMLDocument();
-    if(pDoc->Load(CSharedConfig::Shared()->GetVFolderConfigFileName())) {
+    if(pDoc->LoadFromFile(CSharedConfig::Shared()->GetVFolderConfigFileName())) {
       if(pDoc->RootNode()->Attribute("version").compare(VFOLDER_CFG_VERSION) != 0) {
         CSharedLog::Log(L_NORM, __FILE__, __LINE__, "vfolder.cfg has wrong version");
         m_bVFolderCfgValid = false;
@@ -102,7 +102,7 @@ fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
   CSharedLog::Print("[VirtualContainer] create virtual container layout started at %s", sNowtime.c_str());
   
   CXMLDocument* pDoc = new CXMLDocument();
-  if(!pDoc->Load(CSharedConfig::Shared()->GetVFolderConfigFileName())) {    
+  if(!pDoc->LoadFromFile(CSharedConfig::Shared()->GetVFolderConfigFileName())) {    
     CSharedLog::Print("[VirtualContainer] error loading %s", CSharedConfig::Shared()->GetVFolderConfigFileName().c_str());
     delete pDoc;
     g_bIsRebuilding = false;

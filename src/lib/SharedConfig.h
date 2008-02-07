@@ -129,9 +129,9 @@ class CSharedConfig
   	
 		CConfigFile* ConfigFile() { return m_pConfigFile; }
 		
-    bool UseImageMagick() { return m_pConfigFile->UseImageMagick(); }
+    /*bool UseImageMagick() { return m_pConfigFile->UseImageMagick(); }
     bool UseTaglib()      { return m_pConfigFile->UseTaglib(); }
-    bool UseLibAvFormat() { return m_pConfigFile->UseLibAvFormat(); }
+    bool UseLibAvFormat() { return m_pConfigFile->UseLibAvFormat(); }*/
 
     std::string LameLibName() { return m_pConfigFile->LameLibName(); }
     std::string TwoLameLibName() { return m_pConfigFile->TwoLameLibName(); }

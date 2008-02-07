@@ -3,13 +3,14 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+*  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -481,7 +482,6 @@ void ParsePLSPlaylist(CSelectResult* pResult);
 
 
 unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::string p_sFileName);
-unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL);
 
 unsigned int GetObjectIDFromFileName(CContentDatabase* pDb, std::string p_sFileName);
 
@@ -854,28 +854,30 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
 	return nObjId;         
 }
 
-unsigned int InsertURL(unsigned int p_nParentId, std::string p_sURL)
+unsigned int InsertURL(std::string p_sURL,
+											 std::string p_sTitle = "",
+											 std::string p_sMimeType = "")
 {
-  /*stringstream sSql;
-  sSql << "insert into objects (TYPE, PARENT_ID, PATH, FILE_NAME, MD5, MIME_TYPE, DETAILS) values ";
-  //sSql << "(" << ITEM_VIDEO_ITEM_VIDEO_BROADCAST << ", ";
-  sSql << "(" << ITEM_AUDIO_ITEM_MUSIC_TRACK << ", ";
-  //sSql << "(" <<  << ", ";
-  
-  sSql << p_nParentId << ", ";
-  sSql << "'" << SQLEscape(p_sURL) << "', ";
-  sSql << "'" << p_sURL << "', ";
-  //sSql << "'" << MD5Sum(sTmp.str()) << "', ";
-  sSql << "'" << "todo" << "', ";
-  sSql << "'" << "audio/mpeg" << "', ";
-  sSql << "'" << "details - todo" << "');";
-  
-  #warning FIXME: mime type
-  
-  CContentDatabase* pDB = new CContentDatabase();          
-  unsigned int nRowId = pDB->Insert(sSql.str());
-  delete pDB;
-  return nRowId;*/
+	OBJECT_TYPE nObjectType = OBJECT_TYPE_UNKNOWN;
+	#warning FIXME: object type
+	nObjectType = ITEM_AUDIO_ITEM_AUDIO_BROADCAST;
+	
+	CContentDatabase* pDb = new CContentDatabase();          								 
+	unsigned int nObjId = pDb->GetObjId();
+
+  stringstream sSql;
+  sSql << 
+	"insert into objects (TYPE, OBJECT_ID, PATH, FILE_NAME, TITLE, MIME_TYPE) values " <<
+  "(" << nObjectType << ", " <<
+  nObjId << ", " <<
+  "'" << SQLEscape(p_sURL) << "', " <<
+  "'" << SQLEscape(p_sURL) << "', " <<
+  "'" << SQLEscape(p_sTitle) << "', " <<  
+  "'" << SQLEscape(p_sMimeType) << "');";
+
+  pDb->Insert(sSql.str());
+  delete pDb;
+  return nObjId;
 }
 
 void BuildPlaylists()
@@ -942,10 +944,12 @@ void ParsePlaylist(CSelectResult* pResult)
   if(!Parser.LoadPlaylist(pResult->GetValue("PATH"))) {
     return;
   }
-    
+
   unsigned int nPlaylistID = pResult->GetValueAsUInt("OBJECT_ID");
   unsigned int nObjectID   = 0;  
-   
+
+	cout << "playlist id: " << nPlaylistID << endl;
+		
   CContentDatabase* pDb = new CContentDatabase();
   
   while(!Parser.Eof()) {
@@ -954,14 +958,15 @@ void ParsePlaylist(CSelectResult* pResult)
       nObjectID = GetObjectIDFromFileName(pDb, Parser.Entry()->sFileName);
       
       if(nObjectID == 0) {        
-        nObjectID = InsertFile(pDb, nPlaylistID, Parser.Entry()->sFileName);        
+        nObjectID = InsertFile(pDb, nPlaylistID, Parser.Entry()->sFileName);
       }            
       else {
         MapPlaylistItem(nPlaylistID, nObjectID);
       }
     }
     else if(!Parser.Entry()->bIsLocalFile) {
-      nObjectID = InsertURL(nPlaylistID, Parser.Entry()->sFileName);
+      nObjectID = InsertURL(Parser.Entry()->sFileName, Parser.Entry()->sTitle, Parser.Entry()->sMimeType);
+			MapPlaylistItem(nPlaylistID, nObjectID);
     }    
     
     Parser.Next();
@@ -994,84 +999,6 @@ std::string ReadFile(std::string p_sFileName)
    
   return sResult;
 }
-
-void ParsePLSPlaylist(CSelectResult* pResult)
-{
-  std::string sContent = ReadFile(pResult->GetValue("PATH"));
-  RegEx rxNumber("NumberOfEntries=(\\d+)", PCRE_CASELESS);
-  if(!rxNumber.Search(sContent.c_str()))
-    return;
-  
-  CContentDatabase* pDb = new CContentDatabase();
-
-  //cout << "parse pls" << endl;
-  
-  int nEntryCount = atoi(rxNumber.Match(1));  
-  for(int i = 0; i < nEntryCount; i++)
-  {
-    stringstream sExpr;
-    sExpr << "File" << i + 1 << "=(.+)\\n";    
-    RegEx rxFile(sExpr.str().c_str(), PCRE_CASELESS);
-    if(!rxFile.Search(sContent.c_str()))
-      continue;
-    
-    string sFileName = rxFile.Match(1);
-    //cout << "FILE: " << rxFile.Match(1) << endl;
-    if(sFileName.length() == 0)
-      continue;
-    
-    //cout << sFileName << endl;
-        
-    // relative or absolute file name 
-    bool bIsLocalFile = true;
-    unsigned int nObjectID = 0;
-    unsigned int nPlaylistID = pResult->GetValueAsUInt("OBJECT_ID");
-    
-    if(sFileName.substr(0, 1).compare(upnpPathDelim) == 0)
-    {
-      //cout << "absolute" << endl;
-      bIsLocalFile = true;
-    }
-    else
-    {
-      //cout << "relative or url" << endl;
-      RegEx rxUrl("\\w+://", PCRE_CASELESS);
-      if(rxUrl.Search(sFileName.c_str()))
-      {
-        //cout << "URL" << endl;
-        bIsLocalFile = false;        
-        nObjectID = InsertURL(nPlaylistID, sFileName);        
-      }
-      else
-      {
-        bIsLocalFile = true;
-        //cout << "relative" << endl;
-        
-        sFileName = ExtractFilePath(pResult->GetValue("PATH")) + sFileName;
-        //cout << sFileName << endl;        
-      }
-    
-    }
-    
-    if(bIsLocalFile && FileExists(sFileName))
-    {
-      nObjectID = GetObjectIDFromFileName(pDb, sFileName);      
-      if(nObjectID == 0) {
-        //cout << "file does not exist in db" << endl;        
-        InsertFile(pDb, nPlaylistID, sFileName);       
-      }         
-      else {
-        //cout << "file exists: " << nObjectID << endl;
-        MapPlaylistItem(nPlaylistID, nObjectID);
-      }
-    } /* if(bIsLocalFile && FileExists(sFileName)) */        
-
-    
-  } /* for(int i = 0; i < nEntryCount; i++) */
-  
-  delete pDb;
-}
-
 
 fuppesThreadCallback BuildLoop(void* arg)
 {  

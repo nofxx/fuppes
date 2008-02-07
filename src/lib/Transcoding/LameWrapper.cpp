@@ -304,8 +304,9 @@ void CLameWrapper::Init()
       "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"    
       "qqqqqqqqqqqqqqqqqqo=";
     
-    string sBinFake = Base64Decode(sFakeMp3Tail);      
-    memcpy(szMp3Tail, sBinFake.c_str(), 128);                 
+    //string sBinFake = Base64Decode(sFakeMp3Tail);      
+    //memcpy(szMp3Tail, sBinFake.c_str(), 128);                 
+		Base64Decode(sFakeMp3Tail, szMp3Tail, sizeof(szMp3Tail));
   }
   
   if(m_LameSetMode) {

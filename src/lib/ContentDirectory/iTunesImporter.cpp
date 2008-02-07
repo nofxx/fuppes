@@ -31,7 +31,7 @@ using namespace std;
 void CiTunesImporter::Import(std::string p_sFileName)
 {
   CXMLDocument* pDoc = new CXMLDocument();
-  if(!pDoc->Load(p_sFileName)) {
+  if(!pDoc->LoadFromFile(p_sFileName)) {
    cout << "error loading iTunes.xml" << endl; fflush(stdout);
    delete pDoc;
    return;  

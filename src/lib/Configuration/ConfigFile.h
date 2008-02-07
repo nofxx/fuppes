@@ -78,9 +78,9 @@ class CConfigFile
     // content_directory
     std::string LocalCharset() { return m_sLocalCharset; }
     void        LocalCharset(std::string p_sLocalCharset);
-    bool        UseImageMagick() { return m_bUseImageMagick; }
+    /*bool        UseImageMagick() { return m_bUseImageMagick; }
     bool        UseTaglib() { return m_bUseTaglib; }
-    bool        UseLibAvFormat() { return m_bUseLibAvFormat; }
+    bool        UseLibAvFormat() { return m_bUseLibAvFormat; }*/
   
     // transcoding  
     std::string  AudioEncoder() { return m_sAudioEncoder; }
@@ -122,9 +122,9 @@ class CConfigFile
   
     // content_directory
     std::string             m_sLocalCharset;
-    bool                    m_bUseImageMagick;
+    /*bool                    m_bUseImageMagick;
     bool                    m_bUseTaglib;
-    bool                    m_bUseLibAvFormat;
+    bool                    m_bUseLibAvFormat;*/
 
 		// global_settings
 		std::string							m_sTempDir;

@@ -39,9 +39,9 @@ CConfigFile::CConfigFile()
   m_nHttpPort  = 0;
 
   m_sLocalCharset   = "UTF-8";
-  m_bUseImageMagick = false;
+/*  m_bUseImageMagick = false;
   m_bUseTaglib      = false;
-  m_bUseLibAvFormat = false;
+  m_bUseLibAvFormat = false;*/
   
   m_bTranscodeFlac     = true;
   m_bTranscodeVorbis   = true;
@@ -57,7 +57,7 @@ CConfigFile::~CConfigFile()
 
 int CConfigFile::Load(std::string p_sFileName, std::string* p_psErrorMsg)
 {
-  if(!m_pDoc->Load(p_sFileName)) {    
+  if(!m_pDoc->LoadFromFile(p_sFileName)) {    
     *p_psErrorMsg = "parse error";
     return CF_PARSE_ERROR;
   }
@@ -88,7 +88,7 @@ int CConfigFile::Load(std::string p_sFileName, std::string* p_psErrorMsg)
       if(pTmpNode->ChildNode(i)->Name().compare("local_charset") == 0) {
         m_sLocalCharset = pTmpNode->ChildNode(i)->Value();
       }
-      else if(pTmpNode->ChildNode(i)->Name().compare("use_imagemagick") == 0) {
+     /* else if(pTmpNode->ChildNode(i)->Name().compare("use_imagemagick") == 0) {
         m_bUseImageMagick = (pTmpNode->ChildNode(i)->Value().compare("true") == 0);
       }
       else if(pTmpNode->ChildNode(i)->Name().compare("use_taglib") == 0) {
@@ -96,7 +96,7 @@ int CConfigFile::Load(std::string p_sFileName, std::string* p_psErrorMsg)
       }      
       else if(pTmpNode->ChildNode(i)->Name().compare("use_libavformat") == 0) {
         m_bUseLibAvFormat = (pTmpNode->ChildNode(i)->Value().compare("true") == 0);
-      }     
+      }*/     
     }
   }
   // end content_directory

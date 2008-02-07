@@ -3,13 +3,14 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <fuppes@ulrich-voelkel.de>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -603,7 +604,8 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter,
         BuildAudioItemDescription(pWriter, pSQLResult, pUPnPBrowse, szObjId);
         break;
       case ITEM_AUDIO_ITEM_AUDIO_BROADCAST:
-        BuildAudioItemAudioBroadcastDescription(pWriter, pSQLResult, pUPnPBrowse, szObjId);
+			case ITEM_VIDEO_ITEM_VIDEO_BROADCAST:
+        BuildAudioVideoBroadcastItemDescription(pWriter, pSQLResult, pUPnPBrowse, szObjId);
         break;
       case ITEM_IMAGE_ITEM:
       case ITEM_IMAGE_ITEM_PHOTO:
@@ -613,9 +615,6 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter,
       case ITEM_VIDEO_ITEM_MOVIE:
         BuildVideoItemDescription(pWriter, pSQLResult, pUPnPBrowse, szObjId);
         break;
-      case ITEM_VIDEO_ITEM_VIDEO_BROADCAST:
-        BuildVideoItemVideoBroadcastDescription(pWriter, pSQLResult, pUPnPBrowse, szObjId);
-        break;      
       case CONTAINER_PLAYLIST_CONTAINER:
         BuildPlaylistItemDescription(pWriter, pSQLResult, pUPnPBrowse, szObjId);
         break;
@@ -677,6 +676,8 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
 	  xmlTextWriterEndElement(pWriter);
   }
 	
+	//<upnp:albumArtURI xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" dlna:profileID="JPEG_TN">http://192.168.0.5:9386/MediaServer/ConnectionManager/AlbumArt?397</upnp:albumArtURI>
+																											
   // res
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
   
@@ -735,29 +736,7 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterEndElement(pWriter);  
 }
 
-void CContentDirectory::BuildAudioItemAudioBroadcastDescription(xmlTextWriterPtr pWriter,
-                                                  CSelectResult* pSQLResult,
-                                                  CUPnPBrowseSearchBase*  pUPnPBrowse,
-                                                  std::string p_sObjectID)
-{
-  // title
-	xmlTextWriterStartElement(pWriter, BAD_CAST "dc:title");
-    // trim filename
-    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength, true);    
-    sFileName = TruncateFileExt(sFileName);
-    xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
-	xmlTextWriterEndElement(pWriter);
 
-  // class
-  xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:class");
-  xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.audioItem.audioBroadcast");
-  xmlTextWriterEndElement(pWriter);      
-  
-  // res
-  xmlTextWriterStartElement(pWriter, BAD_CAST "res");  
-  xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("PATH").c_str());
-  xmlTextWriterEndElement(pWriter);   
-}
 
 void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
                                                   CSelectResult* pSQLResult,
@@ -904,12 +883,31 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterEndElement(pWriter);  
 }
 
-void CContentDirectory::BuildVideoItemVideoBroadcastDescription(xmlTextWriterPtr pWriter,
+void CContentDirectory::BuildAudioVideoBroadcastItemDescription(xmlTextWriterPtr pWriter,
                                                   CSelectResult* pSQLResult,
                                                   CUPnPBrowseSearchBase*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 { 
-  // title
+/* // title
+	xmlTextWriterStartElement(pWriter, BAD_CAST "dc:title");
+    // trim filename
+    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength, true);    
+    sFileName = TruncateFileExt(sFileName);
+    xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
+	xmlTextWriterEndElement(pWriter);
+
+  // class
+  xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:class");
+  xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.audioItem.audioBroadcast");
+  xmlTextWriterEndElement(pWriter);      
+  
+  // res
+  xmlTextWriterStartElement(pWriter, BAD_CAST "res");  
+  xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("PATH").c_str());
+  xmlTextWriterEndElement(pWriter);   */
+																											
+																											
+																											// title
 	xmlTextWriterStartElement(pWriter, BAD_CAST "dc:title");
     // trim filename
     string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength, true);    

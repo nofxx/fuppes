@@ -297,7 +297,7 @@ static const std::string base64_chars =
              "abcdefghijklmnopqrstuvwxyz"
              "0123456789+/";
 
-std::string Base64Decode(const std::string p_sInputString)
+int Base64Decode(const std::string p_sInputString, char* p_szOutBuffer, int nBufSize)
 {
   int nSize = p_sInputString.size();
   int i     = 0;
@@ -305,8 +305,10 @@ std::string Base64Decode(const std::string p_sInputString)
   int in_   = 0;
   unsigned char char_array_4[4];
   unsigned char char_array_3[3];
-  std::string   sResult;
+  //std::string   sResult;
 
+	int nBufCnt = 0;
+		
   while(nSize-- &&  (p_sInputString[in_] != '=') && 
         (IsBase64(p_sInputString[in_]) ||
         (p_sInputString[in_] == '\n')  ||
@@ -333,8 +335,13 @@ std::string Base64Decode(const std::string p_sInputString)
       char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
       char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
 
-      for (i = 0; (i < 3); i++)
-        sResult += char_array_3[i];
+      for (i = 0; (i < 3); i++) {
+        //sResult += char_array_3[i];
+				p_szOutBuffer[nBufCnt] = char_array_3[i];
+				nBufCnt++;
+				if(nBufCnt == nBufSize)
+				  return nBufSize;
+			}
 
       i = 0;
     }
@@ -352,11 +359,16 @@ std::string Base64Decode(const std::string p_sInputString)
     char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
     char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
 
-    for (j = 0; (j < i - 1); j++)
-      sResult += char_array_3[j];
+    for (j = 0; (j < i - 1); j++) {
+      //sResult += char_array_3[j];
+			p_szOutBuffer[nBufCnt] = char_array_3[j];
+			nBufCnt++;
+			if(nBufCnt == nBufSize)
+			  return nBufSize;
+		}
   }
 
-  return sResult.c_str();
+  return nBufCnt;
 }
 /* end BASE64 decoding */
 

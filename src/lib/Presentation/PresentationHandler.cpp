@@ -137,28 +137,38 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
   
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/fuppes-small.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
-    string sImg = Base64Decode(fuppes_small_png);    
-    pResult->SetBinContent((char*)sImg.c_str(), sImg.length());
+			
+		char szImg[4096];
+		int nLen = Base64Decode(fuppes_small_png, szImg, sizeof(szImg));
+		pResult->SetBinContent(szImg, nLen);
   }  
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/header-gradient.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
-    string sImg = Base64Decode(header_gradient_png);    
-    pResult->SetBinContent((char*)sImg.c_str(), sImg.length());
+		
+		char szImg[4096];
+		int nLen = Base64Decode(header_gradient_png, szImg, sizeof(szImg));
+		pResult->SetBinContent(szImg, nLen);
   }  
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/header-gradient-small.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
-    string sImg = Base64Decode(header_gradient_small_png);    
-    pResult->SetBinContent((char*)sImg.c_str(), sImg.length());
+		
+		char szImg[4096];
+		int nLen = Base64Decode(header_gradient_small_png, szImg, sizeof(szImg));
+		pResult->SetBinContent(szImg, nLen);
   }  
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/device-type-unknown.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
-    string sImg = Base64Decode(device_type_unknown_png);
-    pResult->SetBinContent((char*)sImg.c_str(), sImg.length());
+		
+		char szImg[4096];
+		int nLen = Base64Decode(device_type_unknown_png, szImg, sizeof(szImg));
+		pResult->SetBinContent(szImg, nLen);
   }  
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/device-type-media-server.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
-    string sImg = Base64Decode(device_type_media_server_png);
-    pResult->SetBinContent((char*)sImg.c_str(), sImg.length());
+		
+		char szImg[4096];
+		int nLen = Base64Decode(device_type_media_server_png, szImg, sizeof(szImg));
+		pResult->SetBinContent(szImg, nLen);
   }  
   
   if(nPresentationPage == PRESENTATION_BINARY_IMAGE)

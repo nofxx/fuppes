@@ -459,7 +459,7 @@ bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoIt
   // filesize  
 	pVideoItem->nSize = pFormatCtx->file_size;	
   
-	char* codec_name;
+	string codec_name;
 	char buf1[32];
 	
 	for(int i = 0; i < pFormatCtx->nb_streams; i++) 
