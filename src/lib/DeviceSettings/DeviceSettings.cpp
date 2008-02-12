@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007 - 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -363,10 +363,11 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
   m_sDeviceName = p_sDeviceName;
   m_sVirtualFolderDevice = "default";
 
-  m_bShowPlaylistAsContainer = false;
-	m_bXBox360Support					 = false;
-	m_bDLNAEnabled             = false; 
-  m_bEnableDeviceIcon        = false;
+  m_bShowPlaylistAsContainer	= false;
+	m_bXBox360Support						= false;
+	m_bDLNAEnabled            	= false; 
+  m_bEnableDeviceIcon       	= false;
+	m_bShowEmptyResolution			= false;
 
   m_DisplaySettings.bShowChildCountInTitle = false;
   m_DisplaySettings.nMaxFileNameLength     = 0;
@@ -399,11 +400,7 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSe
   m_bXBox360Support          = pSettings->m_bXBox360Support;
   m_bDLNAEnabled             = pSettings->m_bDLNAEnabled;
   m_bEnableDeviceIcon        = pSettings->m_bEnableDeviceIcon;
-  
-  /*m_ImageSettings.bResize    = pSettings->m_ImageSettings.bResize;
-  m_ImageSettings.bResizeIfLarger = pSettings->m_ImageSettings.bResizeIfLarger;
-  m_ImageSettings.nWidth  = pSettings->m_ImageSettings.nWidth;
-  m_ImageSettings.nHeight = pSettings->m_ImageSettings.nWidth;*/
+	m_bShowEmptyResolution		 = pSettings->m_bShowEmptyResolution;
   
   m_DisplaySettings.bShowChildCountInTitle = pSettings->m_DisplaySettings.bShowChildCountInTitle;
   m_DisplaySettings.nMaxFileNameLength     = pSettings->m_DisplaySettings.nMaxFileNameLength; 

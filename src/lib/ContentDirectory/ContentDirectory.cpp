@@ -788,12 +788,16 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
 																											
   // resolution
-	if(pUPnPBrowse->IncludeProperty("res@resolution") &&
-     (pSQLResult->GetValue("IV_WIDTH").compare("NULL") != 0) && 
-     (pSQLResult->GetValue("IV_HEIGHT").compare("NULL") != 0)) {
-	#warning todo rescaling
-    sTmp = pSQLResult->GetValue("IV_WIDTH") + "x" + pSQLResult->GetValue("IV_HEIGHT");
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.c_str());
+	if(pUPnPBrowse->IncludeProperty("res@resolution")) {
+    #warning todo rescaling
+			
+		if(!pSQLResult->IsNull("IV_WIDTH") && !pSQLResult->IsNull("IV_HEIGHT")) {
+			sTmp = pSQLResult->GetValue("IV_WIDTH") + "x" + pSQLResult->GetValue("IV_HEIGHT");
+			xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.c_str());
+		}
+		else if(pUPnPBrowse->DeviceSettings()->ShowEmptyResolution()) {
+			xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST "0x0");
+		}
 	}
   
   sTmp = "http://" + m_sHTTPServerURL + "/MediaServer/ImageItems/" + p_sObjectID + "." + sExt;
@@ -849,9 +853,14 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   }
       
 	// resolution 
-	if(pUPnPBrowse->IncludeProperty("res@resolution") && !pSQLResult->IsNull("IV_WIDTH") && !pSQLResult->IsNull("IV_HEIGHT")) {
-    sTmp = pSQLResult->GetValue("IV_WIDTH") + "x" + pSQLResult->GetValue("IV_HEIGHT");
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.c_str());
+	if(pUPnPBrowse->IncludeProperty("res@resolution") && !pSQLResult->IsNull("IV_WIDTH") && !pSQLResult->IsNull("IV_HEIGHT")) {	
+		if(!pSQLResult->IsNull("IV_WIDTH") && !pSQLResult->IsNull("IV_HEIGHT")) {
+			sTmp = pSQLResult->GetValue("IV_WIDTH") + "x" + pSQLResult->GetValue("IV_HEIGHT");
+			xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.c_str());
+		}
+		else if(pUPnPBrowse->DeviceSettings()->ShowEmptyResolution()) {
+			xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST "0x0");
+		}
 	}
 
 	// bitrate

@@ -378,30 +378,7 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
 	pImageItem->nHeight = MagickGetImageHeight(magick_wand);
 	
 	magick_wand = DestroyMagickWand(magick_wand);
-	return true;
-	
-	/*Magick::Image image;	
-  try {		
-    image.read(p_sFileName);
-  }
-	catch(...) {  //Magick::Exception &ex) {
-		cout << __FILE__ << " " << __LINE__ << " :: ex" << endl << endl;
-    return false;
-	}*/
-	
-  /*catch(Magick::WarningCorruptImage &ex) {
-    cout << "WARNING: image \"" << p_sFileName << "\" corrupt" << endl;
-    cout << ex.what() << endl << endl;
-    return false;
-  }
-  catch(exception &ex) {
-    cout << __FILE__ << " " << __LINE__ << " :: " << ex.what() << endl << endl;
-    return false;
-  }*/
-  	
-  /*pImageItem->nWidth  = image.baseColumns();
-  pImageItem->nHeight = image.baseRows();*/
-	
+
 	return true;
 	#else
 	return false;

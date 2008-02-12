@@ -3,13 +3,14 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -584,10 +585,10 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
       // end device (default)
       xmlTextWriterEndElement(pWriter);
   
-  
-      xmlTextWriterWriteComment(pWriter, BAD_CAST "If you have more than one device it is a good idea to set the ip address manually as some devices may have conflicting \"user agents\".");
+			xmlTextWriterWriteComment(pWriter, BAD_CAST "For other device settings take a look at http://fuppes.ulrich-voelkel.de/wiki/index.php/Category:Device");
+      xmlTextWriterWriteComment(pWriter, BAD_CAST "If you have more than one device it is a good idea to set the ip address as some devices may have conflicting \"user agents\".");
 			xmlTextWriterWriteComment(pWriter, BAD_CAST "It is safe to remove unneeded devices");
-		
+
       // device (PS3)
       xmlTextWriterStartElement(pWriter, BAD_CAST "device");
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "name", BAD_CAST "PS3");
@@ -635,6 +636,7 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
       // end device (PS3)
       xmlTextWriterEndElement(pWriter);      
   
+
       // device (Xbox 360)
       xmlTextWriterStartElement(pWriter, BAD_CAST "device");
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "name", BAD_CAST "Xbox 360");
@@ -653,13 +655,34 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
         xmlTextWriterStartElement(pWriter, BAD_CAST "xbox360");
         xmlTextWriterWriteString(pWriter, BAD_CAST "true");
         xmlTextWriterEndElement(pWriter);
-  
+		
+				// show_empty_resolution
+				xmlTextWriterStartElement(pWriter, BAD_CAST "show_empty_resolution");
+        xmlTextWriterWriteString(pWriter, BAD_CAST "true");
+        xmlTextWriterEndElement(pWriter);
+		
+				// description_values
+				xmlTextWriterStartElement(pWriter, BAD_CAST "description_values");
+					// friendly_name
+					xmlTextWriterStartElement(pWriter, BAD_CAST "friendly_name");
+					xmlTextWriterWriteString(pWriter, BAD_CAST "%s %v : 1 : Windows Media Connect");
+					xmlTextWriterEndElement(pWriter);
+					// model_name
+					xmlTextWriterStartElement(pWriter, BAD_CAST "model_name");
+					xmlTextWriterWriteString(pWriter, BAD_CAST "Windows Media Connect compatible (%s)");
+					xmlTextWriterEndElement(pWriter);
+					// model_number
+					xmlTextWriterStartElement(pWriter, BAD_CAST "model_number");
+					xmlTextWriterWriteString(pWriter, BAD_CAST "2.0");
+					xmlTextWriterEndElement(pWriter);
+        xmlTextWriterEndElement(pWriter);
+		
       // end device (Xbox 360)
       xmlTextWriterEndElement(pWriter);  
   
   
       // device (Noxon audio)
-      xmlTextWriterStartElement(pWriter, BAD_CAST "device");
+      /*xmlTextWriterStartElement(pWriter, BAD_CAST "device");
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "name", BAD_CAST "Noxon audio");
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "virtual", BAD_CAST "default");
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "false");
@@ -701,7 +724,7 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
         xmlTextWriterEndElement(pWriter);  
   
       // end device (Telegent TG 100)
-      xmlTextWriterEndElement(pWriter);  
+      xmlTextWriterEndElement(pWriter); */
   
   
     // end device_settings

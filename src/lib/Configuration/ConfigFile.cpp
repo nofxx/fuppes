@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007 - 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -39,13 +39,6 @@ CConfigFile::CConfigFile()
   m_nHttpPort  = 0;
 
   m_sLocalCharset   = "UTF-8";
-/*  m_bUseImageMagick = false;
-  m_bUseTaglib      = false;
-  m_bUseLibAvFormat = false;*/
-  
-  m_bTranscodeFlac     = true;
-  m_bTranscodeVorbis   = true;
-  m_bTranscodeMusePack = true;
 }
 
 CConfigFile::~CConfigFile()
@@ -106,7 +99,7 @@ int CConfigFile::Load(std::string p_sFileName, std::string* p_psErrorMsg)
   if(pTmpNode != NULL) {
     for(i = 0; i < pTmpNode->ChildCount(); i++) {    
       
-      if(pTmpNode->ChildNode(i)->Name().compare("audio_encoder") == 0) {
+      /*if(pTmpNode->ChildNode(i)->Name().compare("audio_encoder") == 0) {
         m_sAudioEncoder = pTmpNode->ChildNode(i)->Value();
       }
       else if(pTmpNode->ChildNode(i)->Name().compare("transcode_vorbis") == 0) {
@@ -118,8 +111,8 @@ int CConfigFile::Load(std::string p_sFileName, std::string* p_psErrorMsg)
       else if(pTmpNode->ChildNode(i)->Name().compare("transcode_flac") == 0) {
         m_bTranscodeFlac = (pTmpNode->ChildNode(i)->Value().compare("true") == 0);
       }
-	  
-      else if(pTmpNode->ChildNode(i)->Name().compare("lame_libname") == 0) {
+      else*/
+			if(pTmpNode->ChildNode(i)->Name().compare("lame_libname") == 0) {
         m_sLameLibName = pTmpNode->ChildNode(i)->Value();
       }
       else if(pTmpNode->ChildNode(i)->Name().compare("twolame_libname") == 0) {
@@ -319,12 +312,18 @@ void CConfigFile::SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode, bo
       else if(pTmp->Name().compare("enable_dlna") == 0) {
         pSettings->m_bDLNAEnabled = (pTmp->Value().compare("true") == 0);
       }
+			// transocding_release_delay
       else if(pTmp->Name().compare("transcoding_release_delay") == 0) {
         pSettings->nDefaultReleaseDelay = atoi(pTmp->Value().c_str());
       }
+			// show_device_icon
       else if(pTmp->Name().compare("show_device_icon") == 0) {
         pSettings->m_bEnableDeviceIcon = (pTmp->Value().compare("true") == 0);
       }
+			// show_empty_resolution
+			else if(pTmp->Name().compare("show_empty_resolution") == 0) {
+				pSettings->m_bShowEmptyResolution = (pTmp->Value().compare("true") == 0);
+			}
 			// file_settings
       else if(pTmp->Name().compare("file_settings") == 0) {
         

@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007 - 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -78,15 +78,12 @@ class CConfigFile
     // content_directory
     std::string LocalCharset() { return m_sLocalCharset; }
     void        LocalCharset(std::string p_sLocalCharset);
-    /*bool        UseImageMagick() { return m_bUseImageMagick; }
-    bool        UseTaglib() { return m_bUseTaglib; }
-    bool        UseLibAvFormat() { return m_bUseLibAvFormat; }*/
   
     // transcoding  
-    std::string  AudioEncoder() { return m_sAudioEncoder; }
+    /*std::string  AudioEncoder() { return m_sAudioEncoder; }
     bool         TranscodeVorbis() { return m_bTranscodeVorbis; }
     bool         TranscodeMusePack() { return m_bTranscodeMusePack; }
-    bool         TranscodeFlac() { return m_bTranscodeFlac; }
+    bool         TranscodeFlac() { return m_bTranscodeFlac; }*/
   
     std::string	 LameLibName() { return m_sLameLibName; }
     std::string  TwoLameLibName() { return m_sTwoLameLibName; }
@@ -122,18 +119,15 @@ class CConfigFile
   
     // content_directory
     std::string             m_sLocalCharset;
-    /*bool                    m_bUseImageMagick;
-    bool                    m_bUseTaglib;
-    bool                    m_bUseLibAvFormat;*/
 
 		// global_settings
 		std::string							m_sTempDir;
 		
     // transcoding
-    std::string             m_sAudioEncoder;
+    /*std::string             m_sAudioEncoder;
     bool                    m_bTranscodeVorbis;
     bool                    m_bTranscodeMusePack;
-    bool                    m_bTranscodeFlac;  
+    bool                    m_bTranscodeFlac;  */
 	
     std::string				m_sLameLibName;
     std::string				m_sTwoLameLibName;

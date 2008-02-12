@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007 - 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -299,11 +299,12 @@ class CDeviceSettings
     
 		CMediaServerSettings* MediaServerSettings() { return &m_MediaServerSettings; }
 		
-    bool         EnableDeviceIcon() { return m_bEnableDeviceIcon; }  
-    bool         Xbox360Support() { return m_bXBox360Support; }    
-		bool         ShowPlaylistAsContainer() { return m_bShowPlaylistAsContainer; }		
-    bool         DLNAEnabled() { return m_bDLNAEnabled; }
-    
+    bool        EnableDeviceIcon() { return m_bEnableDeviceIcon; }  
+    bool        Xbox360Support() { return m_bXBox360Support; }    
+		bool        ShowPlaylistAsContainer() { return m_bShowPlaylistAsContainer; }		
+    bool        DLNAEnabled() { return m_bDLNAEnabled; }
+    bool				ShowEmptyResolution() { return m_bShowEmptyResolution; }
+		
     std::string  VirtualFolderDevice() { return m_sVirtualFolderDevice; }
   
   private:
@@ -317,7 +318,8 @@ class CDeviceSettings
 		bool m_bXBox360Support;
     bool m_bDLNAEnabled;  
     bool m_bEnableDeviceIcon;
-    
+		bool m_bShowEmptyResolution;
+		
     std::map<std::string, CFileSettings*> m_FileSettings;
     std::map<std::string, CFileSettings*>::iterator m_FileSettingsIterator;
   
