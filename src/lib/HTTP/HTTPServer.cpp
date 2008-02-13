@@ -3,13 +3,14 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -81,7 +82,7 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
   // create socket
 	m_Socket = socket(AF_INET, SOCK_STREAM, 0);
   if(m_Socket == -1)
-	  throw EException("failed to create socket", __FILE__, __LINE__);
+	  throw EException(__FILE__, __LINE__, "failed to create socket");
   
 	#ifdef FUPPES_TARGET_MAC_OSX
 	/* OS X does not support pthread_cancel
@@ -111,7 +112,7 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
   nRet = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
   #endif
   if(nRet == -1) {
-    throw EException("failed to setsockopt: SO_REUSEADDR", __FILE__, __LINE__);
+    throw EException(__FILE__, __LINE__, "failed to setsockopt: SO_REUSEADDR");
   }
 
   // set local end point
@@ -148,7 +149,7 @@ void CHTTPServer::Start()
   // listen on socket
   int nRet = listen(m_Socket, 0);
   if(nRet == -1) {
-    throw EException("failed to listen on socket", __FILE__, __LINE__);
+    throw EException(__FILE__, __LINE__, "failed to listen on socket");
   }
 
   // start accept thread
@@ -513,7 +514,7 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
     RegEx rxContentLength("CONTENT-LENGTH: *(\\d+)", PCRE_CASELESS);
     if(rxContentLength.Search(sHeader.c_str())) {
       string sContentLength = rxContentLength.Match(1);    
-      nContentLength = std::atoi(sContentLength.c_str());
+      nContentLength = ::atoi(sContentLength.c_str());
     }
 
     // check if we received the full content
@@ -713,8 +714,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
       nErr = fuppesSocketSend(p_Session->GetConnection(), szChunk, nRet);    
 
       if(p_Response->GetTransferEncoding() == HTTP_TRANSFER_ENCODING_CHUNKED) {
-        char* szCRLF = "\r\n";
-        fuppesSocketSend(p_Session->GetConnection(), szCRLF, strlen(szCRLF));
+        string szCRLF = "\r\n";
+        fuppesSocketSend(p_Session->GetConnection(), szCRLF.c_str(), strlen(szCRLF.c_str()));
       }
       
     }        
@@ -767,8 +768,8 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
   
   // send last chunk
   if((nErr > 0) && (p_Response->GetTransferEncoding() == HTTP_TRANSFER_ENCODING_CHUNKED)) {
-    char* szCRLF = "0\r\n\r\n";
-    fuppesSocketSend(p_Session->GetConnection(), szCRLF, strlen(szCRLF));    
+    string szCRLF = "0\r\n\r\n";
+    fuppesSocketSend(p_Session->GetConnection(), szCRLF.c_str(), strlen(szCRLF.c_str()));    
   }
   
   

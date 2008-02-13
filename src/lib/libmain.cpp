@@ -3,13 +3,14 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -41,6 +42,9 @@
 #include "../config.h"
 #endif
 
+#include "Common/Process.h"
+#include "Common/RegEx.h"
+
 #ifdef HAVE_IMAGEMAGICK
 //#include <Magick++.h>
 #include <wand/magick-wand.h>
@@ -54,13 +58,30 @@ extern "C"
 }
 #endif
 
+#include <string>
+
 using namespace std;
 
 CFuppes* pFuppes = 0;
 
+void printHelp()
+{
+	CSharedLog::Print("            FUPPES - %s", CSharedConfig::Shared()->GetAppVersion().c_str());
+  CSharedLog::Print("    the Free UPnP Entertainment Service");
+  CSharedLog::Print("      http://fuppes.ulrich-voelkel.de\n\n");
+	
+	CSharedLog::Print(" --temp-dir <dir> set temp directory (default: /tmp/fuppes)");
+	CSharedLog::Print(" --config-file <filename> use alternate config file (default ~/.fuppes/fuppes.cfg)");
+	CSharedLog::Print(" --database-file <filename> use alternate database file (default ~/.fuppes/fuppes.db)");
+	CSharedLog::Print(" --vfolder-config-file <filename> use alternate vfolder config file (default ~/.fuppes/vfolder.cfg)");
+	CSharedLog::Print(" --friendly-name <name> set friendly name");
+	CSharedLog::Print(" --log-level [0-3] set log level (0-none, 1-normal, 2-extended, 3-debug)");
+	CSharedLog::Print(" --log-file <filename> set log file (default: none)");
+}
+
 int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
 {
-  // already initialized
+	// already initialized
   if(pFuppes)
     return FUPPES_FALSE;    
   
@@ -86,7 +107,12 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   #warning todo: check params
   
   for(int i = 0; i < argc; i++) {
-    if((strcmp(argv[i], "--config-dir") == 0) && (argc > i + 1)) {
+		
+		if(strcmp(argv[i], "--help") == 0) { 
+			printHelp();
+			return FUPPES_FALSE; 
+		}		
+    else if((strcmp(argv[i], "--config-dir") == 0) && (argc > i + 1)) {
       sConfigDir = argv[i + 1];
       if((sConfigDir.length() > 1) && (sConfigDir.substr(sConfigDir.length() - 1).compare(upnpPathDelim) != 0)) {
         sConfigDir += upnpPathDelim;
@@ -146,6 +172,8 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   av_register_all();
   #endif
 
+	CProcessMgr::init();
+	
   return FUPPES_TRUE;
 }
 

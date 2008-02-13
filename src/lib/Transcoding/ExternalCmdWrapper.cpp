@@ -38,23 +38,27 @@
 
 using namespace std;
 
+CExternalCmdWrapper::CExternalCmdWrapper()
+{
+	m_process = new CProcess();
+}
+
+CExternalCmdWrapper::~CExternalCmdWrapper()
+{
+	delete m_process;
+}
+
 bool CExternalCmdWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile)
 {    
   string sTmpFileName = CSharedConfig::Shared()->CreateTempFileName() + "." + pFileSettings->Extension();
 	*p_psOutFile = sTmpFileName;
 		
 	string sCmd = pFileSettings->pTranscodingSettings->ExternalCmd();
-	sCmd = StringReplace(sCmd, "%in%", p_sInFile);
-	sCmd = StringReplace(sCmd, "%out%", *p_psOutFile);
-		
-	#ifdef WIN32
-  #warning todo: exec
-  #else	
-  //sDcraw << "dcraw " << pFileSettings->pImageSettings->sDcrawParams << " -T -c " << p_sInFile << " > " << sTmpFileName;
-  system(sCmd.c_str());
-  #endif
-
-  return true;
+	
+	m_process->setInFile(p_sInFile);
+	m_process->setOutFile(*p_psOutFile);
+	
+	return m_process->start(sCmd);
 }
 
 #endif // DISABLE_TRANSCODING

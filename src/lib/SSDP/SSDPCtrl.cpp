@@ -3,13 +3,14 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+  *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -37,7 +38,8 @@ CSSDPCtrl::CSSDPCtrl(std::string p_sIPAddress, std::string p_sHTTPServerURL)
 
   m_sIPAddress   = p_sIPAddress;
 	msearch_thread = (fuppesThread)NULL;
-  
+  m_isStarted = false;
+	
   fuppesThreadInitMutex(&m_SessionReceiveMutex);
   fuppesThreadInitMutex(&m_SessionTimedOutMutex);
 }
@@ -56,6 +58,7 @@ void CSSDPCtrl::Start()
     m_Listener.SetupSocket(true, m_sIPAddress);
     m_Listener.SetTTL(4);
 	  m_Listener.SetReceiveHandler(this);
+		m_Listener.SetStartedHander(this);
 	  m_Listener.BeginReceive();	
   }
   catch(...) {
@@ -199,6 +202,11 @@ void CSSDPCtrl::send_byebye()
 	Sock.SendMulticast(m_pNotifyMsgFactory->notify_bye_bye(MESSAGE_TYPE_USN));
 	
 	Sock.TeardownSocket();
+}
+
+void CSSDPCtrl::OnUDPSocketStarted()
+{
+	m_isStarted = true;
 }
 
 void CSSDPCtrl::SetReceiveHandler(ISSDPCtrl* pHandler)

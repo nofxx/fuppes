@@ -28,6 +28,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <string.h>
 
 using namespace std;
 
@@ -42,6 +43,7 @@ CUDPSocket::CUDPSocket()
   m_LocalEndpoint.sin_port = 0;
 	m_ReceiveThread          = (fuppesThread)NULL;
   m_pReceiveHandler        = NULL;
+	m_pStartedHandler				 = NULL;
 }	
 	
 CUDPSocket::~CUDPSocket()
@@ -203,19 +205,19 @@ void CUDPSocket::EndReceive()
   }
 }
 
-/* SetReceiveHandler */
-void CUDPSocket::SetReceiveHandler(IUDPSocket* pHandler)
-{
-  /* Save pointer to the receive handler */
-  m_pReceiveHandler = pHandler;
-}
 
 /* CallOnReceive */
 void CUDPSocket::CallOnReceive(CSSDPMessage* pSSDPMessage)
 { 
-  /* Call receive handler */  
-  if(NULL != m_pReceiveHandler)
+  if(m_pReceiveHandler != NULL)
 	  m_pReceiveHandler->OnUDPSocketReceive(pSSDPMessage);
+}
+
+void CUDPSocket::CallOnStarted()
+{
+	if(m_pReceiveHandler != NULL) {
+		m_pReceiveHandler->OnUDPSocketStarted();
+	}
 }
 
 /* GetSocketFd */
@@ -271,6 +273,8 @@ fuppesThreadCallback UDPReceiveLoop(void *arg)
 	sockaddr_in remote_ep;	
 	socklen_t   size = sizeof(remote_ep);  
   
+	udp_sock->CallOnStarted();
+	
   while(!udp_sock->m_bBreakReceive)
   {
     bytes_received = recvfrom(udp_sock->GetSocketFd(), buffer, sizeof(buffer), 0, (struct sockaddr*)&remote_ep, &size);

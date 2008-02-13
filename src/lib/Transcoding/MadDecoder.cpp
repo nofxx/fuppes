@@ -29,6 +29,8 @@
 
 #include "../SharedConfig.h"
 #include "../Common/Common.h"
+#include <string.h>
+#include <limits.h>
 
 using namespace std;
 

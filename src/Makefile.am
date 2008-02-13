@@ -37,10 +37,6 @@ fuppesd_LDFLAGS = \
 endif
 
 libfuppes_la_SOURCES = \
-  lib/Common/Common.h\
-  lib/Common/md5.h\
-  lib/Common/UUID.h\
-  lib/Common/Timer.h\
   lib/MessageBase.h\
   lib/SSDP/UDPSocket.h\
   lib/SSDP/SSDPCtrl.h\
@@ -89,11 +85,17 @@ libfuppes_la_SOURCES = \
 	lib/Fuppes.h\
 	lib/Common/RegEx.h\
   lib/Common/Common.cpp\
+	lib/Common/Common.h\
   lib/Common/md5.c\
+	lib/Common/md5.h\
   lib/Common/UUID.cpp\
+	lib/Common/UUID.h\
   lib/Common/Timer.cpp\
+	lib/Common/Timer.h\
   lib/Common/XMLParser.cpp\
 	lib/Common/XMLParser.h\
+	lib/Common/Process.cpp\
+	lib/Common/Process.h\
   lib/MessageBase.cpp\
   lib/SSDP/UDPSocket.cpp\
 	lib/SSDP/SSDPCtrl.cpp\

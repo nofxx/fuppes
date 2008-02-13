@@ -3,13 +3,14 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -60,7 +61,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
   }
   if(bIsNewDB) {
     CContentDatabase::Shared()->RebuildDB();
-  }  
+  }
   
   /* init HTTP-server */
   try {
@@ -81,6 +82,10 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
   catch(EException ex) {    
     throw;
   }
+	
+	while(!m_pSSDPCtrl->isStarted()) {
+		fuppesSleep(10);
+	}
 
   /* init SubscriptionMgr */
   try {
@@ -120,18 +125,23 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
 	  throw;
 	}
   
+	// wait for ssdp listener
+	while(!m_pSSDPCtrl->isStarted()) {
+		fuppesSleep(10);
+	}
+	
   CSharedLog::Log(L_EXT, __FILE__, __LINE__, "UPnP subsystem started");
 
   // init virtual containers
 	CVirtualContainerMgr::Shared();
-  
-  /* if everything is up and running, multicast alive messages
-     and search for other devices */       
+	
+	/* if everything is up and running, multicast alive messages
+  and search for other devices */       
   CSharedLog::Log(L_EXT, __FILE__, __LINE__, "multicasting alive messages");
   m_pSSDPCtrl->send_alive();
   CSharedLog::Log(L_EXT, __FILE__, __LINE__, "multicasting m-search");
   m_pSSDPCtrl->send_msearch();
-  
+	
   /* start alive timer */
   m_pMediaServer->GetTimer()->SetInterval(840);  // 900 sec = 15 min
   m_pMediaServer->GetTimer()->Start();

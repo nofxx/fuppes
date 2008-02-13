@@ -3,13 +3,14 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006, 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net> 
+ *  Copyright (C) 2006-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net> 
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -36,6 +37,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <string.h>
 
 using namespace std;
 
@@ -139,7 +141,7 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
   }
   
   
-  CSharedLog::Shared()->Log(L_EXT, "Init " + pSessionInfo->m_sInFileName, __FILE__, __LINE__);  
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "Init %s", pSessionInfo->m_sInFileName.c_str());  
   m_pDeviceSettings = pDeviceSettings;
     
   
@@ -553,7 +555,7 @@ void CTranscodingCache::ReleaseCacheObject(CTranscodingCacheObject* pCacheObj)
 				"ref count: " << pCacheObj->m_nRefCount << endl <<
 				"delay: " << pCacheObj->ReleaseCountOrig();
 		
-	CSharedLog::Shared()->Log(L_EXT, sLog.str(), __FILE__, __LINE__);
+	CSharedLog::Log(L_EXT, __FILE__, __LINE__, sLog.str().c_str());
   pCacheObj->m_nRefCount--;
   
   #warning todo: pause transcoding if ref count == 0
@@ -587,7 +589,7 @@ fuppesThreadCallback ReleaseLoop(void* arg)
 				sLog << "delete object \"" << pCacheObj->m_sInFileName << "\"" << endl <<
 				"delay: " << pCacheObj->ReleaseCountOrig();
 		
-				CSharedLog::Shared()->Log(L_EXT, sLog.str(), __FILE__, __LINE__);						 
+				CSharedLog::Log(L_EXT, __FILE__, __LINE__, sLog.str().c_str());
 						 
         pCache->m_CachedObjects.erase(pCache->m_CachedObjectsIterator);
         delete pCacheObj;

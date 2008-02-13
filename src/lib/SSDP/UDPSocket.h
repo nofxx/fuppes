@@ -49,6 +49,7 @@ class IUDPSocket
   public:
     virtual ~IUDPSocket() {};
   
+		virtual void OnUDPSocketStarted() = 0;
     virtual void OnUDPSocketReceive(CSSDPMessage* pMessage) = 0;
 };
 
@@ -103,13 +104,19 @@ class CUDPSocket
     /** sets the receive handler
      *  @param  pISocket  the receiver handler
      */	
-    void SetReceiveHandler(IUDPSocket* pISocket);
+    void SetReceiveHandler(IUDPSocket* pISocket)
+			{ m_pReceiveHandler = pISocket; }
 
     /** lets the receiver handler handle a message
      *  @param  pMessage  the message to handle
      */	    
     void CallOnReceive(CSSDPMessage* pMessage);
 
+		void SetStartedHander(IUDPSocket* pISocket)
+			{ m_pStartedHandler = pISocket; }
+	
+		void CallOnStarted();
+	
     /** returns the socket's descriptor
      *  @return the descriptor
      */
@@ -144,7 +151,7 @@ class CUDPSocket
     /* Message handling */
     fuppesThread  m_ReceiveThread;
     IUDPSocket*   m_pReceiveHandler;
-
+		IUDPSocket*   m_pStartedHandler;
 };
 
 #endif // _UDPSOCKET_H

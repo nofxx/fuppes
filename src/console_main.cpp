@@ -1,9 +1,9 @@
 /***************************************************************************
- *            main.cpp
+ *            console_main.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007 - 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -71,16 +71,6 @@ int fuppes_getch (void)
 	return -1;
 }
 #endif
-
-void PrintParams()
-{
-  cout << endl;
-  cout << "  --help" << endl;
-  cout << "  --loglevel [none|normal|extended|debug]" << endl;
-  cout << "  --config-dir /home/user/.fuppes/" << endl;  
-  //cout << "  --daemon" << endl;
-  cout << endl;
-}
 
 void PrintHelp()
 {
@@ -208,4 +198,6 @@ int main(int argc, char* argv[])
   fuppes_stop();
   fuppes_cleanup();
   cout << "[FUPPES] exit" << endl;
+		
+	return 0;
 }

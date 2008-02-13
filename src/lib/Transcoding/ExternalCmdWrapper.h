@@ -30,15 +30,21 @@
 #include "../../config.h"
 #endif
 
+#include "../Common/Process.h"
 #include "WrapperBase.h"
 
 class CExternalCmdWrapper: public CTranscoderBase
 {
   public:
-    virtual ~CExternalCmdWrapper() {};
+		CExternalCmdWrapper();
+    virtual ~CExternalCmdWrapper();
     
     bool Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile);
     bool Threaded() { return true; }
+	
+	private:
+		CProcess* m_process;
+	
 };
 
 #endif // DISABLE_TRANSCODING
