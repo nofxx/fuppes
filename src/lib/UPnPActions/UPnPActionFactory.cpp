@@ -3,13 +3,14 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -68,12 +69,12 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent, C
     if(sName.compare("Browse") == 0) {
       pAction = new CUPnPBrowse(p_sContent);
       pAction->DeviceSettings(pDeviceSettings);
-      ParseBrowseAction((CUPnPBrowse*)pAction);
+      parseBrowseAction((CUPnPBrowse*)pAction);
     }
 	  else if(sName.compare("Search") == 0) {
 	    pAction = new CUPnPSearch(p_sContent);
       pAction->DeviceSettings(pDeviceSettings);
-		  ParseSearchAction((CUPnPSearch*)pAction);
+		  parseSearchAction((CUPnPSearch*)pAction);
 	  }
     else if(sName.compare("GetSearchCapabilities") == 0) {
       pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_SEARCH_CAPABILITIES, p_sContent);      
@@ -81,6 +82,10 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent, C
     }
     else if(sName.compare("GetSortCapabilities") == 0) {
       pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_SORT_CAPABILITIES, p_sContent);
+      pAction->DeviceSettings(pDeviceSettings);
+    }
+		else if(sName.compare("GetSortExtensionCapabilities") == 0) {
+      pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_SORT_EXTENSION_CAPABILITIES, p_sContent);
       pAction->DeviceSettings(pDeviceSettings);
     }
     else if(sName.compare("GetSystemUpdateID") == 0) {
@@ -130,24 +135,15 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent, C
 	}
 	
 	if(!pAction) {
-	  stringstream sLog;
-	  sLog << "unhandled UPnP Action \"" << sName << "\"";
-		CSharedLog::Shared()->Log(L_DBG, sLog.str(), __FILE__, __LINE__);
-	}		
-
-  /*cout << "[UPnPActionFactory] Browse Action:" << endl;
-  cout << "\tObjectID: " << ((CUPnPBrowse*)pResult)->m_sObjectID << endl;
-  cout << "\tStartingIndex: " << ((CUPnPBrowse*)pResult)->m_nStartingIndex << endl;
-  cout << "\tRequestedCount: " << ((CUPnPBrowse*)pResult)->m_nRequestedCount << endl;*/  
-  
+		CSharedLog::Log(L_DBG, __FILE__, __LINE__, "unhandled UPnP Action \"%s\"", sName.c_str());
+	}
+	
   xmlFreeDoc(pDoc);
-  //xmlCleanupParser();  
-  
   return pAction;
 }
 
 
-bool CUPnPActionFactory::ParseBrowseAction(CUPnPBrowse* pAction)
+bool CUPnPActionFactory::parseBrowseAction(CUPnPBrowse* pAction)
 {
 /*<?xml version="1.0" encoding="utf-8"?>
   <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
@@ -205,13 +201,12 @@ bool CUPnPActionFactory::ParseBrowseAction(CUPnPBrowse* pAction)
   if(rxReqCnt.Search(pAction->GetContent().c_str()))  
     pAction->m_nRequestedCount = atoi(rxReqCnt.Match(1));  
   
-  /* Sort */
-  pAction->m_sSortCriteria = "";
+	parseSortCriteria(pAction);
 
   return true;     
 }
 
-bool CUPnPActionFactory::ParseSearchAction(CUPnPSearch* pAction)
+bool CUPnPActionFactory::parseSearchAction(CUPnPSearch* pAction)
 {
   /*
 	<?xml version="1.0" encoding="utf-8"?>
@@ -255,9 +250,90 @@ bool CUPnPActionFactory::ParseSearchAction(CUPnPSearch* pAction)
   if(rxReqCnt.Search(pAction->GetContent().c_str()))  
     pAction->m_nRequestedCount = atoi(rxReqCnt.Match(1)); 
 
-  // sort
-	pAction->m_sSortCriteria = "";
-	
+  // sort cirteria
+	parseSortCriteria(pAction);
 	
 	return true;
+}
+
+bool CUPnPActionFactory::parseSortCriteria(CUPnPBrowseSearchBase* action)
+{
+#warning todo: error handling as defined by the upnp forum
+	action->m_isSupportedSort = true;
+	
+	// sort criteria
+  RegEx rxSort("<SortCriteria.*>(.+)</SortCriteria>");
+	if(!rxSort.Search(action->GetContent().c_str())) {
+	
+		// sort by title if no sort criteria found
+		action->m_sortCriteriaSQL = " o.TITLE asc ";
+		return false;
+	}
+	
+	string tmp = rxSort.Match(1);
+	action->m_sortCriteria = tmp;
+	
+	tmp += ",";
+	string part;
+	string ext;
+	string::size_type pos;
+	
+	// split the criterias
+	// e.g. +upnp:artist,-dc:date,+dc:title
+	while((pos = tmp.find(",")) != string::npos) {
+		
+		part	= tmp.substr(0, pos);
+		part	= TrimWhiteSpace(part);
+		
+		tmp		= tmp.substr(pos + 1);		
+		tmp		= TrimWhiteSpace(tmp);
+		
+		// asc, desc
+		ext   = part.substr(0, 1);
+		part  = part.substr(1);
+		
+		if(ext.compare("+") == 0) {
+			ext = "asc";
+		}
+		else if(ext.compare("-") == 0) {
+			ext = "desc";
+		}
+		
+		// replace fields
+		if(part.compare("upnp:artist") == 0) {
+			part = " d.A_ARTIST " + ext;
+		}
+		else if(part.compare("dc:title") == 0) {
+			part = " o.TITLE " + ext;
+		}
+		else if(part.compare("upnp:originalTrackNumber") == 0) {
+			part = " d.A_TRACK_NO " + ext;
+		}
+		// unhandled
+		else {
+			action->m_isSupportedSort = false;
+			  cout << 
+				"unhandled sort order" << endl <<
+				"your device requested a sort order that is currently not supported " <<
+				"by FUPPES. This is not a bug as FUPPES correctly specifies it's sorting " <<
+				"capabilities but your device seems to ignore it." << endl <<
+				"please file a feature request containing the following lines: " << endl << endl <<
+        "=== CUT ===" << endl <<
+        action->m_sortCriteria << endl <<
+        "=== CUT ===" << endl;
+
+			return false;
+		}		
+
+		action->m_sortCriteriaSQL +=	(part + ", ");
+	} // while
+	
+	// remove trailing ","
+	action->m_sortCriteriaSQL = TrimWhiteSpace(action->m_sortCriteriaSQL);
+	if(action->m_sortCriteriaSQL.substr(action->m_sortCriteriaSQL.length()-1, 1).compare(",") == 0) {
+		action->m_sortCriteriaSQL = action->m_sortCriteriaSQL.substr(0, action->m_sortCriteriaSQL.length()-1);
+	}
+	
+	action->m_isSupportedSort = true;
+	return action->m_isSupportedSort;	
 }

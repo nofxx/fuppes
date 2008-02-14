@@ -309,8 +309,7 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
   if(!p_bCount) {  
     
     // order by
-    #warning: todo 'sort'
-    sSql << " order by o.TITLE ";
+    sSql << " order by " << m_sortCriteriaSQL << " ";
         
     // limit
 	  if((m_nRequestedCount > 0) || (m_nStartingIndex > 0)) {

@@ -70,7 +70,7 @@
   #endif
   #endif
 
-  #ifdef HAVE_IMAGEMAGICK
+  #ifdef HAVE_IMAGEMAGICK_PP
   #include "ImageMagickWrapper.h"
   #endif
 
@@ -480,7 +480,7 @@ CTranscoderBase* CTranscodingMgr::CreateTranscoder(TRANSCODER_TYPE p_nTranscoder
   #endif
 
 
-	#ifdef HAVE_IMAGEMAGICK
+	#ifdef HAVE_IMAGEMAGICK_PP
   if(p_nTranscoderType == TTYP_IMAGE_MAGICK) {
     pResult = new CImageMagickWrapper();
   }

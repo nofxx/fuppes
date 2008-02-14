@@ -111,6 +111,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
   try {
     m_pConnectionManager = new CConnectionManager(m_pHTTPServer->GetURL()); 
     m_pMediaServer->AddUPnPService(m_pConnectionManager);
+		CConnectionManagerCore::init();
   }
   catch(EException ex) {
     throw;

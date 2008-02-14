@@ -3,13 +3,14 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -35,13 +36,14 @@
 #define UPNP_UNKNOWN 0
 
 typedef enum UPNP_CONTENT_DIRECTORY_ACTIONS {
-  UPNP_UNKNWON                  = 0,
-  UPNP_BROWSE									  = 1,
-	UPNP_SEARCH									  = 2,
-	UPNP_GET_SEARCH_CAPABILITIES  = 3,
-	UPNP_GET_SORT_CAPABILITIES    = 4,
-  UPNP_GET_SYSTEM_UPDATE_ID		  = 5,
-	UPNP_GET_PROTOCOL_INFO		    = 6
+  UPNP_UNKNWON                  				= 0,
+  UPNP_BROWSE									  				= 1,
+	UPNP_SEARCH									  				= 2,
+	UPNP_GET_SEARCH_CAPABILITIES  				= 3,
+	UPNP_GET_SORT_CAPABILITIES    				= 4,
+	UPNP_GET_SORT_EXTENSION_CAPABILITIES	= 5,
+  UPNP_GET_SYSTEM_UPDATE_ID		  				= 6,
+	UPNP_GET_PROTOCOL_INFO		    				= 7
 } UPNP_CONTENT_DIRECTORY_ACTIONS;
 
 typedef enum UPNP_AV_TRANSPORT_ACTIONS {
@@ -98,12 +100,16 @@ class CUPnPBrowseSearchBase: public CUPnPAction
     CUPnPBrowseSearchBase(UPNP_DEVICE_TYPE p_nTargetDeviceType, int p_nActionType, std::string p_sContent);
     
   public:
-    bool IncludeProperty(std::string p_sProperty);  
+    bool						IncludeProperty(std::string p_sProperty);
+		std::string			getSortOrder();
   
-    std::string      m_sFilter;
-    unsigned int     m_nStartingIndex;
-    unsigned int     m_nRequestedCount;
-    std::string      m_sSortCriteria;   
+    std::string     m_sFilter;
+    unsigned int    m_nStartingIndex;
+    unsigned int    m_nRequestedCount;
+	
+    std::string     m_sortCriteria;
+		std::string			m_sortCriteriaSQL;
+		bool						m_isSupportedSort;
 };
 
 #endif // _UPNPACTION_H

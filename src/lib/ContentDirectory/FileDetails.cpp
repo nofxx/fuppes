@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -40,8 +40,7 @@
 #include <mp4.h>
 #endif
 
-#ifdef HAVE_IMAGEMAGICK
-//#include <Magick++.h>
+#ifdef HAVE_IMAGEMAGICK_WAND
 #include <wand/magick-wand.h>
 #endif
 
@@ -51,6 +50,10 @@ extern "C"
   #include <avformat.h>
   #include <avcodec.h>
 }
+#endif
+
+#ifdef HAVE_SIMAGE
+#include <simage.h>
 #endif
 
 #include <sstream>
@@ -351,11 +354,33 @@ bool CFileDetails::GetMusicTrackDetailsMPEG4IP(std::string p_sFileName, SAudioIt
 
 bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageItem)
 {
-  #ifdef HAVE_IMAGEMAGICK	
-  string sExt = ExtractFileExt(p_sFileName);  
+	string sExt = ExtractFileExt(p_sFileName);  
   if(!CDeviceIdentificationMgr::Shared()->DefaultDevice()->FileSettings(sExt)->ExtractMetadata())
     return false;
-  
+	
+	#ifdef HAVE_SIMAGE
+	if(simage_check_supported(p_sFileName.c_str()) == 1) {
+		
+		unsigned char* img;
+		int width;
+		int height;
+		int numComponents;
+		
+		img = simage_read_image(p_sFileName.c_str(), &width, &height, &numComponents);
+		if(img == NULL) {
+			cout << simage_get_last_error() << endl;
+			return false;
+		}
+		simage_free_image(img);
+	
+		pImageItem->nWidth  = width;
+		pImageItem->nHeight = height;
+		
+		return true;
+	}
+	#endif
+	
+  #ifdef HAVE_IMAGEMAGICK_WAND
 	MagickBooleanType status;
   MagickWand* magick_wand;
   
@@ -380,9 +405,9 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
 	magick_wand = DestroyMagickWand(magick_wand);
 
 	return true;
-	#else
-	return false;
 	#endif
+	
+	return false;	
 }
 
 bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoItem)

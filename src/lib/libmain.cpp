@@ -45,8 +45,7 @@
 #include "Common/Process.h"
 #include "Common/RegEx.h"
 
-#ifdef HAVE_IMAGEMAGICK
-//#include <Magick++.h>
+#ifdef HAVE_IMAGEMAGICK_WAND
 #include <wand/magick-wand.h>
 #endif
 
@@ -162,7 +161,7 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   if(!CSharedConfig::Shared()->SetupConfig())
     return FUPPES_FALSE;
 
-	#ifdef HAVE_IMAGEMAGICK
+	#ifdef HAVE_IMAGEMAGICK_WAND
 	#ifdef WIN32
 	MagickWandGenesis();
 	#endif
@@ -224,7 +223,7 @@ int fuppes_cleanup()
 {
   xmlCleanupParser();
     
-  #ifdef HAVE_IMAGEMAGICK	  
+  #ifdef HAVE_IMAGEMAGICK_WAND  
 	MagickWandTerminus();
   #endif
     
@@ -319,17 +318,134 @@ void fuppes_print_info()
   cout << "  log-level   : " << CSharedLog::Shared()->GetLogLevel() << endl;
   cout << "  webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
   cout << endl;
-  CSharedConfig::Shared()->PrintTranscodingSettings();
-	cout << endl;
 	cout << "configuration file:" << endl;
 	cout << "  " << CSharedConfig::Shared()->GetConfigFileName() << endl;
-	cout << endl;
-	cout << "ImageMagick: ";
-	#ifdef HAVE_IMAGEMAGICK
-	cout << " enabled" << endl;
-	#else
-	cout << " compiled without ImageMagick support" << endl;	
-	#endif
+	cout << endl;	
+	
+#ifdef HAVE_FAAD
+	cout << "faad: enabled" << endl;
+#else
+	cout << "faad: disabled" << endl;
+#endif
+
+#ifdef HAVE_FLAC 
+	cout << "flac: enabled" << endl;
+#else
+	cout << "flac: disabled" << endl;
+#endif
+	
+#ifdef HAVE_ICONV
+	cout << "iconv: enabled" << endl;
+#else
+	cout << "iconv: disabled" << endl;
+#endif
+	
+#ifdef HAVE_IMAGEMAGICK_PP
+	cout << "ImageMagick++: enabled" << endl;
+#else
+	cout << "ImageMagick++: disabled" << endl;
+#endif
+
+#ifdef HAVE_IMAGEMAGICK_WAND
+	cout << "ImageMagick Wand: enabled" << endl;
+#else
+	cout << "ImageMagick Wand: disabled" << endl;
+#endif
+	
+#ifdef HAVE_INOTIFY
+	cout << "inotify: enabled" << endl;
+#else
+	cout << "inotify: disabled" << endl;
+#endif
+	
+
+#ifdef HAVE_LAME
+	cout << "lame: enabled" << endl;
+#else
+	cout << "lame: disabled" << endl;
+#endif
+	
+
+#ifdef HAVE_LIBAVFORMAT
+	cout << "libavformat: enabled" << endl;
+#else
+	cout << "libavformat: disabled" << endl;
+#endif
+
+#ifdef HAVE_LIBNOTIFY
+	cout << "libnotify: enabled" << endl;
+#else
+	cout << "libnotify: disabled" << endl;
+#endif
+	
+
+#ifdef HAVE_MAD
+	cout << "mad: enabled" << endl;
+#else
+	cout << "mad: disabled" << endl;
+#endif
+	
+#ifdef HAVE_MP4FF_H
+	cout << "mp4ff: enabled" << endl;
+#else
+	cout << "mp4ff: disabled" << endl;
+#endif
+	
+#ifdef HAVE_MPEG4IP
+	cout << "mpeg4ip: enabled" << endl;
+#else
+	cout << "mpeg4ip: disabled" << endl;
+#endif
+	
+#ifdef HAVE_MUSEPACK
+	cout << "musepack: enabled" << endl;
+#else
+	cout << "musepack: disabled" << endl;
+#endif
+	
+#ifdef HAVE_SIMAGE
+	cout << "simage: enabled" << endl;
+#else
+	cout << "simage: disabled" << endl;
+#endif
+	
+#ifdef HAVE_SYS_INOTIFY_H
+	cout << "inotify: enabled" << endl;
+#else
+	cout << "inotify: disabled" << endl;
+#endif
+
+#ifdef HAVE_TAGLIB
+	cout << "taglib: enabled" << endl;
+#else
+	cout << "taglib: disabled" << endl;
+#endif
+
+#ifdef HAVE_TREMOR
+	cout << "tremor: enabled" << endl;
+#else
+	cout << "tremor: disabled" << endl;
+#endif
+
+#ifdef HAVE_TWOLAME
+	cout << "twolame: enabled" << endl;
+#else
+	cout << "twolame: disabled" << endl;
+#endif
+
+#ifdef HAVE_UUID
+	cout << "uuid: enabled" << endl;
+#else
+	cout << "uuid: disabled" << endl;
+#endif
+
+#ifdef HAVE_VORBIS
+	cout << "vorbis: enabled" << endl;
+#else
+	cout << "vorbis: disabled" << endl;
+#endif
+
+	
 }
 
 void fuppes_print_device_settings()

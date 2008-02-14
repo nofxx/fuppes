@@ -159,26 +159,36 @@ fi
 #
 use_imagemagick=yes
 AC_ARG_ENABLE(imagemagick, 
-            [  --disable-imagemagick  Do not use ImageMagick (Magick++)],
+            [  --disable-imagemagick  Do not use ImageMagick (MagickWand and Magick++)],
             [ use_imagemagick=no; ] )
 
-have_imagemagick=no
+have_magickpp=no
+have_magickwand=no
 
-AH_TEMPLATE([HAVE_IMAGEMAGICK], [])
+AH_TEMPLATE([HAVE_IMAGEMAGICK_PP], [])
+AH_TEMPLATE([HAVE_IMAGEMAGICK_WAND], [])
 
 if test "x$use_imagemagick" = "xyes"; then
 
+  IMAGEMAGICK_PP_CFLAGS=""
+  IMAGEMAGICK_PP_LIBS=""
+  PKG_CHECK_MODULES(IMAGEMAGICK_PP, ImageMagick++ >= 6.2.4, have_magickpp=yes, have_magickpp=no)
 
-  IMAGEMAGICK_CFLAGS=""
-  IMAGEMAGICK_LIBS=""
-  PKG_CHECK_MODULES(IMAGEMAGICK, ImageMagick++ >= 6.2.4, have_imagemagick=yes, have_imagemagick=no)
+  if test "x$have_magickpp" = "xyes"; then
+		AC_DEFINE([HAVE_IMAGEMAGICK_PP], [1], [])
+    FUPPES_CFLAGS="$FUPPES_CFLAGS $IMAGEMAGICK_PP_CFLAGS"
+		FUPPES_LIBS="$FUPPES_LIBS $IMAGEMAGICK_PP_LIBS"
+  #else
+  #  AC_MSG_NOTICE([*** ImageMagick (Magick++) support disabled ***]);
+  fi
 
-  if test "x$have_imagemagick" = "xyes"; then
-		AC_DEFINE([HAVE_IMAGEMAGICK], [1], [])
-    FUPPES_CFLAGS="$FUPPES_CFLAGS $IMAGEMAGICK_CFLAGS"
-		FUPPES_LIBS="$FUPPES_LIBS $IMAGEMAGICK_LIBS"
-  else
-    AC_MSG_NOTICE([*** ImageMagick (Magick++) support disabled ***]);
+	IMAGEMAGICK_WAND_CFLAGS=""
+  IMAGEMAGICK_WAND_LIBS=""
+  PKG_CHECK_MODULES(IMAGEMAGICK_WAND, Wand >= 6.2.4, have_magickwand=yes, have_magickwand=no)
+	if test "x$have_magickwand" = "xyes"; then
+		AC_DEFINE([HAVE_IMAGEMAGICK_WAND], [1], [])
+    FUPPES_CFLAGS="$FUPPES_CFLAGS $IMAGEMAGICK_WAND_CFLAGS"
+		FUPPES_LIBS="$FUPPES_LIBS $IMAGEMAGICK_WAND_LIBS"
   fi
 
 fi
@@ -698,12 +708,12 @@ if test "x$transcoding" = "xyes"; then
 
     if test "x$have_faad" = "xyes"; then
       if test "x$have_mp4ff" = "xyes"; then
-        echo "      faad       : yes (aac/mp4)"
+        echo "      faad       : yes (aac/mp4/m4a)"
       else
-        echo "      faad       : yes (aac/NO mp4)"
+        echo "      faad       : yes (aac/NO mp4/m4a)"
       fi
     else
-      echo "      faad       : no"      
+      echo "      faad       : no (aac/mp4/m4a)"
     fi 
 
 		if test "x$have_mad" = "xyes"; then
@@ -717,28 +727,81 @@ else # transcoding = yes
 fi
 
 echo ""
+#end audio transcoding
+
 echo "  video transcoding (experimental)"
 if test "x$video_transcoding" = "xyes"; then
-  echo "  ffmpeg     : enabled"
+  echo "    ffmpeg     : enabled"
 else
-  echo "  ffmpeg     : disabled"
+  echo "    ffmpeg     : disabled"
 fi
 echo ""
 
 
-# iconv
-echo ""
-if test "x$have_iconv" = "xyes"; then
-  echo "  iconv      : enabled (charset conversion)"
+echo "  image conversion/rescaling"
+if test "x$have_magickpp" = "xyes"; then
+  echo "    ImageMagick: enabled  (Magick++)"
 else
-  echo "  iconv      : disabled (charset conversion)"
+  echo "    ImageMagick: disabled (Magick++)"
+fi
+echo ""
+#end image conversion/rescaling
+
+
+echo "  metadata extraction"
+# taglib
+if test "x$have_taglib" = "xyes"; then
+  echo "    taglib     : enabled  (mp3, ogg, flac & mpc metadata extraction)"
+else
+  echo "    taglib     : disabled (mp3, ogg, flac & mpc metadata extraction)"
+fi
+
+# mpeg4ip
+if test "x$have_mpeg4ip" = "xyes"; then
+  echo "    mpeg4ip    : enabled  (mp4/ma4 metadata extraction)"
+else
+  echo "    mpeg4ip    : disabled (mp4/ma4 metadata extraction)"
+fi
+
+# ImageMagick
+if test "x$have_magickwand" = "xyes"; then
+  echo "    ImageMagick: enabled  (Wand)"
+else
+  echo "    ImageMagick: disabled (Wand)"
+fi
+
+# simage
+if test "x$have_simage" = "xyes"; then
+  echo "    simage     : enabled  (jpeg, png, gif, tiff, rgb, pic, tga, eps)"
+else
+  echo "    simage     : disabled (jpeg, png, gif, tiff, rgb, pic, tga, eps)"
+fi
+
+# libavformat
+if test "x$have_libavformat" = "xyes"; then
+  echo "    libavformat: enabled"
+else
+  echo "    libavformat: disabled"
+fi
+
+echo ""
+#end metadata
+
+
+echo "  miscellaneous"
+
+# iconv
+if test "x$have_iconv" = "xyes"; then
+  echo "    iconv      : enabled (charset conversion)"
+else
+  echo "    iconv      : disabled (charset conversion)"
 fi
 
 # uuid
 if test "x$have_uuid" = "xyes"; then
-  echo "  uuid       : enabled"
+  echo "    uuid       : enabled"
 else
-  echo "  uuid       : disabled"
+  echo "    uuid       : disabled"
 fi
 
 # gamin
@@ -755,40 +818,6 @@ fi
 #  echo "  inotify    : disabled"
 #fi
 
-# taglib
-if test "x$have_taglib" = "xyes"; then
-  echo "  taglib     : enabled (mp3, ogg, flac & mpc metadata extraction)"
-else
-  echo "  taglib     : disabled (mp3, ogg, flac & mpc metadata extraction)"
-fi
-
-# mpeg4ip
-if test "x$have_mpeg4ip" = "xyes"; then
-  echo "  mpeg4ip    : enabled (mp4/ma4 metadata extraction)"
-else
-  echo "  mpeg4ip    : disabled (mp4/ma4 metadata extraction)"
-fi
-
-# ImageMagick
-if test "x$have_imagemagick" = "xyes"; then
-  echo "  ImageMagick: enabled"
-else
-  echo "  ImageMagick: disabled"
-fi
-
-# simage
-if test "x$have_simage" = "xyes"; then
-  echo "  simage     : enabled"
-else
-  echo "  simage     : disabled"
-fi
-
-# libavformat
-if test "x$have_libavformat" = "xyes"; then
-  echo "  libavformat: enabled"
-else
-  echo "  libavformat: disabled"
-fi
 
 #
 # GNOME
@@ -796,18 +825,18 @@ fi
 
 # have_libpanelapplet
 echo ""
-echo "GNOME"
+echo "  GNOME"
 if test "x$have_libpanelapplet" = "xyes"; then
-  echo "  panel applet : enabled"
+  echo "    panel applet : enabled"
 else
-  echo "  panel applet : disabled"
+  echo "    panel applet : disabled"
 fi
 
 # libnotify
 if test "x$have_libnotify" = "xyes"; then
-  echo "  libnotify    : enabled"
+  echo "    libnotify    : enabled"
 else
-  echo "  libnotify    : disabled"
+  echo "    libnotify    : disabled"
 fi
 
 

@@ -76,6 +76,10 @@ void CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
     case UPNP_GET_SORT_CAPABILITIES:
       HandleUPnPGetSortCapabilities(pUPnPAction, &sContent);
       break;
+		// GetSortExtensionsCapabilities
+    case UPNP_GET_SORT_EXTENSION_CAPABILITIES:
+      HandleUPnPGetSortExtensionCapabilities(pUPnPAction, &sContent);
+      break;
     // GetSystemUpdateID  
     case UPNP_GET_SYSTEM_UPDATE_ID:
       HandleUPnPGetSystemUpdateID(pUPnPAction, &sContent);
@@ -990,12 +994,25 @@ void CContentDirectory::HandleUPnPGetSortCapabilities(CUPnPAction* pAction, std:
     "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
     "  <s:Body>"
     "    <u:GetSortCapabilitiesResponse xmlns:u=\"urn:schemas-upnp-org:service:ContentDirectory:1\">"
-    "      <SortCaps></SortCaps>"
+    "      <SortCaps>dc:title,upnp:artist,upnp:originalTrackNumber</SortCaps>"
     "    </u:GetSortCapabilitiesResponse>"
     "  </s:Body>"
     "</s:Envelope>";
-
+	
   // <SortCaps>dc:title,dc:creator,upnp:artist,upnp:genre,upnp:album,dc:date,upnp:originalTrackNumber,Philips:shuffle</SortCaps>
+}
+
+void CContentDirectory::HandleUPnPGetSortExtensionCapabilities(CUPnPAction* pAction, std::string* p_psResult)
+{
+  *p_psResult = 
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+    "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
+    "  <s:Body>"
+    "    <u:GetSortExtensionsCapabilitiesResponse xmlns:u=\"urn:schemas-upnp-org:service:ContentDirectory:1\">"
+    "      <SortExtensionCaps>+, -</SortExtensionCaps>"
+    "    </u:GetSortExtensionsCapabilitiesResponse>"
+    "  </s:Body>"
+    "</s:Envelope>";
 }
 
 void CContentDirectory::HandleUPnPGetSystemUpdateID(CUPnPAction* pAction, std::string* p_psResult)

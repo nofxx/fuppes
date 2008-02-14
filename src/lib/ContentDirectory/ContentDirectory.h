@@ -130,10 +130,12 @@ class CContentDirectory: public CUPnPService
 
     void HandleUPnPGetSortCapabilities(CUPnPAction* pAction, std::string* p_psResult);
     
+		void HandleUPnPGetSortExtensionCapabilities(CUPnPAction* pAction, std::string* p_psResult);
+	
     void HandleUPnPGetSystemUpdateID(CUPnPAction* pAction, std::string* p_psResult);    
 		
     void HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_psResult);
-  
+	
     std::string BuildProtocolInfo(bool p_bTranscode,
                                   std::string p_sMimeType,
                                   std::string p_sProfileId,
