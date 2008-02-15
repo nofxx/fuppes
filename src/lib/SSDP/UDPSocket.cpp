@@ -58,7 +58,7 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
   /* Create socket */
 	m_Socket = socket(AF_INET, SOCK_DGRAM, 0);
 	if(m_Socket == -1) {
-    throw EException("failed to create socket", __FILE__, __LINE__);    
+    throw EException(__FILE__, __LINE__, "failed to create socket");
   }
   
   /* Set socket options */
@@ -105,7 +105,7 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
 	/* Bind socket */
 	ret = bind(m_Socket, (struct sockaddr*)&m_LocalEndpoint, sizeof(m_LocalEndpoint)); 
   if(ret == -1) {
-    throw EException("failed to bind socket", __FILE__, __LINE__);
+    throw EException(__FILE__, __LINE__, "failed to bind socket");
   }
 	
 	/* Get random port */
@@ -122,7 +122,7 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
 		stMreq.imr_interface.s_addr = inet_addr(p_sIPAddress.c_str()); //INADDR_ANY; 	
 		ret = setsockopt(m_Socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&stMreq,sizeof(stMreq)); 	
 		if(ret == -1) {      
-      throw EException("failed to setsockopt: multicast", __FILE__, __LINE__);      
+      throw EException(__FILE__, __LINE__, "failed to setsockopt: multicast");
     }
 	}
   

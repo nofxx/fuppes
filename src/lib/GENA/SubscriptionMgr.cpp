@@ -3,13 +3,14 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006, 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2006-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -217,21 +218,19 @@ void CSubscriptionCache::AddSubscription(CSubscription* pSubscription)
 
 bool CSubscriptionCache::RenewSubscription(std::string pSID)
 {
-  CSharedLog::Shared()->Log(L_EXT, "renew subscription \"" + pSID + "\"", __FILE__, __LINE__);  
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "renew subscription \"%s\"", pSID.c_str());
   
   bool bResult = false;
   
   fuppesThreadLockMutex(&m_Mutex);
   m_SubscriptionsIterator = m_Subscriptions.find(pSID);
-  if(m_SubscriptionsIterator != m_Subscriptions.end())
-  {    
-    CSharedLog::Shared()->Log(L_EXT, "renew subscription \"" + pSID + "\" done", __FILE__, __LINE__);
+  if(m_SubscriptionsIterator != m_Subscriptions.end()) {    
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "renew subscription \"%s\" done", pSID.c_str());
     m_Subscriptions[pSID]->Renew();
     bResult = true;
   }
-  else
-  {
-    CSharedLog::Shared()->Log(L_EXT, "renew subscription \"" + pSID + "\" failed", __FILE__, __LINE__);
+  else {
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "renew subscription \"%s\" failed", pSID.c_str());
     bResult = false;
   }
   
@@ -241,24 +240,22 @@ bool CSubscriptionCache::RenewSubscription(std::string pSID)
 
 bool CSubscriptionCache::DeleteSubscription(std::string pSID)
 {
-  CSharedLog::Shared()->Log(L_EXT, "delete subscription \"" + pSID + "\"", __FILE__, __LINE__);  
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "delete subscription \"%s\"", pSID.c_str());
     
   bool bResult = false;
   CSubscription* pSubscription;
   
   fuppesThreadLockMutex(&m_Mutex);    
   m_SubscriptionsIterator = m_Subscriptions.find(pSID);  
-  if(m_SubscriptionsIterator != m_Subscriptions.end())
-  { 
-    CSharedLog::Shared()->Log(L_EXT, "delete subscription \"" + pSID + "\" done", __FILE__, __LINE__);    
+  if(m_SubscriptionsIterator != m_Subscriptions.end()) { 
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "delete subscription \"%s\" done", pSID.c_str());
     pSubscription = (*m_SubscriptionsIterator).second;
     m_Subscriptions.erase(pSID);
     delete pSubscription;
     bResult = true;
   }
-  else
-  {
-    CSharedLog::Shared()->Log(L_EXT, "delete subscription \"" + pSID + "\" faild", __FILE__, __LINE__);
+  else {
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "delete subscription \"%s\" failed", pSID.c_str());
     bResult = false;
   }
   
@@ -285,7 +282,7 @@ CSubscriptionMgr::CSubscriptionMgr(bool p_bSingelton)
   
   // start main loop in singleton instance only
   if(p_bSingelton && !m_MainLoop) {
-    CSharedLog::Shared()->Log(L_DBG, "start CSubscriptionMgr MainLoop", __FILE__, __LINE__);
+    CSharedLog::Log(L_DBG, __FILE__, __LINE__, "start CSubscriptionMgr MainLoop");
     fuppesThreadStartArg(m_MainLoop, MainLoop, *this);
   }
 }
@@ -303,14 +300,14 @@ CSubscriptionMgr::~CSubscriptionMgr()
 
 bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {
-  CSharedLog::Shared()->Log(L_DBG, pRequest->GetHeader(), __FILE__, __LINE__); 
+  CSharedLog::Log(L_DBG, __FILE__, __LINE__, pRequest->GetHeader().c_str()); 
   
   CSubscription* pSubscription = new CSubscription();
   try {    
     this->ParseSubscription(pRequest, pSubscription);
   } 
   catch (EException ex) {
-    CSharedLog::Shared()->Log(L_EXT, ex.What(), __FILE__, __LINE__);
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, ex.What().c_str());
     
     delete pSubscription;
     return false;
@@ -346,7 +343,7 @@ void CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* 
   // subscription type
   RegEx rxSubscribe("([SUBSCRIBE|UNSUBSCRIBE]+)", PCRE_CASELESS);
   if(!rxSubscribe.Search(pRequest->GetHeader().c_str()))
-    throw EException("parsing subscription", __FILE__, __LINE__);
+    throw EException(__FILE__, __LINE__, "parsing subscription");
   
   // subscription target
   RegEx rxTarget("[SUBSCRIBE|UNSUBSCRIBE] +(.+) +HTTP/1\\.[1|0]", PCRE_CASELESS);
@@ -359,11 +356,11 @@ void CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* 
       pSubscription->SetSubscriptionTarget(UPNP_SERVICE_CONNECTION_MANAGER);
     }
     else {
-      throw EException("unknown subscription target", __FILE__, __LINE__);
+      throw EException(__FILE__, __LINE__, "unknown subscription target");
     }    
   }
   else {
-    throw EException("parsing subscription", __FILE__, __LINE__);    
+    throw EException(__FILE__, __LINE__, "parsing subscription");
   }
   
   // SID
@@ -388,7 +385,7 @@ void CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* 
         pSubscription->SetCallback(sCallback);
       }
       else {
-        throw EException("parsing subscription callback", __FILE__, __LINE__);
+        throw EException(__FILE__, __LINE__, "parsing subscription callback");
       }      
     }
     else

@@ -749,7 +749,7 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
 {
   string sExt = ExtractFileExt(pSQLResult->GetValue("PATH"));
   bool bTranscode = pUPnPBrowse->DeviceSettings()->DoTranscode(sExt);
-																											
+																										
   // title
   xmlTextWriterStartElement(pWriter, BAD_CAST "dc:title");
     // trim filename
@@ -804,6 +804,8 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
 		}
 	}
   
+	sExt = pUPnPBrowse->DeviceSettings()->Extension(sExt);
+																									
   sTmp = "http://" + m_sHTTPServerURL + "/MediaServer/ImageItems/" + p_sObjectID + "." + sExt;
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.c_str());
   xmlTextWriterEndElement(pWriter);  

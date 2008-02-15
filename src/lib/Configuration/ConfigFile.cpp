@@ -36,9 +36,9 @@ CConfigFile::CConfigFile()
   m_pDoc = new CXMLDocument();
   
   m_sNetInterface = "";  
-  m_nHttpPort  = 0;
-
-  m_sLocalCharset   = "UTF-8";
+  m_nHttpPort  		= 0;
+  m_sLocalCharset = "UTF-8";
+	m_useFixedUUID 	= false;
 }
 
 CConfigFile::~CConfigFile()
@@ -224,6 +224,10 @@ void CConfigFile::ReadGlobalSettings()
         m_sTempDir = pTmpNode->ChildNode(i)->Value();
       }
     }
+		else if(pTmpNode->ChildNode(i)->Name().compare("use_fixed_uuid") == 0) {
+      m_useFixedUUID = (pTmpNode->ChildNode(i)->Value().compare("true") == 0);
+    }		
+		
   }  
 }
 

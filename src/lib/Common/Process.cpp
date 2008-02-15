@@ -69,7 +69,9 @@ void CProcessMgr::init()
 void CProcessMgr::signal(pid_t pid, int sig)
 {
 	CProcess* proc = m_instance->m_processes[pid];	
-	proc->m_isRunning = false;
+	if(proc != NULL) {
+		proc->m_isRunning = false;
+	}
 }
 	
 void CProcessMgr::register_proc(CProcess* proc)
@@ -111,12 +113,12 @@ CProcess::~CProcess()
 	for(int i = 0; i < m_numArgs; i++) {
 		free((void*)m_args[i]);
 	}
-	free(m_args);
 }
 
 bool CProcess::start(std::string cmd)
 {
 #ifndef WIN32
+	m_isRunning = true;
 	m_pid =	fork();
 	
 	// child process
@@ -128,12 +130,12 @@ bool CProcess::start(std::string cmd)
   }
 	// parent process
 	else if(m_pid > 0) {
-		
 		CProcessMgr::register_proc(this);
     return true;
   }
 	// fork() error
 	else {
+		m_isRunning = false;
 		cout << "fork() failed" << endl;
 		return false;
   }
@@ -145,6 +147,14 @@ bool CProcess::start(std::string cmd)
 void CProcess::stop()
 {
 	m_isRunning = false;
+}
+
+
+void CProcess::waitFor()
+{
+	while(m_isRunning) {
+		fuppesSleep(100);
+	}
 }
 
 #define MAX_ARGS 31
@@ -212,4 +222,8 @@ void CProcess::parseArgs(std::string cmd)
 	}
 	
 	m_args[m_numArgs] = (char*)0;
+	
+	/*for(int i = 0; i < m_numArgs; i++) {
+		cout << i+1 << ". " << m_args[i] << endl;
+	}*/
 }

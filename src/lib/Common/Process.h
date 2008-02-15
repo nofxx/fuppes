@@ -71,6 +71,7 @@ class CProcess {
 		bool	start(std::string cmd);
 		void	stop();
 		bool	isRunning() { return m_isRunning; }
+		void	waitFor();
 		
 		void	setInFile(std::string fileName) { m_inFile = fileName; }
 		void	setOutFile(std::string fileName) { m_outFile = fileName; }

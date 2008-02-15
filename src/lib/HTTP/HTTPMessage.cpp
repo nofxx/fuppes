@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -697,11 +697,11 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName, SAudioItem 
     
   if(m_pTranscodingSessionInfo) {
     delete m_pTranscodingSessionInfo;
-    
+
     CTranscodingCache::Shared()->ReleaseCacheObject(m_pTranscodingCacheObj);
     m_pTranscodingCacheObj = NULL;
   }  
-
+	
   m_bIsBinary  = true;  
   m_pTranscodingSessionInfo = new CTranscodeSessionInfo();
   m_pTranscodingSessionInfo->m_bBreakTranscoding   = false;
@@ -716,13 +716,13 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName, SAudioItem 
   m_pTranscodingSessionInfo->m_sOriginalTrackNumber = p_sTrackDetails.sOriginalTrackNumber;
   m_pTranscodingSessionInfo->sACodec    = p_sTrackDetails.sACodec;
   m_pTranscodingSessionInfo->sVCodec    = p_sTrackDetails.sVCodec;
-  
-  
+
   m_pTranscodingCacheObj = CTranscodingCache::Shared()->GetCacheObject(m_pTranscodingSessionInfo->m_sInFileName);
   if(!m_pTranscodingCacheObj->Init(m_pTranscodingSessionInfo, DeviceSettings())) {
+		CSharedLog::Log(L_EXT, __FILE__, __LINE__, "init transcoding failed :: %s", p_sFileName.c_str());
 		return false;
 	}
-    
+	
   m_pTranscodingCacheObj->Transcode(DeviceSettings()); 
   
   if(DeviceSettings()->TranscodingHTTPResponse(ExtractFileExt(p_sFileName)) == RESPONSE_CHUNKED) {

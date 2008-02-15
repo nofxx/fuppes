@@ -7,7 +7,8 @@ INCLUDES = \
   ${PCRE_CFLAGS}\
   ${VORBISFILE_CFLAGS}\
   ${TAGLIB_CFLAGS}\
-  ${SQLITE3_CFLAGS}
+  ${SQLITE3_CFLAGS}\
+	-DDATADIR=\"$(datadir)/fuppes\"
 
 lib_LTLIBRARIES = libfuppes.la
 

@@ -24,7 +24,7 @@
 
 
 #ifndef HAVE_CONFIG_H
-#define ICONV_SECOND_ARG const char**
+#define ICONV_CONST const
 #endif
 
 #include "Common.h"
@@ -464,7 +464,7 @@ std::string ToUTF8(std::string p_sValue, std::string p_sEncoding)
   char* pOutBuf    = szOutBuf;  
   memset(szOutBuf, 0, p_sValue.length() * 2 + 1);
   
-  iconv(icv, (ICONV_SECOND_ARG)&szInBuf, &nInbytes, &pOutBuf, &nOutbytes);
+  iconv(icv, (ICONV_CONST char**)&szInBuf, &nInbytes, &pOutBuf, &nOutbytes);
   p_sValue = szOutBuf;  
     
   iconv_close(icv); 

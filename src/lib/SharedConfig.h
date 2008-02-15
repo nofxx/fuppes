@@ -56,7 +56,11 @@ class CSharedConfig
     ~CSharedConfig();
     static CSharedConfig* Shared();
 
-    bool SetupConfig();
+#ifdef WIN32
+    bool SetupConfig(std::string applicationPath);
+#else
+		bool SetupConfig();
+#endif	
     bool Refresh();
 
     void PrintTranscodingSettings();  
@@ -101,7 +105,8 @@ class CSharedConfig
 		void TempDir(std::string p_sTempDir) { m_sTempDir = p_sTempDir; }
 		std::string TempDir() { return m_sTempDir; }
 		
-		
+		std::string dataDir();
+	
     // shared dir
     int SharedDirCount();
     std::string GetSharedDir(int p_nIdx);  
@@ -162,6 +167,7 @@ class CSharedConfig
     std::string   m_sOSName;
     std::string   m_sOSVersion;  
     std::string   m_sTempDir;
+		std::string		m_dataDir;
     unsigned int  m_nHTTPPort;
 
     std::vector<CFuppes*> m_vFuppesInstances;

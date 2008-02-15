@@ -320,7 +320,8 @@ fuppesThreadCallback TranscodeThread(void *arg)
     
     pCacheObj->Lock();
     pCacheObj->m_bIsComplete = true;
-    pCacheObj->Unlock();   
+		pCacheObj->m_bIsTranscoding = false;  
+		pCacheObj->Unlock();   
     
     fuppesThreadExit();
     return 0;

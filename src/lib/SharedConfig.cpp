@@ -77,7 +77,7 @@ CSharedConfig* CSharedConfig::Shared()
 CSharedConfig::CSharedConfig()
 {
   m_pConfigFile = NULL;
-  m_sUUID       = GenerateUUID();
+  m_sUUID       = "";
   
   // ./configure --enable-default-http-port=PORT
   #ifdef DEFAULT_HTTP_PORT
@@ -94,8 +94,20 @@ CSharedConfig::~CSharedConfig()
   }
 }
 
+
+#ifdef WIN32
+bool CSharedConfig::SetupConfig(std::string applicationPath)
+{   
+	if((applicationPath.length() > 1) && 
+		 (applicationPath.substr(applicationPath.length() - 1).compare(upnpPathDelim) != 0)) {
+    applicationPath += upnpPathDelim;
+	}
+	m_dataDir = applicationPath + "data/";
+#else
 bool CSharedConfig::SetupConfig()
 {   
+#endif
+	
   // set config dir
   if(m_sConfigDir.empty()) {
     #ifdef WIN32
@@ -233,6 +245,15 @@ string CSharedConfig::GetHostname()
 
 string CSharedConfig::GetUUID()
 {
+	if(m_sUUID.empty()) {
+		if(m_pConfigFile->useFixedUUID()) {
+			m_sUUID = GenerateUUID(m_sConfigDir + "uuid.txt");
+		}
+		else {
+			m_sUUID = GenerateUUID();
+		}
+	}
+	
   return m_sUUID; 
 }
 
@@ -559,4 +580,18 @@ std::string CSharedConfig::CreateTempFileName()
   sResult << m_sTempDir << nTmpCnt;
   nTmpCnt++;
   return sResult.str().c_str();
+}
+
+std::string CSharedConfig::dataDir()
+{
+#ifndef WIN32
+	if(m_dataDir.empty()) {
+		m_dataDir = DATADIR;
+
+		if((m_dataDir.length() > 1) && (m_dataDir.substr(m_dataDir.length() - 1).compare(upnpPathDelim) != 0)) {
+      m_dataDir += upnpPathDelim;
+		}
+	}
+#endif
+	return m_dataDir;
 }

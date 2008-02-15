@@ -52,13 +52,20 @@ bool CExternalCmdWrapper::Transcode(CFileSettings* pFileSettings, std::string p_
 {    
   string sTmpFileName = CSharedConfig::Shared()->CreateTempFileName() + "." + pFileSettings->Extension();
 	*p_psOutFile = sTmpFileName;
-		
+	
 	string sCmd = pFileSettings->pTranscodingSettings->ExternalCmd();
 	
 	m_process->setInFile(p_sInFile);
 	m_process->setOutFile(*p_psOutFile);
+
+	if(!m_process->start(sCmd)) {
+		return false;
+	}
 	
-	return m_process->start(sCmd);
+	cout << "wait" << endl;
+	m_process->waitFor();
+	cout << "return" << endl;
+	return true;
 }
 
 #endif // DISABLE_TRANSCODING

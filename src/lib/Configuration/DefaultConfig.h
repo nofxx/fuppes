@@ -117,32 +117,20 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
     xmlTextWriterEndElement(pWriter);
     
     
-    // transcoding 
-    xmlTextWriterStartElement(pWriter, BAD_CAST "transcoding");
+    // global_settings
+    xmlTextWriterStartElement(pWriter, BAD_CAST "global_settings");
       
-      // audio_encoder
-      xmlTextWriterWriteComment(pWriter, BAD_CAST "[lame|twolame]");
-      xmlTextWriterStartElement(pWriter, BAD_CAST "audio_encoder");
-      xmlTextWriterWriteString(pWriter, BAD_CAST "lame"); // [lame|twolame]
+      // temp
+      xmlTextWriterStartElement(pWriter, BAD_CAST "temp_dir");
       xmlTextWriterEndElement(pWriter);
       
-      // transcode_vorbis
-      xmlTextWriterWriteComment(pWriter, BAD_CAST "[true|false]");
-      xmlTextWriterStartElement(pWriter, BAD_CAST "transcode_vorbis");
-      xmlTextWriterWriteString(pWriter, BAD_CAST "true"); // [true|false]
+      // use_fixed_uuid
+			xmlTextWriterWriteComment(pWriter, BAD_CAST "uuid is written to and read from <config-dir>/uuid.txt if set to true");
+      xmlTextWriterStartElement(pWriter, BAD_CAST "use_fixed_uuid");
+      xmlTextWriterWriteString(pWriter, BAD_CAST "false");
       xmlTextWriterEndElement(pWriter);
-      
-      // transcode_musepack
-      xmlTextWriterStartElement(pWriter, BAD_CAST "transcode_musepack");
-      xmlTextWriterWriteString(pWriter, BAD_CAST "true"); // [true|false]
-      xmlTextWriterEndElement(pWriter);
-      
-      // transcode_flac
-      xmlTextWriterStartElement(pWriter, BAD_CAST "transcode_flac");
-      xmlTextWriterWriteString(pWriter, BAD_CAST "true"); // [true|false]
-      xmlTextWriterEndElement(pWriter);
-    
-    // end transcoding
+
+    // end global_settings
     xmlTextWriterEndElement(pWriter);
     
   
@@ -151,7 +139,10 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
       
       xmlTextWriterWriteComment(pWriter, BAD_CAST "\"default\" settings are inhertied by specific devices and can be overwritten");
 			xmlTextWriterWriteComment(pWriter, BAD_CAST "do NOT remove the \"default\" device settings");
-		
+	
+			xmlTextWriterWriteComment(pWriter, BAD_CAST "all new file types have to be added to the default settings");
+			xmlTextWriterWriteComment(pWriter, BAD_CAST "adding new file types just to a specific device will have no affect");
+	
       // device (default)
       xmlTextWriterStartElement(pWriter, BAD_CAST "device");
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "name", BAD_CAST "default");   

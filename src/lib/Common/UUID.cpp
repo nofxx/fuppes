@@ -3,13 +3,14 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005, 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -45,13 +46,68 @@
 
 #include <iostream>
 #include <sstream>
+#include <fstream>
 using namespace std;
 
-std::string GenerateUUID()
+#define UUID_LENGTH 36
+
+bool readFromFile(std::string fileName, std::string* p_uuid)
+{
+	std::fstream fsUUID;
+	fsUUID.open(fileName.c_str(), ios::in);
+
+  if(fsUUID.fail() != 1) {
+		
+		// check length
+		fsUUID.seekg(0, ios::end);
+		int length = fsUUID.tellg();
+		fsUUID.seekg(0, ios::beg);
+
+		if(length != UUID_LENGTH) {
+			fsUUID.close();
+			return false;
+		}
+
+		// read uuid
+		char uuid[UUID_LENGTH + 1];
+		fsUUID.read((char*)&uuid, UUID_LENGTH);
+		fsUUID.close();
+		
+		uuid[UUID_LENGTH] = '\0';	
+		*p_uuid = uuid;
+		
+    return true;
+  } 
+  else {
+    return false;
+  }	
+		
+}
+
+void writeToFile(std::string fileName, std::string uuid)
+{
+	std::fstream fsUUID;
+	
+	fsUUID.open(fileName.c_str(), ios::out | ios::trunc);
+  if(fsUUID.fail() != 1) {
+		fsUUID.write(uuid.c_str(), uuid.length());
+		fsUUID.close();
+  }
+}
+
+std::string GenerateUUID(std::string fileName)
 {
   stringstream sResult;
+	string result;
 
-  #ifdef WIN32
+	// read uuid from file
+	if(!fileName.empty()) {
+		if(readFromFile(fileName, &result)) {
+			return result.c_str();
+		}
+	}		 
+	
+#ifdef WIN32
 
   /* Generate GUID */
   GUID guid;
@@ -71,8 +127,7 @@ std::string GenerateUUID()
   /* remove leading and trailing brackets */
   sResult << sTmp.substr(1, sTmp.length() - 2);
 
-  #else  
-  
+#else  
   
   #ifdef HAVE_UUID
   uuid_t uuid;
@@ -83,8 +138,7 @@ std::string GenerateUUID()
   
   sResult << szUUID; 
   delete[] szUUID;
-  #else
-  
+  #else  
   srand(time(0));
 
   int nRandom;
@@ -96,10 +150,16 @@ std::string GenerateUUID()
   } while (sRandom.str().length() < 8);
 
   sResult << sRandom.str().substr(0, 8) << "-aabb-dead-beef-1234eeff0000";  
-  
   #endif // HAVE_UUID
   
-  #endif
+#endif
   
-  return sResult.str();
+	result = sResult.str();
+		
+	// write uuid to file
+	if(!fileName.empty()) {
+		writeToFile(fileName, result);
+	}
+	
+  return result.c_str();
 }
