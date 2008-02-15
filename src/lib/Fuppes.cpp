@@ -127,7 +127,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
 	}
   
 	// wait for ssdp listener
-	while(!m_pSSDPCtrl->isStarted()) {
+	while(!m_pSSDPCtrl->isStarted() || !m_pHTTPServer->isStarted()) {
 		fuppesSleep(10);
 	}
 	

@@ -330,7 +330,7 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
   }
   else // eof
   {
-    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "unknown object id: ", p_sObjectId);
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "unknown object id: %s", p_sObjectId.c_str());
     bResult = false;
   }
   

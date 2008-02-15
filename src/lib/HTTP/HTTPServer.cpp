@@ -76,6 +76,7 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 {
   // init member vars
   m_bIsRunning  = false;
+	m_isStarted   = false;
 	accept_thread = (fuppesThread)NULL;
 	fuppesThreadInitMutex(&m_ReceiveMutex);  	
   	
@@ -153,7 +154,7 @@ void CHTTPServer::Start()
   }
 
   // start accept thread
-  fuppesThreadStart(accept_thread, AcceptLoop);  
+  fuppesThreadStart(accept_thread, AcceptLoop);
   m_bIsRunning = true;
   
   CSharedLog::Log(L_EXT, __FILE__, __LINE__, "HTTPServer started");
@@ -279,7 +280,9 @@ fuppesThreadCallback AcceptLoop(void *arg)
   // log  
 	CSharedLog::Log(L_EXT, __FILE__, __LINE__,
     "listening on %s", pHTTPServer->GetURL().c_str());
-  
+
+	pHTTPServer->m_isStarted = true;
+
   // loop	
 	while(!pHTTPServer->m_bBreakAccept)
 	{
@@ -314,6 +317,8 @@ fuppesThreadCallback AcceptLoop(void *arg)
     pHTTPServer->CleanupSessions();
 	}  
 
+	pHTTPServer->m_isStarted = false;
+	
   CSharedLog::Log(L_DBG, __FILE__, __LINE__, "exiting accept loop");
   pHTTPServer->CleanupSessions();
 	fuppesThreadExit();

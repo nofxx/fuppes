@@ -106,9 +106,11 @@ class CHTTPServer
 
     bool				  SetReceiveHandler(IHTTPServer* pHandler);
     bool          CallOnReceive(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
-   
-    bool m_bBreakAccept;
-
+		bool					isStarted() { return m_isStarted; }
+	
+    bool 					m_bBreakAccept;
+		bool					m_isStarted;
+	
   private: 
 
     // Eventhandler 
