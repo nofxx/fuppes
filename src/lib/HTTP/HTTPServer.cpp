@@ -50,12 +50,17 @@
 #ifndef WIN32
 
 // mac os x has no MSG_NOSIGNAL 
-// but >= 10.2 comes with SO_SIGPIPE
+// but >= 10.2 comes with SO_NOSIGPIPE
 // SO_NOSIGPIPE is a setsockopt() option
 // and not a send() parameter as MSG_NOSIGNAL
+// OpenBSD has none of the options so we
+// need to ignore SIGPIPE events
+// the signal is created in fuppes_start() (libmain.cpp)
 #ifndef MSG_NOSIGNAL
-#define USE_SO_NOSIGPIPE
 #define MSG_NOSIGNAL 0
+#ifdef SO_NOSIGPIPE
+  #define USE_SO_NOSIGPIPE
+#endif
 #endif
 
 #include <sys/errno.h>
@@ -338,10 +343,11 @@ fuppesThreadCallback SessionLoop(void *arg)
   
   stringstream sLog;
   
+	pRequest->SetRemoteEndPoint(pSession->GetRemoteEndPoint());
+	
   while(bKeepAlive)
   {  
     // receive HTTP-request
-		pRequest->SetRemoteEndPoint(pSession->GetRemoteEndPoint());
     bResult = ReceiveRequest(pSession, pRequest);  
     if(!bResult) {
       break;
@@ -398,6 +404,10 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
   int   nRecvCnt = 0;
   char  szBuffer[4096];    
   char* szMsg = NULL;
+	char* szHeader = NULL;
+	bool	bGotHeader = false;
+	size_t	nHeaderPos	= 0;
+	
   unsigned int nContentLength = 0;   
  
   bool bDoReceive = true;
@@ -464,23 +474,13 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
     
     // create new buffer or ...
     if ((nBytesReceived == 0) && (nTmpRecv > 0)) {
-      szMsg = new char[nTmpRecv + 1];
+      szMsg = (char*)malloc((nTmpRecv + 1) * sizeof(char*));
       memcpy(szMsg, szBuffer, nTmpRecv);
-      szMsg[nTmpRecv] = '\0';
-    }    
+    }
     // ... append received buffer or ...
     else if((nBytesReceived > 0) && (nTmpRecv > 0)) {
-      char* szTmp = new char[nBytesReceived + 1];
-      memcpy(szTmp, szMsg, nBytesReceived);
-      szTmp[nBytesReceived] = '\0';
-      
-      delete[] szMsg;        
-      szMsg = new char[nBytesReceived + nTmpRecv + 1];
-      memcpy(szMsg, szTmp, nBytesReceived);
-      memcpy(&szMsg[nBytesReceived], szBuffer, nTmpRecv);
-      szMsg[nBytesReceived + nTmpRecv] = '\0';
-      
-      delete[] szTmp;
+			szMsg = (char*)realloc(szMsg, (nBytesReceived + nTmpRecv + 1) * sizeof(char*));
+			memcpy(&szMsg[nBytesReceived], szBuffer, nTmpRecv);
     }    
     // ... close connection gracefully
     else if(nTmpRecv == 0) {      
@@ -488,48 +488,52 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
       bDoReceive = false;
       break;
     }
-    
+		
     // clear receive buffer
     memset(szBuffer, '\0', 4096);
-    
+		
     nBytesReceived += nTmpRecv; 
-    string sMsg = szMsg;     
-    
-    // split header and content
-    string sHeader  = "";
-    string sContent = "";
-    string::size_type nPos = sMsg.find("\r\n\r\n");  
-        
-    // got the full header
-    if(nPos != string::npos) {            
-      sHeader = sMsg.substr(0, nPos);
-      nPos += string("\r\n\r\n").length();
-      sContent = sMsg.substr(nPos, sMsg.length() - nPos);
-      
-      p_Request->SetHeader(sHeader);      
-    }
+		szMsg[nBytesReceived] = '\0';
+		
+    // split header and content		
+		char*	szPos	= NULL;
+		
+		// got the full header
+		if(((szPos = strstr(szMsg, "\r\n\r\n")) != NULL) && !bGotHeader) {
+			
+			nHeaderPos = szPos - szMsg;
+			szHeader = (char*)malloc((nHeaderPos + 1) * sizeof(char*));
+			strncpy(szHeader, szMsg, nHeaderPos);
+			szHeader[nHeaderPos] = '\0';
+
+			p_Request->SetHeader(szHeader);
+			
+			free(szHeader);
+			szHeader = NULL;
+			bGotHeader = true;
+			nHeaderPos += 4;
+		}
     // header is incomplete (continue receiving)
-    else {
+    else if(!bGotHeader) {
       nRecvCnt++;      
       continue;
     }
-    
-    
+
     // check content length
     RegEx rxContentLength("CONTENT-LENGTH: *(\\d+)", PCRE_CASELESS);
-    if(rxContentLength.Search(sHeader.c_str())) {
+    if(rxContentLength.Search(p_Request->GetHeader().c_str())) {
       string sContentLength = rxContentLength.Match(1);    
       nContentLength = ::atoi(sContentLength.c_str());
     }
-
+		
     // check if we received the full content
-    if(sContent.length() < nContentLength) {
+    if((nBytesReceived - nHeaderPos) < nContentLength) {
       
       // xbox 360: sends a content length of 3 but only 2 bytes of data
       if((p_Request->DeviceSettings()->Xbox360Support()) && (nContentLength == 3)) {
         bDoReceive = false;
       }
-      else {      
+      else {
         // content incomplete (continue receiving)
         continue;
       }
@@ -548,17 +552,15 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
 
   // build received message
   bool bResult = false;  
-  if((nBytesReceived > 0) && !bRecvErr)
-  {
-    // log
-    //stringstream sMsg;
-    //sMsg << "bytes received: " << nBytesReceived;
-    //CSharedLog::Shared()->Log(L_EXTENDED, sMsg.str(), __FILE__, __LINE__);
-
+  if((nBytesReceived > 0) && !bRecvErr) {
     // create message
-    bResult = p_Request->SetMessage(szMsg); 
+    bResult = p_Request->SetMessage(szMsg);
   }
-  
+
+	if(szMsg) {
+		free(szMsg);
+	}
+	
   return bResult;
 } // ReceiveRequest
 

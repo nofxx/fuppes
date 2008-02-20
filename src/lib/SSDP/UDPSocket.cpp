@@ -295,9 +295,10 @@ fuppesThreadCallback UDPReceiveLoop(void *arg)
 			 (remote_ep.sin_port != udp_sock->GetLocalEndPoint().sin_port))	
     {
 			CSSDPMessage pSSDPMessage;
+			pSSDPMessage.SetRemoteEndPoint(remote_ep);
+	  	pSSDPMessage.SetLocalEndPoint(udp_sock->GetLocalEndPoint());
+			
       if(pSSDPMessage.SetMessage(buffer)) {
-  			pSSDPMessage.SetRemoteEndPoint(remote_ep);
-	  		pSSDPMessage.SetLocalEndPoint(udp_sock->GetLocalEndPoint());
 		  	udp_sock->CallOnReceive(&pSSDPMessage);
       }
       else {

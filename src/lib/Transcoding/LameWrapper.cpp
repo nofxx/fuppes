@@ -50,13 +50,15 @@ CLameWrapper::CLameWrapper():CAudioEncoderBase()
   m_nBitRate = 0;
   m_nSampleRate = 0;
   m_nChannels = 2;
+	m_LameGlobalFlags = NULL;
 }
 
 CLameWrapper::~CLameWrapper()
 {
   if(m_LibHandle) {
-    if(m_LameClose)
+    if(m_LameClose && m_LameGlobalFlags) {
       m_LameClose(m_LameGlobalFlags);
+		}
     FuppesCloseLibrary(m_LibHandle);
   }
 }
@@ -213,13 +215,14 @@ bool CLameWrapper::LoadLib()
     CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot load symbol 'id3tag_set_genre'");
   }   
   
-  m_LameGlobalFlags = m_LameInit();
   return true;
 }
 
 void CLameWrapper::Init()
 {
-  if(m_Id3TagInit) {
+  m_LameGlobalFlags = m_LameInit();
+	
+	if(m_Id3TagInit) {
     m_Id3TagInit(m_LameGlobalFlags);
   }
   

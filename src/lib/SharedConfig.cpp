@@ -586,7 +586,7 @@ std::string CSharedConfig::dataDir()
 {
 #ifndef WIN32
 	if(m_dataDir.empty()) {
-		m_dataDir = DATADIR;
+		m_dataDir = FUPPES_DATADIR;
 
 		if((m_dataDir.length() > 1) && (m_dataDir.substr(m_dataDir.length() - 1).compare(upnpPathDelim) != 0)) {
       m_dataDir += upnpPathDelim;

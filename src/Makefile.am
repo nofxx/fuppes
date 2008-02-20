@@ -8,7 +8,7 @@ INCLUDES = \
   ${VORBISFILE_CFLAGS}\
   ${TAGLIB_CFLAGS}\
   ${SQLITE3_CFLAGS}\
-	-DDATADIR=\"$(datadir)/fuppes\"
+	-DFUPPES_DATADIR=\"$(datadir)/fuppes\"
 
 lib_LTLIBRARIES = libfuppes.la
 

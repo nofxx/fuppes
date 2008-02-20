@@ -195,7 +195,13 @@ int fuppes_start()
 {
   if(pFuppes)
     return FUPPES_FALSE;
-    
+
+	#ifndef MSG_NOSIGNAL
+	#ifndef SO_NOSIGPIPE
+	signal(SIGPIPE, SIG_IGN);
+	#endif
+	#endif	
+	
   // create fuppes instance
   try {
     pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUUID());

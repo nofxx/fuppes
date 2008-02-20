@@ -172,6 +172,8 @@ CFuppes::~CFuppes()
   fuppesThreadDestroyMutex(&m_RemoteDevicesMutex);
   
   /* destroy objects */
+	delete m_pConnectionManager;
+	delete m_pXMSMediaReceiverRegistrar;
   delete m_pContentDirectory;
   delete m_pMediaServer;
   delete m_pSSDPCtrl;
@@ -211,7 +213,8 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
   else
   {  
 	  if(!pSender->GetFriendlyName().empty()) {      
-      CSharedLog::Shared()->Log(L_NORM, "device: " + pSender->GetFriendlyName() + " timed out", __FILE__, __LINE__);
+      CSharedLog::Log(L_NORM, __FILE__, __LINE__, 
+					"device: %s timed out", pSender->GetFriendlyName().c_str());
 		}
 
     fuppesThreadLockMutex(&m_RemoteDevicesMutex);
@@ -309,16 +312,13 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
   if(m_RemoteDeviceIterator != m_RemoteDevices.end()) {
     
     m_RemoteDevices[pMessage->GetUUID()]->GetTimer()->Reset();
-        
-    CSharedLog::Shared()->Log(L_EXT, 
-        "received \"Notify-Alive\" from known device id: " + pMessage->GetUUID(), __FILE__, __LINE__);
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__,
+        "received \"Notify-Alive\" from known device id: %s", pMessage->GetUUID().c_str());
   }
-
   // new device
   else {    
-    
-    CSharedLog::Shared()->Log(L_EXT, 
-        "received \"Notify-Alive\" from unknown device id: " + pMessage->GetUUID(), __FILE__, __LINE__);
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__,
+        "received \"Notify-Alive\" from unknown device id: %s", pMessage->GetUUID().c_str());
         
     if((pMessage->GetLocation().compare("") == 0) ||
        (pMessage->GetUUID().compare("") == 0)) {
@@ -343,8 +343,7 @@ void CFuppes::OnNewDevice(CUPnPDevice* pSender)
   m_RemoteDeviceIterator = m_RemoteDevices.find(pSender->GetUUID());  
   if(m_RemoteDeviceIterator != m_RemoteDevices.end())	{	  
     
-	  CSharedLog::Shared()->Log(L_NORM, 
-      "new device: " + pSender->GetFriendlyName() + " :: " + pSender->GetUPnPDeviceTypeAsString(), __FILE__, __LINE__);	
+	  CSharedLog::Log(L_NORM, __FILE__, __LINE__, "new device: %s :: %s", pSender->GetFriendlyName().c_str(), pSender->GetUPnPDeviceTypeAsString().c_str());
 	
 	  pSender->GetTimer()->SetInterval(900); // 900 sec = 15 min
 			
@@ -364,8 +363,8 @@ void CFuppes::HandleSSDPByeBye(CSSDPMessage* pMessage)
   m_RemoteDeviceIterator = m_RemoteDevices.find(pMessage->GetUUID());    
   if(m_RemoteDeviceIterator != m_RemoteDevices.end()) {    
     
-    CSharedLog::Shared()->Log(L_NORM, 
-        "received byebye from " + m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName() + " :: " + m_RemoteDevices[pMessage->GetUUID()]->GetUPnPDeviceTypeAsString(), __FILE__, __LINE__);
+    CSharedLog::Log(L_NORM, __FILE__, __LINE__,
+        "received byebye from %s :: %s", m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName().c_str(), m_RemoteDevices[pMessage->GetUUID()]->GetUPnPDeviceTypeAsString().c_str());
     
     CSharedLog::Shared()->UserNotify(m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName(),                                    
         "UPnP device gone:\n" + m_RemoteDevices[pMessage->GetUUID()]->GetFriendlyName() + " (" + m_RemoteDevices[pMessage->GetUUID()]->GetUPnPDeviceTypeAsString() + ")");	  

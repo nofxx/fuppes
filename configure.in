@@ -3,13 +3,20 @@ dnl $Id: $
 
 AC_INIT([fuppes], [SVN-578], [fuppes@ulrich-voelkel.de])
 AM_CONFIG_HEADER(src/config.h)
-AM_INIT_AUTOMAKE(fuppes, SVN-578, fuppes@ulrich-voelkel.de)
+AM_INIT_AUTOMAKE([1.10])
+dnl AM_INIT_AUTOMAKE(fuppes, SVN-578, fuppes@ulrich-voelkel.de)
+
 
 AC_PROG_CC
+dnl AM_PROG_CC_C_O
 AC_PROG_CXX
-AC_PROG_INSTALL
+dnl AC_CHECK_GCC_VERSION
+dnl AC_CHECK_CXX_VERSION
+AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
+AC_PROG_INSTALL
 AM_PROG_INSTALL_STRIP
+
 
 AC_FUNC_FSEEKO
 AC_TYPE_OFF_T

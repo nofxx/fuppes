@@ -99,6 +99,7 @@ void CProcessMgr::unregister_proc(CProcess* proc)
 
 CProcess::CProcess()
 {
+	m_numArgs = 0;
 	m_isRunning = false;
 }
 
@@ -168,7 +169,6 @@ void CProcess::parseArgs(std::string cmd)
 	bool escape = false;
 	bool quote = false;
 	
-	m_numArgs = 0;
 	m_args = (char const**)malloc(MAX_ARGS + 1 * sizeof(*m_args));
 	
 	cmd += " ";
