@@ -57,7 +57,7 @@ using namespace std;
 bool FileExists(std::string p_sFileName)
 {
   struct stat Stat;  
-  return (stat(p_sFileName.c_str(), &Stat) == 0 && S_ISREG(Stat.st_mode));
+  return (stat(p_sFileName.c_str(), &Stat) == 0 && S_ISREG(Stat.st_mode) != 0);
 }
 
 bool IsFile(std::string p_sFileName)
@@ -89,18 +89,15 @@ bool DirectoryExists(std::string p_sDirName)
   return true;
 }
 #else
-bool DirectoryExists(std::string p_sDirName)
+bool DirectoryExists(std::string dirName)
 {
-  DIR* pDir;
-  if((pDir = opendir(p_sDirName.c_str())) != NULL)
-  {
-    closedir(pDir);
-    return true;
+	if((dirName.length() > 2) &&
+     (dirName.substr(dirName.length() - 1).compare(upnpPathDelim) != 0)) {
+    dirName += upnpPathDelim;
   }
-  else
-  {
-    return false;
-  }  
+	
+  struct stat Stat;  
+  return (stat(dirName.c_str(), &Stat) == 0 && S_ISDIR(Stat.st_mode) != 0);
 }
 #endif
 
@@ -157,8 +154,7 @@ std::string StringReplace(std::string p_sIn, std::string p_sSearch, std::string 
 	if(p_sIn.find(p_sSearch) == std::string::npos)
 	  return p_sIn;
 	
-  while(p_sIn.find(p_sSearch) != std::string::npos)
-	{
+  while(p_sIn.find(p_sSearch) != std::string::npos)	{
 	  sResult += p_sIn.substr(0, p_sIn.find(p_sSearch)) + p_sReplace;
 		p_sIn   = p_sIn.substr(p_sIn.find(p_sSearch) + p_sSearch.length(), p_sIn.length());
 	}
@@ -167,39 +163,34 @@ std::string StringReplace(std::string p_sIn, std::string p_sSearch, std::string 
 	return sResult.c_str();
 }
 
-std::string ExtractFileExt(std::string p_sFileName)
+std::string ExtractFileExt(std::string fileName)
 {
-  RegEx rxExt("\\.([\\w|\\n]+)$");
-  std::string sResult;
-  if(rxExt.Search(p_sFileName.c_str()))
-  {
-    do
-    {
-      sResult = rxExt.Match(1);  
-    } while(rxExt.SearchAgain());
-    
-  }
-  return ToLower(sResult).c_str();
+  size_t pos = fileName.find_last_of(".");
+	if(pos == string::npos)
+		return "";
+	
+	fileName = ToLower(fileName.substr(pos + 1));
+  return fileName;
 }
 
-std::string ExtractFilePath(std::string p_sFileName)
+std::string ExtractFilePath(std::string fileName)
 {
-  p_sFileName = p_sFileName.substr(0, p_sFileName.length() - ExtractFileExt(p_sFileName).length());
-  while((p_sFileName.length() > 0) && (p_sFileName.substr(p_sFileName.length() - 1, 1).compare(upnpPathDelim) != 0))
-  {
-    p_sFileName = p_sFileName.substr(0, p_sFileName.length() -1);    
-  }
-  return p_sFileName;
+	size_t pos = fileName.find_last_of(upnpPathDelim);
+	if(pos == string::npos)
+		return fileName;
+	
+	fileName = fileName.substr(0, pos +1);
+  return fileName;
 }
 
-std::string TruncateFileExt(std::string p_sFileName)
+std::string TruncateFileExt(std::string fileName)
 {
-  std::string sExt = ExtractFileExt(p_sFileName);  
-  if((sExt.length() == 0) && (p_sFileName.substr(p_sFileName.length() - 1, 1).compare(".") != 0))
-    return p_sFileName;
-  
-  std::string sResult = p_sFileName.substr(0, p_sFileName.length() - sExt.length() - 1);
-  return sResult.c_str();
+  size_t pos = fileName.find_last_of(".");
+	if(pos == string::npos)
+		return fileName;
+	
+	fileName = fileName.substr(0, pos);
+  return fileName;
 }
 
 std::string ToLower(std::string p_sInput)
@@ -230,7 +221,7 @@ bool ExtractFolderFromPath(std::string p_sPath, std::string* p_sFolder)
     *p_sFolder = p_sPath.substr(pos, p_sPath.length() - pos);
     return true;
   }
-  else {  
+  else {
     return false;
   }
 }

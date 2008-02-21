@@ -99,7 +99,8 @@ CTranscodingMgr::CTranscodingMgr()
   m_bFlacAvailable     = false;
   m_bMusePackAvailable = false;
 
-  #ifndef DISABLE_TRANSCODING
+
+  /*#ifndef DISABLE_TRANSCODING
 
   m_bUseLame = false;
 
@@ -139,7 +140,9 @@ CTranscodingMgr::CTranscodingMgr()
 
   m_bTranscodeVorbis   = m_bVorbisAvailable;
   m_bTranscodeMusePack = m_bMusePackAvailable;
-  m_bTranscodeFlac     = m_bFlacAvailable;
+  m_bTranscodeFlac     = m_bFlacAvailable;*/
+	
+	
 }
 
 CTranscodingMgr::~CTranscodingMgr()
@@ -154,67 +157,6 @@ bool CTranscodingMgr::IsTranscodingAvailable()
   return ((m_bLameAvailable && m_bUseLame) || (m_bTwoLameAvailable && !m_bUseLame)) && (m_bVorbisAvailable || m_bFlacAvailable || m_bMusePackAvailable);
   #endif
 }
-
-/*bool CTranscodingMgr::IsTranscodingExtension(std::string p_sFileExt)
-{
-  p_sFileExt = ToLower(p_sFileExt);
-
-  if((p_sFileExt.compare("mp3") == 0))
-    return false;
-  
-  else if((p_sFileExt.compare("ogg") == 0)  && IsTranscodingAvailable() && m_bVorbisAvailable   && m_bTranscodeVorbis)
-    return true;
-  else if((p_sFileExt.compare("mpc") == 0)  && IsTranscodingAvailable() && m_bMusePackAvailable && m_bTranscodeMusePack)
-    return true;
-  else if((p_sFileExt.compare("flac") == 0) && IsTranscodingAvailable() && m_bFlacAvailable     && m_bTranscodeFlac)
-    return true;
-  
-  #ifdef ENABLE_VIDEO_TRANSCODING
-  else if(p_sFileExt.compare("flv") == 0)
-    return true;
-  else if(p_sFileExt.compare("wmv") == 0)
-    return true;
-  else if(p_sFileExt.compare("vdr") == 0)
-    return true;  
-  else if(p_sFileExt.compare("asf") == 0)
-    return true; 
-  #endif
-  
-  else if(p_sFileExt.compare("jpg") == 0)
-    return true;
-  
-  else
-    return false;
-}*/
-
-/*TRANSCODING_TYPE CTranscodingMgr::GetTranscodingType(CDeviceSettings* pDeviceSettings)
-{
-  */
-  /*if((p_sFileExt.compare("mp3") == 0))
-    return TT_NONE;
-  
-  else if((p_sFileExt.compare("ogg") == 0)  && IsTranscodingAvailable() && m_bVorbisAvailable   && m_bTranscodeVorbis)
-    return TT_THREADED_DECODER_ENCODER;
-  else if((p_sFileExt.compare("mpc") == 0)  && IsTranscodingAvailable() && m_bMusePackAvailable && m_bTranscodeMusePack)
-    return TT_THREADED_DECODER_ENCODER;
-  else if((p_sFileExt.compare("flac") == 0) && IsTranscodingAvailable() && m_bFlacAvailable     && m_bTranscodeFlac)
-    return TT_THREADED_DECODER_ENCODER; 
-  
-  else if(p_sFileExt.compare("flv") == 0)
-    return TT_THREADED_TRANSCODER;
-  else if(p_sFileExt.compare("wmv") == 0)
-    return TT_THREADED_TRANSCODER;
-  else if(p_sFileExt.compare("vdr") == 0)
-    return TT_NONE;  
-  else if(p_sFileExt.compare("asf") == 0)
-    return TT_THREADED_TRANSCODER; 
-  
-  else if(p_sFileExt.compare("jpg") == 0)
-    return TT_TRANSCODER;*/
-  
-  //else
-    /*return TT_NONE;  
-}*/
 
 void CTranscodingMgr::SetDoTranscodeVorbis(bool p_bDoTranscodeVorbis)
 {

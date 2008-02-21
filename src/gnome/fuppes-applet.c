@@ -1,5 +1,5 @@
 /***************************************************************************
- *            fuppes_applet.c.in
+ *            fuppes_applet.c
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -44,8 +44,8 @@
 #include "../../include/fuppes.h"
 
 
-#define PIXMAPSDIR "@PIXMAPSDIR@/"
-#define FUPPES_SVG "@PIXMAPSDIR@/fuppes.svg"
+#define PIXMAPSDIR FUPPES_PIXMAPSDIR
+#define FUPPES_SVG PIXMAPSDIR "/fuppes.svg"
 
 
 G_DEFINE_TYPE(FuppesApplet, fuppes_applet, PANEL_TYPE_APPLET)

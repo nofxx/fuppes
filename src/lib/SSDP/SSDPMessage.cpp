@@ -29,7 +29,7 @@
 
 using namespace std;
 
-const std::string LOGNAME = "SSDPMessage";
+//const std::string LOGNAME = "SSDPMessage";
 
 CSSDPMessage::CSSDPMessage()
 {
@@ -43,7 +43,7 @@ CSSDPMessage::~CSSDPMessage()
 bool CSSDPMessage::SetMessage(std::string p_sMessage)
 {
   CMessageBase::SetMessage(p_sMessage);  
-  CSharedLog::Shared()->DebugLog(LOGNAME, p_sMessage);
+  //CSharedLog::Shared()->DebugLog(LOGNAME, p_sMessage);
   
   /* some sample messages */
   

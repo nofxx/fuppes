@@ -105,7 +105,8 @@ class CSharedConfig
 		void TempDir(std::string p_sTempDir) { m_sTempDir = p_sTempDir; }
 		std::string TempDir() { return m_sTempDir; }
 		
-		std::string dataDir();
+		std::string dataDir() { return m_dataDir; }
+		std::string pluginDir() { return m_pluginDir; }
 	
     // shared dir
     int SharedDirCount();
@@ -168,6 +169,7 @@ class CSharedConfig
     std::string   m_sOSVersion;  
     std::string   m_sTempDir;
 		std::string		m_dataDir;
+		std::string		m_pluginDir;
     unsigned int  m_nHTTPPort;
 
     std::vector<CFuppes*> m_vFuppesInstances;

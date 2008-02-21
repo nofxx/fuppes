@@ -1,15 +1,23 @@
 Version SVN-    2008-
 
 	* fixed DLNA string for audio and image files
-	* extract mp4/m4a metadata
+	* mp4/m4a metadata extraction
+	* initial RSS support #1847121
+	* initial mp3 decoder (madlib)
+	* "external command" transcoder #1851499
+	* support for simage
+  * initial sort support
+	* optinally use same UUID on each startup #1890011
+	* updated default config
+  * fixed file extension for converted image files
 	* fixed bug #1837741 - Ogg files don't stream
 	* fixed bug #1862357 - iTunes path not parsed correctly Mac OS X 10.5
 	* fixed bug #1819645 - fuppesd is failing to background fuppes
   * fixed bug #1863196 - unsafe use of std::string
   * fixed bug #1870194 - OS X iTunes xml file paths
 	* fixed bug #1864791 - multicast problem on OS X
-	* mp3 decoder (madlib)
-	* "external command" transcoder
+	* fixed bug #1880069 - search string parser error
+	
 
 Version SVN-578 2007-12-19
 

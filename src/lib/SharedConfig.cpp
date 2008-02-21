@@ -46,6 +46,8 @@
 
 #include "Transcoding/TranscodingMgr.h"
 #include "DeviceSettings/DeviceIdentificationMgr.h"
+#include "Plugins/Plugin.h"
+#include "Common/Process.h"
 
 #include <sys/types.h>
 #include <fcntl.h>
@@ -102,12 +104,16 @@ bool CSharedConfig::SetupConfig(std::string applicationPath)
 		 (applicationPath.substr(applicationPath.length() - 1).compare(upnpPathDelim) != 0)) {
     applicationPath += upnpPathDelim;
 	}
-	m_dataDir = applicationPath + "data/";
+	
+	m_dataDir 	= applicationPath + "data/";
+	m_pluginDir = applicationPath + "plugins/";
 #else
 bool CSharedConfig::SetupConfig()
-{   
+{ 
+	m_dataDir 	= string(FUPPES_DATADIR) + "/";
+	m_pluginDir = string(FUPPES_PLUGINDIR) + "/";
 #endif
-	
+
   // set config dir
   if(m_sConfigDir.empty()) {
     #ifdef WIN32
@@ -115,7 +121,7 @@ bool CSharedConfig::SetupConfig()
     #else
     m_sConfigDir = string(getenv("HOME")) + "/.fuppes/";
     #endif  
-  }  
+  }
 		
   // build file names
   if(m_sConfigFileName.empty()) {
@@ -180,7 +186,11 @@ bool CSharedConfig::SetupConfig()
   // by the main thread so let's do it
   // when everytihng else is correct
   CTranscodingMgr::Shared();
-		
+
+	CProcessMgr::init();
+	
+	CPluginMgr::init(m_pluginDir);
+	
   return true;
 }
 
@@ -400,16 +410,16 @@ bool CSharedConfig::ReadConfigFile()
   // write default config
   if(!FileExists(m_sConfigFileName)) {
     if(!m_pConfigFile->WriteDefaultConfig(m_sConfigFileName)) {
-      CSharedLog::Shared()->Log(L_NORM, string("could not write default configuration to ") + m_sConfigFileName, __FILE__, __LINE__);  
+      CSharedLog::Log(L_NORM, __FILE__, __LINE__, "could not write default configuration to %s", m_sConfigFileName.c_str());
     }
     else {
-      CSharedLog::Shared()->Log(L_EXT, string("wrote default configuration to ") + m_sConfigFileName, __FILE__, __LINE__);  
+      CSharedLog::Log(L_EXT, __FILE__, __LINE__, "wrote default configuration to %s", m_sConfigFileName.c_str());
     }
   }
   
   // load config file
   if(m_pConfigFile->Load(m_sConfigFileName, &sErrorMsg) != CF_OK) {
-    CSharedLog::Shared()->Log(L_NORM, sErrorMsg, __FILE__, __LINE__);
+    CSharedLog::Log(L_NORM, __FILE__, __LINE__, sErrorMsg.c_str());
     return false;
   }
 
@@ -433,7 +443,7 @@ bool CSharedConfig::ResolveHostAndIP()
   char szName[MAXHOSTNAMELEN]; 
   int  nRet = gethostname(szName, MAXHOSTNAMELEN);  
   if(nRet != 0) {
-    throw EException("can't resolve hostname", __FILE__, __LINE__);
+    throw EException(__FILE__, __LINE__, "can't resolve hostname");
   }
   m_sHostname = szName;
 
@@ -580,18 +590,4 @@ std::string CSharedConfig::CreateTempFileName()
   sResult << m_sTempDir << nTmpCnt;
   nTmpCnt++;
   return sResult.str().c_str();
-}
-
-std::string CSharedConfig::dataDir()
-{
-#ifndef WIN32
-	if(m_dataDir.empty()) {
-		m_dataDir = FUPPES_DATADIR;
-
-		if((m_dataDir.length() > 1) && (m_dataDir.substr(m_dataDir.length() - 1).compare(upnpPathDelim) != 0)) {
-      m_dataDir += upnpPathDelim;
-		}
-	}
-#endif
-	return m_dataDir;
 }

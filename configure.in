@@ -8,11 +8,9 @@ dnl AM_INIT_AUTOMAKE(fuppes, SVN-578, fuppes@ulrich-voelkel.de)
 
 
 AC_PROG_CC
-dnl AM_PROG_CC_C_O
 AC_PROG_CXX
-dnl AC_CHECK_GCC_VERSION
-dnl AC_CHECK_CXX_VERSION
 AC_DISABLE_STATIC
+#AC_DISABLE_SHARED
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 AM_PROG_INSTALL_STRIP
@@ -595,6 +593,7 @@ AC_OUTPUT([
 Makefile
 src/Makefile
 src/gnome/Makefile
+src/plugins/Makefile
 ])
 
 

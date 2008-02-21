@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -23,7 +23,7 @@
  */
  
 #include "PresentationHandler.h"
-#include "Stylesheet.h"
+//#include "Stylesheet.h"
 #include "../SharedConfig.h"
 #include "../SharedLog.h"
 #include "../Common/Common.h"
@@ -36,8 +36,8 @@
 
 //#include "Images/fuppes_png.cpp"
 #include "Images/fuppes_small_png.cpp"
-#include "Images/header_gradient_png.cpp"
-#include "Images/header_gradient_small_png.cpp"
+/*#include "Images/header_gradient_png.cpp"
+#include "Images/header_gradient_small_png.cpp"*/
 #include "Images/device_type_unknown_png.cpp"
 #include "Images/device_type_media_server_png.cpp"
 
@@ -83,6 +83,12 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
     sContent = this->GetIndexHTML(sImgPath);
     sPageName = "Start";
   }
+	
+	else if(ToLower(pMessage->GetRequest()).compare("/presentation/style.css") == 0) {
+    nPresentationPage = PRESENTATION_STYLESHEET;
+		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "style.css");
+  }
+	
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/about.html") == 0)
   {
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "send about.html");
@@ -142,19 +148,13 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
 		int nLen = Base64Decode(fuppes_small_png, szImg, sizeof(szImg));
 		pResult->SetBinContent(szImg, nLen);
   }  
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/header-gradient.png") == 0) {
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/header-gradient.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
-		
-		char szImg[4096];
-		int nLen = Base64Decode(header_gradient_png, szImg, sizeof(szImg));
-		pResult->SetBinContent(szImg, nLen);
+		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "header-gradient.png");
   }  
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/header-gradient-small.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
-		
-		char szImg[4096];
-		int nLen = Base64Decode(header_gradient_small_png, szImg, sizeof(szImg));
-		pResult->SetBinContent(szImg, nLen);
+		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "header-gradient-small.png");
   }  
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/device-type-unknown.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
@@ -171,11 +171,14 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
 		pResult->SetBinContent(szImg, nLen);
   }  
   
-  if(nPresentationPage == PRESENTATION_BINARY_IMAGE)
-  {
+  if(nPresentationPage == PRESENTATION_BINARY_IMAGE) {
     pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    
     pResult->SetContentType("image/png"); // HTTP_CONTENT_TYPE_IMAGE_PNG
-  }  
+  }
+	else if(nPresentationPage == PRESENTATION_STYLESHEET) {
+    pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    
+    pResult->SetContentType("text/css");
+  }
   else if((nPresentationPage != PRESENTATION_BINARY_IMAGE) && (nPresentationPage != PRESENTATION_PAGE_UNKNOWN))
   {   
     stringstream sResult;   
@@ -210,12 +213,8 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
 
 	//sResult << "<meta http-equiv=\"Content-Script-Type\" content=\"text/javascript\">" << endl;
 	sResult << "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">" << endl;
-  sResult << "<meta http-equiv=\"Content-Style-Type\" content=\"text/css\">" << endl;  
-
-	
-  // stylesheet
-	sResult << "<style type=\"text/css\">" << endl << GetStylesheet(p_sImgPath) << endl << "</style>";
-
+  sResult << "<meta http-equiv=\"Content-Style-Type\" content=\"text/css\">" << endl; 
+	sResult << "<link href=\"/presentation/style.css\" rel=\"stylesheet\" type=\"text/css\" media=\"screen\" />" << endl;
 	
   
   /*sResult << "<script type=\"text/javascript\"> \r\n"
@@ -307,7 +306,7 @@ std::string CPresentationHandler::GetPageFooter(PRESENTATION_PAGE p_nPresentatio
 {
   std::stringstream sResult;
   
-  sResult << "<p style=\"padding-top: 20pt; text-align: center;\"><small>copyright &copy; 2005 - 2008 Ulrich V&ouml;lkel<!--<br />distributed under the GPL--></small></p>";
+  sResult << "<p style=\"padding-top: 20pt; text-align: center;\"><small>copyright &copy; 2005-2008 Ulrich V&ouml;lkel</small></p>";
 
   sResult << "</div>" << endl; // #content
   sResult << "</div>" << endl; // #mainframe

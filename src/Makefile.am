@@ -8,7 +8,8 @@ INCLUDES = \
   ${VORBISFILE_CFLAGS}\
   ${TAGLIB_CFLAGS}\
   ${SQLITE3_CFLAGS}\
-	-DFUPPES_DATADIR=\"$(datadir)/fuppes\"
+	-DFUPPES_DATADIR=\"$(datadir)/fuppes\" \
+	-DFUPPES_PLUGINDIR=\"$(libdir)/fuppes\"
 
 lib_LTLIBRARIES = libfuppes.la
 
@@ -73,8 +74,6 @@ libfuppes_la_SOURCES = \
   lib/ConnectionManager/ConnectionManager.h\
   lib/GENA/SubscriptionMgr.h\
   lib/GENA/EventNotification.h\
-  lib/Presentation/PresentationHandler.h\
-  lib/Presentation/Stylesheet.h\
   lib/Transcoding/WrapperBase.h\
   lib/Transcoding/TranscodingMgr.h\
   lib/Transcoding/TranscodingCache.h\
@@ -97,6 +96,8 @@ libfuppes_la_SOURCES = \
 	lib/Common/XMLParser.h\
 	lib/Common/Process.cpp\
 	lib/Common/Process.h\
+	lib/Plugins/Plugin.cpp\
+	lib/Plugins/Plugin.h\
   lib/MessageBase.cpp\
   lib/SSDP/UDPSocket.cpp\
 	lib/SSDP/SSDPCtrl.cpp\
@@ -127,9 +128,8 @@ libfuppes_la_SOURCES = \
   lib/GENA/SubscriptionMgr.cpp\
   lib/GENA/EventNotification.cpp\
   lib/Presentation/PresentationHandler.cpp\
+	lib/Presentation/PresentationHandler.h\
   lib/Presentation/Images/fuppes_small_png.cpp\
-  lib/Presentation/Images/header_gradient_png.cpp\
-  lib/Presentation/Images/header_gradient_small_png.cpp\
   lib/Presentation/Images/device_type_unknown_png.cpp\
   lib/Presentation/Images/device_type_media_server_png.cpp\
   lib/Transcoding/TranscodingMgr.cpp\
@@ -232,3 +232,9 @@ version.h: Makefile
 	if test -e "../version.sh"; then \
 		../version.sh; \
 	fi
+
+pixmapsdir = $(datadir)/fuppes
+dist_pixmaps_DATA = \
+	lib/Presentation/style.css \
+	lib/Presentation/header-gradient.png \
+	lib/Presentation/header-gradient-small.png

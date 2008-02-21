@@ -42,9 +42,6 @@
 #include "../config.h"
 #endif
 
-#include "Common/Process.h"
-#include "Common/RegEx.h"
-
 #ifdef HAVE_IMAGEMAGICK_WAND
 #include <wand/magick-wand.h>
 #endif
@@ -57,6 +54,7 @@ extern "C"
 }
 #endif
 
+#include <string.h>
 #include <string>
 
 using namespace std;
@@ -170,8 +168,6 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   #ifdef HAVE_LIBAVFORMAT
   av_register_all();
   #endif
-
-	CProcessMgr::init();
 	
   return FUPPES_TRUE;
 }
@@ -326,7 +322,7 @@ void fuppes_print_info()
   cout << endl;
 	cout << "configuration file:" << endl;
 	cout << "  " << CSharedConfig::Shared()->GetConfigFileName() << endl;
-	cout << endl;	
+	cout << endl;
 	
 #ifdef HAVE_FAAD
 	cout << "faad: enabled" << endl;
