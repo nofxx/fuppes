@@ -1,5 +1,5 @@
 /***************************************************************************
- *            fuppes_plugin.h
+ *            metadata_simage.c
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -22,55 +22,63 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "../../include/fuppes_plugin.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifndef _FUPPES_PLUGIN_H
-#define _FUPPES_PLUGIN_H
+#include <simage.h>
 	
-#include <string.h>
-#include <stdlib.h>
-#include "fuppes_plugin_types.h"
-
-#include <stdio.h>
-	
-inline void set_value(char** out, const char* in)
-{	
-	if(strlen(in) == 0) {
-		return;
-	}
-	
-	*out = (char*)realloc(*out, sizeof(char) * (strlen(in) + 1));	
-	strcpy(*out, in);
-}
-	
-//static void register_fuppes_plugin(plugin_info* info) = 0;
-
-/*static inline void add_extension(file_ext* info, char* ext)
+void register_fuppes_plugin(plugin_info* info)
 {
-	file_ext* tmp  = info->extension;
-	file_ext* next = NULL;
+	strcpy(info->plugin_name, "simage");
+	info->plugin_type = PT_METADATA;
+}
+
+int fuppes_metadata_file_open(plugin_info* plugin, const char* fileName)
+{
 	
-	if(tmp) {
-		next = (file_ext*)tmp->next;
+	if(simage_check_supported(fileName) == 1) {	
+		plugin->user_data = malloc((strlen(fileName)+1) * sizeof(char));
+		strcpy(plugin->user_data, fileName);
+		return 0;
 	}
 	else {
-		tmp = (file_ext*)malloc(sizeof(file_ext));
-		tmp->next = NULL;
-		next = tmp;
+		return -1;
 	}
-	
-	while(next != NULL) {
-		tmp = next;
-		next = (file_ext*)next->next;
-	}
-	
-	strcpy(tmp->ext, ext);
-	tmp->next = NULL;	
-}*/
+}
 
-#endif //_FUPPES_PLUGIN_H
+int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
+{
+	metadata->type = MD_IMAGE;
+	
+	unsigned char* img;
+	int width;
+	int height;
+	int numComponents;
+		
+	img = simage_read_image((const char*)plugin->user_data, &width, &height, &numComponents);
+	if(img == NULL) {
+		return -1;
+	}
+	simage_free_image(img);
+	
+	metadata->width  = width;
+	metadata->height = height;
+	
+	return 0;
+}
+
+void fuppes_metadata_file_close(plugin_info* plugin)
+{
+	free(plugin->user_data);
+	plugin->user_data = NULL;
+}
+
+void unregister_fuppes_plugin(plugin_info* info)
+{
+}
 
 #ifdef __cplusplus
 }

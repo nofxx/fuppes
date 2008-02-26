@@ -6,7 +6,6 @@ INCLUDES = \
   ${LIBXML_CFLAGS}\
   ${PCRE_CFLAGS}\
   ${VORBISFILE_CFLAGS}\
-  ${TAGLIB_CFLAGS}\
   ${SQLITE3_CFLAGS}\
 	-DFUPPES_DATADIR=\"$(datadir)/fuppes\" \
 	-DFUPPES_PLUGINDIR=\"$(libdir)/fuppes\"
@@ -22,8 +21,7 @@ fuppes_LDFLAGS = \
 	${UUID_LIBS}\
 	${LIBXML_LIBS}\
 	${PCRE_LIBS}\
-	${SQLITE3_LIBS}\
-	${TAGLIB_LIBS}
+	${SQLITE3_LIBS}
 
 if BUILD_DAEMON
 bin_PROGRAMS += fuppesd

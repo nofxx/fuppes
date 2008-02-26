@@ -19,6 +19,7 @@ AM_PROG_INSTALL_STRIP
 AC_FUNC_FSEEKO
 AC_TYPE_OFF_T
 AC_SYS_LARGEFILE
+AC_C_BIGENDIAN
 
 PKG_PROG_PKG_CONFIG
 
@@ -84,6 +85,9 @@ have_taglib=no
 
 AH_TEMPLATE([HAVE_TAGLIB], [])
 
+TAGLIB_CFLAGS=""
+TAGLIB_LIBS=""
+
 if test "x$use_taglib" = "xyes"; then
 
 if test -z "$TAGLIB_CONFIG"; then
@@ -99,18 +103,22 @@ else
 
   AC_MSG_CHECKING(TAGLIB_CFLAGS)
   TAGLIB_CFLAGS=`$TAGLIB_CONFIG --cflags`
-	FUPPES_CFLAGS="$FUPPES_CFLAGS $TAGLIB_CFLAGS"
+	#FUPPES_CFLAGS="$FUPPES_CFLAGS $TAGLIB_CFLAGS"
   AC_MSG_RESULT($TAGLIB_CFLAGS)
-  
+
 	AC_MSG_CHECKING(TAGLIB_LIBS)
 	TAGLIB_LIBS=`$TAGLIB_CONFIG --libs`
-  FUPPES_LIBS="$FUPPES_LIBS $TAGLIB_LIBS"
+  #FUPPES_LIBS="$FUPPES_LIBS $TAGLIB_LIBS"
   AC_MSG_RESULT($TAGLIB_LIBS)
-  
+
   have_taglib=yes
 fi
-
 fi
+
+AM_CONDITIONAL(TAGLIB_METADATA, test "x$have_taglib" = "xyes")
+AC_SUBST(TAGLIB_CFLAGS)
+AC_SUBST(TAGLIB_LIBS)
+
 # END TAGLIB
 
 #
@@ -144,13 +152,9 @@ if test "x$use_imagemagick" = "xyes"; then
 	IMAGEMAGICK_WAND_CFLAGS=""
   IMAGEMAGICK_WAND_LIBS=""
   PKG_CHECK_MODULES(IMAGEMAGICK_WAND, Wand >= 6.2.4, have_magickwand=yes, have_magickwand=no)
-	if test "x$have_magickwand" = "xyes"; then
-		AC_DEFINE([HAVE_IMAGEMAGICK_WAND], [1], [])
-    FUPPES_CFLAGS="$FUPPES_CFLAGS $IMAGEMAGICK_WAND_CFLAGS"
-		FUPPES_LIBS="$FUPPES_LIBS $IMAGEMAGICK_WAND_LIBS"
-  fi
 
 fi
+AM_CONDITIONAL(MAGICK_WAND_METADATA, test "x$have_magickwand" = "xyes")
 #end ImageMagick
 
 
@@ -219,6 +223,7 @@ if test "x$use_libavformat" = "xyes"; then
     AC_MSG_NOTICE([*** libavformat (FFmpeg) support disabled ***]);
   fi 
 fi
+AM_CONDITIONAL(LIBAVFORMAT_METADATA, test "x$have_libavformat" = "xyes")
 # end libavformat
 
 
@@ -469,6 +474,8 @@ AM_CONDITIONAL(DISABLE_TRANSCODING, test x$ENABLE_TRANSCODING = xfalse)
 
 
 AH_TEMPLATE([HAVE_SIMAGE], [])
+SIMAGE_CFLAGS=""
+SIMAGE_LIBS=""
 have_simage=no
 if test -z "$SIMAGE_CONFIG"; then
   AC_PATH_PROG(SIMAGE_CONFIG, simage-config, no)
@@ -491,6 +498,9 @@ else
   
   have_simage=yes
 fi
+AM_CONDITIONAL(SIMAGE_METADATA, test "x$have_simage" = "xyes")
+AC_SUBST(SIMAGE_CFLAGS)
+AC_SUBST(SIMAGE_LIBS)
 
 
 dnl Checks for header files.
@@ -708,18 +718,20 @@ echo ""
 
 
 echo "  metadata extraction"
-# taglib
-if test "x$have_taglib" = "xyes"; then
-  echo "    taglib     : enabled  (mp3, ogg, flac & mpc metadata extraction)"
-else
-  echo "    taglib     : disabled (mp3, ogg, flac & mpc metadata extraction)"
-fi
-
 # mpeg4ip
 if test "x$have_mpeg4ip" = "xyes"; then
   echo "    mpeg4ip    : enabled  (mp4/ma4 metadata extraction)"
 else
   echo "    mpeg4ip    : disabled (mp4/ma4 metadata extraction)"
+fi
+echo ""
+
+echo "  metadata extraction plugins"
+# taglib
+if test "x$have_taglib" = "xyes"; then
+  echo "    taglib     : enabled  (mp3, ogg, flac & mpc metadata extraction)"
+else
+  echo "    taglib     : disabled (mp3, ogg, flac & mpc metadata extraction)"
 fi
 
 # ImageMagick

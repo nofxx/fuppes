@@ -42,18 +42,6 @@
 #include "../config.h"
 #endif
 
-#ifdef HAVE_IMAGEMAGICK_WAND
-#include <wand/magick-wand.h>
-#endif
-
-#ifdef HAVE_LIBAVFORMAT
-extern "C"
-{ 
-  #include <avformat.h>
-  #include <avcodec.h>
-}
-#endif
-
 #include <string.h>
 #include <string>
 
@@ -159,16 +147,6 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   if(!CSharedConfig::Shared()->SetupConfig())
     return FUPPES_FALSE;
 
-	#ifdef HAVE_IMAGEMAGICK_WAND
-	#ifdef WIN32
-	MagickWandGenesis();
-	#endif
-  #endif
-
-  #ifdef HAVE_LIBAVFORMAT
-  av_register_all();
-  #endif
-	
   return FUPPES_TRUE;
 }
 
@@ -224,10 +202,6 @@ int fuppes_stop()
 int fuppes_cleanup()
 {
   xmlCleanupParser();
-    
-  #ifdef HAVE_IMAGEMAGICK_WAND  
-	MagickWandTerminus();
-  #endif
     
   // cleanup winsockets
   #ifdef WIN32

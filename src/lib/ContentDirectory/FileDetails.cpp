@@ -29,31 +29,10 @@
 #include "../SharedLog.h"
 #include "../Transcoding/TranscodingMgr.h"
 #include "../DeviceSettings/DeviceIdentificationMgr.h"
-
-#ifdef HAVE_TAGLIB
-#include <fileref.h>
-#include <tfile.h>
-#include <tag.h>
-#endif
+#include "../Plugins/Plugin.h"
 
 #ifdef HAVE_MPEG4IP
 #include <mp4.h>
-#endif
-
-#ifdef HAVE_IMAGEMAGICK_WAND
-#include <wand/magick-wand.h>
-#endif
-
-#ifdef HAVE_LIBAVFORMAT
-extern "C"
-{ 
-  #include <avformat.h>
-  #include <avcodec.h>
-}
-#endif
-
-#ifdef HAVE_SIMAGE
-#include <simage.h>
 #endif
 
 #include <sstream>
@@ -88,7 +67,6 @@ CFileDetails::~CFileDetails()
 OBJECT_TYPE CFileDetails::GetObjectType(std::string p_sFileName)
 {
   string sExt = ExtractFileExt(p_sFileName);
-  
   return CDeviceIdentificationMgr::Shared()->DefaultDevice()->ObjectType(sExt);
 }
 
@@ -167,7 +145,6 @@ bool CFileDetails::IsSupportedFileExtension(std::string p_sFileExtension)
   return CDeviceIdentificationMgr::Shared()->DefaultDevice()->Exists(p_sFileExtension);
 }
 
-
 bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SAudioItem* pMusicTrack)
 {
   string sExt = ExtractFileExt(p_sFileName);
@@ -182,97 +159,47 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SAudioItem* pMu
 		#endif			
 	}
 	else {
-		#ifdef HAVE_TAGLIB  
-		return GetMusicTrackDetailsTaglib(p_sFileName, pMusicTrack);
-		#else
-		return false;
-		#endif
+		CMetadataPlugin* audio = CPluginMgr::metadataPlugin("taglib");
+		metadata_t metadata;
+		if(audio && audio->openFile(p_sFileName)) {
+			
+			init_metadata(&metadata);			
+			if(audio->readData(&metadata)) {
+
+				pMusicTrack->sTitle 					= TrimWhiteSpace(metadata.title);  
+				pMusicTrack->sDuration				= metadata.duration;
+				pMusicTrack->nNrAudioChannels =	metadata.channels;
+				pMusicTrack->nBitrate 				= metadata.bitrate;
+				pMusicTrack->nBitsPerSample 	= 0;
+				pMusicTrack->nSampleRate 			= metadata.samplerate;
+				pMusicTrack->sArtist 					= TrimWhiteSpace(metadata.artist);
+				pMusicTrack->sAlbum 					= TrimWhiteSpace(metadata.album);
+				pMusicTrack->sGenre 					= TrimWhiteSpace(metadata.genre);
+				pMusicTrack->sDescription 		= TrimWhiteSpace(metadata.description);
+				pMusicTrack->nOriginalTrackNumber = metadata.track_no;
+				//pMusicTrack->sDate 					= sDate.str();
+
+				if(pMusicTrack->sArtist.empty()) {
+					pMusicTrack->sArtist = "unknown";
+				}			 
+				if(pMusicTrack->sAlbum.empty()) {
+					pMusicTrack->sAlbum = "unknown";
+				}				
+				if(pMusicTrack->sGenre.empty()) {
+					pMusicTrack->sGenre = "unknown";
+				}
+				
+				audio->closeFile();
+				free_metadata(&metadata);
+				return true;
+			}
+			free_metadata(&metadata);
+		}
 	}
+	
+	return false;
 }
 
-#ifdef HAVE_TAGLIB
-bool CFileDetails::GetMusicTrackDetailsTaglib(std::string p_sFileName, SAudioItem* pMusicTrack)
-{  
-  TagLib::FileRef pFile(p_sFileName.c_str());
-  
-	if (pFile.isNull()) {
-	  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "taglib error");
-		return false;
-	}
-	
-	TagLib::String sTmp;
-	unsigned int nTmp;
-	
-	// title
-	sTmp = pFile.tag()->title();
-  pMusicTrack->sTitle = TrimWhiteSpace(sTmp.to8Bit(true));  
-  
-	// duration	
-	long length = pFile.audioProperties()->length();  
-  int hours, mins, secs;
-    
-  secs  = length % 60;
-  length /= 60;
-  mins  = length % 60;
-  hours = length / 60;  
-
-  char szDuration[12];
-	sprintf(szDuration, "%02d:%02d:%02d.00", hours, mins, secs);
-	szDuration[11] = '\0';  
-  pMusicTrack->sDuration = szDuration;  
-	
-	// channels
-	pMusicTrack->nNrAudioChannels = pFile.audioProperties()->channels();
-	
-	// bitrate
-	pMusicTrack->nBitrate = (pFile.audioProperties()->bitrate() * 1024);
-	
-  pMusicTrack->nBitsPerSample = 0;
-  
-	// samplerate
-	pMusicTrack->nSampleRate = pFile.audioProperties()->sampleRate();
-	
-  // size
-  pMusicTrack->nSize = pFile.file()->length();
-     
-	// artist
-  sTmp = pFile.tag()->artist();
-  pMusicTrack->sArtist = TrimWhiteSpace(sTmp.to8Bit(true));  
-  if(pMusicTrack->sArtist.empty()) {
-    pMusicTrack->sArtist = "unknown";
-  }   
-    
-  // album
-  sTmp = pFile.tag()->album();
-  pMusicTrack->sAlbum = TrimWhiteSpace(sTmp.to8Bit(true));  
-  if(pMusicTrack->sAlbum.empty()) {
-    pMusicTrack->sAlbum = "unknown";
-  }  
-  
-  // genre
-	sTmp = pFile.tag()->genre();
-  pMusicTrack->sGenre = TrimWhiteSpace(sTmp.to8Bit(true));   
-  if(pMusicTrack->sGenre.empty()) {
-    pMusicTrack->sGenre = "unknown";
-  }
-
-  // description/comment
-	sTmp = pFile.tag()->comment();
-	pMusicTrack->sDescription = TrimWhiteSpace(sTmp.to8Bit(true));
-
-  // track no.
-	nTmp = pFile.tag()->track();
-	pMusicTrack->nOriginalTrackNumber = nTmp;
-
-  // date/year
-	nTmp = pFile.tag()->year();
-  stringstream sDate;
-  sDate << nTmp;
-  pMusicTrack->sDate = sDate.str();
-
-}
-#endif
-		
 #ifdef HAVE_MPEG4IP
 bool CFileDetails::GetMusicTrackDetailsMPEG4IP(std::string p_sFileName, SAudioItem* pMusicTrack)
 {
@@ -358,176 +285,62 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
   if(!CDeviceIdentificationMgr::Shared()->DefaultDevice()->FileSettings(sExt)->ExtractMetadata())
     return false;
 	
-	#ifdef HAVE_SIMAGE
-	if(simage_check_supported(p_sFileName.c_str()) == 1) {
+	CMetadataPlugin* image = CPluginMgr::metadataPlugin("simage");
+	metadata_t metadata;
+	if(image && image->openFile(p_sFileName)) {
 		
-		unsigned char* img;
-		int width;
-		int height;
-		int numComponents;
-		
-		img = simage_read_image(p_sFileName.c_str(), &width, &height, &numComponents);
-		if(img == NULL) {
-			cout << simage_get_last_error() << endl;
-			return false;
+		if(image->readData(&metadata)) {
+			pImageItem->nWidth  = metadata.width;
+			pImageItem->nHeight = metadata.height;
+			
+			image->closeFile();
+			return true;
 		}
-		simage_free_image(img);
-	
-		pImageItem->nWidth  = width;
-		pImageItem->nHeight = height;
-		
-		return true;
 	}
-	#endif
 	
-  #ifdef HAVE_IMAGEMAGICK_WAND
-	MagickBooleanType status;
-  MagickWand* magick_wand;
-  
-  magick_wand = NewMagickWand();	
-  status = MagickReadImage(magick_wand, p_sFileName.c_str());	
-	
-	if (status == MagickFalse) {
-	
-		ExceptionType severity; 
-		char* description;
-		description = MagickGetException(magick_wand, &severity);
-		(void)fprintf(stderr,"%s %s %lu %s\n", GetMagickModule(), description);
-		description = (char*)MagickRelinquishMemory(description);	
-	
-		magick_wand = DestroyMagickWand(magick_wand);
-		return false;
+	image = CPluginMgr::metadataPlugin("magickWand");
+	if(image && image->openFile(p_sFileName)) {
+				
+		if(image->readData(&metadata)) {
+			pImageItem->nWidth  = metadata.width;
+			pImageItem->nHeight = metadata.height;
+			
+			image->closeFile();
+			return true;
+		}
 	}
-		
-	pImageItem->nWidth  = MagickGetImageWidth(magick_wand);
-	pImageItem->nHeight = MagickGetImageHeight(magick_wand);
 	
-	magick_wand = DestroyMagickWand(magick_wand);
-
-	return true;
-	#endif
-	
-	return false;	
+	return false;
 }
 
 bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoItem)
 {
-  #ifdef HAVE_LIBAVFORMAT
 	string sExt = ExtractFileExt(p_sFileName);  
   if(!CDeviceIdentificationMgr::Shared()->DefaultDevice()->FileSettings(sExt)->ExtractMetadata())
-    return false;  
-  
-	AVFormatContext *pFormatCtx;
+    return false;
 	
-	if(av_open_input_file(&pFormatCtx, p_sFileName.c_str(), NULL, 0, NULL) != 0) {
-	  cout << "error open av file: " << p_sFileName << endl;
-		return false;
-	}
-		
-	if(av_find_stream_info(pFormatCtx) < 0) {
-	  cout << "error reading stream info: " << p_sFileName << endl;
-		av_close_input_file(pFormatCtx);
-	  return false;
-	}
-		
-	// duration
-	if(pFormatCtx->duration != AV_NOPTS_VALUE) {
-  	//cout << pFormatCtx->duration << endl;
- 
-	  int hours, mins, secs, us;
-		secs = pFormatCtx->duration / AV_TIME_BASE;
-		us   = pFormatCtx->duration % AV_TIME_BASE;
-		mins = secs / 60;
-		secs %= 60;
-		hours = mins / 60;
-		mins %= 60;
-	
-		char szDuration[12];
-	  sprintf(szDuration, "%02d:%02d:%02d.%02d", hours, mins, secs, (10 * us) / AV_TIME_BASE);
-	  szDuration[11] = '\0';
-		
-	  pVideoItem->sDuration = szDuration;
-	}
-	else {
-	  pVideoItem->sDuration = "NULL";
-	}
-	
-	// bitrate
-	if(pFormatCtx->bit_rate)
-  	pVideoItem->nBitrate = pFormatCtx->bit_rate / 8;
-	else
-	  pVideoItem->nBitrate = 0;
+	CMetadataPlugin* video = CPluginMgr::metadataPlugin("libavformat");
+	metadata_t metadata;
+	if(video && video->openFile(p_sFileName)) {
 
-  // filesize  
-	pVideoItem->nSize = pFormatCtx->file_size;	
-  
-	string codec_name;
-	char buf1[32];
-	
-	for(int i = 0; i < pFormatCtx->nb_streams; i++) 
-  {
-	  AVStream* pStream = pFormatCtx->streams[i];
-	  AVCodec* pCodec;
-				
-		pCodec = avcodec_find_decoder(pStream->codec->codec_id);
-		if(pCodec)
-		{			
-			codec_name = (char*)pCodec->name;
-         if (pStream->codec->codec_id == CODEC_ID_MP3) {
-             if (pStream->codec->sub_id == 2)
-                 codec_name = "mp2";
-             else if (pStream->codec->sub_id == 1)
-                 codec_name = "mp1";
-         }
-     } else if (pStream->codec->codec_id == CODEC_ID_MPEG2TS) {
-         // fake mpeg2 transport stream codec (currently not registered) 
-         codec_name = "mpeg2ts";
-     } else if (pStream->codec->codec_name[0] != '\0') {
-         codec_name = pStream->codec->codec_name;
-     } else {
-         // output avi tags 
-         if(   isprint(pStream->codec->codec_tag&0xFF) && isprint((pStream->codec->codec_tag>>8)&0xFF)
-            && isprint((pStream->codec->codec_tag>>16)&0xFF) && isprint((pStream->codec->codec_tag>>24)&0xFF)){
-             snprintf(buf1, sizeof(buf1), "%c%c%c%c / 0x%04X",
-                      pStream->codec->codec_tag & 0xff,
-                      (pStream->codec->codec_tag >> 8) & 0xff,
-                      (pStream->codec->codec_tag >> 16) & 0xff,
-                      (pStream->codec->codec_tag >> 24) & 0xff,
-                       pStream->codec->codec_tag);
-         } else {
-             snprintf(buf1, sizeof(buf1), "0x%04x", pStream->codec->codec_tag);
-         }
-         codec_name = buf1;
-     }		
-		
-		
-			switch(pStream->codec->codec_type)
-			{
-			  case CODEC_TYPE_VIDEO:
-					pVideoItem->nWidth  = pStream->codec->width;
-					pVideoItem->nHeight = pStream->codec->height;        
-          pVideoItem->sVCodec = codec_name;
-					break;
-			  case CODEC_TYPE_AUDIO:
-          pVideoItem->sACodec = codec_name;
-          
-					break;
-				case CODEC_TYPE_DATA:
-					break;
-				case CODEC_TYPE_SUBTITLE:
-					break;
-				default:
-					break;
-			}
-		
+		init_metadata(&metadata);
+		if(video->readData(&metadata)) {
+			
+			pVideoItem->nWidth  = metadata.width;
+			pVideoItem->nHeight = metadata.height;
+			
+			pVideoItem->nBitrate = metadata.bitrate;
+			pVideoItem->sACodec  = metadata.audio_codec;
+			pVideoItem->sVCodec  = metadata.video_codec;
+
+			video->closeFile();
+			free_metadata(&metadata);
+			return true;
+		}
+		free_metadata(&metadata);
 	}
-		
-	av_close_input_file(pFormatCtx);
 	
-	return true;
-	#else
 	return false;
-	#endif
 }
 
 std::string CFileDetails::GuessDLNAProfileId(std::string p_sFileName)

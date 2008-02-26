@@ -37,6 +37,8 @@ CUPnPSearch::CUPnPSearch(std::string p_sMessage):
   CUPnPBrowseSearchBase(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_SEARCH, p_sMessage)
 {
   m_sParentIds = "";
+	m_SQLselect = "";
+	m_SQLtotalMatches = "";
 }                                     
 
 CUPnPSearch::~CUPnPSearch()
@@ -81,11 +83,11 @@ std::string BuildParentIdList(CContentDatabase* pDb, std::string p_sIds, std::st
     sResult = sResult + ", " + sSub + ", " + p_sIds;
   }
   
-  return sResult;
+  return sResult.c_str();
 }
 
 
-std::string CUPnPSearch::BuildSQL(bool p_bCount)
+bool CUPnPSearch::prepareSQL()
 {
   /*std::string sTest;
 	sTest = "(upnp:class contains \"object.item.imageItem\") and (dc:title = \"test \\\"dahhummm\\\" [xyz] §$%&(abc) titel\") or author exists true and (title exists false and (author = \"test\" or author = \"dings\"))";
@@ -106,7 +108,6 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
   
   stringstream sSql;
 
-  
   string sDevice = " is NULL ";
   
   unsigned int nContainerId = GetContainerIdAsUInt();
@@ -141,13 +142,9 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 	}
   
   
-  sSql <<
-    "select ";
-  if(p_bCount)
-    sSql << " count(*) as COUNT ";
-  else
-    sSql << " * ";  
-  
+	m_SQLselect = "select * ";
+	m_SQLtotalMatches  = "select count(*) as COUNT ";
+	
   sSql <<
     "from " <<
     "  OBJECTS o, MAP_OBJECTS m " <<
@@ -302,24 +299,27 @@ std::string CUPnPSearch::BuildSQL(bool p_bCount)
 			
 		}	while (rxSearch.SearchAgain());
 	}
-
+	
+	m_SQLselect += sSql.str();
+	m_SQLtotalMatches += sSql.str();
+	
+	sSql.str("");
   
+  // order by
+  sSql << " order by " << m_sortCriteriaSQL << " ";
+
+  // limit
+	if((m_nRequestedCount > 0) || (m_nStartingIndex > 0)) {
+    sSql << " limit " << m_nStartingIndex << ", ";
+    if(m_nRequestedCount == 0)
+      sSql << "-1";
+    else
+      sSql << m_nRequestedCount;
+	}
+
   // order by and limit are not needed
   // in a count request  
-  if(!p_bCount) {  
-    
-    // order by
-    sSql << " order by " << m_sortCriteriaSQL << " ";
-        
-    // limit
-	  if((m_nRequestedCount > 0) || (m_nStartingIndex > 0)) {
-      sSql << " limit " << m_nStartingIndex << ", ";
-      if(m_nRequestedCount == 0)
-        sSql << "-1";
-      else
-        sSql << m_nRequestedCount;
-    }
-  }
+	m_SQLselect += sSql.str();
 
-  return sSql.str();
+  return true;
 }

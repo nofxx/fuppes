@@ -29,38 +29,53 @@
 #include "../../config.h"
 #endif
 
+#include <map>
+
 #include "../Common/Common.h"
 
 #include "../../../include/fuppes_plugin.h"
 
 typedef void (*registerPlugin_t)(plugin_info* info);
 
-class CPlugin;
+class CMetadataPlugin;
 
 class CPluginMgr
 {
 	public:
 		static void init(std::string pluginDir);
 	
+		static CMetadataPlugin* metadataPlugin(std::string pluginName);
+	
 	private:
 		static CPluginMgr* m_instance;
+	
+		std::map<std::string, CMetadataPlugin*> m_metadataPlugins;
+		std::map<std::string, CMetadataPlugin*>::iterator m_metadataPluginsIter;
 };
 
 class CPlugin
 {
 	protected:
 		CPlugin(fuppesLibHandle handle, plugin_info* info);
-		~CPlugin();
 	
 	public:
+		virtual ~CPlugin();
 		PLUGIN_TYPE		pluginType() { return m_pluginInfo.plugin_type; }
 		
 		virtual bool 	initPlugin() = 0;
+		virtual bool  openFile(std::string) { return false; }
+		virtual bool	readData(metadata_t*) { return false; }
+		virtual void	closeFile() {};
 	
-	private:
+	protected:
 		fuppesLibHandle		m_handle;
 		plugin_info				m_pluginInfo;
 };
+
+
+typedef int		(*metadataFileOpen_t)(plugin_info* plugin, const char* fileName);
+typedef int		(*metadataRead_t)(plugin_info* plugin, metadata_t* audio);
+typedef void	(*metadataFileClose_t)(plugin_info* plugin);
 
 class CMetadataPlugin: public CPlugin
 {
@@ -69,6 +84,15 @@ class CMetadataPlugin: public CPlugin
 			CPlugin(handle, info) {}
 	
 		bool initPlugin();
+	
+		bool openFile(std::string fileName);
+		bool readData(metadata_t* metadata);
+		void closeFile();
+	
+	private:
+		metadataFileOpen_t				m_fileOpen;
+		metadataRead_t						m_readData;
+		metadataFileClose_t				m_fileClose;
 };
 
 /*class CAudioDecoderPlugin: public CPlugin

@@ -1035,20 +1035,19 @@ void CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_ps
 {
 	CContentDatabase* pDb  = new CContentDatabase();
 	CSelectResult*    pRow = NULL;
-  string            sSql;
+  //string            sSql;
   unsigned int      nTotalMatches = 0;
   unsigned int      nNumberReturned = 0;
   
   // get total matches     
-  sSql = pSearch->BuildSQL(true);  
-  pDb->Select(sSql);
+	pSearch->prepareSQL();
+  pDb->Select(pSearch->SQLtotalMatches());
   if(!pDb->Eof()) {
     nTotalMatches = atoi(pDb->GetResult()->GetValue("COUNT").c_str());
-  }  
+  }
      
   // get items     	
-  sSql = pSearch->BuildSQL(false);
-	pDb->Select(sSql);	
+	pDb->Select(pSearch->SQLselect());
 	
   // build result
   xmlTextWriterPtr writer;

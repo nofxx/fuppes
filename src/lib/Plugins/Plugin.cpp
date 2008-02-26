@@ -23,6 +23,7 @@
  */
 
 #include "Plugin.h"
+#include "../SharedLog.h"
 
 #include <dirent.h>
 #include <sys/stat.h>
@@ -96,12 +97,14 @@ void CPluginMgr::init(std::string pluginDir)
 			}
 
 			regPlugin(&pluginInfo);
-			
-			//cout << "name:" << pluginInfo.plugin_name << endl;
-			
+
 			switch(pluginInfo.plugin_type) {
 				case PT_METADATA:
 					plugin = new CMetadataPlugin(handle, &pluginInfo);
+				  if(plugin->initPlugin()) {
+						m_instance->m_metadataPlugins[string(pluginInfo.plugin_name)] =	(CMetadataPlugin*)plugin;
+						CSharedLog::Log(L_NORM, __FILE__, __LINE__, "registered metadata plugin \"%s\"", pluginInfo.plugin_name);
+					}
 					break;
 				case PT_AUDIO_DECODER:
 					//plugin = new CAudioDecoderPlugin();
@@ -114,17 +117,29 @@ void CPluginMgr::init(std::string pluginDir)
 					//plugin = new CTranscoderPlugin();
 					break;
 			}
-
-			if(plugin) {
-				plugin->initPlugin();
-			}
 		}
 		catch(EException ex) {
 		}
 		
 	} // while
-	
+	closedir(dir);
 }
+
+CMetadataPlugin* CPluginMgr::metadataPlugin(std::string pluginName)
+{
+	m_instance->m_metadataPluginsIter =
+		m_instance->m_metadataPlugins.find(pluginName);
+	
+	if(m_instance->m_metadataPluginsIter != m_instance->m_metadataPlugins.end()) {
+		return m_instance->m_metadataPlugins[pluginName];
+	}
+	else {
+		return NULL;
+	}
+}
+
+
+
 
 CPlugin::CPlugin(fuppesLibHandle handle, plugin_info* info)
 {
@@ -137,9 +152,49 @@ CPlugin::CPlugin(fuppesLibHandle handle, plugin_info* info)
 
 CPlugin::~CPlugin()
 {
+	FuppesCloseLibrary(m_handle);
 }
 
 bool CMetadataPlugin::initPlugin()
 {
+	m_fileOpen = NULL;
+	m_readData = NULL;	
+	m_fileClose = NULL;
+
+	m_fileOpen = (metadataFileOpen_t)FuppesGetProcAddress(m_handle, "fuppes_metadata_file_open");
+	if(m_fileOpen == NULL) {
+		return false;
+	}
+	
+	m_readData	= (metadataRead_t)FuppesGetProcAddress(m_handle, "fuppes_metadata_read");
+	if(m_readData == NULL) {
+		return false;
+	}
+	
+	m_fileClose	= (metadataFileClose_t)FuppesGetProcAddress(m_handle, "fuppes_metadata_file_close");
+	
 	return true;
+}
+
+bool CMetadataPlugin::openFile(std::string fileName)
+{	
+	if(m_fileOpen == NULL) {
+		return false;
+	}
+	return ((m_fileOpen(&m_pluginInfo, fileName.c_str())) == 0);
+}
+
+bool CMetadataPlugin::readData(metadata_t* metadata)
+{	
+	if(m_readData == NULL) {
+		return false;
+	}
+	return (m_readData(&m_pluginInfo, metadata) == 0);
+}
+
+void CMetadataPlugin::closeFile()
+{
+	if(m_fileClose) {
+		m_fileClose(&m_pluginInfo);
+	}
 }
