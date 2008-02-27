@@ -144,7 +144,13 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   xmlInitParser();
 
   // init config
-  if(!CSharedConfig::Shared()->SetupConfig())
+	#ifdef WIN32
+	string appDir = argv[0];
+	cout << appDir << endl;
+	if(!CSharedConfig::Shared()->SetupConfig(appDir))  
+	#else
+	if(!CSharedConfig::Shared()->SetupConfig())
+	#endif
     return FUPPES_FALSE;
 
   return FUPPES_TRUE;
@@ -170,11 +176,13 @@ int fuppes_start()
   if(pFuppes)
     return FUPPES_FALSE;
 
+	#ifndef WIN32
 	#ifndef MSG_NOSIGNAL
 	#ifndef SO_NOSIGPIPE
 	signal(SIGPIPE, SIG_IGN);
 	#endif
-	#endif	
+	#endif
+	#endif
 	
   // create fuppes instance
   try {

@@ -41,6 +41,7 @@ int taglib_open_file(plugin_info* info, const char* fileName)
 		info->user_data = NULL;
 		return -1;
 	}
+	return 0;
 }
 
 void taglib_get_title(plugin_info* plugin, metadata_t* audio)
@@ -153,6 +154,8 @@ int fuppes_metadata_file_open(plugin_info* plugin, const char* fileName)
 {
 	if(taglib_open_file(plugin, fileName) != 0)
 		return -1;
+		
+	return 0;
 }
 
 int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)

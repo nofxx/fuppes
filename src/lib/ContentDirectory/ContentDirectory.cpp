@@ -803,6 +803,11 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
 			xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST "0x0");
 		}
 	}
+	
+	// size
+  if(!bTranscode && pUPnPBrowse->IncludeProperty("res@size") && !pSQLResult->IsNull("SIZE")) {
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->GetValue("SIZE").c_str());
+  }
   
 	sExt = pUPnPBrowse->DeviceSettings()->Extension(sExt);
 																									

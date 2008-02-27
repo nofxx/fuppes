@@ -35,7 +35,9 @@
 #include <string>
 #include <map>
 #include <signal.h>
+#ifndef WIN32
 #include <sys/wait.h>
+#endif
 
 class CProcess;
 
@@ -46,7 +48,9 @@ class CProcessMgr {
 		~CProcessMgr();
 	
 		static void	init();
+		#ifndef WIN32
 		static void signal(pid_t pid, int sig);
+		#endif
 	
 		static void register_proc(CProcess* proc);
 		static void unregister_proc(CProcess* proc);
@@ -54,8 +58,10 @@ class CProcessMgr {
 	private:
 		static CProcessMgr* 									m_instance;
 	
+		#ifndef WIN32
 		std::map<pid_t, CProcess*>						m_processes;
-		std::map<pid_t, CProcess*>::iterator	m_processesIter;
+		std::map<pid_t, CProcess*>::iterator	m_processesIter;		
+		#endif
 		fuppesThreadMutex											m_mutex;
 };
 
@@ -76,7 +82,9 @@ class CProcess {
 		void	setInFile(std::string fileName) { m_inFile = fileName; }
 		void	setOutFile(std::string fileName) { m_outFile = fileName; }
 	
+		#ifndef WIN32
 		pid_t	pid() { return m_pid; }
+		#endif
 	
 	private:
 		void parseArgs(std::string cmd);
@@ -90,7 +98,6 @@ class CProcess {
 	
 #ifndef WIN32
 		pid_t	m_pid;
-#else
 #endif
 		
 };

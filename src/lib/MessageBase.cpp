@@ -34,8 +34,8 @@ CMessageBase::CMessageBase()
   m_sHeader  = "";
   m_sContent = "";
 	
-	bzero(&m_LocalEp, sizeof(struct sockaddr_in));
-	bzero(&m_RemoteEp, sizeof(struct sockaddr_in));
+	memset(&m_LocalEp, '\0', sizeof(struct sockaddr_in));
+	memset(&m_RemoteEp, '\0', sizeof(struct sockaddr_in));
 }
 
 CMessageBase::~CMessageBase()

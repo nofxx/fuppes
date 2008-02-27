@@ -98,15 +98,16 @@ CSharedConfig::~CSharedConfig()
 
 
 #ifdef WIN32
-bool CSharedConfig::SetupConfig(std::string applicationPath)
+bool CSharedConfig::SetupConfig(std::string applicationDir)
 {   
-	if((applicationPath.length() > 1) && 
-		 (applicationPath.substr(applicationPath.length() - 1).compare(upnpPathDelim) != 0)) {
-    applicationPath += upnpPathDelim;
+	applicationDir = ExtractFilePath(applicationDir);
+
+	if((applicationDir.length() > 1) && 
+		 (applicationDir.substr(applicationDir.length() - 1).compare(upnpPathDelim) != 0)) {
+    applicationDir += upnpPathDelim;
 	}
-	
-	m_dataDir 	= applicationPath + "data/";
-	m_pluginDir = applicationPath + "plugins/";
+	m_dataDir 	= applicationDir + "data/";
+	m_pluginDir = applicationDir + "plugins/";
 #else
 bool CSharedConfig::SetupConfig()
 { 

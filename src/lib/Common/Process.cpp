@@ -28,6 +28,7 @@
 #include <string.h>
 using namespace std;
 
+#ifndef WIN32
 void on_signal(int sig)
 {
 	pid_t pid;
@@ -44,6 +45,7 @@ void on_signal(int sig)
 		CProcessMgr::signal(pid, status);
   }
 }
+#endif
 
 CProcessMgr* CProcessMgr::m_instance = NULL;
 
@@ -63,9 +65,12 @@ void CProcessMgr::init()
 		m_instance = new CProcessMgr();
 	}
 	
+	#ifndef WIN32
 	::signal(SIGCHLD, &on_signal);
+	#endif
 }
 
+#ifndef WIN32
 void CProcessMgr::signal(pid_t pid, int sig)
 {
 	CProcess* proc = m_instance->m_processes[pid];	
@@ -73,12 +78,15 @@ void CProcessMgr::signal(pid_t pid, int sig)
 		proc->m_isRunning = false;
 	}
 }
+#endif
 	
 void CProcessMgr::register_proc(CProcess* proc)
 {
 	fuppesThreadLockMutex(&m_instance->m_mutex);
 	
+	#ifndef WIN32
 	m_instance->m_processes[proc->pid()] = proc;
+	#endif
 	
 	fuppesThreadUnlockMutex(&m_instance->m_mutex);
 }
@@ -87,10 +95,12 @@ void CProcessMgr::unregister_proc(CProcess* proc)
 {
 	fuppesThreadLockMutex(&m_instance->m_mutex);
 	
+	#ifndef WIN32
 	m_instance->m_processesIter = m_instance->m_processes.find(proc->pid());      
   if(m_instance->m_processesIter != m_instance->m_processes.end()) { 
 		m_instance->m_processes.erase(proc->pid());
-	}		
+	}
+	#endif
 	
 	fuppesThreadUnlockMutex(&m_instance->m_mutex);
 }

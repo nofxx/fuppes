@@ -28,6 +28,9 @@
 extern "C" {
 #endif
 
+#ifdef WIN32
+#define SIMAGE_DLL
+#endif
 #include <simage.h>
 	
 void register_fuppes_plugin(plugin_info* info)

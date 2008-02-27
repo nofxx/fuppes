@@ -57,7 +57,7 @@ class CSharedConfig
     static CSharedConfig* Shared();
 
 #ifdef WIN32
-    bool SetupConfig(std::string applicationPath);
+    bool SetupConfig(std::string applicationDir);
 #else
 		bool SetupConfig();
 #endif	

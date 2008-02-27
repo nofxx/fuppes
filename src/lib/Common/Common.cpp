@@ -522,6 +522,16 @@ void fuppesSleep(unsigned int p_nMilliseconds)
 }
 
 
+fuppes_off_t getFileSize(std::string fileName)
+{
+	struct stat Stat;  
+  if(stat(fileName.c_str(), &Stat) != 0)
+		return 0;
+
+	return Stat.st_size;
+}
+
+
 bool fuppesSocketSetNonBlocking(upnpSocket p_SocketHandle)
 {
   #ifdef WIN32     

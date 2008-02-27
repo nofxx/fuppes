@@ -54,6 +54,17 @@
 
 #endif
 
+#ifdef WIN32
+  #if SIZEOF_UNSIGNED_LONG_INT == 8
+  typedef unsigned long int fuppes_off_t;  
+	#elif SIZEOF_UNSIGNED_LONG_LONG_INT == 8
+	typedef unsigned long long int fuppes_off_t;  
+	#endif	
+#else
+  typedef off_t fuppes_off_t;
+#endif
+
+
 class EException: public std::exception
 {
   public:
@@ -116,6 +127,7 @@ std::string URLEncodeValueToPlain(std::string p_sValue);
 
 void fuppesSleep(unsigned int p_nMilliseconds);
 
+fuppes_off_t getFileSize(std::string fileName);
 
 #ifdef WIN32
   typedef SOCKET fuppesSocket;  
@@ -163,15 +175,7 @@ bool              FuppesCloseLibrary(fuppesLibHandle p_LibHandle);
 
 
 
-#ifdef WIN32
-  #if SIZEOF_UNSIGNED_LONG_INT == 8
-  typedef unsigned long int fuppes_off_t;  
-	#elif SIZEOF_UNSIGNED_LONG_LONG_INT == 8
-	typedef unsigned long long int fuppes_off_t;  
-	#endif	
-#else
-  typedef off_t fuppes_off_t;
-#endif
+
 
 
 

@@ -702,7 +702,8 @@ unsigned int InsertAudioFile(CContentDatabase* pDb, std::string p_sFileName, std
 	  return 0;
 		
   string sDlna = CFileDetails::Shared()->GuessDLNAProfileId(p_sFileName);
-  
+  TrackInfo.nSize = getFileSize(p_sFileName);
+	
 	stringstream sSql;
 	sSql << 
 	  "insert into OBJECT_DETAILS " <<
@@ -734,13 +735,14 @@ unsigned int InsertImageFile(CContentDatabase* pDb, std::string p_sFileName)
 	if(!CFileDetails::Shared()->GetImageDetails(p_sFileName, &ImageItem))
 	  return 0;
 	
-  string sDlna = CFileDetails::Shared()->GuessDLNAProfileId(p_sFileName);
-  
+  string sDlna = CFileDetails::Shared()->GuessDLNAProfileId(p_sFileName);  
+	
 	stringstream sSql;
 	sSql << 
 	  "insert into OBJECT_DETAILS " <<
-		"(IV_WIDTH, IV_HEIGHT, DLNA_PROFILE) " <<
+		"(SIZE, IV_WIDTH, IV_HEIGHT, DLNA_PROFILE) " <<
 		"values (" <<
+		getFileSize(p_sFileName) << ", " <<
 		ImageItem.nWidth << ", " <<
 		ImageItem.nHeight << ", " <<
     "'" << sDlna << "')";
@@ -757,7 +759,8 @@ unsigned int InsertVideoFile(CContentDatabase* pDb, std::string p_sFileName)
 	  return 0;  
   
   string sDlna = CFileDetails::Shared()->GuessDLNAProfileId(p_sFileName);
-    
+	VideoItem.nSize = getFileSize(p_sFileName);
+	 
 	stringstream sSql;
 	sSql << 
 	  "insert into OBJECT_DETAILS " <<
