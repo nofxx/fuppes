@@ -152,7 +152,7 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
 		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "header-gradient.png");
   }  
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/header-gradient-small.png") == 0) {
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/header-gradient-small.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
 		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "header-gradient-small.png");
   }  
@@ -250,13 +250,13 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
   
   /* title */
   sResult << "<div id=\"title\">" << endl;
-  sResult << "<img src=\"" << p_sImgPath << "fuppes-small.png\" style=\"float: left; margin-top: 7px; margin-left: 5px;\" />" << endl;
+  sResult << "<img src=\"" << p_sImgPath << "fuppes-small.png\" style=\"float: left; margin-top: 10px; margin-left: 5px;\" />" << endl;
   
-  sResult << "<p style=\"font-size: large; margin-top: 12px; margin-left: 65px; margin-bottom: 0px; padding: 0px;\">" << endl <<
+  sResult << "<p>" << endl <<
     "FUPPES - Free UPnP Entertainment Service<br />" << endl <<
-    "<span style=\"font-size: small; margin-left: 10px; padding: 0px;\">" <<
-    "Version: " << CSharedConfig::Shared()->GetAppVersion() << "&nbsp;&nbsp;&nbsp;" <<
-    "Host: "    << CSharedConfig::Shared()->GetHostname() << "&nbsp;&nbsp;&nbsp;" <<
+    "<span>" <<
+    "Version: " << CSharedConfig::Shared()->GetAppVersion() << " &bull; " <<
+    "Host: "    << CSharedConfig::Shared()->GetHostname() << " &bull; " <<
     "Address: " << CSharedConfig::Shared()->GetIPv4Address() <<
     "</span>"   << endl <<
     "</p>" << endl;
@@ -266,39 +266,26 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
   
   /* menu */
   sResult << "<div id=\"menu\">" << endl;
-  
-  sResult << "<div style=\"background-image: url(" << p_sImgPath << "header-gradient-small.png);" << endl <<
-             "background-repeat: repeat-x; color: #FFFFFF; height: 20px; font-weight: bold; text-align: center; \">" <<
-             "Menu</div>" << endl;
-    
-  /*
-  " <<  
-             "margin: 0px; padding-bottom: 2px; padding-top: 0px; text-indent: 5px;
-             */
-  
-  sResult << "<a href=\"/index.html\">Start</a>" << endl;
-  sResult << "<br />";
-  /*sResult << "<a href=\"/presentation/about.html\">About</a>" << endl;
-  sResult << "<br />";*/
-  sResult << "<a href=\"/presentation/options.html\">Options</a>" << endl;
-  sResult << "<br />";
-  sResult << "<a href=\"/presentation/status.html\">Status</a>" << endl;    
-  sResult << "<br />";
-  sResult << "<a href=\"/presentation/config.html\">Configuration</a>" << endl;    
-  sResult << "<br />";
-  sResult << "Debug" << endl;
+  sResult << "<div id=\"framehead\">Menu</div>" << endl;    
+
+  sResult << 
+    "<ul>" <<
+      "<li><a href=\"/index.html\">Start</a></li>" <<
+      "<li><a href=\"/presentation/options.html\">Options</a></li>" <<
+      "<li><a href=\"/presentation/status.html\">Status</a></li>" <<
+      "<li><a href=\"/presentation/config.html\">Configuration</a></li>" <<
+    "</ul>";
   
   sResult << "</div>" << endl;  
   /* menu end */
   
+
   sResult << "<div id=\"mainframe\">" << endl;
-  sResult << "<div style=\"background-image: url(" << p_sImgPath << "header-gradient-small.png);" << endl <<
-             "background-repeat: repeat-x; color: #FFFFFF; height: 20px; font-weight: bold; text-align: center; margin-left: 0px; \">" <<
-             p_sPageName << "</div>" << endl;     
+  sResult << "<div id=\"framehead\">" << p_sPageName << "</div>" << endl;
   
   sResult << "<div id=\"content\">" << endl;
   
-  return sResult.str();
+  return sResult.str().c_str();
 }
 
 
@@ -314,7 +301,7 @@ std::string CPresentationHandler::GetPageFooter(PRESENTATION_PAGE p_nPresentatio
   sResult << "</body>";
   sResult << "</html>";
   
-  return sResult.str();
+  return sResult.str().c_str();
 }
 
 /* GetXHTMLHeader */
@@ -326,7 +313,7 @@ std::string CPresentationHandler::GetXHTMLHeader()
   sResult << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " << endl;
   sResult << "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">" << endl;
   
-  return sResult.str();
+  return sResult.str().c_str();
 }
 
 /* GetIndexHTML */
@@ -356,7 +343,7 @@ std::string CPresentationHandler::GetIndexHTML(std::string p_sImgPath)
   sResult << "<h1>remote devices</h1>";
   sResult << BuildFuppesDeviceList(CSharedConfig::Shared()->GetFuppesInstance(0), p_sImgPath);
   
-  return sResult.str();
+  return sResult.str().c_str();
   
   //sResult << "<h2>Start</h2>" << endl;
   //*p_psImgPath = "Start";
@@ -380,7 +367,7 @@ std::string CPresentationHandler::GetAboutHTML(std::string p_sImgPath)
   //*p_psImgPath = "About";
 
   
-  return sResult.str();
+  return sResult.str().c_str();
 }
 
 std::string CPresentationHandler::GetOptionsHTML(std::string p_sImgPath)
@@ -405,7 +392,7 @@ std::string CPresentationHandler::GetOptionsHTML(std::string p_sImgPath)
 			sResult << "virtual container rebuild in progress" << endl;
 	}
   
-  return sResult.str();
+  return sResult.str().c_str();
 }
 
 std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
@@ -428,11 +415,8 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
     "<table rules=\"all\" style=\"font-size: 10pt; border-style: solid; border-width: 1px; border-color: #000000;\" cellspacing=\"0\" width=\"400\">" << endl <<
       "<thead>" << endl <<
         "<tr>" << endl <<        
-          "<th style=\"background-image: url(" << p_sImgPath << "header-gradient-small.png); color: #FFFFFF;\">" <<           
-          "Type" << "</th>" << 
-          "<th style=\"background-image: url(" << p_sImgPath << "header-gradient-small.png); color: #FFFFFF;\">" <<           
-          "Count" << 
-          "</th>" << endl <<
+          "<th>Type</th>" << 
+          "<th>Count</th>" << endl <<
         "</tr>" << endl <<
       "</thead>" << endl << 
       "<tbody>" << endl;  
@@ -590,7 +574,7 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
   sResult << sDeviceSettings << endl;
   // end device settings
   
-  return sResult.str();  
+  return sResult.str().c_str();  
 }
 
 
@@ -821,7 +805,7 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
   
   sResult << "</form>";
   
-  return sResult.str();  
+  return sResult.str().c_str();  
 }
 
 /* BuildFuppesDeviceList */
@@ -838,7 +822,7 @@ std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes, std::s
         "<thead>";
     /*sResult << "<tr><th colspan=\"2\"><a href=\"javascript:Klappen(" << i << ")\"><img src=\"plus.gif\" id=\"Pic" << i << "\" border=\"0\">x</a> ";
     sResult<< pDevice->GetFriendlyName() << "</th></tr>" << endl;*/
-    sResult << "<tr><th colspan=\"2\" style=\"background-image: url(" << p_sImgPath << "header-gradient-small.png); color: #FFFFFF;\">" <<
+    sResult << "<tr><th colspan=\"2\">" <<
                  
                  /*"<div style=\"float: left;\">";
                  switch(pDevice->GetDeviceType())
@@ -873,5 +857,5 @@ std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes, std::s
       "</table><br />"  << endl;    
   }
   
-  return sResult.str();
+  return sResult.str().c_str();
 }
