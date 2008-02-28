@@ -531,6 +531,39 @@ fuppes_off_t getFileSize(std::string fileName)
 	return Stat.st_size;
 }
 
+fuppes_off_t strToOffT(std::string value)
+{
+#ifdef WIN32
+	
+	#if SIZEOF_LONG_INT == 8
+	return long strtol(const char *restrict str, char **restrict endptr, int base);
+	#elif SIZEOF_LONG_LONG_INT == 8
+	return long long strtoll(const char *restrict str, char **restrict endptr, int base);
+	#endif
+	
+#else		
+
+	errno = 0;
+	fuppes_off_t result;
+	char* endptr;
+	
+	#if	SIZEOF_OFF_T == 8	
+	result = strtoll(value.c_str(), &endptr, 10);
+	#elif	SIZEOF_OFF_T == 4
+	result = strtol(value.c_str(), &endptr, 10);
+	#endif
+
+	if(errno != 0) {
+		if(errno == ERANGE) {
+			cout << "range error " << value << endl;
+		}
+		return -1;
+	}
+	
+	return result;
+#endif		
+}
+
 
 bool fuppesSocketSetNonBlocking(upnpSocket p_SocketHandle)
 {

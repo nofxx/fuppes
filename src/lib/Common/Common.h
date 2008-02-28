@@ -3,7 +3,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -55,10 +55,10 @@
 #endif
 
 #ifdef WIN32
-  #if SIZEOF_UNSIGNED_LONG_INT == 8
-  typedef unsigned long int fuppes_off_t;  
-	#elif SIZEOF_UNSIGNED_LONG_LONG_INT == 8
-	typedef unsigned long long int fuppes_off_t;  
+  #if SIZEOF_LONG_INT == 8
+  typedef long int fuppes_off_t;  
+	#elif SIZEOF_LONG_LONG_INT == 8
+	typedef long long int fuppes_off_t;  
 	#endif	
 #else
   typedef off_t fuppes_off_t;
@@ -128,6 +128,8 @@ std::string URLEncodeValueToPlain(std::string p_sValue);
 void fuppesSleep(unsigned int p_nMilliseconds);
 
 fuppes_off_t getFileSize(std::string fileName);
+
+fuppes_off_t strToOffT(std::string value);
 
 #ifdef WIN32
   typedef SOCKET fuppesSocket;  

@@ -95,7 +95,10 @@ CTranscodingCacheObject::~CTranscodingCacheObject()
   delete m_pAudioEncoder;
   delete m_pDecoder;
   
-  delete m_pTranscoder;
+	if(m_pTranscoder != NULL) {
+		unlink(m_sOutFileName.c_str());
+		delete m_pTranscoder;
+	}
 }
 
 bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceSettings* pDeviceSettings)

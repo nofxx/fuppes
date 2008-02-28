@@ -348,7 +348,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
       m_nBinContentPosition = p_nOffset;
     }
       
-    unsigned int nRead = 0;
+    fuppes_off_t nRead = 0;
     if((m_nBinContentLength - p_nOffset) < p_nSize)
       nRead = m_nBinContentLength - p_nOffset;
     else
@@ -638,22 +638,21 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
      sMatch2 = rxRANGE.Match(2);
 
     if(sMatch1.substr(0,1) != "-")
-      m_nRangeStart = atoll(rxRANGE.Match(1));
+      m_nRangeStart = strToOffT(rxRANGE.Match(1));
     else
       m_nRangeStart = 0;
     
     m_nRangeEnd = 0;
     
     string sSub;
-    if(sMatch1.substr(0, 1) == "-")
-    {
+    if(sMatch1.substr(0, 1) == "-") {
       sSub = sMatch1.substr(1, sMatch1.length());
-      m_nRangeEnd   = atoll(sSub.c_str());
+      m_nRangeEnd   = strToOffT(sSub.c_str());
     }
     else if(rxRANGE.SubStrings() > 2)
     {
       sSub = sMatch2.substr(1, sMatch2.length());
-      m_nRangeEnd   = atoll(sSub.c_str());
+      m_nRangeEnd   = strToOffT(sSub.c_str());
     }
   }
   
