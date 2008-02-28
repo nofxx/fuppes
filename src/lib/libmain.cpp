@@ -176,14 +176,10 @@ int fuppes_start()
   if(pFuppes)
     return FUPPES_FALSE;
 
-	#ifndef WIN32
-	#ifndef MSG_NOSIGNAL
-	#ifndef SO_NOSIGPIPE
+	#if !defined(WIN32) && !defined(MSG_NOSIGNAL) && !(SO_NOSIGPIPE)
 	signal(SIGPIPE, SIG_IGN);
 	#endif
-	#endif
-	#endif
-	
+
   // create fuppes instance
   try {
     pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUUID());

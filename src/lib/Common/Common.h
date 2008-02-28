@@ -52,6 +52,10 @@
 #include <Ws2tcpip.h>
 #include <shlwapi.h>
 
+#else
+
+#include <pthread.h>
+
 #endif
 
 #ifdef WIN32

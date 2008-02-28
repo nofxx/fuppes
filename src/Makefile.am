@@ -128,8 +128,6 @@ libfuppes_la_SOURCES = \
   lib/Presentation/PresentationHandler.cpp\
 	lib/Presentation/PresentationHandler.h\
   lib/Presentation/Images/fuppes_small_png.cpp\
-  lib/Presentation/Images/device_type_unknown_png.cpp\
-  lib/Presentation/Images/device_type_media_server_png.cpp\
   lib/Transcoding/TranscodingMgr.cpp\
   lib/Transcoding/TranscodingCache.cpp\
   lib/Transcoding/LameWrapper.h\

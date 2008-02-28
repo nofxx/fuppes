@@ -34,12 +34,8 @@
 #include "../HTTP/HTTPParser.h"
 #include "../DeviceSettings/DeviceIdentificationMgr.h"
 
-//#include "Images/fuppes_png.cpp"
+
 #include "Images/fuppes_small_png.cpp"
-/*#include "Images/header_gradient_png.cpp"
-#include "Images/header_gradient_small_png.cpp"*/
-#include "Images/device_type_unknown_png.cpp"
-#include "Images/device_type_media_server_png.cpp"
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
@@ -71,8 +67,6 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
  
   std::string sImgPath = "images/";
   std::string sPageName = "undefined";
-    
-  //cout << pMessage->GetRequest() << " "; // << endl;
   
   if((pMessage->GetRequest().compare("/") == 0) || (ToLower(pMessage->GetRequest()).compare("/index.html") == 0))
   {
@@ -155,21 +149,7 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/header-gradient-small.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
 		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "header-gradient-small.png");
-  }  
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/device-type-unknown.png") == 0) {
-    nPresentationPage = PRESENTATION_BINARY_IMAGE;
-		
-		char szImg[4096];
-		int nLen = Base64Decode(device_type_unknown_png, szImg, sizeof(szImg));
-		pResult->SetBinContent(szImg, nLen);
-  }  
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/device-type-media-server.png") == 0) {
-    nPresentationPage = PRESENTATION_BINARY_IMAGE;
-		
-		char szImg[4096];
-		int nLen = Base64Decode(device_type_media_server_png, szImg, sizeof(szImg));
-		pResult->SetBinContent(szImg, nLen);
-  }  
+  }
   
   if(nPresentationPage == PRESENTATION_BINARY_IMAGE) {
     pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    

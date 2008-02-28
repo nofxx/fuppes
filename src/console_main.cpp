@@ -30,6 +30,7 @@
 
 #include <iostream>
 #include <string>
+#include <unistd.h>
 
 #ifndef WIN32
 #include <signal.h>

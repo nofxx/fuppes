@@ -30,6 +30,10 @@
 #include <sstream>
 #include <string.h>
 
+#if (defined(__unix__) || defined(unix)) && !defined(USG)
+#include <sys/param.h>
+#endif
+
 using namespace std;
 
 #define MULTICAST_PORT 1900
@@ -74,7 +78,7 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
     throw EException(__FILE__, __LINE__, "failed to setsockopt: SO_REUSEADDR");
   }
 
-	#ifdef FUPPES_TARGET_MAC_OSX
+	#if defined(BSD)
 	// bug #1864791 - avoid locking the multicast port on OS X
 	flag = 1;
 	ret = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEPORT, &flag, sizeof(flag));
@@ -279,7 +283,7 @@ fuppesThreadCallback UDPReceiveLoop(void *arg)
   {
     bytes_received = recvfrom(udp_sock->GetSocketFd(), buffer, sizeof(buffer), 0, (struct sockaddr*)&remote_ep, &size);
     if(bytes_received <= 0) {
-		  #ifdef FUPPES_TARGET_MAC_OSX
+		  #if defined(BSD)
 			pthread_testcancel();
 			fuppesSleep(100);
 			#else
