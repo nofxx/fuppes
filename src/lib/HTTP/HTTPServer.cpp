@@ -90,7 +90,8 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
   if(m_Socket == -1)
 	  throw EException(__FILE__, __LINE__, "failed to create socket");
   
-	#ifdef FUPPES_TARGET_MAC_OSX
+	//#ifdef FUPPES_TARGET_MAC_OSX
+	#if defined(BSD)
 	/* OS X does not support pthread_cancel
 	   so we need to set the socket to non blocking and
 		 constantly poll the cancellation state.
@@ -295,7 +296,8 @@ fuppesThreadCallback AcceptLoop(void *arg)
     // accept new connection
     nConnection = accept(nSocket, (struct sockaddr*)&remote_ep, &size);   
 		if(nConnection == -1) {
-		  #ifdef FUPPES_TARGET_MAC_OSX
+		  //#ifdef FUPPES_TARGET_MAC_OSX
+			#if defined(BSD)
       pthread_testcancel();
 			fuppesSleep(10);
 			#endif
@@ -304,7 +306,7 @@ fuppesThreadCallback AcceptLoop(void *arg)
   
 		#ifdef USE_SO_NOSIGPIPE	
 		int flag = 1;
-    int nOpt = setsockopt(nConnection, SOL_SOCKET, SO_NOSIGPIPE, &flag, sizeof(flag));	  
+    int nOpt = setsockopt(nConnection, SOL_SOCKET, SO_NOSIGPIPE, &flag, sizeof(flag));
 	  if(nOpt < 0)
 	    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "setsockopt(SO_NOSIGPIPE)");
 		#endif
@@ -451,7 +453,8 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
       }
       #else			
 			// MAC OS X :: EAGAIN handling
-			#ifdef FUPPES_TARGET_MAC_OSX
+			//#ifdef FUPPES_TARGET_MAC_OSX
+			#if defined(BSD)
 			if(errno == EAGAIN) {
 				nLoopCnt++;
 				fuppesSleep(10);
@@ -651,8 +654,7 @@ bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMe
     p_Response->SetRangeEnd(p_Response->GetBinContentLength());
   }
 
-    
-    
+
   // send header if it is a HEAD response 
   // or the start range is greater than the content and return
   if((nErr != -1) && 
