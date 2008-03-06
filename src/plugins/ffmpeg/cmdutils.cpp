@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include <libavformat/avformat.h>
+#include <avformat.h>
 #include "cmdutils.h"
 
 #ifdef HAVE_CONFIG_H

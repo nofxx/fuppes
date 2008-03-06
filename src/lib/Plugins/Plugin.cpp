@@ -24,6 +24,7 @@
 
 #include "Plugin.h"
 #include "../SharedLog.h"
+#include "../SharedConfig.h"
 
 #include <dirent.h>
 #include <sys/stat.h>
@@ -42,12 +43,9 @@ void CPluginMgr::init(std::string pluginDir)
 	
 	DIR*    dir;
   dirent* dirEnt;
-  
-	cout << "read plugins from: " << pluginDir << endl;
 	
   dir = opendir(pluginDir.c_str());
 	if(dir == NULL) {
-		cout << "error opening: " << pluginDir << endl;
 		return;
 	}
 	
@@ -62,8 +60,6 @@ void CPluginMgr::init(std::string pluginDir)
   while((dirEnt = readdir(dir)) != NULL) {
 		
 		fileName = pluginDir + dirEnt->d_name;		
-		
-		cout << "read file: " << fileName << endl;
 		
 		if(!IsFile(fileName)) {
 			continue;
@@ -119,7 +115,11 @@ void CPluginMgr::init(std::string pluginDir)
 					break;
 				case PT_TRANSCODER:
 				case PT_THREADED_TRANSCODER:
-					//plugin = new CTranscoderPlugin();
+					plugin = new CTranscoderPlugin(handle, &pluginInfo);
+          if(plugin->initPlugin()) {
+						m_instance->m_transcoderPlugins[string(pluginInfo.plugin_name)] =	(CTranscoderPlugin*)plugin;
+						CSharedLog::Log(L_NORM, __FILE__, __LINE__, "registered transcoder plugin \"%s\"", pluginInfo.plugin_name);
+					}
 					break;
 			}
 		}
@@ -127,8 +127,7 @@ void CPluginMgr::init(std::string pluginDir)
 		}
 		
 	} // while
-	
-	cout << "end read plugins" << endl;
+
 	closedir(dir);
 }
 
@@ -175,7 +174,9 @@ CPlugin::CPlugin(fuppesLibHandle handle, plugin_info* info)
 
 CPlugin::~CPlugin()
 {
-	FuppesCloseLibrary(m_handle);
+  if (m_pluginInfo.plugin_type == PT_METADATA) {
+    FuppesCloseLibrary(m_handle);
+  }
 }
 
 bool CMetadataPlugin::initPlugin()
@@ -226,31 +227,37 @@ void CMetadataPlugin::closeFile()
 CTranscoderPlugin::CTranscoderPlugin(CTranscoderPlugin* plugin):
 CPlugin(plugin->m_handle, &plugin->m_pluginInfo) 
 {
-	m_init = plugin->m_init;
+	m_transcode = plugin->m_transcode;
 }
 
 bool CTranscoderPlugin::initPlugin()
 {
-	/*m_fileOpen = NULL;
-	m_readData = NULL;	
-	m_fileClose = NULL;
+	m_transcode = NULL;
 
-	m_fileOpen = (metadataFileOpen_t)FuppesGetProcAddress(m_handle, "fuppes_metadata_file_open");
-	if(m_fileOpen == NULL) {
+	m_transcode = (transcoderTranscode_t)FuppesGetProcAddress(m_handle, "fuppes_transcoder_transcode");
+	if(m_transcode == NULL) {
 		return false;
-	}
+	}	
 	
-	m_readData	= (metadataRead_t)FuppesGetProcAddress(m_handle, "fuppes_metadata_read");
-	if(m_readData == NULL) {
-		return false;
-	}
-	
-	m_fileClose	= (metadataFileClose_t)FuppesGetProcAddress(m_handle, "fuppes_metadata_file_close");
-	*/
 	return true;
 }
 
 
 bool CTranscoderPlugin::Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile)
 {
+  if(m_transcode == NULL) {
+    return false;
+  }
+  
+  *p_psOutFile = CSharedConfig::Shared()->CreateTempFileName() + "." + pFileSettings->Extension(m_audioCodec, m_videoCodec);  
+  
+  return (m_transcode(&m_pluginInfo, 
+                      p_sInFile.c_str(), 
+                      (*p_psOutFile).c_str(), 
+                      pFileSettings->pTranscodingSettings->AudioCodec(m_audioCodec).c_str(), 
+                      pFileSettings->pTranscodingSettings->VideoCodec(m_videoCodec).c_str(),
+                      pFileSettings->pTranscodingSettings->VideoBitRate(),
+                      pFileSettings->pTranscodingSettings->AudioBitRate(),
+                      pFileSettings->pTranscodingSettings->AudioSampleRate(),                      
+                      pFileSettings->pTranscodingSettings->FFmpegParams().c_str()) == 0);
 }

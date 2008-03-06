@@ -37,12 +37,12 @@ extern "C"
 {  
   #include <ctype.h>
   #include <string.h>
-  #include <libavformat/avformat.h>
-	#include <libavutil/avutil.h>
-  #include <libavutil/fifo.h> 
-	#include <libavcodec/opt.h>
+  #include <avformat.h>
+	#include <avutil.h>
+  #include <fifo.h> 
+	#include <opt.h>
 #ifdef HAVE_LIBSWSCALE
-  #include <libswscale/swscale.h>
+  #include <swscale.h>
 #endif
   #include <math.h>
   #include <stdlib.h>

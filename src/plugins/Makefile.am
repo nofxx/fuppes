@@ -79,8 +79,6 @@ lib_LTLIBRARIES += libtranscoder_ffmpeg.la
 
 libtranscoder_ffmpeg_la_SOURCES = \
 	transcoder_ffmpeg.cpp \
-	FFmpegWrapper.cpp \
-	FFmpegWrapper.h \
 	ffmpeg/cmdutils.cpp \
 	ffmpeg/cmdutils.h \
 	ffmpeg/ffmpeg.cpp \

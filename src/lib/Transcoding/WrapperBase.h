@@ -172,7 +172,7 @@ class CTranscoderBase
 {
   public:
 	  virtual ~CTranscoderBase() {};
-    virtual bool Init(std::string p_sACodec, std::string p_sVCodec) {} ;
+    virtual bool Init(std::string p_sACodec, std::string p_sVCodec) {};
     virtual bool Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile) = 0;
     virtual bool Threaded() = 0;
 };

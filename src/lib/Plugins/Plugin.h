@@ -101,7 +101,16 @@ class CMetadataPlugin: public CPlugin
 		metadataFileClose_t				m_fileClose;
 };
 
-typedef int		(*transcoderInit_t)(plugin_info* info, const char* audioCodec, const char* videoCodec);
+
+typedef int		(*transcoderTranscode_t)(plugin_info* plugin,
+                                      const char* inputFile,
+                                      const char* outputFile,
+                                      const char* audioCodec, 
+                                      const char* videoCodec,
+                                      int videoBitrate,
+                                      int audioBitrate,
+                                      int audioSamplerate,
+                                      const char* ffmpegParams);
 
 class CTranscoderPlugin: public CPlugin, CTranscoderBase
 {
@@ -110,18 +119,26 @@ class CTranscoderPlugin: public CPlugin, CTranscoderBase
 			CPlugin(handle, info) {}
 			
 		CTranscoderPlugin(CTranscoderPlugin* plugin);
-			
+  
 		// from CPlugin
 		bool 	initPlugin();		
 			
 		// from CTranscoderBase
+    bool Init(std::string audioCodec, std::string videoCodec) 
+      {
+        m_audioCodec = audioCodec;
+        m_videoCodec = videoCodec;
+        return true;
+      }
+
 		bool Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile);
     bool Threaded() { return true; }
 			
 		private:
-			transcoderInit_t		m_init;		
+			transcoderTranscode_t		m_transcode;
+      std::string             m_audioCodec;
+      std::string             m_videoCodec;
 };
-
 
 
 

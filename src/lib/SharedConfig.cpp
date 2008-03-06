@@ -189,8 +189,7 @@ bool CSharedConfig::SetupConfig()
   CTranscodingMgr::Shared();
 
 	CProcessMgr::init();
-	
-	cout << "init plugin mgr" << endl;
+
 	CPluginMgr::init(m_pluginDir);
 	
   return true;

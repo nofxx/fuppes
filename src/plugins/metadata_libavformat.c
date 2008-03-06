@@ -28,8 +28,8 @@
 extern "C" {
 #endif
 
-#include <libavformat/avformat.h>
-#include <libavcodec/avcodec.h>
+#include <avformat.h>
+#include <avcodec.h>
 #include <string.h>
 	
 void register_fuppes_plugin(plugin_info* info)
@@ -98,7 +98,7 @@ int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
 		
 		strncpy(codec_name, (char*)pCodec->name, sizeof(codec_name));
 		
-    if(pStream->codec->codec_id == CODEC_ID_MP3) {
+/*    if(pStream->codec->codec_id == CODEC_ID_MP3) {
     
 			if(pStream->codec->sub_id == 2)
 				strncpy(codec_name, "mp2", sizeof(codec_name));
@@ -130,7 +130,7 @@ int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
          snprintf(buf1, sizeof(buf1), "0x%04x", pStream->codec->codec_tag);
       }
 			strncpy(codec_name, buf1, sizeof(codec_name));
-		}
+		} */
 
 		switch(pStream->codec->codec_type) {
 			case CODEC_TYPE_VIDEO:
