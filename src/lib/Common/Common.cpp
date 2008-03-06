@@ -533,19 +533,19 @@ fuppes_off_t getFileSize(std::string fileName)
 
 fuppes_off_t strToOffT(std::string value)
 {
+	errno = 0;
+	fuppes_off_t result;
+	char* endptr;	
+
 #ifdef WIN32
 	
 	#if SIZEOF_LONG_INT == 8
-	return long strtol(const char *restrict str, char **restrict endptr, int base);
+	result = strtol(value.c_str(), &endptr, 10);
 	#elif SIZEOF_LONG_LONG_INT == 8
-	return long long strtoll(const char *restrict str, char **restrict endptr, int base);
+	result = strtoll(value.c_str(), &endptr, 10);
 	#endif
 	
-#else		
-
-	errno = 0;
-	fuppes_off_t result;
-	char* endptr;
+#else
 	
 	#if	SIZEOF_OFF_T == 8	
 	result = strtoll(value.c_str(), &endptr, 10);
@@ -553,6 +553,8 @@ fuppes_off_t strToOffT(std::string value)
 	result = strtol(value.c_str(), &endptr, 10);
 	#endif
 
+#endif	
+	
 	if(errno != 0) {
 		if(errno == ERANGE) {
 			cout << "range error " << value << endl;
@@ -561,7 +563,6 @@ fuppes_off_t strToOffT(std::string value)
 	}
 	
 	return result;
-#endif		
 }
 
 

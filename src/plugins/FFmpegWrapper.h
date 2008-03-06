@@ -25,24 +25,23 @@
 #define FFMPEGWRAPPER_H
 
 #ifdef HAVE_CONFIG_H
-#include "../../config.h"
+#include "../config.h"
 #endif
-
-#ifdef ENABLE_VIDEO_TRANSCODING
-
-#include "WrapperBase.h"
 
 #ifdef HAVE_LIBAVFORMAT
 
 #include "ffmpeg/ffmpeg.h"
+#include <string>
 
-class CFFmpegWrapper: public CTranscoderBase
+class CFFmpegWrapper
+//: public CTranscoderBase
 {
   public:
-    virtual ~CFFmpegWrapper();
+		~CFFmpegWrapper();
   
     bool Init(std::string p_sACodec, std::string p_sVCodec);    
-    bool Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile);
+    //bool Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile);
+		bool Transcode(std::string p_sInFile, std::string* p_psOutFile);
     bool Threaded() { return true; }
   
   private:
@@ -54,7 +53,5 @@ class CFFmpegWrapper: public CTranscoderBase
 };
 
 #endif // HAVE_LIBAVFORMAT
-
-#endif // NABLE_VIDEO_TRANSCODING
 
 #endif // FFMPEGWRAPPER_H

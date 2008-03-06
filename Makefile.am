@@ -3,8 +3,9 @@
 
 SUBDIRS = \
   src \
-  src/gnome \
-	src/plugins
+	src/plugins \
+	src/gnome \
+	src/windows
 
 noinst_HEADERS = \
 	include/fuppes.h \

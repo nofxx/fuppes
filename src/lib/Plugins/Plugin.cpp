@@ -43,8 +43,11 @@ void CPluginMgr::init(std::string pluginDir)
 	DIR*    dir;
   dirent* dirEnt;
   
+	cout << "read plugins from: " << pluginDir << endl;
+	
   dir = opendir(pluginDir.c_str());
 	if(dir == NULL) {
+		cout << "error opening: " << pluginDir << endl;
 		return;
 	}
 	
@@ -59,6 +62,8 @@ void CPluginMgr::init(std::string pluginDir)
   while((dirEnt = readdir(dir)) != NULL) {
 		
 		fileName = pluginDir + dirEnt->d_name;		
+		
+		cout << "read file: " << fileName << endl;
 		
 		if(!IsFile(fileName)) {
 			continue;
@@ -122,6 +127,8 @@ void CPluginMgr::init(std::string pluginDir)
 		}
 		
 	} // while
+	
+	cout << "end read plugins" << endl;
 	closedir(dir);
 }
 
@@ -138,6 +145,22 @@ CMetadataPlugin* CPluginMgr::metadataPlugin(std::string pluginName)
 	}
 }
 
+
+CTranscoderBase* CPluginMgr::transcoderPlugin(std::string pluginName)
+{
+#warning todo lock
+
+	m_instance->m_transcoderPluginsIter =
+		m_instance->m_transcoderPlugins.find(pluginName);
+	
+	if(m_instance->m_transcoderPluginsIter != m_instance->m_transcoderPlugins.end()) {
+		CTranscoderPlugin* plugin = new CTranscoderPlugin(m_instance->m_transcoderPlugins[pluginName]);
+		return (CTranscoderBase*)plugin;
+	}
+	else {
+		return NULL;
+	}
+}
 
 
 
@@ -197,4 +220,37 @@ void CMetadataPlugin::closeFile()
 	if(m_fileClose) {
 		m_fileClose(&m_pluginInfo);
 	}
+}
+
+
+CTranscoderPlugin::CTranscoderPlugin(CTranscoderPlugin* plugin):
+CPlugin(plugin->m_handle, &plugin->m_pluginInfo) 
+{
+	m_init = plugin->m_init;
+}
+
+bool CTranscoderPlugin::initPlugin()
+{
+	/*m_fileOpen = NULL;
+	m_readData = NULL;	
+	m_fileClose = NULL;
+
+	m_fileOpen = (metadataFileOpen_t)FuppesGetProcAddress(m_handle, "fuppes_metadata_file_open");
+	if(m_fileOpen == NULL) {
+		return false;
+	}
+	
+	m_readData	= (metadataRead_t)FuppesGetProcAddress(m_handle, "fuppes_metadata_read");
+	if(m_readData == NULL) {
+		return false;
+	}
+	
+	m_fileClose	= (metadataFileClose_t)FuppesGetProcAddress(m_handle, "fuppes_metadata_file_close");
+	*/
+	return true;
+}
+
+
+bool CTranscoderPlugin::Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile)
+{
 }

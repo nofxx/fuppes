@@ -32,8 +32,7 @@ fuppesd_LDFLAGS = \
 	${UUID_LIBS}\
 	${LIBXML_LIBS}\
 	${PCRE_LIBS}\
-	${SQLITE3_LIBS}\
-	${TAGLIB_LIBS}
+	${SQLITE3_LIBS}
 endif
 
 libfuppes_la_SOURCES = \
@@ -153,16 +152,6 @@ libfuppes_la_SOURCES = \
 	lib/Transcoding/ExternalCmdWrapper.h\
   lib/Transcoding/ExternalCmdWrapper.cpp
 
-if VIDEO_TRANSCODING
-libfuppes_la_SOURCES += \
-  lib/Transcoding/FFmpegWrapper.h\
-  lib/Transcoding/FFmpegWrapper.cpp\
-  lib/Transcoding/ffmpeg/cmdutils.h\
-  lib/Transcoding/ffmpeg/cmdutils.cpp\
-  lib/Transcoding/ffmpeg/ffmpeg.h\
-  lib/Transcoding/ffmpeg/ffmpeg.cpp
-endif
-
 if HAVE_INOTIFY
 libfuppes_la_SOURCES += \
   lib/ContentDirectory/inotify-cxx-0.7.2/inotify-cxx.h \
@@ -218,8 +207,7 @@ libfuppes_la_LDFLAGS = \
 	${UUID_LIBS}\
 	${LIBXML_LIBS}\
 	${PCRE_LIBS}\
-	${SQLITE3_LIBS}\
-	${TAGLIB_LIBS}
+	${SQLITE3_LIBS}
 
 
 BUILT_SOURCES = version.h

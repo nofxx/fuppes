@@ -64,12 +64,6 @@
   #endif
 
   // transcoder
-  #ifdef HAVE_LIBAVFORMAT
-  #ifdef ENABLE_VIDEO_TRANSCODING
-  #include "FFmpegWrapper.h"
-  #endif
-  #endif
-
   #ifdef HAVE_IMAGEMAGICK_PP
   #include "ImageMagickWrapper.h"
   #endif
@@ -77,6 +71,8 @@
 	#include "ExternalCmdWrapper.h"
 
 #endif
+
+#include "../Plugins/Plugin.h"
 
 #include <iostream>
 
@@ -413,14 +409,9 @@ CTranscoderBase* CTranscodingMgr::CreateTranscoder(TRANSCODER_TYPE p_nTranscoder
 
 	#ifndef DISABLE_TRANSCODING	
 
-  #ifdef HAVE_LIBAVFORMAT
-  #ifdef ENABLE_VIDEO_TRANSCODING
   if(p_nTranscoderType == TTYP_FFMPEG) {     
-    pResult = new CFFmpegWrapper();
-  }
-  #endif
-  #endif
-
+    pResult = CPluginMgr::transcoderPlugin("ffmpeg");
+  }  
 
 	#ifdef HAVE_IMAGEMAGICK_PP
   if(p_nTranscoderType == TTYP_IMAGE_MAGICK) {

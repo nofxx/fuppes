@@ -32,12 +32,14 @@
 #include <map>
 
 #include "../Common/Common.h"
+#include "../Transcoding/WrapperBase.h"
 
 #include "../../../include/fuppes_plugin.h"
 
 typedef void (*registerPlugin_t)(plugin_info* info);
 
 class CMetadataPlugin;
+class CTranscoderPlugin;
 
 class CPluginMgr
 {
@@ -45,12 +47,16 @@ class CPluginMgr
 		static void init(std::string pluginDir);
 	
 		static CMetadataPlugin* metadataPlugin(std::string pluginName);
+		static CTranscoderBase* transcoderPlugin(std::string pluginName);
 	
 	private:
 		static CPluginMgr* m_instance;
 	
 		std::map<std::string, CMetadataPlugin*> m_metadataPlugins;
 		std::map<std::string, CMetadataPlugin*>::iterator m_metadataPluginsIter;
+		
+		std::map<std::string, CTranscoderPlugin*> m_transcoderPlugins;
+		std::map<std::string, CTranscoderPlugin*>::iterator m_transcoderPluginsIter;
 };
 
 class CPlugin
@@ -94,6 +100,30 @@ class CMetadataPlugin: public CPlugin
 		metadataRead_t						m_readData;
 		metadataFileClose_t				m_fileClose;
 };
+
+typedef int		(*transcoderInit_t)(plugin_info* info, const char* audioCodec, const char* videoCodec);
+
+class CTranscoderPlugin: public CPlugin, CTranscoderBase
+{
+	public:
+		CTranscoderPlugin(fuppesLibHandle handle, plugin_info* info): 
+			CPlugin(handle, info) {}
+			
+		CTranscoderPlugin(CTranscoderPlugin* plugin);
+			
+		// from CPlugin
+		bool 	initPlugin();		
+			
+		// from CTranscoderBase
+		bool Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile);
+    bool Threaded() { return true; }
+			
+		private:
+			transcoderInit_t		m_init;		
+};
+
+
+
 
 /*class CAudioDecoderPlugin: public CPlugin
 {

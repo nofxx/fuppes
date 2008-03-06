@@ -28,8 +28,8 @@
 extern "C" {
 #endif
 
-#include <avformat.h>
-#include <avcodec.h>
+#include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
 #include <string.h>
 	
 void register_fuppes_plugin(plugin_info* info)

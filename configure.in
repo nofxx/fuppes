@@ -32,19 +32,21 @@ FUPPES_LIBS=""
 F_CFLAGS=""
 F_LDFLAGS=""
 
-
+is_windows=false
 build_daemon=true
 case $host in 
   *-*-mingw32*)
 		echo "building with MinGW"
-    LDFLAGS="$LDFLAGS -lws2_32 -lole32"
+    LDFLAGS="$LDFLAGS -lws2_32 -lole32 -no-undefined"
 		build_daemon=false
+		is_windows=true
 	;;
 	*)
 	  build_daemon=true
 	;;
 esac
 AM_CONDITIONAL([BUILD_DAEMON], [test x$build_daemon = xtrue])
+AM_CONDITIONAL([WINDOWS_BUILD], [test x$is_windows = xtrue])
 
 
 dnl Checks for libraries.
@@ -105,12 +107,12 @@ else
   TAGLIB_CFLAGS=`$TAGLIB_CONFIG --cflags`
 	#FUPPES_CFLAGS="$FUPPES_CFLAGS $TAGLIB_CFLAGS"
   AC_MSG_RESULT($TAGLIB_CFLAGS)
-
+	
 	AC_MSG_CHECKING(TAGLIB_LIBS)
 	TAGLIB_LIBS=`$TAGLIB_CONFIG --libs`
   #FUPPES_LIBS="$FUPPES_LIBS $TAGLIB_LIBS"
   AC_MSG_RESULT($TAGLIB_LIBS)
-
+	
   have_taglib=yes
 fi
 fi
@@ -199,15 +201,11 @@ if test "x$use_libavformat" = "xyes"; then
 		if test "x$have_libswscale" = "xyes"; then
       AC_DEFINE([HAVE_LIBSWSCALE], [1], [])
     fi
-
-    FUPPES_CFLAGS="$FUPPES_CFLAGS -D__STDC_CONSTANT_MACROS $LIBAVFORMAT_CFLAGS $LIBSWSCALE_CFLAGS"
-		FUPPES_LIBS="$FUPPES_LIBS $LIBAVFORMAT_LIBS $LIBSWSCALE_LIBS"
-
+		
     AC_CHECK_HEADERS(ffmpeg/avstring.h, have_avstring_h=yes, have_avstring_h=no)
     if test "x$have_avstring_h" = "xyes"; then
       AC_DEFINE([HAVE_AVSTRING_H], [1], [])
     fi
-
 
 		if test "x$have_libavformat52" = "xyes"; then
 			AC_DEFINE([FFMPEG_VERSION], [52], [])
@@ -606,8 +604,9 @@ AC_SUBST(FUPPES_CFLAGS)
 AC_OUTPUT([
 Makefile
 src/Makefile
-src/gnome/Makefile
 src/plugins/Makefile
+src/gnome/Makefile
+src/windows/Makefile
 ])
 
 
@@ -702,7 +701,7 @@ fi
 echo ""
 #end audio transcoding
 
-echo "  video transcoding (experimental)"
+echo "  video transcoding plugins"
 if test "x$video_transcoding" = "xyes"; then
   echo "    ffmpeg     : enabled"
 else
@@ -773,10 +772,12 @@ else
 fi
 
 # uuid
+if test x$is_windows = xfalse; then
 if test "x$have_uuid" = "xyes"; then
   echo "    uuid       : enabled"
 else
   echo "    uuid       : disabled"
+fi
 fi
 
 # gamin

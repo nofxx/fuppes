@@ -107,7 +107,7 @@ bool CSharedConfig::SetupConfig(std::string applicationDir)
     applicationDir += upnpPathDelim;
 	}
 	m_dataDir 	= applicationDir + "data/";
-	m_pluginDir = applicationDir + "plugins/";
+	m_pluginDir = applicationDir;
 #else
 bool CSharedConfig::SetupConfig()
 { 
@@ -190,6 +190,7 @@ bool CSharedConfig::SetupConfig()
 
 	CProcessMgr::init();
 	
+	cout << "init plugin mgr" << endl;
 	CPluginMgr::init(m_pluginDir);
 	
   return true;

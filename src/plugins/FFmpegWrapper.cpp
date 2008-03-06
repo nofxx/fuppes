@@ -26,7 +26,7 @@
 #ifdef HAVE_LIBAVFORMAT
 #ifdef ENABLE_VIDEO_TRANSCODING
 
-#include "../SharedConfig.h"
+//#include "../SharedConfig.h"
 
 #include <iostream>
 #include <sstream>
@@ -45,10 +45,10 @@ bool CFFmpegWrapper::Init(std::string p_sACodec, std::string p_sVCodec)
   
   pFFmpeg = new CFFmpeg();
 }
-
-bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile)
+//CFileSettings* pFileSettings, 
+bool CFFmpegWrapper::Transcode(std::string p_sInFile, std::string* p_psOutFile)
 {
-  *p_psOutFile = CSharedConfig::Shared()->CreateTempFileName() + "." + pFileSettings->Extension(m_sACodec, m_sVCodec);
+  /**p_psOutFile = CSharedConfig::Shared()->CreateTempFileName() + "." + pFileSettings->Extension(m_sACodec, m_sVCodec);
   
   int nArgs = 0;
   char* szArgs[20];   
@@ -144,7 +144,7 @@ bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFi
   strcpy(szArgs[nArgs], "2");
   nArgs++;  
 
-
+*/
 /*  szArgs[nArgs] = (char*)malloc((strlen("-s") + 1) * sizeof(char));
   strcpy(szArgs[nArgs], "-s");
   nArgs++;
@@ -153,7 +153,7 @@ bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFi
   strcpy(szArgs[nArgs], "640x360");
   nArgs++;      */
   
-  string  sParams = pFileSettings->pTranscodingSettings->FFmpegParams();
+ /* string  sParams = pFileSettings->pTranscodingSettings->FFmpegParams();
   int     nChar = ' ';
   char*   sChar = NULL;
   string  sArg;  
@@ -185,7 +185,7 @@ bool CFFmpegWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFi
   
   for(int i = 0; i < nArgs; i++) {
     free(szArgs[i]);
-  }
+  }*/
   
   return true;  
 }
