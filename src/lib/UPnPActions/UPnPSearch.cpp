@@ -51,20 +51,19 @@ unsigned int CUPnPSearch::GetContainerIdAsUInt()
 }
 
 
-std::string BuildParentIdList(CContentDatabase* pDb, std::string p_sIds, std::string p_sDevice)
+void BuildParentIdList(CContentDatabase* pDb, std::string p_sIds, std::string p_sDevice, std::string* m_sParentIds)
 {
+  // read child ids of p_sIds
   stringstream sSql;
   sSql << 
     "select OBJECT_ID from MAP_OBJECTS " <<
     "where " <<
     "  PARENT_ID in (" << p_sIds << ") and " <<
-    "  DEVICE " << p_sDevice;
-  
-  //cout << sSql.str() << endl; fflush(stdout);
+    "  DEVICE " << p_sDevice;  
     
   pDb->Select(sSql.str());
   if(pDb->Eof()) {
-    return "";
+    return;
   }
   
   string sResult = "";
@@ -72,18 +71,15 @@ std::string BuildParentIdList(CContentDatabase* pDb, std::string p_sIds, std::st
     sResult += pDb->GetResult()->GetValue("OBJECT_ID") + ", ";
     pDb->Next();
   }
-  
+
+  // append to list
+  (*m_sParentIds) += sResult;
+    
   // remove trailing ", "
-  if(sResult.length() > 2) {
-    sResult = sResult.substr(0, sResult.length() - 2);
-  }
-  
-  string sSub = BuildParentIdList(pDb, sResult, p_sDevice);
-  if(sSub.length() > 0) {
-    sResult = sResult + ", " + sSub + ", " + p_sIds;
-  }
-  
-  return sResult.c_str();
+  sResult = sResult.substr(0, sResult.length() - 2);
+    
+  // recursively read child objects
+  BuildParentIdList(pDb, sResult, p_sDevice, m_sParentIds);
 }
 
 
@@ -121,14 +117,8 @@ bool CUPnPSearch::prepareSQL()
       CContentDatabase* pDb = new CContentDatabase();       
       stringstream sIds;
       sIds << nContainerId;    
-      m_sParentIds = BuildParentIdList(pDb, sIds.str(), sDevice);
-      
-      if(m_sParentIds.length() > 0) {
-        m_sParentIds = m_sParentIds + ", " + sIds.str();
-      }
-      else {
-        m_sParentIds = sIds.str();
-      }
+      BuildParentIdList(pDb, sIds.str(), sDevice, &m_sParentIds);      
+      m_sParentIds = m_sParentIds + sIds.str();      
       delete pDb;
       
       //cout << "PARENT ID LIST: " << m_sParentIds << endl; fflush(stdout);
