@@ -300,7 +300,10 @@ bool CUPnPActionFactory::parseSortCriteria(CUPnPBrowseSearchBase* action)
 		}
 		
 		// replace fields
-		if(part.compare("upnp:artist") == 0) {
+		if(part.compare("upnp:class") == 0) {
+			part = " o.TYPE " + ext;
+		}
+		else if(part.compare("upnp:artist") == 0) {
 			part = " d.A_ARTIST " + ext;
 		}
 		else if(part.compare("dc:title") == 0) {

@@ -161,7 +161,7 @@ fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
 void CVirtualContainerMgr::RebuildContainerList()
 {
   if(CContentDatabase::Shared()->IsRebuilding()) {
-    CSharedLog::Shared()->Log(L_NORM, "database rebuild in progress", __FILE__, __LINE__);
+    CSharedLog::Log(L_NORM, __FILE__, __LINE__, "database rebuild in progress");
     return;
   }
  
@@ -203,33 +203,29 @@ void CVirtualContainerMgr::CreateChildItems(CXMLNode* pParentNode,
     }      
       
     if(pNode->Name().compare("vfolder") == 0) {
-      //cout << "create single vfolder: " << pNode->Attribute("name") << " :: " << p_sFilter << endl; fflush(stdout);
-      CSharedLog::Shared()->Log(L_EXT, "create single vfolder: " + pNode->Attribute("name") + " :: " + p_sFilter, __FILE__, __LINE__);
+      CSharedLog::Log(L_EXT, __FILE__, __LINE__, "create single vfolder: %s :: %s", pNode->Attribute("name").c_str(), p_sFilter.c_str());
       CreateSingleVFolder(pNode, pIns, p_sDevice, p_nParentId, pDetails, p_bContainerDetails, p_bCreateRef);
     }
     else if(pNode->Name().compare("vfolders") == 0) {      
       if(pNode->Attribute("property").length() > 0) {
-        //cout << "create vfolders from property: " << pNode->Attribute("property") << " :: " << p_sFilter << endl;  fflush(stdout);      
-        CSharedLog::Shared()->Log(L_EXT, "create vfolders from property: " + pNode->Attribute("property") + " :: " + p_sFilter, __FILE__, __LINE__);
+        CSharedLog::Log(L_EXT, __FILE__, __LINE__, "create vfolders from property: %s :: %s", pNode->Attribute("property").c_str(), p_sFilter.c_str());
         CreateVFoldersFromProperty(pNode, pIns, p_sDevice, p_nParentId, pDetails, p_bContainerDetails, p_bCreateRef, p_sFilter);
       }
       else if(pNode->Attribute("split").length() > 0) {
-        CSharedLog::Shared()->Log(L_EXT, "create split vfolders :: " + p_sFilter, __FILE__, __LINE__);
+        CSharedLog::Log(L_EXT, __FILE__, __LINE__, "create split vfolders :: %s", p_sFilter.c_str());
         CreateVFoldersSplit(pNode, pIns, p_sDevice, p_nParentId, pDetails, p_bContainerDetails, p_bCreateRef, p_sFilter);
       }
     }
     else if(pNode->Name().compare("items") == 0) {
-      //cout << "create item mappings for type: " << pNode->Attribute("type") << " :: " << p_sFilter << endl;
-      CSharedLog::Shared()->Log(L_EXT, "create item mappings for type: " + pNode->Attribute("type") + " :: " + p_sFilter, __FILE__, __LINE__);
+      CSharedLog::Log(L_EXT, __FILE__, __LINE__, "create item mappings for type: %s :: %s", pNode->Attribute("type").c_str(), p_sFilter.c_str());
       CreateItemMappings(pNode, pIns, p_sDevice, p_nParentId, p_bCreateRef, p_sFilter);
     }
     else if(pNode->Name().compare("folders") == 0) {
-      //cout << "create folder mappings for filter: " << pNode->Attribute("filter") << " :: " << p_sFilter << endl;
-      CSharedLog::Shared()->Log(L_EXT, "create folder mappings - filter: " + pNode->Attribute("filter") + " :: " + p_sFilter, __FILE__, __LINE__);
+      CSharedLog::Log(L_EXT, __FILE__, __LINE__, "create folder mappings - filter: %s :: %s", pNode->Attribute("filter").c_str(), p_sFilter.c_str());
       CreateFolderMappings(pNode, pIns, p_sDevice, p_nParentId, p_bCreateRef, p_sFilter);
     }
     else if(pNode->Name().compare("shared_dirs") == 0) {
-      CSharedLog::Shared()->Log(L_EXT, "create shared dir mappings :: " + p_sFilter, __FILE__, __LINE__);
+      CSharedLog::Log(L_EXT, __FILE__, __LINE__, "create shared dir mappings :: %s", p_sFilter.c_str());
       MapSharedDirsTo(pNode, pIns, p_sDevice, p_nParentId);
     }
     

@@ -1001,7 +1001,7 @@ void CContentDirectory::HandleUPnPGetSortCapabilities(CUPnPAction* pAction, std:
     "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
     "  <s:Body>"
     "    <u:GetSortCapabilitiesResponse xmlns:u=\"urn:schemas-upnp-org:service:ContentDirectory:1\">"
-    "      <SortCaps>dc:title,upnp:artist,upnp:originalTrackNumber</SortCaps>"
+    "      <SortCaps>upnp:class,dc:title,upnp:artist,upnp:originalTrackNumber</SortCaps>"
     "    </u:GetSortCapabilitiesResponse>"
     "  </s:Body>"
     "</s:Envelope>";
@@ -1155,47 +1155,46 @@ std::string CContentDirectory::BuildProtocolInfo(bool p_bTranscode,
                                   CUPnPBrowseSearchBase*  pUPnPBrowse)
 {
   string sTmp;
-  if(pUPnPBrowse->DeviceSettings()->DLNAEnabled()) {
+  if(!pUPnPBrowse->DeviceSettings()->DLNAEnabled()) {
+		sTmp = "http-get:*:" + p_sMimeType + ":*";
+		return sTmp.c_str();
+	}
+	
+	sTmp = "http-get:*:" + p_sMimeType + ":";
 
-    sTmp = "http-get:*:" + p_sMimeType + ":";
-  
-    dlna_org_conversion_t ci = DLNA_ORG_CONVERSION_NONE;
-    if(p_bTranscode)
-      ci = DLNA_ORG_CONVERSION_TRANSCODED;
-    
-    dlna_org_operation_t op = DLNA_ORG_OPERATION_NONE;
-    if(!p_bTranscode)
-      op = DLNA_ORG_OPERATION_RANGE;
+	dlna_org_conversion_t ci = DLNA_ORG_CONVERSION_NONE;
+	if(p_bTranscode)
+		ci = DLNA_ORG_CONVERSION_TRANSCODED;
+	
+	dlna_org_operation_t op = DLNA_ORG_OPERATION_NONE;
+	if(!p_bTranscode)
+		op = DLNA_ORG_OPERATION_RANGE;
 
-    int flags;
-    flags = 
-      DLNA_ORG_FLAG_STREAMING_TRANSFER_MODE |
-      DLNA_ORG_FLAG_BACKGROUND_TRANSFERT_MODE |
-      DLNA_ORG_FLAG_CONNECTION_STALL |
-      DLNA_ORG_FLAG_DLNA_V15;
-    
-    if(!p_bTranscode) {
-      flags |= DLNA_ORG_FLAG_BYTE_BASED_SEEK;
-    }
-    
-    char dlna_info[448];
-    if(!p_sProfileId.empty()) {
-      sprintf(dlna_info, "%s=%d;%s=%d;%s=%.2x;%s=%s;%s=%.8x%.24x",
-           "DLNA.ORG_PS", DLNA_ORG_PLAY_SPEED_NORMAL, "DLNA.ORG_CI", ci,
-           "DLNA.ORG_OP", op, "DLNA.ORG_PN", p_sProfileId.c_str(),
-           "DLNA.ORG_FLAGS", flags, 0);
-    }
-    else {
-      sprintf(dlna_info, "%s=%d;%s=%d;%s=%.2x;%s=%.8x%.24x",
-           "DLNA.ORG_PS", DLNA_ORG_PLAY_SPEED_NORMAL, "DLNA.ORG_CI", ci,
-           "DLNA.ORG_OP", op, "DLNA.ORG_FLAGS", flags, 0);
-    }
-  
-    sTmp += dlna_info;    
-  }
-  else {
-    sTmp = "http-get:*:" + p_sMimeType + ":*";
-  }
+	int flags;
+	flags = 
+		DLNA_ORG_FLAG_STREAMING_TRANSFER_MODE |
+		DLNA_ORG_FLAG_BACKGROUND_TRANSFERT_MODE |
+		DLNA_ORG_FLAG_CONNECTION_STALL |
+		DLNA_ORG_FLAG_DLNA_V15;
+	
+	if(!p_bTranscode) {
+		flags |= DLNA_ORG_FLAG_BYTE_BASED_SEEK;
+	}
+	
+	char dlna_info[448];
+	if(!p_sProfileId.empty()) {
+		sprintf(dlna_info, "%s=%d;%s=%d;%s=%.2x;%s=%s;%s=%.8x%.24x",
+				 "DLNA.ORG_PS", DLNA_ORG_PLAY_SPEED_NORMAL, "DLNA.ORG_CI", ci,
+				 "DLNA.ORG_OP", op, "DLNA.ORG_PN", p_sProfileId.c_str(),
+				 "DLNA.ORG_FLAGS", flags, 0);
+	}
+	else {
+		sprintf(dlna_info, "%s=%d;%s=%d;%s=%.2x;%s=%.8x%.24x",
+				 "DLNA.ORG_PS", DLNA_ORG_PLAY_SPEED_NORMAL, "DLNA.ORG_CI", ci,
+				 "DLNA.ORG_OP", op, "DLNA.ORG_FLAGS", flags, 0);
+	}
 
-  return sTmp;
+  sTmp += dlna_info;
+
+  return sTmp.c_str();
 }
