@@ -64,10 +64,6 @@
   #endif
 
   // transcoder
-  #ifdef HAVE_IMAGEMAGICK_PP
-  #include "ImageMagickWrapper.h"
-  #endif
-
 	#include "ExternalCmdWrapper.h"
 
 #endif
@@ -412,14 +408,10 @@ CTranscoderBase* CTranscodingMgr::CreateTranscoder(TRANSCODER_TYPE p_nTranscoder
   if(p_nTranscoderType == TTYP_FFMPEG) {     
     pResult = CPluginMgr::transcoderPlugin("ffmpeg");
   }  
-
-	#ifdef HAVE_IMAGEMAGICK_PP
-  if(p_nTranscoderType == TTYP_IMAGE_MAGICK) {
-    pResult = new CImageMagickWrapper();
-  }
-  #endif
-		
-	if(p_nTranscoderType == TTYP_EXTERNAL_CMD) {
+  else if(p_nTranscoderType == TTYP_IMAGE_MAGICK) {
+    pResult = CPluginMgr::transcoderPlugin("Magick++");
+  }  
+	else if(p_nTranscoderType == TTYP_EXTERNAL_CMD) {
 		pResult = new CExternalCmdWrapper();
 	}
 		

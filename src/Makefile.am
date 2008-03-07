@@ -147,8 +147,6 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/FaadWrapper.cpp\
   lib/Transcoding/MadDecoder.h\
   lib/Transcoding/MadDecoder.cpp\
-  lib/Transcoding/ImageMagickWrapper.h\
-  lib/Transcoding/ImageMagickWrapper.cpp\
 	lib/Transcoding/ExternalCmdWrapper.h\
   lib/Transcoding/ExternalCmdWrapper.cpp
 

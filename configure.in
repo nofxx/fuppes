@@ -145,10 +145,8 @@ if test "x$use_imagemagick" = "xyes"; then
 
   if test "x$have_magickpp" = "xyes"; then
 		AC_DEFINE([HAVE_IMAGEMAGICK_PP], [1], [])
-    FUPPES_CFLAGS="$FUPPES_CFLAGS $IMAGEMAGICK_PP_CFLAGS"
-		FUPPES_LIBS="$FUPPES_LIBS $IMAGEMAGICK_PP_LIBS"
-  #else
-  #  AC_MSG_NOTICE([*** ImageMagick (Magick++) support disabled ***]);
+    #FUPPES_CFLAGS="$FUPPES_CFLAGS $IMAGEMAGICK_PP_CFLAGS"
+		#FUPPES_LIBS="$FUPPES_LIBS $IMAGEMAGICK_PP_LIBS"
   fi
 
 	IMAGEMAGICK_WAND_CFLAGS=""
@@ -157,6 +155,7 @@ if test "x$use_imagemagick" = "xyes"; then
 
 fi
 AM_CONDITIONAL(MAGICK_WAND_METADATA, test "x$have_magickwand" = "xyes")
+AM_CONDITIONAL(MAGICK_PP_TRANSCODER, test "x$have_magickpp" = "xyes")
 #end ImageMagick
 
 
@@ -486,12 +485,12 @@ else
 
   AC_MSG_CHECKING(SIMAGE_CFLAGS)
   SIMAGE_CFLAGS=`$SIMAGE_CONFIG --cflags`
-	FUPPES_CFLAGS="$FUPPES_CFLAGS $SIMAGE_CFLAGS"
+	#FUPPES_CFLAGS="$FUPPES_CFLAGS $SIMAGE_CFLAGS"
   AC_MSG_RESULT($SIMAGE_CFLAGS)
   
 	AC_MSG_CHECKING(SIMAGE_LIBS)
 	SIMAGE_LIBS=`$SIMAGE_CONFIG --libs`
-  FUPPES_LIBS="$FUPPES_LIBS $SIMAGE_LIBS"
+  #FUPPES_LIBS="$FUPPES_LIBS $SIMAGE_LIBS"
   AC_MSG_RESULT($SIMAGE_LIBS)
   
   have_simage=yes
@@ -710,7 +709,7 @@ fi
 echo ""
 
 
-echo "  image conversion/rescaling"
+echo "  image conversion/rescaling plugins"
 if test "x$have_magickpp" = "xyes"; then
   echo "    ImageMagick: enabled  (Magick++)"
 else

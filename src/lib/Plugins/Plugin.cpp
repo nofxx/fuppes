@@ -227,15 +227,20 @@ void CMetadataPlugin::closeFile()
 CTranscoderPlugin::CTranscoderPlugin(CTranscoderPlugin* plugin):
 CPlugin(plugin->m_handle, &plugin->m_pluginInfo) 
 {
-	m_transcode = plugin->m_transcode;
+	m_transcodeVideo = plugin->m_transcodeVideo;
+	m_transcodeImage = plugin->m_transcodeImage;
 }
 
 bool CTranscoderPlugin::initPlugin()
 {
-	m_transcode = NULL;
+	m_transcodeVideo = NULL;
+	m_transcodeImage = NULL;
 
-	m_transcode = (transcoderTranscode_t)FuppesGetProcAddress(m_handle, "fuppes_transcoder_transcode");
-	if(m_transcode == NULL) {
+	m_transcodeVideo = (transcoderTranscodeVideo_t)FuppesGetProcAddress(m_handle, "fuppes_transcoder_transcode");
+	m_transcodeImage = (transcoderTranscodeImage_t)FuppesGetProcAddress(m_handle, "fuppes_transcoder_transcode_image");
+	
+	if((m_transcodeVideo == NULL) && 
+		 (m_transcodeImage == NULL)) {
 		return false;
 	}	
 	
@@ -244,14 +249,16 @@ bool CTranscoderPlugin::initPlugin()
 
 
 bool CTranscoderPlugin::Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile)
-{
-  if(m_transcode == NULL) {
-    return false;
-  }
-  
+{  
+	if((m_transcodeVideo == NULL) && 
+		 (m_transcodeImage == NULL)) {
+		return false;
+	}	
+	
   *p_psOutFile = CSharedConfig::Shared()->CreateTempFileName() + "." + pFileSettings->Extension(m_audioCodec, m_videoCodec);  
-  
-  return (m_transcode(&m_pluginInfo, 
+
+	if(m_transcodeVideo != NULL) {
+		return (m_transcodeVideo(&m_pluginInfo, 
                       p_sInFile.c_str(), 
                       (*p_psOutFile).c_str(), 
                       pFileSettings->pTranscodingSettings->AudioCodec(m_audioCodec).c_str(), 
@@ -260,4 +267,25 @@ bool CTranscoderPlugin::Transcode(CFileSettings* pFileSettings, std::string p_sI
                       pFileSettings->pTranscodingSettings->AudioBitRate(),
                       pFileSettings->pTranscodingSettings->AudioSampleRate(),                      
                       pFileSettings->pTranscodingSettings->FFmpegParams().c_str()) == 0);
+	}
+	else if(m_transcodeImage != NULL) {
+		
+		int less = 0;
+		int greater = 0;
+		if(pFileSettings->pImageSettings->Less()) {
+			less = 1;
+		}
+		
+		if(pFileSettings->pImageSettings->Greater()) {
+			greater = 1;
+		}
+		
+		return (m_transcodeImage(&m_pluginInfo, 
+                      p_sInFile.c_str(), 
+                      (*p_psOutFile).c_str(),
+											pFileSettings->pImageSettings->Width(),
+											pFileSettings->pImageSettings->Height(),
+											less, greater) == 0);
+	}
+		
 }

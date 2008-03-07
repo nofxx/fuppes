@@ -94,3 +94,20 @@ libtranscoder_ffmpeg_la_LDFLAGS = \
 	$(LIBSWSCALE_LIBS)
 
 endif
+
+
+## Magick++ transcoder
+if MAGICK_PP_TRANSCODER
+
+lib_LTLIBRARIES += libtranscoder_magickpp.la
+
+libtranscoder_magickpp_la_SOURCES = \
+	transcoder_magickpp.cpp
+
+libtranscoder_magickpp_la_CXXFLAGS = \
+	$(IMAGEMAGICK_PP_CFLAGS)
+	
+libtranscoder_magickpp_la_LDFLAGS = \
+	$(IMAGEMAGICK_PP_LIBS)
+
+endif

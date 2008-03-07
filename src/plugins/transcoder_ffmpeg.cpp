@@ -85,7 +85,6 @@ int fuppes_transcoder_transcode(plugin_info* plugin,
                                 int audioSamplerate,
 																const char* ffmpegParams)
 {
-    
   plugin->user_data = malloc(sizeof(pluginData_t));
   pluginData_t* data = (pluginData_t*)plugin->user_data;
   data->numArgs = 0;
@@ -167,7 +166,7 @@ int fuppes_transcoder_transcode(plugin_info* plugin,
   delete (pluginData_t*)plugin->user_data;
   plugin->user_data = NULL;
 
-	return -1;
+	return 0;
 }
 
 void unregister_fuppes_plugin(plugin_info* info)
