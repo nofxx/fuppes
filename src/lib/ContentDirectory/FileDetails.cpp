@@ -333,6 +333,8 @@ bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoIt
 			pVideoItem->sACodec  = metadata.audio_codec;
 			pVideoItem->sVCodec  = metadata.video_codec;
 
+			pVideoItem->sDuration = metadata.duration;
+			
 			video->closeFile();
 			free_metadata(&metadata);
 			return true;

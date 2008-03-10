@@ -226,28 +226,18 @@ bool ExtractFolderFromPath(std::string p_sPath, std::string* p_sFolder)
   }
 }
 
-std::string TrimFileName(std::string p_sFileName, unsigned int p_nMaxLength, bool p_bTruncateFileExt)
+std::string TrimFileName(std::string p_sFileName, unsigned int p_nMaxLength)
 { 
   if((p_nMaxLength == 0) || (p_sFileName.length() <= p_nMaxLength))
     return p_sFileName;
   
-  std::string  sExt  = "";
+  std::string  sExt  = ExtractFileExt(p_sFileName);
   std::string  sFile = TruncateFileExt(p_sFileName);
   unsigned int nLen = 0;
   
-  if(p_bTruncateFileExt) {
-    nLen = p_nMaxLength;
-  }
-  else {
-    sExt = ExtractFileExt(p_sFileName);
-    nLen = p_nMaxLength - sExt.length() - 1;
-  }    
-  
+  nLen = p_nMaxLength - sExt.length() - 1;	
   sFile = sFile.substr(0, nLen);
-  
-  if(!p_bTruncateFileExt) {
-    sFile = sFile + "." + sExt;
-  }
+  sFile = sFile + "." + sExt;  
   
   return sFile.c_str();
 }

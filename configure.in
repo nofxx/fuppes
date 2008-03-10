@@ -447,6 +447,8 @@ if test "x$transcoding" = "xyes"; then
 
 fi # transcoding = yes
 
+AC_SUBST(LAME_LIBS)
+AM_CONDITIONAL([LAME_ENCODER], [test "x$have_lame" = "xyes"])
 
 
 
