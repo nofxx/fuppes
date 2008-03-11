@@ -21,6 +21,10 @@
  *  with this program; if not, write to the Free Software Foundation, Inc.,
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
  
 #include "PresentationHandler.h"
 //#include "Stylesheet.h"
@@ -34,15 +38,7 @@
 #include "../HTTP/HTTPParser.h"
 #include "../DeviceSettings/DeviceIdentificationMgr.h"
 
-
-#include "Images/fuppes_small_png.cpp"
-
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
-
 #include <sstream>
-
 #include <fstream>
 #include <iostream>
 
@@ -53,28 +49,21 @@ CPresentationHandler::CPresentationHandler()
 {
 }
 
-
 CPresentationHandler::~CPresentationHandler()
 {
 }
-
 
 
 void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, CHTTPMessage* pResult)
 {
   PRESENTATION_PAGE nPresentationPage = PRESENTATION_PAGE_UNKNOWN;
   string sContent;
- 
-  std::string sImgPath = "images/";
   std::string sPageName = "undefined";
   
-  if((pMessage->GetRequest().compare("/") == 0) || (ToLower(pMessage->GetRequest()).compare("/index.html") == 0))
-  {
-    sImgPath = "presentation/images/";
-    
+  if((pMessage->GetRequest().compare("/") == 0) || (ToLower(pMessage->GetRequest()).compare("/index.html") == 0)) {    
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "send index.html");
     nPresentationPage = PRESENTATION_PAGE_INDEX;
-    sContent = this->GetIndexHTML(sImgPath);
+    sContent = this->GetIndexHTML();
     sPageName = "Start";
   }
 	
@@ -87,13 +76,13 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
   {
     CSharedLog::Shared()->ExtendedLog(LOGNAME, "send about.html");
     nPresentationPage = PRESENTATION_PAGE_ABOUT;
-    sContent = this->GetAboutHTML(sImgPath);
+    sContent = this->GetAboutHTML();
     sPageName = "About";
   }
   
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html") == 0) {
     nPresentationPage = PRESENTATION_PAGE_OPTIONS;
-    sContent = this->GetOptionsHTML(sImgPath);
+    sContent = this->GetOptionsHTML();
     sPageName = "Options";
   }
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html?db=rebuild") == 0) {
@@ -102,7 +91,7 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
       CContentDatabase::Shared()->RebuildDB();
 
     nPresentationPage = PRESENTATION_PAGE_OPTIONS;
-    sContent = this->GetOptionsHTML(sImgPath);
+    sContent = this->GetOptionsHTML();
     sPageName = "Options";
   }
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html?db=update") == 0) {
@@ -111,7 +100,7 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
       CContentDatabase::Shared()->UpdateDB();
 
     nPresentationPage = PRESENTATION_PAGE_OPTIONS;
-    sContent = this->GetOptionsHTML(sImgPath);
+    sContent = this->GetOptionsHTML();
     sPageName = "Options";
   }
 	else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html?vcont=rebuild") == 0) {
@@ -120,27 +109,24 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
       CVirtualContainerMgr::Shared()->RebuildContainerList();
 
     nPresentationPage = PRESENTATION_PAGE_OPTIONS;
-    sContent = this->GetOptionsHTML(sImgPath);
+    sContent = this->GetOptionsHTML();
     sPageName = "Options";
   }
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/status.html") == 0) {
     nPresentationPage = PRESENTATION_PAGE_STATUS;
-    sContent = this->GetStatusHTML(sImgPath);
+    sContent = this->GetStatusHTML();
     sPageName = "Status";
   }
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/config.html") == 0) {
     nPresentationPage = PRESENTATION_PAGE_STATUS;
-    sContent = this->GetConfigHTML(sImgPath, pMessage);
+    sContent = this->GetConfigHTML(pMessage);
     sPageName = "Configuration";
   }        
   
   
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/images/fuppes-small.png") == 0) {
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/fuppes-small.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
-			
-		char szImg[4096];
-		int nLen = Base64Decode(fuppes_small_png, szImg, sizeof(szImg));
-		pResult->SetBinContent(szImg, nLen);
+		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "fuppes-small.png");
   }  
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/header-gradient.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
@@ -164,7 +150,7 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
     stringstream sResult;   
     
     sResult << GetXHTMLHeader();
-    sResult << GetPageHeader(nPresentationPage, sImgPath, sPageName);    
+    sResult << GetPageHeader(nPresentationPage, sPageName);
     sResult << sContent;    
     sResult << GetPageFooter(nPresentationPage);
     
@@ -180,7 +166,7 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
 }
 
 
-std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentationPage, std::string p_sImgPath, std::string p_sPageName)
+std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentationPage, std::string p_sPageName)
 {
   std::stringstream sResult; 
 	 
@@ -230,7 +216,7 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
   
   /* title */
   sResult << "<div id=\"title\">" << endl;
-  sResult << "<img src=\"" << p_sImgPath << "fuppes-small.png\" style=\"float: left; margin-top: 10px; margin-left: 5px;\" />" << endl;
+  sResult << "<img src=\"/presentation/fuppes-small.png\" style=\"float: left; margin-top: 10px; margin-left: 5px;\" />" << endl;
   
   sResult << "<p>" << endl <<
     "FUPPES - Free UPnP Entertainment Service<br />" << endl <<
@@ -297,7 +283,7 @@ std::string CPresentationHandler::GetXHTMLHeader()
 }
 
 /* GetIndexHTML */
-std::string CPresentationHandler::GetIndexHTML(std::string p_sImgPath)
+std::string CPresentationHandler::GetIndexHTML()
 {
   std::stringstream sResult;
   
@@ -321,7 +307,7 @@ std::string CPresentationHandler::GetIndexHTML(std::string p_sImgPath)
   
   
   sResult << "<h1>remote devices</h1>";
-  sResult << BuildFuppesDeviceList(CSharedConfig::Shared()->GetFuppesInstance(0), p_sImgPath);
+  sResult << BuildFuppesDeviceList(CSharedConfig::Shared()->GetFuppesInstance(0));
   
   return sResult.str().c_str();
   
@@ -339,7 +325,7 @@ std::string CPresentationHandler::GetIndexHTML(std::string p_sImgPath)
   }*/
 }
 
-std::string CPresentationHandler::GetAboutHTML(std::string p_sImgPath)
+std::string CPresentationHandler::GetAboutHTML()
 {
   std::stringstream sResult;
   
@@ -350,7 +336,7 @@ std::string CPresentationHandler::GetAboutHTML(std::string p_sImgPath)
   return sResult.str().c_str();
 }
 
-std::string CPresentationHandler::GetOptionsHTML(std::string p_sImgPath)
+std::string CPresentationHandler::GetOptionsHTML()
 {
   std::stringstream sResult;
   
@@ -375,7 +361,7 @@ std::string CPresentationHandler::GetOptionsHTML(std::string p_sImgPath)
   return sResult.str().c_str();
 }
 
-std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
+std::string CPresentationHandler::GetStatusHTML()
 {
   std::stringstream sResult;  
   
@@ -558,7 +544,7 @@ std::string CPresentationHandler::GetStatusHTML(std::string p_sImgPath)
 }
 
 
-std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMessage* pRequest)
+std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)
 {
   std::stringstream sResult;  
 
@@ -789,7 +775,7 @@ std::string CPresentationHandler::GetConfigHTML(std::string p_sImgPath, CHTTPMes
 }
 
 /* BuildFuppesDeviceList */
-std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes, std::string p_sImgPath)
+std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes)
 {
   stringstream sResult;
 

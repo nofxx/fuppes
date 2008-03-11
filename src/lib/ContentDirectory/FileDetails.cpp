@@ -31,10 +31,6 @@
 #include "../DeviceSettings/DeviceIdentificationMgr.h"
 #include "../Plugins/Plugin.h"
 
-#ifdef HAVE_MPEG4IP
-#include <mp4.h>
-#endif
-
 #include <sstream>
 #include <iostream>
 
@@ -150,134 +146,54 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SAudioItem* pMu
   string sExt = ExtractFileExt(p_sFileName);
   if(!CDeviceIdentificationMgr::Shared()->DefaultDevice()->FileSettings(sExt)->ExtractMetadata())
     return false;
+	
+	CMetadataPlugin* audio = NULL;
 
 	if(sExt.compare("m4a") == 0 || sExt.compare("mp4") == 0) {
-		#ifdef HAVE_MPEG4IP
-		return GetMusicTrackDetailsMPEG4IP(p_sFileName, pMusicTrack);
-		#else
-		return false;
-		#endif			
+		audio = CPluginMgr::metadataPlugin("mp4v2");
 	}
 	else {
-		CMetadataPlugin* audio = CPluginMgr::metadataPlugin("taglib");
-		metadata_t metadata;
-		if(audio && audio->openFile(p_sFileName)) {
-			
-			init_metadata(&metadata);			
-			if(audio->readData(&metadata)) {
-
-				pMusicTrack->sTitle 					= TrimWhiteSpace(metadata.title);  
-				pMusicTrack->sDuration				= metadata.duration;
-				pMusicTrack->nNrAudioChannels =	metadata.channels;
-				pMusicTrack->nBitrate 				= metadata.bitrate;
-				pMusicTrack->nBitsPerSample 	= 0;
-				pMusicTrack->nSampleRate 			= metadata.samplerate;
-				pMusicTrack->sArtist 					= TrimWhiteSpace(metadata.artist);
-				pMusicTrack->sAlbum 					= TrimWhiteSpace(metadata.album);
-				pMusicTrack->sGenre 					= TrimWhiteSpace(metadata.genre);
-				pMusicTrack->sDescription 		= TrimWhiteSpace(metadata.description);
-				pMusicTrack->nOriginalTrackNumber = metadata.track_no;
-				//pMusicTrack->sDate 					= sDate.str();
-
-				if(pMusicTrack->sArtist.empty()) {
-					pMusicTrack->sArtist = "unknown";
-				}			 
-				if(pMusicTrack->sAlbum.empty()) {
-					pMusicTrack->sAlbum = "unknown";
-				}				
-				if(pMusicTrack->sGenre.empty()) {
-					pMusicTrack->sGenre = "unknown";
-				}
-				
-				audio->closeFile();
-				free_metadata(&metadata);
-				return true;
-			}
-			free_metadata(&metadata);
-		}
+		audio = CPluginMgr::metadataPlugin("taglib");
 	}
 	
-	return false;
-}
-
-#ifdef HAVE_MPEG4IP
-bool CFileDetails::GetMusicTrackDetailsMPEG4IP(std::string p_sFileName, SAudioItem* pMusicTrack)
-{
-	MP4FileHandle mp4file = MP4Read(p_sFileName.c_str());
-	if(!mp4file) {
+	metadata_t metadata;
+	if(!audio || !audio->openFile(p_sFileName)) {
+		return false;
+	}
+		
+	init_metadata(&metadata);			
+	if(!audio->readData(&metadata)) {
+		free_metadata(&metadata);	
 		return false;
 	}
 
-	char *value;
-	// title
-	MP4GetMetadataName(mp4file, &value);
-	if(value) {
-		pMusicTrack->sTitle = string(value);
-		free(value);
-	}
-	// duration
-	u_int32_t scale = MP4GetTimeScale(mp4file);//scale is ticks in secs, used same value in duration.
-	MP4Duration length = MP4GetDuration(mp4file);
-	int hours, mins, secs;
-	length = length /scale;
-	secs = length % 60;
-	length /= 60;
-	mins = length % 60;
-	hours = length / 60;
+	pMusicTrack->sTitle 					= TrimWhiteSpace(metadata.title);  
+	pMusicTrack->sDuration				= metadata.duration;
+	pMusicTrack->nNrAudioChannels =	metadata.channels;
+	pMusicTrack->nBitrate 				= metadata.bitrate;
+	pMusicTrack->nBitsPerSample 	= 0;
+	pMusicTrack->nSampleRate 			= metadata.samplerate;
+	pMusicTrack->sArtist 					= TrimWhiteSpace(metadata.artist);
+	pMusicTrack->sAlbum 					= TrimWhiteSpace(metadata.album);
+	pMusicTrack->sGenre 					= TrimWhiteSpace(metadata.genre);
+	pMusicTrack->sDescription 		= TrimWhiteSpace(metadata.description);
+	pMusicTrack->nOriginalTrackNumber = metadata.track_no;
+	//pMusicTrack->sDate 					= sDate.str();
 
-	char szDuration[12];
-	sprintf(szDuration, "%02d:%02d:%02d.00", hours, mins, secs);
-	szDuration[11] = '\0';
-	pMusicTrack->sDuration = szDuration;
-	// channels
-	pMusicTrack->nNrAudioChannels = MP4GetTrackAudioChannels(mp4file, 
-																		MP4FindTrackId(mp4file, 0, MP4_AUDIO_TRACK_TYPE));
-	// bitrate
-	pMusicTrack->nBitrate = MP4GetTrackBitRate(mp4file, 
-														MP4FindTrackId(mp4file, 0, MP4_AUDIO_TRACK_TYPE));
-	pMusicTrack->nBitsPerSample = 0;
-
-	// artist
-	MP4GetMetadataArtist(mp4file, &value);
-	if(value) {
-		pMusicTrack->sArtist = string(value);
-		free(value);
+	if(pMusicTrack->sArtist.empty()) {
+		pMusicTrack->sArtist = "unknown";
+	}			 
+	if(pMusicTrack->sAlbum.empty()) {
+		pMusicTrack->sAlbum = "unknown";
+	}				
+	if(pMusicTrack->sGenre.empty()) {
+		pMusicTrack->sGenre = "unknown";
 	}
-	// genre
-	MP4GetMetadataGenre(mp4file, &value);
-	if(value) {
-		pMusicTrack->sGenre = string(value);
-		free(value);
-	}
-	// Album
-	MP4GetMetadataAlbum(mp4file, &value);
-	if(value) {
-		pMusicTrack->sAlbum = string(value);
-		free(value);
-	}
-	// description/comment
-	MP4GetMetadataComment(mp4file, &value);
-	if(value) {
-		pMusicTrack->sDescription = string(value);
-		free(value);
-	}
-
-	// track no.
-	u_int16_t track, totaltracks;
-	MP4GetMetadataTrack(mp4file, &track, &totaltracks);
-	pMusicTrack->nOriginalTrackNumber = track;
-
-	// date/year
-	MP4GetMetadataYear(mp4file, &value);
-	if(value)	{
-		pMusicTrack->nYear = atoi(value);
-		free(value);
-	}
-
-	MP4Close(mp4file);
-	return true;
+	
+	audio->closeFile();
+	free_metadata(&metadata);
+	return true;	
 }
-#endif
 
 bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageItem)
 {

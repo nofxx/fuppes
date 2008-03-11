@@ -75,28 +75,28 @@ class CPresentationHandler
      */
     std::string GetXHTMLHeader();  
 
-    std::string GetPageHeader(PRESENTATION_PAGE p_nPresentationPage, std::string p_sImgPath, std::string p_sPageName);
+    std::string GetPageHeader(PRESENTATION_PAGE p_nPresentationPage, std::string p_sPageName);
     std::string GetPageFooter(PRESENTATION_PAGE p_nPresentationPage);
 
     /** returns the main HTML page
      *  @return the content of the index.html
      */
-    std::string GetIndexHTML(std::string p_sImgPath);
+    std::string GetIndexHTML();
 
-    std::string GetAboutHTML(std::string p_sImgPath);
+    std::string GetAboutHTML();
   
-    std::string GetOptionsHTML(std::string p_sImgPath);
+    std::string GetOptionsHTML();
   
-    std::string GetStatusHTML(std::string p_sImgPath);
+    std::string GetStatusHTML();
 
-    std::string GetConfigHTML(std::string p_sImgPath, CHTTPMessage* pRequest);
+    std::string GetConfigHTML(CHTTPMessage* pRequest);
 
 
     /** builds a stringlist for all devices connected to a FUPPES instance
      *  @param pFuppes a pointer to a FUPPES instance
      *  @return the device list as string
      */
-    std::string BuildFuppesDeviceList(CFuppes* pFuppes, std::string p_sImgPath);
+    std::string BuildFuppesDeviceList(CFuppes* pFuppes);
 
 };
 

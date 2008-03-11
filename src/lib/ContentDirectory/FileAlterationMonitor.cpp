@@ -3,13 +3,14 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007 Ulrich Völkel <fuppes@ulrich-voelkel.de>
+ *  Copyright (C) 2007-2008 Ulrich Völkel <fuppes@ulrich-voelkel.de>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -45,10 +46,6 @@ CFileAlterationMonitor* CFileAlterationMgr::CreateMonitor(IFileAlterationMonitor
 {
   CFileAlterationMonitor* pResult = NULL;
   
-  #if defined(HAVE_GAMIN)
-  pResult = new CGaminMonitor(pEventHandler);
-  #endif
-  
   #if defined(HAVE_INOTIFY)
   pResult = new CInotifyMonitor(pEventHandler);
   #endif
@@ -80,15 +77,17 @@ CInotifyMonitor::~CInotifyMonitor()
 }
   
 bool CInotifyMonitor::AddDirectory(std::string p_sDirectory)
-{  
-  InotifyWatch* pWatch = new InotifyWatch(p_sDirectory, IN_CREATE | IN_MODIFY | IN_DELETE | IN_MOVE);
+{
+	//p_sDirectory = p_sDirectory.substr(0, p_sDirectory.length()-1);
+	cout << "create watch: " << p_sDirectory << endl;
   try {
+		InotifyWatch* pWatch = new InotifyWatch(p_sDirectory, IN_CREATE | IN_MODIFY | IN_DELETE | IN_MOVE);
     m_pInotify->Add(pWatch);
+		m_lWatches.push_back(pWatch);
   }
   catch(InotifyException &ex) {
     cout << "exception: " << ex.GetMessage() << endl;
   }
-  m_lWatches.push_back(pWatch);
   
   if(!m_MonitorThread) {
     fuppesThreadStart(m_MonitorThread, WatchLoop);
@@ -120,74 +119,31 @@ fuppesThreadCallback WatchLoop(void* arg)
       string sDump;
       event.DumpTypes(sDump);
       cout << sDump << endl << endl;
-    }    
+
+			string dir;
+			
+			if(event.IsType(IN_ISDIR)) {
+				cout << "is dir: " << event.GetWatch()->GetPath() << endl;
+				
+				if(event.IsType(IN_CREATE) || event.IsType(IN_MOVED_TO)) {
+					
+					dir = event.GetWatch()->GetPath() + event.GetName() + "/";					
+					pInotify->AddDirectory(dir);					
+					pInotify->famEvent(FAM_DIR_NEW, 
+														event.GetWatch()->GetPath(),
+														event.GetName());
+				}				
+			}
+			
+			/*IN_MOVED_TO,IN_ISDIR
+			IN_CREATE,IN_ISDIR
+			IN_DELETE,IN_ISDIR
+			IN_MOVED_FROM,IN_ISDIR*/
+
+    }
   }
-  
-  
-  
-  /*int rc = 0;
-	struct timeval  timeout;
-	timeout.tv_sec  = 10;
-	timeout.tv_usec = 0;
-	struct timeval* timeout_ptr = &timeout;
-	
-	fd_set read_fd;
-	FD_ZERO(&read_fd);
-	FD_SET(pInotify->m_nInotifyFd, &read_fd);
-	
-	struct inotify_event event;
-	
-	int bytes_to_read = 0;
-	
-  cout << "inotify loop" << endl;
-  
-	while (true) {
-	  rc = select(pInotify->m_nInotifyFd + 1, &read_fd, NULL, NULL, timeout_ptr); 
-	  if(rc > 0) {
-  	  cout << "select: " << rc << endl;  	  
-	    do {
-		    rc = ioctl(pInotify->m_nInotifyFd, FIONREAD, &bytes_to_read);
-	    } while (!rc && bytes_to_read < sizeof(struct inotify_event));
-  	  
-  	  cout << "bytes to read: " << bytes_to_read << endl;
-  	  
-	    rc = read(pInotify->m_nInotifyFd, &event, bytes_to_read); // sizeof(struct inotify_event));
-	    if(rc > 0) {
-	      cout << "read: " << rc << endl;
-	      cout << event.name << " :: " << event.mask << endl;
-	    }
-	  }
-	}*/
   
   fuppesThreadExit();
 }
   
 #endif // HAVE_INOTIFY
-
-
-#ifdef HAVE_GAMIN
-CGaminMonitor::CGaminMonitor(IFileAlterationMonitor* pEventHandler):
-  CFileAlterationMonitor(pEventHandler)
-{
-  FAMOpen(&m_FAMConnection);    
-  FAMMonitorDirectory(&m_FAMConnection, "/home/ulrich/Desktop/famtest", &m_FAMRequest, NULL);  
-    
-  FAMEvent event;
-
-  while(true) {
-    FAMNextEvent(&m_FAMConnection, &event);    
-    cout << "file/dir: " << event.filename << " changed: " << event.code << "." << endl;
-  }
-}
-
-CGaminMonitor::~CGaminMonitor()
-{
-  FAMCancelMonitor(&m_FAMConnection, &m_FAMRequest);
-  FAMClose(&m_FAMConnection);
-}
-
-bool CGaminMonitor::AddDirectory(std::string p_sDirectory)
-{
-  FAMMonitorDirectory(&m_FAMConnection, p_sDirectory, &m_FAMRequest, NULL);  
-}
-#endif // HAVE_GAMIN

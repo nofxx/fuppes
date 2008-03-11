@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -159,14 +159,6 @@ class CFileDetails
     static CFileDetails* m_Instance; 
 		#ifdef DLNA_SUPPORT
 		dlna_t* m_dlna;
-		#endif
-
-		#ifdef HAVE_TAGLIB
-		bool GetMusicTrackDetailsTaglib(std::string p_sFileName, SAudioItem* pMusicTrack);
-		#endif
-		
-		#ifdef HAVE_MPEG4IP
-		bool GetMusicTrackDetailsMPEG4IP(std::string p_sFileName, SAudioItem* pMusicTrack);
 		#endif
 };
 

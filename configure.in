@@ -1,11 +1,9 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl $Id: $
 
-AC_INIT([fuppes], [SVN-578], [fuppes@ulrich-voelkel.de])
+AC_INIT([fuppes], [0.607], [fuppes@ulrich-voelkel.de])
 AM_CONFIG_HEADER(src/config.h)
-AM_INIT_AUTOMAKE([1.10])
-dnl AM_INIT_AUTOMAKE(fuppes, SVN-578, fuppes@ulrich-voelkel.de)
-
+AM_INIT_AUTOMAKE([1.9])
 
 AC_PROG_CC
 AC_PROG_CXX
@@ -65,16 +63,6 @@ if test "x$have_uuid" = "xyes"; then
 	F_CFLAGS="$F_CFLAGS $UUID_CFLAGS"
   F_LDFLAGS="$F_LDFLAGS $UUID_LIBS"
 fi
-
-# gamin
-#have_gamin=no
-#AH_TEMPLATE([HAVE_GAMIN], [])
-#PKG_CHECK_MODULES(GAMIN, gamin, have_gamin=yes, have_gamin=no)
-#if test "x$have_gamin" = "xyes"; then
-#  FUPPES_CFLAGS="$FUPPES_CFLAGS $GAMIN_CFLAGS"
-#  FUPPES_LIBS="$FUPPES_LIBS $GAMIN_LIBS"
-#  AC_DEFINE([HAVE_GAMIN], [1], [])
-#fi
 
 
 # TAGLIB
@@ -248,18 +236,21 @@ if test -z "$MPEG4IP_CONFIG"; then
 fi
 
 if test "$MPEG4IP_CONFIG" = "no" ; then   
-   AC_MSG_NOTICE([*** mpeg4ip support disabled ***]);
+   AC_MSG_NOTICE([*** mpeg4ip/libmp4v2 support disabled ***]);
 else  
 	AC_DEFINE([HAVE_MPEG4IP], [1], [])
 
-  AC_MSG_CHECKING(MPEG4IP_CFLAGS)
-  MPEG4IP_CFLAGS=`$MPEG4IP_CONFIG --cflags`
-	FUPPES_CFLAGS="$FUPPES_CFLAGS $MPEG4IP_CFLAGS"
-	FUPPES_LIBS="$FUPPES_LIBS -lmp4v2"
-  AC_MSG_RESULT($MPEG4IP_CFLAGS)
+  AC_MSG_CHECKING(MP4V2_CFLAGS)
+  MP4V2_CFLAGS=`$MPEG4IP_CONFIG --cflags`
+	MP4V2_LIBS="-lmp4v2"
+  AC_MSG_RESULT($MP4V2_CFLAGS)
   
   have_mpeg4ip=yes
 fi
+
+AC_SUBST(MP4V2_CFLAGS)
+AC_SUBST(MP4V2_LIBS)
+AM_CONDITIONAL(MP4V2_METADATA, test "x$have_mpeg4ip" = "xyes")
 
 
 LAME_LIBS=""
@@ -721,42 +712,40 @@ echo ""
 #end image conversion/rescaling
 
 
-echo "  metadata extraction"
-# mpeg4ip
-if test "x$have_mpeg4ip" = "xyes"; then
-  echo "    mpeg4ip    : enabled  (mp4/ma4 metadata extraction)"
-else
-  echo "    mpeg4ip    : disabled (mp4/ma4 metadata extraction)"
-fi
-echo ""
-
 echo "  metadata extraction plugins"
 # taglib
 if test "x$have_taglib" = "xyes"; then
-  echo "    taglib     : enabled  (mp3, ogg, flac & mpc metadata extraction)"
+  echo "    taglib        : enabled  (mp3, ogg, flac & mpc metadata extraction)"
 else
-  echo "    taglib     : disabled (mp3, ogg, flac & mpc metadata extraction)"
+  echo "    taglib        : disabled (mp3, ogg, flac & mpc metadata extraction)"
 fi
 
 # ImageMagick
 if test "x$have_magickwand" = "xyes"; then
-  echo "    ImageMagick: enabled  (Wand)"
+  echo "    ImageMagick   : enabled  (Wand)"
 else
-  echo "    ImageMagick: disabled (Wand)"
+  echo "    ImageMagick   : disabled (Wand)"
 fi
 
 # simage
 if test "x$have_simage" = "xyes"; then
-  echo "    simage     : enabled  (jpeg, png, gif, tiff, rgb, pic, tga, eps)"
+  echo "    simage        : enabled  (jpeg, png, gif, tiff, rgb, pic, tga, eps)"
 else
-  echo "    simage     : disabled (jpeg, png, gif, tiff, rgb, pic, tga, eps)"
+  echo "    simage        : disabled (jpeg, png, gif, tiff, rgb, pic, tga, eps)"
 fi
 
 # libavformat
 if test "x$have_libavformat" = "xyes"; then
-  echo "    libavformat: enabled"
+  echo "    libavformat   : enabled"
 else
-  echo "    libavformat: disabled"
+  echo "    libavformat   : disabled"
+fi
+
+# mpeg4ip
+if test "x$have_mpeg4ip" = "xyes"; then
+  echo "    mpeg4ip/mp4v2 : enabled  (mp4/ma4 metadata extraction)"
+else
+  echo "    mpeg4ip/mp4v2 : disabled (mp4/ma4 metadata extraction)"
 fi
 
 echo ""
@@ -781,12 +770,6 @@ else
 fi
 fi
 
-# gamin
-#if test "x$have_gamin" = "xyes"; then
-#  echo "  gamin      : enabled"
-#else
-#  echo "  gamin      : disabled"
-#fi
 
 # inotify
 #if test "x$have_inotify" = "xyes"; then

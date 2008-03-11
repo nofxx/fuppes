@@ -3,13 +3,14 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007 Ulrich Völkel <fuppes@ulrich-voelkel.de>
+ *  Copyright (C) 2007-2008 Ulrich Völkel <fuppes@ulrich-voelkel.de>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -30,11 +31,6 @@
 
 #include "../Common/Common.h"
 
-#undef HAVE_GAMIN
-#ifdef HAVE_GAMIN
-#include <fam.h>
-#endif
-
 #ifdef HAVE_INOTIFY
 #include "inotify-cxx-0.7.2/inotify-cxx.h"
 #endif
@@ -54,19 +50,37 @@ typedef enum {
 class IFileAlterationMonitor
 {
   public:
-    virtual void FamEvent(FAM_EVENT_TYPE p_nEventType, std::string p_sPath) = 0;
+			virtual void FamEvent(FAM_EVENT_TYPE eventType, std::string path, std::string name) = 0;
 };
 
 class CFileAlterationMonitor
 {
   public:
+		virtual ~CFileAlterationMonitor() {
+			fuppesThreadDestroyMutex(&mutex);
+		}
+		
     virtual bool AddDirectory(std::string p_sDirectory) = 0;
   
+		void famEvent(FAM_EVENT_TYPE eventType, std::string path, std::string name)	{
+			if(!m_pEventHandler) {
+				return;
+			}
+			
+			fuppesThreadLockMutex(&mutex);
+			m_pEventHandler->FamEvent(eventType, path, name);
+			fuppesThreadUnlockMutex(&mutex);
+		}
+			
   protected:
-    CFileAlterationMonitor(IFileAlterationMonitor* pEventHandler) 
-      { m_pEventHandler = pEventHandler; }
-    
+    CFileAlterationMonitor(IFileAlterationMonitor* pEventHandler) { 
+			fuppesThreadInitMutex(&mutex);
+			m_pEventHandler = pEventHandler; 
+		}
+			
     IFileAlterationMonitor* m_pEventHandler;
+			
+		fuppesThreadMutex	mutex;
 };
 
 
@@ -98,21 +112,6 @@ class CInotifyMonitor: public CFileAlterationMonitor
   
     //int   m_nInotifyFd;
     Inotify*        m_pInotify;
-};
-#endif
-
-#ifdef HAVE_GAMIN
-class CGaminMonitor: public CFileAlterationMonitor
-{
-  public:
-    CGaminMonitor(IFileAlterationMonitor* pEventHandler);
-    ~CGaminMonitor();
-  
-    bool AddDirectory(std::string p_sDirectory);
-  
-  private:
-    FAMConnection m_FAMConnection;
-    FAMRequest    m_FAMRequest;
 };
 #endif
 

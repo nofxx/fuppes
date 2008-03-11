@@ -3,13 +3,14 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -67,7 +68,7 @@ CUPnPDevice::~CUPnPDevice()
 
 void CUPnPDevice::OnTimer()
 {
-  CSharedLog::Shared()->Log(L_DBG, "OnTimer()", __FILE__, __LINE__);
+  CSharedLog::Log(L_DBG, __FILE__, __LINE__, "OnTimer()");
   if(m_pEventHandler != NULL)
     m_pEventHandler->OnTimer(this);
 }
@@ -380,7 +381,7 @@ bool CUPnPDevice::ParseDescription(std::string p_sDescription)
   xmlDocPtr pDoc = NULL;
   pDoc = xmlReadMemory(p_sDescription.c_str(), p_sDescription.length(), "", NULL, 0);
   if(!pDoc) {
-    CSharedLog::Shared()->Log(L_DBG, "xml parser error", __FILE__, __LINE__);
+    CSharedLog::Log(L_DBG, __FILE__, __LINE__, "xml parser error");
     return false;    
   }
     

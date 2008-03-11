@@ -126,7 +126,6 @@ libfuppes_la_SOURCES = \
   lib/GENA/EventNotification.cpp\
   lib/Presentation/PresentationHandler.cpp\
 	lib/Presentation/PresentationHandler.h\
-  lib/Presentation/Images/fuppes_small_png.cpp\
   lib/Transcoding/TranscodingMgr.cpp\
   lib/Transcoding/TranscodingCache.cpp\
   lib/Transcoding/LameWrapper.h\
@@ -148,15 +147,23 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/MadDecoder.h\
   lib/Transcoding/MadDecoder.cpp\
 	lib/Transcoding/ExternalCmdWrapper.h\
-  lib/Transcoding/ExternalCmdWrapper.cpp
+  lib/Transcoding/ExternalCmdWrapper.cpp\
+	lib/DeviceSettings/DeviceSettings.cpp\
+	lib/DeviceSettings/DeviceIdentificationMgr.cpp\
+	lib/XMSMediaReceiverRegistrar.cpp\
+	lib/Configuration/ConfigFile.cpp\
+	lib/Configuration/ConfigFile.h\
+  lib/Configuration/DefaultConfig.h\
+	lib/SharedConfig.cpp\
+  lib/SharedLog.cpp\
+	lib/Fuppes.cpp\
+	lib/libmain.cpp\
+  version.h
 
 if HAVE_INOTIFY
 libfuppes_la_SOURCES += \
   lib/ContentDirectory/inotify-cxx-0.7.2/inotify-cxx.h \
   lib/ContentDirectory/inotify-cxx-0.7.2/inotify-cxx.cpp
-
-INCLUDES += \
-  -DINOTIFY_THREAD_SAFE
 endif
 
 #if DLNA_SUPPORT
@@ -186,20 +193,6 @@ libfuppes_la_SOURCES += \
 #  lib/ContentDirectory/libdlna/audio_wma.c
 #endif
 
-libfuppes_la_SOURCES += \
-	lib/DeviceSettings/DeviceSettings.cpp\
-	lib/DeviceSettings/DeviceIdentificationMgr.cpp\
-	lib/XMSMediaReceiverRegistrar.cpp\
-	lib/Configuration/ConfigFile.cpp\
-	lib/Configuration/ConfigFile.h\
-  lib/Configuration/DefaultConfig.h\
-	lib/SharedConfig.cpp\
-  lib/SharedLog.cpp\
-	lib/Fuppes.cpp\
-	lib/libmain.cpp\
-  version.h
-	
-
 libfuppes_la_LDFLAGS = \
 	$(FUPPES_LIBS)\
 	${UUID_LIBS}\
@@ -218,5 +211,7 @@ version.h: Makefile
 pixmapsdir = $(datadir)/fuppes
 dist_pixmaps_DATA = \
 	lib/Presentation/style.css \
+	lib/Presentation/fuppes-small.png \
 	lib/Presentation/header-gradient.png \
 	lib/Presentation/header-gradient-small.png
+

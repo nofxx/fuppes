@@ -5,7 +5,7 @@ test $svn_revision || svn_revision=`cd "$1" && grep revision .svn/entries 2>/dev
 test $svn_revision || svn_revision=`cd "$1" && sed -n -e '/^dir$/{n;p;q}' .svn/entries 2>/dev/null`
 test $svn_revision || svn_revision=UNKNOWN
 
-NEW_REVISION="#define FUPPES_VERSION \"SVN-r$svn_revision\""
+NEW_REVISION="#define FUPPES_VERSION \"0.$svn_revision\""
 OLD_REVISION=`cat version.h 2> /dev/null`
 
 # Update version.h only on revision changes to avoid spurious rebuilds

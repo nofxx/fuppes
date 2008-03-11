@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
-*  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -106,7 +106,7 @@ CContentDatabase::CContentDatabase(bool p_bShared)
     g_bRemoveMissing  = false;    
     m_nLockCount 		  = 0;
     
-    m_pFileAlterationMonitor = CFileAlterationMgr::Shared()->CreateMonitor(this);    
+    m_pFileAlterationMonitor = CFileAlterationMgr::Shared()->CreateMonitor(this);
     fuppesThreadInitMutex(&m_Mutex);        
   }
     
@@ -217,6 +217,16 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
   Execute("pragma temp_store = MEMORY");
   Execute("pragma synchronous = OFF;");  
   
+	
+	// setup file alteration monitor
+	if(m_pFileAlterationMonitor) {
+		Select("select PATH from OBJECTS where TYPE = 1 and DEVICE is NULL");
+		while(!Eof()) {
+			m_pFileAlterationMonitor->AddDirectory(GetResult()->GetValue("PATH"));
+			Next();
+		}
+	}
+	
   return true;
 }
 
@@ -1120,7 +1130,7 @@ fuppesThreadCallback BuildLoop(void* arg)
         pDb->Insert(sSql.str());      
       }
       
-      DbScanDir(pDb, CSharedConfig::Shared()->GetSharedDir(i), nObjId);      
+      DbScanDir(pDb, CSharedConfig::Shared()->GetSharedDir(i), nObjId);
     }
     else {      
       CSharedLog::Log(L_EXT, __FILE__, __LINE__,
@@ -1171,7 +1181,55 @@ fuppesThreadCallback BuildLoop(void* arg)
   g_bIsRebuilding = false;
   fuppesThreadExit();
 }
-    
-void CContentDatabase::FamEvent(FAM_EVENT_TYPE p_nEventType, std::string p_sPath)
+
+
+void CContentDatabase::FamEvent(FAM_EVENT_TYPE eventType,
+																std::string path,
+																std::string name)
 {
+	cout << "FAM: " << path + name << endl;
+	
+	g_bIsRebuilding = true;
+
+	stringstream sSql;
+	unsigned int nObjId;
+	unsigned int parentId = 0;
+	
+	if(eventType == FAM_DIR_NEW) {
+
+		nObjId = GetObjId();
+		
+		sSql << "select OBJECT_ID from OBJECTS where PATH = '" <<
+			path << "' and DEVICE is NULL";
+		
+		Select(sSql.str());
+		sSql.str("");
+		if(!Eof()) {
+			parentId = GetResult()->GetValueAsUInt("OBJECT_ID");
+		}
+		else {
+			parentId = 0;
+		}
+		
+    sSql << 
+          "insert into OBJECTS (OBJECT_ID, TYPE, PATH, FILE_NAME, TITLE) values " <<
+          "(" << nObjId << 
+          ", " << CONTAINER_STORAGE_FOLDER << 
+          ", '" << SQLEscape(path + name + "/") << "'" <<
+          ", '" << SQLEscape(name) << "'" <<
+          ", '" << SQLEscape(name) << "');";
+        
+    Insert(sSql.str());
+    
+    sSql.str("");
+    sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID) " <<
+          "values (" << nObjId << ", " << parentId << ")";
+      
+    Insert(sSql.str());
+		
+		DbScanDir(this, path + name + "/", nObjId);		
+	}
+	
+	//Unlock();
+	g_bIsRebuilding = false;
 }

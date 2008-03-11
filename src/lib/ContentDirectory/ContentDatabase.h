@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
-*  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -146,7 +146,7 @@ class CContentDatabase: public IFileAlterationMonitor
   
 		fuppesThreadMutex m_Mutex;
   
-    void FamEvent(FAM_EVENT_TYPE p_nEventType, std::string p_sPath);
+			void FamEvent(FAM_EVENT_TYPE eventType, std::string path, std::string name);
   private:    
     void BuildDB();
     

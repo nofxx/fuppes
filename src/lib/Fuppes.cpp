@@ -57,7 +57,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
   // init database 
   bool bIsNewDB = false;   
   if(!CContentDatabase::Shared()->Init(&bIsNewDB)) {    
-    throw EException("unable to create database file", __FILE__, __LINE__);
+    throw EException(__FILE__, __LINE__, "unable to create database file");
   }
   if(bIsNewDB) {
     CContentDatabase::Shared()->RebuildDB();
@@ -152,18 +152,18 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
  */
 CFuppes::~CFuppes()
 {  
-  CSharedLog::Shared()->Log(L_EXT, "deleting FUPPES instance", __FILE__, __LINE__);    
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "deleting FUPPES instance");
   
   /* multicast notify-byebye */
-  CSharedLog::Shared()->Log(L_EXT, "multicasting byebye messages", __FILE__, __LINE__);
+  CSharedLog::Shared()->Log(L_EXT, __FILE__, __LINE__, "multicasting byebye messages");
   m_pSSDPCtrl->send_byebye();  
   
   /* stop SSDP-controller */
-	CSharedLog::Shared()->Log(L_EXT, "stopping SSDP controller", __FILE__, __LINE__);
+	CSharedLog::Shared()->Log(L_EXT, __FILE__, __LINE__, "stopping SSDP controller");
   m_pSSDPCtrl->Stop();
 
   /* stop HTTP-server */
-	CSharedLog::Shared()->Log(L_EXT, "stopping HTTP server", __FILE__, __LINE__);
+	CSharedLog::Shared()->Log(L_EXT, __FILE__, __LINE__, "stopping HTTP server");
   m_pHTTPServer->Stop();
 
   CleanupTimedOutDevices();  
@@ -205,7 +205,7 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
   // local device must send alive message
   if(pSender->GetIsLocalDevice()) {                                  
     
-    CSharedLog::Shared()->Log(L_EXT, "device: " + pSender->GetUUID() + " send timed alive", __FILE__, __LINE__);
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "device: %s send timed alive",  + pSender->GetUUID().c_str());
     m_pSSDPCtrl->send_alive();    
   }
   
@@ -356,7 +356,8 @@ void CFuppes::OnNewDevice(CUPnPDevice* pSender)
 
 void CFuppes::HandleSSDPByeBye(CSSDPMessage* pMessage)
 {
-  CSharedLog::Shared()->Log(L_EXT, "received \"Notify-ByeBye\" from device: " + pMessage->GetUUID(), __FILE__, __LINE__);
+  CSharedLog::Shared()->Log(L_EXT, __FILE__, __LINE__,
+														"received \"Notify-ByeBye\" from device: %s", pMessage->GetUUID().c_str());
 
   fuppesThreadLockMutex(&m_RemoteDevicesMutex);
 

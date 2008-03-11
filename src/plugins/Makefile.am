@@ -71,6 +71,22 @@ libmetadata_magickwand_la_LDFLAGS = \
 
 endif
 
+## libmp4v2 metadata extraction plugin
+if MP4V2_METADATA
+
+lib_LTLIBRARIES += libmetadata_libmp4v2.la
+
+libmetadata_libmp4v2_la_SOURCES = \
+	metadata_libmp4v2.cpp
+
+libmetadata_libmp4v2_la_CXXFLAGS = \
+	$(MP4V2_CFLAGS)
+	
+libmetadata_libmp4v2_la_LDFLAGS = \
+	$(MP4V2_LIBS)
+
+endif
+
 
 ## ffmpeg transcoder
 if VIDEO_TRANSCODING
@@ -111,3 +127,20 @@ libtranscoder_magickpp_la_LDFLAGS = \
 	$(IMAGEMAGICK_PP_LIBS)
 
 endif
+
+
+## L.A.M.E. encoder
+#if LAME_ENCODER
+
+#lib_LTLIBRARIES += libencoder_lame.la
+
+#libencoder_lame_la_SOURCES = \
+#	encoder_lame.c
+
+#libencoder_lame_la_CFLAGS = \
+#	$(LAME_H_DIR)
+	
+#libencoder_lame_la_LDFLAGS = \
+#	$(LAME_LIBS)
+
+#endif
