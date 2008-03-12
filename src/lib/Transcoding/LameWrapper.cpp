@@ -214,14 +214,14 @@ bool CLameWrapper::LoadLib()
   if(!m_Id3TagSetGenre) {
     CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot load symbol 'id3tag_set_genre'");
   }   
+ 
+  m_LameGlobalFlags = m_LameInit();
   
   return true;
 }
 
 void CLameWrapper::Init()
-{
-  m_LameGlobalFlags = m_LameInit();
-	
+{	
 	if(m_Id3TagInit) {
     m_Id3TagInit(m_LameGlobalFlags);
   }
