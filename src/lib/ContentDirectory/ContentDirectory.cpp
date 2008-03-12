@@ -412,7 +412,8 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
 		"  o." << sDevice << " and " <<
     "  m." << sDevice <<
     "order by " <<
-    "  o.TYPE, o.FILE_NAME ";
+		pUPnPBrowse->m_sortCriteriaSQL;
+    //"  o.TYPE, o.FILE_NAME ";
   
   
   if((pUPnPBrowse->m_nRequestedCount > 0) || (pUPnPBrowse->m_nStartingIndex > 0))  {
@@ -645,9 +646,11 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
     string sFileName = pSQLResult->GetValue("FILE_NAME");
 		if(!pSQLResult->IsNull("TITLE"))
 		  sFileName = pSQLResult->GetValue("TITLE");
-			
-	  sFileName = TrimFileName(sFileName, pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength + sExt.length() + 1);
-    sFileName = TruncateFileExt(sFileName);
+	
+		if(pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength > 0) {
+			sFileName = TrimFileName(sFileName, pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength + sExt.length() + 1);
+		}    
+		sFileName = TruncateFileExt(sFileName);		
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);
 	
@@ -753,7 +756,10 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
   // title
   xmlTextWriterStartElement(pWriter, BAD_CAST "dc:title");
     // trim filename
-    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength + sExt.length() + 1);
+		string sFileName = pSQLResult->GetValue("FILE_NAME");
+		if(pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength > 0) {
+			sFileName = TrimFileName(sFileName, pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength + sExt.length() + 1);
+		}
     sFileName = TruncateFileExt(sFileName);
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);
@@ -836,8 +842,10 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
 			duration = " " + pSQLResult->GetValue("AV_DURATION");
 		}*/
 	
-    sFileName += pSQLResult->GetValue("FILE_NAME");
-    sFileName = TrimFileName(sFileName, pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength + sExt.length() + 1); // - duration.length()); // +1 "."
+    sFileName = pSQLResult->GetValue("FILE_NAME");
+		if(pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength > 0) {
+			sFileName = TrimFileName(sFileName, pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength + sExt.length() + 1); // - duration.length()); // +1 "."
+		}
     sFileName = TruncateFileExt(sFileName);
 		//sFileName = sFileName + duration;
                                                     
