@@ -743,9 +743,9 @@ fi
 
 # mpeg4ip
 if test "x$have_mpeg4ip" = "xyes"; then
-  echo "    mpeg4ip/mp4v2 : enabled  (mp4/ma4 metadata extraction)"
+  echo "    mpeg4ip/mp4v2 : enabled  (mp4/m4a metadata extraction)"
 else
-  echo "    mpeg4ip/mp4v2 : disabled (mp4/ma4 metadata extraction)"
+  echo "    mpeg4ip/mp4v2 : disabled (mp4/m4a metadata extraction)"
 fi
 
 echo ""
