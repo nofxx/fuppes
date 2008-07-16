@@ -95,11 +95,11 @@ void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, std::string p_sContent
 }
 
 bool CHTTPMessage::SetMessage(std::string p_sMessage)
-{   
+{
   CMessageBase::SetMessage(p_sMessage);  
 
   CHTTPParser Parser;
-  Parser.Parse(this);
+  Parser.parseHeader(this);
   
   return BuildFromString(p_sMessage);
 }
@@ -109,11 +109,12 @@ bool CHTTPMessage::SetHeader(std::string p_sHeader)
   // header is already set
   if(m_sHeader.length() > 0)
     return true;
-  
+ 
+	// this sets m_sHeader
   CMessageBase::SetHeader(p_sHeader);  
   
   CHTTPParser Parser;
-  return Parser.Parse(this);
+  return Parser.parseHeader(this);
 }
 
 void CHTTPMessage::SetBinContent(char* p_szBinContent, fuppes_off_t p_nBinContenLength)
@@ -312,7 +313,7 @@ std::string CHTTPMessage::GetHeaderAsString()
 	
 	sResult << "\r\n";
   
-	return sResult.str();
+	return sResult.str().c_str();
 }
 
 std::string CHTTPMessage::GetMessageAsString()
@@ -320,7 +321,7 @@ std::string CHTTPMessage::GetMessageAsString()
   stringstream sResult;
   sResult << GetHeaderAsString();
   sResult << m_sContent;
-  return sResult.str();
+  return sResult.str().c_str();
 }
 
 fuppes_off_t CHTTPMessage::GetBinContentLength()
@@ -552,9 +553,30 @@ std::string CHTTPMessage::GetPostVar(std::string p_sPostVarName)
       sResult = sResult.substr(0, sResult.length() - 1);    
   }
   
-  return sResult;
+  return sResult.c_str();
 }
 
+std::string	CHTTPMessage::getVarAsStr(std::string key)
+{
+	m_getVarsIter = m_getVars.find(key);
+	if(m_getVarsIter == m_getVars.end()) {
+		return "";
+	}
+	
+	return m_getVars[key].c_str();	
+}
+
+int CHTTPMessage::getVarAsInt(std::string key)
+{
+	string val;
+	val = getVarAsStr(key);
+	if(val.length() == 0) {
+		return 0;
+	}
+	
+	int ret = atoi(val.c_str());
+	return ret;
+}
 
 bool CHTTPMessage::BuildFromString(std::string p_sMessage)
 {

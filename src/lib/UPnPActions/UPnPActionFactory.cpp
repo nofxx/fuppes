@@ -266,7 +266,7 @@ bool CUPnPActionFactory::parseSortCriteria(CUPnPBrowseSearchBase* action)
 	if(!rxSort.Search(action->GetContent().c_str())) {
 	
 		// sort by title if no sort criteria found
-		action->m_sortCriteriaSQL = " o.TITLE asc ";
+		action->m_sortCriteriaSQL = " d.A_TRACK_NO, o.TITLE asc ";
 		return false;
 	}
 	

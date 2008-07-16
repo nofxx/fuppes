@@ -29,6 +29,7 @@ extern "C" {
 
 typedef enum tagPLUGIN_TYPE {
 	PT_NONE,
+	PT_DLNA,
 	PT_METADATA,
 	PT_AUDIO_DECODER,
 	PT_AUDIO_ENCODER,
@@ -68,6 +69,9 @@ typedef struct {
 	int							track_no;
 	int							year;
 	int							channels;
+
+	int							has_image;
+	char*						image_mime_type;
 	
 	int							width;
 	int							height;
@@ -100,7 +104,11 @@ static void init_metadata(metadata_t* metadata)
 	metadata->track_no = 0;
 	metadata->year = 0;
 	metadata->channels = 0;
-
+	
+	metadata->has_image = 0;
+	metadata->image_mime_type = (char*)malloc(sizeof(char));
+	metadata->image_mime_type[0] = '\0';
+	
 	metadata->width = 0;
 	metadata->height = 0;
 	
@@ -125,6 +133,8 @@ static void free_metadata(metadata_t* metadata)
 	
 	free(metadata->audio_codec);
 	free(metadata->video_codec);
+	
+	free(metadata->image_mime_type);
 }
 
 #ifdef __cplusplus

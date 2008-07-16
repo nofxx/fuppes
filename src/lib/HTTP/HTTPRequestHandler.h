@@ -46,8 +46,11 @@ class CHTTPRequestHandler
 
     bool HandleGENAMessage(CHTTPMessage* pRequest, CHTTPMessage* pResponse);
   
-    bool HandleItemRequest(std::string p_sObjectId, CHTTPMessage* pRequest, CHTTPMessage* pResponse);
-    
+    bool handleItemRequest(std::string p_sObjectId, CHTTPMessage* pRequest, CHTTPMessage* pResponse);
+		
+		bool handleImageRequest(std::string p_sObjectId, CHTTPMessage* pRequest, CHTTPMessage* pResponse);
+			
+			
     std::string m_sHTTPServerURL;
 };
 

@@ -38,7 +38,9 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <map>
 
+#include "HTTPParser.h"
 
 using namespace std;
 
@@ -114,10 +116,12 @@ typedef enum HTTP_TRANSFER_ENCODING {
   HTTP_TRANSFER_ENCODING_CHUNKED
 } HTTP_TRANSFER_ENCODING;
 
-class CHTTPMessage;
+//class CHTTPMessage;
 
 class CHTTPMessage: public CMessageBase
 {
+	friend class CHTTPParser;
+	
   public:
     CHTTPMessage();
     virtual ~CHTTPMessage();
@@ -156,7 +160,9 @@ class CHTTPMessage: public CMessageBase
     bool              PostVarExists(std::string p_sPostVarName);
     std::string       GetPostVar(std::string p_sPostVarName);
   
-
+		std::string				getVarAsStr(std::string key);
+		int								getVarAsInt(std::string key);
+			
     void             SetMessageType(HTTP_MESSAGE_TYPE p_nHTTPMessageType) { m_nHTTPMessageType = p_nHTTPMessageType; }
     void             SetVersion(HTTP_VERSION p_nHTTPVersion)              { m_nHTTPVersion     = p_nHTTPVersion;     }
     void             SetContentType(std::string p_sContentType)           { m_sHTTPContentType = p_sContentType;     }
@@ -229,7 +235,8 @@ private:
     fuppes_off_t       m_nRangeEnd;
     fuppes_off_t       m_nBinContentPosition;  
   
-  
+		std::map<std::string, std::string> 						m_getVars;
+		std::map<std::string, std::string>::iterator	m_getVarsIter;
   
 	  CDeviceSettings*   m_pDeviceSettings;    
 

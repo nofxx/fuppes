@@ -29,7 +29,6 @@
 #include "../SharedLog.h"
 #include "../Transcoding/TranscodingMgr.h"
 #include "../DeviceSettings/DeviceIdentificationMgr.h"
-#include "../Plugins/Plugin.h"
 
 #include <sstream>
 #include <iostream>
@@ -47,17 +46,10 @@ CFileDetails* CFileDetails::Shared()
 
 CFileDetails::CFileDetails()
 {
-	#ifdef DLNA_SUPPORT
-	m_dlna = dlna_init();
-  dlna_register_all_media_profiles(m_dlna);
-	#endif
 }
 
 CFileDetails::~CFileDetails()
 {
-	#ifdef DLNA_SUPPORT
-	dlna_uninit(m_dlna);
-	#endif
 }
 
 OBJECT_TYPE CFileDetails::GetObjectType(std::string p_sFileName)
@@ -141,7 +133,8 @@ bool CFileDetails::IsSupportedFileExtension(std::string p_sFileExtension)
   return CDeviceIdentificationMgr::Shared()->DefaultDevice()->Exists(p_sFileExtension);
 }
 
-bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SAudioItem* pMusicTrack)
+bool CFileDetails::getMusicTrackDetails(std::string p_sFileName,
+																				metadata_t* metadata)
 {
   string sExt = ExtractFileExt(p_sFileName);
   if(!CDeviceIdentificationMgr::Shared()->DefaultDevice()->FileSettings(sExt)->ExtractMetadata())
@@ -156,18 +149,18 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SAudioItem* pMu
 		audio = CPluginMgr::metadataPlugin("taglib");
 	}
 	
-	metadata_t metadata;
+	//metadata_t metadata;
 	if(!audio || !audio->openFile(p_sFileName)) {
 		return false;
 	}
 		
-	init_metadata(&metadata);			
-	if(!audio->readData(&metadata)) {
-		free_metadata(&metadata);	
+	//init_metadata(metadata);			
+	if(!audio->readData(metadata)) {
+		//free_metadata(metadata);	
 		return false;
 	}
 
-	pMusicTrack->sTitle 					= TrimWhiteSpace(metadata.title);  
+	/*pMusicTrack->sTitle 					= TrimWhiteSpace(metadata.title);  
 	pMusicTrack->sDuration				= metadata.duration;
 	pMusicTrack->nNrAudioChannels =	metadata.channels;
 	pMusicTrack->nBitrate 				= metadata.bitrate;
@@ -177,21 +170,21 @@ bool CFileDetails::GetMusicTrackDetails(std::string p_sFileName, SAudioItem* pMu
 	pMusicTrack->sAlbum 					= TrimWhiteSpace(metadata.album);
 	pMusicTrack->sGenre 					= TrimWhiteSpace(metadata.genre);
 	pMusicTrack->sDescription 		= TrimWhiteSpace(metadata.description);
-	pMusicTrack->nOriginalTrackNumber = metadata.track_no;
+	pMusicTrack->nOriginalTrackNumber = metadata.track_no;*/
 	//pMusicTrack->sDate 					= sDate.str();
 
-	if(pMusicTrack->sArtist.empty()) {
-		pMusicTrack->sArtist = "unknown";
-	}			 
-	if(pMusicTrack->sAlbum.empty()) {
-		pMusicTrack->sAlbum = "unknown";
-	}				
-	if(pMusicTrack->sGenre.empty()) {
-		pMusicTrack->sGenre = "unknown";
+	if(strlen(metadata->artist) == 0) {
+		set_value(&metadata->artist, "unknown");							
+	}	
+	if(strlen(metadata->album) == 0) {
+		set_value(&metadata->album, "unknown");							
+	}	
+	if(strlen(metadata->genre) == 0) {
+		set_value(&metadata->genre, "unknown");							
 	}
 	
 	audio->closeFile();
-	free_metadata(&metadata);
+	//free_metadata(&metadata);
 	return true;	
 }
 
@@ -260,54 +253,3 @@ bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoIt
 	
 	return false;
 }
-
-std::string CFileDetails::GuessDLNAProfileId(std::string p_sFileName)
-{
-  #ifdef DLNA_SUPPORT
-  string sResult;
-  dlna_profile_t *p;
-  p = dlna_guess_media_profile(m_dlna, p_sFileName.c_str());
-  if(p) {
-    sResult = p->id;
-  }  
-  return sResult;
-  #else
-  return "";
-  #endif
-}
-
-/*std::string CFileDetails::GetDLNAString(std::string p_sFileName)
-{		
-	string sResult = "";	
-	dlna_profile_t *p;
-  dlna_org_flags_t flags;
-
-  flags = DLNA_ORG_FLAG_STREAMING_TRANSFER_MODE |
-    DLNA_ORG_FLAG_BACKGROUND_TRANSFERT_MODE |
-    DLNA_ORG_FLAG_CONNECTION_STALL |
-    DLNA_ORG_FLAG_DLNA_V15;		
-		
-	p = dlna_guess_media_profile(dlna, p_sFileName.c_str());
-  if(p) {
-    char *protocol_info;
-  */  
-    /*printf ("ID: %s\n", p->id);
-    printf ("MIME: %s\n", p->mime);
-    printf ("Label: %s\n", p->label);
-    printf ("Class: %d\n", p->class);
-    printf ("UPnP Object Item: %s\n", dlna_profile_upnp_object_item(p));*/
-/*
-    protocol_info = dlna_write_protocol_info(DLNA_PROTOCOL_INFO_TYPE_HTTP,
-                                             DLNA_ORG_PLAY_SPEED_NORMAL,
-                                             DLNA_ORG_CONVERSION_NONE,
-                                             DLNA_ORG_OPERATION_RANGE,
-                                             flags, p);
-    
-		//printf ("Protocol Info: %s\n", protocol_info);
-		sResult = protocol_info;
-    free (protocol_info);
-  }
-			
-	return sResult;
-	#endif
-}*/

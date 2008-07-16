@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006 - 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2006-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -21,16 +21,22 @@
  *  with this program; if not, write to the Free Software Foundation, Inc.,
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
- 
+
 #include "HTTPParser.h"
+#include "HTTPMessage.h"
 #include "../Common/RegEx.h"
 #include "../DeviceSettings/DeviceIdentificationMgr.h"
 
-bool CHTTPParser::Parse(CHTTPMessage* pMessage)
+bool CHTTPParser::parseHeader(CHTTPMessage* pMessage)
 {
   m_pMessage = pMessage;
 
-  /* detect message type and HTTP version */
+	// header is already parsed
+	if(pMessage->m_nHTTPMessageType != HTTP_MESSAGE_TYPE_UNKNOWN) {
+		return true;
+	}
+	
+  // detect message type and HTTP version
   std::string sType;
   int nVersion;
   
@@ -41,11 +47,13 @@ bool CHTTPParser::Parse(CHTTPMessage* pMessage)
   if(rxRequest.Search(pMessage->GetHeader().c_str())) { 
     sType    = rxRequest.Match(1);
     nVersion = atoi(rxRequest.Match(3));
+		pMessage->m_sRequest = rxRequest.Match(2);
   }
 	// it's a response
   else if(rxResponse.Search(pMessage->GetHeader().c_str())) {
 		sType    = rxResponse.Match(2);
 		nVersion = atoi(rxResponse.Match(1));
+		pMessage->m_sRequest = rxRequest.Match(3);
 	}
 	else {    
 		return false;
@@ -96,14 +104,15 @@ bool CHTTPParser::Parse(CHTTPMessage* pMessage)
 	else if(sType.compare("404") == 0) {
 	  pMessage->SetMessageType(HTTP_MESSAGE_TYPE_404_NOT_FOUND);
 	}
-  
+
+	parseCommonValues();
+	parseGetVars();
 	
-	ParseCommonValues();  
 	CDeviceIdentificationMgr::Shared()->IdentifyDevice(pMessage); 
   return true;
 }
 
-void CHTTPParser::ParseCommonValues()
+void CHTTPParser::parseCommonValues()
 {
   RegEx rxUserAgent("USER-AGENT: *(.*)\r\n", PCRE_CASELESS);
 	if(rxUserAgent.Search(m_pMessage->GetHeader().c_str())) {
@@ -157,4 +166,37 @@ void CHTTPParser::ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage)
 	}
 	
   m_pMessage->SetContent(sVars.str());
+}
+
+void CHTTPParser::parseGetVars()
+{
+	// get vars already parsed
+	if(!m_pMessage->m_getVars.empty()) {
+		return;
+	}
+	
+	// check if there are get vars available
+	size_t pos;
+	if((pos = m_pMessage->m_sRequest.find_first_of("?")) == std::string::npos) {
+		return;
+	}
+	
+	// parse the stuff
+	string get;
+	string key;
+	string val;
+	size_t amp;
+	
+	get = m_pMessage->m_sRequest.substr(pos + 1, m_pMessage->m_sRequest.length());
+	get += "&";
+	
+	while(get.length() > 0) {
+		
+		key = get.substr(0, (pos = get.find_first_of("=")));
+		val = get.substr(pos + 1, (amp = get.find_first_of("&")) - pos - 1);
+	
+		m_pMessage->m_getVars[key] = val;
+		
+		get = get.substr(amp + 1, get.length());
+	}
 }

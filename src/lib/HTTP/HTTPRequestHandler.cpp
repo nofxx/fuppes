@@ -140,15 +140,19 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
 
 
   /* AudioItem, ImageItem, videoItem */
-  else if(
-          ((sRequest.length() > 24) &&
-           ((sRequest.substr(0, 24).compare("/MediaServer/AudioItems/") == 0) ||
-            (sRequest.substr(0, 24).compare("/MediaServer/ImageItems/") == 0) ||
-            (sRequest.substr(0, 24).compare("/MediaServer/VideoItems/") == 0)
-           )))
-  {
-    string sObjectId = TruncateFileExt(sRequest.substr(24, sRequest.length()));
-    bResult = HandleItemRequest(sObjectId, pRequest, pResponse);    
+  else if(sRequest.length() > 24) {
+
+		string sObjectId = TruncateFileExt(sRequest.substr(24, sRequest.length()));
+		
+		if((sRequest.substr(0, 24).compare("/MediaServer/AudioItems/") == 0) ||
+       (sRequest.substr(0, 24).compare("/MediaServer/VideoItems/") == 0)) {		
+			
+			bResult = handleItemRequest(sObjectId, pRequest, pResponse);
+		}
+		else if(sRequest.substr(0, 24).compare("/MediaServer/ImageItems/") == 0) {
+			
+			bResult = handleImageRequest(sObjectId, pRequest, pResponse);    
+		}
   }
   
   /* set 404 */
@@ -225,7 +229,7 @@ bool CHTTPRequestHandler::HandleGENAMessage(CHTTPMessage* pRequest, CHTTPMessage
   return true;
 }
 
-bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessage* pRequest, CHTTPMessage* pResponse)
+bool CHTTPRequestHandler::handleItemRequest(std::string p_sObjectId, CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {
   std::stringstream sSql;
   OBJECT_TYPE       nObjectType;
@@ -336,4 +340,84 @@ bool CHTTPRequestHandler::HandleItemRequest(std::string p_sObjectId, CHTTPMessag
   
   delete pDb;
   return bResult;
+}
+
+bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessage* pRequest, CHTTPMessage* pResponse)
+{
+	cout << "image request" << endl;
+	cout << pRequest->getVarAsInt("width") << "x" << pRequest->getVarAsInt("height") << endl;
+	
+  std::stringstream sSql;
+  OBJECT_TYPE       nObjectType;
+  std::string       sExt;
+  std::string       sPath;
+  std::string       sMimeType;
+  CContentDatabase  db; //         = new CContentDatabase();  
+  bool              bResult     = true;  
+  
+  
+  string sDevice = " and o.DEVICE is NULL ";
+  if(CVirtualContainerMgr::Shared()->IsVirtualContainer(HexToInt(p_sObjectId), pRequest->DeviceSettings()->VirtualFolderDevice()))
+    sDevice = " and o.DEVICE = '" + pRequest->DeviceSettings()->VirtualFolderDevice() + "' ";
+  
+  sSql << 
+    "select " <<
+    "  * " <<
+    "from " <<
+    "  OBJECTS o " <<
+    "  left join OBJECT_DETAILS d on (d.ID = o.DETAIL_ID) " <<
+    "where " <<
+    "  o.OBJECT_ID = " << HexToInt(p_sObjectId) << sDevice;
+  
+  db.Select(sSql.str());
+  
+  if(db.Eof()) {
+		CSharedLog::Log(L_EXT, __FILE__, __LINE__, "unknown object id: %s", p_sObjectId.c_str());
+		return false;
+	}
+        
+  sPath = db.GetResult()->GetValue("PATH");    
+  sExt  = ExtractFileExt(sPath);
+    
+  if(!FileExists(sPath)) {
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "file: %s not found", sPath.c_str());
+    return false;
+  }
+  
+	if(pRequest->DeviceSettings()->DoTranscode(sExt, db.GetResult()->GetValue("A_CODEC"), db.GetResult()->GetValue("V_CODEC"))) {
+		CSharedLog::Log(L_EXT, __FILE__, __LINE__, "transcode %s",  sPath.c_str());
+ 
+		sMimeType = pRequest->DeviceSettings()->MimeType(sExt, db.GetResult()->GetValue("A_CODEC"), db.GetResult()->GetValue("V_CODEC"));
+		if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {          
+			//
+			SAudioItem trackDetails;
+			if(!pResponse->TranscodeContentFromFile(sPath, trackDetails)) {
+				return false;
+			}
+		}
+		else if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) {
+			// mark the head response as chunked so
+			// the correct header will be build
+			pResponse->SetIsBinary(true);
+				
+			if(pRequest->DeviceSettings()->TranscodingHTTPResponse(sExt) == RESPONSE_CHUNKED) {
+				pResponse->SetTransferEncoding(HTTP_TRANSFER_ENCODING_CHUNKED);
+			}
+			else if(pRequest->DeviceSettings()->TranscodingHTTPResponse(sExt) == RESPONSE_STREAM) {
+				pResponse->SetTransferEncoding(HTTP_TRANSFER_ENCODING_NONE);
+			}
+		}
+	}
+	else {
+		sMimeType = pRequest->DeviceSettings()->MimeType(sExt, db.GetResult()->GetValue("A_CODEC"), db.GetResult()->GetValue("V_CODEC"));
+		pResponse->LoadContentFromFile(sPath);
+	}      
+	
+	// we always set the response type to "200 OK"
+	// if the message should be a "206 partial content" 
+	// CHTTPServer will change the type
+	pResponse->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
+	pResponse->SetContentType(sMimeType);
+  
+  return true;
 }

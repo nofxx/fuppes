@@ -40,6 +40,7 @@ typedef void (*registerPlugin_t)(plugin_info* info);
 
 class CMetadataPlugin;
 class CTranscoderPlugin;
+class CDlnaPlugin;
 
 class CPluginMgr
 {
@@ -49,6 +50,8 @@ class CPluginMgr
 		static CMetadataPlugin* metadataPlugin(std::string pluginName);
 		static CTranscoderBase* transcoderPlugin(std::string pluginName);
 	
+		static CDlnaPlugin* dlnaPlugin() { return m_instance->m_dlnaPlugin; }
+			
 	private:
 		static CPluginMgr* m_instance;
 	
@@ -57,6 +60,8 @@ class CPluginMgr
 		
 		std::map<std::string, CTranscoderPlugin*> m_transcoderPlugins;
 		std::map<std::string, CTranscoderPlugin*>::iterator m_transcoderPluginsIter;
+			
+		CDlnaPlugin*	m_dlnaPlugin;
 };
 
 class CPlugin
@@ -76,6 +81,21 @@ class CPlugin
 	protected:
 		fuppesLibHandle		m_handle;
 		plugin_info				m_pluginInfo;
+};
+
+
+typedef int (*dlnaGetImageProfile_t)(const char* ext, int width, int height, char* dlnaProfile, char* mimeType);
+class CDlnaPlugin: public CPlugin
+{
+	public:
+		CDlnaPlugin(fuppesLibHandle handle, plugin_info* info): 
+			CPlugin(handle, info) {}
+	
+		bool initPlugin();
+		bool getImageProfile(std::string ext, int width, int height, std::string* dlnaProfile, std::string* mimeType);
+			
+	private:
+		dlnaGetImageProfile_t			m_getImageProfile;
 };
 
 

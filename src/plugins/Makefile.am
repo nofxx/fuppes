@@ -88,6 +88,23 @@ libmetadata_libmp4v2_la_LDFLAGS = \
 endif
 
 
+## dlna profile detection plugin
+if DLNA_SUPPORT
+
+lib_LTLIBRARIES += libmetadata_dlna_profiles.la
+
+libmetadata_dlna_profiles_la_SOURCES = \
+	metadata_dlna_profiles.c \
+	dlna\dlna_image_profiles.h
+
+libmetadata_dlna_profiles_la_CXXFLAGS = 
+	
+libmetadata_dlna_profiles_la_LDFLAGS = 
+
+endif
+
+
+
 ## ffmpeg transcoder
 if VIDEO_TRANSCODING
 

@@ -37,10 +37,19 @@ extern "C"
 {  
   #include <ctype.h>
   #include <string.h>
+
+#if FFMPEG_VERSION >= 52
+  #include <libavformat/avformat.h>
+  #include <libavutil/avutil.h>
+  #include <libavutil/fifo.h> 
+  #include <libavcodec/opt.h>
+#else
   #include <avformat.h>
-	#include <avutil.h>
-  #include <fifo.h> 
-	#include <opt.h>
+  #include <avutil.h>
+  #include <fifo.h>
+  #include <opt.h>
+#endif
+
 #ifdef HAVE_LIBSWSCALE
   #include <swscale.h>
 #endif

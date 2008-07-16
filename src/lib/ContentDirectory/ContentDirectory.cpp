@@ -30,6 +30,7 @@
 #include "../Common/Common.h"
 #include "../Common/RegEx.h"
 #include "VirtualContainerMgr.h"
+#include "libdlna/dlna.h"
 
 #include <iostream>
 #include <sstream>
@@ -785,22 +786,27 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
   // res
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
   
-  // protocol info
-  //string sTmp = "http-get:*:" + pUPnPBrowse->DeviceSettings()->MimeType(sExt) + ":*";
-  //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
-  
 	// protocol info
-  string sDLNA = pSQLResult->GetValue("DLNA_PROFILE");
-  if(sDLNA.empty())
-    sDLNA = pUPnPBrowse->DeviceSettings()->DLNA(sExt);
-  
-  string sTmp = BuildProtocolInfo(false, pUPnPBrowse->DeviceSettings()->MimeType(sExt), sDLNA, pUPnPBrowse);
+  string dlna;
+	
+	if(pUPnPBrowse->DeviceSettings()->DLNAEnabled()) {
+		// check image format and convert/rescale if necessary
+	}	
+	
+	if(!bTranscode) {
+		dlna = pSQLResult->GetValue("DLNA_PROFILE");
+	}
+	else {
+		// CPluginMgr::DlnaPlugin()->getImageProfile();
+	}
+
+  string sTmp = BuildProtocolInfo(false, pUPnPBrowse->DeviceSettings()->MimeType(sExt), dlna, pUPnPBrowse);
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
-																											
+
   // resolution
 	if(pUPnPBrowse->IncludeProperty("res@resolution")) {
     #warning todo rescaling
-			
+
 		if(!pSQLResult->IsNull("IV_WIDTH") && !pSQLResult->IsNull("IV_HEIGHT")) {
 			sTmp = pSQLResult->GetValue("IV_WIDTH") + "x" + pSQLResult->GetValue("IV_HEIGHT");
 			xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.c_str());
@@ -809,7 +815,7 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
 			xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST "0x0");
 		}
 	}
-	
+
 	// size
   if(!bTranscode && pUPnPBrowse->IncludeProperty("res@size") && !pSQLResult->IsNull("SIZE")) {
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->GetValue("SIZE").c_str());

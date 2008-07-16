@@ -29,7 +29,12 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#if FFMPEG_VERSION >= 52
+#include <libavformat/avformat.h>
+#else
 #include <avformat.h>
+#endif
+
 #include "cmdutils.h"
 
 #ifdef HAVE_CONFIG_H

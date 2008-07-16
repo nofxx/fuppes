@@ -1,9 +1,9 @@
 /***************************************************************************
- *            HTTPParser.h
+ *            dlna_image_profiles.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,27 +22,40 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _HTTPPARSER_H
-#define _HTTPPARSER_H
-
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
-
-class CHTTPMessage;
-
-class CHTTPParser
-{ 
-  public:
-    bool parseHeader(CHTTPMessage* pMessage);
-		void ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage);
+int dlna_get_image_profile_jpeg(int width, int height, char* profile, char* mimeType)
+{
+	strcpy(mimeType, "image/jpeg");
 	
-  private:
-	  CHTTPMessage* m_pMessage;
+  if(width <= 48 && height <= 48) {
+		strcpy(profile, "JPEG_SM_ICO");
+		return 0;
+  }
+  else if(width <= 120 && height <= 120) {
+		strcpy(profile, "JPEG_LRG_ICO");
+		return 0;
+  }
+  else if(width <= 160 && height <= 160) {
+		strcpy(profile, "JPEG_TN");
+		return 0;
+  }
+  else if(width <= 640 && height <= 480) {
+		strcpy(profile, "JPEG_SM");
+		return 0;
+  }
+  else if(width <= 1024 && height <= 768) {
+    strcpy(profile, "JPEG_MED");
+		return 0;
+  }
+  else if(width <= 4096 && height <= 4096) {
+    strcpy(profile, "JPEG_LRG");
+		return 0;
+  }
+  else {
+    return -1;
+  }
+}
 
-		void parseCommonValues();
-		void parseGetVars();
-		
-};
-
-#endif // _HTTPPARSER_H
+int dlna_get_image_profile_png(int width, int height, char* profile, char* mimeType)
+{
+	return -1;
+}

@@ -99,10 +99,13 @@ typedef enum tagOBJECT_TYPE
 class CSelectResult
 {
   public:
-    std::string  GetValue(std::string p_sFieldName);
-    bool         IsNull(std::string p_sFieldName);
-    unsigned int GetValueAsUInt(std::string p_sFieldName);
-  
+    std::string		GetValue(std::string p_sFieldName);
+    bool        	IsNull(std::string p_sFieldName);
+    unsigned int	GetValueAsUInt(std::string p_sFieldName);
+		
+		unsigned int	asUInt(std::string fieldName) { return GetValueAsUInt(fieldName); }
+		int						asInt(std::string fieldName);
+			
   //private:
     std::map<std::string, std::string> m_FieldValues;
     std::map<std::string, std::string>::iterator m_FieldValuesIterator;  

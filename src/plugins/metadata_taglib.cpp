@@ -28,6 +28,9 @@
 #include <fileref.h>
 #include <tfile.h>
 #include <tag.h>
+#include <mpegfile.h>
+#include <id3v2tag.h>
+#include <attachedpictureframe.h>
 
 #include <iostream>
 using namespace std;
@@ -134,6 +137,53 @@ void taglib_close_file(plugin_info* plugin)
 	plugin->user_data = NULL;
 }
 
+void taglib_check_image(plugin_info* info, metadata_t* metadata)
+{
+	TagLib::MPEG::File* mpegFile = new TagLib::MPEG::File(((TagLib::FileRef*)info->user_data)->file()->name());
+	if(mpegFile->isValid() == false || mpegFile->ID3v2Tag() == NULL) {
+		delete mpegFile;
+		return;
+	}
+
+	TagLib::ID3v2::Tag *tag = mpegFile->ID3v2Tag();
+  const TagLib::ID3v2::FrameList frameList = tag->frameList("APIC");
+	if(frameList.isEmpty()) {
+		delete mpegFile;
+		return;
+	}
+	
+	TagLib::ID3v2::AttachedPictureFrame* picFrame;
+	picFrame = dynamic_cast<TagLib::ID3v2::AttachedPictureFrame*>(frameList.front());
+  if(picFrame == NULL) {
+		delete mpegFile;
+		return;
+	}
+	
+	cout << "mime/type: " << picFrame->mimeType().toCString() << endl;
+  
+	metadata->has_image = 1;
+	set_value(&metadata->image_mime_type, picFrame->mimeType().toCString());
+
+	delete mpegFile;
+	
+  /*  wxString sMimeType(ConvA2W(ApicFrame->mimeType().toCString()));
+    const TagLib::ByteVector pic = ApicFrame->picture();
+    wxMemoryInputStream vMstream(pic.data(), pic.size());
+    return img.LoadFile(vMstream,sMimeType);*/	
+  /*
+    TagLib::ID3v2::Tag *tag = pMpegfile->ID3v2Tag();
+    const TagLib::ID3v2::FrameList & ApicFrameList = tag->frameList("APIC");
+    if(ApicFrameList.isEmpty() 
+        || dynamic_cast<const TagLib::ID3v2::AttachedPictureFrame *>(ApicFrameList.front()) == NULL 
+      )
+        return false;
+    const TagLib::ID3v2::AttachedPictureFrame *ApicFrame = static_cast<const TagLib::ID3v2::AttachedPictureFrame *>(ApicFrameList.front());
+    wxString sMimeType(ConvA2W(ApicFrame->mimeType().toCString()));
+    const TagLib::ByteVector pic = ApicFrame->picture();
+    wxMemoryInputStream vMstream(pic.data(), pic.size());
+    return img.LoadFile(vMstream,sMimeType);*/
+}
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -174,6 +224,8 @@ int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
 	taglib_get_bitrate(plugin, metadata);
 	taglib_get_samplerate(plugin, metadata);
 
+	taglib_check_image(plugin, metadata);
+	
 	metadata->bits_per_sample = 0;
 
 	return 0;

@@ -29,9 +29,9 @@
 #include "../../config.h"
 #endif
 
+#include "../Plugins/Plugin.h"
 #include "ContentDatabase.h"
 #include <string>
-#include "libdlna/dlna.h"
 
 struct FileType_t
 {
@@ -147,19 +147,14 @@ class CFileDetails
     std::string GetObjectTypeAsStr(OBJECT_TYPE p_nObjectType);
     std::string GetContainerTypeAsStr(OBJECT_TYPE p_nContainerType);
   
-    bool GetMusicTrackDetails(std::string p_sFileName, SAudioItem* pMusicTrack);
+    bool getMusicTrackDetails(std::string p_sFileName, metadata_t* metadata);
     bool GetImageDetails(std::string p_sFileName, SImageItem* pImageItem);
 	  bool GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoItem);
 	
     bool IsSupportedFileExtension(std::string p_sFileExtension);
 
-    std::string GuessDLNAProfileId(std::string p_sFileName);
-		
   private:
     static CFileDetails* m_Instance; 
-		#ifdef DLNA_SUPPORT
-		dlna_t* m_dlna;
-		#endif
 };
 
 #endif // _FILEDETAILS_H

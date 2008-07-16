@@ -79,6 +79,16 @@ unsigned int CSelectResult::GetValueAsUInt(std::string p_sFieldName)
   return nResult;
 }
 
+int CSelectResult::asInt(std::string fieldName)
+{
+	int result = 0;
+  if(!IsNull(fieldName)) {
+    result = atoi(GetValue(fieldName).c_str());
+  }
+  return result;
+}
+
+
 CContentDatabase* CContentDatabase::m_Instance = 0;
 
 CContentDatabase* CContentDatabase::Shared()
@@ -182,12 +192,15 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 				"  DATE TEXT, "
 				"  IV_HEIGHT INTEGER, "
 				"  IV_WIDTH INTEGER, "
-        "  A_CODEC, "
-        "  V_CODEC, "
+        "  A_CODEC TEXT, "
+        "  V_CODEC TEXT, "
+				"  ALBUM_ART_ID INTEGER, "
+				"  ALBUM_ART_MIME_TYPE TEXT, "
         "  SIZE INTEGER DEFAULT 0, "
-				"  DLNA_PROFILE TEXT DEFAULT NULL"
+				"  DLNA_PROFILE TEXT DEFAULT NULL,"
+				"  DLNA_MIME_TYPE TEXT DEFAULT NULL"
 				");"))   
-			return false;    
+			return false;
     
     if(!Execute("CREATE TABLE MAP_OBJECTS ( "
         "  ID INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -705,59 +718,77 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
   #endif         
 }
 
-unsigned int InsertAudioFile(CContentDatabase* pDb, std::string p_sFileName, std::string* p_sTitle)
+unsigned int InsertAudioFile(CContentDatabase* pDb, unsigned int objectId, std::string p_sFileName, std::string* p_sTitle)
 {
-	SAudioItem TrackInfo; 
-	if(!CFileDetails::Shared()->GetMusicTrackDetails(p_sFileName, &TrackInfo))
+	metadata_t metadata;
+	init_metadata(&metadata);
+	
+	if(!CFileDetails::Shared()->getMusicTrackDetails(p_sFileName, &metadata)) {
+		free_metadata(&metadata);
 	  return 0;
-		
-  string sDlna = CFileDetails::Shared()->GuessDLNAProfileId(p_sFileName);
-  TrackInfo.nSize = getFileSize(p_sFileName);
+	}
+
+  string sDlna; // = CFileDetails::Shared()->GuessDLNAProfileId(p_sFileName);
+  fuppes_off_t fileSize = getFileSize(p_sFileName);
+	
+	unsigned int imgId = 0;
+	string imgMimeType;
+	if(metadata.has_image == 1) {
+		imgId = objectId;
+		imgMimeType = metadata.image_mime_type;
+	}
 	
 	stringstream sSql;
 	sSql << 
 	  "insert into OBJECT_DETAILS " <<
 		"(A_ARTIST, A_ALBUM, A_TRACK_NO, A_GENRE, AV_DURATION, DATE, " <<
-    "A_CHANNELS, AV_BITRATE, A_SAMPLERATE, SIZE, DLNA_PROFILE) " <<
+    "A_CHANNELS, AV_BITRATE, A_SAMPLERATE, " <<
+		"ALBUM_ART_ID, ALBUM_ART_MIME_TYPE, SIZE, DLNA_PROFILE) " <<
 		"values (" <<
-		//"'" << SQLEscape(TrackInfo.mAudioItem.sTitle) << "', " <<
-		"'" << SQLEscape(TrackInfo.sArtist) << "', " <<
-		"'" << SQLEscape(TrackInfo.sAlbum) << "', " <<
-		TrackInfo.nOriginalTrackNumber << ", " <<
-		"'" << SQLEscape(TrackInfo.sGenre) << "', " <<
-		"'" << TrackInfo.sDuration << "', " <<
-		"'" << TrackInfo.sDate << "', " <<
-		TrackInfo.nNrAudioChannels << ", " <<
-		TrackInfo.nBitrate << ", " <<
-		TrackInfo.nSampleRate << ", " <<
-    TrackInfo.nSize << ", " <<
+		"'" << SQLEscape(metadata.artist) << "', " <<
+		"'" << SQLEscape(metadata.album) << "', " <<
+		metadata.track_no << ", " <<
+		"'" << SQLEscape(metadata.genre) << "', " <<
+		"'" << metadata.duration << "', " <<
+		"'" << "" << "', " <<
+		metadata.channels << ", " <<
+		metadata.bitrate << ", " <<
+		metadata.samplerate << ", " <<
+		imgId << ", " <<
+		"'" << imgMimeType << "', " <<
+    fileSize << ", " <<
     "'" << sDlna << "')";
 		
-	//cout << sSql.str() << endl;
-  *p_sTitle = TrackInfo.sTitle;
+  *p_sTitle = metadata.title;
 	
+	free_metadata(&metadata);	
   return pDb->Insert(sSql.str());
 }
 
-unsigned int InsertImageFile(CContentDatabase* pDb, std::string p_sFileName)
+unsigned int InsertImageFile(CContentDatabase* pDb, std::string fileName)
 {
   SImageItem ImageItem;
-	if(!CFileDetails::Shared()->GetImageDetails(p_sFileName, &ImageItem))
+	if(!CFileDetails::Shared()->GetImageDetails(fileName, &ImageItem))
 	  return 0;
 	
-  string sDlna = CFileDetails::Shared()->GuessDLNAProfileId(p_sFileName);  
+  string dlna;
+	string mimeType;
+	string ext = ExtractFileExt(fileName);
+	if(CPluginMgr::dlnaPlugin()) {
+		CPluginMgr::dlnaPlugin()->getImageProfile(ext, ImageItem.nWidth, ImageItem.nHeight, &dlna, &mimeType);
+	}
 	
 	stringstream sSql;
 	sSql << 
 	  "insert into OBJECT_DETAILS " <<
-		"(SIZE, IV_WIDTH, IV_HEIGHT, DLNA_PROFILE) " <<
+		"(SIZE, IV_WIDTH, IV_HEIGHT, " <<
+		"DLNA_PROFILE, DLNA_MIME_TYPE) " <<
 		"values (" <<
-		getFileSize(p_sFileName) << ", " <<
+		getFileSize(fileName) << ", " <<
 		ImageItem.nWidth << ", " <<
 		ImageItem.nHeight << ", " <<
-    "'" << sDlna << "')";
-	
-	//cout << sSql.str() << endl;
+    "'" << dlna << "', " <<
+		"'" << mimeType << "')";
 	
   return pDb->Insert(sSql.str());  
 } 
@@ -768,7 +799,7 @@ unsigned int InsertVideoFile(CContentDatabase* pDb, std::string p_sFileName)
 	if(!CFileDetails::Shared()->GetVideoDetails(p_sFileName, &VideoItem))
 	  return 0;  
   
-  string sDlna = CFileDetails::Shared()->GuessDLNAProfileId(p_sFileName);
+  string sDlna; // = CFileDetails::Shared()->GuessDLNAProfileId(p_sFileName);
 	VideoItem.nSize = getFileSize(p_sFileName);
 	 
 	stringstream sSql;
@@ -803,7 +834,9 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
   OBJECT_TYPE nObjectType = CFileDetails::Shared()->GetObjectType(p_sFileName);  
   if(nObjectType == OBJECT_TYPE_UNKNOWN)
     return false;
-    
+   
+	nObjId = pDb->GetObjId();
+	
   // we insert file details first to get the detail ID
   unsigned int nDetailId = 0;
   string sTitle;
@@ -811,7 +844,7 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
   {
     case ITEM_AUDIO_ITEM:
     case ITEM_AUDIO_ITEM_MUSIC_TRACK:     
-      nDetailId = InsertAudioFile(pDb, p_sFileName, &sTitle); 
+      nDetailId = InsertAudioFile(pDb, nObjId, p_sFileName, &sTitle); 
       break;
     case ITEM_IMAGE_ITEM:
     case ITEM_IMAGE_ITEM_PHOTO:
@@ -825,7 +858,6 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
     default:
       break;
   }  
-              
 
   // insert object  
   string sTmpFileName =  p_sFileName;
@@ -842,9 +874,6 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
   else {
     sTitle = sTmpFileName;
   }
-  
-  
-  nObjId = pDb->GetObjId();
   
   stringstream sSql;
   sSql << "insert into objects (" <<

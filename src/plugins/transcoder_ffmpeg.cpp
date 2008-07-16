@@ -56,8 +56,14 @@ void parseFFmpegArgs(const char* args, char* argv[], int* argc)
 extern "C" {
 #endif
 
+#if FFMPEG_VERSION >= 52
+#include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+#else
 #include <avformat.h>
 #include <avcodec.h>
+#endif
+
 #include <string.h>
 	
 void register_fuppes_plugin(plugin_info* info)

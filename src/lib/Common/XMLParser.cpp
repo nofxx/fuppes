@@ -257,14 +257,14 @@ CXMLDocument::~CXMLDocument()
 bool CXMLDocument::LoadFromFile(std::string p_sFileName)
 {
   m_sFileName = p_sFileName;
-  m_pDoc = xmlReadFile(p_sFileName.c_str(), "UTF-8", XML_PARSE_NOBLANKS);  
+  m_pDoc = xmlReadFile(p_sFileName.c_str(), "UTF-8", XML_PARSE_NOBLANKS);
   return (m_pDoc != NULL);
 }
 
 bool CXMLDocument::LoadFromString(std::string p_sXML)
 {
 	m_sFileName = "";
-	m_pDoc = xmlReadMemory(p_sXML.c_str(), p_sXML.length(), "", NULL, 0);
+	m_pDoc = xmlReadMemory(p_sXML.c_str(), p_sXML.length(), "", NULL, XML_PARSE_NOBLANKS);
 	return (m_pDoc != NULL);
 }
 

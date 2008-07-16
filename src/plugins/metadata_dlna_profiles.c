@@ -1,9 +1,9 @@
 /***************************************************************************
- *            HTTPParser.h
+ *            metadata_dlna_profiles.c
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,27 +22,46 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _HTTPPARSER_H
-#define _HTTPPARSER_H
+#include "../../include/fuppes_plugin.h"
+#include "dlna/dlna_image_profiles.h"
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-class CHTTPMessage;
+void register_fuppes_plugin(plugin_info* info)
+{
+	strcpy(info->plugin_name, "dlna-profiles");
+	info->plugin_type = PT_DLNA;
+}
 
-class CHTTPParser
-{ 
-  public:
-    bool parseHeader(CHTTPMessage* pMessage);
-		void ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage);
+int fuppes_dlna_get_image_profile(const char* ext, int width, int height, char* dlnaProfile, char* mimeType)
+{
+	if(width == 0 || height == 0) {
+		return -1;
+	}
 	
-  private:
-	  CHTTPMessage* m_pMessage;
-
-		void parseCommonValues();
-		void parseGetVars();
+	if((strcmp(ext, "jpeg") == 0) || (strcmp(ext, "jpg") == 0)) {
 		
-};
+		if(dlna_get_image_profile_jpeg(width, height, dlnaProfile, mimeType) == 0) {
+			return 0;
+		}		
+	}	
+	else if(strcmp(ext, "png") == 0) {
+		
+		if(dlna_get_image_profile_png(width, height, dlnaProfile, mimeType) == 0) {
+			return 0;
+		}
+	}
+	
+	// no other image formats are defined by dlna	
+	return -1;
+}
 
-#endif // _HTTPPARSER_H
+void unregister_fuppes_plugin(plugin_info* info)
+{
+}
+
+#ifdef __cplusplus
+}
+#endif

@@ -100,6 +100,13 @@ void CPluginMgr::init(std::string pluginDir)
 			regPlugin(&pluginInfo);
 
 			switch(pluginInfo.plugin_type) {
+				case PT_DLNA:
+					plugin = new CDlnaPlugin(handle, &pluginInfo);
+					if(plugin->initPlugin()) {
+						m_instance->m_dlnaPlugin = (CDlnaPlugin*)plugin;
+						CSharedLog::Log(L_NORM, __FILE__, __LINE__, "registered dlna profile plugin");
+					}					
+					break;
 				case PT_METADATA:
 					plugin = new CMetadataPlugin(handle, &pluginInfo);
 				  if(plugin->initPlugin()) {
@@ -174,9 +181,34 @@ CPlugin::CPlugin(fuppesLibHandle handle, plugin_info* info)
 
 CPlugin::~CPlugin()
 {
-  if (m_pluginInfo.plugin_type == PT_METADATA) {
+  if(m_pluginInfo.plugin_type == PT_METADATA || 
+		 m_pluginInfo.plugin_type == PT_DLNA) {
     FuppesCloseLibrary(m_handle);
   }
+}
+
+bool CDlnaPlugin::initPlugin()
+{
+	m_getImageProfile = NULL;
+
+	m_getImageProfile = (dlnaGetImageProfile_t)FuppesGetProcAddress(m_handle, "fuppes_dlna_get_image_profile");
+	if(m_getImageProfile == NULL) {
+		return false;
+	}
+	
+	return true;
+}
+
+bool CDlnaPlugin::getImageProfile(std::string ext, int width, int height, std::string* dlnaProfile, std::string* mimeType)
+{
+	char profile[256];
+	char mime[256];
+	if(m_getImageProfile(ext.c_str(), width, height, (char*)&profile, (char*)&mime) == 0) {
+		*dlnaProfile = profile;
+		*mimeType = mime;
+		return true;
+	}
+	return false;																																		
 }
 
 bool CMetadataPlugin::initPlugin()

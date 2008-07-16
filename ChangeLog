@@ -1,5 +1,6 @@
-Version SVN-    2008-
+Version 0.6    2008-
 
+  * moved metadata extraction into plugins
 	* fixed DLNA string for audio and image files
 	* mp4/m4a metadata extraction
 	* initial RSS support #1847121
@@ -7,7 +8,7 @@ Version SVN-    2008-
 	* "external command" transcoder #1851499
 	* support for simage
   * initial sort support
-	* optinally use same UUID on each startup #1890011
+	* optionally use same UUID on each startup #1890011
 	* updated default config
   * fixed file extension for converted image files
 	* fixed bug #1837741 - Ogg files don't stream
