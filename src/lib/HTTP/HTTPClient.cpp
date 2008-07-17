@@ -167,6 +167,8 @@ bool CHTTPClient::AsyncGet(std::string p_sGetURL)
   RegEx rxGet("[http://]*[0-9|\\.]+:*[0-9]*([/|\\w|\\.]*)", PCRE_CASELESS);
   if(rxGet.Search(p_sGetURL.c_str())) {
 		sGet = rxGet.Match(1);
+    if(sGet.empty())
+      return false;
   }
 	else {
 	  return false;
