@@ -643,15 +643,25 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
                                           
   // title  
   xmlTextWriterStartElement(pWriter, BAD_CAST "dc:title");
-    // trim filename
-    string sFileName = pSQLResult->GetValue("FILE_NAME");
-		if(!pSQLResult->IsNull("TITLE"))
+
+    string sFileName;
+		if(!pSQLResult->IsNull("TITLE")) {
 		  sFileName = pSQLResult->GetValue("TITLE");
-	
-		if(pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength > 0) {
-			sFileName = TrimFileName(sFileName, pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength + sExt.length() + 1);
-		}    
-		sFileName = TruncateFileExt(sFileName);		
+
+			// trim filename				
+			if(pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength > 0) {
+				sFileName = TrimFileName(sFileName, pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength);
+			}				
+		}
+		else {
+			sFileName = TruncateFileExt(pSQLResult->GetValue("FILE_NAME"));
+			
+	    // trim filename
+			if(pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength > 0) {
+				sFileName = TrimFileName(sFileName, pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength + sExt.length() + 1);
+			}
+		}
+
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);
 	
