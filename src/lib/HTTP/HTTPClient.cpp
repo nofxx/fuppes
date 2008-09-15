@@ -42,7 +42,8 @@ CHTTPClient::CHTTPClient(IHTTPClient* pAsyncReceiveHandler)
 {
   m_AsyncThread = (fuppesThread)NULL;
   m_bIsAsync    = false;
-	m_pAsyncReceiveHandler = pAsyncReceiveHandler;
+  m_pAsyncReceiveHandler = pAsyncReceiveHandler;
+  m_Socket = -1;
 }
 
 CHTTPClient::~CHTTPClient()
@@ -54,7 +55,8 @@ CHTTPClient::~CHTTPClient()
     fuppesThreadClose(m_AsyncThread);
   }
 
-  upnpSocketClose(m_Socket);
+  if(m_Socket != -1)
+    upnpSocketClose(m_Socket);
 }
 
 fuppesThreadCallback AsyncThread(void* arg)
