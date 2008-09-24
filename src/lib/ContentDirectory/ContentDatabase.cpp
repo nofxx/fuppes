@@ -1408,7 +1408,18 @@ void CContentDatabase::FamEvent(FAM_EVENT_TYPE eventType,
     //cout << "FAM_FILE_MOVE: " << path << " name: " << name << " old: " << oldPath << " - " << oldName << endl;
         
     objId = GetObjectIDFromFileName(this, oldPath + oldName);
-            
+    parentId = GetObjectIDFromFileName(this, path);
+    
+    // update mapping
+    sSql << 
+        "update MAP_OBJECTS set " <<
+        "  PARENT_ID = " << parentId << " " <<        
+        "where OBJECT_ID = " << objId << " and DEVICE is NULL";
+    Execute(sSql.str());
+    sSql.str("");
+    
+    
+    // update object
     sSql << "update OBJECTS set " <<
         "PATH = '" << SQLEscape(path + name) << "', " <<
         "FILE_NAME = '" << SQLEscape(name) << "', " <<
