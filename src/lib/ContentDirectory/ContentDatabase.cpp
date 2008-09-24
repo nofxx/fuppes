@@ -117,7 +117,7 @@ CContentDatabase::CContentDatabase(bool p_bShared)
     m_nLockCount 		  = 0;
     
     m_pFileAlterationMonitor = CFileAlterationMgr::Shared()->CreateMonitor(this);
-    fuppesThreadInitMutex(&m_Mutex);        
+    fuppesThreadInitMutex(&m_Mutex);
   }
     
   if(!m_bShared) {
@@ -130,9 +130,7 @@ CContentDatabase::~CContentDatabase()
 {                            
 	if(m_bShared) {                  
     fuppesThreadDestroyMutex(&m_Mutex);
-    if(m_pFileAlterationMonitor) {
-      delete m_pFileAlterationMonitor;
-    }
+    delete m_pFileAlterationMonitor;    
   }
 	
 	if(m_bShared && (m_RebuildThread != (fuppesThread)NULL)) {
@@ -232,10 +230,10 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
   
 	
 	// setup file alteration monitor
-	if(m_pFileAlterationMonitor) {
+	if(m_pFileAlterationMonitor->isActive()) {
 		Select("select PATH from OBJECTS where TYPE = 1 and DEVICE is NULL");
 		while(!Eof()) {
-			m_pFileAlterationMonitor->AddDirectory(GetResult()->GetValue("PATH"));
+			m_pFileAlterationMonitor->addWatch(GetResult()->GetValue("PATH"));
 			Next();
 		}
 	}
@@ -304,6 +302,11 @@ bool CContentDatabase::Open()
   //JM: Tell sqlite3 to retry queries for up to 1 second if the database is locked.
   sqlite3_busy_timeout(m_pDbHandle, 1000);
 	
+  Select("select max(OBJECT_ID) as VALUE from OBJECTS where DEVICE is NULL");
+  if(!Eof()) {  
+    g_nObjId = GetResult()->GetValueAsUInt("VALUE");
+  }
+  
 	return true;
 }
 
@@ -410,7 +413,7 @@ bool CContentDatabase::Execute(std::string p_sStatement)
 	
   int nStat = sqlite3_exec(m_pDbHandle, p_sStatement.c_str(), NULL, NULL, &szErr);  
   if(nStat != SQLITE_OK) {
-    fprintf(stderr, "CContentDatabase::Execute :: SQL error: %s\n", szErr);  
+    fprintf(stderr, "CContentDatabase::Execute :: SQL error: %s, statement: \n", szErr, p_sStatement.c_str());  
     sqlite3_free(szErr);  
     bResult = false;
   }
@@ -673,6 +676,8 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
           
           stringstream sSql;
           
+          appendTrailingSlash(&sTmp);
+          
           if(g_bAddNew) {
             nObjId = GetObjectIDFromFileName(pDb, sTmp);
           }
@@ -700,6 +705,8 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
             pDb->Insert(sSql.str());
             
             pDb->Commit();
+            
+            pDb->fileAlterationMonitor()->addWatch(sTmp);
           }
             
           // recursively scan subdirectories
@@ -958,7 +965,7 @@ unsigned int GetObjectIDFromFileName(CContentDatabase* pDb, std::string p_sFileN
   
   pDb->Select(sSQL.str());
   if(!pDb->Eof())
-    nResult = atoi(pDb->GetResult()->GetValue("OBJECT_ID").c_str());   
+    nResult = pDb->GetResult()->GetValueAsUInt("OBJECT_ID");
   
   return nResult;
 }
@@ -1214,37 +1221,25 @@ fuppesThreadCallback BuildLoop(void* arg)
 
 void CContentDatabase::FamEvent(FAM_EVENT_TYPE eventType,
 																std::string path,
-																std::string name)
+																std::string name,
+                                std::string oldPath /* = "" */,
+                                std::string oldName /* = "" */)
 {
-	cout << "FAM: " << path + name << endl;
+  stringstream sSql;
+	unsigned int objId;
+	unsigned int parentId;
 	
-	g_bIsRebuilding = true;
-
-	stringstream sSql;
-	unsigned int nObjId;
-	unsigned int parentId = 0;
-	
+  // new directory
 	if(eventType == FAM_DIR_NEW) {
 
-		nObjId = GetObjId();
-		
-		sSql << "select OBJECT_ID from OBJECTS where PATH = '" <<
-			path << "' and DEVICE is NULL";
-		
-		Select(sSql.str());
-		sSql.str("");
-		if(!Eof()) {
-			parentId = GetResult()->GetValueAsUInt("OBJECT_ID");
-		}
-		else {
-			parentId = 0;
-		}
+		objId = GetObjId();
+		parentId = GetObjectIDFromFileName(this, path);
 		
     sSql << 
           "insert into OBJECTS (OBJECT_ID, TYPE, PATH, FILE_NAME, TITLE) values " <<
-          "(" << nObjId << 
+          "(" << objId << 
           ", " << CONTAINER_STORAGE_FOLDER << 
-          ", '" << SQLEscape(path + name + "/") << "'" <<
+          ", '" << SQLEscape(appendTrailingSlash(path + name)) << "'" <<
           ", '" << SQLEscape(name) << "'" <<
           ", '" << SQLEscape(name) << "');";
         
@@ -1252,13 +1247,184 @@ void CContentDatabase::FamEvent(FAM_EVENT_TYPE eventType,
     
     sSql.str("");
     sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID) " <<
-          "values (" << nObjId << ", " << parentId << ")";
+          "values (" << objId << ", " << parentId << ")";
       
     Insert(sSql.str());
 		
-		DbScanDir(this, path + name + "/", nObjId);		
-	}
-	
+		//DbScanDir(this, appendTrailingSlash(path + name), nObjId);		
+	} // new directory
+  
+  
+	// directory deleted
+  else if(eventType == FAM_DIR_DEL) {
+    
+    // delete object details
+    sSql << "select DETAIL_ID from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(path + name)) << "%' and DEVICE is NULL";
+		Select(sSql.str());
+		sSql.str("");
+    
+    string details;
+		while(!Eof()) {
+      if(!GetResult()->IsNull("DETAIL_ID")) {
+        details += GetResult()->GetValue("DETAIL_ID") + ", ";
+      }
+      Next();
+		}
+    
+    if(details.length() > 0) {
+      details = details.substr(0, details.length() -2);
+      
+      sSql << "delete from OBJECT_DETAILS where ID in (" << details << ")";
+      //cout << sSql.str() << endl;
+      Execute(sSql.str());
+      sSql.str("");
+    }
+    
+    // delete mappings
+    sSql << "select OBJECT_ID from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(path + name)) << "%' and DEVICE is NULL";		
+		Select(sSql.str());
+		sSql.str("");
+    
+    string objects;
+		while(!Eof()) {
+      objects += GetResult()->GetValue("OBJECT_ID") + ", ";
+      Next();
+		}
+    
+    if(objects.length() > 0) {
+      objects = objects.substr(0, objects.length() -2);
+      
+      sSql << "delete from MAP_OBJECTS where OBJECT_ID in (" << objects << ")";
+      //cout << sSql.str() << endl;      
+      Execute(sSql.str());
+      sSql.str("");
+    }
+    
+    // delete objects
+    sSql << "delete from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(path + name)) << "%'";
+    //cout << sSql.str() << endl;    
+    Execute(sSql.str());
+    sSql.str("");
+    
+  } // directory deleted
+  
+  
+	// directory moved/renamed
+  else if(eventType == FAM_DIR_MOVE) {
+        
+    //cout << "FAM_DIR_MOVE: " << path << " name: " << name << " old: " << oldPath << " - " << oldName << endl;    
+    
+    // update moved folder
+    objId = GetObjectIDFromFileName(this, appendTrailingSlash(oldPath + oldName));
+    sSql << 
+      "update OBJECTS set " <<
+      " PATH = '" << SQLEscape(appendTrailingSlash(path + name)) << "', "
+      " FILE_NAME = '" << SQLEscape(name) << "', " <<
+      " TITLE = '" << SQLEscape(name) << "' " <<
+      "where ID = " << objId;
+      
+    //cout << sSql.str() << endl;
+    Execute(sSql.str());
+    sSql.str("");
+        
+    parentId = GetObjectIDFromFileName(this, path);
+    
+    sSql << 
+      "update MAP_OBJECTS set " <<
+      " PARENT_ID = " << parentId << " "
+      "where OBJECT_ID = " << objId << " and DEVICE is NULL";
+      
+    //cout << sSql.str() << endl;
+    Execute(sSql.str());
+    sSql.str("");
+    
+    
+    sSql << "select ID, PATH from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(oldPath + oldName)) << "%' and DEVICE is NULL";
+		Select(sSql.str());    
+		sSql.str("");
+
+    string newPath;  
+    CContentDatabase db; 
+		while(!Eof()) {
+
+      newPath = StringReplace(GetResult()->GetValue("PATH"), appendTrailingSlash(oldPath + oldName), appendTrailingSlash(path + name));
+
+      #warning sql prepare
+      sSql << 
+        "update OBJECTS set " <<
+        " PATH = '" << SQLEscape(newPath) << "' " <<
+        "where ID = " << GetResult()->GetValue("ID");
+      
+      //cout << sSql.str() << endl;
+      db.Execute(sSql.str());
+      sSql.str("");
+      
+      Next();
+		}
+    
+    
+  } // directory moved/renamed
+  
+  
+  
+	// new file
+  else if(eventType == FAM_FILE_NEW) {
+    //cout << "FAM_FILE_NEW: " << path << " name: " << name << endl;
+        
+    parentId = GetObjectIDFromFileName(this, path);
+    InsertFile(this, parentId, path + name);    
+  } // new file
+
+	// file deleted
+  else if(eventType == FAM_FILE_DEL) {
+    //cout << "FAM_FILE_DEL: " << path << " name: " << name << endl;
+    
+    objId = GetObjectIDFromFileName(this, path + name);
+
+    // delete details    
+    sSql << "select DETAIL_ID from OBJECTS where OBJECT_ID = " << objId;
+		Select(sSql.str());
+		sSql.str("");
+		if(!Eof() && !GetResult()->IsNull("DETAIL_ID")) {      
+      sSql << "delete from OBJECT_DETAILS where ID = " << GetResult()->GetValue("DETAIL_ID");
+      Execute(sSql.str());
+      sSql.str("");
+		}
+    
+    // delete mapping
+    sSql << "delete from MAP_OBJECTS where OBJECT_ID = " << objId;
+    Execute(sSql.str());
+    sSql.str("");
+    
+    // delete object
+    sSql << "delete from OBJECTS where OBJECT_ID = " << objId;
+    Execute(sSql.str());
+    sSql.str("");
+    
+  } // file deleted  
+  
+	// file moved
+  else if(eventType == FAM_FILE_MOVE) {
+    //cout << "FAM_FILE_MOVE: " << path << " name: " << name << " old: " << oldPath << " - " << oldName << endl;
+        
+    objId = GetObjectIDFromFileName(this, oldPath + oldName);
+            
+    sSql << "update OBJECTS set " <<
+        "PATH = '" << SQLEscape(path + name) << "', " <<
+        "FILE_NAME = '" << SQLEscape(name) << "', " <<
+        "TITLE = '" << SQLEscape(name) << "' " <<
+        "where ID = " << objId;
+    //cout << sSql.str() << endl;
+    Execute(sSql.str());
+    sSql.str("");
+
+  } // file moved  
+    
+	// file modified
+  else if(eventType == FAM_FILE_MOD) {
+    cout << "FAM_FILE_MOD: " << path << " name: " << name << " todo" << endl;
+  } // file modified  
+  
 	//Unlock();
 	g_bIsRebuilding = false;
 }

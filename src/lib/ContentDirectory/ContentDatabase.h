@@ -149,7 +149,8 @@ class CContentDatabase: public IFileAlterationMonitor
   
 		fuppesThreadMutex m_Mutex;
   
-			void FamEvent(FAM_EVENT_TYPE eventType, std::string path, std::string name);
+    CFileAlterationMonitor* fileAlterationMonitor() { return m_Instance->m_pFileAlterationMonitor; }
+    void FamEvent(FAM_EVENT_TYPE eventType, std::string path, std::string name, std::string oldPath = "", std::string oldName = "");
   private:    
     void BuildDB();
     
@@ -157,8 +158,8 @@ class CContentDatabase: public IFileAlterationMonitor
     void Unlock();
     void ClearResult();
   
-	  fuppesThread m_RebuildThread;
-	
+	  fuppesThread  m_RebuildThread;
+
     //bool m_bIsRebuilding;
 		bool m_bShared;
     static CContentDatabase* m_Instance;

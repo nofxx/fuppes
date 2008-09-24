@@ -116,6 +116,9 @@ std::string TrimFileName(std::string p_sFileName, unsigned int p_nMaxLength);
 std::string TrimWhiteSpace(std::string s);
 std::string MD5Sum(std::string p_sFileName);
 
+void        appendTrailingSlash(std::string* value);
+std::string appendTrailingSlash(std::string value);
+
 
 std::string ToLower(std::string p_sInput);
 std::string ToUpper(std::string p_sInput);

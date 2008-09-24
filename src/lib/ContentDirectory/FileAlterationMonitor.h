@@ -40,17 +40,20 @@
 
 typedef enum {
   FAM_FILE_NEW,
-  FAM_DIR_NEW,
-  FAM_FILE_MOD,
-  FAM_DIR_MOD,
   FAM_FILE_DEL,
-  FAM_DIR_DEL  
+  FAM_FILE_MOD,   // modified (e.g. metadata change)
+  FAM_FILE_MOVE,  // rename or move inside watched dirs
+  
+  FAM_DIR_NEW,    // newly created or moved into watched dirs
+  FAM_DIR_DEL,    // watched dir deleted
+  FAM_DIR_MOVE    // rename or move inside watched dirs
+
 }FAM_EVENT_TYPE;
 
 class IFileAlterationMonitor
 {
   public:
-			virtual void FamEvent(FAM_EVENT_TYPE eventType, std::string path, std::string name) = 0;
+    virtual void FamEvent(FAM_EVENT_TYPE eventType, std::string path, std::string name, std::string oldPath = "", std::string oldName = "") = 0;
 };
 
 class CFileAlterationMonitor
@@ -60,15 +63,19 @@ class CFileAlterationMonitor
 			fuppesThreadDestroyMutex(&mutex);
 		}
 		
-    virtual bool AddDirectory(std::string p_sDirectory) = 0;
-  
-		void famEvent(FAM_EVENT_TYPE eventType, std::string path, std::string name)	{
+    virtual bool addWatch(std::string path) = 0;
+    bool isActive() { return m_active; }
+    
+    void famEvent(FAM_EVENT_TYPE eventType, std::string path, std::string name, std::string oldPath = "", std::string oldName = "")	{
 			if(!m_pEventHandler) {
 				return;
 			}
 			
+      appendTrailingSlash(&path);
+      appendTrailingSlash(&oldPath);      
+      
 			fuppesThreadLockMutex(&mutex);
-			m_pEventHandler->FamEvent(eventType, path, name);
+			m_pEventHandler->FamEvent(eventType, path, name, oldPath, oldName);
 			fuppesThreadUnlockMutex(&mutex);
 		}
 			
@@ -79,10 +86,10 @@ class CFileAlterationMonitor
 		}
 			
     IFileAlterationMonitor* m_pEventHandler;
-			
+
+    bool m_active;
 		fuppesThreadMutex	mutex;
 };
-
 
 class CFileAlterationMgr
 {
@@ -95,6 +102,16 @@ class CFileAlterationMgr
     static CFileAlterationMgr* m_Instance;
 };
 
+class CDummyMonitor: public CFileAlterationMonitor
+{
+  public:
+    CDummyMonitor(IFileAlterationMonitor* pEventHandler)
+      :CFileAlterationMonitor(pEventHandler) { m_active = false; }
+
+    virtual ~CDummyMonitor() {}
+    virtual bool addWatch(std::string path) { return true; }
+};
+
 #ifdef HAVE_INOTIFY
 class CInotifyMonitor: public CFileAlterationMonitor
 {
@@ -104,14 +121,15 @@ class CInotifyMonitor: public CFileAlterationMonitor
     CInotifyMonitor(IFileAlterationMonitor* pEventHandler);
     virtual ~CInotifyMonitor();
   
-    bool  AddDirectory(std::string p_sDirectory);
+    bool  addWatch(std::string path);
+    void  removeWatch(std::string path);
+    void  moveWatch(std::string fromPath, std::string toPath);
     
   private:
-    fuppesThread    m_MonitorThread;  
-    std::list<InotifyWatch*>  m_lWatches;
-  
-    //int   m_nInotifyFd;
-    Inotify*        m_pInotify;
+    Inotify*                                m_pInotify;  
+    fuppesThread                            m_MonitorThread;    
+    // path, watch
+    std::map<std::string, InotifyWatch*>    m_watches;    
 };
 #endif
 

@@ -148,6 +148,21 @@ std::string MD5Sum(std::string p_sFileName)
   return hex_output;
 }
 
+void appendTrailingSlash(std::string* value)
+{  
+  string tmp = *value;  
+  if((tmp.length() > 1) && (tmp.substr(tmp.length() - 1).compare(upnpPathDelim) != 0)) {
+    tmp += upnpPathDelim;
+    *value = tmp;
+  }
+}
+
+std::string appendTrailingSlash(std::string value)
+{
+  appendTrailingSlash(&value);
+  return value.c_str();
+}
+
 std::string StringReplace(std::string p_sIn, std::string p_sSearch, std::string p_sReplace)
 {
   std::string sResult;
