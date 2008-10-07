@@ -23,12 +23,46 @@
  */
 
 #include "../../include/fuppes_plugin.h"
+#include <wand/magick-wand.h>
+
+void magick_set_date(MagickWand* wand, char** dateMetadata)
+{
+	char* date = MagickGetImageProperty(wand, "exif:DateTimeOriginal");
+	
+	if(date == 0)
+	{
+		date = MagickGetImageProperty(wand, "exif:DateTimeDigitized");
+		
+		if(date == 0)
+			return;
+	}
+	
+    const int dateLen = strlen(date);
+    
+	if(dateLen > 0)
+	{
+	    *dateMetadata = (char*)relloc(*dateMetadata, (dateLen + 1) * sizeof(char));
+	    strcpy(*dateMetadata, date);
+	    
+	    char* dateStr = *dateMetadata;
+	    
+	    if(dateLen > 4 && dateStr[4] != '-')
+		    dateStr[4] = '-';
+		    
+	    if(dateLen > 6 && dateStr[7] != '-')
+	        dateStr[7] = '-';
+	        
+	    if(dateLen > 10 && dateStr[10] != 'T')
+	        dateStr[10] = 'T';
+	}
+	
+    MagickRelinquishMemory(date);
+}
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <wand/magick-wand.h>
 	
 void register_fuppes_plugin(plugin_info* info)
 {
@@ -68,6 +102,8 @@ int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
 	
 	metadata->width  = MagickGetImageWidth(plugin->user_data);
 	metadata->height = MagickGetImageHeight(plugin->user_data);	
+	
+	magick_set_date(plugin->user_data, &metadata->date);
 	
 	return 0;
 }

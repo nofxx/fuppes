@@ -71,6 +71,22 @@ libmetadata_magickwand_la_LDFLAGS = \
 
 endif
 
+## exiv2 metadata extraction plugin
+if EXIV2_METADATA
+
+lib_LTLIBRARIES += libmetadata_exiv2.la
+
+libmetadata_exiv2_la_SOURCES = \
+	metadata_exiv2.cpp
+
+libmetadata_exiv2_la_CXXFLAGS = \
+	$(EXIV2_CXXFLAGS)
+	
+libmetadata_exiv2_la_LDFLAGS = \
+	$(EXIV2_LIBS)
+
+endif
+
 ## libmp4v2 metadata extraction plugin
 if MP4V2_METADATA
 
@@ -95,7 +111,7 @@ lib_LTLIBRARIES += libmetadata_dlna_profiles.la
 
 libmetadata_dlna_profiles_la_SOURCES = \
 	metadata_dlna_profiles.c \
-	dlna\dlna_image_profiles.h
+	dlna/dlna_image_profiles.h
 
 libmetadata_dlna_profiles_la_CXXFLAGS = 
 	

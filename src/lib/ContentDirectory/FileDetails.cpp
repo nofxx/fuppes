@@ -1,3 +1,4 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            FileDetails.cpp
  *
@@ -194,15 +195,20 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
   if(!CDeviceIdentificationMgr::Shared()->DefaultDevice()->FileSettings(sExt)->ExtractMetadata())
     return false;
 	
-	CMetadataPlugin* image = CPluginMgr::metadataPlugin("simage");
+	CMetadataPlugin* image;
 	metadata_t metadata;
+	init_metadata(&metadata);
+	
+	image = CPluginMgr::metadataPlugin("exiv2");
 	if(image && image->openFile(p_sFileName)) {
-		
+				
 		if(image->readData(&metadata)) {
 			pImageItem->nWidth  = metadata.width;
 			pImageItem->nHeight = metadata.height;
+      pImageItem->sDate   = (strlen(metadata.date) > 0 ? TrimWhiteSpace(metadata.date) : string());
 			
 			image->closeFile();
+			free_metadata(&metadata);
 			return true;
 		}
 	}
@@ -213,12 +219,28 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
 		if(image->readData(&metadata)) {
 			pImageItem->nWidth  = metadata.width;
 			pImageItem->nHeight = metadata.height;
+      pImageItem->sDate   = (strlen(metadata.date) > 0 ? TrimWhiteSpace(metadata.date) : string());
 			
 			image->closeFile();
+			free_metadata(&metadata);
 			return true;
 		}
 	}
 	
+	image = CPluginMgr::metadataPlugin("simage");
+	if(image && image->openFile(p_sFileName)) {
+		
+		if(image->readData(&metadata)) {
+			pImageItem->nWidth  = metadata.width;
+			pImageItem->nHeight = metadata.height;
+			
+			image->closeFile();
+			free_metadata(&metadata);
+			return true;
+		}
+	}
+	
+	free_metadata(&metadata);
 	return false;
 }
 

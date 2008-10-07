@@ -1,4 +1,8 @@
-Version 0.6    2008-
+Version ...
+
+  * exiv2 plugin from Ben Rees
+  * intitial support for fam (using inotify)
+
 
   * moved metadata extraction into plugins
 	* fixed DLNA string for audio and image files

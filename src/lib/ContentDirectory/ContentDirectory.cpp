@@ -400,7 +400,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   sSql << 
     "select " <<
     "  o.OBJECT_ID, o.TYPE, o.PATH, o.FILE_NAME, " <<
-    "  d.IV_HEIGHT, d.IV_WIDTH, " <<
+    "  d.IV_HEIGHT, d.IV_WIDTH, d.DATE, " <<
     "  o.TITLE, d.AV_DURATION, d.A_ALBUM, d.A_ARTIST, d.A_GENRE, " <<
   	"  d.A_TRACK_NO, d.AV_BITRATE, d.A_SAMPLERATE, d.A_CHANNELS, " <<
 	  "  d.AV_DURATION, d.SIZE, d.A_CODEC, d.V_CODEC, d.DLNA_PROFILE " <<
@@ -590,11 +590,13 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter,
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "restricted", BAD_CAST "0");    
   
     // date
-    /*if(pUPnPBrowse->IncludeProperty("dc:date")) {
+    if(pUPnPBrowse->IncludeProperty("dc:date") && !pSQLResult->IsNull("DATE"))
+    {
+      CSharedLog::Shared()->Log(L_DBG, "Writing date to stream", __FILE__, __LINE__);
       xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "date", BAD_CAST "http://purl.org/dc/elements/1.1/");    
-      xmlTextWriterWriteString(pWriter, BAD_CAST "2005-10-15");
+      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("DATE").c_str());
       xmlTextWriterEndElement(pWriter);
-    }*/
+    }
     
     // writeStatus (optional)
     /*if(pUPnPBrowse->IncludeProperty("upnp:writeStatus")) {
@@ -791,8 +793,20 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
    rating upnp No
    description dc No
    publisher dc No  
+   date dc No
    rights dc No */  
 
+    // date
+    if(pUPnPBrowse->IncludeProperty("dc:date"))
+    {
+    	if(!pSQLResult->IsNull("DATE"))
+    	{
+    		xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "date", BAD_CAST "http://purl.org/dc/elements/1.1/");    
+        	xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("DATE").c_str());
+        	xmlTextWriterEndElement(pWriter);
+    	}
+    }
+    
   // res
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
   
@@ -993,7 +1007,7 @@ void CContentDirectory::BuildPlaylistItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:class");    
   xmlTextWriterWriteString(pWriter, BAD_CAST "object.item.playlistItem");
   xmlTextWriterEndElement(pWriter);      
-  
+
   // res
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
   

@@ -75,7 +75,8 @@ typedef struct {
 	
 	int							width;
 	int							height;
-	
+    char*                       date;
+    	
 	int							bitrate;
 	int 						samplerate;
   int 						bits_per_sample;
@@ -111,6 +112,8 @@ static void init_metadata(metadata_t* metadata)
 	
 	metadata->width = 0;
 	metadata->height = 0;
+	metadata->date = (char*)malloc(sizeof(char));
+	metadata->date[0] = '\0';	
 	
 	metadata->bitrate = 0;
 	metadata->samplerate = 0;
@@ -130,6 +133,8 @@ static void free_metadata(metadata_t* metadata)
 	free(metadata->genre);
 	free(metadata->duration);
 	free(metadata->description);
+
+	free(metadata->date);
 	
 	free(metadata->audio_codec);
 	free(metadata->video_codec);

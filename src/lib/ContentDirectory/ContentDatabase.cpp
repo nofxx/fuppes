@@ -788,12 +788,13 @@ unsigned int InsertImageFile(CContentDatabase* pDb, std::string fileName)
 	stringstream sSql;
 	sSql << 
 	  "insert into OBJECT_DETAILS " <<
-		"(SIZE, IV_WIDTH, IV_HEIGHT, " <<
+		"(SIZE, IV_WIDTH, IV_HEIGHT, DATE, " <<
 		"DLNA_PROFILE, DLNA_MIME_TYPE) " <<
 		"values (" <<
 		getFileSize(fileName) << ", " <<
 		ImageItem.nWidth << ", " <<
 		ImageItem.nHeight << ", " <<
+   (ImageItem.sDate.empty() ? "NULL" : "'" + ImageItem.sDate + "'") << ", " <<
     "'" << dlna << "', " <<
 		"'" << mimeType << "')";
 	
