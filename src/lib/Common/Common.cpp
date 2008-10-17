@@ -106,6 +106,20 @@ bool IsDirectory(std::string p_sDirName)
   return DirectoryExists(p_sDirName);
 }
 
+bool CreateDirectory(std::string dir)
+{
+  if(!DirectoryExists(dir)) {
+    #ifdef WIN32
+		CreateDirectory(dir.c_str(), NULL);
+    #else
+		int ret = mkdir(dir.c_str(), S_IRWXU | S_IRWXG);
+		return (ret == 0);
+    #endif
+  }
+  
+  return true;
+}
+
 std::string MD5Sum(std::string p_sFileName)
 {
   std::fstream fsFile;   

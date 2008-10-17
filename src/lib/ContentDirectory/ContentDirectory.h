@@ -135,6 +135,8 @@ class CContentDirectory: public CUPnPService
     void HandleUPnPGetSystemUpdateID(CUPnPAction* pAction, std::string* p_psResult);    
 		
     void HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_psResult);
+
+    void HandeUPnPDestroyObject(CUPnPAction* pAction, std::string* p_psResult);  	
 	
     std::string BuildProtocolInfo(bool p_bTranscode,
                                   std::string p_sMimeType,

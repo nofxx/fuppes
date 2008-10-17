@@ -106,6 +106,7 @@ bool FileExists(std::string p_sFileName);
 bool IsFile(std::string p_sFileName);
 bool DirectoryExists(std::string p_sDirName);
 bool IsDirectory(std::string p_sDirName);
+bool CreateDirectory(std::string dir);
 
 std::string StringReplace(std::string p_sIn, std::string p_sSearch, std::string p_sReplace);
 std::string ExtractFileExt(std::string p_sFileName);

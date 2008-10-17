@@ -43,10 +43,10 @@ class CUPnPBrowse: public CUPnPBrowseSearchBase
     CUPnPBrowse(std::string p_sMessage);
     ~CUPnPBrowse();    
 
-    unsigned int GetObjectIDAsInt();
+    
   
 
-    std::string      m_sObjectID;
+    //std::string      m_sObjectID;
     UPNP_BROWSE_FLAG m_nBrowseFlag;
 
     bool             m_bVirtualContainer;

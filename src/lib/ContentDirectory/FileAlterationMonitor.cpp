@@ -99,7 +99,7 @@ bool CInotifyMonitor::addWatch(std::string path)
   }
   
   try {    
-		InotifyWatch* pWatch = new InotifyWatch(path, IN_CREATE | IN_DELETE | IN_MOVE | IN_MODIFY);
+		InotifyWatch* pWatch = new InotifyWatch(path, IN_CREATE | IN_DELETE | IN_MOVE | IN_MODIFY | IN_CLOSE);
     m_pInotify->Add(pWatch);
     m_watches[path] = pWatch;
   }

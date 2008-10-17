@@ -85,6 +85,9 @@ void CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
     case UPNP_GET_SYSTEM_UPDATE_ID:
       HandleUPnPGetSystemUpdateID(pUPnPAction, &sContent);
       break;
+    // DestroyObject
+    case UPNP_DESTROY_OBJECT:
+      HandeUPnPDestroyObject(pUPnPAction, &sContent);
     default:
       break;
   }
@@ -290,7 +293,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
     xmlTextWriterStartElement(pWriter, BAD_CAST "container"); 
        
       /* id */  
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "id", BAD_CAST pUPnPBrowse->m_sObjectID.c_str()); 
+      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "id", BAD_CAST pUPnPBrowse->objectId().c_str()); 
       /* searchable  */
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "searchable", BAD_CAST "0"); 
       /* parentID  */
@@ -434,7 +437,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   while(!pDb->Eof()) {
     
     pRow = pDb->GetResult();    
-    BuildDescription(pWriter, pRow, pUPnPBrowse, pUPnPBrowse->m_sObjectID);
+    BuildDescription(pWriter, pRow, pUPnPBrowse, pUPnPBrowse->objectId());
         
     pDb->Next();
     tmpInt++;
@@ -1192,6 +1195,78 @@ void CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_ps
 	
   *p_psResult = output;
 }
+
+
+void CContentDirectory::HandeUPnPDestroyObject(CUPnPAction* pAction, std::string* p_psResult)
+{
+  if(CSharedConfig::Shared()->ConfigFile()->TrashDir().length() == 0) {
+    return;
+  }
+
+  //cout << "DESTROY OBJECT: " << pAction->GetObjectIDAsInt() << endl;
+  
+  CContentDatabase db;    
+  stringstream sql;
+  
+  sql << "select TYPE, PATH, FILE_NAME from OBJECTS where OBJECT_ID = " << pAction->GetObjectIDAsInt() << " and DEVICE is NULL";		
+  db.Select(sql.str());
+	sql.str("");
+    
+  string objects;
+	if(db.Eof()) {
+	  return;
+	}
+ 
+  OBJECT_TYPE type = (OBJECT_TYPE)db.GetResult()->asInt("TYPE");
+ 
+    
+  #ifndef WIN32
+  time_t now;
+  char nowtime[26];
+  time(&now);  
+  ctime_r(&now, nowtime);
+	nowtime[24] = '\0';
+	string sNowtime = nowtime;
+	#else		
+  char timeStr[9];    
+  _strtime(timeStr);	
+	string sNowtime = timeStr;	
+	#endif 
+    
+  // create target dir
+  string targetDir = CSharedConfig::Shared()->ConfigFile()->TrashDir();
+  if(type < ITEM) { // container
+    targetDir += db.GetResult()->GetValue("FILE_NAME") + "_" + sNowtime + "/";
+  }
+  else {
+    targetDir += sNowtime + "/";
+  }
+  
+  if(!CreateDirectory(targetDir)) {
+    cout << "contentdir: error creating trash folder : " << targetDir << endl;
+    return;
+  }
+  if(type >= ITEM) { // item
+    targetDir += db.GetResult()->GetValue("FILE_NAME");
+  }
+    
+  // move    
+  //cout << "mv " << db.GetResult()->GetValue("PATH") << " " << targetDir << endl;  
+  
+  int ret = rename(db.GetResult()->GetValue("PATH").c_str(), targetDir.c_str());
+  if(ret != 0) {
+    cout << "contentdir: error moving to trash folder" << endl;
+    return;
+  }
+
+  
+  // delete from db
+  db.deleteObject(pAction->GetObjectIDAsInt());
+
+#warning todo: error code
+  //*p_psResult =  TODO
+}
+
 
 std::string CContentDirectory::BuildProtocolInfo(bool p_bTranscode,
                                   std::string p_sMimeType,

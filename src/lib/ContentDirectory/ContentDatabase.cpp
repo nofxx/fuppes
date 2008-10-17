@@ -1259,53 +1259,7 @@ void CContentDatabase::FamEvent(FAM_EVENT_TYPE eventType,
 	// directory deleted
   else if(eventType == FAM_DIR_DEL) {
     
-    // delete object details
-    sSql << "select DETAIL_ID from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(path + name)) << "%' and DEVICE is NULL";
-		Select(sSql.str());
-		sSql.str("");
-    
-    string details;
-		while(!Eof()) {
-      if(!GetResult()->IsNull("DETAIL_ID")) {
-        details += GetResult()->GetValue("DETAIL_ID") + ", ";
-      }
-      Next();
-		}
-    
-    if(details.length() > 0) {
-      details = details.substr(0, details.length() -2);
-      
-      sSql << "delete from OBJECT_DETAILS where ID in (" << details << ")";
-      //cout << sSql.str() << endl;
-      Execute(sSql.str());
-      sSql.str("");
-    }
-    
-    // delete mappings
-    sSql << "select OBJECT_ID from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(path + name)) << "%' and DEVICE is NULL";		
-		Select(sSql.str());
-		sSql.str("");
-    
-    string objects;
-		while(!Eof()) {
-      objects += GetResult()->GetValue("OBJECT_ID") + ", ";
-      Next();
-		}
-    
-    if(objects.length() > 0) {
-      objects = objects.substr(0, objects.length() -2);
-      
-      sSql << "delete from MAP_OBJECTS where OBJECT_ID in (" << objects << ")";
-      //cout << sSql.str() << endl;      
-      Execute(sSql.str());
-      sSql.str("");
-    }
-    
-    // delete objects
-    sSql << "delete from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(path + name)) << "%'";
-    //cout << sSql.str() << endl;    
-    Execute(sSql.str());
-    sSql.str("");
+    deleteContainer(path + name);
     
   } // directory deleted
   
@@ -1381,26 +1335,7 @@ void CContentDatabase::FamEvent(FAM_EVENT_TYPE eventType,
     //cout << "FAM_FILE_DEL: " << path << " name: " << name << endl;
     
     objId = GetObjectIDFromFileName(this, path + name);
-
-    // delete details    
-    sSql << "select DETAIL_ID from OBJECTS where OBJECT_ID = " << objId;
-		Select(sSql.str());
-		sSql.str("");
-		if(!Eof() && !GetResult()->IsNull("DETAIL_ID")) {      
-      sSql << "delete from OBJECT_DETAILS where ID = " << GetResult()->GetValue("DETAIL_ID");
-      Execute(sSql.str());
-      sSql.str("");
-		}
-    
-    // delete mapping
-    sSql << "delete from MAP_OBJECTS where OBJECT_ID = " << objId;
-    Execute(sSql.str());
-    sSql.str("");
-    
-    // delete object
-    sSql << "delete from OBJECTS where OBJECT_ID = " << objId;
-    Execute(sSql.str());
-    sSql.str("");
+    deleteObject(objId);
     
   } // file deleted  
   
@@ -1440,3 +1375,109 @@ void CContentDatabase::FamEvent(FAM_EVENT_TYPE eventType,
 	//Unlock();
 	g_bIsRebuilding = false;
 }
+
+void CContentDatabase::deleteObject(unsigned int objectId)
+{
+  #warning todo delete fam watches before destroying
+
+  stringstream sql;
+
+  // get type
+  sql << "select TYPE, PATH from OBJECTS where OBJECT_ID = " << objectId << " and DEVICE is NULL";		
+  Select(sql.str());
+	sql.str("");
+    
+  string objects;
+	if(Eof()) {
+	  return;
+	}
+  
+  OBJECT_TYPE type = (OBJECT_TYPE)GetResult()->asUInt("TYPE");  
+  if(type < ITEM) { // is a container
+    cout << "contentdb: delete container : " << GetResult()->GetValue("PATH") << endl;  
+    deleteContainer(GetResult()->GetValue("PATH"));
+  }
+  else {  
+     cout << "contentdb: delete object : " << GetResult()->GetValue("PATH") << endl;
+  
+    // delete details    
+    sql << "select DETAIL_ID from OBJECTS where OBJECT_ID = " << objectId;
+		Select(sql.str());
+		sql.str("");
+		if(!Eof() && !GetResult()->IsNull("DETAIL_ID")) {      
+      sql << "delete from OBJECT_DETAILS where ID = " << GetResult()->GetValue("DETAIL_ID");
+      Execute(sql.str());
+      sql.str("");
+		}
+    
+    // delete mapping
+    sql << "delete from MAP_OBJECTS where OBJECT_ID = " << objectId;
+    Execute(sql.str());
+    sql.str("");
+    
+    // delete object
+    sql << "delete from OBJECTS where OBJECT_ID = " << objectId;
+    Execute(sql.str());
+    sql.str("");
+  }
+  
+}
+
+void CContentDatabase::deleteContainer(std::string path)
+{
+  stringstream sSql;
+
+  // delete object details
+  sSql << 
+    "select DETAIL_ID from OBJECTS where PATH like '" <<
+    SQLEscape(appendTrailingSlash(path)) << "%' and DEVICE is NULL";
+	Select(sSql.str());
+	sSql.str("");
+  
+  string details;
+	while(!Eof()) {
+    if(!GetResult()->IsNull("DETAIL_ID")) {
+      details += GetResult()->GetValue("DETAIL_ID") + ", ";
+    }
+    Next();
+	}
+  
+  if(details.length() > 0) {
+    details = details.substr(0, details.length() -2);
+    
+    sSql << "delete from OBJECT_DETAILS where ID in (" << details << ")";
+    //cout << sSql.str() << endl;
+    Execute(sSql.str());
+    sSql.str("");
+  }
+  
+  // delete mappings
+  sSql << "select OBJECT_ID from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(path)) << "%' and DEVICE is NULL";		
+	Select(sSql.str());
+	sSql.str("");
+  
+  string objects;
+	while(!Eof()) {
+    objects += GetResult()->GetValue("OBJECT_ID") + ", ";
+    Next();
+	}
+  
+  if(objects.length() > 0) {
+    objects = objects.substr(0, objects.length() -2);
+    
+    sSql << "delete from MAP_OBJECTS where OBJECT_ID in (" << objects << ")";
+    //cout << sSql.str() << endl;      
+    Execute(sSql.str());
+    sSql.str("");
+  }
+  
+  // delete objects
+  sSql << "delete from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(path)) << "%'";
+  //cout << sSql.str() << endl;    
+  Execute(sSql.str());
+  sSql.str("");
+}
+
+
+
+

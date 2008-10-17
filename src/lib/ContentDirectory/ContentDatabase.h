@@ -151,6 +151,10 @@ class CContentDatabase: public IFileAlterationMonitor
   
     CFileAlterationMonitor* fileAlterationMonitor() { return m_Instance->m_pFileAlterationMonitor; }
     void FamEvent(FAM_EVENT_TYPE eventType, std::string path, std::string name, std::string oldPath = "", std::string oldName = "");
+    
+    void deleteObject(unsigned int objectId); 
+    void deleteContainer(std::string path);    
+    
   private:    
     void BuildDB();
     

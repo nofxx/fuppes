@@ -222,11 +222,18 @@ void CConfigFile::ReadGlobalSettings()
     if(pTmpNode->ChildNode(i)->Name().compare("temp_dir") == 0) {
       if(pTmpNode->ChildNode(i)->Value().length() > 0) {
         m_sTempDir = pTmpNode->ChildNode(i)->Value();
+        appendTrailingSlash(&m_sTempDir);
       }
     }
 		else if(pTmpNode->ChildNode(i)->Name().compare("use_fixed_uuid") == 0) {
       m_useFixedUUID = (pTmpNode->ChildNode(i)->Value().compare("true") == 0);
-    }		
+    }	
+    else if(pTmpNode->ChildNode(i)->Name().compare("trash_dir") == 0) {
+      if(pTmpNode->ChildNode(i)->Value().length() > 0) {
+        m_sTrashDir = pTmpNode->ChildNode(i)->Value();
+        appendTrailingSlash(&m_sTrashDir);
+      }
+    }	
 		
   }  
 }

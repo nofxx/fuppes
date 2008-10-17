@@ -33,7 +33,8 @@ CUPnPBrowse::~CUPnPBrowse()
 {
 }
 
-unsigned int CUPnPBrowse::GetObjectIDAsInt()
+/*unsigned int CUPnPBrowse::GetObjectIDAsInt()
 {
-  return HexToInt(m_sObjectID);
-}
+  
+} */
+

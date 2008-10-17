@@ -35,6 +35,8 @@
 
 #define UPNP_UNKNOWN 0
 
+class UPnPActionFactory;
+
 typedef enum UPNP_CONTENT_DIRECTORY_ACTIONS {
   UPNP_UNKNWON                  				= 0,
   UPNP_BROWSE									  				= 1,
@@ -43,7 +45,8 @@ typedef enum UPNP_CONTENT_DIRECTORY_ACTIONS {
 	UPNP_GET_SORT_CAPABILITIES    				= 4,
 	UPNP_GET_SORT_EXTENSION_CAPABILITIES	= 5,
   UPNP_GET_SYSTEM_UPDATE_ID		  				= 6,
-	UPNP_GET_PROTOCOL_INFO		    				= 7
+	UPNP_GET_PROTOCOL_INFO		    				= 7,
+	UPNP_DESTROY_OBJECT                   = 8
 } UPNP_CONTENT_DIRECTORY_ACTIONS;
 
 typedef enum UPNP_AV_TRANSPORT_ACTIONS {
@@ -66,6 +69,8 @@ typedef enum UPNP_X_MS_MEDIA_RECEIVER_REGISTRAR_ACTIONS {
 
 class CUPnPAction
 {
+  friend class CUPnPActionFactory;
+
   public:
 
     /** constructor */
@@ -86,12 +91,17 @@ class CUPnPAction
     CDeviceSettings* DeviceSettings() { return m_pDeviceSettings; }
 	  void DeviceSettings(CDeviceSettings* pSettings) { m_pDeviceSettings = pSettings; }
 
+    std::string   objectId() { return m_sObjectId; }
+    unsigned int GetObjectIDAsInt() { return HexToInt(m_sObjectId); }
+
   private:
     UPNP_DEVICE_TYPE m_nTargetDeviceType;
     int              m_nActionType;
     std::string      m_sContent;
 		
 		CDeviceSettings*   m_pDeviceSettings;
+		
+		std::string      m_sObjectId;
 };
 
 class CUPnPBrowseSearchBase: public CUPnPAction
@@ -111,6 +121,7 @@ class CUPnPBrowseSearchBase: public CUPnPAction
 		std::string			m_sortCriteriaSQL;
 		bool						m_isSupportedSort;
 };
+
 
 #endif // _UPNPACTION_H
 

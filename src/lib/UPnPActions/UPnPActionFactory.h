@@ -51,6 +51,8 @@ class CUPnPActionFactory
     bool parseBrowseAction(CUPnPBrowse* pAction);		
 		bool parseSearchAction(CUPnPSearch* pAction);
 		bool parseSortCriteria(CUPnPBrowseSearchBase* action);
+		
+		bool parseDestroyObjectAction(CUPnPAction* action);
 
 };
 

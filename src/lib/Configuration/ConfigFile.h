@@ -75,6 +75,7 @@ class CConfigFile
 		// global_settings
 		std::string	TempDir() { return m_sTempDir; }
 		bool				useFixedUUID() { return m_useFixedUUID; }
+		std::string TrashDir() { return m_sTrashDir; }
 		
     // content_directory
     std::string LocalCharset() { return m_sLocalCharset; }
@@ -124,6 +125,7 @@ class CConfigFile
 		// global_settings
 		std::string							m_sTempDir;
 		bool										m_useFixedUUID;
+		std::string             m_sTrashDir;
 		
     // transcoding
     /*std::string             m_sAudioEncoder;

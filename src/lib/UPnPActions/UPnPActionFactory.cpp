@@ -96,6 +96,11 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent, C
       pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_PROTOCOL_INFO, p_sContent);
       pAction->DeviceSettings(pDeviceSettings);
     }
+    else if(sName.compare("DestroyObject") == 0) {
+      pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_DESTROY_OBJECT, p_sContent);
+      pAction->DeviceSettings(pDeviceSettings);
+      parseDestroyObjectAction(pAction);
+    }
 	}
 	
 	// Connection Manager
@@ -170,7 +175,7 @@ bool CUPnPActionFactory::parseBrowseAction(CUPnPBrowse* pAction)
   }    
   RegEx rxObjId(sRxObjId.c_str());
   if (rxObjId.Search(pAction->GetContent().c_str()))
-    pAction->m_sObjectID = rxObjId.Match(1);
+    pAction->m_sObjectId = rxObjId.Match(1);
   
   /* Browse flag */
   pAction->m_nBrowseFlag = UPNP_BROWSE_FLAG_UNKNOWN;    
@@ -340,3 +345,27 @@ bool CUPnPActionFactory::parseSortCriteria(CUPnPBrowseSearchBase* action)
 	action->m_isSupportedSort = true;
 	return action->m_isSupportedSort;	
 }
+
+bool CUPnPActionFactory::parseDestroyObjectAction(CUPnPAction* action)
+{
+/*<?xml version="1.0" encoding="utf-8"?>
+  <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Body>
+  <u:DestroyObject xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1">
+  <ObjectID>0</ObjectID>
+  </u:DestroyObject>
+  </s:Body>
+  </s:Envelope>*/
+  
+  
+  // object ID
+  RegEx rxObjectID("<ObjectID.*>(.+)</ObjectID>");
+  if (rxObjectID.Search(action->GetContent().c_str()))
+    action->m_sObjectId = rxObjectID.Match(1);
+  else
+    return false;
+    
+    
+  return true;  
+}
+
