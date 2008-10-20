@@ -41,7 +41,7 @@ void magick_set_date(MagickWand* wand, char** dateMetadata)
     
 	if(dateLen > 0)
 	{
-	    *dateMetadata = (char*)relloc(*dateMetadata, (dateLen + 1) * sizeof(char));
+	    *dateMetadata = (char*)realloc(*dateMetadata, (dateLen + 1) * sizeof(char));
 	    strcpy(*dateMetadata, date);
 	    
 	    char* dateStr = *dateMetadata;
