@@ -39,21 +39,72 @@
 #include <list>
 
 typedef enum {
-  FAM_FILE_NEW,
-  FAM_FILE_DEL,
-  FAM_FILE_MOD,   // modified (e.g. metadata change)
-  FAM_FILE_MOVE,  // rename or move inside watched dirs
-  
-  FAM_DIR_NEW,    // newly created or moved into watched dirs
-  FAM_DIR_DEL,    // watched dir deleted
-  FAM_DIR_MOVE    // rename or move inside watched dirs
 
+  FAM_UNKNOWN   = 0,
+  FAM_CREATE    = 1,
+  FAM_DELETE    = 2,
+  FAM_MOVE      = 4,
+  FAM_MODIFY    = 8
+    
 }FAM_EVENT_TYPE;
+
+/*
+ dir events:
+    FAM_CREATE              = new dir created
+    FAM_CREATE | FAM_MOVE   = dir moved in from unwatched dir
+    FAM_MOVE                = dir moved inside watched dirs
+    FAM_DELETE              = dir deleted / moved outside watched dirs
+ 
+ file events:
+    FAM_CREATE              = new file created / moved in from unwatched dir
+    FAM_MOVE                = file moved inside watched dirs
+    FAM_DELETE              = file deleted / moved outside watched dirs
+    FAM_MODIFY              = file modified 
+*/
+
+
+class CFileAlterationMonitor;
+
+class CFileAlterationEvent
+{
+  friend class CFileAlterationMonitor;
+  #ifdef HAVE_INOTIFY
+  friend fuppesThreadCallback WatchLoop(void* arg);
+  #endif
+  
+  public:
+    CFileAlterationEvent() {
+      m_type = FAM_UNKNOWN;
+      m_isDir = false;
+    }
+    
+    int             type() { return m_type; }
+    bool            isDir() { return m_isDir; }
+
+    std::string     path() { return m_path; }
+    std::string     file() { return m_file; }
+    std::string     fullPath() { return m_path + m_file; }
+    
+    // for moved events
+    std::string     oldPath() { return m_oldPath; }
+    std::string     oldFile() { return m_oldFile; }
+    std::string     oldFullPath() { return m_oldPath + m_oldFile; }
+    
+  private:
+    int               m_type;
+    bool              m_isDir;
+    
+    std::string       m_path;
+    std::string       m_file;
+    std::string       m_oldPath;
+    std::string       m_oldFile;
+};
 
 class IFileAlterationMonitor
 {
   public:
-    virtual void FamEvent(FAM_EVENT_TYPE eventType, std::string path, std::string name, std::string oldPath = "", std::string oldName = "") = 0;
+    //virtual void FamEvent(FAM_EVENT_TYPE eventType, std::string path, std::string name, std::string oldPath = "", std::string oldName = "") = 0;
+     virtual void FamEvent(CFileAlterationEvent* event) = 0;
 };
 
 class CFileAlterationMonitor
@@ -63,10 +114,13 @@ class CFileAlterationMonitor
 			fuppesThreadDestroyMutex(&mutex);
 		}
 		
-    virtual bool addWatch(std::string path) = 0;
+    virtual bool  addWatch(std::string path) = 0;
+    virtual void  removeWatch(std::string path) = 0;
+    virtual void  moveWatch(std::string fromPath, std::string toPath) = 0;
+    
     bool isActive() { return m_active; }
     
-    void famEvent(FAM_EVENT_TYPE eventType, std::string path, std::string name, std::string oldPath = "", std::string oldName = "")	{
+    /*void famEvent(FAM_EVENT_TYPE eventType, std::string path, std::string name, std::string oldPath = "", std::string oldName = "")	{
 			if(!m_pEventHandler) {
 				return;
 			}
@@ -77,7 +131,13 @@ class CFileAlterationMonitor
 			fuppesThreadLockMutex(&mutex);
 			m_pEventHandler->FamEvent(eventType, path, name, oldPath, oldName);
 			fuppesThreadUnlockMutex(&mutex);
-		}
+		}*/
+    
+    void FamEvent(CFileAlterationEvent* event) {
+      fuppesThreadLockMutex(&mutex);
+			m_pEventHandler->FamEvent(event);
+			fuppesThreadUnlockMutex(&mutex);
+    }
 			
   protected:
     CFileAlterationMonitor(IFileAlterationMonitor* pEventHandler) { 
@@ -109,7 +169,9 @@ class CDummyMonitor: public CFileAlterationMonitor
       :CFileAlterationMonitor(pEventHandler) { m_active = false; }
 
     virtual ~CDummyMonitor() {}
-    virtual bool addWatch(std::string path) { return true; }
+    virtual bool  addWatch(std::string path) { return true; }
+    virtual void  removeWatch(std::string path) { }
+    virtual void  moveWatch(std::string fromPath, std::string toPath) { }
 };
 
 #ifdef HAVE_INOTIFY
@@ -129,7 +191,7 @@ class CInotifyMonitor: public CFileAlterationMonitor
     Inotify*                                m_pInotify;  
     fuppesThread                            m_MonitorThread;    
     // path, watch
-    std::map<std::string, InotifyWatch*>    m_watches;    
+    std::map<std::string, InotifyWatch*>    m_watches;
 };
 #endif
 

@@ -1220,11 +1220,183 @@ fuppesThreadCallback BuildLoop(void* arg)
 }
 
 
-void CContentDatabase::FamEvent(FAM_EVENT_TYPE eventType,
+void CContentDatabase::FamEvent(CFileAlterationEvent* event)
+{
+  if(g_bIsRebuilding)
+    return;
+  
+  cout << "[ContentDatabase] fam event: ";
+  
+  switch(event->type()) {
+    case FAM_CREATE:
+      cout << "CREATE";
+      break;
+    case FAM_DELETE:
+      cout << "DELETE";
+      break;
+    case FAM_MOVE:
+      cout << "MOVE";
+      break;
+    case FAM_MODIFY:
+      cout << "MODIFY";
+      break;
+    default:
+      cout << "UNKNOWN";
+      break;
+  }
+  
+  cout << (event->isDir() ? " DIR " : " FILE ") << endl;
+  cout << event->fullPath() << endl << endl;
+  
+  stringstream sSql;
+	unsigned int objId;
+	unsigned int parentId;  
+  
+  // newly created or moved in directory
+	if((event->type() == FAM_CREATE || event->type() == (FAM_CREATE | FAM_MOVE)) && event->isDir()) {
+
+		objId = GetObjId();
+		parentId = GetObjectIDFromFileName(this, event->path());
+		
+    sSql << 
+          "insert into OBJECTS (OBJECT_ID, TYPE, PATH, FILE_NAME, TITLE) values " <<
+          "(" << objId << 
+          ", " << CONTAINER_STORAGE_FOLDER << 
+          ", '" << SQLEscape(appendTrailingSlash(event->fullPath())) << "'" <<
+          ", '" << SQLEscape(event->file()) << "'" <<
+          ", '" << SQLEscape(event->file()) << "');";        
+    Insert(sSql.str());
+    
+    sSql.str("");
+    sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID) " <<
+          "values (" << objId << ", " << parentId << ")";      
+    Insert(sSql.str());
+    
+    if(event->type() == (FAM_CREATE | FAM_MOVE)) {
+      cout << "scan moved in" << endl;
+      DbScanDir(this, appendTrailingSlash(event->fullPath()), objId);
+    }
+	} // new directory
+  
+	// directory deleted
+  else if(event->type() == FAM_DELETE && event->isDir()) {    
+    deleteContainer(event->fullPath());    
+  } // directory deleted  
+  
+	// directory moved/renamed
+  else if(event->type() == FAM_MOVE && event->isDir()) {        
+     
+    // update moved folder
+    objId = GetObjectIDFromFileName(this, appendTrailingSlash(event->oldFullPath()));
+    sSql << 
+      "update OBJECTS set " <<
+      " PATH = '" << SQLEscape(appendTrailingSlash(event->fullPath())) << "', "
+      " FILE_NAME = '" << SQLEscape(event->file()) << "', " <<
+      " TITLE = '" << SQLEscape(event->file()) << "' " <<
+      "where ID = " << objId;
+      
+    //cout << sSql.str() << endl;
+    Execute(sSql.str());
+    sSql.str("");
+        
+    // update mapping
+    parentId = GetObjectIDFromFileName(this, event->path());
+    
+    sSql << 
+      "update MAP_OBJECTS set " <<
+      " PARENT_ID = " << parentId << " "
+      "where OBJECT_ID = " << objId << " and DEVICE is NULL";
+      
+    //cout << sSql.str() << endl;
+    Execute(sSql.str());
+    sSql.str("");
+    
+    
+    // update child object's path
+    sSql << "select ID, PATH from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(event->oldFullPath())) << "%' and DEVICE is NULL";
+		Select(sSql.str());    
+		sSql.str("");
+
+    string newPath;  
+    CContentDatabase db; 
+		while(!Eof()) {
+
+      newPath = StringReplace(GetResult()->GetValue("PATH"), appendTrailingSlash(event->oldFullPath()), appendTrailingSlash(event->fullPath()));
+
+      #warning sql prepare
+      sSql << 
+        "update OBJECTS set " <<
+        " PATH = '" << SQLEscape(newPath) << "' " <<
+        "where ID = " << GetResult()->GetValue("ID");
+      
+      //cout << sSql.str() << endl;
+      db.Execute(sSql.str());
+      sSql.str("");
+      
+      Next();
+		}   
+    
+  } // directory moved/renamed  
+ 
+  
+  
+  // file created
+  else if(event->type() == FAM_CREATE && !event->isDir()) { 
+    //cout << "FAM_FILE_NEW: " << path << " name: " << name << endl;
+        
+    parentId = GetObjectIDFromFileName(this, event->path());
+    InsertFile(this, parentId, event->fullPath());    
+  } // file created
+
+	// file deleted
+  else if(event->type() == FAM_DELETE && !event->isDir()) { 
+    //cout << "FAM_FILE_DEL: " << path << " name: " << name << endl;
+    
+    objId = GetObjectIDFromFileName(this, event->fullPath());
+    deleteObject(objId);
+    
+  } // file deleted 
+  
+	// file moved
+  else if(event->type() == FAM_MOVE && !event->isDir()) { 
+    //cout << "FAM_FILE_MOVE: " << path << " name: " << name << " old: " << oldPath << " - " << oldName << endl;
+        
+    objId = GetObjectIDFromFileName(this, event->oldFullPath());
+    parentId = GetObjectIDFromFileName(this, event->path());
+    
+    // update mapping
+    sSql << 
+        "update MAP_OBJECTS set " <<
+        "  PARENT_ID = " << parentId << " " <<        
+        "where OBJECT_ID = " << objId << " and DEVICE is NULL";
+    Execute(sSql.str());
+    sSql.str("");
+    
+    // update object
+    sSql << "update OBJECTS set " <<
+        "PATH = '" << SQLEscape(event->fullPath()) << "', " <<
+        "FILE_NAME = '" << SQLEscape(event->file()) << "', " <<
+        "TITLE = '" << SQLEscape(event->file()) << "' " <<
+        "where ID = " << objId;
+    //cout << sSql.str() << endl;
+    Execute(sSql.str());
+    sSql.str("");
+
+  } // file moved
+  
+  // file modified
+  else if(event->type() == FAM_MOVE && !event->isDir()) {
+    cout << "file modified" << endl;
+  }
+  
+}
+
+
+/*void CContentDatabase::FamEvent(FAM_EVENT_TYPE eventType,
 																std::string path,
 																std::string name,
-                                std::string oldPath /* = "" */,
-                                std::string oldName /* = "" */)
+                                std::string oldPath,
+                                std::string oldName)
 {
   stringstream sSql;
 	unsigned int objId;
@@ -1374,12 +1546,10 @@ void CContentDatabase::FamEvent(FAM_EVENT_TYPE eventType,
   
 	//Unlock();
 	g_bIsRebuilding = false;
-}
+}*/
 
 void CContentDatabase::deleteObject(unsigned int objectId)
 {
-  #warning todo delete fam watches before destroying
-
   stringstream sql;
 
   // get type
@@ -1396,6 +1566,7 @@ void CContentDatabase::deleteObject(unsigned int objectId)
   if(type < ITEM) { // is a container
     cout << "contentdb: delete container : " << GetResult()->GetValue("PATH") << endl;  
     deleteContainer(GetResult()->GetValue("PATH"));
+    m_pFileAlterationMonitor->removeWatch(GetResult()->GetValue("PATH"));
   }
   else {  
      cout << "contentdb: delete object : " << GetResult()->GetValue("PATH") << endl;
@@ -1470,6 +1641,8 @@ void CContentDatabase::deleteContainer(std::string path)
     Execute(sSql.str());
     sSql.str("");
   }
+  
+#warning todo: remove fam watches
   
   // delete objects
   sSql << "delete from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(path)) << "%'";

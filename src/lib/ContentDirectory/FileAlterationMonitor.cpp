@@ -91,15 +91,15 @@ bool CInotifyMonitor::addWatch(std::string path)
   appendTrailingSlash(&path);
   
 	//p_sDirectory = p_sDirectory.substr(0, p_sDirectory.length()-1);
-	//cout << "create watch: " << path << endl;
+	cout << "create watch: " << path << endl;
   
   if(m_watches.find(path) != m_watches.end()) {
     cout << "watch already exists: " << path << endl;
     return false;
   }
   
-  try {    
-		InotifyWatch* pWatch = new InotifyWatch(path, IN_CREATE | IN_DELETE | IN_MOVE | IN_MODIFY | IN_CLOSE);
+  try {     // IN_UNMOUNT
+		InotifyWatch* pWatch = new InotifyWatch(path, IN_CREATE | IN_DELETE | IN_MOVE | IN_CLOSE_WRITE); // IN_MODIFY 
     m_pInotify->Add(pWatch);
     m_watches[path] = pWatch;
   }
@@ -117,7 +117,7 @@ bool CInotifyMonitor::addWatch(std::string path)
 void CInotifyMonitor::removeWatch(std::string path)
 {
   appendTrailingSlash(&path);
-  //cout << "remove watch: " << path << endl;
+  cout << "remove watch: " << path << endl;
   
   std::map<std::string, InotifyWatch*>::iterator iter;
   if((iter = m_watches.find(path)) == m_watches.end()) {
@@ -135,7 +135,7 @@ void CInotifyMonitor::moveWatch(std::string fromPath, std::string toPath)
   appendTrailingSlash(&fromPath);
   appendTrailingSlash(&toPath);
 
-  //cout << "move watch: " << fromPath << " to: " << toPath << endl;
+  cout << "move watch: " << fromPath << " to: " << toPath << endl;
   
   removeWatch(fromPath);
   addWatch(toPath);
@@ -150,8 +150,13 @@ fuppesThreadCallback WatchLoop(void* arg)
   std::string eventPath;
   int         movedFromCookie = 0;
   std::string movedFromPath;
-  std::string movedFromName;
+  std::string movedFromFile;
   bool        movedFromIsDir = false;
+  
+  CFileAlterationEvent   famEvent;
+  // path, event
+  std::map<std::string, CFileAlterationEvent*>            events;
+  std::map<std::string, CFileAlterationEvent*>::iterator  eventsIter;  
   
   while(true) {
   
@@ -169,82 +174,147 @@ fuppesThreadCallback WatchLoop(void* arg)
     while(pInotify->m_pInotify->GetEvent(&event)) {
       
       if(event.IsType(IN_IGNORED)) {
+        cout << "inotify: IN_IGNORED" << endl;        
+        /*string sDump;
+        event.DumpTypes(sDump);
+        cout << "cookie: " << event.GetCookie() << " mask: " << sDump << endl;*/        
         continue;
-      }        
-
+      } 
+      
       FAM_EVENT_TYPE  type;
+      eventPath = event.GetWatch()->GetPath() + event.GetName();            
       
-      string sDump;
-      event.DumpTypes(sDump);      
-
-      eventPath = event.GetWatch()->GetPath() + event.GetName();      
+			// check if we have a pending MOVED_FROM event and
+      // throw a delete if the current event is no MOVED_TO.
+      // I assume that a MOVED_FROM is directly followed
+      // by a MOVED_TO if moved inside watched dirs.
+      // I hope this assumption is correct!?
+      if(movedFromCookie > 0 && !event.IsType(IN_MOVED_TO)) {       
+        famEvent.m_type  = FAM_DELETE;
+        famEvent.m_path  = movedFromPath;
+        famEvent.m_file  = movedFromFile;        
+        famEvent.m_isDir = movedFromIsDir;
+        if(movedFromIsDir) {          
+    			pInotify->removeWatch(movedFromPath + movedFromFile);          
+        }
+        pInotify->FamEvent(&famEvent);        
+        movedFromCookie = 0;
+      }
       
-      //cout << "event: " << eventPath << endl;
-      //cout << "cookie: " << event.GetCookie() << " mask: " << sDump << endl;
       
-				
       // IN_CREATE
 			if(event.IsType(IN_CREATE)) {        
-        //cout << "object created: " << eventPath << " [NEW]" << endl;
-        
-        if(event.IsType(IN_ISDIR))
+        //cout << "object created: " << eventPath << " [NEW]" << endl;        
+
+        // directories just send a CREATE event so we can
+        // throw the event right now
+        if(event.IsType(IN_ISDIR)) {
    				pInotify->addWatch(eventPath);
-        event.IsType(IN_ISDIR) ? type = FAM_DIR_NEW : type = FAM_FILE_NEW;
-				pInotify->famEvent(type, event.GetWatch()->GetPath(), event.GetName());       
-			}
-      
-      // IN_MOVED_FROM
-      else if(event.IsType(IN_MOVED_FROM)) {
-        
-        // moved from is still set so the associated file was moved
-        // to outside the watched dirs
-        if(movedFromCookie != 0) {
-          //cout << "object moved outside watched dirs: " << movedFromPath + movedFromName << " [DEL]" << endl;
-          pInotify->removeWatch(movedFromPath + movedFromName);
           
-          movedFromIsDir ? type = FAM_DIR_DEL : type = FAM_FILE_DEL;
-          pInotify->famEvent(type, movedFromPath, movedFromName);
-          movedFromCookie = 0;
+          famEvent.m_type  = FAM_CREATE;
+          famEvent.m_isDir = true;
+          famEvent.m_path  = event.GetWatch()->GetPath();
+          famEvent.m_file  = event.GetName();            
+                 
+          pInotify->FamEvent(&famEvent);
         }
-
-        movedFromCookie = event.GetCookie();
-        movedFromPath   = event.GetWatch()->GetPath();
-        movedFromName   = event.GetName();
-        movedFromIsDir  = event.IsType(IN_ISDIR);
-      }
-      
-      // IN_MOVED_TO
-      else if(event.IsType(IN_MOVED_TO)) {
-
-        if(event.GetCookie() == movedFromCookie) {
-          //cout << "moved already watched object from : " << movedFromPath + movedFromName << " to: " << eventPath << " [MOVE]" << endl;            
-
-          if(event.IsType(IN_ISDIR))
-            pInotify->moveWatch(movedFromPath + movedFromName, eventPath);          
-          event.IsType(IN_ISDIR) ? type = FAM_DIR_MOVE : type = FAM_FILE_MOVE;          
-          pInotify->famEvent(type, event.GetWatch()->GetPath(), event.GetName(), movedFromPath, movedFromName);
-          movedFromCookie = 0;
-        }
+        // the file's CREATE event is always followed by a
+        // CLOSE event. therefore we queue it and wait for CLOSE
         else {
-          //cout << "new object moved in to: " << eventPath << " [NEW]" << endl;
-          if(event.IsType(IN_ISDIR))
-  				  pInotify->addWatch(eventPath);
-          event.IsType(IN_ISDIR) ? type = FAM_DIR_NEW : type = FAM_FILE_NEW;
-  				pInotify->famEvent(type,	event.GetWatch()->GetPath(), event.GetName());
-        }
-      }
+          events[eventPath] = new CFileAlterationEvent();
+          events[eventPath]->m_type  = FAM_CREATE;
+          events[eventPath]->m_isDir = false;
+          events[eventPath]->m_path  = event.GetWatch()->GetPath();
+          events[eventPath]->m_file  = event.GetName();
+        }        
+        
+			} // IN_CREATE
       
       // IN_DELETE
       else if(event.IsType(IN_DELETE)) {
         //cout << "object deleted: " << eventPath << endl;
-        if(event.IsType(IN_ISDIR))
-    			pInotify->removeWatch(eventPath);
-        event.IsType(IN_ISDIR) ? type = FAM_DIR_DEL : type = FAM_FILE_DEL;
-  			pInotify->famEvent(type,	event.GetWatch()->GetPath(), event.GetName());
-      }
         
+        famEvent.m_type = FAM_DELETE;
+        famEvent.m_path = event.GetWatch()->GetPath();
+        famEvent.m_file = event.GetName();        
+        if(event.IsType(IN_ISDIR)) {
+          famEvent.m_isDir = true;
+    			pInotify->removeWatch(eventPath);          
+        }
 
-      //cout << endl;
+        pInotify->FamEvent(&famEvent);
+      } // IN_DELETE        
+
+      // IN_CLOSE_WRITE
+      else if(event.IsType(IN_CLOSE_WRITE)) {
+        //cout << "object closed: " << eventPath << " cookie: " << event.GetCookie() << endl;
+        
+        // check if there is a create event and throw it ...
+        eventsIter = events.find(eventPath);
+        if(eventsIter != events.end()) {
+          
+          CFileAlterationEvent* evt = eventsIter->second;
+          pInotify->FamEvent(evt);
+          delete evt;
+          events.erase(eventsIter); 
+        }
+        // ... else we have a (file) modify event
+        else {
+          famEvent.m_type  = FAM_MODIFY;
+          famEvent.m_isDir = false;
+          famEvent.m_path  = event.GetWatch()->GetPath();
+          famEvent.m_file  = event.GetName();
+          pInotify->FamEvent(&famEvent);
+        }
+        
+      } // IN_CLOSE_WRITE
+      
+      
+      // IN_MOVED_FROM
+      else if(event.IsType(IN_MOVED_FROM)) {        
+        //cout << "object moved from: " << eventPath << " [NEW]" << endl;
+
+        movedFromCookie = event.GetCookie();
+        movedFromPath   = event.GetWatch()->GetPath();
+        movedFromFile   = event.GetName();
+        movedFromIsDir  = event.IsType(IN_ISDIR);
+      } // IN_MOVED_FROM
+      
+      // IN_MOVED_TO
+      else if(event.IsType(IN_MOVED_TO)) {
+
+        //cout << "object moved to: " << eventPath << " [NEW]" << endl;
+        
+        if(event.GetCookie() == movedFromCookie) {
+          //cout << "moved already watched object from : " << movedFromPath + movedFromFile << " to: " << eventPath << " [MOVE]" << endl;            
+
+          famEvent.m_type  = FAM_MOVE;
+          famEvent.m_isDir = event.IsType(IN_ISDIR);
+          famEvent.m_path  = event.GetWatch()->GetPath();
+          famEvent.m_file  = event.GetName();
+          famEvent.m_oldPath  = movedFromPath;
+          famEvent.m_oldFile  = movedFromFile;          
+          pInotify->FamEvent(&famEvent);          
+
+          movedFromCookie = 0;
+        }
+        else {
+          //cout << "new object moved in to: " << eventPath << " [NEW]" << endl;
+          
+          famEvent.m_type = (event.IsType(IN_ISDIR) ? (FAM_CREATE | FAM_MOVE) : FAM_CREATE);          
+          famEvent.m_isDir = event.IsType(IN_ISDIR);
+          famEvent.m_path  = event.GetWatch()->GetPath();
+          famEvent.m_file  = event.GetName();                 
+                     
+          if(event.IsType(IN_ISDIR)) {
+            pInotify->addWatch(eventPath); 
+          }
+          pInotify->FamEvent(&famEvent); 
+        }
+
+      }  // IN_MOVED_TO   
+      
+
     } // while getEvents
     
   }

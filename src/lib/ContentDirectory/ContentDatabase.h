@@ -150,7 +150,8 @@ class CContentDatabase: public IFileAlterationMonitor
 		fuppesThreadMutex m_Mutex;
   
     CFileAlterationMonitor* fileAlterationMonitor() { return m_Instance->m_pFileAlterationMonitor; }
-    void FamEvent(FAM_EVENT_TYPE eventType, std::string path, std::string name, std::string oldPath = "", std::string oldName = "");
+    //void FamEvent(FAM_EVENT_TYPE eventType, std::string path, std::string name, std::string oldPath = "", std::string oldName = "");
+    void FamEvent(CFileAlterationEvent* event);
     
     void deleteObject(unsigned int objectId); 
     void deleteContainer(std::string path);    
