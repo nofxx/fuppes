@@ -64,6 +64,11 @@ Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: FUPPES UPnP server plugin: magick transcoder
  <insert long description, indented with spaces>
 
+Package: fuppes-transcode-plugin-ffmpeg
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: FUPPES UPnP server plugin: ffmpeg video transcoder
+ <insert long description, indented with spaces>
 
 
 #Package: fuppes-doc
