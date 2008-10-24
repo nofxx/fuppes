@@ -1,0 +1,1 @@
+shlibs:Depends=libc6 (>= 2.7-1), libgcc1 (>= 1:4.1.1), libmp4v2-0 (>= 1:1.6), libstdc++6 (>= 4.1.1)

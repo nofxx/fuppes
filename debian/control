@@ -1,0 +1,74 @@
+Source: fuppes
+Section: unknown
+Priority: extra
+Maintainer: Ulrich Völkel <fuppes@ulrich-voelkel.de>
+Build-Depends: debhelper (>= 7), autotools-dev
+Standards-Version: 3.7.3
+Homepage: http://fuppes.ulrich-voelkel.de/
+
+Package: fuppes
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: FUPPES UPnP server executables
+ <insert long description, indented with spaces>
+ 
+Package: libfuppes0
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: FUPPES UPnP server core library
+ <insert long description, indented with spaces>
+
+
+
+Package: fuppes-metadata-plugin-dlna
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: FUPPES UPnP server plugin: DLNA metadata
+ <insert long description, indented with spaces>
+
+Package: fuppes-metadata-plugin-exiv2
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: FUPPES UPnP server plugin: exiv2 metadata
+ <insert long description, indented with spaces>  
+ 
+Package: fuppes-metadata-plugin-libavformat
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: FUPPES UPnP server plugin: libavformat metadata
+ <insert long description, indented with spaces> 
+ 
+Package: fuppes-metadata-plugin-libmp4v2
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: FUPPES UPnP server plugin: libmp4v2 metadata
+ <insert long description, indented with spaces>
+ 
+Package: fuppes-metadata-plugin-magick
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: FUPPES UPnP server plugin: imagemagick metadata
+ <insert long description, indented with spaces> 
+ 
+Package: fuppes-metadata-plugin-taglib
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: FUPPES UPnP server plugin: taglib metadata
+ <insert long description, indented with spaces>
+ 
+
+
+Package: fuppes-transcode-plugin-magick
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: FUPPES UPnP server plugin: magick transcoder
+ <insert long description, indented with spaces>
+
+
+
+#Package: fuppes-doc
+#Architecture: all
+#Description: Documentation for fuppes
+# <insert long description, indented with spaces>
+
+
