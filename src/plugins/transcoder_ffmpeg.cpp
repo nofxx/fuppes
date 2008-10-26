@@ -56,7 +56,7 @@ void parseFFmpegArgs(const char* args, char* argv[], int* argc)
 extern "C" {
 #endif
 
-#if FFMPEG_VERSION >= 52
+#if FFMPEG_VERSION >= 52 && !defined(OLD_INCLUDES_PATH)
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
 #else

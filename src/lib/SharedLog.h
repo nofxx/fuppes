@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -93,6 +93,7 @@ public:
 
 		
 	static void Log(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* p_szFormat, ...);
+	static void LogArgs(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* p_szFormat, va_list args);
 	static void Print(const char* p_szFormat, ...);
 		
   /** set the level of log verbosity

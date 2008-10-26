@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -304,10 +304,15 @@ void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, 
 void CSharedLog::Log(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* p_szFormat, ...)
 {
 	va_list args;
-	char buffer[8192];
   va_start(args, p_szFormat);
-	vsnprintf(buffer, sizeof(buffer) - 1, p_szFormat, args);
-  va_end(args);
+	LogArgs(p_nLogLevel, p_sFileName, p_nLineNumber, p_szFormat, args);
+	va_end(args);
+}
+
+void CSharedLog::LogArgs(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* p_szFormat, va_list args)
+{
+	char buffer[8192];	
+	vsnprintf(buffer, sizeof(buffer) - 1, p_szFormat, args);  
 
   switch(p_nLogLevel) {
     case L_NORM:

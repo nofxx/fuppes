@@ -3,6 +3,11 @@ libdir = @libdir@/fuppes
 
 lib_LTLIBRARIES =
 
+
+##
+##  METADATA PLUGINS
+##
+
 ## libavformat metadata extraction plugin
 
 if LIBAVFORMAT_METADATA
@@ -121,6 +126,11 @@ endif
 
 
 
+##
+##  TRANSCODER PLUGINS
+##
+
+
 ## ffmpeg transcoder
 if VIDEO_TRANSCODING
 
@@ -162,8 +172,53 @@ libtranscoder_magickpp_la_LDFLAGS = \
 endif
 
 
+
+
+##
+##  AUDIO DECODER PLUGINS
+##
+
+## vorbis decoder
+if VORBIS_DECODER_PLUGIN
+
+lib_LTLIBRARIES += libdecoder_vorbis.la
+
+libdecoder_vorbis_la_SOURCES = \
+	decoder_vorbis.c
+
+libdecoder_vorbis_la_CFLAGS = \
+	$(VORBISFILE_CFLAGS)
+	
+libdecoder_vorbis_la_LDFLAGS = \
+	$(VORBISFILE_LIBS)
+
+endif
+
+## FLAC decoder
+if FLAC_DECODER_PLUGIN
+
+lib_LTLIBRARIES += libdecoder_flac.la
+
+libdecoder_flac_la_SOURCES = \
+	decoder_flac.c
+
+libdecoder_flac_la_CFLAGS = \
+	$(FLAC_CFLAGS)
+	
+libdecoder_flac_la_LDFLAGS = \
+	$(FLAC_LIBS)
+
+endif
+
+
+
+##
+##  AUDIO ENCODER PLUGINS
+##
+
+
 ## L.A.M.E. encoder
-#if LAME_ENCODER
+#if LAME_ENCODER_PLUGIN
 
 #lib_LTLIBRARIES += libencoder_lame.la
 
@@ -177,3 +232,4 @@ endif
 #	$(LAME_LIBS)
 
 #endif
+

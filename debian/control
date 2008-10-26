@@ -1,5 +1,5 @@
 Source: fuppes
-Section: unknown
+Section: net
 Priority: extra
 Maintainer: Ulrich Völkel <fuppes@ulrich-voelkel.de>
 Build-Depends: debhelper (>= 7), autotools-dev
@@ -11,12 +11,18 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: FUPPES UPnP server executables
  <insert long description, indented with spaces>
- 
+
 Package: libfuppes0
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: FUPPES UPnP server core library
  <insert long description, indented with spaces>
+
+Package: fuppes-dev
+Architecture: all
+Description: FUPPES UPnP server: development files
+ <insert long description, indented with spaces>
+
 
 
 
@@ -58,6 +64,7 @@ Description: FUPPES UPnP server plugin: taglib metadata
  
 
 
+
 Package: fuppes-transcode-plugin-magick
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -69,6 +76,23 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: FUPPES UPnP server plugin: ffmpeg video transcoder
  <insert long description, indented with spaces>
+
+
+
+ 
+Package: fuppes-decoder-plugin-vorbis
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: FUPPES UPnP server plugin: ogg/vorbis audio decoder
+ <insert long description, indented with spaces>
+
+Package: fuppes-decoder-plugin-flac
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: FUPPES UPnP server plugin: F.L.A.C. audio decoder
+ <insert long description, indented with spaces>
+
+
 
 
 #Package: fuppes-doc

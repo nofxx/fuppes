@@ -29,10 +29,18 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#if FFMPEG_VERSION >= 52
+#if FFMPEG_VERSION >= 52 && !defined(OLD_INCLUDES_PATH)
 #include <libavformat/avformat.h>
+
+	#ifdef HAVE_AVSTRING_H
+	#include <libavutil/avstring.h>
+	#endif
 #else
 #include <avformat.h>
+
+	#ifdef HAVE_AVSTRING_H
+	#include <avstring.h>
+	#endif
 #endif
 
 #include "cmdutils.h"
@@ -41,9 +49,7 @@
 #include "../../config.h"
 #endif
 
-#ifdef HAVE_AVSTRING_H
-#include "avstring.h"
-#endif
+
 
 #include "ffmpeg.h"
 

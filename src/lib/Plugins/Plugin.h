@@ -1,3 +1,4 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Plugin.h
  *
@@ -38,32 +39,46 @@
 
 typedef void (*registerPlugin_t)(plugin_info* info);
 
+class CDlnaPlugin;
 class CMetadataPlugin;
 class CTranscoderPlugin;
-class CDlnaPlugin;
+class CAudioDecoderPlugin;
+class CAudioEncoderPlugin;
 
 class CPluginMgr
 {
 	public:
 		static void init(std::string pluginDir);
 	
-		static CMetadataPlugin* metadataPlugin(std::string pluginName);
-		static CTranscoderBase* transcoderPlugin(std::string pluginName);
-	
-		static CDlnaPlugin* dlnaPlugin() { return m_instance->m_dlnaPlugin; }
+		// returns a reference to a single plugin instance
+		static CDlnaPlugin*						dlnaPlugin() { return m_instance->m_dlnaPlugin; }
+		static CMetadataPlugin*				metadataPlugin(std::string pluginName);
+		
+		// returns a new instance of the plugin that must be deleted by caller
+		static CTranscoderBase*				transcoderPlugin(std::string pluginName);
+		static CAudioDecoderPlugin*		audioDecoderPlugin(std::string pluginName);
+		static CAudioEncoderPlugin*		audioEncoderPlugin(std::string pluginName);
 			
 	private:
 		static CPluginMgr* m_instance;
-	
+		fuppesThreadMutex	 m_mutex;
+		
 		std::map<std::string, CMetadataPlugin*> m_metadataPlugins;
 		std::map<std::string, CMetadataPlugin*>::iterator m_metadataPluginsIter;
 		
 		std::map<std::string, CTranscoderPlugin*> m_transcoderPlugins;
 		std::map<std::string, CTranscoderPlugin*>::iterator m_transcoderPluginsIter;
 			
+		std::map<std::string, CAudioDecoderPlugin*> m_audioDecoderPlugins;
+		std::map<std::string, CAudioDecoderPlugin*>::iterator m_audioDecoderPluginsIter;
+
+		std::map<std::string, CAudioEncoderPlugin*> m_audioEncoderPlugins;
+		std::map<std::string, CAudioEncoderPlugin*>::iterator m_audioEncoderPluginsIter;
+		
 		CDlnaPlugin*	m_dlnaPlugin;
 };
 
+// typedef void Log(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* p_szFormat, ...);
 class CPlugin
 {
 	protected:
@@ -74,10 +89,12 @@ class CPlugin
 		PLUGIN_TYPE		pluginType() { return m_pluginInfo.plugin_type; }
 		
 		virtual bool 	initPlugin() = 0;
-		virtual bool  openFile(std::string) { return false; }
+		/*virtual bool  openFile(std::string) { return false; }
 		virtual bool	readData(metadata_t*) { return false; }
-		virtual void	closeFile() {};
+		virtual void	closeFile() {};*/
 	
+		static void  logCb(int level, const char* file, int line, const char* format, ...);
+		
 	protected:
 		fuppesLibHandle		m_handle;
 		plugin_info				m_pluginInfo;
@@ -170,16 +187,67 @@ class CTranscoderPlugin: public CPlugin, CTranscoderBase
 
 
 
-/*class CAudioDecoderPlugin: public CPlugin
+typedef int		(*audioDecoderFileOpen_t)(plugin_info* plugin, const char* fileName, audio_settings_t* settings);
+typedef int		(*audioDecoderSetOutEndianess_t)(plugin_info* plugin, ENDIANESS endianess);
+typedef int		(*audioDecoderTotalSamples_t)(plugin_info* plugin);
+typedef int		(*audioDecoderDecodeInterleaved_t)(plugin_info* plugin, char* pcmOut, int bufferSize, int* bytesRead);
+typedef void	(*audioDecoderFileClose_t)(plugin_info* plugin);
+
+class CAudioDecoderPlugin: public CPlugin, public CAudioDecoderBase
 {
+  
+  public:
+    CAudioDecoderPlugin(fuppesLibHandle handle, plugin_info* info): 		
+			CPlugin(handle, info) {}
+		
+		CAudioDecoderPlugin(CAudioDecoderPlugin* plugin);
+    
+		// from CPlugin
+		bool 	initPlugin();
+		
+    bool  openFile(std::string fileName, CAudioDetails* pAudioDetails);  
+		void	setOutEndianness(ENDIANESS endianess);
+    int   numPcmSamples();  
+    int   decodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead);  
+    void  closeFile();
+		
+		// CAudioDecoderBase
+		bool LoadLib() { return true; }
+    bool OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetails) {
+			return openFile(p_sFileName, pAudioDetails);
+		}
+		
+    void CloseFile() {
+			closeFile();
+		}
+
+    long DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead) {
+			return decodeInterleaved(p_PcmOut, p_nBufferSize, p_nBytesRead);
+		}
+		
+    unsigned int NumPcmSamples() {
+			return numPcmSamples();
+		}
+		
+	private:
+		audioDecoderFileOpen_t						m_fileOpen;
+		audioDecoderSetOutEndianess_t			m_setOutEndianess;
+		audioDecoderTotalSamples_t				m_totalSamples;
+		audioDecoderDecodeInterleaved_t		m_decodeInterleaved;
+		audioDecoderFileClose_t						m_fileClose;
 };
 
 class CAudioEncoderPlugin: public CPlugin
-{
+{	
+	public:
+		CAudioEncoderPlugin(fuppesLibHandle handle, plugin_info* info): 		
+			CPlugin(handle, info) {}
+		CAudioEncoderPlugin(CAudioEncoderPlugin* plugin);
+	
+	// from CPlugin
+	bool 	initPlugin() { return false; }	
+	
 };
 
-class CTranscoderPlugin: public CPlugin
-{
-};*/
 
 #endif // _PLUGIN_H

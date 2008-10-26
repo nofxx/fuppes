@@ -32,6 +32,7 @@
 #include "../Common/Common.h"
 #include "../SharedLog.h"
 #include "../DeviceSettings/DeviceSettings.h"
+#include "../../../include/fuppes_plugin.h"
 
 struct CAudioDetails
 {
@@ -87,11 +88,11 @@ class CTranscodeSessionInfo
     bool          m_bTranscodeToFile;
 };
 
-typedef enum ENDIANESS
+/*typedef enum ENDIANESS
 {
   E_LITTLE_ENDIAN = 0,
   E_BIG_ENDIAN = 1
-} ENDIANESS;
+} ENDIANESS;*/
 
 class CAudioEncoderBase
 {

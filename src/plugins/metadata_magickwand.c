@@ -1,3 +1,4 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            metadata_magickwand.c
  *
@@ -22,6 +23,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+
 #include "../../include/fuppes_plugin.h"
 #include <wand/magick-wand.h>
 
@@ -29,21 +31,18 @@ void magick_set_date(MagickWand* wand, char** dateMetadata)
 {
 	char* date = MagickGetImageProperty(wand, "exif:DateTimeOriginal");
 	
-	if(date == 0)
-	{
-		date = MagickGetImageProperty(wand, "exif:DateTimeDigitized");
-		
+	if(date == 0)	{
+  	date = MagickGetImageProperty(wand, "exif:DateTimeDigitized");		
 		if(date == 0)
 			return;
 	}
 	
-    const int dateLen = strlen(date);
+  const int dateLen = strlen(date);    
+	if(dateLen > 0 && set_value(dateMetadata, date) == 0)	{
     
-	if(dateLen > 0)
-	{
-	    *dateMetadata = (char*)realloc(*dateMetadata, (dateLen + 1) * sizeof(char));
-	    strcpy(*dateMetadata, date);
-	    
+	    /**dateMetadata = (char*)realloc(*dateMetadata, (dateLen + 1) * sizeof(char));
+	    strcpy(*dateMetadata, date);*/
+    
 	    char* dateStr = *dateMetadata;
 	    
 	    if(dateLen > 4 && dateStr[4] != '-')
@@ -56,7 +55,7 @@ void magick_set_date(MagickWand* wand, char** dateMetadata)
 	        dateStr[10] = 'T';
 	}
 	
-    MagickRelinquishMemory(date);
+  MagickRelinquishMemory(date);
 }
 
 

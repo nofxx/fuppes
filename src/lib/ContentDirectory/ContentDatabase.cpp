@@ -231,6 +231,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 	
 	// setup file alteration monitor
 	if(m_pFileAlterationMonitor->isActive()) {
+		
 		Select("select PATH from OBJECTS where TYPE = 1 and DEVICE is NULL");
 		while(!Eof()) {
 			m_pFileAlterationMonitor->addWatch(GetResult()->GetValue("PATH"));
@@ -1134,19 +1135,18 @@ fuppesThreadCallback BuildLoop(void* arg)
   for(i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
   {
     if(DirectoryExists(CSharedConfig::Shared()->GetSharedDir(i)))
-    {  
-      sSql.str("");
+    { 	
+			pDb->fileAlterationMonitor()->addWatch(CSharedConfig::Shared()->GetSharedDir(i));
       
       ExtractFolderFromPath(CSharedConfig::Shared()->GetSharedDir(i), &sFileName);
-
       bInsert = true;
       if(g_bAddNew) {
         if((nObjId = GetObjectIDFromFileName(pDb, CSharedConfig::Shared()->GetSharedDir(i))) > 0) {
           bInsert = false;
         }
       }
-      
-      
+
+      sSql.str("");
       if(bInsert) {      
         nObjId = pDb->GetObjId();      
       

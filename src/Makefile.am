@@ -5,7 +5,6 @@ INCLUDES = \
   ${FUPPES_CFLAGS}\
   ${LIBXML_CFLAGS}\
   ${PCRE_CFLAGS}\
-  ${VORBISFILE_CFLAGS}\
   ${SQLITE3_CFLAGS}\
 	-DFUPPES_DATADIR=\"$(datadir)/fuppes\" \
 	-DFUPPES_PLUGINDIR=\"$(libdir)/fuppes\"
@@ -137,8 +136,6 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/WavEncoder.cpp\
   lib/Transcoding/PcmEncoder.h\
   lib/Transcoding/PcmEncoder.cpp\
-  lib/Transcoding/VorbisWrapper.h\
-  lib/Transcoding/VorbisWrapper.cpp\
   lib/Transcoding/MpcWrapper.h\
   lib/Transcoding/MpcWrapper.cpp\
   lib/Transcoding/FlacWrapper.h\

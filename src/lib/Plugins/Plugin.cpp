@@ -1,3 +1,4 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Plugin.cpp
  *
@@ -39,8 +40,9 @@ void CPluginMgr::init(std::string pluginDir)
 {
 	if(m_instance == 0) {
 		m_instance = new CPluginMgr();
+		fuppesThreadInitMutex(&m_instance->m_mutex);
 	}
-	
+
 	DIR*    dir;
   dirent* dirEnt;
 	
@@ -84,6 +86,7 @@ void CPluginMgr::init(std::string pluginDir)
 		try {
 			plugin_info pluginInfo;
 			pluginInfo.plugin_type = PT_NONE;
+			pluginInfo.log = &CPlugin::logCb;
 
 			fuppesLibHandle handle;
 			
@@ -115,10 +118,18 @@ void CPluginMgr::init(std::string pluginDir)
 					}
 					break;
 				case PT_AUDIO_DECODER:
-					//plugin = new CAudioDecoderPlugin();
+					plugin = new CAudioDecoderPlugin(handle, &pluginInfo);
+					if(plugin->initPlugin()) {
+						m_instance->m_audioDecoderPlugins[string(pluginInfo.plugin_name)] =	(CAudioDecoderPlugin*)plugin;
+						CSharedLog::Log(L_NORM, __FILE__, __LINE__, "registered audio decoder plugin \"%s\"", pluginInfo.plugin_name);
+					}
 					break;
 				case PT_AUDIO_ENCODER:
-					//plugin = new CAudioEncoderPlugin();
+					plugin = new CAudioEncoderPlugin(handle, &pluginInfo);
+					if(plugin->initPlugin()) {
+						m_instance->m_audioEncoderPlugins[string(pluginInfo.plugin_name)] =	(CAudioEncoderPlugin*)plugin;
+						CSharedLog::Log(L_NORM, __FILE__, __LINE__, "registered audio encoder plugin \"%s\"", pluginInfo.plugin_name);
+					}
 					break;
 				case PT_TRANSCODER:
 				case PT_THREADED_TRANSCODER:
@@ -140,41 +151,78 @@ void CPluginMgr::init(std::string pluginDir)
 
 CMetadataPlugin* CPluginMgr::metadataPlugin(std::string pluginName)
 {
+	fuppesThreadLockMutex(&m_instance->m_mutex);
+	CMetadataPlugin* plugin = NULL;
+	
 	m_instance->m_metadataPluginsIter =
 		m_instance->m_metadataPlugins.find(pluginName);
 	
 	if(m_instance->m_metadataPluginsIter != m_instance->m_metadataPlugins.end()) {
-		return m_instance->m_metadataPlugins[pluginName];
+		plugin = m_instance->m_metadataPlugins[pluginName];
 	}
-	else {
-		return NULL;
-	}
+	
+	fuppesThreadUnlockMutex(&m_instance->m_mutex);
+	return plugin;	
 }
 
 
 CTranscoderBase* CPluginMgr::transcoderPlugin(std::string pluginName)
 {
-#warning todo lock
-
+	fuppesThreadLockMutex(&m_instance->m_mutex);
+	CTranscoderPlugin* plugin = NULL;
+		
 	m_instance->m_transcoderPluginsIter =
 		m_instance->m_transcoderPlugins.find(pluginName);
 	
 	if(m_instance->m_transcoderPluginsIter != m_instance->m_transcoderPlugins.end()) {
-		CTranscoderPlugin* plugin = new CTranscoderPlugin(m_instance->m_transcoderPlugins[pluginName]);
-		return (CTranscoderBase*)plugin;
-	}
-	else {
-		return NULL;
-	}
+		plugin = new CTranscoderPlugin(m_instance->m_transcoderPlugins[pluginName]);
+	}	
+
+	fuppesThreadUnlockMutex(&m_instance->m_mutex);
+	return (CTranscoderBase*)plugin;
+}
+
+CAudioDecoderPlugin* CPluginMgr::audioDecoderPlugin(std::string pluginName)
+{
+	fuppesThreadLockMutex(&m_instance->m_mutex);
+	CAudioDecoderPlugin* plugin = NULL;
+		
+	m_instance->m_audioDecoderPluginsIter =
+		m_instance->m_audioDecoderPlugins.find(pluginName);
+	
+	if(m_instance->m_audioDecoderPluginsIter != m_instance->m_audioDecoderPlugins.end()) {
+		plugin = new CAudioDecoderPlugin(m_instance->m_audioDecoderPlugins[pluginName]);
+	}	
+
+	fuppesThreadUnlockMutex(&m_instance->m_mutex);
+	return plugin;
+}
+
+CAudioEncoderPlugin* CPluginMgr::audioEncoderPlugin(std::string pluginName)
+{
+	fuppesThreadLockMutex(&m_instance->m_mutex);
+	CAudioEncoderPlugin* plugin = NULL;
+		
+	m_instance->m_audioEncoderPluginsIter =
+		m_instance->m_audioEncoderPlugins.find(pluginName);
+	
+	if(m_instance->m_audioEncoderPluginsIter != m_instance->m_audioEncoderPlugins.end()) {
+		plugin = new CAudioEncoderPlugin(m_instance->m_audioEncoderPlugins[pluginName]);
+	}	
+
+	fuppesThreadUnlockMutex(&m_instance->m_mutex);
+	return plugin;
 }
 
 
 
 CPlugin::CPlugin(fuppesLibHandle handle, plugin_info* info)
 {
-	strcpy(m_pluginInfo.plugin_name, info->plugin_name);
 	m_pluginInfo.plugin_type = info->plugin_type;
+	strcpy(m_pluginInfo.plugin_name, info->plugin_name);
+	strcpy(m_pluginInfo.plugin_author, info->plugin_author);
 	m_pluginInfo.user_data = NULL;
+	m_pluginInfo.log = &CPlugin::logCb;
 	
 	m_handle = handle;
 }
@@ -186,6 +234,20 @@ CPlugin::~CPlugin()
     FuppesCloseLibrary(m_handle);
   }
 }
+
+void CPlugin::logCb(int level, const char* file, int line, const char* format, ...)
+{
+	va_list args;	
+  va_start(args, format);
+	CSharedLog::LogArgs(level, file, line, format, args);	
+  va_end(args);
+}
+
+
+
+/**
+ *  CDlnaPlugin
+ */
 
 bool CDlnaPlugin::initPlugin()
 {
@@ -210,6 +272,11 @@ bool CDlnaPlugin::getImageProfile(std::string ext, int width, int height, std::s
 	}
 	return false;																																		
 }
+
+
+/**
+ *  CMetadataPlugin
+ */
 
 bool CMetadataPlugin::initPlugin()
 {
@@ -256,8 +323,12 @@ void CMetadataPlugin::closeFile()
 }
 
 
-CTranscoderPlugin::CTranscoderPlugin(CTranscoderPlugin* plugin):
-CPlugin(plugin->m_handle, &plugin->m_pluginInfo) 
+/**
+ *  CTranscoderPlugin
+ */
+
+CTranscoderPlugin::CTranscoderPlugin(CTranscoderPlugin* plugin)
+:CPlugin(plugin->m_handle, &plugin->m_pluginInfo) 
 {
 	m_transcodeVideo = plugin->m_transcodeVideo;
 	m_transcodeImage = plugin->m_transcodeImage;
@@ -320,4 +391,125 @@ bool CTranscoderPlugin::Transcode(CFileSettings* pFileSettings, std::string p_sI
 											less, greater) == 0);
 	}
 		
+}
+
+
+/**
+ *  CAudioDecoderPlugin
+ */
+
+CAudioDecoderPlugin::CAudioDecoderPlugin(CAudioDecoderPlugin* plugin)
+:CPlugin(plugin->m_handle, &plugin->m_pluginInfo) 
+{
+	//m_pluginInfo.user_data = malloc(1);
+	
+	m_fileOpen = plugin->m_fileOpen;
+	m_setOutEndianess = plugin->m_setOutEndianess;
+	m_totalSamples = plugin->m_totalSamples;
+	m_decodeInterleaved = plugin->m_decodeInterleaved;
+	m_fileClose = plugin->m_fileClose;	
+}
+
+bool CAudioDecoderPlugin::initPlugin()
+{
+	m_fileOpen = NULL;
+	m_setOutEndianess = NULL;
+	m_totalSamples = NULL;
+	m_decodeInterleaved = NULL;
+	m_fileClose = NULL;
+	
+	m_fileOpen = (audioDecoderFileOpen_t)FuppesGetProcAddress(m_handle, "fuppes_decoder_file_open");
+	if(m_fileOpen == NULL) {
+		cout << "error load symbol 'fuppes_decoder_file_open'" << endl;
+		return false;
+	}
+
+	m_setOutEndianess = (audioDecoderSetOutEndianess_t)FuppesGetProcAddress(m_handle, "fuppes_decoder_set_out_endianess");
+	if(m_setOutEndianess == NULL) {
+		cout << "error load symbol 'fuppes_decoder_set_out_endianess'" << endl;
+		return false;
+	}
+	
+	m_totalSamples = (audioDecoderTotalSamples_t)FuppesGetProcAddress(m_handle, "fuppes_decoder_total_samples");
+	if(m_totalSamples == NULL) {
+		cout << "error load symbol 'fuppes_decoder_total_samples'" << endl;
+		return false;
+	}
+	
+	m_decodeInterleaved = (audioDecoderDecodeInterleaved_t)FuppesGetProcAddress(m_handle, "fuppes_decoder_decode_interleaved");
+	if(m_decodeInterleaved == NULL) {
+		cout << "error load symbol 'fuppes_decoder_decode_interleaved'" << endl;
+		return false;
+	}
+
+	m_fileClose	= (audioDecoderFileClose_t)FuppesGetProcAddress(m_handle, "fuppes_decoder_file_close");
+	if(m_fileClose == NULL) {
+		cout << "error load symbol 'fuppes_decoder_file_close'" << endl;
+		return false;
+	}
+	
+	return true;
+}
+
+bool CAudioDecoderPlugin::openFile(std::string fileName, CAudioDetails* pAudioDetails)
+{
+	if(!m_fileOpen) {
+		return false;
+	}
+	
+	audio_settings_t settings;
+	init_audio_settings(&settings);
+	
+	bool open = ((m_fileOpen(&m_pluginInfo, fileName.c_str(), &settings)) == 0);	
+	if(open) {		
+		pAudioDetails->nNumChannels		= settings.channels;
+		pAudioDetails->nSampleRate		= settings.samplerate;
+		pAudioDetails->nBitRate				= settings.bitrate;
+		pAudioDetails->nNumPcmSamples = numPcmSamples();	
+	}
+	free_audio_settings(&settings);
+	
+	return open;
+}
+
+void CAudioDecoderPlugin::setOutEndianness(ENDIANESS endianess) 
+{
+	if(!m_setOutEndianess)
+		return;
+	
+	m_setOutEndianess(&m_pluginInfo, endianess);
+}
+
+int CAudioDecoderPlugin::numPcmSamples()
+{
+	if(!m_totalSamples)
+		return 0;
+	
+	return m_totalSamples(&m_pluginInfo);
+}
+
+int CAudioDecoderPlugin::decodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead)
+{
+	if(!m_decodeInterleaved) {
+		return -1;
+	}
+	
+	return m_decodeInterleaved(&m_pluginInfo, p_PcmOut, p_nBufferSize, p_nBytesRead);
+}
+
+void CAudioDecoderPlugin::closeFile()
+{
+	if(m_fileClose) {
+		m_fileClose(&m_pluginInfo);
+	}
+}
+
+
+/**
+ *  CAudioEncoderPlugin
+ */
+
+CAudioEncoderPlugin::CAudioEncoderPlugin(CAudioEncoderPlugin* plugin)
+:CPlugin(plugin->m_handle, &plugin->m_pluginInfo) 
+{
 }

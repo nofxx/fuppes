@@ -78,7 +78,7 @@ install: install-indep install-arch
 install-indep:
 	dh_testdir
 	dh_testroot
-	dh_clean -k -i
+	#dh_clean -k -i
 	dh_installdirs -i
 
 	# Add here commands to install the indep part of the package into
@@ -86,6 +86,7 @@ install-indep:
 	#INSTALLDOC#
 
 	dh_install -i
+	dh_clean -k -i
 
 install-arch:
 	dh_testdir

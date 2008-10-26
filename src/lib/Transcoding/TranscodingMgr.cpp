@@ -43,9 +43,9 @@
   #include "WavEncoder.h"
 
   // decoder
-  #ifdef HAVE_VORBIS
-  #include "VorbisWrapper.h"
-  #endif
+  //#ifdef HAVE_VORBIS
+  //#include "VorbisWrapper.h"
+  //#endif
 
   #ifdef HAVE_MUSEPACK
   #include "MpcWrapper.h"
@@ -358,9 +358,10 @@ CAudioDecoderBase* CTranscodingMgr::CreateAudioDecoder(DECODER_TYPE p_nDecoderTy
   switch(p_nDecoderType) {
     
     case DT_OGG_VORBIS:
-      #ifdef HAVE_VORBIS
-      pResult = (CAudioDecoderBase*)(new CVorbisDecoder());
-      #endif
+      //#ifdef HAVE_VORBIS
+      //pResult = (CAudioDecoderBase*)(new CVorbisDecoder());
+			pResult = CPluginMgr::audioDecoderPlugin("vorbis");
+      //#endif
       break;
     
     case DT_MUSEPACK:

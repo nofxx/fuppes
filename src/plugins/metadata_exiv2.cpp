@@ -197,6 +197,7 @@ extern "C" {
 void register_fuppes_plugin(plugin_info* info)
 {
 	strcpy(info->plugin_name, "exiv2");
+	strcpy(info->plugin_author, "Ben Rees");
 	info->plugin_type = PT_METADATA;
 }
 

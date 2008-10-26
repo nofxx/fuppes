@@ -1,3 +1,4 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            fuppes_plugin.h
  *
@@ -35,14 +36,15 @@ extern "C" {
 
 #include <stdio.h>
 	
-inline void set_value(char** out, const char* in)
+inline int set_value(char** out, const char* in)
 {	
 	if(strlen(in) == 0) {
-		return;
+		return 1;
 	}
 	
 	*out = (char*)realloc(*out, sizeof(char) * (strlen(in) + 1));	
 	strcpy(*out, in);
+  return 0;
 }
 	
 //static void register_fuppes_plugin(plugin_info* info) = 0;

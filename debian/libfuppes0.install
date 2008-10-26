@@ -1,1 +1,5 @@
 debian/tmp/usr/lib/libfuppes.so.*
+debian/tmp/usr/share/fuppes/fuppes-small.png
+debian/tmp/usr/share/fuppes/header-gradient.png
+debian/tmp/usr/share/fuppes/header-gradient-small.png
+debian/tmp/usr/share/fuppes/style.css

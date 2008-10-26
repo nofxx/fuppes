@@ -1,3 +1,4 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            fuppes_plugin_types.h
  *
@@ -42,10 +43,14 @@ typedef struct {
 	void*		next;
 } file_ext;
 
+typedef void (*log_t)(int level, const char* file, int line, const char* format, ...);
+
 typedef struct {
 	char					plugin_name[200];
+	char					plugin_author[200];
 	PLUGIN_TYPE		plugin_type;
 	void*					user_data;
+	log_t					log;
 } plugin_info;
 
 
@@ -75,7 +80,7 @@ typedef struct {
 	
 	int							width;
 	int							height;
-    char*                       date;
+	char*						date;
     	
 	int							bitrate;
 	int 						samplerate;
@@ -140,6 +145,32 @@ static void free_metadata(metadata_t* metadata)
 	free(metadata->video_codec);
 	
 	free(metadata->image_mime_type);
+}
+
+// AUDIO
+
+typedef enum tagENDIANESS {
+  E_LITTLE_ENDIAN = 0,
+  E_BIG_ENDIAN = 1
+} ENDIANESS;
+
+typedef struct {	
+	int					channels;
+  int					samplerate;
+  int    			bitrate;
+  int					num_samples;	
+} audio_settings_t;
+
+static void init_audio_settings(audio_settings_t* settings)
+{
+	settings->channels = 0;
+	settings->samplerate = 0;	
+	settings->bitrate = 0;
+	settings->num_samples = 0;
+}
+
+static void free_audio_settings(audio_settings_t* settings)
+{
 }
 
 #ifdef __cplusplus

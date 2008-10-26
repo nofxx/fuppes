@@ -38,29 +38,41 @@ extern "C"
   #include <ctype.h>
   #include <string.h>
 
-#if FFMPEG_VERSION >= 52
+#if FFMPEG_VERSION >= 52 && !defined(OLD_INCLUDES_PATH)
   #include <libavformat/avformat.h>
   #include <libavutil/avutil.h>
   #include <libavutil/fifo.h> 
   #include <libavcodec/opt.h>
+  
+  #ifdef HAVE_LIBSWSCALE
+	#include <libswscale/swscale.h>
+  #endif
+	
+  #ifdef HAVE_AVSTRING_H
+  #include <libavutil/avstring.h>
+  #endif	
 #else
   #include <avformat.h>
   #include <avutil.h>
   #include <fifo.h>
   #include <opt.h>
+  
+  
+  #ifdef HAVE_LIBSWSCALE
+	#include <swscale.h>
+  #endif 
+	
+  #ifdef HAVE_AVSTRING_H
+  #include <avstring.h>
+  #endif	
 #endif
 
-#ifdef HAVE_LIBSWSCALE
-  #include <swscale.h>
-#endif
+
   #include <math.h>
   #include <stdlib.h>
   #include <limits.h>  
-  //#include <mem.h>
-  
-  #ifdef HAVE_AVSTRING_H
-  #include <avstring.h>
-  #endif
+  //#include <mem.h> 
+
 } 
 #endif // __cplusplus 
 
@@ -761,16 +773,14 @@ void opt_video_standard(const char *arg)
 void opt_codec(int *pstream_copy, int *pcodec_id,
                       int codec_type, const char *arg)
 {
-    AVCodec *p;
+    AVCodec *p = NULL;
 
     if (!strcmp(arg, "copy")) {
         *pstream_copy = 1;
     } else {
-        p = first_avcodec;
-        while (p) {
+        while (p = av_codec_next(p)) {
             if (!strcmp(p->name, arg) && p->type == codec_type)
                 break;
-            p = p->next;
         }
         if (p == NULL) {
             fprintf(stderr, "Unknown codec '%s'\n", arg);
