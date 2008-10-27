@@ -95,6 +95,14 @@ Description: FUPPES UPnP server plugin: F.L.A.C. audio decoder
 
 
 
+Package: fuppes-encoder-plugin-twolame
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: FUPPES UPnP server plugin: twolame audio encoder
+ <insert long description, indented with spaces>
+
+
+
 #Package: fuppes-doc
 #Architecture: all
 #Description: Documentation for fuppes

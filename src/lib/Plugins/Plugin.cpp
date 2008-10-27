@@ -465,10 +465,12 @@ bool CAudioDecoderPlugin::openFile(std::string fileName, CAudioDetails* pAudioDe
 		pAudioDetails->nNumChannels		= settings.channels;
 		pAudioDetails->nSampleRate		= settings.samplerate;
 		pAudioDetails->nBitRate				= settings.bitrate;
-		pAudioDetails->nNumPcmSamples = numPcmSamples();	
+		pAudioDetails->nNumPcmSamples = numPcmSamples();
+		
+		setOutEndianness(OutEndianess());
 	}
-	free_audio_settings(&settings);
-	
+	free_audio_settings(&settings);	
+
 	return open;
 }
 
@@ -513,3 +515,9 @@ CAudioEncoderPlugin::CAudioEncoderPlugin(CAudioEncoderPlugin* plugin)
 :CPlugin(plugin->m_handle, &plugin->m_pluginInfo) 
 {
 }
+
+bool CAudioEncoderPlugin::initPlugin()
+{ 
+	
+	return true;
+}	

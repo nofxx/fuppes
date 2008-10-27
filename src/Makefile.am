@@ -138,8 +138,6 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/PcmEncoder.cpp\
   lib/Transcoding/MpcWrapper.h\
   lib/Transcoding/MpcWrapper.cpp\
-  lib/Transcoding/FlacWrapper.h\
-  lib/Transcoding/FlacWrapper.cpp\
   lib/Transcoding/FaadWrapper.h\
   lib/Transcoding/FaadWrapper.cpp\
   lib/Transcoding/MadDecoder.h\

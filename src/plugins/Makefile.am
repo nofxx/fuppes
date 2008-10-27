@@ -216,6 +216,22 @@ endif
 ##  AUDIO ENCODER PLUGINS
 ##
 
+## twolame decoder
+if TWOLAME_ENCODER_PLUGIN
+
+lib_LTLIBRARIES += libencoder_twolame.la
+
+libencoder_twolame_la_SOURCES = \
+	encoder_twolame.c
+
+libencoder_twolame_la_CFLAGS = \
+	$(TWOLAME_CFLAGS)
+	
+libencoder_twolame_la_LDFLAGS = \
+	$(TWOLAME_LIBS)
+
+endif
+
 
 ## L.A.M.E. encoder
 #if LAME_ENCODER_PLUGIN

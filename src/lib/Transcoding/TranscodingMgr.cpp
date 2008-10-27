@@ -372,9 +372,10 @@ CAudioDecoderBase* CTranscodingMgr::CreateAudioDecoder(DECODER_TYPE p_nDecoderTy
       break;
   
     case DT_FLAC:
-      #ifdef HAVE_FLAC
-      pResult = (CAudioDecoderBase*)(new CFLACDecoder());
-      #endif
+      //#ifdef HAVE_FLAC
+      //pResult = (CAudioDecoderBase*)(new CFLACDecoder());
+			pResult = CPluginMgr::audioDecoderPlugin("FLAC");
+      //#endif
       break;
     
     case DT_FAAD:

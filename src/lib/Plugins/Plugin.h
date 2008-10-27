@@ -245,7 +245,7 @@ class CAudioEncoderPlugin: public CPlugin
 		CAudioEncoderPlugin(CAudioEncoderPlugin* plugin);
 	
 	// from CPlugin
-	bool 	initPlugin() { return false; }	
+	bool 	initPlugin();	
 	
 };
 

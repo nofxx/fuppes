@@ -494,6 +494,10 @@ fi # transcoding = yes
 AM_CONDITIONAL([LAME_ENCODER_PLUGIN], [test "x$have_lame" = "xyes"])
 AC_SUBST(LAME_LIBS)
 
+AM_CONDITIONAL(TWOLAME_ENCODER_PLUGIN, test "x$have_twolame" = "xyes")
+AC_SUBST(TWOLAME_CFLAGS)
+AC_SUBST(TWOLAME_LIBS)
+
 
 AM_CONDITIONAL(VORBIS_DECODER_PLUGIN, test "x$have_vorbis" = "xyes")
 AC_SUBST(VORBISFILE_CFLAGS)
