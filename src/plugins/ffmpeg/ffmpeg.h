@@ -778,9 +778,18 @@ void opt_codec(int *pstream_copy, int *pcodec_id,
     if (!strcmp(arg, "copy")) {
         *pstream_copy = 1;
     } else {
+				#if FFMPEG_VERSION >= 52 && !defined(OLD_INCLUDES_PATH)	
         while (p = av_codec_next(p)) {
+				#else					
+				p = first_avcodec;
+				while (p) {
+				#endif
+					
             if (!strcmp(p->name, arg) && p->type == codec_type)
                 break;
+					#if FFMPEG_VERSION <= 52 && defined(OLD_INCLUDES_PATH)	
+					p = p->next;
+					#endif
         }
         if (p == NULL) {
             fprintf(stderr, "Unknown codec '%s'\n", arg);

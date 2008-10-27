@@ -2175,8 +2175,13 @@ void show_formats(void)
         const char *type_str;
 
         p2=NULL;
-	p=NULL;
-        for(p = av_codec_next(p); p != NULL; p = av_codec_next(p) ) {
+				#if FFMPEG_VERSION >= 52 && !defined(OLD_INCLUDES_PATH)							
+				p=NULL;	
+				for(p = av_codec_next(p); p != NULL; p = av_codec_next(p) ) {				
+				#else
+				for(p = first_avcodec; p != NULL; p = p->next) {
+				#endif
+        
             if((p2==NULL || strcmp(p->name, p2->name)<0) &&
                 strcmp(p->name, last_name)>0){
                 p2= p;
