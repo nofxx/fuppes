@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -1551,44 +1551,44 @@ void CContentDatabase::FamEvent(CFileAlterationEvent* event)
 void CContentDatabase::deleteObject(unsigned int objectId)
 {
   stringstream sql;
-
+	CContentDatabase db;
+	
   // get type
   sql << "select TYPE, PATH from OBJECTS where OBJECT_ID = " << objectId << " and DEVICE is NULL";		
-  Select(sql.str());
+  db.Select(sql.str());
 	sql.str("");
     
   string objects;
-	if(Eof()) {
+	if(db.Eof()) {
 	  return;
 	}
   
-  OBJECT_TYPE type = (OBJECT_TYPE)GetResult()->asUInt("TYPE");  
+  OBJECT_TYPE type = (OBJECT_TYPE)db.GetResult()->asUInt("TYPE");
   if(type < ITEM) { // is a container
-    cout << "contentdb: delete container : " << GetResult()->GetValue("PATH") << endl;  
-    deleteContainer(GetResult()->GetValue("PATH"));
-    m_pFileAlterationMonitor->removeWatch(GetResult()->GetValue("PATH"));
+		fileAlterationMonitor()->removeWatch(db.GetResult()->GetValue("PATH"));
+    deleteContainer(db.GetResult()->GetValue("PATH"));    
   }
   else {  
-     cout << "contentdb: delete object : " << GetResult()->GetValue("PATH") << endl;
+     cout << "contentdb: delete object : " << db.GetResult()->GetValue("PATH") << endl;
   
     // delete details    
     sql << "select DETAIL_ID from OBJECTS where OBJECT_ID = " << objectId;
-		Select(sql.str());
+		db.Select(sql.str());
 		sql.str("");
-		if(!Eof() && !GetResult()->IsNull("DETAIL_ID")) {      
-      sql << "delete from OBJECT_DETAILS where ID = " << GetResult()->GetValue("DETAIL_ID");
-      Execute(sql.str());
+		if(!db.Eof() && !db.GetResult()->IsNull("DETAIL_ID")) {      
+      sql << "delete from OBJECT_DETAILS where ID = " << db.GetResult()->GetValue("DETAIL_ID");
+      db.Execute(sql.str());
       sql.str("");
 		}
     
     // delete mapping
     sql << "delete from MAP_OBJECTS where OBJECT_ID = " << objectId;
-    Execute(sql.str());
+    db.Execute(sql.str());
     sql.str("");
     
     // delete object
     sql << "delete from OBJECTS where OBJECT_ID = " << objectId;
-    Execute(sql.str());
+    db.Execute(sql.str());
     sql.str("");
   }
   
@@ -1598,19 +1598,21 @@ void CContentDatabase::deleteContainer(std::string path)
 {
   stringstream sSql;
 
+	CContentDatabase db;
+	
   // delete object details
   sSql << 
     "select DETAIL_ID from OBJECTS where PATH like '" <<
     SQLEscape(appendTrailingSlash(path)) << "%' and DEVICE is NULL";
-	Select(sSql.str());
+	db.Select(sSql.str());
 	sSql.str("");
   
   string details;
-	while(!Eof()) {
-    if(!GetResult()->IsNull("DETAIL_ID")) {
-      details += GetResult()->GetValue("DETAIL_ID") + ", ";
+	while(!db.Eof()) {
+    if(!db.GetResult()->IsNull("DETAIL_ID")) {
+      details += db.GetResult()->GetValue("DETAIL_ID") + ", ";
     }
-    Next();
+    db.Next();
 	}
   
   if(details.length() > 0) {
@@ -1618,19 +1620,19 @@ void CContentDatabase::deleteContainer(std::string path)
     
     sSql << "delete from OBJECT_DETAILS where ID in (" << details << ")";
     //cout << sSql.str() << endl;
-    Execute(sSql.str());
+    db.Execute(sSql.str());
     sSql.str("");
   }
   
   // delete mappings
   sSql << "select OBJECT_ID from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(path)) << "%' and DEVICE is NULL";		
-	Select(sSql.str());
+	db.Select(sSql.str());
 	sSql.str("");
   
   string objects;
-	while(!Eof()) {
-    objects += GetResult()->GetValue("OBJECT_ID") + ", ";
-    Next();
+	while(!db.Eof()) {
+    objects += db.GetResult()->GetValue("OBJECT_ID") + ", ";
+    db.Next();
 	}
   
   if(objects.length() > 0) {
@@ -1638,7 +1640,7 @@ void CContentDatabase::deleteContainer(std::string path)
     
     sSql << "delete from MAP_OBJECTS where OBJECT_ID in (" << objects << ")";
     //cout << sSql.str() << endl;      
-    Execute(sSql.str());
+    db.Execute(sSql.str());
     sSql.str("");
   }
   
@@ -1647,10 +1649,7 @@ void CContentDatabase::deleteContainer(std::string path)
   // delete objects
   sSql << "delete from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(path)) << "%'";
   //cout << sSql.str() << endl;    
-  Execute(sSql.str());
+  db.Execute(sSql.str());
   sSql.str("");
 }
-
-
-
 
