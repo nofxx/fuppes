@@ -1021,8 +1021,19 @@ int output_packet(AVInputStream *ist, int ist_index,
         if (subtitle_to_free) {
             if (subtitle_to_free->rects != NULL) {
                 for (i = 0; i < subtitle_to_free->num_rects; i++) {
+									
+#ifndef LIBAVCODEC_VERSION_MINOR
+#define LIBAVCODEC_VERSION_MINOR 0
+#endif
+
+#if LIBAVCODEC_VERSION_MINOR >= 11
+                    av_freep(subtitle_to_free->rects[i]->pict.data[0]);
+                    av_freep(subtitle_to_free->rects[i]->pict.data[1]);
+                    av_freep(subtitle_to_free->rects[i]);
+#else
                     av_free(subtitle_to_free->rects[i].bitmap);
-                    av_free(subtitle_to_free->rects[i].rgba_palette);
+                    av_free(subtitle_to_free->rects[i].rgba_palette);									
+#endif
                 }
                 av_freep(&subtitle_to_free->rects);
             }
