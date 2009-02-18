@@ -3,6 +3,51 @@ libdir = @libdir@/fuppes
 
 lib_LTLIBRARIES =
 
+##
+##  CORE PLUGINS
+##
+
+## basic presentation
+
+lib_LTLIBRARIES += libcore_presentation.la
+
+libcore_presentation_la_SOURCES = \
+	core_presentation.cpp
+
+
+## sqlite3
+
+lib_LTLIBRARIES += libdatabase_sqlite3.la
+
+libdatabase_sqlite3_la_SOURCES = \
+	database_sqlite3.cpp
+
+libdatabase_sqlite3_la_CXXFLAGS = \
+	$(SQLITE3_CFLAGS)
+	
+libdatabase_sqlite3_la_LDFLAGS = \
+	$(SQLITE3_LIBS)
+
+
+## MySQL
+
+if MYSQL_DATABASE_PLUGIN
+lib_LTLIBRARIES += libdatabase_mysql.la
+
+libdatabase_mysql_la_SOURCES = \
+	database_mysql.cpp
+
+libdatabase_mysql_la_CXXFLAGS = \
+	$(MYSQL_CFLAGS)
+	
+libdatabase_mysql_la_LDFLAGS = \
+	$(MYSQL_LIBS)
+endif
+
+
+
+
+
 
 ##
 ##  METADATA PLUGINS
@@ -10,7 +55,7 @@ lib_LTLIBRARIES =
 
 ## libavformat metadata extraction plugin
 
-if LIBAVFORMAT_METADATA
+if LIBAVFORMAT_METADATA_PLUGIN
 
 lib_LTLIBRARIES += libmetadata_libavformat.la
 
@@ -27,7 +72,7 @@ endif
 
 
 ## taglib metadata extraction plugin
-if TAGLIB_METADATA
+if TAGLIB_METADATA_PLUGIN
 
 lib_LTLIBRARIES += libmetadata_taglib.la
 
@@ -44,7 +89,7 @@ endif
 
 
 ## simage metadata extraction plugin
-if SIMAGE_METADATA
+if SIMAGE_METADATA_PLUGIN
 
 lib_LTLIBRARIES += libmetadata_simage.la
 
@@ -61,7 +106,7 @@ endif
 
 
 ## magickWand metadata extraction plugin
-if MAGICK_WAND_METADATA
+if MAGICK_WAND_METADATA_PLUGIN
 
 lib_LTLIBRARIES += libmetadata_magickwand.la
 
@@ -77,7 +122,7 @@ libmetadata_magickwand_la_LDFLAGS = \
 endif
 
 ## exiv2 metadata extraction plugin
-if EXIV2_METADATA
+if EXIV2_METADATA_PLUGIN
 
 lib_LTLIBRARIES += libmetadata_exiv2.la
 
@@ -93,7 +138,7 @@ libmetadata_exiv2_la_LDFLAGS = \
 endif
 
 ## libmp4v2 metadata extraction plugin
-if MP4V2_METADATA
+if MP4V2_METADATA_PLUGIN
 
 lib_LTLIBRARIES += libmetadata_libmp4v2.la
 
@@ -132,7 +177,7 @@ endif
 
 
 ## ffmpeg transcoder
-if VIDEO_TRANSCODING
+if FFMPEG_TRANSCODER_PLUGIN
 
 lib_LTLIBRARIES += libtranscoder_ffmpeg.la
 
@@ -155,8 +200,25 @@ libtranscoder_ffmpeg_la_LDFLAGS = \
 endif
 
 
+## MagickWand transcoder
+if MAGICK_WAND_TRANSCODER_PLUGIN
+
+lib_LTLIBRARIES += libtranscoder_magickwand.la
+
+libtranscoder_magickwand_la_SOURCES = \
+	transcoder_magickwand.c
+
+libtranscoder_magickwabnd_la_CFLAGS = \
+	$(IMAGEMAGICK_WAND_CFLAGS)
+	
+libtranscoder_magickwand_la_LDFLAGS = \
+	$(IMAGEMAGICK_WAND_LIBS)
+
+endif
+
+
 ## Magick++ transcoder
-if MAGICK_PP_TRANSCODER
+if MAGICK_PP_TRANSCODER_PLUGIN
 
 lib_LTLIBRARIES += libtranscoder_magickpp.la
 
@@ -217,20 +279,20 @@ endif
 ##
 
 ## twolame decoder
-if TWOLAME_ENCODER_PLUGIN
+#if TWOLAME_ENCODER_PLUGIN
 
-lib_LTLIBRARIES += libencoder_twolame.la
+#lib_LTLIBRARIES += libencoder_twolame.la
 
-libencoder_twolame_la_SOURCES = \
-	encoder_twolame.c
+#libencoder_twolame_la_SOURCES = \
+#	encoder_twolame.c
 
-libencoder_twolame_la_CFLAGS = \
-	$(TWOLAME_CFLAGS)
+#libencoder_twolame_la_CFLAGS = \
+#	$(TWOLAME_CFLAGS)
 	
-libencoder_twolame_la_LDFLAGS = \
-	$(TWOLAME_LIBS)
+#libencoder_twolame_la_LDFLAGS = \
+#	$(TWOLAME_LIBS)
 
-endif
+#endif
 
 
 ## L.A.M.E. encoder

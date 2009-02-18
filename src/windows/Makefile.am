@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id: $
 
-if WINDOWS_BUILD
+if WIN32
 
 bin_PROGRAMS = fuppes-win
 
@@ -10,14 +10,24 @@ fuppes_win_SOURCES = \
 	Common.h \
 	WinMainForm.cpp \
 	WinMainForm.h \
-	WinMain.cpp
+	WinMain.cpp \
+	fuppes.rc
 
-fuppes_win_LDFLAGS = -mwindows
+fuppes_win_LDFLAGS = \
+	-mwindows
+
 fuppes_win_LDADD = \
-	./../libfuppes.la
+	./../libfuppes.la \
+	fuppes.res
 
-# fuppes_applet_LDFLAGS = \
-#  $(LIBPANELAPPLET_LIBS) \
-#  ${LIBNOTIFY_LIBS}
+fuppes.res: fuppes.rc
+	$(WINDRES) -i fuppes.rc --input-format=rc -o fuppes.res -O coff
 
-endif
+BUILT_SOURCES = \
+	fuppes.res
+
+CLEANFILES = \
+	fuppes.res
+
+endif # WIN32
+

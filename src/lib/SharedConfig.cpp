@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            SharedConfig.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -591,4 +592,17 @@ std::string CSharedConfig::CreateTempFileName()
   sResult << m_sTempDir << nTmpCnt;
   nTmpCnt++;
   return sResult.str().c_str();
+}
+
+
+bool CSharedConfig::isAlbumArtFile(const std::string fileName)
+{
+#warning todo
+	if(fileName.compare("cover.jpg") == 0 ||
+		 fileName.compare("cover.png") == 0 ||
+		 fileName.compare(".folder.jpg") == 0 ||
+		 fileName.compare(".folder.png") == 0)
+		return true;
+	
+	return false;
 }

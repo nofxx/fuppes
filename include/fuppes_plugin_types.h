@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2008-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -28,6 +28,24 @@
 extern "C" {
 #endif
 
+#ifndef _FUPPES_PLUGIN_TYPES_H
+#define _FUPPES_PLUGIN_TYPES_H
+
+#include <stdlib.h>
+#include <string.h>
+	
+inline int set_value(char** out, const char* in)
+{	
+	if(strlen(in) == 0) {
+		return 0;
+	}
+	
+	int size = sizeof(char) * (strlen(in) + 1);
+	*out = (char*)realloc(*out, size);	
+	strcpy(*out, in);
+  return size;
+}
+	
 typedef enum tagPLUGIN_TYPE {
 	PT_NONE,
 	PT_DLNA,
@@ -35,13 +53,61 @@ typedef enum tagPLUGIN_TYPE {
 	PT_AUDIO_DECODER,
 	PT_AUDIO_ENCODER,
 	PT_TRANSCODER,
-	PT_THREADED_TRANSCODER
+	PT_THREADED_TRANSCODER,
+	PT_PRESENTATION,
+	PT_DATABASE_CONNECTION
 } PLUGIN_TYPE;
 
 typedef struct {
 	char		ext[10];
 	void*		next;
 } file_ext;
+
+
+typedef struct {
+	char*		key;
+	char*		value;
+	void*		next;
+} arg_list_t;
+
+static inline arg_list_t* create_arg_list() {
+	
+	arg_list_t* list = (arg_list_t*)malloc(sizeof(arg_list_t));
+	
+	list->key = (char*)malloc(sizeof(char));
+	list->key = '\0';
+	list->value = (char*)malloc(sizeof(char));
+	list->value = '\0';	
+
+	list->next = NULL;
+	
+	return list;
+}
+
+static inline void arg_list_set_values(arg_list_t* list, const char* key, const char* value)
+{
+	set_value(&list->key, key);
+	set_value(&list->value, key);	
+}
+
+static inline arg_list_t* arg_list_append(arg_list_t* list)
+{
+	while(list->next) {
+		list = (arg_list_t*)list->next;
+	}
+	list->next = create_arg_list();
+}
+
+static inline void free_arg_list(arg_list_t* list) {
+	free(list->key);
+	free(list->value);
+	if(list->next) {
+		free_arg_list(list);
+	}
+	free(list);
+}
+
+typedef int (*ctrl_action_t)(const char* action, arg_list_t* args, arg_list_t* result);
 
 typedef void (*log_t)(int level, const char* file, int line, const char* format, ...);
 
@@ -51,7 +117,9 @@ typedef struct {
 	PLUGIN_TYPE		plugin_type;
 	void*					user_data;
 	log_t					log;
+	ctrl_action_t	ctrl;
 } plugin_info;
+
 
 
 // METADATA
@@ -172,6 +240,13 @@ static void init_audio_settings(audio_settings_t* settings)
 static void free_audio_settings(audio_settings_t* settings)
 {
 }
+
+
+// PRESENTATION
+
+
+
+#endif // _FUPPES_PLUGIN_TYPES_H
 
 #ifdef __cplusplus
 }

@@ -1,3 +1,4 @@
 debian/tmp/usr/include/fuppes_plugin.h
 debian/tmp/usr/include/fuppes_plugin_types.h
+debian/tmp/usr/include/fuppes_db_connection_plugin.h
 #debian/tmp/usr/include/fuppes.h

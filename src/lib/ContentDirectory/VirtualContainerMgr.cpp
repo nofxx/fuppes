@@ -1,3 +1,4 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            VirtualContainerMgr.cpp
  *
@@ -110,10 +111,11 @@ fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
     fuppesThreadExit();
   }
 
-  CContentDatabase* pIns = new CContentDatabase();  
-  pIns->Execute("delete from OBJECTS where DEVICE is NOT NULL;");	
-  pIns->Execute("delete from MAP_OBJECTS where DEVICE is NOT NULL;");	  
-  pIns->Execute("vacuum");
+  //CContentDatabase* pIns = new CContentDatabase();  
+	CSQLQuery* qry = CDatabase::query();
+  qry->exec("delete from OBJECTS where DEVICE is NOT NULL;");	
+  qry->exec("delete from MAP_OBJECTS where DEVICE is NOT NULL;");	  
+  qry->exec("vacuum");
  
   int i;
   CXMLNode* pChild;
@@ -135,14 +137,14 @@ fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
         bCreateRef = true;
       }
 					 
-      pMgr->CreateChildItems(pChild, pIns, sDevice, 0, NULL, bContainerDetails, bCreateRef);
+      pMgr->CreateChildItems(pChild, qry, sDevice, 0, NULL, bContainerDetails, bCreateRef);
     }
     
   }
   
   delete pDoc;    
   
-  delete pIns;
+  delete qry;
 
   time(&now); 
 	#ifndef WIN32
@@ -183,7 +185,7 @@ void CVirtualContainerMgr::RebuildContainerList()
 }
 
 void CVirtualContainerMgr::CreateChildItems(CXMLNode* pParentNode, 
-                                            CContentDatabase* pIns,
+                                            CSQLQuery* pIns,
                                             std::string p_sDevice, 
                                             unsigned int p_nParentId,
                                             CObjectDetails* pDetails,
@@ -239,14 +241,14 @@ void CVirtualContainerMgr::CreateChildItems(CXMLNode* pParentNode,
 }
 
 void CVirtualContainerMgr::CreateSingleVFolder(CXMLNode* pFolderNode,
-                                               CContentDatabase* pIns,
+                                               CSQLQuery* pIns,
                                                std::string p_sDevice,
                                                unsigned int p_nParentId,
                                                CObjectDetails* pDetails,
                                                bool p_bContainerDetails,
 																							 bool p_bCreateRef)
 {
-  CContentDatabase* pDb = new CContentDatabase();
+  //CContentDatabase* pDb = new CContentDatabase();
   stringstream sSql;
   unsigned int nId;
   OBJECT_TYPE  nObjType = CONTAINER_STORAGE_FOLDER;
@@ -269,7 +271,7 @@ void CVirtualContainerMgr::CreateSingleVFolder(CXMLNode* pFolderNode,
           ", '" <<  SQLEscape(pFolderNode->Attribute("name")) << "'" <<
           ", '" << p_sDevice << "')";
   
-  pIns->Execute(sSql.str());
+  pIns->exec(sSql.str());
   sSql.str("");
   
   sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID, DEVICE) values " <<
@@ -277,11 +279,11 @@ void CVirtualContainerMgr::CreateSingleVFolder(CXMLNode* pFolderNode,
     ", "  << p_nParentId << 
     ", '" << p_sDevice << "');";
   
-  pIns->Insert(sSql.str());  
+  pIns->exec(sSql.str());  
   //pDb->Commit();
   
   
-  delete pDb;
+  //delete pDb;
   
   if(pFolderNode->ChildCount() > 0) {
     CreateChildItems(pFolderNode, pIns, p_sDevice, nId, pDetails, p_bContainerDetails, p_bCreateRef);
@@ -289,7 +291,7 @@ void CVirtualContainerMgr::CreateSingleVFolder(CXMLNode* pFolderNode,
 }
 
 void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode, 
-                                                      CContentDatabase* pIns,
+                                                      CSQLQuery* pIns,
                                                       std::string p_sDevice, 
                                                       unsigned int p_nParentId, 
                                                       CObjectDetails* pDetails,
@@ -368,17 +370,17 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
     switch(nContainerType)
     {
       case CONTAINER_GENRE_MUSIC_GENRE:
-        pDetails->sGenre = SQLEscape(pDb->GetResult()->GetValue("VALUE"));        
+        pDetails->sGenre = SQLEscape(pDb->GetResult()->asString("VALUE"));        
         break;
       case CONTAINER_PERSON_MUSIC_ARTIST:
-        pDetails->sArtist = SQLEscape(pDb->GetResult()->GetValue("VALUE"));
+        pDetails->sArtist = SQLEscape(pDb->GetResult()->asString("VALUE"));
         // artist does not necessarily has exactly 1 genre
-        //pDetails->sGenre  = SQLEscape(pDb->GetResult()->GetValue("d.A_GENRE"));
+        //pDetails->sGenre  = SQLEscape(pDb->GetResult()->asString("d.A_GENRE"));
         break;
       case CONTAINER_ALBUM_MUSIC_ALBUM:
-        pDetails->sAlbum  = SQLEscape(pDb->GetResult()->GetValue("VALUE"));
-        pDetails->sArtist = SQLEscape(pDb->GetResult()->GetValue("d.A_ARTIST"));
-        pDetails->sGenre  = SQLEscape(pDb->GetResult()->GetValue("d.A_GENRE"));
+        pDetails->sAlbum  = SQLEscape(pDb->GetResult()->asString("VALUE"));
+        pDetails->sArtist = SQLEscape(pDb->GetResult()->asString("d.A_ARTIST"));
+        pDetails->sGenre  = SQLEscape(pDb->GetResult()->asString("d.A_GENRE"));
         break;      
       default:
         cout << "unhandled property '" << sProp << "'" << endl;
@@ -388,7 +390,7 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
     }    
     
     // escape title
-    sTitle = SQLEscape(pDb->GetResult()->GetValue("VALUE"));
+    sTitle = SQLEscape(pDb->GetResult()->asString("VALUE"));
     if(sTitle.length() == 0) {
       sTitle = "Unknown";
     }    
@@ -396,7 +398,9 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
       sTitle = pDetails->sArtist + ": " + pDetails->sAlbum;
     }*/
     
-    pIns->BeginTransaction();
+		
+    //pIns->BeginTransaction();
+		pIns->connection()->startTransaction();
     
     // insert container details
     sSql << "insert into OBJECT_DETAILS (A_ARTIST, A_ALBUM, A_GENRE) " <<
@@ -405,7 +409,7 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
       ", '" << pDetails->sAlbum << "' " <<
       ", '" << pDetails->sGenre << "')";
     
-    nDetailId = pIns->Insert(sSql.str());
+    nDetailId = pIns->insert(sSql.str());
     sSql.str("");                            
 
 		
@@ -421,9 +425,9 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
 				"DEVICE = '" << p_sDevice << "' and " <<
 				"REF_ID is NULL;";
 				
-			pIns->Select(sSql.str());
-			if(!pIns->Eof())
-				nRefId = pIns->GetResult()->GetValueAsUInt("OBJECT_ID");
+			pIns->select(sSql.str());
+			if(!pIns->eof())
+				nRefId = pIns->result()->asUInt("OBJECT_ID");
 			sSql.str("");
 		}
 				
@@ -444,7 +448,7 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
 				sSql << ", NULL );";
 				
     
-    pIns->Execute(sSql.str());    
+    pIns->exec(sSql.str());    
     sSql.str("");
     
     // map container to parent
@@ -454,13 +458,14 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
       ", "  << p_nParentId << 
       ", '" << p_sDevice << "');";
     
-    pIns->Execute(sSql.str());    
+    pIns->exec(sSql.str());    
     sSql.str("");  
        
-    pIns->Commit();
+    //pIns->Commit();
+		pIns->connection()->commit();
     
     // build filter
-    sSql << sField << " = '" << SQLEscape(pDb->GetResult()->GetValue("VALUE")) << "' ";    
+    sSql << sField << " = '" << SQLEscape(pDb->GetResult()->asString("VALUE")) << "' ";    
     if(p_sFilter.length() > 0) {
       sSql << " and " << p_sFilter;
     }
@@ -479,7 +484,7 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
 }
 
 void CVirtualContainerMgr::CreateVFoldersSplit(CXMLNode* pFoldersNode, 
-                                               CContentDatabase* pIns,
+                                               CSQLQuery* pIns,
                                                std::string p_sDevice, 
                                                unsigned int p_nParentId,
                                                CObjectDetails* pDetails,
@@ -519,7 +524,7 @@ void CVirtualContainerMgr::CreateVFoldersSplit(CXMLNode* pFoldersNode,
     sSql << "insert into OBJECTS (OBJECT_ID, TYPE, PATH, FILE_NAME, TITLE, DEVICE) values " <<
       "(" << nId << ", " << CONTAINER_STORAGE_FOLDER << ", " << "'virtual', '" << 
       sFolders[i] << "', '" << sFolders[i] << "', '" << p_sDevice << "')";
-    pIns->Execute(sSql.str());
+    pIns->exec(sSql.str());
     
     sSql.str(""); 
     sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID, DEVICE) values " <<
@@ -527,7 +532,7 @@ void CVirtualContainerMgr::CreateVFoldersSplit(CXMLNode* pFoldersNode,
       ", "  << p_nParentId << 
       ", '" << p_sDevice << "');";
     
-    pIns->Execute(sSql.str());    
+    pIns->exec(sSql.str());    
     
     
     if(pFoldersNode->ChildCount() > 0) {
@@ -540,7 +545,7 @@ void CVirtualContainerMgr::CreateVFoldersSplit(CXMLNode* pFoldersNode,
 }
 
 void CVirtualContainerMgr::CreateItemMappings(CXMLNode* pNode, 
-                                              CContentDatabase* pIns,
+                                              CSQLQuery* pIns,
                                               std::string p_sDevice, 
                                               unsigned int p_nParentId,
 																							bool p_bCreateRef,
@@ -608,36 +613,36 @@ void CVirtualContainerMgr::CreateItemMappings(CXMLNode* pNode,
 			
 		if(p_bCreateRef) {
 			sSql << "select OBJECT_ID from OBJECTS where " <<
-				"DETAIL_ID = " << pDb->GetResult()->GetValue("DETAIL_ID") << " and " <<
+				"DETAIL_ID = " << pDb->GetResult()->asString("DETAIL_ID") << " and " <<
 				"DEVICE = '" << p_sDevice << "' and " <<
-				"TYPE = " << pDb->GetResult()->GetValue("TYPE") << " and " <<
-				"PATH = '" << SQLEscape(pDb->GetResult()->GetValue("PATH")) << "' and " <<
-				"TITLE = '" << SQLEscape(pDb->GetResult()->GetValue("TITLE")) << "' and " <<
-				"FILE_NAME = '" << SQLEscape(pDb->GetResult()->GetValue("FILE_NAME")) << "' and " <<
+				"TYPE = " << pDb->GetResult()->asString("TYPE") << " and " <<
+				"PATH = '" << SQLEscape(pDb->GetResult()->asString("PATH")) << "' and " <<
+				"TITLE = '" << SQLEscape(pDb->GetResult()->asString("TITLE")) << "' and " <<
+				"FILE_NAME = '" << SQLEscape(pDb->GetResult()->asString("FILE_NAME")) << "' and " <<
 				"REF_ID is NULL";
 			
-			pIns->Select(sSql.str());
-			if(!pIns->Eof())
-				nRefId = pIns->GetResult()->GetValueAsUInt("OBJECT_ID");
+			pIns->select(sSql.str());
+			if(!pIns->eof())
+				nRefId = pIns->result()->asUInt("OBJECT_ID");
 			sSql.str("");
 		}
 			
     sSql << "insert into OBJECTS (OBJECT_ID, DETAIL_ID, DEVICE, TYPE, PATH, TITLE, FILE_NAME, REF_ID)" <<
       "values " <<
       "( " << nId << 
-      ", " << pDb->GetResult()->GetValue("DETAIL_ID") << 
+      ", " << pDb->GetResult()->asString("DETAIL_ID") << 
       ", '" << p_sDevice << "'" <<
-      ", " << pDb->GetResult()->GetValue("TYPE") << 
-      ", '" << SQLEscape(pDb->GetResult()->GetValue("PATH")) << "'" <<
-      ", '" << SQLEscape(pDb->GetResult()->GetValue("TITLE")) << "'" <<
-      ", '" << SQLEscape(pDb->GetResult()->GetValue("FILE_NAME")) << "'";
+      ", " << pDb->GetResult()->asString("TYPE") << 
+      ", '" << SQLEscape(pDb->GetResult()->asString("PATH")) << "'" <<
+      ", '" << SQLEscape(pDb->GetResult()->asString("TITLE")) << "'" <<
+      ", '" << SQLEscape(pDb->GetResult()->asString("FILE_NAME")) << "'";
 		if(nRefId > 0)
 			sSql << ", " << nRefId << ");";
 		else
 			sSql << ", NULL);";
 			
 			
-    pIns->Execute(sSql.str());
+    pIns->exec(sSql.str());
     
     sSql.str(""); 
     sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID, DEVICE) values " <<
@@ -645,7 +650,7 @@ void CVirtualContainerMgr::CreateItemMappings(CXMLNode* pNode,
       ", "  << p_nParentId << 
       ", '" << p_sDevice << "');";
     
-    pIns->Execute(sSql.str());   
+    pIns->exec(sSql.str());   
     
     
     pDb->Next();
@@ -655,7 +660,7 @@ void CVirtualContainerMgr::CreateItemMappings(CXMLNode* pNode,
 }
 
 void CVirtualContainerMgr::CreateFolderMappings(CXMLNode* pNode, 
-                                                CContentDatabase* pIns,
+                                                CSQLQuery* pIns,
                                                 std::string p_sDevice, 
                                                 unsigned int p_nParentId, 
 																								bool p_bCreateRef,
@@ -702,7 +707,7 @@ void CVirtualContainerMgr::CreateFolderMappings(CXMLNode* pNode,
                                                   
   pDb->Select(sSql.str());
   while(!pDb->Eof()) {
-    CreateSingleVFolderFolder(pNode, pIns, p_sDevice, atoi(pDb->GetResult()->GetValue("PARENT_ID").c_str()), p_nParentId, p_bCreateRef);
+    CreateSingleVFolderFolder(pNode, pIns, p_sDevice, atoi(pDb->GetResult()->asString("PARENT_ID").c_str()), p_nParentId, p_bCreateRef);
     pDb->Next();
   }
 
@@ -711,7 +716,7 @@ void CVirtualContainerMgr::CreateFolderMappings(CXMLNode* pNode,
 }
 
 void CVirtualContainerMgr::CreateSingleVFolderFolder(CXMLNode* pNode,
-                                                     CContentDatabase* pIns,
+                                                     CSQLQuery* pIns,
                                                      std::string p_sDevice,
                                                      unsigned int p_nObjectId,
                                                      unsigned int p_nParentId,
@@ -744,12 +749,12 @@ void CVirtualContainerMgr::CreateSingleVFolderFolder(CXMLNode* pNode,
             "( " << nId << 
             ", " << nObjType << 
             ", 'virtual' " <<
-            ", '" <<  SQLEscape(pDb->GetResult()->GetValue("TITLE")) << "'" <<
-            ", '" <<  SQLEscape(pDb->GetResult()->GetValue("TITLE")) << "'" <<
+            ", '" <<  SQLEscape(pDb->GetResult()->asString("TITLE")) << "'" <<
+            ", '" <<  SQLEscape(pDb->GetResult()->asString("TITLE")) << "'" <<
             ", '" << p_sDevice << "')";
   
   //cout << sSql.str() << endl; fflush(stdout);
-    pIns->Execute(sSql.str());
+    pIns->exec(sSql.str());
     sSql.str("");
   
     sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID, DEVICE) values " <<
@@ -758,7 +763,7 @@ void CVirtualContainerMgr::CreateSingleVFolderFolder(CXMLNode* pNode,
       ", '" << p_sDevice << "');";
   
   //cout << sSql.str() << endl; fflush(stdout);
-    pIns->Insert(sSql.str());  
+    pIns->insert(sSql.str());  
   
     stringstream sFilter;
     sFilter << "m.PARENT_ID = " << p_nObjectId;
@@ -771,7 +776,7 @@ void CVirtualContainerMgr::CreateSingleVFolderFolder(CXMLNode* pNode,
 }
 
 void CVirtualContainerMgr::MapSharedDirsTo(CXMLNode* pNode,
-                                           CContentDatabase* pIns,
+                                           CSQLQuery* pIns,
                                            std::string p_sDevice,
                                            unsigned int p_nParentId,
                                            unsigned int p_nSharedParendId)
@@ -795,33 +800,33 @@ void CVirtualContainerMgr::MapSharedDirsTo(CXMLNode* pNode,
   //pIns->BeginTransaction();
   while(!pSel->Eof()) {
     
-    nObjId = pSel->GetResult()->GetValueAsUInt("OBJECT_ID");
+    nObjId = pSel->GetResult()->asUInt("OBJECT_ID");
     
     // copy objects on full extend
     if(bFullExtend) {
       sSql << "select * from OBJECTS where OBJECT_ID = " << nObjId << " and DEVICE is NULL";     
-      pIns->Select(sSql.str());      
+      pIns->select(sSql.str());      
       sSql.str("");
       
-      if(!pIns->Eof()) {
+      if(!pIns->eof()) {
         nObjId = GetId();
-        nSharedObjId = pIns->GetResult()->GetValueAsUInt("OBJECT_ID");
+        nSharedObjId = pIns->result()->asUInt("OBJECT_ID");
         
         sSql <<
           "insert into OBJECTS " <<
           "  (OBJECT_ID, DETAIL_ID, TYPE, DEVICE, PATH, FILE_NAME, TITLE, MD5) " <<
           "values (" <<
           nObjId << ", " <<
-          pIns->GetResult()->GetValue("DETAIL_ID") << ", " <<
-          pIns->GetResult()->GetValue("TYPE") << ", " <<
+          pIns->result()->asString("DETAIL_ID") << ", " <<
+          pIns->result()->asString("TYPE") << ", " <<
           "'" << p_sDevice << "', " <<
-          "'" << SQLEscape(pIns->GetResult()->GetValue("PATH")) << "', " <<
-          "'" << SQLEscape(pIns->GetResult()->GetValue("FILE_NAME")) << "', " <<
-          "'" << SQLEscape(pIns->GetResult()->GetValue("TITLE")) << "', " <<
-          "'" << SQLEscape(pIns->GetResult()->GetValue("MD5")) << "' " <<          
+          "'" << SQLEscape(pIns->result()->asString("PATH")) << "', " <<
+          "'" << SQLEscape(pIns->result()->asString("FILE_NAME")) << "', " <<
+          "'" << SQLEscape(pIns->result()->asString("TITLE")) << "', " <<
+          "'" << SQLEscape(pIns->result()->asString("MD5")) << "' " <<          
           ");";
         
-        pIns->Execute(sSql.str());
+        pIns->exec(sSql.str());
         sSql.str("");
       }
     }    
@@ -830,7 +835,7 @@ void CVirtualContainerMgr::MapSharedDirsTo(CXMLNode* pNode,
       "( "  << nObjId << 
       ", "  << p_nParentId << 
       ", '" << p_sDevice << "');";
-    pIns->Execute(sSql.str());
+    pIns->exec(sSql.str());
     
     // recursively add child objects on full extend
     if(bFullExtend) {
@@ -845,37 +850,50 @@ void CVirtualContainerMgr::MapSharedDirsTo(CXMLNode* pNode,
   delete pSel;
 }
 
-bool CVirtualContainerMgr::IsVirtualContainer(unsigned int p_nContainerId, std::string p_sDevice)
+bool CVirtualContainerMgr::isVirtualContainer(unsigned int p_nContainerId, std::string p_sDevice, CSQLQuery* qry)
 {
   bool bResult = false;
   
   if(p_nContainerId == 0)
     return bResult;
-  
-	CContentDatabase* pDb = new CContentDatabase();
+
+	bool tmpQry = false;
+	if(!qry) {
+		qry = CDatabase::query();
+		tmpQry = true;
+	}
+	
 	stringstream sSql;
 	sSql << "select count(*) as VALUE from OBJECTS where OBJECT_ID = " << p_nContainerId << " and DEVICE = '" << p_sDevice << "';";
 		
-	pDb->Select(sSql.str());
-	bResult = (pDb->GetResult()->GetValue("VALUE").compare("0") != 0);
+	qry->select(sSql.str());
+	bResult = (qry->result()->asString("VALUE").compare("0") != 0);
     
-	delete pDb;
+	if(tmpQry) {
+		delete qry;
+	}
 	
 	return bResult;
 }
 
 
-bool CVirtualContainerMgr::HasVirtualChildren(unsigned int p_nParentId, std::string p_sDevice)
+bool CVirtualContainerMgr::hasVirtualChildren(unsigned int p_nParentId, std::string p_sDevice, CSQLQuery* qry)
 {
-  bool bResult = false;
-	CContentDatabase* pDb = new CContentDatabase();
+  bool bResult = false;	
+	bool tmpQry = false;
+	if(!qry) {
+		qry = CDatabase::query();
+		tmpQry = true;
+	}
+	
 	stringstream sSql;
-	sSql << "select count(*) as VALUE from MAP_OBJECTS where PARENT_ID = " << p_nParentId << " and DEVICE = '" << p_sDevice << "';";
+	sSql << "select count(*) as VALUE from MAP_OBJECTS where PARENT_ID = " << p_nParentId << " and DEVICE = '" << p_sDevice << "';";	
+	qry->select(sSql.str());
+	bResult = (qry->result()->asString("VALUE").compare("0") != 0);
 	
-	pDb->Select(sSql.str());
-	bResult = (pDb->GetResult()->GetValue("VALUE").compare("0") != 0);
-	
-	delete pDb;
+	if(tmpQry) {
+		delete qry;
+	}
 	
 	return bResult;  
 }
@@ -890,7 +908,7 @@ int CVirtualContainerMgr::GetChildCount(unsigned int p_nParentId, std::string p_
           "  PARENT_ID = " << p_nParentId << " and device = '" << p_sDevice << "' ";
   
   pDb->Select(sSql.str());
-  nResult = atoi(pDb->GetResult()->GetValue("COUNT").c_str());
+  nResult = atoi(pDb->GetResult()->asString("COUNT").c_str());
   
   delete pDb;
   return nResult;

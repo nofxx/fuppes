@@ -48,7 +48,7 @@ CExternalCmdWrapper::~CExternalCmdWrapper()
 	delete m_process;
 }
 
-bool CExternalCmdWrapper::Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile)
+bool CExternalCmdWrapper::TranscodeFile(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile)
 {    
   string sTmpFileName = CSharedConfig::Shared()->CreateTempFileName() + "." + pFileSettings->Extension();
 	*p_psOutFile = sTmpFileName;

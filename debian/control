@@ -25,6 +25,27 @@ Description: FUPPES UPnP server: development files
 
 
 
+Package: fuppes-core-plugin-presentation
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: FUPPES UPnP server plugin: basic webinterface
+ <insert long description, indented with spaces>
+
+
+
+Package: fuppes-database-plugin-sqlite3
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: FUPPES UPnP server plugin: sqlite3 db-backend
+ <insert long description, indented with spaces>
+
+Package: fuppes-database-plugin-mysql
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: FUPPES UPnP server plugin: mysql db-backend
+ <insert long description, indented with spaces>
+
+
 
 Package: fuppes-metadata-plugin-dlna
 Architecture: any
@@ -80,26 +101,26 @@ Description: FUPPES UPnP server plugin: ffmpeg video transcoder
 
 
  
-Package: fuppes-decoder-plugin-vorbis
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: FUPPES UPnP server plugin: ogg/vorbis audio decoder
- <insert long description, indented with spaces>
+#Package: fuppes-decoder-plugin-vorbis
+#Architecture: any
+#Depends: ${shlibs:Depends}, ${misc:Depends}
+#Description: FUPPES UPnP server plugin: ogg/vorbis audio decoder
+# <insert long description, indented with spaces>
 
-Package: fuppes-decoder-plugin-flac
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: FUPPES UPnP server plugin: F.L.A.C. audio decoder
- <insert long description, indented with spaces>
-
-
+#Package: fuppes-decoder-plugin-flac
+#Architecture: any
+#Depends: ${shlibs:Depends}, ${misc:Depends}
+#Description: FUPPES UPnP server plugin: F.L.A.C. audio decoder
+# <insert long description, indented with spaces>
 
 
-Package: fuppes-encoder-plugin-twolame
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: FUPPES UPnP server plugin: twolame audio encoder
- <insert long description, indented with spaces>
+
+
+#Package: fuppes-encoder-plugin-twolame
+#Architecture: any
+#Depends: ${shlibs:Depends}, ${misc:Depends}
+#Description: FUPPES UPnP server plugin: twolame audio encoder
+# <insert long description, indented with spaces>
 
 
 

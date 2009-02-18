@@ -164,7 +164,7 @@ std::string CXMLNode::Attribute(std::string p_sName)
   while(attr) {
     string sAttr = (char*)attr->name;
     if(sAttr.compare(p_sName) == 0)    
-      return (char*)attr->children->content;    
+      return string((char*)attr->children->content);
     
     attr = attr->next;
   } 
@@ -184,13 +184,13 @@ unsigned int CXMLNode::AttributeAsUInt(std::string p_sName)
 
 std::string CXMLNode::Name()
 {
-  return (char*)m_pNode->name;
+  return string((char*)m_pNode->name);
 }
 
 std::string CXMLNode::Value()
 {
   if(m_pNode->children && m_pNode->children->content) {
-    return (char*)m_pNode->children->content;
+    return string((char*)m_pNode->children->content);
   }
   else {
     return "";

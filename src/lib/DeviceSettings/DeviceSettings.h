@@ -33,7 +33,8 @@
 #include <list>
 #include <map>
 
-#include "../ContentDirectory/ContentDatabase.h"
+#include "../ContentDirectory/UPnPObjectTypes.h"
+#include "../Common/Common.h"
 
 struct CImageSettings {
   

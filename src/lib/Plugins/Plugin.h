@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2008-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -35,7 +35,9 @@
 #include "../Common/Common.h"
 #include "../Transcoding/WrapperBase.h"
 
+
 #include "../../../include/fuppes_plugin.h"
+#include "../../../include/fuppes_db_connection_plugin.h"
 
 typedef void (*registerPlugin_t)(plugin_info* info);
 
@@ -44,6 +46,11 @@ class CMetadataPlugin;
 class CTranscoderPlugin;
 class CAudioDecoderPlugin;
 class CAudioEncoderPlugin;
+class CPresentationPlugin;
+class CDatabasePlugin;
+
+
+class CHTTPMessage;
 
 class CPluginMgr
 {
@@ -53,13 +60,16 @@ class CPluginMgr
 		// returns a reference to a single plugin instance
 		static CDlnaPlugin*						dlnaPlugin() { return m_instance->m_dlnaPlugin; }
 		static CMetadataPlugin*				metadataPlugin(std::string pluginName);
+		static CPresentationPlugin*		presentationPlugin() { return m_instance->m_presentationPlugin; }
+		static CDatabasePlugin*				databasePlugin(const std::string pluginName);
 		
 		// returns a new instance of the plugin that must be deleted by caller
 		static CTranscoderBase*				transcoderPlugin(std::string pluginName);
 		static CAudioDecoderPlugin*		audioDecoderPlugin(std::string pluginName);
 		static CAudioEncoderPlugin*		audioEncoderPlugin(std::string pluginName);
-			
+
 	private:
+		CPluginMgr();
 		static CPluginMgr* m_instance;
 		fuppesThreadMutex	 m_mutex;
 		
@@ -75,7 +85,11 @@ class CPluginMgr
 		std::map<std::string, CAudioEncoderPlugin*> m_audioEncoderPlugins;
 		std::map<std::string, CAudioEncoderPlugin*>::iterator m_audioEncoderPluginsIter;
 		
-		CDlnaPlugin*	m_dlnaPlugin;
+		CDlnaPlugin*					m_dlnaPlugin;		
+		CPresentationPlugin*	m_presentationPlugin;
+		
+		std::map<std::string, CDatabasePlugin*> m_databasePlugins;
+		std::map<std::string, CDatabasePlugin*>::iterator m_databasePluginsIter;
 };
 
 // typedef void Log(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* p_szFormat, ...);
@@ -118,6 +132,7 @@ class CDlnaPlugin: public CPlugin
 
 typedef int		(*metadataFileOpen_t)(plugin_info* plugin, const char* fileName);
 typedef int		(*metadataRead_t)(plugin_info* plugin, metadata_t* audio);
+typedef int		(*metadataReadImage_t)(plugin_info* plugin, char** mimeType, unsigned char** buffer, size_t* size);
 typedef void	(*metadataFileClose_t)(plugin_info* plugin);
 
 class CMetadataPlugin: public CPlugin
@@ -130,11 +145,13 @@ class CMetadataPlugin: public CPlugin
 	
 		bool openFile(std::string fileName);
 		bool readData(metadata_t* metadata);
+		bool readImage(char** mimeType, unsigned char** buffer, size_t* size);
 		void closeFile();
 	
 	private:
 		metadataFileOpen_t				m_fileOpen;
 		metadataRead_t						m_readData;
+		metadataReadImage_t				m_readImage;
 		metadataFileClose_t				m_fileClose;
 };
 
@@ -149,12 +166,19 @@ typedef int		(*transcoderTranscodeVideo_t)(plugin_info* plugin,
                                       int audioSamplerate,
                                       const char* ffmpegParams);
 
-typedef int		(*transcoderTranscodeImage_t)(plugin_info* plugin,
+typedef int		(*transcoderTranscodeImageFile_t)(plugin_info* plugin,
                                       const char* inputFile,
                                       const char* outputFile,
                                       int width, int height,
 																			int less,	int greater);
 
+typedef int	 (*transcoderTranscodeImageMem_t)(plugin_info* plugin,
+	                                const unsigned char** inBuffer,
+																	size_t inSize,
+		                              unsigned char** outBuffer,
+																	size_t* outSize,
+																	int width, int height,
+																	int less,	int greater);
 
 class CTranscoderPlugin: public CPlugin, CTranscoderBase
 {
@@ -175,12 +199,18 @@ class CTranscoderPlugin: public CPlugin, CTranscoderBase
         return true;
       }
 
-		bool Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile);
-    bool Threaded() { return true; }
+		bool TranscodeMem(CFileSettings* pFileSettings, 
+															const unsigned char** inBuffer, 
+															size_t inSize, 
+															unsigned char** outBuffer, 
+															size_t* outSize);
+		bool TranscodeFile(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile);
+		bool Threaded() { return true; }
 			
 		private:
-			transcoderTranscodeVideo_t	m_transcodeVideo;
-			transcoderTranscodeImage_t	m_transcodeImage;
+			transcoderTranscodeVideo_t			m_transcodeVideo;
+			transcoderTranscodeImageFile_t	m_transcodeImageFile;
+			transcoderTranscodeImageMem_t		m_transcodeImageMem;
       std::string             m_audioCodec;
       std::string             m_videoCodec;
 };
@@ -244,9 +274,46 @@ class CAudioEncoderPlugin: public CPlugin
 			CPlugin(handle, info) {}
 		CAudioEncoderPlugin(CAudioEncoderPlugin* plugin);
 	
-	// from CPlugin
-	bool 	initPlugin();	
+		// from CPlugin
+		bool 	initPlugin();	
 	
+};
+
+
+
+typedef int (*presentationHandleRequest_t)(plugin_info* plugin, 
+																					 const char* url, arg_list_t* get, arg_list_t* post,
+																					 int* error, char** mime_type, char** result, int* length);
+class CPresentationPlugin: public CPlugin
+{
+	public:
+		CPresentationPlugin(fuppesLibHandle handle, plugin_info* info);
+		
+		// from CPlugin
+		bool 	initPlugin();
+		
+		bool	handleRequest(CHTTPMessage* pRequest, CHTTPMessage* pResponse);		
+
+		static int ctrlAction(const char* action, arg_list_t* args, arg_list_t* result);
+		
+	private:
+		presentationHandleRequest_t	 m_handleRequest;
+
+};
+
+
+typedef CDatabaseConnection* (*createConnection_t)(plugin_info* plugin);
+class CDatabasePlugin: public CPlugin
+{
+	public:
+		CDatabasePlugin(fuppesLibHandle handle, plugin_info* info);
+		
+		// from CPlugin
+		bool 	initPlugin();
+		
+		CDatabaseConnection*	createConnection();		
+	private:
+		createConnection_t  m_createConnection;	
 };
 
 

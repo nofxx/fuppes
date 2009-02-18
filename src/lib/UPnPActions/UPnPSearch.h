@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            UPnPSearch.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -33,24 +34,18 @@
 
 class CUPnPSearch: public CUPnPBrowseSearchBase
 {
-  public:
-	  CUPnPSearch(std::string p_sMessage);
-		~CUPnPSearch();
-		
-		bool 					prepareSQL();
-		std::string		SQLselect() { return m_SQLselect; }
-		std::string		SQLtotalMatches() { return m_SQLtotalMatches; }
-	  unsigned int	GetContainerIdAsUInt();
-  
-  
-    std::string      m_sContainerID;
-    std::string      m_sSearchCriteria; 
-  
-  private:
-    std::string     m_sParentIds;
+	friend class CUPnPActionFactory;
 	
-		std::string			m_SQLselect;
-		std::string			m_SQLtotalMatches;
+  public:
+	  CUPnPSearch(std::string message);
+				
+		std::string		getQuery(bool count = false);
+		  
+  private:
+    std::string   m_sParentIds;
+    std::string   m_sSearchCriteria;
+		
+		bool 					prepareSQL();		
 };
 
 #endif // _UPNPSEARCH_H

@@ -83,5 +83,5 @@ void CMessageBase::SetRemoteEndPoint(sockaddr_in p_EndPoint)
 std::string CMessageBase::GetRemoteIPAddress() 
 { 
 	string ip = inet_ntoa(m_RemoteEp.sin_addr);
-	return ip.c_str();
+	return ip;
 }

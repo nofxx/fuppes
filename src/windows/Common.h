@@ -23,5 +23,5 @@
 
 #include <string>
 
-const char* GetAppFullName();
-const char* GetAppShortName();
+std::string GetAppFullName();
+std::string GetAppShortName();

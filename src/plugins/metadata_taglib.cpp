@@ -1,3 +1,4 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            metadata_taglib.cpp
  *
@@ -159,17 +160,46 @@ void taglib_check_image(plugin_info* info, metadata_t* metadata)
 		return;
 	}
 	
-	cout << "mime/type: " << picFrame->mimeType().toCString() << endl;
+	//cout << "mime/type: " << picFrame->mimeType().toCString() << endl;
   
 	metadata->has_image = 1;
 	set_value(&metadata->image_mime_type, picFrame->mimeType().toCString());
 
 	delete mpegFile;
+}
+
+int taglib_read_image(plugin_info* info, char** mimeType, unsigned char** buffer, size_t* size)
+{
+	*size = 0;
+	TagLib::MPEG::File* mpegFile = new TagLib::MPEG::File(((TagLib::FileRef*)info->user_data)->file()->name());
+	if(mpegFile->isValid() == false || mpegFile->ID3v2Tag() == NULL) {
+		delete mpegFile;
+		return -1;
+	}
+
+	TagLib::ID3v2::Tag *tag = mpegFile->ID3v2Tag();
+  const TagLib::ID3v2::FrameList frameList = tag->frameList("APIC");
+	if(frameList.isEmpty()) {
+		delete mpegFile;
+		return -1;
+	}
 	
-  /*  wxString sMimeType(ConvA2W(ApicFrame->mimeType().toCString()));
-    const TagLib::ByteVector pic = ApicFrame->picture();
-    wxMemoryInputStream vMstream(pic.data(), pic.size());
-    return img.LoadFile(vMstream,sMimeType);*/	
+	TagLib::ID3v2::AttachedPictureFrame* picFrame;
+	picFrame = dynamic_cast<TagLib::ID3v2::AttachedPictureFrame*>(frameList.front());
+  if(picFrame == NULL) {
+		delete mpegFile;
+		return -1;
+	}
+
+	set_value(mimeType, picFrame->mimeType().toCString());
+	
+	const TagLib::ByteVector pic = picFrame->picture();
+	*buffer = (unsigned char*)realloc(*buffer, pic.size());
+  memcpy(*buffer, pic.data(), pic.size());
+	*size = pic.size();
+	
+	delete mpegFile;
+	return 0;
   /*
     TagLib::ID3v2::Tag *tag = pMpegfile->ID3v2Tag();
     const TagLib::ID3v2::FrameList & ApicFrameList = tag->frameList("APIC");
@@ -229,6 +259,11 @@ int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
 	metadata->bits_per_sample = 0;
 
 	return 0;
+}
+
+int fuppes_metadata_read_image(plugin_info* plugin, char** mimeType, unsigned char** buffer, size_t* size)
+{
+	return taglib_read_image(plugin, mimeType, buffer, size);
 }
 
 void fuppes_metadata_file_close(plugin_info* plugin)

@@ -1,3 +1,4 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            VirtualContainerMgr.h
  *
@@ -31,7 +32,9 @@
 
 #include "../Common/Common.h"
 #include "../Common/XMLParser.h"
-#include "../UPnPActions/UPnPBrowse.h"
+//#include "../UPnPActions/UPnPBrowse.h"
+//#include "ContentDatabase.h"
+#include "DatabaseConnection.h"
 
 class CObjectDetails {
   public:
@@ -48,14 +51,14 @@ class CVirtualContainerMgr
 	  static CVirtualContainerMgr* Shared();
     ~CVirtualContainerMgr();
 				
-    bool IsVirtualContainer(unsigned int p_nContainerId, std::string p_sDevice);    
-    bool HasVirtualChildren(unsigned int p_nParentId, std::string p_sDevice);
+    static bool isVirtualContainer(unsigned int p_nContainerId, std::string p_sDevice, CSQLQuery* qry = NULL);
+    static bool hasVirtualChildren(unsigned int p_nParentId, std::string p_sDevice, CSQLQuery* qry = NULL);
 	  int  GetChildCount(unsigned int p_nParentId, std::string p_sDevice);
   
     void RebuildContainerList();
     bool IsRebuilding();
   
-    void CreateChildItems(CXMLNode* pParentNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef, std::string p_sFilter = "");
+    void CreateChildItems(CXMLNode* pParentNode, CSQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef, std::string p_sFilter = "");
   
 	private:
 	  CVirtualContainerMgr();
@@ -72,13 +75,13 @@ class CVirtualContainerMgr
 		unsigned short m_nIdCounter;
 		#endif
 		
-    void CreateSingleVFolder(CXMLNode* pFolderNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef);
-    void CreateSingleVFolderFolder(CXMLNode* pNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nObjectId, unsigned int p_nParentId, bool p_bCreateRef);
-    void CreateVFoldersFromProperty(CXMLNode* pFoldersNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef, std::string p_sFilter = "");
-    void CreateVFoldersSplit(CXMLNode* pFoldersNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef, std::string p_sFilter = "");
-    void CreateItemMappings(CXMLNode* pNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, bool p_bCreateRef, std::string p_sFilter = "");
-    void CreateFolderMappings(CXMLNode* pNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, bool p_bCreateRef, std::string p_sFilter = "");
-    void MapSharedDirsTo(CXMLNode* pNode, CContentDatabase* pIns, std::string p_sDevice, unsigned int p_nParentId, unsigned int p_nSharedParendId = 0);
+    void CreateSingleVFolder(CXMLNode* pFolderNode, CSQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef);
+    void CreateSingleVFolderFolder(CXMLNode* pNode, CSQLQuery* pIns, std::string p_sDevice, unsigned int p_nObjectId, unsigned int p_nParentId, bool p_bCreateRef);
+    void CreateVFoldersFromProperty(CXMLNode* pFoldersNode, CSQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef, std::string p_sFilter = "");
+    void CreateVFoldersSplit(CXMLNode* pFoldersNode, CSQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef, std::string p_sFilter = "");
+    void CreateItemMappings(CXMLNode* pNode, CSQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, bool p_bCreateRef, std::string p_sFilter = "");
+    void CreateFolderMappings(CXMLNode* pNode, CSQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, bool p_bCreateRef, std::string p_sFilter = "");
+    void MapSharedDirsTo(CXMLNode* pNode, CSQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, unsigned int p_nSharedParendId = 0);
   
 		unsigned int GetId() { m_nIdCounter--; return m_nIdCounter; }		
 };

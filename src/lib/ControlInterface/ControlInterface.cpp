@@ -1,10 +1,10 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
- *            UPnPAction.cpp
- *
+ *            ControlInterface.cpp
+ * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2008-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -23,33 +23,37 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "UPnPAction.h"
-//#include "UPnPActionFactory.h"
+#include "ControlInterface.h"
 
-CUPnPBrowseSearchBase::CUPnPBrowseSearchBase(UPNP_DEVICE_TYPE p_nTargetDeviceType, int p_nActionType, std::string p_sContent)
-  :CUPnPAction(p_nTargetDeviceType, p_nActionType, p_sContent)
+#include <iostream>
+#include <sstream>
+using namespace std;
+
+#include "../SharedConfig.h"
+
+int	CControlInterface::action(std::string action, stringList* args, stringList* result)
 {
-}
-
-bool CUPnPBrowseSearchBase::IncludeProperty(std::string p_sProperty)
-{
-  if(m_sFilter.compare("*") == 0) {
-    return true;
-  }
-
-  if(m_sFilter.find(p_sProperty) != std::string::npos) {
-    return true;
-  }
- 
-  return false;
-}
-
-std::string CUPnPBrowseSearchBase::getSortOrder()
-{
-	if(m_isSupportedSort) {
-		return m_sortCriteriaSQL;
+	CFuppes* fuppes = CSharedConfig::Shared()->GetFuppesInstance(0);
+	
+	if(action.compare("get_version") == 0) {		
+		(*result)["version"] = CSharedConfig::Shared()->GetAppVersion();
 	}
+	else if(action.compare("get_friendly_name") == 0) {		
+		(*result)["friendly_name"] = CSharedConfig::Shared()->FriendlyName();
+	}
+	else if(action.compare("get_data_dir") == 0) {		
+		(*result)["data_dir"] = CSharedConfig::Shared()->dataDir();
+	}
+	else if(action.compare("get_hostname") == 0) {		
+		(*result)["hostname"] = CSharedConfig::Shared()->GetHostname();
+	}
+	else if(action.compare("get_ip_address") == 0) {
+		(*result)["ip_address"] = CSharedConfig::Shared()->GetIPv4Address();
+	}
+	
 	else {
-		return " o.TITLE asc ";
+		return 1;
 	}
+	
+	return 0;
 }

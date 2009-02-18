@@ -26,14 +26,14 @@
 
 using namespace std;
 
-const char* GetAppFullName()
+std::string GetAppFullName()
 {
   string sResult = string("FUPPES - Free UPnP Entertainment Service ") + fuppes_get_version();
-  return sResult.c_str();
+  return sResult;
 }
 
-const char* GetAppShortName()
+std::string GetAppShortName()
 {
   string sResult =  string("FUPPES ") + fuppes_get_version();
-  return sResult.c_str();
+  return sResult;
 }

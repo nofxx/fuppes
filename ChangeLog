@@ -2,7 +2,8 @@ Version ...
 
   * exiv2 plugin from Ben Rees
   * intitial support for fam (using inotify)
-
+	* moved database connection into plugins (sqlite3 and mysql)
+	* initial album art support
 
   * moved metadata extraction into plugins
 	* fixed DLNA string for audio and image files

@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            UPnPAction.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -92,7 +93,7 @@ class CUPnPAction
 	  void DeviceSettings(CDeviceSettings* pSettings) { m_pDeviceSettings = pSettings; }
 
     std::string   objectId() { return m_sObjectId; }
-    unsigned int GetObjectIDAsInt() { return HexToInt(m_sObjectId); }
+    unsigned int GetObjectIDAsUInt() { return HexToInt(m_sObjectId); }
 
   private:
     UPNP_DEVICE_TYPE m_nTargetDeviceType;
@@ -110,6 +111,8 @@ class CUPnPBrowseSearchBase: public CUPnPAction
     CUPnPBrowseSearchBase(UPNP_DEVICE_TYPE p_nTargetDeviceType, int p_nActionType, std::string p_sContent);
     
   public:
+		virtual std::string getQuery(bool count = false) = 0;
+		
     bool						IncludeProperty(std::string p_sProperty);
 		std::string			getSortOrder();
   
@@ -120,6 +123,10 @@ class CUPnPBrowseSearchBase: public CUPnPAction
     std::string     m_sortCriteria;
 		std::string			m_sortCriteriaSQL;
 		bool						m_isSupportedSort;
+		
+	protected:
+		std::string			m_query;
+		std::string			m_queryCount;
 };
 
 

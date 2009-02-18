@@ -103,7 +103,7 @@ std::string GenerateUUID(std::string fileName)
 	// read uuid from file
 	if(!fileName.empty()) {
 		if(readFromFile(fileName, &result)) {
-			return result.c_str();
+			return result;
 		}
 	}		 
 	
@@ -161,5 +161,5 @@ std::string GenerateUUID(std::string fileName)
 		writeToFile(fileName, result);
 	}
 	
-  return result.c_str();
+  return result;
 }

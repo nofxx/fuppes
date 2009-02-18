@@ -39,7 +39,13 @@ class CExternalCmdWrapper: public CTranscoderBase
 		CExternalCmdWrapper();
     virtual ~CExternalCmdWrapper();
     
-    bool Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile);
+		
+		bool TranscodeMem(CFileSettings* pFileSettings, 
+															const unsigned char** inBuffer, 
+															size_t inSize, 
+															unsigned char** outBuffer, 
+															size_t* outSize) { return false; }
+    bool TranscodeFile(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile);
     bool Threaded() { return true; }
 	
 	private:

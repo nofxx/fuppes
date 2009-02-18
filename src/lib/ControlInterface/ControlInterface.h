@@ -1,7 +1,7 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
- *            fuppes_plugin.h
- *
+ *            ControlInterface.h
+ * 
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
@@ -23,21 +23,27 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifdef __cplusplus
-extern "C" {
+#ifndef _CONTROLTERFACE_H
+#define _CONTROLTERFACE_H
+
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
 #endif
 
-#ifndef _FUPPES_PLUGIN_H
-#define _FUPPES_PLUGIN_H
-	
-#include <string.h>
-#include <stdlib.h>
-#include "fuppes_plugin_types.h"
+#include <string>
+#include <map>
 
-#include <stdio.h>
+typedef std::multimap<std::string, std::string>	argList;
+typedef std::multimap<std::string, std::string>::iterator	argListIter;
 
-#endif //_FUPPES_PLUGIN_H
+typedef std::map<std::string, std::string>	stringList;
+typedef std::map<std::string, std::string>::iterator	stringListIter;
 
-#ifdef __cplusplus
-}
-#endif
+class CControlInterface
+{
+	public:
+		int	action(std::string action, stringList* args, stringList* result);
+		//int	action(std::string action, stringList* values);
+};
+
+#endif // _CONTROLTERFACE_H

@@ -1,3 +1,4 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            FileDetails.h
  *
@@ -29,8 +30,9 @@
 #include "../../config.h"
 #endif
 
-#include "../Plugins/Plugin.h"
-#include "ContentDatabase.h"
+#include "../../../include/fuppes_plugin_types.h"
+#include "../Common/Common.h"
+#include "UPnPObjectTypes.h"
 #include <string>
 
 struct FileType_t

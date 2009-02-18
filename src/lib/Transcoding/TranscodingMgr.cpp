@@ -411,7 +411,7 @@ CTranscoderBase* CTranscodingMgr::CreateTranscoder(TRANSCODER_TYPE p_nTranscoder
     pResult = CPluginMgr::transcoderPlugin("ffmpeg");
   }  
   else if(p_nTranscoderType == TTYP_IMAGE_MAGICK) {
-    pResult = CPluginMgr::transcoderPlugin("Magick++");
+    pResult = CPluginMgr::transcoderPlugin("magickWand");
   }  
 	else if(p_nTranscoderType == TTYP_EXTERNAL_CMD) {
 		pResult = new CExternalCmdWrapper();

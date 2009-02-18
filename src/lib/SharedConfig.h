@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            SharedConfig.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -128,6 +129,9 @@ class CSharedConfig
     bool RemoveAllowedIP(unsigned int p_nIndex);  
   
   
+		// album art
+		static bool isAlbumArtFile(const std::string fileName);
+		
     unsigned int GetFuppesInstanceCount();
     CFuppes* GetFuppesInstance(unsigned int p_nIndex);
     void AddFuppesInstance(CFuppes* pFuppes);

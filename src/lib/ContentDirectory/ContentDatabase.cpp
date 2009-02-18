@@ -1,3 +1,4 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            ContentDatabase.cpp
  *
@@ -34,6 +35,7 @@
 #include "../Common/Common.h"
 #include "iTunesImporter.h"
 #include "PlaylistParser.h"
+#include "../Plugins/Plugin.h"
 
 #include <sstream>
 #include <string>
@@ -45,8 +47,8 @@
 #include <dirent.h>
 #endif
 #include <sys/types.h>
-#include <sys/stat.h> 
- 
+#include <sys/stat.h>
+
 using namespace std;
 
 static bool g_bIsRebuilding;
@@ -55,39 +57,6 @@ static bool g_bAddNew;
 static bool g_bRemoveMissing;
 
 unsigned int g_nObjId = 0;
-
-std::string CSelectResult::GetValue(std::string p_sFieldName)
-{
-  return m_FieldValues[p_sFieldName];
-}
-
-bool CSelectResult::IsNull(std::string p_sFieldName)
-{
-  std::string sValue = GetValue(p_sFieldName);
-  if((sValue.length() == 0) || (sValue.compare("NULL") == 0))
-    return true;
-  else
-    return false;
-}
-
-unsigned int CSelectResult::GetValueAsUInt(std::string p_sFieldName)
-{
-  unsigned int nResult = 0;
-  if(!IsNull(p_sFieldName)) {
-    nResult = strtoul(GetValue(p_sFieldName).c_str(), NULL, 0);
-  }
-  return nResult;
-}
-
-int CSelectResult::asInt(std::string fieldName)
-{
-	int result = 0;
-  if(!IsNull(fieldName)) {
-    result = atoi(GetValue(fieldName).c_str());
-  }
-  return result;
-}
-
 
 CContentDatabase* CContentDatabase::m_Instance = 0;
 
@@ -101,9 +70,7 @@ CContentDatabase* CContentDatabase::Shared()
 
 CContentDatabase::CContentDatabase(bool p_bShared)
 { 
-	m_pDbHandle 			= NULL;
-	m_nRowsReturned 	= 0;  
-  m_RebuildThread 	= (fuppesThread)NULL;	
+	m_RebuildThread 	= (fuppesThread)NULL;	
   m_bShared       	= p_bShared;	
   m_bInTransaction 	= false;
   m_nLockCount 			= -1;
@@ -123,7 +90,7 @@ CContentDatabase::CContentDatabase(bool p_bShared)
   if(!m_bShared) {
     if(!Open())
       cout << "FAILED OPENING DB FILE" << endl;
-  }  
+  }
 }
  
 CContentDatabase::~CContentDatabase()
@@ -138,13 +105,12 @@ CContentDatabase::~CContentDatabase()
 		m_RebuildThread = (fuppesThread)NULL;
 	}
 
-  ClearResult();  
   Close();
 }
 
 std::string CContentDatabase::GetLibVersion()
 {
-  return sqlite3_libversion();
+  return ""; //sqlite3_libversion();
 }
 
 bool CContentDatabase::Init(bool* p_bIsNewDB)
@@ -157,9 +123,9 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
   *p_bIsNewDB = bIsNewDb;  
   
   Open();
-  
-  if(bIsNewDb) {
 	
+  if(bIsNewDb) {
+
     if(!Execute("CREATE TABLE OBJECTS ( "
 				"  ID INTEGER PRIMARY KEY AUTOINCREMENT, "
 				"  OBJECT_ID INTEGER NOT NULL, "
@@ -171,7 +137,8 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 				"  TITLE TEXT DEFAULT NULL, "
 				"  MD5 TEXT DEFAULT NULL, "
 				"  MIME_TYPE TEXT DEFAULT NULL, "
-				"  REF_ID INTEGER DEFAULT NULL "
+				"  REF_ID INTEGER DEFAULT NULL, "
+				"  HIDDEN INTEGER DEFAULT 0 "
 				//"  UPDATE_ID INTEGER DEFAULT 0"
 				");"))   
 			return false;
@@ -193,7 +160,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
         "  A_CODEC TEXT, "
         "  V_CODEC TEXT, "
 				"  ALBUM_ART_ID INTEGER, "
-				"  ALBUM_ART_MIME_TYPE TEXT, "
+				"  ALBUM_ART_EXT TEXT, "
         "  SIZE INTEGER DEFAULT 0, "
 				"  DLNA_PROFILE TEXT DEFAULT NULL,"
 				"  DLNA_MIME_TYPE TEXT DEFAULT NULL"
@@ -201,14 +168,19 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 			return false;
     
     if(!Execute("CREATE TABLE MAP_OBJECTS ( "
-        "  ID INTEGER PRIMARY KEY AUTOINCREMENT, "
         "  OBJECT_ID INTEGER NOT NULL, "
         "  PARENT_ID INTEGER NOT NULL, "
         "  DEVICE TEXT "
         ");"))
-      return false;               
-    
+      return false;
 
+		/*if(!Execute("CREATE TABLE MAP_OBJECT_DETAILS ( "
+        "  OBJECT_ID INTEGER NOT NULL, "
+        "  DETAIL_ID INTEGER NOT NULL, "
+        "  DEVICE TEXT "
+        ");"))
+      return false;		*/
+		
     if(!Execute("CREATE INDEX IDX_OBJECTS_OBJECT_ID ON OBJECTS(OBJECT_ID);"))
       return false;
     
@@ -223,22 +195,25 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 
     if(!Execute("CREATE INDEX IDX_OBJECT_DETAILS_ID ON OBJECT_DETAILS(ID);"))
       return false;
+		
+    /*if(!Execute("CREATE INDEX IDX_MAP_OBJECT_DETAILS_OBJECT_ID ON MAP_OBJECT_DETAILS(OBJECT_ID);"))
+      return false;
+    
+    if(!Execute("CREATE INDEX IDX_MAP_OBJECT_DETAILS_DETAILS_ID ON MAP_OBJECT_DETAILS(DETAIL_ID);"))
+      return false;*/
   }
-	
-  Execute("pragma temp_store = MEMORY");
-  Execute("pragma synchronous = OFF;");  
-  
-	
+
+#ifdef OLD_DB
 	// setup file alteration monitor
 	if(m_pFileAlterationMonitor->isActive()) {
 		
 		Select("select PATH from OBJECTS where TYPE = 1 and DEVICE is NULL");
 		while(!Eof()) {
-			m_pFileAlterationMonitor->addWatch(GetResult()->GetValue("PATH"));
+			m_pFileAlterationMonitor->addWatch(GetResult()->asString("PATH"));
 			Next();
 		}
 	}
-	
+#endif
   return true;
 }
 
@@ -264,29 +239,23 @@ void CContentDatabase::Unlock()
     CContentDatabase::Shared()->Unlock();
 }
 
-void CContentDatabase::ClearResult()
-{
-  // clear old results
-  for(m_ResultListIterator = m_ResultList.begin(); m_ResultListIterator != m_ResultList.end();)
-  {
-    if(m_ResultList.empty())
-      break;
-    
-    CSelectResult* pResult = *m_ResultListIterator;
-    std::list<CSelectResult*>::iterator tmpIt = m_ResultListIterator;          
-    ++tmpIt;
-    m_ResultList.erase(m_ResultListIterator);
-    m_ResultListIterator = tmpIt;
-    delete pResult;
-  } 
-  
-  m_ResultList.clear();
-  m_nRowsReturned = 0;
-}
 
 bool CContentDatabase::Open()
 {  
-  if(!m_bShared) {	
+	CConnectionParams params;
+	params.type = "sqlite3";
+	params.filename = m_sDbFileName;
+	
+	/*params.type = "mysql";
+	params.hostname = "localhost";
+	params.username = "fuppes";
+	params.password = "fuppes";
+	params.dbname = "fuppes";*/
+	
+	if(!CDatabase::init(params))
+		return false;
+	
+  /*if(!m_bShared) {	
 		m_pDbHandle = CContentDatabase::Shared()->m_pDbHandle;		
 		return (m_pDbHandle != NULL);
 	}	
@@ -302,11 +271,14 @@ bool CContentDatabase::Open()
   }
   //JM: Tell sqlite3 to retry queries for up to 1 second if the database is locked.
   sqlite3_busy_timeout(m_pDbHandle, 1000);
-	
-  Select("select max(OBJECT_ID) as VALUE from OBJECTS where DEVICE is NULL");
-  if(!Eof()) {  
-    g_nObjId = GetResult()->GetValueAsUInt("VALUE");
+	*/
+
+	CSQLQuery* qry = CDatabase::query();
+	qry->select("select max(OBJECT_ID) as VALUE from OBJECTS where DEVICE is NULL");
+  if(!qry->eof()) {  
+    g_nObjId = qry->result()->asUInt("VALUE");
   }
+	delete qry;
   
 	return true;
 }
@@ -314,171 +286,69 @@ bool CContentDatabase::Open()
 void CContentDatabase::Close()
 {
   if(m_bShared) {
-    sqlite3_close(m_pDbHandle);
-    m_pDbHandle = NULL;
+		CDatabase::close();
 	}
 }
 
-void CContentDatabase::BeginTransaction()
-{
-  if(m_bInTransaction) {
-    return;
-  }
-  
-  Lock();  
-  char* szErr = 0;
-  
-  if(sqlite3_exec(m_pDbHandle, "BEGIN TRANSACTION;", NULL, NULL, &szErr) != SQLITE_OK) {
-    fprintf(stderr, "CContentDatabase::BeginTransaction() :: SQL error: %s\n", szErr);
-  }
-  else {
-    m_bInTransaction = true;
-  }
 
-  Unlock();
-}
-
-void CContentDatabase::Commit()
+void CContentDatabase::ClearResult()
 {
-  if(!m_bInTransaction) {
-    return;
-  }
+  // clear old results
+  for(m_ResultListIterator = m_ResultList.begin(); m_ResultListIterator != m_ResultList.end();)
+  {
+    if(m_ResultList.empty())
+      break;
+    
+    CSQLResult* pResult = *m_ResultListIterator;
+    std::list<CSQLResult*>::iterator tmpIt = m_ResultListIterator;          
+    ++tmpIt;
+    m_ResultList.erase(m_ResultListIterator);
+    m_ResultListIterator = tmpIt;
+    delete pResult;
+  } 
   
-  Lock();
-  char* szErr = 0;  
-  
-  if(sqlite3_exec(m_pDbHandle, "COMMIT;", NULL, NULL, &szErr) != SQLITE_OK) {
-    fprintf(stderr, "CContentDatabase::Commit() :: SQL error: %s\n", szErr);
-  }
-  else {
-    m_bInTransaction = false;
-  }
-  
-  Unlock();  
+  m_ResultList.clear();
+  m_nRowsReturned = 0;
 }
 
 unsigned int CContentDatabase::Insert(std::string p_sStatement)
-{  
-  bool bTransaction = false;
-  
-  if(!m_bInTransaction) {
-    bTransaction = true;
-    BeginTransaction();
-  }
-
-  Lock();
-  
-  char* szErr  = NULL;
-  bool  bRetry = true;
-  int   nResult;
-    
-  while(bRetry) {  
-    
-    nResult = sqlite3_exec(m_pDbHandle, p_sStatement.c_str(), NULL, NULL, &szErr);  
-    switch(nResult) {
-      case SQLITE_BUSY:
-        bRetry = true;
-        fuppesSleep(50);
-        break;
-      
-      case SQLITE_OK:
-        bRetry  = false;
-        nResult = sqlite3_last_insert_rowid(m_pDbHandle);
-        break;
-      
-      default:
-        bRetry = false;
-        CSharedLog::Log(L_NORM, __FILE__, __LINE__, "CContentDatabase::Insert - insert :: SQL error: %s\nStatement: %s", szErr, p_sStatement.c_str());
-        sqlite3_free(szErr);
-        nResult = 0;
-        break;
-    }
-    
-  }
-   
-  Unlock();
-  
-  if(bTransaction) {
-    Commit();
-  }
-  
-  return nResult;  
+{
+	CSQLQuery* qry = CDatabase::query();
+	fuppes_off_t result = qry->insert(p_sStatement);
+	delete qry;
+	return result;
 }
 
 bool CContentDatabase::Execute(std::string p_sStatement)
 {
-  Lock();
-  //Open();
-	bool bResult = false;
-  char* szErr  = NULL;
-	
-  int nStat = sqlite3_exec(m_pDbHandle, p_sStatement.c_str(), NULL, NULL, &szErr);  
-  if(nStat != SQLITE_OK) {
-    fprintf(stderr, "CContentDatabase::Execute :: SQL error: %s, statement: \n", szErr, p_sStatement.c_str());  
-    sqlite3_free(szErr);  
-    bResult = false;
-  }
-  else {
-    bResult = true;
-  }
-	
-	//Close();
-	Unlock();
-	return bResult;
+	CSQLQuery* qry = CDatabase::query();
+	bool result = qry->exec(p_sStatement);
+	delete qry;
+	return result;
 }
 
 bool CContentDatabase::Select(std::string p_sStatement)
 {  
-  Lock();
-  //Open();  
   ClearResult();    
-  bool bResult = true;
-  
-  char* szErr = NULL;
-  char** szResult;
-  int nRows = 0;
-  int nCols = 0;
-  
-  int nResult = SQLITE_OK;  
-  int nTry = 0;
-  
-  CSharedLog::Log(L_DBG, __FILE__, __LINE__, "SELECT %s", p_sStatement.c_str());
-  
-  do {
-    nResult = sqlite3_get_table(m_pDbHandle, p_sStatement.c_str(), &szResult, &nRows, &nCols, &szErr);   
-    if(nTry > 0) {      
-      //CSharedLog::Shared()->Log(L_EXTENDED_WARN, "SQLITE_BUSY", __FILE__, __LINE__);
-      fuppesSleep(100);
-    }
-    nTry++;
-  }while(nResult == SQLITE_BUSY);
-    
-  if(nResult != SQLITE_OK) {    
-    CSharedLog::Log(L_DBG, __FILE__, __LINE__, "SQL error: %s, Statement: %s\n", szErr, p_sStatement.c_str());
-    sqlite3_free(szErr);
-    bResult = false;
-  }
-  else {
 
-   CSelectResult* pResult;
-       
-    for(int i = 1; i < nRows + 1; i++) {
-      pResult = new CSelectResult();
-            
-      for(int j = 0; j < nCols; j++) {        
-        pResult->m_FieldValues[szResult[j]] =  szResult[(i * nCols) + j] ? szResult[(i * nCols) + j] : "NULL";
-      }
-      
-      m_ResultList.push_back(pResult);
-      m_nRowsReturned++;
-    }
-    m_ResultListIterator = m_ResultList.begin();       
-       
-    sqlite3_free_table(szResult);
-  }
-	Unlock();
+  CSQLResult* pResult;
+  CSQLQuery* qry = CDatabase::query();     
 	
-  return bResult;
+	
+	if(!qry->select(p_sStatement)) {
+		delete qry;
+		return false;
+	}
+	
+	while(!qry->eof()) {	
+    pResult = qry->result()->clone();      
+    m_ResultList.push_back(pResult);
+		qry->next();
+	}
+	m_ResultListIterator = m_ResultList.begin();       
+  
+	delete qry;
+  return true;
 }
 
 bool CContentDatabase::Eof()
@@ -486,7 +356,7 @@ bool CContentDatabase::Eof()
   return (m_ResultListIterator == m_ResultList.end());
 }
     
-CSelectResult* CContentDatabase::GetResult()
+CSQLResult* CContentDatabase::GetResult()
 {
   return *m_ResultListIterator;
 }
@@ -500,15 +370,17 @@ void CContentDatabase::Next()
 
 
 
+
 fuppesThreadCallback BuildLoop(void *arg);
 void DbScanDir(std::string p_sDirectory, long long int p_nParentId);
 void BuildPlaylists();
-void ParsePlaylist(CSelectResult* pResult);
-void ParseM3UPlaylist(CSelectResult* pResult);
-void ParsePLSPlaylist(CSelectResult* pResult);
+void ParsePlaylist(CSQLResult* pResult);
+void ParseM3UPlaylist(CSQLResult* pResult);
+void ParsePLSPlaylist(CSQLResult* pResult);
 
+std::string findAlbumArtFile(std::string dir);
 
-unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::string p_sFileName);
+unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::string p_sFileName, bool hidden = false);
 
 unsigned int GetObjectIDFromFileName(CContentDatabase* pDb, std::string p_sFileName);
 
@@ -556,12 +428,13 @@ void CContentDatabase::UpdateDB()
   g_bAddNew = true;
   g_bRemoveMissing = true;  
     
-  Select("select max(OBJECT_ID) as VALUE from OBJECTS where DEVICE is NULL");
-  if(!Eof()) {  
-    g_nObjId = GetResult()->GetValueAsUInt("VALUE");
+	CSQLQuery* qry = CDatabase::query();
+	qry->select("select max(OBJECT_ID) as VALUE from OBJECTS where DEVICE is NULL");
+  if(!qry->eof()) {  
+    g_nObjId = qry->result()->asUInt("VALUE");
   }
-  ClearResult();
-  
+	delete qry;
+
   BuildDB();
 }
 
@@ -576,13 +449,14 @@ void CContentDatabase::AddNew()
   g_bFullRebuild = false;
   g_bAddNew = true;
   g_bRemoveMissing = false;  
-  
-  Select("select max(OBJECT_ID) as VALUE from OBJECTS where DEVICE is NULL");
-  if(!Eof()) {  
-    g_nObjId = GetResult()->GetValueAsUInt("VALUE");
-  } 
-  ClearResult();
-  
+
+	CSQLQuery* qry = CDatabase::query();
+	qry->select("select max(OBJECT_ID) as VALUE from OBJECTS where DEVICE is NULL");
+  if(!qry->eof()) {  
+    g_nObjId = qry->result()->asUInt("VALUE");
+  }
+	delete qry;
+	
   BuildDB();
 }
 
@@ -614,11 +488,11 @@ unsigned int CContentDatabase::GetObjId()
 
 void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_nParentId)
 {
-  // append trailing slash if neccessary
-  if(p_sDirectory.substr(p_sDirectory.length()-1).compare(upnpPathDelim) != 0) {
-    p_sDirectory += upnpPathDelim;
-  }    
-     
+	p_sDirectory = appendTrailingSlash(p_sDirectory);
+
+	if(!DirectoryExists(p_sDirectory))
+		return;
+	
   #ifdef WIN32
   char szTemp[MAX_PATH];
   strcpy(szTemp, p_sDirectory.c_str());
@@ -684,17 +558,38 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
           }
           
           if(nObjId == 0) {
-            nObjId = pDb->GetObjId();          
-            pDb->BeginTransaction();          
-                
-            sSql << "insert into objects ( " <<
+
+#ifdef OLD_DB
+//            pDb->BeginTransaction();          
+#endif
+						
+            nObjId = pDb->GetObjId();
+						OBJECT_TYPE folderType = CONTAINER_STORAGE_FOLDER;
+	
+						// check for album art
+						string albumArt = findAlbumArtFile(sTmp);
+						if(albumArt.length() > 0) {
+							
+							unsigned int artId = GetObjectIDFromFileName(pDb, albumArt);
+#warning device compatibility!?
+							folderType = CONTAINER_ALBUM_MUSIC_ALBUM;
+							if(artId == 0) {
+								InsertFile(pDb, nObjId, albumArt, true);
+							}
+							else {
+#warning todo hide
+							}
+						}
+	
+						// insert folder
+            sSql << "insert into OBJECTS ( " <<
               "  OBJECT_ID, TYPE, " <<
-              "  PATH, FILE_NAME, TITLE) " <<
+              "  PATH, TITLE) " <<
               "values ( " << 
                  nObjId << ", " <<  
-                 CONTAINER_STORAGE_FOLDER << 
+                 folderType << 
                  ", '" << SQLEscape(sTmp) << "', '" <<
-                 sTmpFileName << "', '" <<
+                 //sTmpFileName << "', '" <<
                  sTmpFileName <<
               "');";
 
@@ -705,7 +600,9 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
                     "values (" << nObjId << ", " << p_nParentId << ")";          
             pDb->Insert(sSql.str());
             
-            pDb->Commit();
+#ifdef OLD_DB
+//            pDb->Commit();
+#endif
             
             pDb->fileAlterationMonitor()->addWatch(sTmp);
           }
@@ -715,7 +612,10 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
         }
         else if(IsFile(sTmp) && CFileDetails::Shared()->IsSupportedFileExtension(sExt))
         {
-          InsertFile(pDb, p_nParentId, sTmp);
+					unsigned int objId = GetObjectIDFromFileName(pDb, sTmp);
+					if(objId == 0) {
+	          InsertFile(pDb, p_nParentId, sTmp);
+					}
         }         
        
       }
@@ -724,6 +624,139 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
     closedir(pDir);
   } /* if opendir */
   #endif         
+}
+
+std::string findAlbumArtFile(std::string dir)
+{
+  string file;
+	dir = appendTrailingSlash(dir);
+	string result;
+
+	#ifdef WIN32
+	WIN32_FIND_DATA data;
+  HANDLE hFile = FindFirstFile(string(dir + "*").c_str(), &data);
+  if(NULL == hFile)
+    return "";
+
+  while(FindNextFile(hFile, &data)) {		
+    if(((string(".").compare(data.cFileName) != 0) && 
+      (string("..").compare(data.cFileName) != 0))) {        
+      
+			file = data.cFileName;
+  #else
+      
+  DIR*    pDir;
+  dirent* pDirEnt;
+  
+  if((pDir = opendir(dir.c_str())) != NULL) { 
+    while((pDirEnt = readdir(pDir)) != NULL) {
+      if(((string(".").compare(pDirEnt->d_name) != 0) && 
+         (string("..").compare(pDirEnt->d_name) != 0))) {
+
+        file = pDirEnt->d_name;
+  #endif
+					 
+				if(CSharedConfig::isAlbumArtFile(file)) {
+					result = dir + file;
+					break;
+				}
+				
+			} // if
+				
+		} // while  FindNext | readdir
+			
+  #ifndef WIN32
+    closedir(pDir);
+  } /* if opendir */
+  #endif 
+	
+	return result;
+}
+
+unsigned int findAlbumArt(std::string dir, std::string* ext, CSQLQuery* qry)
+{
+	string file = findAlbumArtFile(dir);
+	if(file.length() == 0) {
+		return 0;
+	}
+	
+	string path = ExtractFilePath(file);
+	file = file.substr(path.length(), file.length());
+
+	qry->select("select * from OBJECTS "
+							"where PATH = '" + SQLEscape(path) + "' and "
+							"FILE_NAME = '" + SQLEscape(file) + "' and "
+							"DEVICE is NULL");
+	if(qry->eof()) {
+		return 0;
+	}
+
+	*ext = ExtractFileExt(file);
+	return qry->result()->asUInt("OBJECT_ID");
+}
+
+/**
+ * if "file" is set only selected "file" is updated else 
+ * all audio files in the "path" will be set to "artId, ext" using "qry"
+ */
+
+void setAlbumArtImage(std::string path, std::string file, unsigned int artId, std::string ext, CSQLQuery* qry)
+{	
+	stringstream sql;
+	sql << "select * from OBJECTS " <<
+		"where PATH = '" + SQLEscape(path) + "' ";
+	if(file.empty()) {
+		sql << " and TYPE in (" <<
+			ITEM_AUDIO_ITEM << ", " << ITEM_AUDIO_ITEM_MUSIC_TRACK << ")";  
+	}
+	else {
+		sql << " and FILE_NAME = '" << SQLEscape(file) + "' ";
+	}
+	sql <<  " and DEVICE is NULL";
+
+	//cout << sql.str() << endl;
+	
+	unsigned int detailId;
+	bool updateDetails;
+	qry->select(sql.str());
+	while(!qry->eof()) {
+
+		sql.str("");
+		sql.clear();
+		
+		detailId = 0;
+		updateDetails = false;
+		if(!qry->result()->isNull("DETAIL_ID")) {
+			detailId = qry->result()->asUInt("DETAIL_ID");
+			updateDetails = true;
+		}		
+	
+		if(updateDetails) {
+			sql << "update OBJECT_DETAILS set " <<
+				"ALBUM_ART_ID = " << artId <<	", " <<
+				"ALBUM_ART_EXT = '" << SQLEscape(ext) << "' " <<
+				"where ID = " << detailId;
+			qry->exec(sql.str());
+			cout << sql.str() << endl;
+		}
+		else {
+			sql << "insert into OBJECT_DETAILS " <<
+				"(ALBUM_ART_ID, ALBUM_ART_EXT) " <<
+				"values " <<
+				"(" << artId << ", " <<
+				"'" << SQLEscape(ext) << "')";
+			detailId = qry->insert(sql.str());
+			cout << sql.str() << endl;
+			
+			sql.str("");
+			sql << "update OBJECTS set " <<
+				"DETAIL_ID = " << detailId << " " <<
+				"where OBJECT_ID = " << qry->result()->asString("OBJECT_ID");
+			qry->exec(sql.str());
+		}
+		
+		qry->next();
+	}
 }
 
 unsigned int InsertAudioFile(CContentDatabase* pDb, unsigned int objectId, std::string p_sFileName, std::string* p_sTitle)
@@ -751,7 +784,7 @@ unsigned int InsertAudioFile(CContentDatabase* pDb, unsigned int objectId, std::
 	  "insert into OBJECT_DETAILS " <<
 		"(A_ARTIST, A_ALBUM, A_TRACK_NO, A_GENRE, AV_DURATION, DATE, " <<
     "A_CHANNELS, AV_BITRATE, A_SAMPLERATE, " <<
-		"ALBUM_ART_ID, ALBUM_ART_MIME_TYPE, SIZE, DLNA_PROFILE) " <<
+		"ALBUM_ART_ID, ALBUM_ART_EXT, SIZE, DLNA_PROFILE) " <<
 		"values (" <<
 		"'" << SQLEscape(metadata.artist) << "', " <<
 		"'" << SQLEscape(metadata.album) << "', " <<
@@ -829,7 +862,7 @@ unsigned int InsertVideoFile(CContentDatabase* pDb, std::string p_sFileName)
   return pDb->Insert(sSql.str());
 } 
 
-unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::string p_sFileName)
+unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::string p_sFileName, bool hidden /* = false*/)
 {
   unsigned int nObjId = 0;
 
@@ -848,12 +881,12 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
 	
   // we insert file details first to get the detail ID
   unsigned int nDetailId = 0;
-  string sTitle;
+  string title;
   switch(nObjectType)
   {
     case ITEM_AUDIO_ITEM:
     case ITEM_AUDIO_ITEM_MUSIC_TRACK:     
-      nDetailId = InsertAudioFile(pDb, nObjId, p_sFileName, &sTitle); 
+      nDetailId = InsertAudioFile(pDb, nObjId, p_sFileName, &title); 
       break;
     case ITEM_IMAGE_ITEM:
     case ITEM_IMAGE_ITEM_PHOTO:
@@ -869,32 +902,24 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
   }  
 
   // insert object  
-  string sTmpFileName =  p_sFileName;
-  
-  // format file name
-  int nPathLen = ExtractFilePath(sTmpFileName).length();
-  sTmpFileName = sTmpFileName.substr(nPathLen, sTmpFileName.length() - nPathLen);  
-  sTmpFileName = ToUTF8(sTmpFileName);
-  sTmpFileName = SQLEscape(sTmpFileName);  
-  
-  if(!sTitle.empty()) {
-    sTitle = SQLEscape(sTitle);
-  }
-  else {
-    sTitle = sTmpFileName;
+  string path = ExtractFilePath(p_sFileName);
+	string fileName = p_sFileName.substr(path.length(), p_sFileName.length() - path.length());
+  if(title.empty()) {
+    title = ToUTF8(fileName);
   }
   
   stringstream sSql;
-  sSql << "insert into objects (" <<
+  sSql << "insert into OBJECTS (" <<
     "  OBJECT_ID, DETAIL_ID, TYPE, " <<
-    "  PATH, FILE_NAME, TITLE) values (" <<
+    "  PATH, FILE_NAME, TITLE, HIDDEN) values (" <<
        nObjId << ", " <<
        nDetailId << ", " <<   
        nObjectType << ", " <<
-       "'" << SQLEscape(p_sFileName) << "', " << 
-       "'" << sTmpFileName << "', " << 
-       "'" << sTitle << "')";
-               
+       "'" << SQLEscape(path) << "', " <<
+       "'" << SQLEscape(fileName) << "', " <<
+       "'" << SQLEscape(title) << "', " <<
+			 (hidden ? 1 : 0) << ")";
+
   pDb->Insert(sSql.str());  
   sSql.str("");
   
@@ -902,6 +927,34 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
             "values (" << nObjId << ", " << p_nParentId << ")";  
   pDb->Insert(sSql.str());
 
+	
+	CSQLQuery* qry = CDatabase::query();
+	string ext;
+
+	switch(nObjectType) {
+		
+    case ITEM_AUDIO_ITEM:
+    case ITEM_AUDIO_ITEM_MUSIC_TRACK: {
+				unsigned int artId = findAlbumArt(path, &ext, qry);
+				if(artId > 0) {
+					setAlbumArtImage(path, fileName, artId, ext, qry);
+				}
+			}
+			break;
+    case ITEM_IMAGE_ITEM:
+    case ITEM_IMAGE_ITEM_PHOTO: {
+				if(CSharedConfig::isAlbumArtFile(fileName)) {
+					//cout << "set image " << fileName << " as album art for all audio files in " << path << endl;
+					ext = ExtractFileExt(p_sFileName);
+		  		setAlbumArtImage(path, "", nObjId, ext, qry);
+				}
+			}
+      break;
+    default:
+      break;
+  }
+	
+	delete qry;
 	return nObjId;         
 }
 
@@ -918,7 +971,7 @@ unsigned int InsertURL(std::string p_sURL,
 
   stringstream sSql;
   sSql << 
-	"insert into objects (TYPE, OBJECT_ID, PATH, FILE_NAME, TITLE, MIME_TYPE) values " <<
+	"insert into OBJECTS (TYPE, OBJECT_ID, PATH, FILE_NAME, TITLE, MIME_TYPE) values " <<
   "(" << nObjectType << ", " <<
   nObjId << ", " <<
   "'" << SQLEscape(p_sURL) << "', " <<
@@ -933,8 +986,6 @@ unsigned int InsertURL(std::string p_sURL,
 
 void BuildPlaylists()
 {
-  CContentDatabase* pDb = new CContentDatabase();
-	
 	stringstream sGetPlaylists;
     sGetPlaylists << 
     "select     " << 
@@ -943,31 +994,43 @@ void BuildPlaylists()
     "  OBJECTS  " <<
     "where      " <<
     "  TYPE = " << CONTAINER_PLAYLIST_CONTAINER; 
-  
-  if(!pDb->Select(sGetPlaylists.str())) {
-	  delete pDb;
-    return;
-  }
-  
-  CSelectResult* pResult = NULL;
-  while(!pDb->Eof()) {
-    pResult = pDb->GetResult();    
-    ParsePlaylist(pResult);    
-    pDb->Next();
-  }
 
-  delete pDb;
+	CSQLQuery* qry = CDatabase::query();
+  qry->select(sGetPlaylists.str());
+  while(!qry->eof()) {
+    ParsePlaylist(qry->result());
+    qry->next();
+  }
+  delete qry;
 }
     
 unsigned int GetObjectIDFromFileName(CContentDatabase* pDb, std::string p_sFileName)
 {
   unsigned int nResult = 0;
   stringstream sSQL;
-  sSQL << "select OBJECT_ID from OBJECTS where PATH = '" << SQLEscape(p_sFileName) << "' and DEVICE is NULL";
+	
+	string path = ExtractFilePath(p_sFileName);
+	string fileName;
+	if(path.length() < p_sFileName.length()) {
+		fileName = p_sFileName.substr(path.length(), p_sFileName.length());
+	}
+	
+  sSQL << 
+		"select OBJECT_ID "
+		"from OBJECTS "
+		"where PATH = '" << SQLEscape(path) << "' ";
+	
+	if(fileName.empty())
+		sSQL << " and FILE_NAME is NULL ";
+	else
+		sSQL << " and FILE_NAME = '" + SQLEscape(fileName) + "' ";
+	
+	sSQL <<
+		"and DEVICE is NULL";
   
   pDb->Select(sSQL.str());
   if(!pDb->Eof())
-    nResult = pDb->GetResult()->GetValueAsUInt("OBJECT_ID");
+    nResult = pDb->GetResult()->asUInt("OBJECT_ID");
   
   return nResult;
 }
@@ -989,14 +1052,14 @@ bool MapPlaylistItem(unsigned int p_nPlaylistID, unsigned int p_nItemID)
 }
     
 
-void ParsePlaylist(CSelectResult* pResult)
+void ParsePlaylist(CSQLResult* pResult)
 {
   CPlaylistParser Parser;
-  if(!Parser.LoadPlaylist(pResult->GetValue("PATH"))) {
+  if(!Parser.LoadPlaylist(pResult->asString("PATH") + pResult->asString("FILE_NAME"))) {
     return;
   }
 
-  unsigned int nPlaylistID = pResult->GetValueAsUInt("OBJECT_ID");
+  unsigned int nPlaylistID = pResult->asUInt("OBJECT_ID");
   unsigned int nObjectID   = 0;  
 
 	cout << "playlist id: " << nPlaylistID << endl;
@@ -1067,13 +1130,14 @@ fuppesThreadCallback BuildLoop(void* arg)
 	#endif  
 
   CSharedLog::Print("[ContentDatabase] create database at %s", sNowtime.c_str());
-  CContentDatabase* pDb = new CContentDatabase();
+
+	CSQLQuery* qry = CDatabase::query();
   stringstream sSql;
 		
   if(g_bFullRebuild) {
-    pDb->Execute("delete from OBJECTS");
-    pDb->Execute("delete from OBJECT_DETAILS");
-    pDb->Execute("delete from MAP_OBJECTS");
+    qry->exec("delete from OBJECTS");
+    qry->exec("delete from OBJECT_DETAILS");
+    qry->exec("delete from MAP_OBJECTS");
   }
 
 	/*pDb->Execute("drop index IDX_OBJECTS_OBJECT_ID");
@@ -1084,46 +1148,47 @@ fuppesThreadCallback BuildLoop(void* arg)
 
 	if(!g_bFullRebuild && g_bRemoveMissing) {
 	
-		CSharedLog::Print("remove missing");
+		CSharedLog::Print("remove missing");		
+		//CContentDatabase* pDel = new CContentDatabase();
+		CSQLQuery* del = CDatabase::query();
 		
-		pDb->Select("select * from OBJECTS");
-		CContentDatabase* pDel = new CContentDatabase();
-			
-		while(!pDb->Eof()) {
-			
-			if(pDb->GetResult()->GetValueAsUInt("TYPE") < ITEM) {
-				if(DirectoryExists(pDb->GetResult()->GetValue("PATH"))) {
-					pDb->Next();
+		qry->select("select * from OBJECTS");
+		while(!qry->eof()) {
+			CSQLResult* result = qry->result();
+
+			if(result->asUInt("TYPE") < ITEM) {
+				if(DirectoryExists(result->asString("PATH"))) {
+					qry->next();
 					continue;
 				}
 			}
 			else {
-				if(FileExists(pDb->GetResult()->GetValue("PATH"))) {
-					pDb->Next();
+				if(FileExists(result->asString("PATH") + result->asString("FILE_NAME"))) {
+					qry->next();
 					continue;
 				}
 			}
 				
-			sSql << "delete from OBJECT_DETAILS where ID = " << pDb->GetResult()->GetValue("OBJECT_ID");
-			pDel->Execute(sSql.str());
+			sSql << "delete from OBJECT_DETAILS where ID = " << result->asString("OBJECT_ID");
+			del->exec(sSql.str());
 			sSql.str("");
 			
-			sSql << "delete from MAP_OBJECTS where OBJECT_ID = " << pDb->GetResult()->GetValue("OBJECT_ID");
-			pDel->Execute(sSql.str());
+			sSql << "delete from MAP_OBJECTS where OBJECT_ID = " << result->asString("OBJECT_ID");
+			del->exec(sSql.str());
 			sSql.str("");
 				
-			sSql << "delete from OBJECTS where OBJECT_ID = " << pDb->GetResult()->GetValue("OBJECT_ID");
-			pDel->Execute(sSql.str());
+			sSql << "delete from OBJECTS where OBJECT_ID = " << result->asString("OBJECT_ID");
+			del->exec(sSql.str());
 			sSql.str("");
 			
-			pDb->Next();
+			qry->next();
 		}
 
-		delete pDel;
+		delete del;
 		CSharedLog::Print("[DONE] remove missing");		
 	}
 		
-  pDb->Execute("vacuum");  
+  qry->exec("vacuum");
   
   int i;
   unsigned int nObjId;
@@ -1132,42 +1197,45 @@ fuppesThreadCallback BuildLoop(void* arg)
   
   CSharedLog::Print("read shared directories");
 
+	CContentDatabase* db = new CContentDatabase();
+	
   for(i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
   {
     if(DirectoryExists(CSharedConfig::Shared()->GetSharedDir(i)))
     { 	
-			pDb->fileAlterationMonitor()->addWatch(CSharedConfig::Shared()->GetSharedDir(i));
+			db->fileAlterationMonitor()->addWatch(CSharedConfig::Shared()->GetSharedDir(i));
       
       ExtractFolderFromPath(CSharedConfig::Shared()->GetSharedDir(i), &sFileName);
       bInsert = true;
       if(g_bAddNew) {
-        if((nObjId = GetObjectIDFromFileName(pDb, CSharedConfig::Shared()->GetSharedDir(i))) > 0) {
+        if((nObjId = GetObjectIDFromFileName(db, CSharedConfig::Shared()->GetSharedDir(i))) > 0) {
           bInsert = false;
         }
       }
 
       sSql.str("");
       if(bInsert) {      
-        nObjId = pDb->GetObjId();      
+        nObjId = db->GetObjId();      
       
+				sFileName = ToUTF8(sFileName);
+				
         sSql << 
-          "insert into OBJECTS (OBJECT_ID, TYPE, PATH, FILE_NAME, TITLE) values " <<
+          "insert into OBJECTS (OBJECT_ID, TYPE, PATH, TITLE) values " <<
           "(" << nObjId << 
           ", " << CONTAINER_STORAGE_FOLDER << 
           ", '" << SQLEscape(CSharedConfig::Shared()->GetSharedDir(i)) << "'" <<
-          ", '" << SQLEscape(sFileName) << "'" <<
           ", '" << SQLEscape(sFileName) << "');";
         
-        pDb->Insert(sSql.str());
+        qry->insert(sSql.str());
     
         sSql.str("");
         sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID) " <<
           "values (" << nObjId << ", 0)";
       
-        pDb->Insert(sSql.str());      
+        qry->insert(sSql.str());
       }
       
-      DbScanDir(pDb, CSharedConfig::Shared()->GetSharedDir(i), nObjId);
+      DbScanDir(db, CSharedConfig::Shared()->GetSharedDir(i), nObjId);
     }
     else {      
       CSharedLog::Log(L_EXT, __FILE__, __LINE__,
@@ -1192,7 +1260,8 @@ fuppesThreadCallback BuildLoop(void* arg)
   BuildPlaylists();
   CSharedLog::Print("[DONE] parse playlists");
     
-  delete pDb;
+  delete db;
+	delete qry;
   
   
   // import iTunes db
@@ -1262,7 +1331,7 @@ void CContentDatabase::FamEvent(CFileAlterationEvent* event)
           "insert into OBJECTS (OBJECT_ID, TYPE, PATH, FILE_NAME, TITLE) values " <<
           "(" << objId << 
           ", " << CONTAINER_STORAGE_FOLDER << 
-          ", '" << SQLEscape(appendTrailingSlash(event->fullPath())) << "'" <<
+          ", '" << SQLEscape(appendTrailingSlash(event->path())) << "'" <<
           ", '" << SQLEscape(event->file()) << "'" <<
           ", '" << SQLEscape(event->file()) << "');";        
     Insert(sSql.str());
@@ -1314,27 +1383,44 @@ void CContentDatabase::FamEvent(CFileAlterationEvent* event)
     
     // update child object's path
     sSql << "select ID, PATH from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(event->oldFullPath())) << "%' and DEVICE is NULL";
+#ifdef OLD_DB
 		Select(sSql.str());    
+#else
+		CSQLQuery* qry = CDatabase::query();
+		qry->select(sSql.str());
+#endif
 		sSql.str("");
 
     string newPath;  
     CContentDatabase db; 
+		
+#ifdef OLD_DB
 		while(!Eof()) {
-
-      newPath = StringReplace(GetResult()->GetValue("PATH"), appendTrailingSlash(event->oldFullPath()), appendTrailingSlash(event->fullPath()));
+			CSQLResult* result = GetResult();
+#else
+		while(!qry->eof()) {
+			CSQLResult* result = qry->result();
+#endif
+      newPath = StringReplace(result->asString("PATH"), appendTrailingSlash(event->oldFullPath()), appendTrailingSlash(event->fullPath()));
 
       #warning sql prepare
       sSql << 
         "update OBJECTS set " <<
         " PATH = '" << SQLEscape(newPath) << "' " <<
-        "where ID = " << GetResult()->GetValue("ID");
+        "where ID = " << result->asString("ID");
       
       //cout << sSql.str() << endl;
       db.Execute(sSql.str());
       sSql.str("");
-      
+
+#ifdef OLD_DB
       Next();
+		}
+#else
+			qry->next();
 		}   
+		delete qry;
+#endif
     
   } // directory moved/renamed  
  
@@ -1374,7 +1460,7 @@ void CContentDatabase::FamEvent(CFileAlterationEvent* event)
     
     // update object
     sSql << "update OBJECTS set " <<
-        "PATH = '" << SQLEscape(event->fullPath()) << "', " <<
+        "PATH = '" << SQLEscape(event->path()) << "', " <<
         "FILE_NAME = '" << SQLEscape(event->file()) << "', " <<
         "TITLE = '" << SQLEscape(event->file()) << "' " <<
         "where ID = " << objId;
@@ -1391,228 +1477,77 @@ void CContentDatabase::FamEvent(CFileAlterationEvent* event)
   
 }
 
-
-/*void CContentDatabase::FamEvent(FAM_EVENT_TYPE eventType,
-																std::string path,
-																std::string name,
-                                std::string oldPath,
-                                std::string oldName)
-{
-  stringstream sSql;
-	unsigned int objId;
-	unsigned int parentId;
-	
-  // new directory
-	if(eventType == FAM_DIR_NEW) {
-
-		objId = GetObjId();
-		parentId = GetObjectIDFromFileName(this, path);
-		
-    sSql << 
-          "insert into OBJECTS (OBJECT_ID, TYPE, PATH, FILE_NAME, TITLE) values " <<
-          "(" << objId << 
-          ", " << CONTAINER_STORAGE_FOLDER << 
-          ", '" << SQLEscape(appendTrailingSlash(path + name)) << "'" <<
-          ", '" << SQLEscape(name) << "'" <<
-          ", '" << SQLEscape(name) << "');";
-        
-    Insert(sSql.str());
-    
-    sSql.str("");
-    sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID) " <<
-          "values (" << objId << ", " << parentId << ")";
-      
-    Insert(sSql.str());
-		
-		//DbScanDir(this, appendTrailingSlash(path + name), nObjId);		
-	} // new directory
-  
-  
-	// directory deleted
-  else if(eventType == FAM_DIR_DEL) {
-    
-    deleteContainer(path + name);
-    
-  } // directory deleted
-  
-  
-	// directory moved/renamed
-  else if(eventType == FAM_DIR_MOVE) {
-        
-    //cout << "FAM_DIR_MOVE: " << path << " name: " << name << " old: " << oldPath << " - " << oldName << endl;    
-    
-    // update moved folder
-    objId = GetObjectIDFromFileName(this, appendTrailingSlash(oldPath + oldName));
-    sSql << 
-      "update OBJECTS set " <<
-      " PATH = '" << SQLEscape(appendTrailingSlash(path + name)) << "', "
-      " FILE_NAME = '" << SQLEscape(name) << "', " <<
-      " TITLE = '" << SQLEscape(name) << "' " <<
-      "where ID = " << objId;
-      
-    //cout << sSql.str() << endl;
-    Execute(sSql.str());
-    sSql.str("");
-        
-    parentId = GetObjectIDFromFileName(this, path);
-    
-    sSql << 
-      "update MAP_OBJECTS set " <<
-      " PARENT_ID = " << parentId << " "
-      "where OBJECT_ID = " << objId << " and DEVICE is NULL";
-      
-    //cout << sSql.str() << endl;
-    Execute(sSql.str());
-    sSql.str("");
-    
-    
-    sSql << "select ID, PATH from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(oldPath + oldName)) << "%' and DEVICE is NULL";
-		Select(sSql.str());    
-		sSql.str("");
-
-    string newPath;  
-    CContentDatabase db; 
-		while(!Eof()) {
-
-      newPath = StringReplace(GetResult()->GetValue("PATH"), appendTrailingSlash(oldPath + oldName), appendTrailingSlash(path + name));
-
-      #warning sql prepare
-      sSql << 
-        "update OBJECTS set " <<
-        " PATH = '" << SQLEscape(newPath) << "' " <<
-        "where ID = " << GetResult()->GetValue("ID");
-      
-      //cout << sSql.str() << endl;
-      db.Execute(sSql.str());
-      sSql.str("");
-      
-      Next();
-		}
-    
-    
-  } // directory moved/renamed
-  
-  
-  
-	// new file
-  else if(eventType == FAM_FILE_NEW) {
-    //cout << "FAM_FILE_NEW: " << path << " name: " << name << endl;
-        
-    parentId = GetObjectIDFromFileName(this, path);
-    InsertFile(this, parentId, path + name);    
-  } // new file
-
-	// file deleted
-  else if(eventType == FAM_FILE_DEL) {
-    //cout << "FAM_FILE_DEL: " << path << " name: " << name << endl;
-    
-    objId = GetObjectIDFromFileName(this, path + name);
-    deleteObject(objId);
-    
-  } // file deleted  
-  
-	// file moved
-  else if(eventType == FAM_FILE_MOVE) {
-    //cout << "FAM_FILE_MOVE: " << path << " name: " << name << " old: " << oldPath << " - " << oldName << endl;
-        
-    objId = GetObjectIDFromFileName(this, oldPath + oldName);
-    parentId = GetObjectIDFromFileName(this, path);
-    
-    // update mapping
-    sSql << 
-        "update MAP_OBJECTS set " <<
-        "  PARENT_ID = " << parentId << " " <<        
-        "where OBJECT_ID = " << objId << " and DEVICE is NULL";
-    Execute(sSql.str());
-    sSql.str("");
-    
-    
-    // update object
-    sSql << "update OBJECTS set " <<
-        "PATH = '" << SQLEscape(path + name) << "', " <<
-        "FILE_NAME = '" << SQLEscape(name) << "', " <<
-        "TITLE = '" << SQLEscape(name) << "' " <<
-        "where ID = " << objId;
-    //cout << sSql.str() << endl;
-    Execute(sSql.str());
-    sSql.str("");
-
-  } // file moved  
-    
-	// file modified
-  else if(eventType == FAM_FILE_MOD) {
-    cout << "FAM_FILE_MOD: " << path << " name: " << name << " todo" << endl;
-  } // file modified  
-  
-	//Unlock();
-	g_bIsRebuilding = false;
-}*/
-
 void CContentDatabase::deleteObject(unsigned int objectId)
 {
   stringstream sql;
-	CContentDatabase db;
+	CSQLQuery* qry = CDatabase::query();
 	
   // get type
-  sql << "select TYPE, PATH from OBJECTS where OBJECT_ID = " << objectId << " and DEVICE is NULL";		
-  db.Select(sql.str());
+  sql << "select TYPE, PATH from OBJECTS where OBJECT_ID = " << objectId << " and DEVICE is NULL";
+	qry->select(sql.str());
 	sql.str("");
     
   string objects;
-	if(db.Eof()) {
+	if(qry->eof()) {
+		delete qry;
 	  return;
 	}
-  
-  OBJECT_TYPE type = (OBJECT_TYPE)db.GetResult()->asUInt("TYPE");
+
+	CSQLResult* result = qry->result();
+
+  OBJECT_TYPE type = (OBJECT_TYPE)result->asUInt("TYPE");
   if(type < ITEM) { // is a container
-		fileAlterationMonitor()->removeWatch(db.GetResult()->GetValue("PATH"));
-    deleteContainer(db.GetResult()->GetValue("PATH"));    
+		fileAlterationMonitor()->removeWatch(result->asString("PATH"));
+    deleteContainer(result->asString("PATH"));    
   }
   else {  
-     cout << "contentdb: delete object : " << db.GetResult()->GetValue("PATH") << endl;
-  
-    // delete details    
+    cout << "contentdb: delete object : " << result->asString("PATH") << endl;  
+
+		// delete details    
     sql << "select DETAIL_ID from OBJECTS where OBJECT_ID = " << objectId;
-		db.Select(sql.str());
+		qry->select(sql.str());
 		sql.str("");
-		if(!db.Eof() && !db.GetResult()->IsNull("DETAIL_ID")) {      
-      sql << "delete from OBJECT_DETAILS where ID = " << db.GetResult()->GetValue("DETAIL_ID");
-      db.Execute(sql.str());
+
+		if(!qry->eof() && !qry->result()->isNull("DETAIL_ID")) {      
+      sql << "delete from OBJECT_DETAILS where ID = " << qry->result()->asString("DETAIL_ID");
+      qry->exec(sql.str());
       sql.str("");
 		}
     
     // delete mapping
     sql << "delete from MAP_OBJECTS where OBJECT_ID = " << objectId;
-    db.Execute(sql.str());
+		qry->exec(sql.str());
     sql.str("");
     
     // delete object
     sql << "delete from OBJECTS where OBJECT_ID = " << objectId;
-    db.Execute(sql.str());
+		qry->exec(sql.str());
     sql.str("");
   }
-  
+
+	delete qry;
 }
 
 void CContentDatabase::deleteContainer(std::string path)
 {
   stringstream sSql;
-
-	CContentDatabase db;
+	CSQLQuery* qry = CDatabase::query();
 	
   // delete object details
   sSql << 
     "select DETAIL_ID from OBJECTS where PATH like '" <<
     SQLEscape(appendTrailingSlash(path)) << "%' and DEVICE is NULL";
-	db.Select(sSql.str());
+
+	qry->select(sSql.str());
 	sSql.str("");
-  
+	
   string details;
-	while(!db.Eof()) {
-    if(!db.GetResult()->IsNull("DETAIL_ID")) {
-      details += db.GetResult()->GetValue("DETAIL_ID") + ", ";
+	while(!qry->eof()) {
+		
+    if(!qry->result()->isNull("DETAIL_ID")) {
+      details += qry->result()->asString("DETAIL_ID") + ", ";
     }
-    db.Next();
+    qry->next();
 	}
   
   if(details.length() > 0) {
@@ -1620,36 +1555,32 @@ void CContentDatabase::deleteContainer(std::string path)
     
     sSql << "delete from OBJECT_DETAILS where ID in (" << details << ")";
     //cout << sSql.str() << endl;
-    db.Execute(sSql.str());
+    qry->exec(sSql.str());
     sSql.str("");
   }
   
   // delete mappings
   sSql << "select OBJECT_ID from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(path)) << "%' and DEVICE is NULL";		
-	db.Select(sSql.str());
+	qry->select(sSql.str());
 	sSql.str("");
   
   string objects;
-	while(!db.Eof()) {
-    objects += db.GetResult()->GetValue("OBJECT_ID") + ", ";
-    db.Next();
+	while(!qry->eof()) {
+    objects += qry->result()->asString("OBJECT_ID") + ", ";
+    qry->next();
 	}
   
   if(objects.length() > 0) {
     objects = objects.substr(0, objects.length() -2);
-    
-    sSql << "delete from MAP_OBJECTS where OBJECT_ID in (" << objects << ")";
-    //cout << sSql.str() << endl;      
-    db.Execute(sSql.str());
-    sSql.str("");
+    qry->exec("delete from MAP_OBJECTS where OBJECT_ID in (" + objects + ")");
   }
   
 #warning todo: remove fam watches
   
   // delete objects
   sSql << "delete from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(path)) << "%'";
-  //cout << sSql.str() << endl;    
-  db.Execute(sSql.str());
+  qry->exec(sSql.str());
   sSql.str("");
-}
 
+	delete qry;
+}

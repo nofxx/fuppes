@@ -169,10 +169,12 @@ class CHTTPMessage: public CMessageBase
   	void						 SetContent(std::string p_sContent)                   { m_sContent         = p_sContent;         }
     void             SetBinContent(char* p_szBinContent, fuppes_off_t p_nBinContenLength);  
     
-    std::string  GetGENASubscriptionID() { return m_sGENASubscriptionID; }
-    void         SetGENASubscriptionID(std::string p_sSubscriptionID) { m_sGENASubscriptionID = p_sSubscriptionID; }
+    std::string				GetGENASubscriptionID() { return m_sGENASubscriptionID; }
+    void       				SetGENASubscriptionID(std::string p_sSubscriptionID) { m_sGENASubscriptionID = p_sSubscriptionID; }
   
- 
+		std::string				soapTarget() { return m_soapTarget; }
+		std::string				soapAction() { return m_soapAction; }
+		
     bool             LoadContentFromFile(std::string);
     bool             TranscodeContentFromFile(std::string p_sFileName, SAudioItem p_sTrackDetails);
     void             BreakTranscoding();  
@@ -225,7 +227,9 @@ private:
     std::string        m_sGENATimeout;  
     // Header information: Subscription-ID (GENA - Request & Response)
     std::string        m_sGENASubscriptionID;
-  
+  		
+		std::string					m_soapTarget;
+		std::string					m_soapAction;	
 	
     HTTP_TRANSFER_ENCODING m_nTransferEncoding;
   

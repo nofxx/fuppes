@@ -1,6 +1,6 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
- *            decoder_twolame.c
+ *            encoder_twolame.c
  *
  *  FUPPES - Free UPnP Entertainment Service
  *

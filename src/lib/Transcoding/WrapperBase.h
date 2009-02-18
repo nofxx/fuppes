@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            WrapperBase.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -174,7 +175,12 @@ class CTranscoderBase
   public:
 	  virtual ~CTranscoderBase() {};
     virtual bool Init(std::string p_sACodec, std::string p_sVCodec) {};
-    virtual bool Transcode(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile) = 0;
+		virtual bool TranscodeMem(CFileSettings* pFileSettings, 
+															const unsigned char** inBuffer, 
+															size_t inSize, 
+															unsigned char** outBuffer, 
+															size_t* outSize) = 0;
+    virtual bool TranscodeFile(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile) = 0;
     virtual bool Threaded() = 0;
 };
 

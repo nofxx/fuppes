@@ -82,7 +82,7 @@ CMainForm::CMainForm(HINSTANCE hInstance)
   hWnd = CreateWindowEx (
          0,                   /* Extended possibilites for variation */
          "CMainForm",         /* Classname */
-         GetAppFullName(),    /* Title Text */
+         GetAppFullName().c_str(),    /* Title Text */
          WS_OVERLAPPEDWINDOW, /* default window */
          CW_USEDEFAULT,       /* Windows decides the position */
          CW_USEDEFAULT,       /* where the window ends up on the screen */
@@ -266,7 +266,7 @@ void CMainForm::ShowTrayIcon()
   tsym.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
   tsym.uCallbackMessage = WM_TRAYICON;
   tsym.hIcon  = wincl.hIcon;
-  strcpy (tsym.szTip, GetAppShortName());
+  strcpy (tsym.szTip, GetAppShortName().c_str());
   Shell_NotifyIcon (NIM_ADD, &tsym);  
 }
 
@@ -318,7 +318,7 @@ void CMainForm::Notify(std::string p_sTitle, std::string p_sMsg)
 
 void CMainForm::Error(std::string p_sError)
 {
-  MessageBox(hWnd, p_sError.c_str(), GetAppShortName(), MB_ICONERROR | MB_OK);
+  MessageBox(hWnd, p_sError.c_str(), GetAppShortName().c_str(), MB_ICONERROR | MB_OK);
 }
 
 void CMainForm::OnWmTrayicon(WPARAM wParam, LPARAM lParam)
@@ -350,23 +350,23 @@ void CMainForm::OnTrayIconLButtonUp()
 	switch(ret)
 	{
     case ID_TRAY_POPUP_QUIT:
-      if(MessageBox(hWnd, "Shutdown FUPPES?", GetAppShortName(), MB_ICONQUESTION | MB_YESNO) == IDYES) {
+      if(MessageBox(hWnd, "Shutdown FUPPES?", GetAppShortName().c_str(), MB_ICONQUESTION | MB_YESNO) == IDYES) {
          PostMessage(hWnd, WM_DESTROY, 0, 0);
       }
       break;
     case ID_TRAY_POPUP_REBUILD_DB:
-      if(MessageBox(hWnd, "Rebuild database?", GetAppShortName(), MB_ICONQUESTION | MB_YESNO) == IDYES) {
+      if(MessageBox(hWnd, "Rebuild database?", GetAppShortName().c_str(), MB_ICONQUESTION | MB_YESNO) == IDYES) {
         fuppes_rebuild_db();
       }
       break;
     case ID_TRAY_POPUP_UPDATE_DB:
-      if(MessageBox(hWnd, "Update database?", GetAppShortName(), MB_ICONQUESTION | MB_YESNO) == IDYES) {
+      if(MessageBox(hWnd, "Update database?", GetAppShortName().c_str(), MB_ICONQUESTION | MB_YESNO) == IDYES) {
         fuppes_update_db();
       }
       break;			
 			
     case ID_TRAY_POPUP_REBUILD_VFOLDER:
-      if(MessageBox(hWnd, "Rebuild virtual containers?", GetAppShortName(), MB_ICONQUESTION | MB_YESNO) == IDYES) {
+      if(MessageBox(hWnd, "Rebuild virtual containers?", GetAppShortName().c_str(), MB_ICONQUESTION | MB_YESNO) == IDYES) {
         fuppes_rebuild_vcontainers();
       }
       break;

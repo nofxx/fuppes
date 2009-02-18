@@ -275,7 +275,7 @@ unsigned int CTranscodingCacheObject::Transcode(CDeviceSettings* pDeviceSettings
   
   if(!m_bThreaded) {
     std::string sExt = ExtractFileExt(m_sInFileName);
-    m_pTranscoder->Transcode(pDeviceSettings->FileSettings(sExt), m_sInFileName, &m_sOutFileName);
+    m_pTranscoder->TranscodeFile(pDeviceSettings->FileSettings(sExt), m_sInFileName, &m_sOutFileName);
     
     m_bIsComplete    = true;
     m_bIsTranscoding = false;
@@ -319,7 +319,7 @@ fuppesThreadCallback TranscodeThread(void *arg)
   if(pCacheObj->m_pTranscoder != NULL) {   
     
     std::string sExt = ExtractFileExt(pCacheObj->m_sInFileName);    
-    pCacheObj->m_pTranscoder->Transcode(pCacheObj->DeviceSettings()->FileSettings(sExt), pCacheObj->m_sInFileName, &pCacheObj->m_sOutFileName);    
+    pCacheObj->m_pTranscoder->TranscodeFile(pCacheObj->DeviceSettings()->FileSettings(sExt), pCacheObj->m_sInFileName, &pCacheObj->m_sOutFileName);
     
     pCacheObj->Lock();
     pCacheObj->m_bIsComplete = true;

@@ -122,7 +122,7 @@ void CHTTPParser::parseCommonValues()
 
 void CHTTPParser::ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage)
 {
-  m_pMessage = pMessage;
+  //m_pMessage = pMessage;
  
   string sContentType;
 	string sBoundary;
@@ -140,7 +140,7 @@ void CHTTPParser::ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage)
 	  return;
 	}
 	
-	string sPost = m_pMessage->GetContent();
+	string sPost = pMessage->GetContent();
 	string sPart;
 	stringstream sVars;
 
@@ -165,7 +165,7 @@ void CHTTPParser::ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage)
 		}	
 	}
 	
-  m_pMessage->SetContent(sVars.str());
+  pMessage->SetContent(sVars.str());
 }
 
 void CHTTPParser::parseGetVars()

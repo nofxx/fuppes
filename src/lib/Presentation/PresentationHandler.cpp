@@ -277,7 +277,7 @@ std::string CPresentationHandler::GetXHTMLHeader()
   
   sResult << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
   sResult << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " << endl;
-  sResult << "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">" << endl;
+  sResult << "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">" << endl;
   
   return sResult.str().c_str();
 }
@@ -391,9 +391,9 @@ std::string CPresentationHandler::GetStatusHTML()
   {
     sResult << "<tr>" << endl;
     
-    nType = (OBJECT_TYPE)atoi(pDb->GetResult()->GetValue("TYPE").c_str());
+    nType = (OBJECT_TYPE)atoi(pDb->GetResult()->asString("TYPE").c_str());
     sResult << "<td>" << CFileDetails::Shared()->GetObjectTypeAsStr(nType) << "</td>" << endl;
-    sResult << "<td>" << pDb->GetResult()->GetValue("VALUE") << "</td>" << endl;
+    sResult << "<td>" << pDb->GetResult()->asString("VALUE") << "</td>" << endl;
     pDb->Next();
     
     sResult << "</tr>" << endl;
@@ -553,9 +553,10 @@ std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)
   {
   	//cout << pRequest->GetMessage() << endl;
 	
-		CHTTPParser* pParser = new CHTTPParser();
+		/*CHTTPParser* pParser = new CHTTPParser();
 		pParser->ConvertURLEncodeContentToPlain(pRequest);
-		delete pParser;	
+		delete pParser;	*/
+		CHTTPParser::ConvertURLEncodeContentToPlain(pRequest);
 	
     // remove shared objects(s)
     stringstream sVar;

@@ -313,7 +313,7 @@ std::string CHTTPMessage::GetHeaderAsString()
 	
 	sResult << "\r\n";
   
-	return sResult.str().c_str();
+	return sResult.str();
 }
 
 std::string CHTTPMessage::GetMessageAsString()
@@ -321,7 +321,7 @@ std::string CHTTPMessage::GetMessageAsString()
   stringstream sResult;
   sResult << GetHeaderAsString();
   sResult << m_sContent;
-  return sResult.str().c_str();
+  return sResult.str();
 }
 
 fuppes_off_t CHTTPMessage::GetBinContentLength()
@@ -553,7 +553,7 @@ std::string CHTTPMessage::GetPostVar(std::string p_sPostVarName)
       sResult = sResult.substr(0, sResult.length() - 1);    
   }
   
-  return sResult.c_str();
+  return sResult;
 }
 
 std::string	CHTTPMessage::getVarAsStr(std::string key)
@@ -563,7 +563,7 @@ std::string	CHTTPMessage::getVarAsStr(std::string key)
 		return "";
 	}
 	
-	return m_getVars[key].c_str();	
+	return m_getVars[key];
 }
 
 int CHTTPMessage::getVarAsInt(std::string key)
@@ -711,6 +711,7 @@ bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
 bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName, SAudioItem p_sTrackDetails)
 { 
   #ifdef DISABLE_TRANSCODING
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "TranscodeContentFromFile :: %s - %s", p_sFileName.c_str(), "ERROR: transcoding disabled");
   return false;
   #else
   
@@ -789,12 +790,13 @@ bool CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
     SOAPACTION: "urn:schemas-upnp-org:service:ContentDirectory:1#Browse"
     CONTENT-TYPE: text/xml ; charset="utf-8"
     Content-Length: 467*/
-  
-  RegEx rxSOAP("SOAPACTION: *\"(.+)\"", PCRE_CASELESS);
-	if(rxSOAP.Search(p_sMessage.c_str()))
-	{
-    string sSOAP = rxSOAP.Match(1);
-    //cout << "[HTTPMessage] SOAPACTION " << sSOAP << endl;
+	
+  RegEx rxSOAP("SOAPACTION: *\"(.+)#(.+)\"", PCRE_CASELESS);
+	if(rxSOAP.Search(p_sMessage.c_str()))	{
+		
+		m_soapTarget = rxSOAP.Match(1);
+		m_soapAction = rxSOAP.Match(2);
+
     m_nHTTPMessageType = HTTP_MESSAGE_TYPE_POST_SOAP_ACTION;
 	}
   else

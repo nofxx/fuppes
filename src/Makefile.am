@@ -1,11 +1,15 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id: $
 
+BUILT_SOURCES =
+CLEANFILES=
+
+
 INCLUDES = \
+	-DOLD_DB\
   ${FUPPES_CFLAGS}\
   ${LIBXML_CFLAGS}\
   ${PCRE_CFLAGS}\
-  ${SQLITE3_CFLAGS}\
 	-DFUPPES_DATADIR=\"$(datadir)/fuppes\" \
 	-DFUPPES_PLUGINDIR=\"$(libdir)/fuppes\"
 
@@ -15,23 +19,40 @@ bin_PROGRAMS = fuppes
 
 fuppes_SOURCES = console_main.cpp
 fuppes_LDADD = ./libfuppes.la
+fuppes_DEPENDENCIES = ./libfuppes.la
 fuppes_LDFLAGS = \
 	$(FUPPES_LIBS)\
 	${UUID_LIBS}\
 	${LIBXML_LIBS}\
-	${PCRE_LIBS}\
-	${SQLITE3_LIBS}
+	${PCRE_LIBS}
+
+if WIN32
+
+fuppes_LDADD += \
+	fuppes.res
+
+fuppes.res: windows/fuppes.rc
+	$(WINDRES) -i windows/fuppes.rc --input-format=rc -o fuppes.res -O coff 
+
+BUILT_SOURCES += \
+	fuppes.res
+
+CLEANFILES += \
+	fuppes.res
+
+endif
+
 
 if BUILD_DAEMON
 bin_PROGRAMS += fuppesd
 fuppesd_SOURCES = daemon_main.cpp
 fuppesd_LDADD = ./libfuppes.la
+fuppesd_DEPENDENCIES = ./libfuppes.la
 fuppesd_LDFLAGS = \
 	$(FUPPES_LIBS)\
 	${UUID_LIBS}\
 	${LIBXML_LIBS}\
-	${PCRE_LIBS}\
-	${SQLITE3_LIBS}
+	${PCRE_LIBS}
 endif
 
 libfuppes_la_SOURCES = \
@@ -57,12 +78,15 @@ libfuppes_la_SOURCES = \
   lib/UPnPActions/UPnPBrowse.h\
   lib/UPnPActions/UPnPSearch.h\
 	lib/MediaServer.h\
+  lib/ContentDirectory/UPnPObjectTypes.h\
   lib/ContentDirectory/FileDetails.h\
   lib/ContentDirectory/FileDetails.cpp\
   lib/ContentDirectory/PlaylistFactory.h\
   lib/ContentDirectory/PlaylistFactory.cpp\
   lib/ContentDirectory/PlaylistParser.h\
   lib/ContentDirectory/PlaylistParser.cpp\
+  lib/ContentDirectory/DatabaseConnection.h\
+  lib/ContentDirectory/DatabaseConnection.cpp\
   lib/ContentDirectory/ContentDatabase.h\
   lib/ContentDirectory/ContentDatabase.cpp\
   lib/ContentDirectory/ContentDirectory.h\
@@ -107,6 +131,13 @@ libfuppes_la_SOURCES = \
   lib/HTTP/HTTPClient.cpp\
   lib/HTTP/HTTPRequestHandler.cpp\
   lib/HTTP/CommonFunctions.cpp\
+  lib/ControlInterface/ErrorCodes.h\
+  lib/ControlInterface/ControlInterface.cpp\
+  lib/ControlInterface/ControlInterface.h\
+  lib/ControlInterface/SoapControl.cpp\
+  lib/ControlInterface/SoapControl.h\
+  lib/ControlInterface/CmdlineInterface.cpp\
+  lib/ControlInterface/CmdlineInterface.h\
   lib/UPnPBase.cpp\
 	lib/UPnPDevice.cpp\
 	lib/UPnPService.cpp\
@@ -167,16 +198,18 @@ libfuppes_la_LDFLAGS = \
 	$(FUPPES_LIBS)\
 	${UUID_LIBS}\
 	${LIBXML_LIBS}\
-	${PCRE_LIBS}\
-	${SQLITE3_LIBS}
+	${PCRE_LIBS}
 
 
-BUILT_SOURCES = version.h
+BUILT_SOURCES += version.h
 
 version.h: Makefile
 	if test -e "../version.sh"; then \
 		../version.sh; \
 	fi
+
+CLEANFILES += \
+	version.h
 
 pixmapsdir = $(datadir)/fuppes
 dist_pixmaps_DATA = \

@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            ContentDirectory.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
-*  Copyright (C) 2005-2008 Ulrich Völkel <fuppes@ulrich-voelkel.de>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <fuppes@ulrich-voelkel.de>
  ****************************************************************************/
 
 /*
@@ -31,9 +32,9 @@
 
 #include "../UPnPService.h"
 #include "../HTTP/HTTPMessage.h"
-#include "ContentDatabase.h"
 #include "../UPnPActions/UPnPBrowse.h"
 #include "../UPnPActions/UPnPSearch.h"
+#include "DatabaseConnection.h"
 
 #include <map>
 #include <string>
@@ -90,38 +91,38 @@ class CContentDirectory: public CUPnPService
                               CUPnPBrowse*  pUPnPBrowse);
 
     void BuildDescription(xmlTextWriterPtr pWriter,
-                          CSelectResult* pSQLResult,
+                          CSQLResult* pSQLResult,
                           CUPnPBrowseSearchBase*  pUPnPBrowse,
                           std::string p_sParentId);
   
     void BuildContainerDescription(xmlTextWriterPtr pWriter,
-                                   CSelectResult* pSQLResult,
+                                   CSQLResult* pSQLResult,
                                    CUPnPBrowseSearchBase*  pUPnPBrowse,
                                    std::string p_sParentId,
                                    OBJECT_TYPE p_nContainerType);
     void BuildItemDescription(xmlTextWriterPtr pWriter,
-                              CSelectResult* pSQLResult,
+                              CSQLResult* pSQLResult,
                               CUPnPBrowseSearchBase*  pUPnPBrowse,
                               OBJECT_TYPE p_nObjectType,
                               std::string p_sParentId);      
     void BuildAudioItemDescription(xmlTextWriterPtr pWriter,
-                                   CSelectResult* pSQLResult,
+                                   CSQLResult* pSQLResult,
                                    CUPnPBrowseSearchBase*  pUPnPBrowse,
                                    std::string p_sObjectID);      
     void BuildAudioVideoBroadcastItemDescription(xmlTextWriterPtr pWriter,
-                                   CSelectResult* pSQLResult,
+                                   CSQLResult* pSQLResult,
                                    CUPnPBrowseSearchBase*  pUPnPBrowse,
                                    std::string p_sObjectID);                                    
     void BuildImageItemDescription(xmlTextWriterPtr pWriter,
-                                   CSelectResult* pSQLResult,
+                                   CSQLResult* pSQLResult,
                                    CUPnPBrowseSearchBase*  pUPnPBrowse,
                                    std::string p_sObjectID);
     void BuildVideoItemDescription(xmlTextWriterPtr pWriter,
-                                   CSelectResult* pSQLResult,
+                                   CSQLResult* pSQLResult,
                                    CUPnPBrowseSearchBase*  pUPnPBrowse,
                                    std::string p_sObjectID); 
     void BuildPlaylistItemDescription(xmlTextWriterPtr pWriter,
-                                   CSelectResult* pSQLResult,
+                                   CSQLResult* pSQLResult,
                                    CUPnPBrowseSearchBase*  pUPnPBrowse,
                                    std::string p_sObjectID);                                    
 

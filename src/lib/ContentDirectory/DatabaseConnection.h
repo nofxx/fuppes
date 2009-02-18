@@ -1,10 +1,10 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
- *            fuppes_plugin.h
+ *            DatabaseCommection.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -23,21 +23,26 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifdef __cplusplus
-extern "C" {
+#ifndef _DATABASECONNECTION_H
+#define _DATABASECONNECTION_H
+
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
 #endif
 
-#ifndef _FUPPES_PLUGIN_H
-#define _FUPPES_PLUGIN_H
-	
-#include <string.h>
-#include <stdlib.h>
-#include "fuppes_plugin_types.h"
+#include "../../../include/fuppes_db_connection_plugin.h"
 
-#include <stdio.h>
+class CDatabase
+{
+	public:		
+		static bool init(const CConnectionParams params);
+		static void close();
 
-#endif //_FUPPES_PLUGIN_H
+		static CSQLQuery* query();
+		static CDatabaseConnection* connection(bool create = false);
+		
+	private:
+		static CDatabaseConnection* m_connection;
+};
 
-#ifdef __cplusplus
-}
-#endif
+#endif // _DATABASECONNECTION_H

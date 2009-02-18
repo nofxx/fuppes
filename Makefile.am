@@ -11,7 +11,8 @@ noinst_HEADERS = \
 
 include_HEADERS = \
 	include/fuppes_plugin.h \
-	include/fuppes_plugin_types.h
+	include/fuppes_plugin_types.h \
+	include/fuppes_db_connection_plugin.h
 
 EXTRA_DIST = \
   README\

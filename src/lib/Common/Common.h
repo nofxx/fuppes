@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Common.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -48,8 +49,8 @@
 #pragma comment(lib,"Ws2_32.lib")
 #pragma comment(lib,"shlwapi.lib")
 
-#include <Winsock2.h>
-#include <Ws2tcpip.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <shlwapi.h>
 
 #else
@@ -166,6 +167,21 @@ void fuppesThreadDestroyMutex(fuppesThreadMutex* p_ThreadMutex);
 void fuppesThreadLockMutex(fuppesThreadMutex* p_ThreadMutex);
 void fuppesThreadUnlockMutex(fuppesThreadMutex* p_ThreadMutex);
 
+
+class MutexLocker
+{
+	public:
+		MutexLocker(fuppesThreadMutex* mutex) {
+			m_mutex = mutex;
+			fuppesThreadLockMutex(m_mutex);
+		}
+		~MutexLocker() {
+			fuppesThreadUnlockMutex(m_mutex);
+		}
+		
+	private:
+		fuppesThreadMutex* m_mutex;
+};
 
 
 #ifdef WIN32

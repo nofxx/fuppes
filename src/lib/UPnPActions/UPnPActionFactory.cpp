@@ -51,6 +51,11 @@ CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent, C
     if(pTmpNode->type == XML_ELEMENT_NODE)
       break;
   }
+	
+	if(!pTmpNode) {
+		xmlFreeDoc(pDoc);
+		return NULL;
+	}
 
   // get first second-level element
   for(pTmpNode = pTmpNode->children; pTmpNode; pTmpNode = pTmpNode->next) {
@@ -231,7 +236,7 @@ bool CUPnPActionFactory::parseSearchAction(CUPnPSearch* pAction)
   // Container ID
   RegEx rxContainerID("<ContainerID.*>(.+)</ContainerID>");
   if (rxContainerID.Search(pAction->GetContent().c_str()))
-    pAction->m_sContainerID = rxContainerID.Match(1);
+    pAction->m_sObjectId = rxContainerID.Match(1);
 	
 	// Search Criteria
 	RegEx rxSearchCriteria("<SearchCriteria.*>(.+)</SearchCriteria>");

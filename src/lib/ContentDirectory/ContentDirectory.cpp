@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            ContentDirectory.cpp
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -31,6 +32,8 @@
 #include "../Common/RegEx.h"
 #include "VirtualContainerMgr.h"
 #include "libdlna/dlna.h"
+
+#include "ContentDatabase.h"
 
 #include <iostream>
 #include <sstream>
@@ -164,7 +167,7 @@ void CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse, std::string
       unsigned int nNumberReturned = 0;
       unsigned int nTotalMatches   = 0;
          
-      switch(pUPnPBrowse->m_nBrowseFlag) {
+      switch(pUPnPBrowse->browseFlag()) {
         
         case UPNP_BROWSE_FLAG_METADATA:          
           BrowseMetadata(resWriter, &nTotalMatches, &nNumberReturned, pUPnPBrowse);          
@@ -239,24 +242,26 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   *p_pnNumberReturned = 1;
 
   stringstream sSql;
-  CContentDatabase* pDb = new CContentDatabase();
 
-  pUPnPBrowse->m_bVirtualContainer = CVirtualContainerMgr::Shared()->IsVirtualContainer(pUPnPBrowse->GetObjectIDAsInt(),
-                                                           pUPnPBrowse->DeviceSettings()->VirtualFolderDevice());
+	CSQLQuery* qry = CDatabase::query();
+
+  bool bVirtualContainer = CVirtualContainerMgr::isVirtualContainer(pUPnPBrowse->GetObjectIDAsUInt(),
+                                                           pUPnPBrowse->DeviceSettings()->VirtualFolderDevice(), qry);
   
   string sDevice = "DEVICE is NULL ";
-  if(pUPnPBrowse->m_bVirtualContainer)
+  if(bVirtualContainer)
     sDevice = "DEVICE = '" + pUPnPBrowse->DeviceSettings()->VirtualFolderDevice() + "' ";
                         
   // get container type
   OBJECT_TYPE nContainerType = CONTAINER_STORAGE_FOLDER;
-  if(pUPnPBrowse->GetObjectIDAsInt() > 0) {
+  if(pUPnPBrowse->GetObjectIDAsUInt() > 0) {
     
     sSql << "select TYPE from OBJECTS " <<
-      "where OBJECT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " << sDevice;
+      "where OBJECT_ID = " << pUPnPBrowse->GetObjectIDAsUInt() << " and " << sDevice;
 
-    pDb->Select(sSql.str());        
-    nContainerType = (OBJECT_TYPE)atoi(pDb->GetResult()->GetValue("TYPE").c_str());
+		qry->select(sSql.str());        
+    nContainerType = (OBJECT_TYPE)qry->result()->asInt("TYPE");
+
     //pDb->ClearResult(); 
     sSql.str("");
     sSql.clear();
@@ -267,16 +272,22 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   if(nContainerType < ITEM) {
     sSql <<
       "select count(*) as COUNT " <<
-      "from MAP_OBJECTS " <<
-      "where PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " << sDevice;
+      "from OBJECTS o, MAP_OBJECTS m " <<
+      "where " <<
+			"m.PARENT_ID = " << pUPnPBrowse->GetObjectIDAsUInt() << " and " << 
+			"o.OBJECT_ID = m.OBJECT_ID and " <<
+			"o.HIDDEN = 0 and " <<
+			"m." << sDevice << " and o." << sDevice;
     
     bNeedCount = true;
   }
 
   string sChildCount = "0";
   if(bNeedCount) {
-    pDb->Select(sSql.str());        
-    sChildCount = pDb->GetResult()->GetValue("COUNT").c_str();
+
+		qry->select(sSql.str());        
+    sChildCount = qry->result()->asString("COUNT");
+
     //pDb->ClearResult();    
     sSql.str("");
     sSql.clear();    
@@ -285,7 +296,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   string sParentId;
   
   // root folder
-  if(pUPnPBrowse->GetObjectIDAsInt() == 0)
+  if(pUPnPBrowse->GetObjectIDAsUInt() == 0)
   {                                  
     sParentId = "-1";
     
@@ -328,24 +339,25 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
       "  o.TITLE, o.PATH, o.FILE_NAME, o.TYPE, " <<
       "  d.* " <<
       "from " <<
-      "  OBJECTS o, MAP_OBJECTS m " <<
+      "  MAP_OBJECTS m, OBJECTS o " <<
       "  left join OBJECT_DETAILS d on (d.ID = o.DETAIL_ID) " <<
       "where " <<
       "  m.OBJECT_ID = o.OBJECT_ID and " <<
-      "  o.OBJECT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " <<
+      "  o.OBJECT_ID = " << pUPnPBrowse->GetObjectIDAsUInt() << " and " <<
 			"  o." << sDevice << " and " <<
       "  m." << sDevice;
 
-    pDb->Select(sSql.str());
-    sSql.str("");
+		qry->select(sSql.str());
+    CSQLResult* pRow = qry->result();
+		sSql.str("");
     sSql.clear();    
     
-    CSelectResult* pRow = pDb->GetResult();        
-    //sTitle = pRow->GetValue("FILE_NAME");
+
+    //sTitle = pRow->asString("FILE_NAME");
 
 
     char szParentId[11];
-    unsigned int nParentId = pRow->GetValueAsUInt("PARENT_ID");
+    unsigned int nParentId = pRow->asUInt("PARENT_ID");
     
     if(nParentId > 0) {
       sprintf(szParentId, "%010X", nParentId);
@@ -358,7 +370,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
     BuildDescription(pWriter, pRow, pUPnPBrowse, sParentId);
   }
   
-  delete pDb;
+	delete qry;
 }
 
 
@@ -368,33 +380,37 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
                           CUPnPBrowse*  pUPnPBrowse)
 { 
   std::stringstream sSql;
-  CContentDatabase* pDb = new CContentDatabase();
+	CSQLQuery* qry = CDatabase::query();
   //OBJECT_TYPE nContainerType = CONTAINER_STORAGE_FOLDER;
  
                             
-  pUPnPBrowse->m_bVirtualContainer = CVirtualContainerMgr::Shared()->HasVirtualChildren(pUPnPBrowse->GetObjectIDAsInt(), pUPnPBrowse->DeviceSettings()->VirtualFolderDevice());	
+  bool bVirtualContainer = CVirtualContainerMgr::hasVirtualChildren(pUPnPBrowse->GetObjectIDAsUInt(), pUPnPBrowse->DeviceSettings()->VirtualFolderDevice(), qry);
  
   string sDevice = "DEVICE is NULL ";
-  if(pUPnPBrowse->m_bVirtualContainer)
+  if(bVirtualContainer)
     sDevice = "DEVICE = '" + pUPnPBrowse->DeviceSettings()->VirtualFolderDevice() + "' ";
                             
   // get total matches
   //cout << "get total matches" << endl; fflush(stdout);
-  sSql << "select count(*) as COUNT from MAP_OBJECTS where PARENT_ID = " <<
-          pUPnPBrowse->GetObjectIDAsInt() << " and " << sDevice;                          
+  /*sSql << "select count(*) as COUNT from MAP_OBJECTS where PARENT_ID = " <<
+          pUPnPBrowse->GetObjectIDAsUInt() << " and " << sDevice; */
+	sSql <<
+      "select count(*) as COUNT " <<
+      "from OBJECTS o, MAP_OBJECTS m " <<
+      "where " <<
+			"m.PARENT_ID = " << pUPnPBrowse->GetObjectIDAsUInt() << " and " << 
+			"o.OBJECT_ID = m.OBJECT_ID and " <<
+			"o.HIDDEN = 0 and " <<
+			"m." << sDevice << " and o." << sDevice;
+    
   
-  
-  pDb->Select(sSql.str()); 
-  if(!pDb->Eof()) {
-    //cout << "COUNT: " << pDb->GetResult()->GetValue("COUNT") << endl; fflush(stdout);
-    *p_pnTotalMatches = atoi(pDb->GetResult()->GetValue("COUNT").c_str());
-  }
-  else {
-    *p_pnTotalMatches = 0;
-  }
+	*p_pnTotalMatches = 0;
 
-  //pDb->ClearResult();
-  
+  qry->select(sSql.str()); 
+  if(!qry->eof()) {
+    //cout << "COUNT: " << pDb->GetResult()->asString("COUNT") << endl; fflush(stdout);
+    *p_pnTotalMatches = qry->result()->asInt("COUNT");
+  }
   sSql.str("");
   sSql.clear();  
   //cout << "DONE get total matches " << *p_pnTotalMatches << endl; fflush(stdout);  
@@ -406,15 +422,17 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
     "  d.IV_HEIGHT, d.IV_WIDTH, d.DATE, " <<
     "  o.TITLE, d.AV_DURATION, d.A_ALBUM, d.A_ARTIST, d.A_GENRE, " <<
   	"  d.A_TRACK_NO, d.AV_BITRATE, d.A_SAMPLERATE, d.A_CHANNELS, " <<
-	  "  d.AV_DURATION, d.SIZE, d.A_CODEC, d.V_CODEC, d.DLNA_PROFILE " <<
+	  "  d.AV_DURATION, d.SIZE, d.A_CODEC, d.V_CODEC, d.DLNA_PROFILE, " <<
+		"  d.ALBUM_ART_ID, d.ALBUM_ART_EXT " <<
     "from " <<
-    "  OBJECTS o, MAP_OBJECTS m" <<
+    "  MAP_OBJECTS m, OBJECTS o " <<
     "  left join OBJECT_DETAILS d on (d.ID = o.DETAIL_ID) " <<
     "where " <<
     "  o.OBJECT_ID = m.OBJECT_ID and " <<
-    "  m.PARENT_ID = " << pUPnPBrowse->GetObjectIDAsInt() << " and " << 
+    "  m.PARENT_ID = " << pUPnPBrowse->GetObjectIDAsUInt() << " and " << 
 		"  o." << sDevice << " and " <<
-    "  m." << sDevice <<
+    "  m." << sDevice << " and " <<
+		"  o.HIDDEN = 0 " <<
     "order by " <<
 		pUPnPBrowse->m_sortCriteriaSQL;
     //"  o.TYPE, o.FILE_NAME ";
@@ -430,31 +448,29 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   }
   
   unsigned int tmpInt = *p_pnNumberReturned;
-  CSelectResult* pRow = NULL;
-                            
-  pDb->Select(sSql.str());
-
-  while(!pDb->Eof()) {
+  CSQLResult* pRow = NULL;
+                          
+  qry->select(sSql.str());
+  while(!qry->eof()) {
+		pRow = qry->result();
     
-    pRow = pDb->GetResult();    
     BuildDescription(pWriter, pRow, pUPnPBrowse, pUPnPBrowse->objectId());
-        
-    pDb->Next();
+
+		qry->next();
     tmpInt++;
   }        
   
    //pDb->ClearResult();                    
   *p_pnNumberReturned = tmpInt;
-
-  delete pDb;     
+	delete qry;
 }
 
 void CContentDirectory::BuildDescription(xmlTextWriterPtr pWriter,
-                                         CSelectResult* pSQLResult,
+                                         CSQLResult* pSQLResult,
                                          CUPnPBrowseSearchBase* pUPnPBrowse,
                                          std::string p_sParentId)
 {
-  OBJECT_TYPE nObjType = (OBJECT_TYPE)atoi(pSQLResult->GetValue("TYPE").c_str());
+  OBJECT_TYPE nObjType = (OBJECT_TYPE)pSQLResult->asInt("TYPE");
   
   // container
   if(nObjType < ITEM) {
@@ -475,7 +491,7 @@ void CContentDirectory::BuildDescription(xmlTextWriterPtr pWriter,
 
 
 void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter, 
-                                                  CSelectResult* pSQLResult, 
+                                                  CSQLResult* pSQLResult, 
                                                   CUPnPBrowseSearchBase* pUPnPBrowse, 
                                                   std::string p_sParentId,
                                                   OBJECT_TYPE p_nContainerType)
@@ -483,28 +499,40 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
   
   // get child count
   string sChildCount = "0";
-  CContentDatabase* pDb = new CContentDatabase();
-  string sSql;
-  
+  //CContentDatabase* pDb = new CContentDatabase();
+  stringstream sSql;
+	CSQLQuery* qry = CDatabase::query();
+	
   string sDevice = "DEVICE is NULL ";
-  if(CVirtualContainerMgr::Shared()->HasVirtualChildren(pSQLResult->GetValueAsUInt("OBJECT_ID"), pUPnPBrowse->DeviceSettings()->VirtualFolderDevice()))
+  if(CVirtualContainerMgr::hasVirtualChildren(pSQLResult->asUInt("OBJECT_ID"), pUPnPBrowse->DeviceSettings()->VirtualFolderDevice(), qry))
     sDevice = "DEVICE = '" + pUPnPBrowse->DeviceSettings()->VirtualFolderDevice() + "' ";                                                    
 
-  sSql = string("select count(*) as COUNT from MAP_OBJECTS ") +
-    "where PARENT_ID = " + pSQLResult->GetValue("OBJECT_ID") + " and " + sDevice;
-    
-  pDb->Select(sSql);
-  sChildCount = pDb->GetResult()->GetValue("COUNT");
-  delete pDb;
-  
+  /*sSql = string("select count(*) as COUNT from MAP_OBJECTS ") +
+    "where PARENT_ID = " + pSQLResult->asString("OBJECT_ID") + " and " + sDevice;*/
+
+	sSql <<
+      "select count(*) as COUNT " <<
+      "from OBJECTS o, MAP_OBJECTS m " <<
+      "where " <<
+			"m.PARENT_ID = " << pSQLResult->asString("OBJECT_ID") << " and " << 
+			"o.OBJECT_ID = m.OBJECT_ID and " <<
+			"o.HIDDEN = 0 and " <<
+			"m." << sDevice << " and o." << sDevice;
+
+	cout << sSql.str() << endl;	
+
+	qry->select(sSql.str());
+	if(!qry->eof())
+		sChildCount = qry->result()->asString("COUNT");
+  delete qry;
   
   // container
   xmlTextWriterStartElement(pWriter, BAD_CAST "container");   
 
     // id
     char szObjId[11];    
-    unsigned int nObjId = pSQLResult->GetValueAsUInt("OBJECT_ID");
-    sprintf(szObjId, "%010X", nObjId);    
+    unsigned int nObjId = pSQLResult->asUInt("OBJECT_ID");
+    sprintf(szObjId, "%010X", nObjId);
   
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "id", BAD_CAST szObjId); 
     // searchable
@@ -517,7 +545,7 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "childCount", BAD_CAST sChildCount.c_str());   
      
     // title
-    string sTitle = pSQLResult->GetValue("FILE_NAME");
+    string sTitle = pSQLResult->asString("TITLE");
     int nLen = pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength;
     if(nLen > 0 && pUPnPBrowse->DeviceSettings()->DisplaySettings()->bShowChildCountInTitle) {
       nLen -= (sChildCount.length() + 3); // "_(n)"
@@ -551,14 +579,14 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
       xmlTextWriterStartElement(pWriter, BAD_CAST "res");
       
       string sTmp;
-      //sTmp = "http-get:*:" + pSQLResult->GetValue("MIME_TYPE") + ":*";
+      //sTmp = "http-get:*:" + pSQLResult->asString("MIME_TYPE") + ":*";
 			#warning todo
 			sTmp = "http-get:*:todo:*";
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
       
         
       sTmp = "http://" + m_sHTTPServerURL + "/MediaServer/Playlists/" + szObjId + 
-             "." + ExtractFileExt(pSQLResult->GetValue("PATH"));    
+             "." + ExtractFileExt(pSQLResult->asString("FILE_NAME"));
       //xmlTextWriterWriteAttribute(pWriter, BAD_CAST "importUri", BAD_CAST sTmp.str().c_str());   
    
       xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.c_str());
@@ -572,7 +600,7 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
 
 
 void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter, 
-                                             CSelectResult* pSQLResult, 
+                                             CSQLResult* pSQLResult, 
                                              CUPnPBrowseSearchBase* pUPnPBrowse, 
                                              OBJECT_TYPE p_nObjectType, 
                                              std::string p_sParentId)
@@ -582,7 +610,7 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter,
 
     /* id */  
     char szObjId[11];         
-    unsigned int nObjId = pSQLResult->GetValueAsUInt("OBJECT_ID");
+    unsigned int nObjId = pSQLResult->asUInt("OBJECT_ID");
     sprintf(szObjId, "%010X", nObjId);   
     //cout << "ITEM ID: " << nObjId << endl;    
   
@@ -593,11 +621,10 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter,
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "restricted", BAD_CAST "0");    
   
     // date
-    if(pUPnPBrowse->IncludeProperty("dc:date") && !pSQLResult->IsNull("DATE"))
-    {
-      CSharedLog::Shared()->Log(L_DBG, "Writing date to stream", __FILE__, __LINE__);
+    if(pUPnPBrowse->IncludeProperty("dc:date") && !pSQLResult->isNull("DATE")) {
+      //CSharedLog::Shared()->Log(L_DBG, "Writing date to stream", __FILE__, __LINE__);
       xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "date", BAD_CAST "http://purl.org/dc/elements/1.1/");    
-      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("DATE").c_str());
+      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("DATE").c_str());
       xmlTextWriterEndElement(pWriter);
     }
     
@@ -640,31 +667,23 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter,
   
 
 void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
-                                                  CSelectResult* pSQLResult,
+                                                  CSQLResult* pSQLResult,
                                                   CUPnPBrowseSearchBase*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {                 
-  string sExt = ExtractFileExt(pSQLResult->GetValue("PATH"));
+  string sExt = ExtractFileExt(pSQLResult->asString("FILE_NAME"));
                                           
   // title  
   xmlTextWriterStartElement(pWriter, BAD_CAST "dc:title");
 
     string sFileName;
-		if(!pSQLResult->IsNull("TITLE")) {
-		  sFileName = pSQLResult->GetValue("TITLE");
+		if(!pSQLResult->isNull("TITLE")) {
+		  sFileName = pSQLResult->asString("TITLE");
 
 			// trim filename				
 			if(pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength > 0) {
 				sFileName = TrimFileName(sFileName, pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength);
 			}				
-		}
-		else {
-			sFileName = TruncateFileExt(pSQLResult->GetValue("FILE_NAME"));
-			
-	    // trim filename
-			if(pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength > 0) {
-				sFileName = TrimFileName(sFileName, pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength + sExt.length() + 1);
-			}
 		}
 
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
@@ -675,32 +694,42 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
     xmlTextWriterWriteString(pWriter, BAD_CAST pUPnPBrowse->DeviceSettings()->ObjectTypeAsStr(sExt).c_str());    
   xmlTextWriterEndElement(pWriter);                                                    
   
-	if(pUPnPBrowse->IncludeProperty("upnp:artist") && !pSQLResult->IsNull("A_ARTIST")) {
+	if(pUPnPBrowse->IncludeProperty("upnp:artist") && !pSQLResult->isNull("A_ARTIST")) {
     xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:artist");    
-      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("A_ARTIST").c_str());
+      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("A_ARTIST").c_str());
   	xmlTextWriterEndElement(pWriter); 
   }
 	
-	if(pUPnPBrowse->IncludeProperty("upnp:album") && !pSQLResult->IsNull("A_ALBUM")) {
+	if(pUPnPBrowse->IncludeProperty("upnp:album") && !pSQLResult->isNull("A_ALBUM")) {
     xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:album");
-      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("A_ALBUM").c_str());
+      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("A_ALBUM").c_str());
     xmlTextWriterEndElement(pWriter);
   }
 
-  if(pUPnPBrowse->IncludeProperty("upnp:genre") && !pSQLResult->IsNull("A_GENRE")) {
+  if(pUPnPBrowse->IncludeProperty("upnp:genre") && !pSQLResult->isNull("A_GENRE")) {
     xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:genre");
-      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("A_GENRE").c_str());
+      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("A_GENRE").c_str());
   	xmlTextWriterEndElement(pWriter);
   }
   
-  if(pUPnPBrowse->IncludeProperty("upnp:originalTrackNumber") && !pSQLResult->IsNull("A_TRACK_NO")) {	
+  if(pUPnPBrowse->IncludeProperty("upnp:originalTrackNumber") && !pSQLResult->isNull("A_TRACK_NO")) {	
     xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:originalTrackNumber");    
-      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("A_TRACK_NO").c_str());
+      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("A_TRACK_NO").c_str());
+	  xmlTextWriterEndElement(pWriter);
+  }
+																												
+	if(!pSQLResult->isNull("ALBUM_ART_ID") && pSQLResult->asUInt("ALBUM_ART_ID") > 0) {
+		xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:albumArtURI");
+		  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "xmlns:dlna", BAD_CAST "urn:schemas-dlna-org:metadata-1-0/");
+			xmlTextWriterWriteAttribute(pWriter, BAD_CAST "dlna:profileID", BAD_CAST "JPEG_TN");
+
+			char szArtId[11];
+  		sprintf(szArtId, "%010X", pSQLResult->asUInt("ALBUM_ART_ID"));
+			string url = "http://" + m_sHTTPServerURL + "/MediaServer/ImageItems/" + string(szArtId) + ".jpg?width=160&height=160";
+			xmlTextWriterWriteString(pWriter, BAD_CAST url.c_str());
 	  xmlTextWriterEndElement(pWriter);
   }
 	
-	//<upnp:albumArtURI xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" dlna:profileID="JPEG_TN">http://192.168.0.5:9386/MediaServer/ConnectionManager/AlbumArt?397</upnp:albumArtURI>
-																											
   // res
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
   
@@ -709,7 +738,7 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
 
 
 	// protocol info
-  string sDLNA = pSQLResult->GetValue("DLNA_PROFILE");
+  string sDLNA = pSQLResult->asString("DLNA_PROFILE");
   if(sDLNA.empty())
     sDLNA = pUPnPBrowse->DeviceSettings()->DLNA(sExt);
   
@@ -718,19 +747,19 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
 	
 																											
   // duration
-  if(pUPnPBrowse->IncludeProperty("res@duration") && !pSQLResult->IsNull("AV_DURATION")) {	
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->GetValue("AV_DURATION").c_str());
+  if(pUPnPBrowse->IncludeProperty("res@duration") && !pSQLResult->isNull("AV_DURATION")) {	
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->asString("AV_DURATION").c_str());
   }
 	
 	// nrAudioChannels 
-  if(pUPnPBrowse->IncludeProperty("res@nrAudioChannels") && !pSQLResult->IsNull("A_CHANNELS")) {		
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "nrAudioChannels", BAD_CAST pSQLResult->GetValue("A_CHANNELS").c_str());
+  if(pUPnPBrowse->IncludeProperty("res@nrAudioChannels") && !pSQLResult->isNull("A_CHANNELS")) {		
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "nrAudioChannels", BAD_CAST pSQLResult->asString("A_CHANNELS").c_str());
   }
 
   // sampleFrequency
   if(pUPnPBrowse->IncludeProperty("res@sampleFrequency")) {    
-    if(!bTranscode && !pSQLResult->IsNull("A_SAMPLERATE")) {		  
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST pSQLResult->GetValue("A_SAMPLERATE").c_str());
+    if(!bTranscode && !pSQLResult->isNull("A_SAMPLERATE")) {		  
+      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "sampleFrequency", BAD_CAST pSQLResult->asString("A_SAMPLERATE").c_str());
     }    
     else if(bTranscode && pUPnPBrowse->DeviceSettings()->TargetAudioSampleRate(sExt) > 0) {      
       xmlTextWriterWriteFormatAttribute(pWriter, BAD_CAST "sampleFrequency", "%d", pUPnPBrowse->DeviceSettings()->TargetAudioSampleRate(sExt));
@@ -739,8 +768,8 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
 
 	// bitrate
   if(pUPnPBrowse->IncludeProperty("res@bitrate")) {    
-    if(!bTranscode && !pSQLResult->IsNull("AV_BITRATE")) {
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("AV_BITRATE").c_str());
+    if(!bTranscode && !pSQLResult->isNull("AV_BITRATE")) {
+      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->asString("AV_BITRATE").c_str());
     }    
     else if(bTranscode && pUPnPBrowse->DeviceSettings()->TargetAudioBitRate(sExt) > 0) {      
       xmlTextWriterWriteFormatAttribute(pWriter, BAD_CAST "bitrate", "%d", pUPnPBrowse->DeviceSettings()->TargetAudioBitRate(sExt));
@@ -748,8 +777,8 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   }
                                                     
   // size
-  if(!bTranscode && pUPnPBrowse->IncludeProperty("res@size") && !pSQLResult->IsNull("SIZE")) {
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->GetValue("SIZE").c_str());
+  if(!bTranscode && pUPnPBrowse->IncludeProperty("res@size") && !pSQLResult->isNull("SIZE")) {
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->asString("SIZE").c_str());
   }                                                    
 
   sExt = pUPnPBrowse->DeviceSettings()->Extension(sExt);
@@ -762,21 +791,21 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
 
 
 void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
-                                                  CSelectResult* pSQLResult,
+                                                  CSQLResult* pSQLResult,
                                                   CUPnPBrowseSearchBase*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {
-  string sExt = ExtractFileExt(pSQLResult->GetValue("PATH"));
+  string sExt = ExtractFileExt(pSQLResult->asString("FILE_NAME"));
   bool bTranscode = pUPnPBrowse->DeviceSettings()->DoTranscode(sExt);
 																										
   // title
   xmlTextWriterStartElement(pWriter, BAD_CAST "dc:title");
     // trim filename
-		string sFileName = pSQLResult->GetValue("FILE_NAME");
+		string sFileName = pSQLResult->asString("TITLE");
 		if(pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength > 0) {
-			sFileName = TrimFileName(sFileName, pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength + sExt.length() + 1);
+			sFileName = TrimFileName(sFileName, pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength);
 		}
-    sFileName = TruncateFileExt(sFileName);
+    //sFileName = TruncateFileExt(sFileName);
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);
 
@@ -802,10 +831,10 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
     // date
     if(pUPnPBrowse->IncludeProperty("dc:date"))
     {
-    	if(!pSQLResult->IsNull("DATE"))
+    	if(!pSQLResult->isNull("DATE"))
     	{
     		xmlTextWriterStartElementNS(pWriter, BAD_CAST "dc", BAD_CAST "date", BAD_CAST "http://purl.org/dc/elements/1.1/");    
-        	xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("DATE").c_str());
+        	xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("DATE").c_str());
         	xmlTextWriterEndElement(pWriter);
     	}
     }
@@ -821,7 +850,7 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
 	}	
 	
 	if(!bTranscode) {
-		dlna = pSQLResult->GetValue("DLNA_PROFILE");
+		dlna = pSQLResult->asString("DLNA_PROFILE");
 	}
 	else {
 		// CPluginMgr::DlnaPlugin()->getImageProfile();
@@ -834,8 +863,8 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
 	if(pUPnPBrowse->IncludeProperty("res@resolution")) {
     #warning todo rescaling
 
-		if(!pSQLResult->IsNull("IV_WIDTH") && !pSQLResult->IsNull("IV_HEIGHT")) {
-			sTmp = pSQLResult->GetValue("IV_WIDTH") + "x" + pSQLResult->GetValue("IV_HEIGHT");
+		if(!pSQLResult->isNull("IV_WIDTH") && !pSQLResult->isNull("IV_HEIGHT")) {
+			sTmp = pSQLResult->asString("IV_WIDTH") + "x" + pSQLResult->asString("IV_HEIGHT");
 			xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.c_str());
 		}
 		else if(pUPnPBrowse->DeviceSettings()->ShowEmptyResolution()) {
@@ -844,8 +873,8 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
 	}
 
 	// size
-  if(!bTranscode && pUPnPBrowse->IncludeProperty("res@size") && !pSQLResult->IsNull("SIZE")) {
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->GetValue("SIZE").c_str());
+  if(!bTranscode && pUPnPBrowse->IncludeProperty("res@size") && !pSQLResult->isNull("SIZE")) {
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->asString("SIZE").c_str());
   }
   
 	sExt = pUPnPBrowse->DeviceSettings()->Extension(sExt);
@@ -857,13 +886,13 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
 }
 
 void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
-                                                  CSelectResult* pSQLResult,
+                                               CSQLResult* pSQLResult,
                                                   CUPnPBrowseSearchBase*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {                                                     
-  string sExt = ExtractFileExt(pSQLResult->GetValue("PATH"));
+  string sExt = ExtractFileExt(pSQLResult->asString("FILE_NAME"));
     
-  bool bTranscode = pUPnPBrowse->DeviceSettings()->DoTranscode(sExt, pSQLResult->GetValue("A_CODEC"), pSQLResult->GetValue("V_CODEC"));
+  bool bTranscode = pUPnPBrowse->DeviceSettings()->DoTranscode(sExt, pSQLResult->asString("A_CODEC"), pSQLResult->asString("V_CODEC"));
 
   // title
   xmlTextWriterStartElement(pWriter, BAD_CAST "dc:title");
@@ -871,15 +900,15 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
     string sFileName;
  
 		/*string duration;
-	  if(!pSQLResult->IsNull("AV_DURATION")) {
-			duration = " " + pSQLResult->GetValue("AV_DURATION");
+	  if(!pSQLResult->isNull("AV_DURATION")) {
+			duration = " " + pSQLResult->asString("AV_DURATION");
 		}*/
 	
-    sFileName = pSQLResult->GetValue("FILE_NAME");
+    sFileName = pSQLResult->asString("TITLE");
 		if(pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength > 0) {
-			sFileName = TrimFileName(sFileName, pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength + sExt.length() + 1); // - duration.length()); // +1 "."
+			sFileName = TrimFileName(sFileName, pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength);
 		}
-    sFileName = TruncateFileExt(sFileName);
+    //sFileName = TruncateFileExt(sFileName);
 		//sFileName = sFileName + duration;
                                                     
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
@@ -893,12 +922,12 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   // res
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");    
     
-  string sMimeType = pUPnPBrowse->DeviceSettings()->MimeType(sExt, pSQLResult->GetValue("A_CODEC"), pSQLResult->GetValue("V_CODEC"));
+  string sMimeType = pUPnPBrowse->DeviceSettings()->MimeType(sExt, pSQLResult->asString("A_CODEC"), pSQLResult->asString("V_CODEC"));
   
   
 
   // protocol info
-  string sDLNA = pSQLResult->GetValue("DLNA_PROFILE");
+  string sDLNA = pSQLResult->asString("DLNA_PROFILE");
   if(sDLNA.empty())
     sDLNA = pUPnPBrowse->DeviceSettings()->DLNA(sExt);
   
@@ -906,14 +935,14 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
                                                     
   // duration
-  if(pUPnPBrowse->IncludeProperty("res@duration") && !pSQLResult->IsNull("AV_DURATION")) {
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->GetValue("AV_DURATION").c_str());
+  if(pUPnPBrowse->IncludeProperty("res@duration") && !pSQLResult->isNull("AV_DURATION")) {
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "duration", BAD_CAST pSQLResult->asString("AV_DURATION").c_str());
   }
       
 	// resolution 
-	if(pUPnPBrowse->IncludeProperty("res@resolution") && !pSQLResult->IsNull("IV_WIDTH") && !pSQLResult->IsNull("IV_HEIGHT")) {	
-		if(!pSQLResult->IsNull("IV_WIDTH") && !pSQLResult->IsNull("IV_HEIGHT")) {
-			sTmp = pSQLResult->GetValue("IV_WIDTH") + "x" + pSQLResult->GetValue("IV_HEIGHT");
+	if(pUPnPBrowse->IncludeProperty("res@resolution") && !pSQLResult->isNull("IV_WIDTH") && !pSQLResult->isNull("IV_HEIGHT")) {	
+		if(!pSQLResult->isNull("IV_WIDTH") && !pSQLResult->isNull("IV_HEIGHT")) {
+			sTmp = pSQLResult->asString("IV_WIDTH") + "x" + pSQLResult->asString("IV_HEIGHT");
 			xmlTextWriterWriteAttribute(pWriter, BAD_CAST "resolution", BAD_CAST sTmp.c_str());
 		}
 		else if(pUPnPBrowse->DeviceSettings()->ShowEmptyResolution()) {
@@ -933,17 +962,17 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
         xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST sBitRate.str().c_str());
       }      
     }
-    else if(!pSQLResult->IsNull("AV_BITRATE")) {
-      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->GetValue("AV_BITRATE").c_str());
+    else if(!pSQLResult->isNull("AV_BITRATE")) {
+      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "bitrate", BAD_CAST pSQLResult->asString("AV_BITRATE").c_str());
     }
   }
       
   // size
-  if(!bTranscode && pUPnPBrowse->IncludeProperty("res@size") && !pSQLResult->IsNull("SIZE")) {
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->GetValue("SIZE").c_str());
+  if(!bTranscode && pUPnPBrowse->IncludeProperty("res@size") && !pSQLResult->isNull("SIZE")) {
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->asString("SIZE").c_str());
   }
   
-  sExt = pUPnPBrowse->DeviceSettings()->Extension(sExt, pSQLResult->GetValue("A_CODEC"), pSQLResult->GetValue("V_CODEC"));
+  sExt = pUPnPBrowse->DeviceSettings()->Extension(sExt, pSQLResult->asString("A_CODEC"), pSQLResult->asString("V_CODEC"));
                                                     
   sTmp = "http://" + m_sHTTPServerURL + "/MediaServer/VideoItems/" + p_sObjectID + "." + sExt;  
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.c_str());
@@ -951,14 +980,14 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
 }
 
 void CContentDirectory::BuildAudioVideoBroadcastItemDescription(xmlTextWriterPtr pWriter,
-                                                  CSelectResult* pSQLResult,
+                                                  CSQLResult* pSQLResult,
                                                   CUPnPBrowseSearchBase*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 { 
 /* // title
 	xmlTextWriterStartElement(pWriter, BAD_CAST "dc:title");
     // trim filename
-    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength, true);    
+    string sFileName = TrimFileName(pSQLResult->asString("FILE_NAME"), pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength, true);    
     sFileName = TruncateFileExt(sFileName);
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);
@@ -970,14 +999,14 @@ void CContentDirectory::BuildAudioVideoBroadcastItemDescription(xmlTextWriterPtr
   
   // res
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");  
-  xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("PATH").c_str());
+  xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("PATH").c_str());
   xmlTextWriterEndElement(pWriter);   */
 																											
 																											
 																											// title
 	xmlTextWriterStartElement(pWriter, BAD_CAST "dc:title");
     // trim filename
-    string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength);
+    string sFileName = TrimFileName(pSQLResult->asString("FILE_NAME"), pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength);
     sFileName = TruncateFileExt(sFileName);
     xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);
@@ -989,20 +1018,20 @@ void CContentDirectory::BuildAudioVideoBroadcastItemDescription(xmlTextWriterPtr
   
   // res
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
-  xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->GetValue("PATH").c_str());
+  xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("PATH").c_str());
   xmlTextWriterEndElement(pWriter);  
 }
 
 void CContentDirectory::BuildPlaylistItemDescription(xmlTextWriterPtr pWriter,
-                                                  CSelectResult* pSQLResult,
+                                                  CSQLResult* pSQLResult,
                                                   CUPnPBrowseSearchBase*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {   
   // title	
   xmlTextWriterStartElement(pWriter, BAD_CAST "dc:title");
 		// trim filename
-		string sFileName = TrimFileName(pSQLResult->GetValue("FILE_NAME"), pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength);
-		sFileName = TruncateFileExt(sFileName);
+		string sFileName = TrimFileName(pSQLResult->asString("TITLE"), pUPnPBrowse->DeviceSettings()->DisplaySettings()->nMaxFileNameLength);
+		//sFileName = TruncateFileExt(sFileName);
 		xmlTextWriterWriteString(pWriter, BAD_CAST sFileName.c_str());    
 	xmlTextWriterEndElement(pWriter);  
 	
@@ -1015,13 +1044,13 @@ void CContentDirectory::BuildPlaylistItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
   
   std::stringstream sTmp;
-  //sTmp << "http-get:*:" << pSQLResult->GetValue("MIME_TYPE") << ":*";
+  //sTmp << "http-get:*:" << pSQLResult->asString("MIME_TYPE") << ":*";
 	#warning todo
 	sTmp << "http-get:*:todo:*";
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.str().c_str());
   sTmp.str("");
     
-  sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/Playlists/" << p_sObjectID << "." << ExtractFileExt(pSQLResult->GetValue("PATH"));      
+  sTmp << "http://" << m_sHTTPServerURL << "/MediaServer/Playlists/" << p_sObjectID << "." << ExtractFileExt(pSQLResult->asString("PATH"));      
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.str().c_str());
   xmlTextWriterEndElement(pWriter);  
 }
@@ -1085,22 +1114,21 @@ void CContentDirectory::HandleUPnPGetSystemUpdateID(CUPnPAction* pAction, std::s
 
 void CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_psResult)
 {
-	CContentDatabase* pDb  = new CContentDatabase();
-	CSelectResult*    pRow = NULL;
-  //string            sSql;
-  unsigned int      nTotalMatches = 0;
-  unsigned int      nNumberReturned = 0;
-  
-  // get total matches     
-	pSearch->prepareSQL();
-  pDb->Select(pSearch->SQLtotalMatches());
-  if(!pDb->Eof()) {
-    nTotalMatches = atoi(pDb->GetResult()->GetValue("COUNT").c_str());
-  }
-     
-  // get items     	
-	pDb->Select(pSearch->SQLselect());
+  unsigned int	nTotalMatches = 0;
+  unsigned int	nNumberReturned = 0;
+  CSQLQuery*		qry = CDatabase::query();
+	CSQLResult*   pRow = NULL;
 	
+  // get total matches     
+	//pSearch->prepareSQL();
+	qry->select(pSearch->getQuery(true));
+  if(!qry->eof()) {
+    nTotalMatches = qry->result()->asInt("COUNT");
+  }
+
+  // get items     	
+	qry->select(pSearch->getQuery());
+
   // build result
   xmlTextWriterPtr writer;
 	xmlBufferPtr buf;	
@@ -1138,12 +1166,12 @@ void CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_ps
       xmlTextWriterWriteAttribute(resWriter, BAD_CAST "xmlns:dc", BAD_CAST "http://purl.org/dc/elements/1.1/");
       xmlTextWriterWriteAttribute(resWriter, BAD_CAST "xmlns:upnp", BAD_CAST "urn:schemas-upnp-org:metadata-1-0/upnp/");          
   
-      while(!pDb->Eof()) {        
-        pRow = pDb->GetResult();        
+      while(!qry->eof()) {        
+        pRow = qry->result();        
         BuildDescription(resWriter, pRow, pSearch, "0");		
         nNumberReturned++;
         
-        pDb->Next();
+        qry->next();
       }
 
       // finalize result xml
@@ -1191,11 +1219,10 @@ void CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_ps
   CSharedLog::Log(L_DBG, __FILE__, __LINE__, output.c_str());
   
 	xmlBufferFree(buf);
-	delete pDb;
+	delete qry;
 	
   *p_psResult = output;
 }
-
 
 void CContentDirectory::HandeUPnPDestroyObject(CUPnPAction* pAction, std::string* p_psResult)
 {
@@ -1204,21 +1231,23 @@ void CContentDirectory::HandeUPnPDestroyObject(CUPnPAction* pAction, std::string
   }
 
   //cout << "DESTROY OBJECT: " << pAction->GetObjectIDAsInt() << endl;
-  
-  CContentDatabase db;    
-  stringstream sql;
-  
-  sql << "select TYPE, PATH, FILE_NAME from OBJECTS where OBJECT_ID = " << pAction->GetObjectIDAsInt() << " and DEVICE is NULL";		
-  db.Select(sql.str());
+
+  stringstream sql;  
+  sql << "select TYPE, PATH, FILE_NAME from OBJECTS where OBJECT_ID = " << pAction->GetObjectIDAsUInt() << " and DEVICE is NULL";
+	
+	CSQLQuery* qry = CDatabase::query();
+	qry->select(sql.str());
 	sql.str("");
     
   string objects;
-	if(db.Eof()) {
+	if(qry->eof()) {
+		delete qry;
 	  return;
 	}
- 
-  OBJECT_TYPE type = (OBJECT_TYPE)db.GetResult()->asInt("TYPE");
- 
+
+	CSQLResult* result = qry->result(); 
+  OBJECT_TYPE type = (OBJECT_TYPE)result->asInt("TYPE");
+
     
   #ifndef WIN32
   time_t now;
@@ -1236,7 +1265,7 @@ void CContentDirectory::HandeUPnPDestroyObject(CUPnPAction* pAction, std::string
   // create target dir
   string targetDir = CSharedConfig::Shared()->ConfigFile()->TrashDir();
   if(type < ITEM) { // container
-    targetDir += db.GetResult()->GetValue("FILE_NAME") + "_" + sNowtime + "/";
+    targetDir += result->asString("FILE_NAME") + "_" + sNowtime + "/";
   }
   else {
     targetDir += sNowtime + "/";
@@ -1244,25 +1273,30 @@ void CContentDirectory::HandeUPnPDestroyObject(CUPnPAction* pAction, std::string
   
   if(!CreateDirectory(targetDir)) {
     cout << "contentdir: error creating trash folder : " << targetDir << endl;
+		delete qry;
     return;
   }
   if(type >= ITEM) { // item
-    targetDir += db.GetResult()->GetValue("FILE_NAME");
+    targetDir += result->asString("FILE_NAME");
   }
     
   // move    
-  //cout << "mv " << db.GetResult()->GetValue("PATH") << " " << targetDir << endl;  
+  //cout << "mv " << db.GetResult()->asString("PATH") << " " << targetDir << endl;  
   
-  int ret = rename(db.GetResult()->GetValue("PATH").c_str(), targetDir.c_str());
+  int ret = rename(string(result->asString("PATH") + result->asString("FILE_NAME")).c_str(), 
+									 targetDir.c_str());
   if(ret != 0) {
     cout << "contentdir: error moving to trash folder" << endl;
+		delete qry;
     return;
   }
 
   
   // delete from db
-  db.deleteObject(pAction->GetObjectIDAsInt());
-
+	CContentDatabase db;
+  db.deleteObject(pAction->GetObjectIDAsUInt());
+	delete qry;
+		
 #warning todo: error code
   //*p_psResult =  TODO
 }
@@ -1276,7 +1310,7 @@ std::string CContentDirectory::BuildProtocolInfo(bool p_bTranscode,
   string sTmp;
   if(!pUPnPBrowse->DeviceSettings()->DLNAEnabled()) {
 		sTmp = "http-get:*:" + p_sMimeType + ":*";
-		return sTmp.c_str();
+		return sTmp;
 	}
 	
 	sTmp = "http-get:*:" + p_sMimeType + ":";
@@ -1315,5 +1349,5 @@ std::string CContentDirectory::BuildProtocolInfo(bool p_bTranscode,
 
   sTmp += dlna_info;
 
-  return sTmp.c_str();
+  return sTmp;
 }

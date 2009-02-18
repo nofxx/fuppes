@@ -35,7 +35,7 @@ class CHTTPParser
 { 
   public:
     bool parseHeader(CHTTPMessage* pMessage);
-		void ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage);
+		static void ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage);
 	
   private:
 	  CHTTPMessage* m_pMessage;

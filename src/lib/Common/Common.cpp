@@ -159,7 +159,7 @@ std::string MD5Sum(std::string p_sFileName)
 	for (di = 0; di < 16; ++di)
 	    sprintf(hex_output + di * 2, "%02x", digest[di]);
   
-  return hex_output;
+  return string(hex_output);
 }
 
 void appendTrailingSlash(std::string* value)
@@ -174,7 +174,7 @@ void appendTrailingSlash(std::string* value)
 std::string appendTrailingSlash(std::string value)
 {
   appendTrailingSlash(&value);
-  return value.c_str();
+  return value;
 }
 
 std::string StringReplace(std::string p_sIn, std::string p_sSearch, std::string p_sReplace)
@@ -189,7 +189,7 @@ std::string StringReplace(std::string p_sIn, std::string p_sSearch, std::string 
 	}
 	sResult += p_sIn;
 	
-	return sResult.c_str();
+	return sResult;
 }
 
 std::string ExtractFileExt(std::string fileName)
@@ -268,14 +268,14 @@ std::string TrimFileName(std::string p_sFileName, unsigned int p_nMaxLength)
   sFile = sFile.substr(0, nLen);
   sFile = sFile + "." + sExt;  
   
-  return sFile.c_str();
+  return sFile;
 }
 
 std::string TrimWhiteSpace(std::string s)
 {
   const std::string drop = " ";
   std::string r = s.erase(s.find_last_not_of(drop)+1);
-  return r.erase(0,r.find_first_not_of(drop)).c_str();
+  return r.erase(0,r.find_first_not_of(drop));
 }
 
 bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPort)
@@ -522,7 +522,7 @@ std::string URLEncodeValueToPlain(std::string p_sValue)
 		} // while bLoop
 	}	
 	
-	return sResult.c_str();
+	return sResult;
 }
 
 

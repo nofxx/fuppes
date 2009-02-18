@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            UPnPSearch.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -25,7 +26,9 @@
 #include "UPnPSearch.h"
 #include "../Common/Common.h"
 #include "../Common/RegEx.h"
-#include "../ContentDirectory/ContentDatabase.h"
+//#include "../ContentDirectory/ContentDatabase.h"
+#include "../ContentDirectory/UPnPObjectTypes.h"
+#include "../ContentDirectory/DatabaseConnection.h"
 #include "../ContentDirectory/VirtualContainerMgr.h"
 
 #include <sstream>
@@ -33,25 +36,26 @@
 
 using namespace std;
 
-CUPnPSearch::CUPnPSearch(std::string p_sMessage):
-  CUPnPBrowseSearchBase(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_SEARCH, p_sMessage)
+CUPnPSearch::CUPnPSearch(std::string message)
+:CUPnPBrowseSearchBase(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_SEARCH, message)
 {
-  m_sParentIds = "";
-	m_SQLselect = "";
-	m_SQLtotalMatches = "";
 }                                     
 
-CUPnPSearch::~CUPnPSearch()
+std::string CUPnPSearch::getQuery(bool count /*= false*/) 
 {
+	if(!prepareSQL()) {
+		return "";
+	}
+
+	if(count) 
+		return m_queryCount;
+	else
+		return m_query;
 }
 
-unsigned int CUPnPSearch::GetContainerIdAsUInt()
-{
-  return HexToInt(m_sContainerID);
-}
 
 
-void BuildParentIdList(CContentDatabase* pDb, std::string p_sIds, std::string p_sDevice, std::string* m_sParentIds)
+void BuildParentIdList(CSQLQuery* qry, std::string p_sIds, std::string p_sDevice, std::string* m_sParentIds)
 {
   // read child ids of p_sIds
   stringstream sSql;
@@ -61,15 +65,15 @@ void BuildParentIdList(CContentDatabase* pDb, std::string p_sIds, std::string p_
     "  PARENT_ID in (" << p_sIds << ") and " <<
     "  DEVICE " << p_sDevice;  
     
-  pDb->Select(sSql.str());
-  if(pDb->Eof()) {
+  qry->select(sSql.str());
+  if(qry->eof()) {
     return;
   }
   
   string sResult = "";
-  while(!pDb->Eof()) {    
-    sResult += pDb->GetResult()->GetValue("OBJECT_ID") + ", ";
-    pDb->Next();
+  while(!qry->eof()) {    
+    sResult += qry->result()->asString("OBJECT_ID") + ", ";
+    qry->next();
   }
 
   // append to list
@@ -79,13 +83,16 @@ void BuildParentIdList(CContentDatabase* pDb, std::string p_sIds, std::string p_
   sResult = sResult.substr(0, sResult.length() - 2);
     
   // recursively read child objects
-  BuildParentIdList(pDb, sResult, p_sDevice, m_sParentIds);
+  BuildParentIdList(qry, sResult, p_sDevice, m_sParentIds);
 }
-
 
 bool CUPnPSearch::prepareSQL()
 {
-  /*std::string sTest;
+	if(m_query.length() > 0 && m_queryCount.length() > 0) {
+		return true;
+	}
+	
+	/*std::string sTest;
 	sTest = "(upnp:class contains \"object.item.imageItem\") and (dc:title = \"test \\\"dahhummm\\\" [xyz] §$%&(abc) titel\") or author exists true and (title exists false and (author = \"test\" or author = \"dings\"))";
 */
 
@@ -106,38 +113,38 @@ bool CUPnPSearch::prepareSQL()
 
   string sDevice = " is NULL ";
   
-  unsigned int nContainerId = GetContainerIdAsUInt();
+  unsigned int nContainerId = GetObjectIDAsUInt(); //GetContainerIdAsUInt();
   if(nContainerId > 0) {
-    if(CVirtualContainerMgr::Shared()->IsVirtualContainer(nContainerId, DeviceSettings()->VirtualFolderDevice())) {
+    if(CVirtualContainerMgr::isVirtualContainer(nContainerId, DeviceSettings()->VirtualFolderDevice())) {
       bVirtualSearch = true;
       sDevice = " = '" + DeviceSettings()->VirtualFolderDevice() + "' ";
     }
     
     if(m_sParentIds.length() == 0) {
-      CContentDatabase* pDb = new CContentDatabase();       
+			CSQLQuery* qry = CDatabase::query();
       stringstream sIds;
       sIds << nContainerId;    
-      BuildParentIdList(pDb, sIds.str(), sDevice, &m_sParentIds);      
+      BuildParentIdList(qry, sIds.str(), sDevice, &m_sParentIds);      
       m_sParentIds = m_sParentIds + sIds.str();      
-      delete pDb;
+      delete qry;
       
       //cout << "PARENT ID LIST: " << m_sParentIds << endl; fflush(stdout);
     }
   }
 	else if(nContainerId == 0) {
-		if(CVirtualContainerMgr::Shared()->HasVirtualChildren(nContainerId, DeviceSettings()->VirtualFolderDevice())) {
+		if(CVirtualContainerMgr::hasVirtualChildren(nContainerId, DeviceSettings()->VirtualFolderDevice())) {
       bVirtualSearch = true;
       sDevice = " = '" + DeviceSettings()->VirtualFolderDevice() + "' ";
     }
 	}
   
   
-	m_SQLselect = "select * ";
-	m_SQLtotalMatches  = "select count(*) as COUNT ";
+	m_query = "select * ";
+	m_queryCount  = "select count(*) as COUNT ";
 	
   sSql <<
     "from " <<
-    "  OBJECTS o, MAP_OBJECTS m " <<
+    "  MAP_OBJECTS m, OBJECTS o " <<
     "  left join OBJECT_DETAILS d on (d.ID = o.DETAIL_ID) " <<
     "where " <<
     "  o.DEVICE " << sDevice << " and " <<
@@ -290,8 +297,8 @@ bool CUPnPSearch::prepareSQL()
 		}	while (rxSearch.SearchAgain());
 	}
 	
-	m_SQLselect += sSql.str();
-	m_SQLtotalMatches += sSql.str();
+	m_query += sSql.str();
+	m_queryCount += sSql.str();
 	
 	sSql.str("");
   
@@ -309,7 +316,7 @@ bool CUPnPSearch::prepareSQL()
 
   // order by and limit are not needed
   // in a count request  
-	m_SQLselect += sSql.str();
+	m_query += sSql.str();
 
   return true;
 }

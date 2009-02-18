@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            UPnPBrowse.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -39,16 +40,19 @@ typedef enum UPNP_BROWSE_FLAG
 
 class CUPnPBrowse: public CUPnPBrowseSearchBase
 {
+	friend class CUPnPActionFactory;
+	
   public:
     CUPnPBrowse(std::string p_sMessage);
-    ~CUPnPBrowse();    
+    ~CUPnPBrowse();
 
-    
-  
-
-    //std::string      m_sObjectID;
+		std::string getQuery(bool count = false);
+		UPNP_BROWSE_FLAG browseFlag() { return m_nBrowseFlag; }
+		
+	private:
+		bool	prepareSQL();
+		
     UPNP_BROWSE_FLAG m_nBrowseFlag;
-
     bool             m_bVirtualContainer;
 };
 

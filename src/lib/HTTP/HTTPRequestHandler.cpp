@@ -1,3 +1,4 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            HTTPRequestHandler.cpp
  *
@@ -30,6 +31,9 @@
 #include "../SharedLog.h"
 #include "../ContentDirectory/FileDetails.h"
 #include "../ContentDirectory/VirtualContainerMgr.h"
+#include "../ContentDirectory/DatabaseConnection.h"
+#include "../Plugins/Plugin.h"
+#include "../Transcoding/TranscodingMgr.h"
 
 #include <iostream>
 #include <sstream>
@@ -100,7 +104,7 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
   //ConnectionManager description
   if(sRequest.compare("/UPnPServices/ConnectionManager/description.xml") == 0) {
     pResponse->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml");
-      
+
     CConnectionManager* pMgr = new CConnectionManager(m_sHTTPServerURL);
     pResponse->SetContent(pMgr->GetServiceDescription());
     delete pMgr;
@@ -114,6 +118,16 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
      ((sRequest.length() > 14) && (ToLower(sRequest).substr(0, 14).compare("/presentation/") == 0))
     )
   {
+		CPresentationPlugin* pres = CPluginMgr::presentationPlugin();
+		if(!pres) {
+			CSharedLog::Log(L_NORM, __FILE__, __LINE__, "no presentation plugin available");
+   		//return false;			
+		}
+		else if(pres->handleRequest(pRequest, pResponse)) {
+			return true;
+		}
+
+#warning remove
     CPresentationHandler* pHandler = new CPresentationHandler();
     pHandler->OnReceivePresentationRequest(pRequest, pResponse);
     delete pHandler;    
@@ -236,12 +250,12 @@ bool CHTTPRequestHandler::handleItemRequest(std::string p_sObjectId, CHTTPMessag
   std::string       sExt;
   std::string       sPath;
   std::string       sMimeType;
-  CContentDatabase* pDb         = new CContentDatabase();  
-  bool              bResult     = true;  
+  CSQLQuery*				qry     = CDatabase::query();
+  bool              bResult = true;  
   
   
   string sDevice = " and o.DEVICE is NULL ";
-  if(CVirtualContainerMgr::Shared()->IsVirtualContainer(HexToInt(p_sObjectId), pRequest->DeviceSettings()->VirtualFolderDevice()))
+  if(CVirtualContainerMgr::isVirtualContainer(HexToInt(p_sObjectId), pRequest->DeviceSettings()->VirtualFolderDevice()))
     sDevice = " and o.DEVICE = '" + pRequest->DeviceSettings()->VirtualFolderDevice() + "' ";
   
   sSql << 
@@ -253,14 +267,14 @@ bool CHTTPRequestHandler::handleItemRequest(std::string p_sObjectId, CHTTPMessag
     "where " <<
     "  o.OBJECT_ID = " << HexToInt(p_sObjectId) << sDevice;
   
-  pDb->Select(sSql.str());
+  qry->select(sSql.str());
   
-  if(!pDb->Eof())
+  if(!qry->eof())
   {
-    //nObjectType = (OBJECT_TYPE)atoi(pDb->GetResult()->GetValue("TYPE").c_str());
+    //nObjectType = (OBJECT_TYPE)atoi(pDb->GetResult()->asString("TYPE").c_str());
     //cout << "OBJECT_TYPE: " << nObjectType << endl;
         
-    sPath = pDb->GetResult()->GetValue("PATH");    
+    sPath = qry->result()->asString("PATH") + qry->result()->asString("FILE_NAME");
     sExt  = ExtractFileExt(sPath);
     
     if(!FileExists(sPath)) {
@@ -269,38 +283,38 @@ bool CHTTPRequestHandler::handleItemRequest(std::string p_sObjectId, CHTTPMessag
     }
     else
     {      
-      if(pRequest->DeviceSettings()->DoTranscode(sExt, pDb->GetResult()->GetValue("A_CODEC"), pDb->GetResult()->GetValue("V_CODEC"))) {
+      if(pRequest->DeviceSettings()->DoTranscode(sExt, qry->result()->asString("A_CODEC"), qry->result()->asString("V_CODEC"))) {
         CSharedLog::Log(L_EXT, __FILE__, __LINE__, "transcode %s",  sPath.c_str());
      
-        sMimeType = pRequest->DeviceSettings()->MimeType(sExt, pDb->GetResult()->GetValue("A_CODEC"), pDb->GetResult()->GetValue("V_CODEC"));
+        sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry->result()->asString("A_CODEC"), qry->result()->asString("V_CODEC"));
         if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {          
           //
           SAudioItem trackDetails;
-          if(!pDb->GetResult()->IsNull("TITLE")) {
-            trackDetails.sTitle = pDb->GetResult()->GetValue("TITLE");
+          if(!qry->result()->isNull("TITLE")) {
+            trackDetails.sTitle = qry->result()->asString("TITLE");
           }
           
-          if(!pDb->GetResult()->IsNull("A_ARTIST")) {
-            trackDetails.sArtist = pDb->GetResult()->GetValue("A_ARTIST");
+          if(!qry->result()->isNull("A_ARTIST")) {
+            trackDetails.sArtist = qry->result()->asString("A_ARTIST");
           }
           
-          if(!pDb->GetResult()->IsNull("A_ALBUM")) {
-            trackDetails.sAlbum  = pDb->GetResult()->GetValue("A_ALBUM");
+          if(!qry->result()->isNull("A_ALBUM")) {
+            trackDetails.sAlbum  = qry->result()->asString("A_ALBUM");
           }
           
-          if(!pDb->GetResult()->IsNull("A_GENRE")) {
-            trackDetails.sGenre = pDb->GetResult()->GetValue("A_GENRE");
+          if(!qry->result()->isNull("A_GENRE")) {
+            trackDetails.sGenre = qry->result()->asString("A_GENRE");
           }
           
-          if(!pDb->GetResult()->IsNull("A_TRACK_NO")) {
-            trackDetails.sOriginalTrackNumber = pDb->GetResult()->GetValue("A_TRACK_NO");
+          if(!qry->result()->isNull("A_TRACK_NO")) {
+            trackDetails.sOriginalTrackNumber = qry->result()->asString("A_TRACK_NO");
           }          
           
-          if(!pDb->GetResult()->IsNull("A_CODEC")) {
-            trackDetails.sACodec = pDb->GetResult()->GetValue("A_CODEC");
+          if(!qry->result()->isNull("A_CODEC")) {
+            trackDetails.sACodec = qry->result()->asString("A_CODEC");
           }
-          if(!pDb->GetResult()->IsNull("V_CODEC")) {
-            trackDetails.sVCodec = pDb->GetResult()->GetValue("V_CODEC");
+          if(!qry->result()->isNull("V_CODEC")) {
+            trackDetails.sVCodec = qry->result()->asString("V_CODEC");
           }
           
           bResult = pResponse->TranscodeContentFromFile(sPath, trackDetails);
@@ -320,7 +334,7 @@ bool CHTTPRequestHandler::handleItemRequest(std::string p_sObjectId, CHTTPMessag
         }
       }
       else {
-        sMimeType = pRequest->DeviceSettings()->MimeType(sExt, pDb->GetResult()->GetValue("A_CODEC"), pDb->GetResult()->GetValue("V_CODEC"));
+        sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry->result()->asString("A_CODEC"), qry->result()->asString("V_CODEC"));
         pResponse->LoadContentFromFile(sPath);
       }      
       
@@ -338,7 +352,7 @@ bool CHTTPRequestHandler::handleItemRequest(std::string p_sObjectId, CHTTPMessag
     bResult = false;
   }
   
-  delete pDb;
+  delete qry;
   return bResult;
 }
 
@@ -352,12 +366,12 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
   std::string       sExt;
   std::string       sPath;
   std::string       sMimeType;
-  CContentDatabase  db; //         = new CContentDatabase();  
+  CSQLQuery*				qry = CDatabase::query();
   bool              bResult     = true;  
   
   
   string sDevice = " and o.DEVICE is NULL ";
-  if(CVirtualContainerMgr::Shared()->IsVirtualContainer(HexToInt(p_sObjectId), pRequest->DeviceSettings()->VirtualFolderDevice()))
+  if(CVirtualContainerMgr::isVirtualContainer(HexToInt(p_sObjectId), pRequest->DeviceSettings()->VirtualFolderDevice()))
     sDevice = " and o.DEVICE = '" + pRequest->DeviceSettings()->VirtualFolderDevice() + "' ";
   
   sSql << 
@@ -369,29 +383,146 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
     "where " <<
     "  o.OBJECT_ID = " << HexToInt(p_sObjectId) << sDevice;
   
-  db.Select(sSql.str());
+  qry->select(sSql.str());
   
-  if(db.Eof()) {
+  if(qry->eof()) {
 		CSharedLog::Log(L_EXT, __FILE__, __LINE__, "unknown object id: %s", p_sObjectId.c_str());
+		delete qry;
 		return false;
 	}
-        
-  sPath = db.GetResult()->GetValue("PATH");    
-  sExt  = ExtractFileExt(sPath);
+
+	sPath = qry->result()->asString("PATH") + qry->result()->asString("FILE_NAME");
+  sExt  = ExtractFileExt(sPath);	
+	bool audioFile = false;
+	
+	OBJECT_TYPE type = (OBJECT_TYPE)qry->result()->asInt("TYPE");
+	if(type >= ITEM_IMAGE_ITEM && type < ITEM_IMAGE_ITEM_MAX) {
+		cout << "request image file " << sPath << endl;
+	}
+	else if(type >= ITEM_AUDIO_ITEM && type < ITEM_AUDIO_ITEM_MAX) {
+		cout << "request image from audio file " << sPath << endl;
+		audioFile = true;
+	}
+	else {
+		CSharedLog::Log(L_EXT, __FILE__, __LINE__, "unsupported image request on object type %d", type);
+		delete qry;
+		return false;
+	}
     
   if(!FileExists(sPath)) {
     CSharedLog::Log(L_EXT, __FILE__, __LINE__, "file: %s not found", sPath.c_str());
+		delete qry;
     return false;
   }
-  
-	if(pRequest->DeviceSettings()->DoTranscode(sExt, db.GetResult()->GetValue("A_CODEC"), db.GetResult()->GetValue("V_CODEC"))) {
+
+	cout << "image request: " << sPath << endl;
+
+	
+	int width = pRequest->getVarAsInt("width");
+	int height = pRequest->getVarAsInt("height");
+	int less = pRequest->getVarAsInt("less");
+	int greater = pRequest->getVarAsInt("greater");
+	
+	// transcode | scale request via GET
+	// and/or embedded image from audio file
+	if(width > 0 || height > 0 || audioFile) {
+		CSharedLog::Log(L_EXT, __FILE__, __LINE__, "GET transcode %s - %dx%d",  sPath.c_str(), width, height);
+		
+		size_t inSize = 0;
+		size_t outSize = 0;
+		unsigned char* inBuffer = (unsigned char*)malloc(1);
+		unsigned char* outBuffer = (unsigned char*)malloc(1);
+		char* mimeType =(char*)malloc(1);
+		
+		// embedded image from audio file
+		if(audioFile) {
+			
+			CMetadataPlugin* metadata = CPluginMgr::metadataPlugin("taglib");
+			if(!metadata) {
+				CSharedLog::Log(L_EXT, __FILE__, __LINE__, "metadata plugin %s not found", "taglib");
+				delete qry;
+				free(inBuffer);
+				free(outBuffer);
+				free(mimeType);
+		    return false;
+			}
+			
+			metadata->openFile(sPath);
+			inSize = 0;
+			if(!metadata->readImage(&mimeType, &inBuffer, &inSize)) {
+				metadata->closeFile();
+				CSharedLog::Log(L_EXT, __FILE__, __LINE__, "metadata plugin %s failed to read embedded image", "taglib");
+				delete qry;
+				free(inBuffer);
+				free(outBuffer);
+				free(mimeType);
+		    return false;
+			}
+			metadata->closeFile();
+		} // embedded image
+		
+		else {
+	
+			std::fstream fsImg;
+			fsImg.open(sPath.c_str(), ios::binary|ios::in);
+		  if(fsImg.fail() == 1) {
+				CSharedLog::Log(L_EXT, __FILE__, __LINE__, "failed to load image file %s", sPath.c_str());
+				delete qry;
+				free(inBuffer);
+				free(outBuffer);
+				free(mimeType);
+			  return false;
+			}
+			fsImg.seekg(0, ios::end); 
+  		inSize = streamoff(fsImg.tellg()); 
+  		fsImg.seekg(0, ios::beg);
+			inBuffer = (unsigned char*)realloc(inBuffer, inSize);
+			fsImg.read((char*)inBuffer, inSize);
+			fsImg.close();
+		} // image file
+		
+		CTranscoderBase* transcoder = CPluginMgr::transcoderPlugin("magickWand");
+		if(transcoder == NULL) {
+			CSharedLog::Log(L_EXT, __FILE__, __LINE__, "image magick transcoder not available");
+			delete qry;
+			free(inBuffer);
+			free(outBuffer);
+			free(mimeType);
+	    return false;
+		}
+		
+		CFileSettings* settings = new CFileSettings(pRequest->DeviceSettings()->FileSettings("jpeg"));
+		
+		settings->pImageSettings->nHeight = height;
+		settings->pImageSettings->nWidth = width;
+		settings->pImageSettings->bGreater = true;
+		//settings->pImageSettings->bLess = true;
+		
+		transcoder->TranscodeMem(settings,
+														 (const unsigned char**)&inBuffer, inSize, &outBuffer, &outSize);
+		delete settings;
+		delete transcoder;
+		
+		pResponse->SetBinContent((char*)outBuffer, outSize);			
+		pResponse->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
+		pResponse->SetContentType(mimeType);
+		
+		free(inBuffer);
+		free(outBuffer);
+		free(mimeType);
+		delete qry;
+		return true;
+	} // embedded audio or width|height via GET
+	
+	
+	if(pRequest->DeviceSettings()->DoTranscode(sExt, qry->result()->asString("A_CODEC"), qry->result()->asString("V_CODEC"))) {
 		CSharedLog::Log(L_EXT, __FILE__, __LINE__, "transcode %s",  sPath.c_str());
  
-		sMimeType = pRequest->DeviceSettings()->MimeType(sExt, db.GetResult()->GetValue("A_CODEC"), db.GetResult()->GetValue("V_CODEC"));
+		sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry->result()->asString("A_CODEC"), qry->result()->asString("V_CODEC"));
 		if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {          
-			//
 			SAudioItem trackDetails;
 			if(!pResponse->TranscodeContentFromFile(sPath, trackDetails)) {
+				delete qry;
 				return false;
 			}
 		}
@@ -409,15 +540,16 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 		}
 	}
 	else {
-		sMimeType = pRequest->DeviceSettings()->MimeType(sExt, db.GetResult()->GetValue("A_CODEC"), db.GetResult()->GetValue("V_CODEC"));
+		sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry->result()->asString("A_CODEC"), qry->result()->asString("V_CODEC"));
 		pResponse->LoadContentFromFile(sPath);
-	}      
+	}
 	
 	// we always set the response type to "200 OK"
 	// if the message should be a "206 partial content" 
 	// CHTTPServer will change the type
 	pResponse->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
 	pResponse->SetContentType(sMimeType);
-  
+
+	delete qry;
   return true;
 }

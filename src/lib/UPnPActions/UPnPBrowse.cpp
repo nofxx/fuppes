@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            UPnPBrowse.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -33,8 +34,24 @@ CUPnPBrowse::~CUPnPBrowse()
 {
 }
 
-/*unsigned int CUPnPBrowse::GetObjectIDAsInt()
-{
-  
-} */
+std::string CUPnPBrowse::getQuery(bool count /*= false*/) {
+	if(!prepareSQL()) {
+		return "";
+	}
 
+	if(count) 
+		return m_queryCount;
+	else
+		return m_query;
+}
+
+bool CUPnPBrowse::prepareSQL()
+{
+	if(m_query.length() > 0 && m_queryCount.length() > 0) {
+		return true;
+	}
+	
+	
+	
+	
+}

@@ -1,7 +1,7 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
- *            fuppes_plugin.h
- *
+ *            ErrorCodes.h
+ * 
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
@@ -23,21 +23,27 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef _ERRORCODES_H
+#define _ERRORCODES_H
 
-#ifndef _FUPPES_PLUGIN_H
-#define _FUPPES_PLUGIN_H
+#include <string>
+
+typedef struct errorCode {
+	const int  		code;
+	const char*		msg;
+};
+
+errorCode  errorCodes[] {
 	
-#include <string.h>
-#include <stdlib.h>
-#include "fuppes_plugin_types.h"
+	{0, "OK"},
+	{1, "unknown action"},
+	{2, "parameter list wrong"},
+		
+	
+	{-1, ""} // closing entry
+};
 
-#include <stdio.h>
 
-#endif //_FUPPES_PLUGIN_H
 
-#ifdef __cplusplus
-}
-#endif
+#endif //_ERRORCODES_H
+

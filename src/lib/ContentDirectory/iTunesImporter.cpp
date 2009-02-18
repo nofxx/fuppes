@@ -1,3 +1,4 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            iTunesImporter.cpp
  *
@@ -24,6 +25,8 @@
  
 #include "iTunesImporter.h"
 #include "FileDetails.h"
+#include "DatabaseConnection.h"
+#include "ContentDatabase.h"
 #include <iostream>
 #include <sstream>
 using namespace std;
@@ -139,12 +142,13 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
      //cout << endl;
 
   stringstream sSql;
-  CContentDatabase* pDb = new CContentDatabase();
+  CSQLQuery* qry = CDatabase::query();
   unsigned int nObjId;
     
-  nObjId = pDb->GetObjId();
+	CContentDatabase db;
+  nObjId = db.GetObjId();
   
-  pDb->BeginTransaction();
+  qry->connection()->startTransaction();
     
   sSql << 
 	  "insert into OBJECT_DETAILS " <<
@@ -161,7 +165,7 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
 		track.nBitrate << ", " <<
 		track.nSampleRate << ")";
     
-  unsigned int nDetailId = pDb->Insert(sSql.str());
+  unsigned int nDetailId = qry->insert(sSql.str());
   
   sSql.str("");
   sSql << "insert into objects " <<
@@ -176,12 +180,11 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
           "'n/a', " <<
           "'" << "obsolete" << "') ";
 
-  pDb->Insert(sSql.str());
+  qry->insert(sSql.str());
   
   
-  pDb->Commit();
-    
-  delete pDb;
+  qry->connection()->commit();    
+  delete qry;
 }
 
 /*
