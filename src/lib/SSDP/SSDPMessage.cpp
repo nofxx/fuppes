@@ -106,7 +106,7 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
     if(rxNotify.Search(m_sMessage.c_str()))
     {
       /* found notify. check whether it's alive or byebye */
-      RegEx rxNTS("NTS: +ssdp:(\\w+)", PCRE_CASELESS);
+      RegEx rxNTS("NTS: *ssdp:(\\w+)", PCRE_CASELESS);
       if(rxNTS.Search(m_sMessage.c_str()))
       {        
         if(ToLower(rxNTS.Match(1)).compare("alive") == 0)        
@@ -135,17 +135,17 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
     if(m_nMessageType != SSDP_MESSAGE_TYPE_M_SEARCH)
     {
       /* Location */
-      RegEx rxLocation("LOCATION: +(http://.+)", PCRE_CASELESS);
+      RegEx rxLocation("LOCATION: *(http://.+)", PCRE_CASELESS);
       if(rxLocation.Search(m_sMessage.c_str()))
         m_sLocation = rxLocation.Match(1);
       
       /* Server */
-      RegEx rxServer("SERVER: +(.*)", PCRE_CASELESS);
+      RegEx rxServer("SERVER: *(.*)", PCRE_CASELESS);
       if(rxServer.Search(m_sMessage.c_str()))      
         m_sServer = rxServer.Match(1);
       
       /* USN */
-      RegEx rxUSN("USN: +(.*)\r\n", PCRE_CASELESS);
+      RegEx rxUSN("USN: *(.*)\r\n", PCRE_CASELESS);
       if(rxUSN.Search(m_sMessage.c_str()))
       {
         m_sUSN = rxUSN.Match(1);        
