@@ -481,6 +481,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 			fsImg.close();
 		} // image file
 		
+		
 		CTranscoderBase* transcoder = CPluginMgr::transcoderPlugin("magickWand");
 		if(transcoder == NULL) {
 			CSharedLog::Log(L_EXT, __FILE__, __LINE__, "image magick transcoder not available");
@@ -493,10 +494,14 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 		
 		CFileSettings* settings = new CFileSettings(pRequest->DeviceSettings()->FileSettings("jpeg"));
 		
+		// fixme
+		if(!settings->pImageSettings) {
+			settings->pImageSettings = new CImageSettings();
+		}
 		settings->pImageSettings->nHeight = height;
 		settings->pImageSettings->nWidth = width;
 		settings->pImageSettings->bGreater = true;
-		//settings->pImageSettings->bLess = true;
+		settings->pImageSettings->bLess = true;
 		
 		transcoder->TranscodeMem(settings,
 														 (const unsigned char**)&inBuffer, inSize, &outBuffer, &outSize);

@@ -208,32 +208,13 @@ lib_LTLIBRARIES += libtranscoder_magickwand.la
 libtranscoder_magickwand_la_SOURCES = \
 	transcoder_magickwand.c
 
-libtranscoder_magickwabnd_la_CFLAGS = \
+libtranscoder_magickwand_la_CFLAGS = \
 	$(IMAGEMAGICK_WAND_CFLAGS)
 	
 libtranscoder_magickwand_la_LDFLAGS = \
 	$(IMAGEMAGICK_WAND_LIBS)
 
 endif
-
-
-## Magick++ transcoder
-if MAGICK_PP_TRANSCODER_PLUGIN
-
-lib_LTLIBRARIES += libtranscoder_magickpp.la
-
-libtranscoder_magickpp_la_SOURCES = \
-	transcoder_magickpp.cpp
-
-libtranscoder_magickpp_la_CXXFLAGS = \
-	$(IMAGEMAGICK_PP_CFLAGS)
-	
-libtranscoder_magickpp_la_LDFLAGS = \
-	$(IMAGEMAGICK_PP_LIBS)
-
-endif
-
-
 
 
 ##
