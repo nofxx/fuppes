@@ -365,10 +365,14 @@ CAudioDecoderBase* CTranscodingMgr::CreateAudioDecoder(DECODER_TYPE p_nDecoderTy
       break;
     
     case DT_MUSEPACK:
-      #ifdef HAVE_MUSEPACK
+      /*#ifdef HAVE_MUSEPACK
       pResult = (CAudioDecoderBase*)(new CMpcDecoder());
-      *p_nBufferSize = MPC_DECODER_BUFFER_LENGTH * 4;
-      #endif
+      *p_nBufferSize = MPC_DECODER_BUFFER_LENGTH * 4;*/
+			pResult = CPluginMgr::audioDecoderPlugin("musepack");
+			if(pResult && pResult->getOutBufferSize() > 0) {
+				*p_nBufferSize = pResult->getOutBufferSize();
+			}
+      //#endif
       break;
   
     case DT_FLAC:

@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            HTTPMessage.cpp
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -59,7 +60,10 @@ CHTTPMessage::CHTTPMessage()
   m_pTranscodingSessionInfo = NULL;  
   m_pTranscodingCacheObj = NULL;
   #endif
-  m_nTransferEncoding    = HTTP_TRANSFER_ENCODING_NONE;  
+  m_nTransferEncoding    = HTTP_TRANSFER_ENCODING_NONE;
+
+	memset(&m_LocalEp, '\0', sizeof(struct sockaddr_in));
+	memset(&m_RemoteEp, '\0', sizeof(struct sockaddr_in));
 }
 
 CHTTPMessage::~CHTTPMessage()
@@ -87,8 +91,7 @@ CHTTPMessage::~CHTTPMessage()
 
 void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, std::string p_sContentType)
 {
-	CMessageBase::SetMessage("");
-  
+	m_sMessage = "";  
   m_nHTTPMessageType  = nMsgType;
 	m_sHTTPContentType  = p_sContentType;
   m_nBinContentLength = 0;
@@ -96,11 +99,17 @@ void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, std::string p_sContent
 
 bool CHTTPMessage::SetMessage(std::string p_sMessage)
 {
-  CMessageBase::SetMessage(p_sMessage);  
-
-  CHTTPParser Parser;
-  Parser.parseHeader(this);
-  
+	m_sMessage = p_sMessage;
+	std::string::size_type nPos = m_sMessage.find("\r\n\r\n");  
+	if(nPos != string::npos) {	
+		m_sHeader  = m_sMessage.substr(0, nPos + strlen("\r\n"));
+		m_sContent = m_sMessage.substr(nPos + 4, m_sMessage.length() - nPos - 4);
+	}
+	else {
+		//return false;
+	}  
+	
+  CHTTPParser::parseHeader(m_sHeader, this);  
   return BuildFromString(p_sMessage);
 }
 
@@ -109,12 +118,9 @@ bool CHTTPMessage::SetHeader(std::string p_sHeader)
   // header is already set
   if(m_sHeader.length() > 0)
     return true;
- 
-	// this sets m_sHeader
-  CMessageBase::SetHeader(p_sHeader);  
-  
-  CHTTPParser Parser;
-  return Parser.parseHeader(this);
+
+	m_sHeader = p_sHeader;
+  return CHTTPParser::parseHeader(m_sHeader, this);
 }
 
 void CHTTPMessage::SetBinContent(char* p_szBinContent, fuppes_off_t p_nBinContenLength)
@@ -130,10 +136,8 @@ void CHTTPMessage::SetBinContent(char* p_szBinContent, fuppes_off_t p_nBinConten
 
 CUPnPAction* CHTTPMessage::GetAction()
 {
-  if(!m_pUPnPAction) {                
-    // Build UPnPAction 
-    CUPnPActionFactory ActionFactory;
-    m_pUPnPAction = ActionFactory.BuildActionFromString(m_sContent, m_pDeviceSettings);
+  if(!m_pUPnPAction) {
+    m_pUPnPAction = CUPnPActionFactory::buildActionFromString(m_sContent, m_pDeviceSettings);
   }
   return m_pUPnPAction;
 }
@@ -860,4 +864,26 @@ Content-Length: 0
   
   
   return true;     
+}
+
+void CHTTPMessage::SetLocalEndPoint(sockaddr_in p_EndPoint)
+{	
+	m_LocalEp.sin_family	= p_EndPoint.sin_family;
+	m_LocalEp.sin_addr 		= p_EndPoint.sin_addr;
+	m_LocalEp.sin_port		= p_EndPoint.sin_port;
+	memset(&m_LocalEp.sin_zero, 0, sizeof(m_LocalEp.sin_zero));	
+}
+
+void CHTTPMessage::SetRemoteEndPoint(sockaddr_in p_EndPoint)
+{
+	m_RemoteEp.sin_family	= p_EndPoint.sin_family;
+	m_RemoteEp.sin_addr		= p_EndPoint.sin_addr;
+	m_RemoteEp.sin_port		= p_EndPoint.sin_port;
+	memset(&m_RemoteEp.sin_zero, 0, sizeof(m_RemoteEp.sin_zero));	
+}
+
+std::string CHTTPMessage::GetRemoteIPAddress() 
+{ 
+	string ip = inet_ntoa(m_RemoteEp.sin_addr);
+	return ip;
 }

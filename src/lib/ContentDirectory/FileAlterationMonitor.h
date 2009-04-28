@@ -189,10 +189,36 @@ class CInotifyMonitor: public CFileAlterationMonitor
     
   private:
     Inotify*                                m_pInotify;  
-    fuppesThread                            m_MonitorThread;    
+    fuppesThread                            m_monitorThread;
     // path, watch
     std::map<std::string, InotifyWatch*>    m_watches;
 };
 #endif
+
+
+#ifdef WIN32
+
+class CWindowsFileMonitor: public CFileAlterationMonitor
+{
+  public:
+    CWindowsFileMonitor(IFileAlterationMonitor* pEventHandler);
+
+    virtual ~CWindowsFileMonitor();
+    virtual bool  addWatch(std::string path);
+    virtual void  removeWatch(std::string path);
+    virtual void  moveWatch(std::string fromPath, std::string toPath);
+		
+	private:
+    fuppesThread                            m_monitorThread;
+    //std::map<std::string, InotifyWatch*>    m_watches;
+};
+
+/*http://msdn.microsoft.com/en-us/library/aa365261(VS.85).aspx
+
+FindFirstChangeNotification
+FindNextChangeNotification */
+
+#endif
+
 
 #endif // _FILEALTERATIONMONITOR_H

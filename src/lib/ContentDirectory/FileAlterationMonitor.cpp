@@ -69,7 +69,7 @@ CInotifyMonitor::CInotifyMonitor(IFileAlterationMonitor* pEventHandler):
   CFileAlterationMonitor(pEventHandler)
 {
   m_pInotify = new Inotify();
-  m_MonitorThread = (fuppesThread)NULL;
+  m_monitorThread = (fuppesThread)NULL;
   m_active = true;
 }
 
@@ -80,8 +80,8 @@ CInotifyMonitor::~CInotifyMonitor()
     //inotify_rm_watch(m_nInotifyFd, iter);
   }*/
 
-  fuppesThreadCancel(m_MonitorThread);
-  fuppesThreadClose(m_MonitorThread);
+  fuppesThreadCancel(m_monitorThread);
+  fuppesThreadClose(m_monitorThread);
   
   delete m_pInotify;
 }
@@ -91,10 +91,10 @@ bool CInotifyMonitor::addWatch(std::string path)
   appendTrailingSlash(&path);
   
 	//p_sDirectory = p_sDirectory.substr(0, p_sDirectory.length()-1);
-	cout << "create watch: " << path << endl;
+	//cout << "create watch: " << path << endl;
   
   if(m_watches.find(path) != m_watches.end()) {
-    cout << "watch already exists: " << path << endl;
+    //cout << "watch already exists: " << path << endl;
     return false;
   }
   
@@ -107,8 +107,8 @@ bool CInotifyMonitor::addWatch(std::string path)
     cout << "exception: " << ex.GetMessage() << endl;
   }
   
-  if(!m_MonitorThread) {
-    fuppesThreadStart(m_MonitorThread, WatchLoop);
+  if(!m_monitorThread) {
+    fuppesThreadStart(m_monitorThread, WatchLoop);
   }
 
   return true;
@@ -117,11 +117,11 @@ bool CInotifyMonitor::addWatch(std::string path)
 void CInotifyMonitor::removeWatch(std::string path)
 {
   appendTrailingSlash(&path);
-  cout << "remove watch: " << path << endl;
+  //cout << "remove watch: " << path << endl;
   
   std::map<std::string, InotifyWatch*>::iterator iter;
   if((iter = m_watches.find(path)) == m_watches.end()) {
-    cout << "watch not found: " << path << endl;
+    //cout << "watch not found: " << path << endl;
     return;
   }
   
@@ -135,7 +135,7 @@ void CInotifyMonitor::moveWatch(std::string fromPath, std::string toPath)
   appendTrailingSlash(&fromPath);
   appendTrailingSlash(&toPath);
 
-  cout << "move watch: " << fromPath << " to: " << toPath << endl;
+  //cout << "move watch: " << fromPath << " to: " << toPath << endl;
   
   removeWatch(fromPath);
   addWatch(toPath);
@@ -323,3 +323,84 @@ fuppesThreadCallback WatchLoop(void* arg)
 }
   
 #endif // HAVE_INOTIFY
+
+
+#ifdef WIN32
+fuppesThreadCallback WatchLoop(void* arg);
+
+CWindowsFileMonitor::CWindowsFileMonitor(IFileAlterationMonitor* pEventHandler)
+:CFileAlterationMonitor(pEventHandler)
+{
+  m_monitorThread = (fuppesThread)NULL;
+  m_active = true;
+}
+
+CWindowsFileMonitor::~CWindowsFileMonitor()
+{
+  fuppesThreadCancel(m_monitorThread);
+  fuppesThreadClose(m_monitorThread);
+}
+  
+bool CWindowsFileMonitor::addWatch(std::string path)
+{
+  appendTrailingSlash(&path);
+  
+	//p_sDirectory = p_sDirectory.substr(0, p_sDirectory.length()-1);
+	cout << "create watch: " << path << endl;
+  
+ /* if(m_watches.find(path) != m_watches.end()) {
+    cout << "watch already exists: " << path << endl;
+    return false;
+  }
+  
+  try {     // IN_UNMOUNT
+		InotifyWatch* pWatch = new InotifyWatch(path, IN_CREATE | IN_DELETE | IN_MOVE | IN_CLOSE_WRITE); // IN_MODIFY 
+    m_pInotify->Add(pWatch);
+    m_watches[path] = pWatch;
+  }
+  catch(InotifyException &ex) {
+    cout << "exception: " << ex.GetMessage() << endl;
+  }*/
+  
+  if(!m_monitorThread) {
+    fuppesThreadStart(m_monitorThread, WatchLoop);
+	}
+  return true;
+}
+  
+void CWindowsFileMonitor::removeWatch(std::string path)
+{
+  appendTrailingSlash(&path);
+  cout << "remove watch: " << path << endl;
+  
+/*  std::map<std::string, InotifyWatch*>::iterator iter;
+  if((iter = m_watches.find(path)) == m_watches.end()) {
+    cout << "watch not found: " << path << endl;
+    return;
+  }
+  
+  m_pInotify->Remove(iter->second);
+  delete iter->second;  
+  m_watches.erase(iter);  */
+}
+
+void CWindowsFileMonitor::moveWatch(std::string fromPath, std::string toPath)
+{
+  appendTrailingSlash(&fromPath);
+  appendTrailingSlash(&toPath);
+
+  cout << "move watch: " << fromPath << " to: " << toPath << endl;
+  
+  removeWatch(fromPath);
+  addWatch(toPath);
+}
+
+fuppesThreadCallback WatchLoop(void* arg)    
+{
+  CWindowsFileMonitor* monitor = (CWindowsFileMonitor*)arg;
+	
+	
+	fuppesThreadExit();
+}
+
+#endif

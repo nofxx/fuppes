@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2006-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -397,10 +397,10 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 	
 	OBJECT_TYPE type = (OBJECT_TYPE)qry->result()->asInt("TYPE");
 	if(type >= ITEM_IMAGE_ITEM && type < ITEM_IMAGE_ITEM_MAX) {
-		cout << "request image file " << sPath << endl;
+		//cout << "request image file " << sPath << endl;
 	}
 	else if(type >= ITEM_AUDIO_ITEM && type < ITEM_AUDIO_ITEM_MAX) {
-		cout << "request image from audio file " << sPath << endl;
+		//cout << "request image from audio file " << sPath << endl;
 		audioFile = true;
 	}
 	else {
@@ -414,8 +414,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 		delete qry;
     return false;
   }
-
-	cout << "image request: " << sPath << endl;
+	//cout << "image request: " << sPath << endl;
 
 	
 	int width = pRequest->getVarAsInt("width");
@@ -432,7 +431,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 		size_t outSize = 0;
 		unsigned char* inBuffer = (unsigned char*)malloc(1);
 		unsigned char* outBuffer = (unsigned char*)malloc(1);
-		char* mimeType =(char*)malloc(1);
+		char* mimeType = (char*)malloc(1);
 		
 		// embedded image from audio file
 		if(audioFile) {

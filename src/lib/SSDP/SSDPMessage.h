@@ -1,3 +1,4 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            SSDPMessage.h
  * 
@@ -28,7 +29,14 @@
 #include "../../config.h"
 #endif
 
-#include "../MessageBase.h"
+#ifndef WIN32
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#else
+#include <winsock2.h>
+#endif
+
 #include <string>
 
 typedef enum tagSSDP_MESSAGE_TYPE
@@ -52,16 +60,18 @@ typedef enum tagM_SEARCH_ST
   M_SEARCH_ST_UNSUPPORTED  
 }M_SEARCH_ST;
 
-class CSSDPMessage: public CMessageBase
+class CSSDPMessage
 {
-
   public:
-
     CSSDPMessage();    
-  	virtual ~CSSDPMessage();
+  	~CSSDPMessage();
 	  void Assign(CSSDPMessage* pSSDPMessage);
 
-    virtual bool SetMessage(std::string p_sMessage);
+		std::string GetContent()         { return m_sContent;                     }
+    std::string	GetMessage()         { return m_sMessage;                     }
+    std::string GetHeader()          { return m_sHeader;                      }
+		
+    bool SetMessage(std::string p_sMessage);
 
     std::string GetLocation() { return m_sLocation; }
     std::string GetUUID()     { return m_sUUID;     }    
@@ -71,6 +81,12 @@ class CSSDPMessage: public CMessageBase
     M_SEARCH_ST GetMSearchST() { return m_nMSearchST; }
     std::string GetSTAsString() { return m_sST; }
     
+		sockaddr_in GetLocalEndPoint() { return m_LocalEp; }
+    sockaddr_in GetRemoteEndPoint() { return m_RemoteEp; }
+
+	  void        SetLocalEndPoint(sockaddr_in);
+	  void        SetRemoteEndPoint(sockaddr_in);		
+		
   private:
     std::string m_sLocation;
     std::string m_sServer;
@@ -83,6 +99,11 @@ class CSSDPMessage: public CMessageBase
     int m_nMX;
     M_SEARCH_ST m_nMSearchST;
 
+		std::string m_sContent;
+    std::string m_sHeader;
+    std::string m_sMessage;	
+		sockaddr_in m_LocalEp;
+		sockaddr_in m_RemoteEp;
 };
 
 #endif // _SSDPMESSAGE_H

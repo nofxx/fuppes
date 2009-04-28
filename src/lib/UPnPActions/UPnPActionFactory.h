@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            UPnPActionFactory.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -44,16 +45,15 @@ class CUPnPActionFactory
     *  @param  p_sContent  the string to build th message from
     *  @return returns the action object on success otherwise NULL
     */
-    CUPnPAction* BuildActionFromString(std::string p_sContent, CDeviceSettings* pDeviceSettings);
+		static CUPnPAction* buildActionFromString(std::string p_sContent, CDeviceSettings* pDeviceSettings);
 
   private:
           
-    bool parseBrowseAction(CUPnPBrowse* pAction);		
-		bool parseSearchAction(CUPnPSearch* pAction);
-		bool parseSortCriteria(CUPnPBrowseSearchBase* action);
+    static bool parseBrowseAction(CUPnPBrowse* pAction);		
+		static bool parseSearchAction(CUPnPSearch* pAction);
+		static bool parseSortCriteria(CUPnPBrowseSearchBase* action);
 		
-		bool parseDestroyObjectAction(CUPnPAction* action);
-
+		static bool parseDestroyObjectAction(CUPnPAction* action);
 };
 
 #endif // _UPNPACTIONFACTORY_H

@@ -100,7 +100,7 @@ void CPluginMgr::init(std::string pluginDir)
 
 			fuppesLibHandle handle;
 			
-			cout << "load: " << fileName << endl;
+			//cout << "load: " << fileName << endl;
 			
 			handle = FuppesLoadLibrary(fileName);
 			if(handle == NULL) {
@@ -513,6 +513,7 @@ bool CAudioDecoderPlugin::initPlugin()
 {
 	m_fileOpen = NULL;
 	m_setOutEndianess = NULL;
+	m_getOutBufferSize = NULL;
 	m_totalSamples = NULL;
 	m_decodeInterleaved = NULL;
 	m_fileClose = NULL;
@@ -528,7 +529,13 @@ bool CAudioDecoderPlugin::initPlugin()
 		cout << "error load symbol 'fuppes_decoder_set_out_endianess'" << endl;
 		return false;
 	}
-	
+
+	// optional
+	m_getOutBufferSize = (audioDecoderGetOutBufferSize_t)FuppesGetProcAddress(m_handle, "fuppes_decoder_get_out_buffer_size");
+	/*if(m_getOutBufferSize == NULL) {
+		cout << "error load symbol 'fuppes_decoder_get_out_buffer_size'" << endl;
+	}*/
+		
 	m_totalSamples = (audioDecoderTotalSamples_t)FuppesGetProcAddress(m_handle, "fuppes_decoder_total_samples");
 	if(m_totalSamples == NULL) {
 		cout << "error load symbol 'fuppes_decoder_total_samples'" << endl;
@@ -548,6 +555,15 @@ bool CAudioDecoderPlugin::initPlugin()
 	}
 	
 	return true;
+}
+
+int CAudioDecoderPlugin::getOutBufferSize()
+{
+	if(!m_getOutBufferSize) {
+		return 0;
+	}
+
+	return m_getOutBufferSize(&m_pluginInfo);
 }
 
 bool CAudioDecoderPlugin::openFile(std::string fileName, CAudioDetails* pAudioDetails)
@@ -633,7 +649,7 @@ CPresentationPlugin::CPresentationPlugin(fuppesLibHandle handle, plugin_info* in
 
 int CPresentationPlugin::ctrlAction(const char* action, arg_list_t* args, arg_list_t* result)
 {
-	cout << "ctrlAction: " << action << endl;
+//	cout << "ctrlAction: " << action << endl;
 
 	stringList ctrlArgs;
 	stringList ctrlResult;
@@ -646,7 +662,7 @@ int CPresentationPlugin::ctrlAction(const char* action, arg_list_t* args, arg_li
 	
 	int ret = ctrl.action(action, &ctrlArgs, &ctrlResult);	
 	if(ret != 0) {
-		cout << "ctrlAction: " << action << " error: " << ret << endl;
+		//cout << "ctrlAction: " << action << " error: " << ret << endl;
 		return ret;
 	}
 	
@@ -663,7 +679,7 @@ int CPresentationPlugin::ctrlAction(const char* action, arg_list_t* args, arg_li
 		}
 	}
 	
-	cout << "ctrlAction: " << action << " DONE" << endl;
+	//cout << "ctrlAction: " << action << " DONE" << endl;
 	return 0;	
 }
 

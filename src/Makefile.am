@@ -8,6 +8,7 @@ CLEANFILES=
 INCLUDES = \
 	-DOLD_DB\
   ${FUPPES_CFLAGS}\
+  ${UUID_CFLAGS}\
   ${LIBXML_CFLAGS}\
   ${PCRE_CFLAGS}\
 	-DFUPPES_DATADIR=\"$(datadir)/fuppes\" \
@@ -20,11 +21,11 @@ bin_PROGRAMS = fuppes
 fuppes_SOURCES = console_main.cpp
 fuppes_LDADD = ./libfuppes.la
 fuppes_DEPENDENCIES = ./libfuppes.la
-fuppes_LDFLAGS = \
-	$(FUPPES_LIBS)\
-	${UUID_LIBS}\
-	${LIBXML_LIBS}\
-	${PCRE_LIBS}
+fuppes_LDFLAGS =
+#	$(FUPPES_LIBS)\
+#	${UUID_LIBS}\
+#	${LIBXML_LIBS}\
+#	${PCRE_LIBS}
 
 if WIN32
 
@@ -57,7 +58,6 @@ endif
 
 libfuppes_la_SOURCES = \
 	lib/ContentDirectory/libdlna/dlna.h \
-  lib/MessageBase.h\
   lib/SSDP/UDPSocket.h\
   lib/SSDP/SSDPCtrl.h\
 	lib/SSDP/SSDPMessage.h\
@@ -119,7 +119,6 @@ libfuppes_la_SOURCES = \
 	lib/Common/Process.h\
 	lib/Plugins/Plugin.cpp\
 	lib/Plugins/Plugin.h\
-  lib/MessageBase.cpp\
   lib/SSDP/UDPSocket.cpp\
 	lib/SSDP/SSDPCtrl.cpp\
 	lib/SSDP/SSDPMessage.cpp\
@@ -167,8 +166,6 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/WavEncoder.cpp\
   lib/Transcoding/PcmEncoder.h\
   lib/Transcoding/PcmEncoder.cpp\
-  lib/Transcoding/MpcWrapper.h\
-  lib/Transcoding/MpcWrapper.cpp\
   lib/Transcoding/FaadWrapper.h\
   lib/Transcoding/FaadWrapper.cpp\
   lib/Transcoding/MadDecoder.h\
@@ -198,7 +195,9 @@ libfuppes_la_LDFLAGS = \
 	$(FUPPES_LIBS)\
 	${UUID_LIBS}\
 	${LIBXML_LIBS}\
-	${PCRE_LIBS}
+	${PCRE_LIBS}\
+	${MAD_LIBS}\
+	${LIBICONV}
 
 
 BUILT_SOURCES += version.h

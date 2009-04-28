@@ -137,7 +137,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 				"  TITLE TEXT DEFAULT NULL, "
 				"  MD5 TEXT DEFAULT NULL, "
 				"  MIME_TYPE TEXT DEFAULT NULL, "
-				"  REF_ID INTEGER DEFAULT NULL, "
+				"  REF_ID INTEGER DEFAULT NULL, " 
 				"  HIDDEN INTEGER DEFAULT 0 "
 				//"  UPDATE_ID INTEGER DEFAULT 0"
 				");"))   
@@ -906,6 +906,8 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
 	string fileName = p_sFileName.substr(path.length(), p_sFileName.length() - path.length());
   if(title.empty()) {
     title = ToUTF8(fileName);
+#warning make configurable
+		title = StringReplace(title, "_", " ");
   }
   
   stringstream sSql;
@@ -1304,7 +1306,7 @@ void CContentDatabase::FamEvent(CFileAlterationEvent* event)
       cout << "DELETE";
       break;
     case FAM_MOVE:
-      cout << "MOVE";
+      cout << "MOVE - " << event->oldFullPath();
       break;
     case FAM_MODIFY:
       cout << "MODIFY";
@@ -1326,26 +1328,29 @@ void CContentDatabase::FamEvent(CFileAlterationEvent* event)
 
 		objId = GetObjId();
 		parentId = GetObjectIDFromFileName(this, event->path());
-		
+		string path = appendTrailingSlash(event->fullPath());
+
     sSql << 
-          "insert into OBJECTS (OBJECT_ID, TYPE, PATH, FILE_NAME, TITLE) values " <<
+          "insert into OBJECTS (OBJECT_ID, TYPE, PATH, TITLE) values " <<
           "(" << objId << 
           ", " << CONTAINER_STORAGE_FOLDER << 
-          ", '" << SQLEscape(appendTrailingSlash(event->path())) << "'" <<
-          ", '" << SQLEscape(event->file()) << "'" <<
+          ", '" << SQLEscape(path) << "'" <<
           ", '" << SQLEscape(event->file()) << "');";        
     Insert(sSql.str());
     
+		cout << "SQL INSERT NEW DIR: " << sSql.str() << endl;
+		
     sSql.str("");
     sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID) " <<
           "values (" << objId << ", " << parentId << ")";      
     Insert(sSql.str());
     
+		// moved in from outside the watches dirs
     if(event->type() == (FAM_CREATE | FAM_MOVE)) {
       cout << "scan moved in" << endl;
       DbScanDir(this, appendTrailingSlash(event->fullPath()), objId);
     }
-	} // new directory
+	} // new or moved directory
   
 	// directory deleted
   else if(event->type() == FAM_DELETE && event->isDir()) {    
@@ -1357,17 +1362,23 @@ void CContentDatabase::FamEvent(CFileAlterationEvent* event)
      
     // update moved folder
     objId = GetObjectIDFromFileName(this, appendTrailingSlash(event->oldFullPath()));
+		
+		//cout << "OBJID: " << objId << " " << appendTrailingSlash(event->oldFullPath()) << endl;
+		
+		// update path
     sSql << 
       "update OBJECTS set " <<
       " PATH = '" << SQLEscape(appendTrailingSlash(event->fullPath())) << "', "
-      " FILE_NAME = '" << SQLEscape(event->file()) << "', " <<
       " TITLE = '" << SQLEscape(event->file()) << "' " <<
-      "where ID = " << objId;
+      "where OBJECT_ID = " << objId;
       
-    //cout << sSql.str() << endl;
+    cout << sSql.str() << endl;
     Execute(sSql.str());
     sSql.str("");
-        
+		
+		// move fam watch
+		m_pFileAlterationMonitor->moveWatch(event->oldFullPath(), event->fullPath());
+		
     // update mapping
     parentId = GetObjectIDFromFileName(this, event->path());
     
@@ -1379,30 +1390,25 @@ void CContentDatabase::FamEvent(CFileAlterationEvent* event)
     //cout << sSql.str() << endl;
     Execute(sSql.str());
     sSql.str("");
-    
-    
+
     // update child object's path
     sSql << "select ID, PATH from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(event->oldFullPath())) << "%' and DEVICE is NULL";
-#ifdef OLD_DB
-		Select(sSql.str());    
-#else
+
 		CSQLQuery* qry = CDatabase::query();
 		qry->select(sSql.str());
-#endif
 		sSql.str("");
 
     string newPath;  
     CContentDatabase db; 
-		
-#ifdef OLD_DB
-		while(!Eof()) {
-			CSQLResult* result = GetResult();
-#else
+
 		while(!qry->eof()) {
 			CSQLResult* result = qry->result();
-#endif
+
       newPath = StringReplace(result->asString("PATH"), appendTrailingSlash(event->oldFullPath()), appendTrailingSlash(event->fullPath()));
 
+#warning move fam watch
+			//m_pFileAlterationMonitor->moveWatch();
+			
       #warning sql prepare
       sSql << 
         "update OBJECTS set " <<
@@ -1413,15 +1419,9 @@ void CContentDatabase::FamEvent(CFileAlterationEvent* event)
       db.Execute(sSql.str());
       sSql.str("");
 
-#ifdef OLD_DB
-      Next();
-		}
-#else
 			qry->next();
 		}   
-		delete qry;
-#endif
-    
+		delete qry;    
   } // directory moved/renamed  
  
   
@@ -1439,8 +1439,7 @@ void CContentDatabase::FamEvent(CFileAlterationEvent* event)
     //cout << "FAM_FILE_DEL: " << path << " name: " << name << endl;
     
     objId = GetObjectIDFromFileName(this, event->fullPath());
-    deleteObject(objId);
-    
+    deleteObject(objId);    
   } // file deleted 
   
 	// file moved

@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            HTTPParser.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2006-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -29,20 +30,19 @@
 #include "../../config.h"
 #endif
 
+#include <string>
+
 class CHTTPMessage;
 
 class CHTTPParser
 { 
   public:
-    bool parseHeader(CHTTPMessage* pMessage);
-		static void ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage);
+  	static bool parseHeader(std::string header, CHTTPMessage* message);
+		static void ConvertURLEncodeContentToPlain(CHTTPMessage* message);
 	
   private:
-	  CHTTPMessage* m_pMessage;
-
-		void parseCommonValues();
-		void parseGetVars();
-		
+		static void parseCommonValues(std::string header, CHTTPMessage* message);
+		static void parseGetVars(std::string header, CHTTPMessage* message);		
 };
 
 #endif // _HTTPPARSER_H

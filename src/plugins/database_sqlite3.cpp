@@ -53,7 +53,7 @@ class CSQLiteQuery: public CSQLQuery
 {
 	friend class CSQLiteConnection;
 	
-	public:
+	public:		
 		~CSQLiteQuery() {
 			clear();
 		}
@@ -74,20 +74,15 @@ class CSQLiteQuery: public CSQLQuery
 		
 		void clear() {
 			for(m_ResultListIterator = m_ResultList.begin(); m_ResultListIterator != m_ResultList.end();) {
-				if(m_ResultList.empty())
-				  break;
-				
 				CSQLResult* pResult = *m_ResultListIterator;
-				std::list<CSQLResult*>::iterator tmpIt = m_ResultListIterator;          
-				++tmpIt;
-				m_ResultList.erase(m_ResultListIterator);
-				m_ResultListIterator = tmpIt;
-				delete pResult;
-			} 
-		
+				delete pResult;				
+				m_ResultListIterator++;
+			}		
 			m_ResultList.clear();
 			m_rowsReturned = 0;
 		}
+
+		CDatabaseConnection* connection() { return m_connection; }
 		
 	private:
 		CSQLiteQuery(CDatabaseConnection* connection, sqlite3* handle);		
@@ -98,6 +93,8 @@ class CSQLiteQuery: public CSQLQuery
 		std::list<CSQLResult*> m_ResultList;
     std::list<CSQLResult*>::iterator m_ResultListIterator;
 		off_t m_rowsReturned;
+		
+		CDatabaseConnection* m_connection;
 };
 
 
@@ -213,9 +210,9 @@ void CSQLiteConnection::rollback()
 
 
 CSQLiteQuery::CSQLiteQuery(CDatabaseConnection* connection, sqlite3* handle)
-:CSQLQuery(connection)
 {
 	m_handle = handle;
+	m_connection = connection;
 }
 
 bool CSQLiteQuery::select(const std::string sql)
@@ -245,7 +242,7 @@ bool CSQLiteQuery::select(const std::string sql)
     nTry++;
   }while(nResult == SQLITE_BUSY);
     
-  if(nResult != SQLITE_OK) {    
+  if(nResult != SQLITE_OK) {
     //CSharedLog::Log(L_DBG, __FILE__, __LINE__, "SQL error: %s, Statement: %s\n", szErr, p_sStatement.c_str());
     sqlite3_free(szErr);
     return false;
@@ -268,7 +265,7 @@ bool CSQLiteQuery::select(const std::string sql)
   m_ResultListIterator = m_ResultList.begin();     
   sqlite3_free_table(szResult);
 
-	//std::cout << "sqlite3 select done : " << &m_ResultListIterator << std::endl;
+	//std::cout << "sqlite3 select done : " << this << std::endl;
 	return true;
 }
 

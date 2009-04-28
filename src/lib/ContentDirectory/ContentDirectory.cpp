@@ -519,7 +519,7 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
 			"o.HIDDEN = 0 and " <<
 			"m." << sDevice << " and o." << sDevice;
 
-	cout << sSql.str() << endl;	
+	//cout << sSql.str() << endl;	
 
 	qry->select(sSql.str());
 	if(!qry->eof())
@@ -1216,7 +1216,7 @@ void CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_ps
 	
 	string output;
 	output = (const char*)buf->content;	
-  CSharedLog::Log(L_DBG, __FILE__, __LINE__, output.c_str());
+  CSharedLog::Log(L_DBG, __FILE__, __LINE__, output);
   
 	xmlBufferFree(buf);
 	delete qry;

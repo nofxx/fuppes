@@ -90,9 +90,10 @@ int fuppes_transcoder_transcode_image_mem(plugin_info* plugin,
 	if(status == MagickFalse) {
 		plugin->log(0, __FILE__, __LINE__,
 								"error reading image from buffer. size: %d", inSize);
-		MagickRelinquishMemory(wand);
+		wand = DestroyMagickWand(wand);
 		return -1;
 	}
+	// wand = DestroyMagickWand(wand);
 
 	printf("magickWand %d\n", 2);
 	
@@ -101,8 +102,8 @@ int fuppes_transcoder_transcode_image_mem(plugin_info* plugin,
 	sprintf(&geometry, "%dx%d", width, height);
 	//char* geometry = "250x250";
 	wandOut = MagickTransformImage(wand, "", geometry);
-	MagickRelinquishMemory(wand);
-	if(wandOut == NULL) {
+	wand = DestroyMagickWand(wand);
+	if(wandOut == NULL) {		
 		return -1;
 	}
 
@@ -120,8 +121,9 @@ int fuppes_transcoder_transcode_image_mem(plugin_info* plugin,
 	
 	printf("magickWand %d, %d\n", 4, *outSize);
 	
-	MagickRelinquishMemory(wandOut);
-	return 0;
+	//MagickRelinquishMemory(wandOut);
+	wandOut = DestroyMagickWand(wandOut);
+	return 0;	
 }
 
 void unregister_fuppes_plugin(plugin_info* info)

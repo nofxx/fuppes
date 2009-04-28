@@ -1,7 +1,10 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id: $
 
+ACLOCAL_AMFLAGS = -I m4
+
 SUBDIRS = \
+	m4 \
   src \
 	src/plugins \
 	src/windows
@@ -23,7 +26,7 @@ EXTRA_DIST = \
 	NEWS\
 	TODO\
   THANKS\
-	configure.in\
+	configure.ac\
 	Makefile.am\
 	src/Makefile.am\
 	src/plugins/Makefile.am\

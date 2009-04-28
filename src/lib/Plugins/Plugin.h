@@ -219,6 +219,7 @@ class CTranscoderPlugin: public CPlugin, CTranscoderBase
 
 typedef int		(*audioDecoderFileOpen_t)(plugin_info* plugin, const char* fileName, audio_settings_t* settings);
 typedef int		(*audioDecoderSetOutEndianess_t)(plugin_info* plugin, ENDIANESS endianess);
+typedef int		(*audioDecoderGetOutBufferSize_t)(plugin_info* plugin);
 typedef int		(*audioDecoderTotalSamples_t)(plugin_info* plugin);
 typedef int		(*audioDecoderDecodeInterleaved_t)(plugin_info* plugin, char* pcmOut, int bufferSize, int* bytesRead);
 typedef void	(*audioDecoderFileClose_t)(plugin_info* plugin);
@@ -237,6 +238,7 @@ class CAudioDecoderPlugin: public CPlugin, public CAudioDecoderBase
 		
     bool  openFile(std::string fileName, CAudioDetails* pAudioDetails);  
 		void	setOutEndianness(ENDIANESS endianess);
+		int		getOutBufferSize();
     int   numPcmSamples();  
     int   decodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead);  
     void  closeFile();
@@ -262,6 +264,7 @@ class CAudioDecoderPlugin: public CPlugin, public CAudioDecoderBase
 	private:
 		audioDecoderFileOpen_t						m_fileOpen;
 		audioDecoderSetOutEndianess_t			m_setOutEndianess;
+		audioDecoderGetOutBufferSize_t		m_getOutBufferSize;
 		audioDecoderTotalSamples_t				m_totalSamples;
 		audioDecoderDecodeInterleaved_t		m_decodeInterleaved;
 		audioDecoderFileClose_t						m_fileClose;

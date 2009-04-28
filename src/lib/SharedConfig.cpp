@@ -597,11 +597,14 @@ std::string CSharedConfig::CreateTempFileName()
 
 bool CSharedConfig::isAlbumArtFile(const std::string fileName)
 {
+	string name = ToLower(fileName);
 #warning todo
-	if(fileName.compare("cover.jpg") == 0 ||
-		 fileName.compare("cover.png") == 0 ||
-		 fileName.compare(".folder.jpg") == 0 ||
-		 fileName.compare(".folder.png") == 0)
+	if(name.compare("cover.jpg") == 0 ||
+		 name.compare("cover.png") == 0 ||
+		 name.compare(".folder.jpg") == 0 ||
+		 name.compare(".folder.png") == 0 ||
+		 name.compare("front.jpg") == 0 ||
+		 name.compare("front.png") == 0)
 		return true;
 	
 	return false;

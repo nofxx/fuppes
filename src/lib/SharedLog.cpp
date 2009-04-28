@@ -301,36 +301,11 @@ void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, 
   CSharedLog::Log(nLogLevel, p_szFileName, p_nLineNumber, p_sMessage.c_str());  
 }
 
-void CSharedLog::Log(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* p_szFormat, ...)
+void CSharedLog::Log(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const std::string msg)
 {
-	va_list args;
-  va_start(args, p_szFormat);
-	LogArgs(p_nLogLevel, p_sFileName, p_nLineNumber, p_szFormat, args);
-	va_end(args);
-}
+  if(p_nLogLevel >= CSharedLog::Shared()->m_nLogLevel)
+    return;
 
-void CSharedLog::LogArgs(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* p_szFormat, va_list args)
-{
-	char buffer[8192];	
-	vsnprintf(buffer, sizeof(buffer) - 1, p_szFormat, args);  
-
-  switch(p_nLogLevel) {
-    case L_NORM:
-      if(CSharedLog::Shared()->m_nLogLevel < 1)
-        return;
-      break;
-      
-    case L_EXT:    
-      if(CSharedLog::Shared()->m_nLogLevel < 2)
-        return;
-      break;
-      
-    case L_DBG:
-      if(CSharedLog::Shared()->m_nLogLevel < 3)
-        return;
-      break;
-  } // switch (m_nLogLevel)
-  
   if(!m_sLogFileName.empty()) {  
     if(!p_sFileName.empty() && p_nLineNumber > 0) {
       #ifndef WIN32
@@ -349,7 +324,7 @@ void CSharedLog::LogArgs(int p_nLogLevel, const std::string p_sFileName, int p_n
       *m_fsLogFile << "== " << p_sFileName << " (" << p_nLineNumber <<  ") :: " <<
         sNowtime << " ==" << endl;
     }
-    *m_fsLogFile << buffer << endl << endl;
+    *m_fsLogFile << msg << endl << endl;
   }
   else {
     if(!p_sFileName.empty() && p_nLineNumber > 0) {
@@ -369,8 +344,29 @@ void CSharedLog::LogArgs(int p_nLogLevel, const std::string p_sFileName, int p_n
       cout << "== " << p_sFileName << " (" << p_nLineNumber <<  ") :: " <<
         sNowtime << " ==" << endl;
     }      
-    cout << buffer << endl << endl;
+    cout << msg << endl << endl;
   }
+}
+
+void CSharedLog::Log(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* p_szFormat, ...)
+{
+	if(p_nLogLevel >= CSharedLog::Shared()->m_nLogLevel)
+    return;
+	
+	va_list args;
+  va_start(args, p_szFormat);
+	LogArgs(p_nLogLevel, p_sFileName, p_nLineNumber, p_szFormat, args);
+	va_end(args);
+}
+
+void CSharedLog::LogArgs(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* p_szFormat, va_list args)
+{
+	if(p_nLogLevel >= CSharedLog::Shared()->m_nLogLevel)
+    return;
+	
+	char buffer[8192];	
+	vsnprintf(buffer, sizeof(buffer) - 1, p_szFormat, args);
+	Log(p_nLogLevel, p_sFileName, p_nLineNumber, string(buffer));	
 }
 
 void CSharedLog::Print(const char* p_szFormat, ...)

@@ -152,7 +152,7 @@ int Presentation::toString(char** szResult)
 	result <<	"</body>" <<
 		"</html>";
 	
-	std::cout << result.str() << std::endl;	
+	//std::cout << result.str() << std::endl;	
 	return set_value(szResult, result.str().c_str());
 }
 
@@ -193,16 +193,16 @@ int fuppes_presentation_handle_request(plugin_info* plugin,
 									 const char* url, arg_list_t* get, arg_list_t* post,
 									 int* error, char** mime_type, char** result, int* length)
 {
-	plugin->log(0, __FILE__, __LINE__, "request URL: %s", url);	
+	//plugin->log(0, __FILE__, __LINE__, "request URL: %s", url);	
 	
 	handle_request(plugin, url, get, post,
 								 error, mime_type, result, length);	
 	
 	if((*error) == 200) {
-		printf("RETURN 0 %s\n", url);
+		//printf("RETURN 0 %s\n", url);
 		return 0;
 	}
-	printf("RETURN 1 %s\n", url);
+	//printf("RETURN 1 %s\n", url);
 	return 1;
 }
 

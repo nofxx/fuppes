@@ -289,10 +289,21 @@ fuppesThreadCallback AcceptLoop(void *arg)
 
 	pHTTPServer->m_isStarted = true;
 
+	
+	#ifdef HAVE_SELECT
+	fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(nSocket, &fds);
+	#endif
+	
   // loop	
 	while(!pHTTPServer->m_bBreakAccept)
 	{
-  
+		#ifdef HAVE_SELECT		
+ 		int sel = select(nSocket + 1, &fds, NULL, NULL, NULL);
+		//cout << "SELECT: " << sel << endl;
+		#endif
+		
     // accept new connection
     nConnection = accept(nSocket, (struct sockaddr*)&remote_ep, &size);   
 		if(nConnection == -1) {
@@ -416,15 +427,25 @@ bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request)
   bool bRecvErr   = false; 
   
   unsigned int nLoopCnt = 0;
-  
-  
+
+#ifdef HAVE_SELECT
+	fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(p_Session->GetConnection(), &fds);
+#endif
+	
   // receive loop
   int nTmpRecv = 0;
   while(bDoReceive)
   {           
     if(nRecvCnt == 30)
       break;
-                   
+    
+#ifdef HAVE_SELECT		
+ 		int sel = select(p_Session->GetConnection() + 1, &fds, NULL, NULL, NULL);
+		//cout << "SELECT: " << sel << endl;
+#endif
+		
     // receive
     nTmpRecv = recv(p_Session->GetConnection(), szBuffer, 4096, 0);    
     

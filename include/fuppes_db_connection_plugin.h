@@ -39,6 +39,8 @@ class CDatabaseConnection;
 class CSQLResult
 {
 	public:
+		virtual ~CSQLResult() {	}
+		
     virtual bool isNull(std::string fieldName) = 0;
 		virtual std::string	asString(std::string fieldName) = 0;		
 		virtual unsigned int asUInt(std::string fieldName) = 0;
@@ -48,11 +50,9 @@ class CSQLResult
 
 class CSQLQuery
 {
-	public:		
-		CSQLQuery(CDatabaseConnection* connection) {
-			m_connection = connection;
-		}
-		
+	public:
+		virtual ~CSQLQuery() { }
+
 		virtual bool select(const std::string sql) = 0;
 		virtual bool exec(const std::string sql) = 0;
 		virtual off_t insert(const std::string sql) = 0;
@@ -63,9 +63,7 @@ class CSQLQuery
 		virtual off_t lastInsertId() = 0;
 		virtual void clear() = 0;
 		
-		CDatabaseConnection* connection() { return m_connection; }		
-	private:
-		CDatabaseConnection*  m_connection;
+		virtual CDatabaseConnection* connection() = 0;
 };
 
 struct CConnectionParams
@@ -91,7 +89,9 @@ struct CConnectionParams
 
 class CDatabaseConnection
 {
-	public:		
+	public:
+		virtual ~CDatabaseConnection() { }
+
 		virtual CSQLQuery*			query() = 0;
 		virtual bool open(const CConnectionParams params) = 0;
 

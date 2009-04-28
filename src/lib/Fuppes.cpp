@@ -182,6 +182,8 @@ CFuppes::~CFuppes()
 
 void CFuppes::CleanupTimedOutDevices()
 {  
+	MutexLocker locker(&m_RemoteDevicesMutex);
+	
   if(m_TimedOutDevices.size() == 0) {
     return;
   }
@@ -191,17 +193,18 @@ void CFuppes::CleanupTimedOutDevices()
   {
     // ... and delete timed out devices
     CUPnPDevice* pTimedOutDevice = *m_TimedOutDevicesIterator;      
-    m_TimedOutDevicesIterator = m_TimedOutDevices.erase(m_TimedOutDevicesIterator);    
+    //m_TimedOutDevicesIterator = m_TimedOutDevices.erase(m_TimedOutDevicesIterator);    
     delete pTimedOutDevice;    
   }  
+	m_TimedOutDevices.clear();
 }
 
 void CFuppes::OnTimer(CUPnPDevice* pSender)
 {
-  fuppesThreadLockMutex(&m_OnTimerMutex);
+  MutexLocker locker(&m_OnTimerMutex);
   
-  CleanupTimedOutDevices();
-  
+	CleanupTimedOutDevices();
+	
   // local device must send alive message
   if(pSender->GetIsLocalDevice()) {                                  
     
@@ -234,7 +237,6 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
 
   }
   
-  fuppesThreadUnlockMutex(&m_OnTimerMutex);
 }
 
 /** Returns URL of the HTTP member

@@ -2268,8 +2268,12 @@ int CFFmpeg::ffmpeg_main(int argc, char* argv[])
         avctx_opts[i]= avcodec_alloc_context2((CodecType)i);
     }
     avformat_opts = av_alloc_format_context();
-#ifdef HAVE_LIBSWSCALE
-    sws_opts = sws_getContext(16,16,0, 16,16,0, sws_flags, NULL,NULL,NULL);
+#ifdef HAVE_LIBSWSCALE	
+		#if LIBAVFORMAT_BUILD >= ((52<<16)+(0<<8)+0)
+			sws_opts = sws_getContext(16,16,(PixelFormat)0, 16,16,(PixelFormat)0, sws_flags, NULL,NULL,NULL);
+		#else
+			sws_opts = sws_getContext(16,16,0, 16,16,0, sws_flags, NULL,NULL,NULL);
+		#endif
 #endif
 
     

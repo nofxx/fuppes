@@ -29,6 +29,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#ifdef WIN32
+#include <sys/file.h>
+#endif
 		
 #include <string.h>
 #ifndef TREMOR

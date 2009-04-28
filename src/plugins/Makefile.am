@@ -254,10 +254,21 @@ libdecoder_flac_la_LDFLAGS = \
 endif
 
 
+## MusePack decoder
+if MUSEPACK_DECODER_PLUGIN
 
-##
-##  AUDIO ENCODER PLUGINS
-##
+lib_LTLIBRARIES += libdecoder_musepack.la
+
+libdecoder_musepack_la_SOURCES = \
+	decoder_musepack.c
+
+libdecoder_musepack_la_CFLAGS = \
+	$(FLAC_CFLAGS)
+	
+libdecoder_musepack_la_LDFLAGS = \
+	$(FLAC_LIBS)
+
+endif
 
 ## twolame decoder
 #if TWOLAME_ENCODER_PLUGIN
@@ -274,6 +285,19 @@ endif
 #	$(TWOLAME_LIBS)
 
 #endif
+
+
+
+##
+##  AUDIO ENCODER PLUGINS
+##
+
+# wav/pcm
+#lib_LTLIBRARIES += libencoder_pcm_wav.la
+#libencoder_pcm_wav_la_SOURCES = encoder_pcm_wav.c
+#libencoder_pcm_wav_la_CFLAGS =	
+#libencoder_pcm_wav_la_LDFLAGS =
+
 
 
 ## L.A.M.E. encoder

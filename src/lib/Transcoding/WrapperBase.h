@@ -160,6 +160,7 @@ class CAudioDecoderBase
     virtual bool OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetails) = 0;      
     virtual void CloseFile() = 0;
     virtual void SetOutputEndianness(ENDIANESS p_nEndianess) { m_nOutEndianess = p_nEndianess; }
+		virtual int getOutBufferSize() { return 0; }
     virtual long DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead) = 0;  
     virtual unsigned int NumPcmSamples() = 0;
   

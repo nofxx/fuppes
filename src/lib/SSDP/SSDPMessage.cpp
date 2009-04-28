@@ -1,3 +1,4 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            SSDPMessage.cpp
  *
@@ -34,6 +35,8 @@ using namespace std;
 CSSDPMessage::CSSDPMessage()
 {
   m_nMessageType = SSDP_MESSAGE_TYPE_UNKNOWN;
+	memset(&m_LocalEp, '\0', sizeof(struct sockaddr_in));
+	memset(&m_RemoteEp, '\0', sizeof(struct sockaddr_in));
 }
 
 CSSDPMessage::~CSSDPMessage()
@@ -42,8 +45,7 @@ CSSDPMessage::~CSSDPMessage()
 
 bool CSSDPMessage::SetMessage(std::string p_sMessage)
 {
-  CMessageBase::SetMessage(p_sMessage);  
-  //CSharedLog::Shared()->DebugLog(LOGNAME, p_sMessage);
+	m_sMessage = p_sMessage;
   
   /* some sample messages */
   
@@ -211,4 +213,20 @@ void CSSDPMessage::Assign(CSSDPMessage* pSSDPMessage)
   pSSDPMessage->SetMessage(m_sMessage);
   pSSDPMessage->SetLocalEndPoint(this->GetLocalEndPoint());
   pSSDPMessage->SetRemoteEndPoint(this->GetRemoteEndPoint());  
+}
+
+void CSSDPMessage::SetLocalEndPoint(sockaddr_in p_EndPoint)
+{	
+	m_LocalEp.sin_family	= p_EndPoint.sin_family;
+	m_LocalEp.sin_addr 		= p_EndPoint.sin_addr;
+	m_LocalEp.sin_port		= p_EndPoint.sin_port;
+	memset(&m_LocalEp.sin_zero, 0, sizeof(m_LocalEp.sin_zero));	
+}
+
+void CSSDPMessage::SetRemoteEndPoint(sockaddr_in p_EndPoint)
+{
+	m_RemoteEp.sin_family	= p_EndPoint.sin_family;
+	m_RemoteEp.sin_addr		= p_EndPoint.sin_addr;
+	m_RemoteEp.sin_port		= p_EndPoint.sin_port;
+	memset(&m_RemoteEp.sin_zero, 0, sizeof(m_RemoteEp.sin_zero));	
 }

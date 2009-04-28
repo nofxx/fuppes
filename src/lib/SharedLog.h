@@ -92,6 +92,7 @@ public:
   //void  Syslog(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber);
 
 		
+	static void Log(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const std::string msg);
 	static void Log(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* p_szFormat, ...);
 	static void LogArgs(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* p_szFormat, va_list args);
 	static void Print(const char* p_szFormat, ...);

@@ -26,7 +26,6 @@
 #include "../SharedLog.h"
 #include "../SharedConfig.h"
 
-#include <iostream>
 #include <sstream>
 #include <string.h>
 
@@ -48,12 +47,13 @@ CUDPSocket::CUDPSocket()
 	m_ReceiveThread          = (fuppesThread)NULL;
   m_pReceiveHandler        = NULL;
 	m_pStartedHandler				 = NULL;
+	m_Socket = -1;
 }	
 	
 CUDPSocket::~CUDPSocket()
 {
   /* Cleanup */
-  //TeardownSocket();
+  TeardownSocket();
 }
 
 /* SetupSocket */
@@ -143,10 +143,14 @@ void CUDPSocket::SetTTL(int p_nTTL)
 /* TeardownSocket */
 void CUDPSocket::TeardownSocket()
 {
+
+  if(m_Socket == -1)
+	return;
+
     /* Exit thread */  
   if(m_ReceiveThread != (fuppesThread)NULL)
     EndReceive();
-  
+
 	/* Leave multicast group */
 	if(m_bDoMulticast)
 	{
@@ -159,6 +163,7 @@ void CUDPSocket::TeardownSocket()
 
   /* Close socket */
   upnpSocketClose(m_Socket);
+  m_Socket = -1;
 }
 
 /* SendMulticast */
@@ -291,9 +296,8 @@ fuppesThreadCallback UDPReceiveLoop(void *arg)
       #endif
 			continue;
     }
-    
 		buffer[bytes_received] = '\0';
-    
+		
     // ensure we don't receive our own message
 		if((remote_ep.sin_addr.s_addr != udp_sock->GetLocalEndPoint().sin_addr.s_addr) || 
 			 (remote_ep.sin_port != udp_sock->GetLocalEndPoint().sin_port))	
@@ -310,7 +314,7 @@ fuppesThreadCallback UDPReceiveLoop(void *arg)
       }
 		}
 	}
-  
+	
   CSharedLog::Log(L_EXT, __FILE__, __LINE__, "exiting ReceiveLoop()");
   fuppesThreadExit();
 }

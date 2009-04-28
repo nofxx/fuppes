@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            UPnPActionFactory.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -33,7 +34,7 @@
 
 using namespace std;
 
-CUPnPAction* CUPnPActionFactory::BuildActionFromString(std::string p_sContent, CDeviceSettings* pDeviceSettings)
+CUPnPAction* CUPnPActionFactory::buildActionFromString(std::string p_sContent, CDeviceSettings* pDeviceSettings)
 {
   xmlDocPtr pDoc = NULL;
   pDoc = xmlReadMemory(p_sContent.c_str(), p_sContent.length(), "", NULL, 0);

@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
-  *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+  *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -24,7 +24,6 @@
  
 #include "SSDPCtrl.h"
 #include "../SharedLog.h"
-#include <iostream>
 #include <sstream>
  
 using namespace std;
@@ -216,33 +215,32 @@ void CSSDPCtrl::SetReceiveHandler(ISSDPCtrl* pHandler)
 
 void CSSDPCtrl::OnUDPSocketReceive(CSSDPMessage* pSSDPMessage)
 {
+  fuppesThreadLockMutex(&m_SessionReceiveMutex);  
+	
   stringstream sLog;
   sLog << "OnUDPSocketReceive() :: " << inet_ntoa(pSSDPMessage->GetRemoteEndPoint().sin_addr) << ":" << ntohs(pSSDPMessage->GetRemoteEndPoint().sin_port) << endl;
   //sLog << inet_ntoa(m_LastMulticastEp.sin_addr) << ":" << ntohs(m_LastMulticastEp.sin_port);
  
   CSharedLog::Log(L_DBG, __FILE__, __LINE__, sLog.str().c_str());
-  
+  	
   if((m_LastMulticastEp.sin_addr.s_addr != pSSDPMessage->GetRemoteEndPoint().sin_addr.s_addr) ||
     (m_LastMulticastEp.sin_port != pSSDPMessage->GetRemoteEndPoint().sin_port))
   {	
     switch(pSSDPMessage->GetMessageType())
     {
       case SSDP_MESSAGE_TYPE_M_SEARCH:
-        //CSharedLog::Shared()->ExtendedLog(LOGNAME, "SSDP_MESSAGE_TYPE_M_SEARCH");
         HandleMSearch(pSSDPMessage);
         break;
       
       default:        
         if(m_pReceiveHandler != NULL) {
-          fuppesThreadLockMutex(&m_SessionReceiveMutex);  
-          m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pSSDPMessage);
-          fuppesThreadUnlockMutex(&m_SessionReceiveMutex);  
+          m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pSSDPMessage);          
         }
-        /*else
-          CSharedLog::Shared()->Warning(LOGNAME, "receive handler is null"); */
         break;
     }
   }
+	
+	fuppesThreadUnlockMutex(&m_SessionReceiveMutex);  
 }
 
 void CSSDPCtrl::OnSessionReceive(CSSDPMessage* pMessage)

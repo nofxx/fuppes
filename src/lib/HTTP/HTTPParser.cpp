@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            HTTPParser.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2006-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -27,15 +28,13 @@
 #include "../Common/RegEx.h"
 #include "../DeviceSettings/DeviceIdentificationMgr.h"
 
-bool CHTTPParser::parseHeader(CHTTPMessage* pMessage)
+bool CHTTPParser::parseHeader(std::string header, CHTTPMessage* message)
 {
-  m_pMessage = pMessage;
-
 	// header is already parsed
-	if(pMessage->m_nHTTPMessageType != HTTP_MESSAGE_TYPE_UNKNOWN) {
+	if(message->m_nHTTPMessageType != HTTP_MESSAGE_TYPE_UNKNOWN) {
 		return true;
 	}
-	
+
   // detect message type and HTTP version
   std::string sType;
   int nVersion;
@@ -44,16 +43,16 @@ bool CHTTPParser::parseHeader(CHTTPMessage* pMessage)
   RegEx rxResponse("HTTP/1\\.([1|0]) +(\\d+) +(.+)", PCRE_CASELESS);
  	
 	// it's a request
-  if(rxRequest.Search(pMessage->GetHeader().c_str())) { 
+  if(rxRequest.Search(header.c_str())) { 
     sType    = rxRequest.Match(1);
     nVersion = atoi(rxRequest.Match(3));
-		pMessage->m_sRequest = rxRequest.Match(2);
+		message->m_sRequest = rxRequest.Match(2);
   }
 	// it's a response
-  else if(rxResponse.Search(pMessage->GetHeader().c_str())) {
+  else if(rxResponse.Search(header.c_str())) {
 		sType    = rxResponse.Match(2);
 		nVersion = atoi(rxResponse.Match(1));
-		pMessage->m_sRequest = rxRequest.Match(3);
+		message->m_sRequest = rxRequest.Match(3);
 	}
 	else {    
 		return false;
@@ -61,9 +60,9 @@ bool CHTTPParser::parseHeader(CHTTPMessage* pMessage)
   
 	// set version
 	if(nVersion == 0)
-	  pMessage->SetVersion(HTTP_VERSION_1_0);
+	  message->SetVersion(HTTP_VERSION_1_0);
 	else if(nVersion == 1)
-	  pMessage->SetVersion(HTTP_VERSION_1_1);
+	  message->SetVersion(HTTP_VERSION_1_1);
 	else {    
 	  return false;
   }
@@ -73,17 +72,17 @@ bool CHTTPParser::parseHeader(CHTTPMessage* pMessage)
 	
   // GET
   if(sType.compare("GET") == 0) {
-	  pMessage->SetMessageType(HTTP_MESSAGE_TYPE_GET);
+	  message->SetMessageType(HTTP_MESSAGE_TYPE_GET);
 	}
   
 	// HEAD
   else if(sType.compare("HEAD") == 0) {
-	  pMessage->SetMessageType(HTTP_MESSAGE_TYPE_HEAD);
+	  message->SetMessageType(HTTP_MESSAGE_TYPE_HEAD);
   }
 	
   // POST
 	else if(sType.compare("POST") == 0) {
-	  pMessage->SetMessageType(HTTP_MESSAGE_TYPE_POST);
+	  message->SetMessageType(HTTP_MESSAGE_TYPE_POST);
   }
 
   /* SUBSCRIBE|UNSUBSCRIBE */
@@ -92,43 +91,33 @@ bool CHTTPParser::parseHeader(CHTTPMessage* pMessage)
   
   // 200 OK
 	else if(sType.compare("200") == 0) {
-	  pMessage->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
+	  message->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
 	}
 	
 	// 403 FORBIDDEN
 	else if(sType.compare("403") == 0) {
-	  pMessage->SetMessageType(HTTP_MESSAGE_TYPE_403_FORBIDDEN);
+	  message->SetMessageType(HTTP_MESSAGE_TYPE_403_FORBIDDEN);
 	}
 	
 	// 404 NOT FOUND
 	else if(sType.compare("404") == 0) {
-	  pMessage->SetMessageType(HTTP_MESSAGE_TYPE_404_NOT_FOUND);
+	  message->SetMessageType(HTTP_MESSAGE_TYPE_404_NOT_FOUND);
 	}
 
-	parseCommonValues();
-	parseGetVars();
+	parseCommonValues(header, message);
+	parseGetVars(header, message);
 	
-	CDeviceIdentificationMgr::Shared()->IdentifyDevice(pMessage); 
+	CDeviceIdentificationMgr::Shared()->IdentifyDevice(message); 
   return true;
 }
 
-void CHTTPParser::parseCommonValues()
+void CHTTPParser::ConvertURLEncodeContentToPlain(CHTTPMessage* message)
 {
-  RegEx rxUserAgent("USER-AGENT: *(.*)\r\n", PCRE_CASELESS);
-	if(rxUserAgent.Search(m_pMessage->GetHeader().c_str())) {
-		m_pMessage->m_sUserAgent = rxUserAgent.Match(1);
-	}
-}
-
-void CHTTPParser::ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage)
-{
-  //m_pMessage = pMessage;
- 
   string sContentType;
 	string sBoundary;
 	
 	RegEx rxContentType("CONTENT-TYPE: *([text/plain|application/x\\-www\\-form\\-urlencoded]+)(.*)", PCRE_CASELESS);
-	if(rxContentType.Search(pMessage->GetHeader().c_str())) {
+	if(rxContentType.Search(message->GetHeader().c_str())) {
 	  sContentType = rxContentType.Match(1);
 		if(rxContentType.SubStrings() == 3)
   		sBoundary = rxContentType.Match(2);
@@ -140,7 +129,7 @@ void CHTTPParser::ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage)
 	  return;
 	}
 	
-	string sPost = pMessage->GetContent();
+	string sPost = message->GetContent();
 	string sPart;
 	stringstream sVars;
 
@@ -165,19 +154,27 @@ void CHTTPParser::ConvertURLEncodeContentToPlain(CHTTPMessage* pMessage)
 		}	
 	}
 	
-  pMessage->SetContent(sVars.str());
+  message->SetContent(sVars.str());
 }
 
-void CHTTPParser::parseGetVars()
+void CHTTPParser::parseCommonValues(std::string header, CHTTPMessage* message)
+{
+  RegEx rxUserAgent("USER-AGENT: *(.*)\r\n", PCRE_CASELESS);
+	if(rxUserAgent.Search(header.c_str())) {
+		message->m_sUserAgent = rxUserAgent.Match(1);
+	}
+}
+
+void CHTTPParser::parseGetVars(std::string header, CHTTPMessage* message)
 {
 	// get vars already parsed
-	if(!m_pMessage->m_getVars.empty()) {
+	if(!message->m_getVars.empty()) {
 		return;
 	}
 	
 	// check if there are get vars available
 	size_t pos;
-	if((pos = m_pMessage->m_sRequest.find_first_of("?")) == std::string::npos) {
+	if((pos = message->m_sRequest.find_first_of("?")) == std::string::npos) {
 		return;
 	}
 	
@@ -187,7 +184,7 @@ void CHTTPParser::parseGetVars()
 	string val;
 	size_t amp;
 	
-	get = m_pMessage->m_sRequest.substr(pos + 1, m_pMessage->m_sRequest.length());
+	get = message->m_sRequest.substr(pos + 1, message->m_sRequest.length());
 	get += "&";
 	
 	while(get.length() > 0) {
@@ -195,7 +192,7 @@ void CHTTPParser::parseGetVars()
 		key = get.substr(0, (pos = get.find_first_of("=")));
 		val = get.substr(pos + 1, (amp = get.find_first_of("&")) - pos - 1);
 	
-		m_pMessage->m_getVars[key] = val;
+		message->m_getVars[key] = val;
 		
 		get = get.substr(amp + 1, get.length());
 	}

@@ -60,7 +60,7 @@ class CMySQLQuery: public CSQLQuery
 		~CMySQLQuery() {
 			clear();
 		}
-		
+
 		virtual bool select(const std::string sql);
 		virtual bool exec(const std::string sql);
 		virtual off_t insert(const std::string sql);
@@ -92,9 +92,12 @@ class CMySQLQuery: public CSQLQuery
 			m_rowsReturned = 0;
 		}
 		
+		CDatabaseConnection* connection() { return m_connection; }
+		
 	private:
 		CMySQLQuery(CDatabaseConnection* connection, MYSQL* handle);		
 		MYSQL* m_handle;
+		CDatabaseConnection* m_connection;		
 		
 		off_t		m_lastInsertId;
 		
@@ -200,9 +203,9 @@ void CMySQLConnection::rollback()
 
 
 CMySQLQuery::CMySQLQuery(CDatabaseConnection* connection, MYSQL* handle)
-:CSQLQuery(connection)
 {
 	m_handle = handle;
+	m_connection = connection;
 }
 
 bool CMySQLQuery::select(const std::string sql)

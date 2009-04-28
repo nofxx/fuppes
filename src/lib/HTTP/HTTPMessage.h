@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            HTTPMessage.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -31,7 +32,6 @@
 
 #include "../Common/Common.h"
 #include "../DeviceSettings/DeviceSettings.h"
-#include "../MessageBase.h"
 #include "../UPnPActions/UPnPAction.h"
 #include "../Transcoding/TranscodingCache.h"
 #include "../ContentDirectory/FileDetails.h"
@@ -40,11 +40,13 @@
 #include <fstream>
 #include <map>
 
-#include "HTTPParser.h"
+#ifndef WIN32
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#endif
 
 using namespace std;
-
-class CUPnPBrowse;
 
 typedef enum tagHTTP_VERSION
 {
@@ -118,18 +120,25 @@ typedef enum HTTP_TRANSFER_ENCODING {
 
 //class CHTTPMessage;
 
-class CHTTPMessage: public CMessageBase
+class CUPnPBrowse;
+
+class CHTTPMessage
 {
 	friend class CHTTPParser;
 	
   public:
     CHTTPMessage();
-    virtual ~CHTTPMessage();
+    ~CHTTPMessage();
 
-    void         SetMessage(HTTP_MESSAGE_TYPE nMsgType, std::string p_sContentType);
-    virtual bool SetMessage(std::string p_sMessage);
-    virtual bool SetHeader(std::string p_sHeader);
+    bool SetHeader(std::string p_sHeader);
+    void SetMessage(HTTP_MESSAGE_TYPE nMsgType, std::string p_sContentType);
+    bool SetMessage(std::string p_sMessage);
+			
 
+		std::string GetContent()         { return m_sContent;                     }
+    std::string	GetMessage()         { return m_sMessage;                     }
+    std::string GetHeader()          { return m_sHeader;                      }
+		
     std::string			  GetRequest()          { return m_sRequest;          }  
     std::string       GetContentType()      { return m_sHTTPContentType;  }
     HTTP_MESSAGE_TYPE GetMessageType()      { return m_nHTTPMessageType;  }
@@ -183,6 +192,11 @@ class CHTTPMessage: public CMessageBase
 	  CDeviceSettings*  DeviceSettings() { return m_pDeviceSettings; }
 	  void              DeviceSettings(CDeviceSettings* pSettings) { m_pDeviceSettings = pSettings; }
   
+		std::string GetRemoteIPAddress();
+		void        SetLocalEndPoint(sockaddr_in);
+	  void        SetRemoteEndPoint(sockaddr_in);		
+    sockaddr_in GetLocalEndPoint() { return m_LocalEp; }
+    sockaddr_in GetRemoteEndPoint() { return m_RemoteEp; }		
   public:
     // buffer
     char*         m_sBuffer;
@@ -244,9 +258,15 @@ private:
   
 	  CDeviceSettings*   m_pDeviceSettings;    
 
-
-    bool ParsePOSTMessage(std::string p_sMessage);
+		std::string m_sContent;
+    std::string m_sHeader;
+    std::string m_sMessage;
+		sockaddr_in m_LocalEp;
+		sockaddr_in m_RemoteEp;
+	
+		bool ParsePOSTMessage(std::string p_sMessage);
     bool ParseSUBSCRIBEMessage(std::string p_sMessage);
+
 };
 
 #endif // _HTTPMESSAGE_H
