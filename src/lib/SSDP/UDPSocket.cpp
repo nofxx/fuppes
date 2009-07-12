@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -23,6 +23,7 @@
  */
 
 #include "UDPSocket.h"
+#include "../Common/Exception.h"
 #include "../SharedLog.h"
 #include "../SharedConfig.h"
 
@@ -38,13 +39,14 @@ using namespace std;
 #define MULTICAST_PORT 1900
 #define MULTICAST_IP   "239.255.255.250"
 
-fuppesThreadCallback UDPReceiveLoop(void *arg);
+//fuppesThreadCallback UDPReceiveLoop(void *arg);
 
 CUDPSocket::CUDPSocket()
+:Thread("udpsocket")
 {	
 	/* Init members */
   m_LocalEndpoint.sin_port = 0;
-	m_ReceiveThread          = (fuppesThread)NULL;
+	//m_ReceiveThread          = (fuppesThread)NULL;
   m_pReceiveHandler        = NULL;
 	m_pStartedHandler				 = NULL;
 	m_Socket = -1;
@@ -62,7 +64,7 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
   /* Create socket */
 	m_Socket = socket(AF_INET, SOCK_DGRAM, 0);
 	if(m_Socket == -1) {
-    throw EException(__FILE__, __LINE__, "failed to create socket");
+    throw fuppes::Exception(__FILE__, __LINE__, "failed to create socket");
   }
   
   /* Set socket options */
@@ -75,7 +77,7 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
   ret = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
   #endif
   if(ret == -1) {
-    throw EException(__FILE__, __LINE__, "failed to setsockopt: SO_REUSEADDR");
+    throw fuppes::Exception(__FILE__, __LINE__, "failed to setsockopt: SO_REUSEADDR");
   }
 
 	#if defined(BSD)
@@ -83,9 +85,11 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
 	flag = 1;
 	ret = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEPORT, &flag, sizeof(flag));
 	if(ret == -1) {
-		throw EException(__FILE__, __LINE__, "failed to setsockopt: SO_REUSEPORT");
+		throw Exception(__FILE__, __LINE__, "failed to setsockopt: SO_REUSEPORT");
 	}
-		
+	#endif
+	
+	#if defined(BSD) || HAVE_SELECT
 	/* OS X does not support pthread_cancel
 	   so we need to set the socket to non blocking and
 		 constantly poll the cancellation state.
@@ -109,7 +113,7 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
 	/* Bind socket */
 	ret = bind(m_Socket, (struct sockaddr*)&m_LocalEndpoint, sizeof(m_LocalEndpoint)); 
   if(ret == -1) {
-    throw EException(__FILE__, __LINE__, "failed to bind socket");
+    throw fuppes::Exception(__FILE__, __LINE__, "failed to bind socket");
   }
 	
 	/* Get random port */
@@ -126,7 +130,7 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
 		stMreq.imr_interface.s_addr = inet_addr(p_sIPAddress.c_str()); //INADDR_ANY; 	
 		ret = setsockopt(m_Socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&stMreq,sizeof(stMreq)); 	
 		if(ret == -1) {      
-      throw EException(__FILE__, __LINE__, "failed to setsockopt: multicast");
+      throw fuppes::Exception(__FILE__, __LINE__, "failed to setsockopt: multicast");
     }
 	}
   
@@ -148,8 +152,9 @@ void CUDPSocket::TeardownSocket()
 	return;
 
     /* Exit thread */  
-  if(m_ReceiveThread != (fuppesThread)NULL)
-    EndReceive();
+  /*if(m_ReceiveThread != (fuppesThread)NULL)
+    EndReceive();*/
+	stop();
 
 	/* Leave multicast group */
 	if(m_bDoMulticast)
@@ -162,7 +167,7 @@ void CUDPSocket::TeardownSocket()
 	}
 
   /* Close socket */
-  upnpSocketClose(m_Socket);
+  fuppesSocketClose(m_Socket);
   m_Socket = -1;
 }
 
@@ -199,7 +204,8 @@ void CUDPSocket::BeginReceive()
 {
   /* Start thread */  
 	m_bBreakReceive = false;
-  fuppesThreadStart(m_ReceiveThread, UDPReceiveLoop);
+  //fuppesThreadStart(m_ReceiveThread, UDPReceiveLoop);
+	start();
 }
 
 /* EndReceive */
@@ -207,11 +213,12 @@ void CUDPSocket::EndReceive()
 {
   /* Exit thread */	 
   m_bBreakReceive = true;
-	if(m_ReceiveThread) {
+	stop();
+	/*if(m_ReceiveThread) {
     fuppesThreadCancel(m_ReceiveThread);    
     fuppesThreadClose(m_ReceiveThread);
     m_ReceiveThread = (fuppesThread)NULL;
-  }
+  }*/
 }
 
 
@@ -230,7 +237,7 @@ void CUDPSocket::CallOnStarted()
 }
 
 /* GetSocketFd */
-upnpSocket CUDPSocket::GetSocketFd()
+fuppesSocket CUDPSocket::GetSocketFd()
 {
 	return m_Socket;
 }
@@ -253,7 +260,8 @@ sockaddr_in CUDPSocket::GetLocalEndPoint()
 	return m_LocalEndpoint;
 }
 
-fuppesThreadCallback UDPReceiveLoop(void *arg)
+//fuppesThreadCallback UDPReceiveLoop(void *arg)
+void CUDPSocket::run()
 {
   #ifndef FUPPES_TARGET_WIN32                     
   //set thread cancel state
@@ -271,7 +279,7 @@ fuppesThreadCallback UDPReceiveLoop(void *arg)
   }
   #endif // FUPPES_TARGET_WIN32
 
-  CUDPSocket* udp_sock = (CUDPSocket*)arg;
+  CUDPSocket* udp_sock = this; //(CUDPSocket*)arg;
 
 	CSharedLog::Log(L_EXT, __FILE__, __LINE__, 
       "listening on %s:%d", udp_sock->GetIPAddress().c_str(), udp_sock->GetPort());
@@ -284,8 +292,25 @@ fuppesThreadCallback UDPReceiveLoop(void *arg)
   
 	udp_sock->CallOnStarted();
 	
-  while(!udp_sock->m_bBreakReceive)
-  {
+	#ifdef HAVE_SELECT
+	fd_set fds;	
+	struct timeval timeout;
+	#endif
+	
+  while(!this->stopRequested() && !udp_sock->m_bBreakReceive) {
+		#ifdef HAVE_SELECT
+		FD_ZERO(&fds);
+		FD_SET(udp_sock->GetSocketFd(), &fds);
+		
+		timeout.tv_sec = 2;
+		timeout.tv_usec = 0;		
+		
+ 		int sel = select(udp_sock->GetSocketFd() + 1, &fds, NULL, NULL, &timeout);
+		//cout << "SELECT: " << sel << endl;
+		if(sel <= 0)
+			continue;
+		#endif
+		
     bytes_received = recvfrom(udp_sock->GetSocketFd(), buffer, sizeof(buffer), 0, (struct sockaddr*)&remote_ep, &size);
     if(bytes_received <= 0) {
 		  #if defined(BSD)
@@ -316,5 +341,5 @@ fuppesThreadCallback UDPReceiveLoop(void *arg)
 	}
 	
   CSharedLog::Log(L_EXT, __FILE__, __LINE__, "exiting ReceiveLoop()");
-  fuppesThreadExit();
+  //fuppesThreadExit();
 }

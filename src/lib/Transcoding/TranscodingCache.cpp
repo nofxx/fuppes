@@ -41,7 +41,7 @@
 
 using namespace std;
 
-fuppesThreadCallback TranscodeThread(void *arg);
+//fuppesThreadCallback TranscodeThread(void *arg);
 
 CTranscodingCacheObject::CTranscodingCacheObject()
 {
@@ -51,7 +51,7 @@ CTranscodingCacheObject::CTranscodingCacheObject()
   m_nBufferSize     = 0;
   m_nValidBytes     = 0;
   m_bIsTranscoding  = false;  
-  m_TranscodeThread = (fuppesThread)NULL; 
+  //m_TranscodeThread = (fuppesThread)NULL; 
   m_pAudioEncoder   = NULL;
   m_pDecoder        = NULL; 
   m_pTranscoder     = NULL;
@@ -77,12 +77,13 @@ CTranscodingCacheObject::~CTranscodingCacheObject()
     m_bBreakTranscoding = true;    
   }
   
-  if(m_TranscodeThread) {
+  //if(m_TranscodeThread) {
     if(TranscodeToFile()) {
-      fuppesThreadCancel(m_TranscodeThread);
+      //fuppesThreadCancel(m_TranscodeThread);
+			this->stop();
     }
-    fuppesThreadClose(m_TranscodeThread);        
-  }
+    //fuppesThreadClose(m_TranscodeThread);        
+  //}
     
   fuppesThreadDestroyMutex(&m_Mutex);  
   if(m_sBuffer) {
@@ -284,10 +285,12 @@ unsigned int CTranscodingCacheObject::Transcode(CDeviceSettings* pDeviceSettings
   
   
   /* start new transcoding thread */
-  if(!m_TranscodeThread && !m_bIsComplete)
+  //if(!m_TranscodeThread && !m_bIsComplete)
+	if(!this->running() && !m_bIsComplete)
   {
     m_bIsTranscoding = true;
-    fuppesThreadStartArg(m_TranscodeThread, TranscodeThread, *this);
+    //fuppesThreadStartArg(m_TranscodeThread, TranscodeThread, *this);
+		this->start();
     while(m_bIsTranscoding && (GetValidBytes() == 0))
       fuppesSleep(100);
     
@@ -311,9 +314,10 @@ unsigned int CTranscodingCacheObject::Transcode(CDeviceSettings* pDeviceSettings
 	return 0;
 }
 
-fuppesThreadCallback TranscodeThread(void *arg)
+//fuppesThreadCallback TranscodeThread(void *arg)
+void CTranscodingCacheObject::run()
 {  
-  CTranscodingCacheObject* pCacheObj = (CTranscodingCacheObject*)arg;  
+  CTranscodingCacheObject* pCacheObj = this; //(CTranscodingCacheObject*)arg;  
   
   // threaded transcoder
   if(pCacheObj->m_pTranscoder != NULL) {   
@@ -326,8 +330,8 @@ fuppesThreadCallback TranscodeThread(void *arg)
 		pCacheObj->m_bIsTranscoding = false;  
 		pCacheObj->Unlock();   
     
-    fuppesThreadExit();
-    return 0;
+    //fuppesThreadExit();
+    return;
   }  
   
   // threaded de-/encoder 
@@ -453,8 +457,8 @@ fuppesThreadCallback TranscodeThread(void *arg)
   if(szTmpBuff)
     free(szTmpBuff);  
   
-  fuppesThreadExit();  
-  return 0;
+  /*fuppesThreadExit();  
+  return 0;*/
 }
 
 
@@ -496,7 +500,7 @@ bool CTranscodingCacheObject::IsMp3Encoding()
   #endif
 }
 
-fuppesThreadCallback ReleaseLoop(void* arg);
+//fuppesThreadCallback ReleaseLoop(void* arg);
 
 CTranscodingCache* CTranscodingCache::m_pInstance = 0;
 
@@ -509,16 +513,18 @@ CTranscodingCache* CTranscodingCache::Shared()
 
 CTranscodingCache::CTranscodingCache()
 {
-  m_ReleaseThread = (fuppesThread)NULL;
+  //m_ReleaseThread = (fuppesThread)NULL;
   fuppesThreadInitMutex(&m_Mutex); 
 }
 
 CTranscodingCache::~CTranscodingCache()
 {
-  if(m_ReleaseThread) {
+  /*if(m_ReleaseThread) {
     fuppesThreadCancel(m_ReleaseThread);
     fuppesThreadClose(m_ReleaseThread);
-  }
+  }*/
+	if(this->running())
+		this->stop();
   
   fuppesThreadDestroyMutex(&m_Mutex);
 }
@@ -550,8 +556,11 @@ void CTranscodingCache::ReleaseCacheObject(CTranscodingCacheObject* pCacheObj)
 {
   fuppesThreadLockMutex(&m_Mutex);  
  
-  if(!m_ReleaseThread) {
+  /*if(!m_ReleaseThread) {
     fuppesThreadStart(m_ReleaseThread, ReleaseLoop);
+  }*/
+	if(!this->running()) {
+    this->start();
   }
 
 	stringstream sLog;
@@ -567,13 +576,15 @@ void CTranscodingCache::ReleaseCacheObject(CTranscodingCacheObject* pCacheObj)
   fuppesThreadUnlockMutex(&m_Mutex);  
 }
 
-fuppesThreadCallback ReleaseLoop(void* arg)
+//fuppesThreadCallback ReleaseLoop(void* arg)
+void CTranscodingCache::run()
 {
-  CTranscodingCache* pCache = (CTranscodingCache*)arg;
+  CTranscodingCache* pCache = this; //(CTranscodingCache*)arg;
   CTranscodingCacheObject* pCacheObj;
   std::map<std::string, CTranscodingCacheObject*>::iterator TmpIterator; 
   
-  while(true) {
+  //while(true) {
+	while(!this->stopRequested()) {
     fuppesSleep(1000);
     
     fuppesThreadLockMutex(&pCache->m_Mutex);  
@@ -611,7 +622,7 @@ fuppesThreadCallback ReleaseLoop(void* arg)
     fuppesThreadUnlockMutex(&pCache->m_Mutex);   
   }
   
-  fuppesThreadExit();
+  //fuppesThreadExit();
 }
 
 #endif // DISABLE_TRANSCODING

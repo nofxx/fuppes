@@ -28,7 +28,9 @@
 #include "../config.h"
 #endif
 
-#include "Common/Common.h"
+//#include "Common/Common.h"
+#include "Common/Thread.h"
+#include "Common/Exception.h"
 #include <string>
 #include <stdarg.h>
 #include <iostream>
@@ -95,6 +97,7 @@ public:
 	static void Log(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const std::string msg);
 	static void Log(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* p_szFormat, ...);
 	static void LogArgs(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* p_szFormat, va_list args);
+	static void Log(int p_nLogLevel, fuppes::Exception exception);
 	static void Print(const char* p_szFormat, ...);
 		
   /** set the level of log verbosity
@@ -110,7 +113,8 @@ public:
 private:
 	
   static CSharedLog*  m_Instance;
-  fuppesThreadMutex   m_Mutex;
+  //fuppesThreadMutex   m_Mutex;
+	fuppes::Mutex				m_mutex;
   bool                m_bShowLog;
   bool                m_bShowExtendedLog;
   bool                m_bShowDebugLog;

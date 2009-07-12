@@ -34,10 +34,17 @@
 #include <map>
 #include <list>
 #include "../Common/Common.h"
+#include "../Common/Thread.h"
 #include "FileAlterationMonitor.h"
 
 #include "DatabaseConnection.h"
 
+class RebuildThread: public fuppes::Thread
+{
+	private:
+		void run();
+};
+	
 class CContentDatabase: public IFileAlterationMonitor
 {
   public:
@@ -89,7 +96,8 @@ class CContentDatabase: public IFileAlterationMonitor
     void Unlock();
     void ClearResult();
 		
-	  fuppesThread  m_RebuildThread;
+	  //fuppesThread  m_RebuildThread;
+		RebuildThread*	 m_RebuildThread;
 
     //bool m_bIsRebuilding;
 		bool m_bShared;

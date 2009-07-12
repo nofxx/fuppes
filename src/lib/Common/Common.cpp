@@ -585,7 +585,7 @@ fuppes_off_t strToOffT(std::string value)
 }
 
 
-bool fuppesSocketSetNonBlocking(upnpSocket p_SocketHandle)
+bool fuppesSocketSetNonBlocking(fuppesSocket p_SocketHandle)
 {
   #ifdef WIN32     
   int nonblocking = 1;
@@ -615,7 +615,7 @@ int fuppesSocketClose(fuppesSocket p_SocketHandle)
 }
 
 
-bool fuppesThreadClose(fuppesThread p_ThreadHandle)
+/*bool fuppesThreadClose(fuppesThread p_ThreadHandle)
 {     
   #ifdef WIN32  
   bool bResult = false;
@@ -623,8 +623,7 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle)
   switch(nErrNo)
   {
     case WAIT_ABANDONED:
-      /*cout << "WAIT_ABANDONED :: " << nErrNo << endl;
-      fflush(stdout);*/
+      //cout << "WAIT_ABANDONED :: " << nErrNo << endl;
       break;
     case WAIT_OBJECT_0:
       //cout << "WAIT_OBJECT_0 :: " << nErrNo << endl;
@@ -632,12 +631,10 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle)
       bResult = true;
       break;
     case WAIT_TIMEOUT:
-      /*cout << "fuppesThreadClose() :: WAIT_TIMEOUT (" << nErrNo << ")" << endl;      
-      fflush(stdout);*/
+      //cout << "fuppesThreadClose() :: WAIT_TIMEOUT (" << nErrNo << ")" << endl;      
       break;
     case WAIT_FAILED:
-      /*cout << "fuppesThreadClose() :: WAIT_FAILED (" << nErrNo << ")" << endl;
-      fflush(stdout);*/
+      //cout << "fuppesThreadClose() :: WAIT_FAILED (" << nErrNo << ")" << endl;
       break;
     default:
       cout << "fuppesThreadClose - DEFAULT :: " << nErrNo << endl;      
@@ -662,7 +659,7 @@ bool fuppesThreadClose(fuppesThread p_ThreadHandle)
       case EDEADLK:
         cout << "pthread_join() :: " << nErrNo << " EDEADLK = deadlock detected" << endl;      
         break;*/
-    }
+   /* }
     fflush(stdout);
   }
   return bResult;  
@@ -680,6 +677,7 @@ int fuppesThreadCancel(fuppesThread p_ThreadHandle)
 	return pthread_cancel(p_ThreadHandle);  
 	#endif
 }
+*/
 
 void fuppesThreadInitMutex(fuppesThreadMutex* p_ThreadMutex)
 {

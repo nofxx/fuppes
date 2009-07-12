@@ -41,6 +41,7 @@
 #include "../version.h"
 
 #include "Common/Common.h"
+#include "Common/Exception.h"
 #include "Common/UUID.h"
 #include "Common/RegEx.h"
 #include "SharedLog.h"
@@ -88,6 +89,8 @@ CSharedConfig::CSharedConfig()
   #else
   m_nHTTPPort = 0;
   #endif
+  
+  m_pluginDir = "";
 }
 
 CSharedConfig::~CSharedConfig()
@@ -113,7 +116,8 @@ bool CSharedConfig::SetupConfig(std::string applicationDir)
 bool CSharedConfig::SetupConfig()
 { 
 	m_dataDir 	= string(FUPPES_DATADIR) + "/";
-	m_pluginDir = string(FUPPES_PLUGINDIR) + "/";
+	if(m_pluginDir.length() == 0)
+		m_pluginDir = string(FUPPES_PLUGINDIR) + "/";
 #endif
 
   // set config dir
@@ -445,7 +449,7 @@ bool CSharedConfig::ResolveHostAndIP()
   char szName[MAXHOSTNAMELEN]; 
   int  nRet = gethostname(szName, MAXHOSTNAMELEN);  
   if(nRet != 0) {
-    throw EException(__FILE__, __LINE__, "can't resolve hostname");
+    throw fuppes::Exception(__FILE__, __LINE__, "can't resolve hostname");
   }
   m_sHostname = szName;
 

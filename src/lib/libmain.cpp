@@ -30,6 +30,7 @@
 
 #include <iostream>
 #include "Common/Common.h"
+#include "Common/Exception.h"
 #include "SharedConfig.h"
 #include "SharedLog.h"
 #include "Fuppes.h"
@@ -88,6 +89,7 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   string sLogFileName;
 	string sTempDir;
   int    nLogLevel = 1;
+  string sPluginDir;
   
   #warning todo: check params
   
@@ -124,6 +126,10 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
     else if((strcmp(argv[i], "--log-file") == 0) && (argc > i + 1)) {
       sLogFileName = argv[i + 1];
     }
+    
+    else if((strcmp(argv[i], "--plugin-dir") == 0) && (argc > i + 1)) {
+      sPluginDir = argv[i + 1];
+    }
   }
   
   CSharedLog::SetLogFileName(sLogFileName);
@@ -135,13 +141,14 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   CSharedConfig::Shared()->SetVFolderConfigFileName(sVFolderFile);  
   CSharedConfig::Shared()->FriendlyName(sFriendlyName);
 	CSharedConfig::Shared()->TempDir(sTempDir);
-    
+	//CSharedConfig::Shared()->pluginDir(sPluginDir);    
+
+	xmlInitParser();
 
   CSharedLog::Print("            FUPPES - %s", CSharedConfig::Shared()->GetAppVersion().c_str());
   CSharedLog::Print("    the Free UPnP Entertainment Service");
   CSharedLog::Print("      http://fuppes.ulrich-voelkel.de\n");
 
-  xmlInitParser();
 
   // init config
 	#ifdef WIN32
@@ -186,8 +193,8 @@ int fuppes_start()
     CSharedConfig::Shared()->AddFuppesInstance(pFuppes);
     return FUPPES_TRUE;
   }
-  catch(EException ex) {
-    CSharedLog::Shared()->UserError(ex.What());    
+  catch(fuppes::Exception ex) {
+    CSharedLog::Shared()->UserError(ex.what());    
     CSharedLog::Print("[exiting]");
     return FUPPES_FALSE;
   }

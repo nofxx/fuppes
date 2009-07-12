@@ -57,7 +57,7 @@ class Presentation
 void Presentation::getCommonValues()
 {
 	int ret;
-	arg_list_t* resultArgs = create_arg_list();
+	arg_list_t* resultArgs = arg_list_create();
 	
 	ret = plugin->ctrl("get_version", NULL, resultArgs);
 	if(ret == 0) {
@@ -84,7 +84,7 @@ void Presentation::getCommonValues()
 		ipAddress = resultArgs->value;
 	}
 	
-	free_arg_list(resultArgs);
+	arg_list_free(resultArgs);
 }
 
 

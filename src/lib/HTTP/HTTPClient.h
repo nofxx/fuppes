@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -31,6 +31,8 @@
 #include "HTTPMessage.h"
 #include "../GENA/EventNotification.h"
 #include "../Common/Common.h"
+#include "../Common/Thread.h"
+#include "../Common/Socket.h"
 
 #ifndef WIN32
 #include <arpa/inet.h>
@@ -47,7 +49,7 @@ class IHTTPClient
 	  virtual void OnAsyncReceiveMsg(CHTTPMessage* pMessage) = 0;
 };
 
-class CHTTPClient
+class CHTTPClient: private fuppes::Thread
 {
   public:
     CHTTPClient(IHTTPClient* pAsyncReceiveHandler = NULL);
@@ -56,19 +58,16 @@ class CHTTPClient
     bool AsyncGet(std::string p_sGetURL);
     void AsyncNotify(CEventNotification* pNotification);
  
-    fuppesThread m_AsyncThread;
-    std::string  m_sAsyncResult;
     std::string  m_sMessage;
     bool         m_bAsyncDone;
     bool         m_bIsAsync;
  	  IHTTPClient* m_pAsyncReceiveHandler;
 
-    sockaddr_in  m_LocalEndpoint;
-    sockaddr_in  m_RemoteEndpoint;
-
-    upnpSocket   m_Socket;
+		fuppes::TCPSocket m_socket;
 
   private:
+		void run();
+		
     std::string BuildGetHeader(std::string  p_sGet,
                                std::string  p_sTargetIPAddress,
                                unsigned int p_nTargetPort); 

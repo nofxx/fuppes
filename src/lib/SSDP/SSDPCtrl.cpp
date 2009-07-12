@@ -36,7 +36,7 @@ CSSDPCtrl::CSSDPCtrl(std::string p_sIPAddress, std::string p_sHTTPServerURL)
   m_pNotifyMsgFactory = new CNotifyMsgFactory(m_sHTTPServerURL);
 
   m_sIPAddress   = p_sIPAddress;
-	msearch_thread = (fuppesThread)NULL;
+	//msearch_thread = (fuppesThread)NULL;
   m_isStarted = false;
 	
   fuppesThreadInitMutex(&m_SessionReceiveMutex);

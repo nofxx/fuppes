@@ -120,6 +120,70 @@ typedef enum HTTP_TRANSFER_ENCODING {
 
 //class CHTTPMessage;
 
+namespace fuppes {
+
+class HTTPHeader {
+	
+	public:
+		HTTPHeader() {
+			m_version = HTTP_VERSION_UNKNOWN;
+			m_contentLength = 0;
+			m_hasContentLength = false;
+		}
+		
+		HTTP_VERSION  version() {	return m_version;	}
+		
+		fuppes_off_t	contentLength() {	return m_contentLength;	}
+		bool					hasContentLength() {	return m_hasContentLength;	}
+
+	private:
+		HTTP_VERSION	m_version;
+		
+		fuppes_off_t	m_contentLength;
+		bool					m_hasContentLength;
+		
+		
+};
+
+typedef enum HTTP_REQUEST_TYPE {
+  HTTP_REQUEST_TYPE_UNKNOWN						= 0,
+	
+	HTTP_REQUEST_TYPE_GET		        		= 1,
+  HTTP_REQUEST_TYPE_HEAD          		= 2,
+	HTTP_REQUEST_TYPE_POST          		= 3,
+	HTTP_REQUEST_TYPE_POST_SOAP_ACTION	= 4,
+	
+  /* GENA message types */
+  HTTP_REQUEST_TYPE_SUBSCRIBE      		= 5,
+  HTTP_REQUEST_TYPE_UNSUBSCRIBE    		= 6,
+  HTTP_REQUEST_TYPE_NOTIFY         		= 7
+	
+} HTTP_REQUEST_TYPE;
+
+class HTTPRequestHeader: public HTTPHeader {
+};
+
+typedef enum HTTP_RESPONSE_TYPE {
+  HTTP_RESPONSE_TYPE_UNKNOWN									 = 0,
+	
+	HTTP_RESPONSE_TYPE_200_OK                    = 1,
+  HTTP_RESPONSE_TYPE_206_PARTIAL_CONTENT       = 2,
+  
+  HTTP_RESPONSE_TYPE_400_BAD_REQUEST           = 3,  
+  HTTP_RESPONSE_TYPE_403_FORBIDDEN             = 4,
+	HTTP_RESPONSE_TYPE_404_NOT_FOUND             = 5,
+	HTTP_RESPONSE_TYPE_500_INTERNAL_SERVER_ERROR = 6,
+
+	/* GENA message types */
+  HTTP_RESPONSE_TYPE_GENA_OK        					 = 7
+	
+} HTTP_RESPONSE_TYPE;
+	
+class HTTPResponseHeader: public HTTPHeader {
+};
+
+}
+		
 class CUPnPBrowse;
 
 class CHTTPMessage

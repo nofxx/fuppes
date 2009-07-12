@@ -70,7 +70,8 @@ CContentDatabase* CContentDatabase::Shared()
 
 CContentDatabase::CContentDatabase(bool p_bShared)
 { 
-	m_RebuildThread 	= (fuppesThread)NULL;	
+	//m_RebuildThread 	= (fuppesThread)NULL;	
+	m_RebuildThread		= NULL;
   m_bShared       	= p_bShared;	
   m_bInTransaction 	= false;
   m_nLockCount 			= -1;
@@ -100,9 +101,11 @@ CContentDatabase::~CContentDatabase()
     delete m_pFileAlterationMonitor;    
   }
 	
-	if(m_bShared && (m_RebuildThread != (fuppesThread)NULL)) {
-	  fuppesThreadClose(m_RebuildThread);
-		m_RebuildThread = (fuppesThread)NULL;
+	if(m_bShared && (m_RebuildThread != NULL)) { //(fuppesThread)NULL)) {
+	  //fuppesThreadClose(m_RebuildThread);
+		//m_RebuildThread = (fuppesThread)NULL;
+		delete m_RebuildThread;
+		m_RebuildThread = NULL;
 	}
 
   Close();
@@ -121,6 +124,9 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
   
   bool bIsNewDb = !FileExists(m_sDbFileName);
   *p_bIsNewDB = bIsNewDb;  
+  
+  
+  //cout << "init db " << m_sDbFileName << endl;
   
   Open();
 	
@@ -371,7 +377,7 @@ void CContentDatabase::Next()
 
 
 
-fuppesThreadCallback BuildLoop(void *arg);
+//fuppesThreadCallback BuildLoop(void *arg);
 void DbScanDir(std::string p_sDirectory, long long int p_nParentId);
 void BuildPlaylists();
 void ParsePlaylist(CSQLResult* pResult);
@@ -392,12 +398,18 @@ void CContentDatabase::BuildDB()
 	if(!m_bShared)
 	  return;
 		
-	if(m_RebuildThread != (fuppesThread)NULL) {
+	/*if(m_RebuildThread != (fuppesThread)NULL) {
 	  fuppesThreadClose(m_RebuildThread);
 		m_RebuildThread = (fuppesThread)NULL;
-	}
+	}*/
+	if(m_RebuildThread) {
+		delete m_RebuildThread;
+		m_RebuildThread = NULL;
+	}	
 		
-	fuppesThreadStart(m_RebuildThread, BuildLoop);
+	m_RebuildThread = new RebuildThread();
+	m_RebuildThread->start();
+	//fuppesThreadStart(m_RebuildThread, BuildLoop);
   g_bIsRebuilding = true;  
 }
 
@@ -737,7 +749,7 @@ void setAlbumArtImage(std::string path, std::string file, unsigned int artId, st
 				"ALBUM_ART_EXT = '" << SQLEscape(ext) << "' " <<
 				"where ID = " << detailId;
 			qry->exec(sql.str());
-			cout << sql.str() << endl;
+			//cout << sql.str() << endl;
 		}
 		else {
 			sql << "insert into OBJECT_DETAILS " <<
@@ -746,7 +758,7 @@ void setAlbumArtImage(std::string path, std::string file, unsigned int artId, st
 				"(" << artId << ", " <<
 				"'" << SQLEscape(ext) << "')";
 			detailId = qry->insert(sql.str());
-			cout << sql.str() << endl;
+			//cout << sql.str() << endl;
 			
 			sql.str("");
 			sql << "update OBJECTS set " <<
@@ -1064,7 +1076,7 @@ void ParsePlaylist(CSQLResult* pResult)
   unsigned int nPlaylistID = pResult->asUInt("OBJECT_ID");
   unsigned int nObjectID   = 0;  
 
-	cout << "playlist id: " << nPlaylistID << endl;
+	//cout << "playlist id: " << nPlaylistID << endl;
 		
   CContentDatabase* pDb = new CContentDatabase();
   
@@ -1116,7 +1128,8 @@ std::string ReadFile(std::string p_sFileName)
   return sResult;
 }
 
-fuppesThreadCallback BuildLoop(void* arg)
+//fuppesThreadCallback BuildLoop(void* arg)
+void RebuildThread::run()
 {  
 	#ifndef WIN32
   time_t now;
@@ -1287,7 +1300,7 @@ fuppesThreadCallback BuildLoop(void* arg)
   CSharedLog::Print("[ContentDatabase] database created at %s", sNowtime.c_str());
 
   g_bIsRebuilding = false;
-  fuppesThreadExit();
+  //fuppesThreadExit();
 }
 
 
@@ -1296,28 +1309,28 @@ void CContentDatabase::FamEvent(CFileAlterationEvent* event)
   if(g_bIsRebuilding)
     return;
   
-  cout << "[ContentDatabase] fam event: ";
+  //cout << "[ContentDatabase] fam event: ";
   
   switch(event->type()) {
     case FAM_CREATE:
-      cout << "CREATE";
+      //cout << "CREATE";
       break;
     case FAM_DELETE:
-      cout << "DELETE";
+      //cout << "DELETE";
       break;
     case FAM_MOVE:
-      cout << "MOVE - " << event->oldFullPath();
+      //cout << "MOVE - " << event->oldFullPath();
       break;
     case FAM_MODIFY:
-      cout << "MODIFY";
+      //cout << "MODIFY";
       break;
     default:
-      cout << "UNKNOWN";
+      //cout << "UNKNOWN";
       break;
   }
   
-  cout << (event->isDir() ? " DIR " : " FILE ") << endl;
-  cout << event->fullPath() << endl << endl;
+  //cout << (event->isDir() ? " DIR " : " FILE ") << endl;
+  //cout << event->fullPath() << endl << endl;
   
   stringstream sSql;
 	unsigned int objId;
@@ -1338,7 +1351,7 @@ void CContentDatabase::FamEvent(CFileAlterationEvent* event)
           ", '" << SQLEscape(event->file()) << "');";        
     Insert(sSql.str());
     
-		cout << "SQL INSERT NEW DIR: " << sSql.str() << endl;
+		//cout << "SQL INSERT NEW DIR: " << sSql.str() << endl;
 		
     sSql.str("");
     sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID) " <<
@@ -1347,7 +1360,7 @@ void CContentDatabase::FamEvent(CFileAlterationEvent* event)
     
 		// moved in from outside the watches dirs
     if(event->type() == (FAM_CREATE | FAM_MOVE)) {
-      cout << "scan moved in" << endl;
+      //cout << "scan moved in" << endl;
       DbScanDir(this, appendTrailingSlash(event->fullPath()), objId);
     }
 	} // new or moved directory
@@ -1372,7 +1385,7 @@ void CContentDatabase::FamEvent(CFileAlterationEvent* event)
       " TITLE = '" << SQLEscape(event->file()) << "' " <<
       "where OBJECT_ID = " << objId;
       
-    cout << sSql.str() << endl;
+    //cout << sSql.str() << endl;
     Execute(sSql.str());
     sSql.str("");
 		
@@ -1471,7 +1484,7 @@ void CContentDatabase::FamEvent(CFileAlterationEvent* event)
   
   // file modified
   else if(event->type() == FAM_MOVE && !event->isDir()) {
-    cout << "file modified" << endl;
+    //cout << "file modified" << endl;
   }
   
 }
@@ -1500,7 +1513,7 @@ void CContentDatabase::deleteObject(unsigned int objectId)
     deleteContainer(result->asString("PATH"));    
   }
   else {  
-    cout << "contentdb: delete object : " << result->asString("PATH") << endl;  
+    //cout << "contentdb: delete object : " << result->asString("PATH") << endl;  
 
 		// delete details    
     sql << "select DETAIL_ID from OBJECTS where OBJECT_ID = " << objectId;

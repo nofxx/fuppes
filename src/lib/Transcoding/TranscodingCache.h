@@ -31,6 +31,7 @@
 
 #ifndef DISABLE_TRANSCODING
 #include "../Common/Common.h"
+#include "../Common/Thread.h"
 #include "WrapperBase.h"
 #include "../DeviceSettings/DeviceSettings.h"
 #include <map>
@@ -40,7 +41,7 @@
 
 
 #ifndef DISABLE_TRANSCODING
-class CTranscodingCacheObject
+class CTranscodingCacheObject: private fuppes::Thread
 {
   public:
     CTranscodingCacheObject();
@@ -117,13 +118,15 @@ class CTranscodingCacheObject
 //  private:
     std::string m_sInFileName;
     std::string m_sOutFileName;
-    fuppesThread m_TranscodeThread;
+    //fuppesThread m_TranscodeThread;
   
     bool Threaded() { return m_bThreaded; }
   
     CDeviceSettings* DeviceSettings() { return m_pDeviceSettings; }
   
-   private:
+  private:
+
+		void run();
 
     bool m_bLocked;
     
@@ -135,7 +138,7 @@ class CTranscodingCacheObject
     CDeviceSettings* m_pDeviceSettings;
 };
 
-class CTranscodingCache
+class CTranscodingCache: private fuppes::Thread
 {
   protected:
 		CTranscodingCache();
@@ -158,7 +161,8 @@ class CTranscodingCache
     std::map<std::string, CTranscodingCacheObject*>::iterator m_CachedObjectsIterator;
   
   private:
-    fuppesThread       m_ReleaseThread;
+    //fuppesThread       m_ReleaseThread;
+		void run();
 };
 #endif // DISABLE_TRANSCODING
 #endif // _TRANSCODINGCACHE_H

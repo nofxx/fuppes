@@ -49,10 +49,8 @@ CSharedLog* CSharedLog::Shared()
 CSharedLog::CSharedLog()
 {
   SetLogLevel(1, false);
-  #ifndef DISABLELOG
-  fuppesThreadInitMutex(&m_Mutex);  
-  #endif
   
+	
   m_log_cb = NULL;
   m_err_cb = NULL;
   m_notify_cb = NULL;
@@ -81,11 +79,7 @@ CSharedLog::~CSharedLog()
     m_fsLogFile->close();
     delete m_fsLogFile;
     m_fsLogFile = NULL;
-  }
-  
-  #ifndef DISABLELOG
-  fuppesThreadDestroyMutex(&m_Mutex);
-  #endif
+  }
 }
 
 bool CSharedLog::SetLogFileName(std::string p_sLogFileName)
@@ -367,6 +361,11 @@ void CSharedLog::LogArgs(int p_nLogLevel, const std::string p_sFileName, int p_n
 	char buffer[8192];	
 	vsnprintf(buffer, sizeof(buffer) - 1, p_szFormat, args);
 	Log(p_nLogLevel, p_sFileName, p_nLineNumber, string(buffer));	
+}
+
+void CSharedLog::Log(int p_nLogLevel, fuppes::Exception exception)
+{	
+	Log(p_nLogLevel, exception.file(), exception.line(), exception.what());	
 }
 
 void CSharedLog::Print(const char* p_szFormat, ...)

@@ -682,7 +682,7 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
     }
   }
   
-  /* CONNETION */
+  /* CONNECTION */
   RegEx rxCONNECTION("CONNECTION: +(close|keep-alive)", PCRE_CASELESS);
   if(rxCONNECTION.Search(p_sMessage.c_str())) {   
     std::string sConnection = ToLower(rxCONNECTION.Match(1));

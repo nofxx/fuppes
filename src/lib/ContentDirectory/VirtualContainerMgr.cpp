@@ -51,7 +51,7 @@ CVirtualContainerMgr::CVirtualContainerMgr()
   m_bVFolderCfgValid = true;
   
 	m_nIdCounter    = 0;
-  m_RebuildThread = (fuppesThread)NULL;
+  //m_RebuildThread = (fuppesThread)NULL;
   if(!FileExists(CSharedConfig::Shared()->GetVFolderConfigFileName())) {
     CSharedLog::Log(L_NORM, __FILE__, __LINE__, "no vfolder.cfg file available");
     m_bVFolderCfgValid = false;
@@ -74,9 +74,11 @@ CVirtualContainerMgr::CVirtualContainerMgr()
 
 CVirtualContainerMgr::~CVirtualContainerMgr()
 {
-	if(m_RebuildThread != (fuppesThread)NULL) {
+	/*if(m_RebuildThread != (fuppesThread)NULL) {
     fuppesThreadClose(m_RebuildThread);  
-  }
+  }*/
+	if(this->running())
+		this->stop();
 }
 
 
@@ -85,9 +87,10 @@ bool CVirtualContainerMgr::IsRebuilding()
   return g_bIsRebuilding;
 }    
 
-fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
+//fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
+void CVirtualContainerMgr::run()
 {
-  CVirtualContainerMgr* pMgr = (CVirtualContainerMgr*)arg;
+  CVirtualContainerMgr* pMgr = this; //(CVirtualContainerMgr*)arg;
     
   time_t now;
   char nowtime[26];
@@ -108,7 +111,7 @@ fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
     CSharedLog::Print("[VirtualContainer] error loading %s", CSharedConfig::Shared()->GetVFolderConfigFileName().c_str());
     delete pDoc;
     g_bIsRebuilding = false;
-    fuppesThreadExit();
+    //fuppesThreadExit();
   }
 
   //CContentDatabase* pIns = new CContentDatabase();  
@@ -158,7 +161,7 @@ fuppesThreadCallback VirtualContainerBuildLoop(void *arg)
   CSharedLog::Print("[VirtualContainer] virtual container layout created at %s", sNowtime.c_str());
 
   g_bIsRebuilding = false;
-  fuppesThreadExit();
+  //fuppesThreadExit();
 }
 
 void CVirtualContainerMgr::RebuildContainerList()
@@ -175,12 +178,15 @@ void CVirtualContainerMgr::RebuildContainerList()
   if(!g_bIsRebuilding) {
     g_bIsRebuilding = true;
     
-    if(m_RebuildThread != (fuppesThread)NULL) {
+    /*if(m_RebuildThread != (fuppesThread)NULL) {
       fuppesThreadClose(m_RebuildThread);
       m_RebuildThread = (fuppesThread)NULL;
-    }
+    }*/
+		if(this->running())
+			this->stop();
 		
-    fuppesThreadStart(m_RebuildThread, VirtualContainerBuildLoop);    
+    //fuppesThreadStart(m_RebuildThread, VirtualContainerBuildLoop);    
+		this->start();
   }  
 }
 

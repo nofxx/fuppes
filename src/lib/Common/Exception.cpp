@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
- *            Timer.h
- *
+ *            Exception.cpp
+ * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -21,46 +22,35 @@
  *  with this program; if not, write to the Free Software Foundation, Inc.,
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
- 
-#ifndef _TIMER_H
-#define _TIMER_H
 
-#include "Thread.h"
+#include "Exception.h" 
+#include <sstream>
+#include <stdarg.h>
 
-namespace fuppes {
+using namespace fuppes;
 
-class ITimer
-{
-  public:
-    virtual void OnTimer() = 0;
-    virtual ~ITimer() {}; 
+Exception::Exception(std::string exception, char* file, int line)
+: std::exception() {       
+	
+	m_file = file;
+	m_line = line;
+	m_exception = exception;
+	
+  /*std::stringstream sRes;
+  sRes << exception << " (" << file << ", " << line << ")";
+  m_exception = sRes.str();*/
 };
 
-class Timer: private Thread
-{
-  public:
-    Timer(ITimer* p_OnTimerHandler);
-    ~Timer();
-
-    void CallOnTimer();
-    void SetInterval(unsigned int p_nSeconds);
-    unsigned int GetInterval() { return m_nInterval; }
-    void Start();
-    void Stop();
-    void Reset();
- 		unsigned int GetCount();
-		
-		void run();
-    
-  private:
-    unsigned int m_nTickCount;    
-		void				 incTicCount();
-		
-		Mutex					m_mutex;        
-    ITimer*       m_pOnTimerHandler;
-    unsigned int  m_nInterval;
+Exception::Exception(const std::string file, int line, const char* exception, ...)
+: std::exception() {       
+	
+	m_file = file;
+	m_line = line;
+	
+  va_list args;
+  char buffer[1024];
+  va_start(args, exception);
+  vsnprintf(buffer, sizeof(buffer), exception, args);
+  va_end(args);
+  m_exception = buffer;
 };
-
-}
-
-#endif // _TIMER_H

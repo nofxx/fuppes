@@ -41,7 +41,7 @@ CUPnPDevice::CUPnPDevice(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL, I
   m_bIsLocalDevice  = true;  
   m_pEventHandler   = pEventHandler;
   
-  m_pTimer = new CTimer(this);
+  m_pTimer = new fuppes::Timer(this);
 	m_pHTTPClient = NULL;
 }
 
@@ -54,21 +54,21 @@ CUPnPDevice::CUPnPDevice(IUPnPDevice* pEventHandler, std::string p_sUUID):
   m_pEventHandler   = pEventHandler;
   m_sUUID						= p_sUUID;
 	
-  m_pTimer = new CTimer(this);
+  m_pTimer = new fuppes::Timer(this);
 	m_pHTTPClient = NULL;
 }
 
 CUPnPDevice::~CUPnPDevice()
 {
   if(m_pHTTPClient)
-	  delete m_pHTTPClient;
-  delete m_pTimer;
+	  delete m_pHTTPClient;	
+	delete m_pTimer;
 }
 
 
 void CUPnPDevice::OnTimer()
 {
-  CSharedLog::Log(L_DBG, __FILE__, __LINE__, "OnTimer()");
+  //CSharedLog::Log(L_DBG, __FILE__, __LINE__, "OnTimer()");
   if(m_pEventHandler != NULL)
     m_pEventHandler->OnTimer(this);
 }

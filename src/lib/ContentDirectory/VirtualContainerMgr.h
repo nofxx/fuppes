@@ -31,6 +31,7 @@
 #endif
 
 #include "../Common/Common.h"
+#include "../Common/Thread.h"
 #include "../Common/XMLParser.h"
 //#include "../UPnPActions/UPnPBrowse.h"
 //#include "ContentDatabase.h"
@@ -45,7 +46,10 @@ class CObjectDetails {
     std::string sGenre;
 };
 
-class CVirtualContainerMgr
+
+
+
+class CVirtualContainerMgr: private fuppes::Thread
 {
   public:
 	  static CVirtualContainerMgr* Shared();
@@ -67,8 +71,9 @@ class CVirtualContainerMgr
     
     bool          m_bVFolderCfgValid;
   
-    fuppesThread  m_RebuildThread;  
-    
+    //fuppesThread  m_RebuildThread;  
+		void run();
+		
 		#if SIZEOF_UNSIGNED_INT == 4
 		unsigned int m_nIdCounter;
 		#elif SIZEOF_UNSIGNED_SHORT == 4

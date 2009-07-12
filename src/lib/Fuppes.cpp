@@ -28,6 +28,7 @@
 //#include <fstream>
 
 #include "Common/Common.h"
+#include "Common/Exception.h"
 #include "SharedLog.h"
 #include "HTTP/HTTPMessage.h"
 #include "MediaServer.h"
@@ -55,31 +56,34 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
   fuppesThreadInitMutex(&m_RemoteDevicesMutex);
 
   // init database 
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "init database");
   bool bIsNewDB = false;   
   if(!CContentDatabase::Shared()->Init(&bIsNewDB)) {    
-    throw EException(__FILE__, __LINE__, "unable to create database file");
+    throw fuppes::Exception(__FILE__, __LINE__, "unable to create database file");
   }
   if(bIsNewDB) {
     CContentDatabase::Shared()->RebuildDB();
   }
   
   /* init HTTP-server */
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "init http-server");
   try {
     m_pHTTPServer = new CHTTPServer(m_sIPAddress);
     m_pHTTPServer->SetReceiveHandler(this);
     m_pHTTPServer->Start();
   }
-  catch(EException ex) {    
+  catch(fuppes::Exception ex) {    
     throw;
   }
     
   /* init SSDP-controller */
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "init ssdp-controller");
   try {
     m_pSSDPCtrl = new CSSDPCtrl(m_sIPAddress, m_pHTTPServer->GetURL());
 	  m_pSSDPCtrl->SetReceiveHandler(this);
     m_pSSDPCtrl->Start();
   }
-  catch(EException ex) {    
+  catch(fuppes::Exception ex) {    
     throw;
   }
 	
@@ -91,7 +95,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
   try {
     CSubscriptionMgr::Shared();
   }
-  catch(EException ex) {
+  catch(fuppes::Exception ex) {
     throw;
   }
 	  
@@ -103,7 +107,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
     m_pContentDirectory = new CContentDirectory(m_pHTTPServer->GetURL());   
 	  m_pMediaServer->AddUPnPService(m_pContentDirectory);
   }
-  catch(EException ex) {
+  catch(fuppes::Exception ex) {
     throw;
   }    
 
@@ -113,7 +117,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
     m_pMediaServer->AddUPnPService(m_pConnectionManager);
 		CConnectionManagerCore::init();
   }
-  catch(EException ex) {
+  catch(fuppes::Exception ex) {
     throw;
   }
 	
@@ -122,7 +126,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
 	  m_pXMSMediaReceiverRegistrar = new CXMSMediaReceiverRegistrar();
 		m_pMediaServer->AddUPnPService(m_pXMSMediaReceiverRegistrar);
 	}
-	catch(EException ex) {
+	catch(fuppes::Exception ex) {
 	  throw;
 	}
   
@@ -182,7 +186,7 @@ CFuppes::~CFuppes()
 
 void CFuppes::CleanupTimedOutDevices()
 {  
-	MutexLocker locker(&m_RemoteDevicesMutex);
+	MutexLocker2 locker(&m_RemoteDevicesMutex);
 	
   if(m_TimedOutDevices.size() == 0) {
     return;
@@ -201,7 +205,7 @@ void CFuppes::CleanupTimedOutDevices()
 
 void CFuppes::OnTimer(CUPnPDevice* pSender)
 {
-  MutexLocker locker(&m_OnTimerMutex);
+  MutexLocker2 locker(&m_OnTimerMutex);
   
 	CleanupTimedOutDevices();
 	

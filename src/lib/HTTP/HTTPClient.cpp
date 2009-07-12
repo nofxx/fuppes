@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,11 +22,12 @@
  */
 
 #include "HTTPClient.h"
-#include "CommonFunctions.h"
 #include "../Common/Common.h"
+#include "../Common/Exception.h"
 #include "../Common/RegEx.h"
 #include "../SharedLog.h"
 #include "../SharedConfig.h"
+#include "HTTPParser.h"
 
 #ifndef WIN32
 #include <pthread.h>
@@ -39,117 +40,101 @@ using namespace std;
 
 CHTTPClient::CHTTPClient(IHTTPClient* pAsyncReceiveHandler)
 {
-  m_AsyncThread = (fuppesThread)NULL;
   m_bIsAsync    = false;
   m_pAsyncReceiveHandler = pAsyncReceiveHandler;
-  m_Socket = -1;
 }
 
 CHTTPClient::~CHTTPClient()
 {
-  if(m_AsyncThread) {
-    if(!m_bAsyncDone) {
-      fuppesThreadCancel(m_AsyncThread);
-    }
-    fuppesThreadClose(m_AsyncThread);
-  }
-
-  if(m_Socket != -1) {
-    upnpSocketClose(m_Socket);
-  }
+	if(this->running()) {
+		this->stop();
+	}
 }
 
-fuppesThreadCallback AsyncThread(void* arg)
+void CHTTPClient::run()
 {
-  CHTTPClient* pClient = (CHTTPClient*)arg;                  
-  char buffer[16384];
-  int nBytesReceived = 0;
- 
-  // connect socket
-  if(connect(pClient->m_Socket, (struct sockaddr*)&pClient->m_RemoteEndpoint, sizeof(pClient->m_RemoteEndpoint)) == -1) {
-    CSharedLog::Log(L_DBG, __FILE__, __LINE__, "failed to connect()");
-    pClient->m_bAsyncDone = true;
-    fuppesThreadExit();
-  }
-
-  
-  // send message
-  if(fuppesSocketSend(pClient->m_Socket, pClient->m_sMessage.c_str(), (int)strlen(pClient->m_sMessage.c_str())) <= 0) {
-    CSharedLog::Log(L_DBG, __FILE__, __LINE__, "failed to send()");
-    upnpSocketClose(pClient->m_Socket);
-    pClient->m_Socket = -1;
-    pClient->m_bAsyncDone = true;
-    fuppesThreadExit();
-  }
-  
-  // receive answer
-  char szTmpBuf[4096];
-  int  nOffset = 0;
-  
-  while((nBytesReceived = recv(pClient->m_Socket, szTmpBuf, sizeof(szTmpBuf), 0)) > 0) {
-    
-    if((nOffset + nBytesReceived) > sizeof(buffer)) {
-      break;
-    }
-    
-    memcpy(&buffer[nOffset], &szTmpBuf, nBytesReceived);
-    nOffset += nBytesReceived;
-  }
-  buffer[nOffset] = '\0';
-  
-	pClient->m_sAsyncResult = buffer; //sReceived;
-	CHTTPMessage Message;
-	Message.SetMessage(buffer);
+	try {
+		// connect
+		m_socket.connect();
 		
-	if(pClient->m_pAsyncReceiveHandler != NULL) {
-	  pClient->m_pAsyncReceiveHandler->OnAsyncReceiveMsg(&Message);
-	}
+		// send message
+		m_socket.send(m_sMessage);
+		
+		// receive response
+		int loop = 0;
+		fuppes_off_t received = 0;
+		fuppes_off_t contentLength = 0;
+		CHTTPMessage Response;
+		bool complete = false;
+		while(!this->stopRequested()) {
+
+			received = m_socket.receive(1);			
+			if(received == 0) {
+				if(loop == 10)
+					break;
+				
+				loop++;
+				continue;
+			}
+
+			// check if we got the full header
+			char*	pos	= NULL;
+			if((pos = strstr(m_socket.buffer(), "\r\n\r\n")) != NULL) {
+
+				contentLength = 0;
+				if(CHTTPParser::hasContentLength(m_socket.buffer()))
+					contentLength = CHTTPParser::getContentLength(m_socket.buffer());
+
+				// full header no content => finished
+				if(contentLength == 0) {
+					 complete = true;
+					 break;
+				}
+					 
+				if(contentLength > 0) {
+					fuppes_off_t headerSize = pos - m_socket.buffer();
+					headerSize += 4; // strlen("\r\n\r\n")
+
+					// full header and content => finished
+					if(m_socket.bufferFill() - headerSize == contentLength) {
+						complete = true;
+						break;
+					} 
+				}
 					
-  // clean up and exit
-  upnpSocketClose(pClient->m_Socket);
-  pClient->m_Socket = -1;
-  pClient->m_bAsyncDone = true;
-  fuppesThreadExit();
+			}
+			
+		} // while
+		
+		
+		if(complete && this->m_pAsyncReceiveHandler != NULL) {
+			Response.SetMessage(m_socket.buffer());
+			this->m_pAsyncReceiveHandler->OnAsyncReceiveMsg(&Response);
+		}
+	} 
+	catch(fuppes::Exception ex)	{
+    CSharedLog::Log(L_DBG, ex);
+	}
+
+	m_bAsyncDone = true;
 }
 
 void CHTTPClient::AsyncNotify(CEventNotification* pNotification)
-{
-  // create socket
-  m_Socket = socket(AF_INET, SOCK_STREAM, 0);
-  if(m_Socket == -1)    
-    throw EException("failed to create socket", __FILE__, __LINE__);  
-   
-  // set local end point
-  m_LocalEndpoint.sin_family      = AF_INET;
-  m_LocalEndpoint.sin_addr.s_addr = inet_addr(CSharedConfig::Shared()->GetIPv4Address().c_str());
-  m_LocalEndpoint.sin_port				= htons(0);
-  memset(&(m_LocalEndpoint.sin_zero), '\0', 8);
-  
-  // bind the socket
-  int nRet = bind(m_Socket, (struct sockaddr*)&m_LocalEndpoint, sizeof(m_LocalEndpoint));	
-  if(nRet == -1)
-    throw EException("failed to bind socket", __FILE__, __LINE__);
-    
-  // fetch local end point to get port number on random ports
-	socklen_t size = sizeof(m_LocalEndpoint);
-	getsockname(m_Socket, (struct sockaddr*)&m_LocalEndpoint, &size);
-  
-  // set remote end point
-  m_RemoteEndpoint.sin_family      = AF_INET;
-  m_RemoteEndpoint.sin_addr.s_addr = inet_addr(pNotification->GetSubscriberIP().c_str());
-  m_RemoteEndpoint.sin_port        = htons(pNotification->GetSubscriberPort());
-  memset(&(m_RemoteEndpoint.sin_zero), '\0', 8);
+{  
+  // set remote end point	
+	m_socket.remoteAddress(pNotification->GetSubscriberIP());
+	m_socket.remotePort(pNotification->GetSubscriberPort());
   
   // set the notification's host
   stringstream sHost;
-  sHost << inet_ntoa(m_LocalEndpoint.sin_addr) << ":" << ntohs(m_LocalEndpoint.sin_port);  
+	sHost << m_socket.localAddress() << ":" << m_socket.localPort();  
   pNotification->SetHost(sHost.str());
   
   // start async send
   m_sMessage   = pNotification->BuildHeader() + pNotification->GetContent();
   m_bIsAsync   = true;
   m_bAsyncDone = false;
-  fuppesThreadStartArg(m_AsyncThread, AsyncThread, *this);
+	this->start();
 }
 
 
@@ -176,33 +161,11 @@ bool CHTTPClient::AsyncGet(std::string p_sGetURL)
 	else {
 	  return false;
 	}
-	
-  // create socket
-  m_Socket = socket(AF_INET, SOCK_STREAM, 0);
-  if(m_Socket == -1)    
-    throw EException("failed to create socket", __FILE__, __LINE__);  
 
-   
-  // set local end point
-  m_LocalEndpoint.sin_family      = AF_INET;
-  m_LocalEndpoint.sin_addr.s_addr = inet_addr(CSharedConfig::Shared()->GetIPv4Address().c_str());
-  m_LocalEndpoint.sin_port				= htons(0);
-  memset(&(m_LocalEndpoint.sin_zero), '\0', 8);
   
-  // bind the socket
-  int nRet = bind(m_Socket, (struct sockaddr*)&m_LocalEndpoint, sizeof(m_LocalEndpoint));	
-  if(nRet == -1)
-    throw EException("failed to bind socket", __FILE__, __LINE__);
-    
-  // fetch local end point to get port number on random ports
-  socklen_t size = sizeof(m_LocalEndpoint);
-  getsockname(m_Socket, (struct sockaddr*)&m_LocalEndpoint, &size);
-  
-  // set remote end point
-  m_RemoteEndpoint.sin_family      = AF_INET;
-  m_RemoteEndpoint.sin_addr.s_addr = inet_addr(sIPAddress.c_str());
-  m_RemoteEndpoint.sin_port        = htons(nPort);
-  memset(&(m_RemoteEndpoint.sin_zero), '\0', 8);
+  // set remote end point								
+	m_socket.remoteAddress(sIPAddress);
+	m_socket.remotePort(nPort);
   
   // build GET header
   std::string sMsg = BuildGetHeader(sGet, sIPAddress, nPort);  
@@ -212,7 +175,7 @@ bool CHTTPClient::AsyncGet(std::string p_sGetURL)
   m_sMessage   = sMsg;
   m_bIsAsync   = true;
   m_bAsyncDone = false;
-  fuppesThreadStartArg(m_AsyncThread, AsyncThread, *this);
+	this->start();
 	
   return true;
 }

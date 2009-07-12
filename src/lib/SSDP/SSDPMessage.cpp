@@ -23,6 +23,7 @@
  */
 
 #include "SSDPMessage.h"
+#include "../Common/Common.h"
 #include "../Common/RegEx.h"
 #include "../SharedLog.h"
 #include <sstream>

@@ -63,13 +63,13 @@ CFileAlterationMonitor* CFileAlterationMgr::CreateMonitor(IFileAlterationMonitor
 
 #ifdef HAVE_INOTIFY
 
-fuppesThreadCallback WatchLoop(void* arg);
+//fuppesThreadCallback WatchLoop(void* arg);
 
 CInotifyMonitor::CInotifyMonitor(IFileAlterationMonitor* pEventHandler):
   CFileAlterationMonitor(pEventHandler)
 {
   m_pInotify = new Inotify();
-  m_monitorThread = (fuppesThread)NULL;
+  //m_monitorThread = (fuppesThread)NULL;
   m_active = true;
 }
 
@@ -80,8 +80,10 @@ CInotifyMonitor::~CInotifyMonitor()
     //inotify_rm_watch(m_nInotifyFd, iter);
   }*/
 
-  fuppesThreadCancel(m_monitorThread);
-  fuppesThreadClose(m_monitorThread);
+  /*fuppesThreadCancel(m_monitorThread);
+  fuppesThreadClose(m_monitorThread);*/
+	if(this->running())
+		this->stop();
   
   delete m_pInotify;
 }
@@ -107,8 +109,11 @@ bool CInotifyMonitor::addWatch(std::string path)
     cout << "exception: " << ex.GetMessage() << endl;
   }
   
-  if(!m_monitorThread) {
+  /*if(!m_monitorThread) {
     fuppesThreadStart(m_monitorThread, WatchLoop);
+  }*/
+	if(!this->running()) {
+    this->start();
   }
 
   return true;
@@ -141,9 +146,10 @@ void CInotifyMonitor::moveWatch(std::string fromPath, std::string toPath)
   addWatch(toPath);
 }
 
-fuppesThreadCallback WatchLoop(void* arg)    
+//fuppesThreadCallback WatchLoop(void* arg)    
+void CInotifyMonitor::run()
 {
-  CInotifyMonitor* pInotify = (CInotifyMonitor*)arg;
+  CInotifyMonitor* pInotify = this; //(CInotifyMonitor*)arg;
   InotifyEvent event;
   
   
@@ -319,7 +325,7 @@ fuppesThreadCallback WatchLoop(void* arg)
     
   }
   
-  fuppesThreadExit();
+  //fuppesThreadExit();
 }
   
 #endif // HAVE_INOTIFY
@@ -395,12 +401,13 @@ void CWindowsFileMonitor::moveWatch(std::string fromPath, std::string toPath)
   addWatch(toPath);
 }
 
-fuppesThreadCallback WatchLoop(void* arg)    
+//fuppesThreadCallback WatchLoop(void* arg)    
+void CWindowsFileMonitor::run()
 {
-  CWindowsFileMonitor* monitor = (CWindowsFileMonitor*)arg;
+  CWindowsFileMonitor* monitor = this; //(CWindowsFileMonitor*)arg;
 	
 	
-	fuppesThreadExit();
+	//fuppesThreadExit();
 }
 
 #endif

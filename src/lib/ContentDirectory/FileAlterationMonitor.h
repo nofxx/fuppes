@@ -30,6 +30,7 @@
 #endif
 
 #include "../Common/Common.h"
+#include "../Common/Thread.h"
 
 #ifdef HAVE_INOTIFY
 #include "inotify-cxx-0.7.2/inotify-cxx.h"
@@ -64,13 +65,26 @@ typedef enum {
 
 
 class CFileAlterationMonitor;
+#ifdef HAVE_INOTIFY
+class CInotifyMonitor;
+#endif
+#ifdef WIN32
+class CWindowsFileMonitor;
+#endif
 
 class CFileAlterationEvent
 {
   friend class CFileAlterationMonitor;
-  #ifdef HAVE_INOTIFY
+	#ifdef HAVE_INOTIFY
+	friend class CInotifyMonitor;
+	#endif
+	#ifdef WIN32
+	friend class CWindowsFileMonitor;
+	#endif
+	
+  /*#ifdef HAVE_INOTIFY
   friend fuppesThreadCallback WatchLoop(void* arg);
-  #endif
+  #endif*/
   
   public:
     CFileAlterationEvent() {
@@ -107,7 +121,7 @@ class IFileAlterationMonitor
      virtual void FamEvent(CFileAlterationEvent* event) = 0;
 };
 
-class CFileAlterationMonitor
+class CFileAlterationMonitor: protected fuppes::Thread
 {
   public:
 		virtual ~CFileAlterationMonitor() {
@@ -172,12 +186,15 @@ class CDummyMonitor: public CFileAlterationMonitor
     virtual bool  addWatch(std::string path) { return true; }
     virtual void  removeWatch(std::string path) { }
     virtual void  moveWatch(std::string fromPath, std::string toPath) { }
+		
+	private:
+		void run() {}
 };
 
 #ifdef HAVE_INOTIFY
 class CInotifyMonitor: public CFileAlterationMonitor
 {
-  friend fuppesThreadCallback WatchLoop(void* arg);
+  //friend fuppesThreadCallback WatchLoop(void* arg);
   
   public:
     CInotifyMonitor(IFileAlterationMonitor* pEventHandler);
@@ -189,7 +206,8 @@ class CInotifyMonitor: public CFileAlterationMonitor
     
   private:
     Inotify*                                m_pInotify;  
-    fuppesThread                            m_monitorThread;
+    //fuppesThread                            m_monitorThread;
+		void run();
     // path, watch
     std::map<std::string, InotifyWatch*>    m_watches;
 };
@@ -197,7 +215,6 @@ class CInotifyMonitor: public CFileAlterationMonitor
 
 
 #ifdef WIN32
-
 class CWindowsFileMonitor: public CFileAlterationMonitor
 {
   public:
@@ -209,7 +226,8 @@ class CWindowsFileMonitor: public CFileAlterationMonitor
     virtual void  moveWatch(std::string fromPath, std::string toPath);
 		
 	private:
-    fuppesThread                            m_monitorThread;
+    //fuppesThread                            m_monitorThread;
+		void run();
     //std::map<std::string, InotifyWatch*>    m_watches;
 };
 

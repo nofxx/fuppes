@@ -84,7 +84,7 @@ int fuppes_transcoder_transcode_image_mem(plugin_info* plugin,
 	MagickBooleanType status;
 	MagickWand* wand = NewMagickWand();
 	
-	printf("magickWand %d\n", 1);
+	//printf("magickWand %d\n", 1);
 	
 	status = MagickReadImageBlob(wand, *inBuffer, inSize);
 	if(status == MagickFalse) {
@@ -95,7 +95,7 @@ int fuppes_transcoder_transcode_image_mem(plugin_info* plugin,
 	}
 	// wand = DestroyMagickWand(wand);
 
-	printf("magickWand %d\n", 2);
+	//printf("magickWand %d\n", 2);
 	
 	MagickWand* wandOut;
 	char geometry[123];
@@ -107,7 +107,7 @@ int fuppes_transcoder_transcode_image_mem(plugin_info* plugin,
 		return -1;
 	}
 
-	printf("magickWand %d\n", 3);
+	//printf("magickWand %d\n", 3);
 	
 	//MagickBooleanType MagickSetFormat(MagickWand *wand,const char *format)
 	
@@ -119,7 +119,7 @@ int fuppes_transcoder_transcode_image_mem(plugin_info* plugin,
 	*outSize = length;
 	MagickRelinquishMemory(blob);
 	
-	printf("magickWand %d, %d\n", 4, *outSize);
+	//printf("magickWand %d, %d\n", 4, *outSize);
 	
 	//MagickRelinquishMemory(wandOut);
 	wandOut = DestroyMagickWand(wandOut);

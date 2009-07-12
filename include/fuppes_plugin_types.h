@@ -64,13 +64,27 @@ typedef struct {
 } file_ext;
 
 
+// stores a list for key/value pairs
+// it's used to represent a single dataset
+// e.g. the description of a shared directory
+// idx, type, path
 typedef struct {
 	char*		key;
 	char*		value;
+	
 	void*		next;
 } arg_list_t;
 
-static inline arg_list_t* create_arg_list() {
+// stores a list of arg_list_t instances
+// if the args store the description of a single shared dir
+// this one holds the list of all shared dirs
+typedef struct {
+	arg_list_t* arg;
+
+	void* next;
+} result_set_t;
+
+static inline arg_list_t* arg_list_create() {
 	
 	arg_list_t* list = (arg_list_t*)malloc(sizeof(arg_list_t));
 	
@@ -90,22 +104,48 @@ static inline void arg_list_set_values(arg_list_t* list, const char* key, const 
 	set_value(&list->value, key);	
 }
 
-static inline arg_list_t* arg_list_append(arg_list_t* list)
-{
+static inline arg_list_t* arg_list_append(arg_list_t* list) {
 	while(list->next) {
 		list = (arg_list_t*)list->next;
 	}
-	list->next = create_arg_list();
+	list->next = arg_list_create();
+	return (arg_list_t*)list->next;
 }
 
-static inline void free_arg_list(arg_list_t* list) {
+static inline void arg_list_free(arg_list_t* list) {
 	free(list->key);
 	free(list->value);
 	if(list->next) {
-		free_arg_list(list);
+		arg_list_free((arg_list_t*)list->next);
 	}
 	free(list);
 }
+
+
+static inline result_set_t* result_set_create() {
+	result_set_t* set = (result_set_t*)malloc(sizeof(result_set_t));
+	set->arg = arg_list_create();
+	set->next = NULL;
+	return set;
+}
+
+static inline void result_set_free(result_set_t* set) {
+	arg_list_free(set->arg);
+	if(set->next) {
+		result_set_free((result_set_t*)set->next);
+	}
+	free(set);
+}
+
+static inline result_set_t* result_set_append(result_set_t* set) {
+	while(set->next) {
+		set = (result_set_t*)set->next;
+	}
+	set->next = result_set_create();
+	return (result_set_t*)set->next;
+}
+
+
 
 typedef int (*ctrl_action_t)(const char* action, arg_list_t* args, arg_list_t* result);
 

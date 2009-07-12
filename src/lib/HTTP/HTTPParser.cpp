@@ -104,11 +104,44 @@ bool CHTTPParser::parseHeader(std::string header, CHTTPMessage* message)
 	  message->SetMessageType(HTTP_MESSAGE_TYPE_404_NOT_FOUND);
 	}
 
+	
+	/*RegEx rxContentLength("CONTENT-LENGTH: *(\\d+)", PCRE_CASELESS);
+  if(rxContentLength.Search(header.c_str())) {
+    string sContentLength = rxContentLength.Match(1);    
+    int nContentLength = ::atoi(sContentLength.c_str());
+  }
+	else {
+		return false;
+	}*/
+	
 	parseCommonValues(header, message);
 	parseGetVars(header, message);
 	
 	CDeviceIdentificationMgr::Shared()->IdentifyDevice(message); 
   return true;
+}
+
+bool CHTTPParser::hasContentLength(char* buffer) 
+{
+	RegEx rxContentLength("CONTENT-LENGTH: *(\\d+)", PCRE_CASELESS);
+  if(rxContentLength.Search(buffer)) {
+    return true;
+  }
+	else {
+		return false;
+	}
+}
+
+fuppes_off_t CHTTPParser::getContentLength(char* buffer)
+{
+	RegEx rxContentLength("CONTENT-LENGTH: *(\\d+)", PCRE_CASELESS);
+  if(rxContentLength.Search(buffer)) {
+    fuppes_off_t contentLength = strToOffT(rxContentLength.Match(1));
+		return contentLength;
+  }
+	else {
+		return 0;
+	}
 }
 
 void CHTTPParser::ConvertURLEncodeContentToPlain(CHTTPMessage* message)

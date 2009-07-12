@@ -52,7 +52,7 @@ class IUPnPDevice
 };
 
 
-class CUPnPDevice: public CUPnPBase, ITimer, IHTTPClient
+class CUPnPDevice: public CUPnPBase, fuppes::ITimer, IHTTPClient
 {
   protected:
 
@@ -70,7 +70,7 @@ class CUPnPDevice: public CUPnPBase, ITimer, IHTTPClient
 
     void OnTimer();
 
-    CTimer* GetTimer() { return m_pTimer; }
+    fuppes::Timer* GetTimer() { return m_pTimer; }
 
     CHTTPClient* GetHTTPClient() { return m_pHTTPClient; }
 
@@ -133,7 +133,7 @@ class CUPnPDevice: public CUPnPBase, ITimer, IHTTPClient
 
 	private:
     bool         m_bIsLocalDevice;
-    CTimer*      m_pTimer;
+    fuppes::Timer*      m_pTimer;
     IUPnPDevice* m_pEventHandler;
 		CHTTPClient* m_pHTTPClient;
   

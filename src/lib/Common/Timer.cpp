@@ -3,13 +3,14 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005 - 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -23,107 +24,75 @@
  
 
 #include "Timer.h"
+#include "Common.h"
+
+using namespace fuppes;
 
 #include <string>
-#include <sstream>
 #include <iostream>
-
 using namespace std;
 
-fuppesThreadCallback TimerLoop(void *arg);
-
-CTimer::CTimer(ITimer* p_OnTimerHandler)
+Timer::Timer(ITimer* p_OnTimerHandler)
 {
   m_pOnTimerHandler = p_OnTimerHandler;
-  m_TimerThread     = (fuppesThread)NULL;
   m_nTickCount      = 0;
-  m_bDoBreak        = false;
-  
-  fuppesThreadInitMutex(&m_TimerMutex);
 }
 
-CTimer::~CTimer()
-{                
-  Stop();
-  Cleanup();  
-  fuppesThreadDestroyMutex(&m_TimerMutex);
-}
-  
-void CTimer::Cleanup()
+Timer::~Timer()
 {
-  if(m_TimerThread) {
-    fuppesThreadClose(m_TimerThread);   
-    m_TimerThread = (fuppesThread)NULL;
-  }
+  Stop();
 }
 
-void CTimer::CallOnTimer()
+void Timer::CallOnTimer()
 {
   if(m_pOnTimerHandler != NULL)
     m_pOnTimerHandler->OnTimer(); 
 }
 
-void CTimer::SetInterval(unsigned int p_nSeconds)
+void Timer::SetInterval(unsigned int p_nSeconds)
 {
   m_nInterval = p_nSeconds;
 }
 
-void CTimer::Start()
+void Timer::Start()
 {
-  void Cleanup(); 
-  m_bDoBreak = false;  
-  fuppesThreadStart(m_TimerThread, TimerLoop);  
+	start();
 }
 
-void CTimer::Stop()
+void Timer::Stop()
 {
-  m_bDoBreak = true; 
+	stop();
 }
 
-void CTimer::Reset()
+void Timer::Reset()
 {
-  fuppesThreadLockMutex(&m_TimerMutex);
+	m_mutex.lock();
   m_nTickCount = 0;
-  fuppesThreadUnlockMutex(&m_TimerMutex);
+	m_mutex.unlock();
 }
 
-unsigned int CTimer::GetCount()
+unsigned int Timer::GetCount()
 {
-  unsigned int nResult = 0;  
-  nResult = m_nInterval - m_nTickCount;
-  return nResult;
+  return (m_nInterval - m_nTickCount);
 }
 
-void CTimer::Lock()
-{
-  fuppesThreadLockMutex(&m_TimerMutex);     
+void Timer::incTicCount() {
+  m_mutex.lock();
+	m_nTickCount++;
+	m_mutex.unlock();
 }
 
-void CTimer::Unlock()
-{
-  fuppesThreadUnlockMutex(&m_TimerMutex);
-}
+void Timer::run() {	
 
-fuppesThreadCallback TimerLoop(void *arg)
-{
-  CTimer* pTimer = (CTimer*)arg;   
-  
-  while(!pTimer->m_bDoBreak && (pTimer->m_nTickCount <= pTimer->GetInterval()))
-  {
-    if (pTimer->m_bDoBreak)
-      break;
-                          
-    pTimer->Lock();
-    pTimer->m_nTickCount++;
-    pTimer->Unlock();
+	while(!this->stopRequested()&& (this->m_nTickCount <= this->GetInterval())) {
+
+		this->incTicCount();
     fuppesSleep(1000);    
     
-    if(!pTimer->m_bDoBreak && (pTimer->m_nTickCount >= (pTimer->GetInterval() - 1)))
-    {
-      pTimer->CallOnTimer();
-      pTimer->Reset();
+    if(!this->stopRequested() && (this->m_nTickCount >= (this->GetInterval() - 1))) {
+      this->CallOnTimer();
+      this->Reset();
     }
-  }  
+  }
 
-  fuppesThreadExit();
 }

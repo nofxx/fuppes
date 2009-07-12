@@ -31,6 +31,7 @@
 
 #include <string>
 #include <map>
+#include "../Common/Thread.h"
 #include "../HTTP/HTTPMessage.h"
 #include "../HTTP/HTTPClient.h"
  
@@ -111,7 +112,7 @@ public:
     std::map<std::string, CSubscription*>::iterator m_SubscriptionsIterator;  
 };
 
-class CSubscriptionMgr
+class CSubscriptionMgr: private fuppes::Thread
 {
   public:
     static CSubscriptionMgr* Shared();
@@ -131,7 +132,8 @@ class CSubscriptionMgr
   
     void ParseSubscription(CHTTPMessage* pRequest, CSubscription* pSubscription);  
     
-    fuppesThread m_MainLoop;    
+    //fuppesThread m_MainLoop; 
+		void run();
 };
 
 #endif /* _SUBSCRIPTIONMGR_H */

@@ -116,7 +116,7 @@ sockaddr_in CMSearchSession:: GetLocalEndPoint()
 	return m_UdpSocket.GetLocalEndPoint();
 }
 
-fuppesThreadCallback HandleMSearchThread(void *arg);
+//fuppesThreadCallback HandleMSearchThread(void *arg);
 
 CHandleMSearchSession::CHandleMSearchSession(CSSDPMessage* pSSDPMessage, std::string p_sIPAddress, std::string p_sHTTPServerURL)
 {
@@ -126,13 +126,13 @@ CHandleMSearchSession::CHandleMSearchSession(CSSDPMessage* pSSDPMessage, std::st
   m_pSSDPMessage      = new CSSDPMessage();
   pSSDPMessage->Assign(m_pSSDPMessage);
   m_pNotifyMsgFactory = new CNotifyMsgFactory(m_sHTTPServerURL);
-  m_Thread            = (fuppesThread)NULL;
+  //m_Thread            = (fuppesThread)NULL;
 }
    
 CHandleMSearchSession::~CHandleMSearchSession()
 {
-  if(m_Thread)
-    fuppesThreadClose(m_Thread);
+  /*if(m_Thread)
+    fuppesThreadClose(m_Thread);*/
   delete m_pSSDPMessage;
   delete m_pNotifyMsgFactory;
 }
@@ -140,15 +140,17 @@ CHandleMSearchSession::~CHandleMSearchSession()
 void CHandleMSearchSession::Start()
 {
   m_bIsTerminated = false;
-  fuppesThreadStartArg(m_Thread, HandleMSearchThread, *this);
+  //fuppesThreadStartArg(m_Thread, HandleMSearchThread, *this);
+	this->start();
 }
 
-fuppesThreadCallback HandleMSearchThread(void *arg)
+//fuppesThreadCallback HandleMSearchThread(void *arg)
+void CHandleMSearchSession::run()
 {
   /*cout << "HandleMSearchThread" << endl;
   fflush(stdout);*/
   
-  CHandleMSearchSession* pSession = (CHandleMSearchSession*) arg;
+  CHandleMSearchSession* pSession = this; //(CHandleMSearchSession*) arg;
  
   if(pSession->GetSSDPMessage()->GetMSearchST() != M_SEARCH_ST_UNSUPPORTED)
   {    
@@ -231,5 +233,5 @@ fuppesThreadCallback HandleMSearchThread(void *arg)
   fflush(stdout);  */
   
   pSession->m_bIsTerminated = true;
-  fuppesThreadExit();
+  //fuppesThreadExit();
 }

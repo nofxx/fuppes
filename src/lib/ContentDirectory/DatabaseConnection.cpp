@@ -25,12 +25,16 @@
 
 #include "DatabaseConnection.h"
 #include "../Plugins/Plugin.h"
-#include "../Common/Common.h"
+//#include "../Common/Common.h"
+#include "../Common/Thread.h"
+
+
 
 CDatabaseConnection* CDatabase::m_connection = NULL;
 
 static CConnectionParams connectionParams;
-static fuppesThreadMutex mutex;
+//static fuppesThreadMutex mutex;
+static fuppes::Mutex mutex;
 
 bool CDatabase::init(const CConnectionParams params)
 {
@@ -45,7 +49,7 @@ bool CDatabase::init(const CConnectionParams params)
 	if(db->open(params)) {
 		m_connection = db;
 		connectionParams = params;
-		fuppesThreadInitMutex(&mutex);
+		//fuppesThreadInitMutex(&mutex);
 		return true;
 	}
 	
@@ -64,7 +68,7 @@ void CDatabase::close()
 
 CSQLQuery* CDatabase::query()
 {	
-	MutexLocker locker(&mutex);
+	fuppes::MutexLocker locker(&mutex);
 	
 	if(!m_connection)
 		return NULL;
@@ -75,7 +79,7 @@ CSQLQuery* CDatabase::query()
 
 CDatabaseConnection* CDatabase::connection(bool create /*= false*/)
 {
-	MutexLocker locker(&mutex);
+	fuppes::MutexLocker locker(&mutex);
 	
 	if(!m_connection) {
 		return NULL;

@@ -24,6 +24,7 @@
  */
 
 #include "Plugin.h"
+#include "../Common/Exception.h"
 #include "../SharedLog.h"
 #include "../SharedConfig.h"
 
@@ -170,7 +171,7 @@ void CPluginMgr::init(std::string pluginDir)
 	
 			}
 		}
-		catch(EException ex) {
+		catch(fuppes::Exception ex) {
 		}
 		
 	} // while

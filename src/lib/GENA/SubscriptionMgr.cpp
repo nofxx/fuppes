@@ -25,6 +25,7 @@
 #include "SubscriptionMgr.h"
 #include "../Common/RegEx.h"
 #include "../Common/UUID.h"
+#include "../Common/Exception.h"
 #include "../SharedLog.h"
 
 CSubscription::CSubscription()
@@ -264,7 +265,7 @@ bool CSubscriptionCache::DeleteSubscription(std::string pSID)
 }
 
 
-fuppesThreadCallback MainLoop(void *arg);
+//fuppesThreadCallback MainLoop(void *arg);
 
 CSubscriptionMgr* CSubscriptionMgr::m_pInstance = 0;
 
@@ -277,13 +278,14 @@ CSubscriptionMgr* CSubscriptionMgr::Shared()
 
 CSubscriptionMgr::CSubscriptionMgr(bool p_bSingelton)
 { 
-  m_MainLoop = (fuppesThread)NULL;
+  //m_MainLoop = (fuppesThread)NULL;
   m_bDoLoop = true;
   
   // start main loop in singleton instance only
-  if(p_bSingelton && !m_MainLoop) {
+  if(p_bSingelton && !this->running()) { // !m_MainLoop) {
     CSharedLog::Log(L_DBG, __FILE__, __LINE__, "start CSubscriptionMgr MainLoop");
-    fuppesThreadStartArg(m_MainLoop, MainLoop, *this);
+    //fuppesThreadStartArg(m_MainLoop, MainLoop, *this);
+		this->start();
   }
 }
 
@@ -291,11 +293,14 @@ CSubscriptionMgr::~CSubscriptionMgr()
 {
   m_bDoLoop = false;
 	
-	if(m_MainLoop) {
+	if(this->running())
+		this->stop();
+	
+	/*if(m_MainLoop) {
     fuppesThreadCancel(m_MainLoop);
     fuppesThreadClose(m_MainLoop);
     m_MainLoop = (fuppesThread)NULL;  
-  }
+  }*/
 }
 
 bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
@@ -306,8 +311,8 @@ bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* 
   try {    
     this->ParseSubscription(pRequest, pSubscription);
   } 
-  catch (EException ex) {
-    CSharedLog::Log(L_EXT, __FILE__, __LINE__, ex.What().c_str());
+  catch (fuppes::Exception ex) {
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, ex.what().c_str());
     
     delete pSubscription;
     return false;
@@ -343,7 +348,7 @@ void CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* 
   // subscription type
   RegEx rxSubscribe("([SUBSCRIBE|UNSUBSCRIBE]+)", PCRE_CASELESS);
   if(!rxSubscribe.Search(pRequest->GetHeader().c_str()))
-    throw EException(__FILE__, __LINE__, "parsing subscription");
+    throw fuppes::Exception(__FILE__, __LINE__, "parsing subscription");
   
   // subscription target
   RegEx rxTarget("[SUBSCRIBE|UNSUBSCRIBE] +(.+) +HTTP/1\\.[1|0]", PCRE_CASELESS);
@@ -356,11 +361,11 @@ void CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* 
       pSubscription->SetSubscriptionTarget(UPNP_SERVICE_CONNECTION_MANAGER);
     }
     else {
-      throw EException(__FILE__, __LINE__, "unknown subscription target");
+      throw fuppes::Exception(__FILE__, __LINE__, "unknown subscription target");
     }    
   }
   else {
-    throw EException(__FILE__, __LINE__, "parsing subscription");
+    throw fuppes::Exception(__FILE__, __LINE__, "parsing subscription");
   }
   
   // SID
@@ -385,7 +390,7 @@ void CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* 
         pSubscription->SetCallback(sCallback);
       }
       else {
-        throw EException(__FILE__, __LINE__, "parsing subscription callback");
+        throw fuppes::Exception(__FILE__, __LINE__, "parsing subscription callback");
       }      
     }
     else
@@ -408,13 +413,14 @@ void CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* 
  * the CSubscriptionMgr's MainLoop constantly
  * walks the subscriptions and handles them
  */
-fuppesThreadCallback MainLoop(void *arg)
+//fuppesThreadCallback MainLoop(void *arg)
+void CSubscriptionMgr::run()
 {
-  CSubscriptionMgr* pMgr = (CSubscriptionMgr*)arg;
+  CSubscriptionMgr* pMgr = this; //(CSubscriptionMgr*)arg;
   CSubscription* pSubscr = NULL;
   std::map<std::string, CSubscription*>::iterator tmpIt;    
   
-  while(pMgr->m_bDoLoop)
+  while(pMgr->m_bDoLoop && !this->stopRequested())
   {
     //cout << "CSubscriptionMgr::MainLoop" << endl;
     
@@ -460,7 +466,7 @@ fuppesThreadCallback MainLoop(void *arg)
     fuppesSleep(1000);
   }
   
-  fuppesThreadExit();
+  //fuppesThreadExit();
 }
 
 /* SUBSCRIBE

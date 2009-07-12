@@ -48,7 +48,7 @@ class IMSearchSession
 };
 
 
-class CMSearchSession: public IUDPSocket, ITimer
+class CMSearchSession: public IUDPSocket, fuppes::ITimer
 {
 
   public:
@@ -76,7 +76,7 @@ class CMSearchSession: public IUDPSocket, ITimer
 	  CUDPSocket         m_UdpSocket;
     std::string        m_sIPAddress;
     IMSearchSession*   m_pEventHandler;
-    CTimer             m_Timer;    
+    fuppes::Timer      m_Timer;    
     CNotifyMsgFactory* m_pNotifyMsgFactory;
 };
 
@@ -89,7 +89,7 @@ class IHandleMSearchSession
     virtual void OnSessionEnd(CHandleMSearchSession* pSender) = 0;
 };
   
-class CHandleMSearchSession
+class CHandleMSearchSession: private fuppes::Thread
 {
   public:
     CHandleMSearchSession(CSSDPMessage* pSSDPMessage, std::string p_sIPAddress, std::string p_sHTTPServerURL);
@@ -104,7 +104,9 @@ class CHandleMSearchSession
     CSSDPMessage* GetSSDPMessage() { return m_pSSDPMessage; }
   
   private:
-    fuppesThread m_Thread;
+    //fuppesThread m_Thread;
+		void run();
+		
     CSSDPMessage* m_pSSDPMessage;
 };
 

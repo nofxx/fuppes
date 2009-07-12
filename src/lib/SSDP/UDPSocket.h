@@ -3,7 +3,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -30,6 +30,7 @@
 #endif
 
 #include "../Common/Common.h"
+#include "../Common/Thread.h"
 
 #ifndef WIN32
 #include <arpa/inet.h>
@@ -53,7 +54,7 @@ class IUDPSocket
     virtual void OnUDPSocketReceive(CSSDPMessage* pMessage) = 0;
 };
 
-class CUDPSocket
+class CUDPSocket: public fuppes::Thread
 {
 
   public:
@@ -140,7 +141,8 @@ class CUDPSocket
     bool m_bBreakReceive;
   
   private:
-
+		void run();
+		
     /* Flags */
     bool          m_bDoMulticast;	
 
@@ -149,7 +151,7 @@ class CUDPSocket
     sockaddr_in   m_LocalEndpoint;
 
     /* Message handling */
-    fuppesThread  m_ReceiveThread;
+    //fuppesThread  m_ReceiveThread;
     IUDPSocket*   m_pReceiveHandler;
 		IUDPSocket*   m_pStartedHandler;
 };

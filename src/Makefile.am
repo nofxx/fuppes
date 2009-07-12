@@ -21,12 +21,16 @@ bin_PROGRAMS = fuppes
 fuppes_SOURCES = console_main.cpp
 fuppes_LDADD = ./libfuppes.la
 fuppes_DEPENDENCIES = ./libfuppes.la
-fuppes_LDFLAGS =
-#	$(FUPPES_LIBS)\
-#	${UUID_LIBS}\
-#	${LIBXML_LIBS}\
-#	${PCRE_LIBS}
+fuppes_LDFLAGS = \
+	$(FUPPES_LIBS)\
+	${UUID_LIBS}\
+	${LIBXML_LIBS}\
+	${PCRE_LIBS}\
+	${MAD_LIBS}\
+	${LIBICONV}
 
+## \	/usr/local/readynas/lib/libz.so.1 -ldl
+	
 if WIN32
 
 fuppes_LDADD += \
@@ -53,7 +57,11 @@ fuppesd_LDFLAGS = \
 	$(FUPPES_LIBS)\
 	${UUID_LIBS}\
 	${LIBXML_LIBS}\
-	${PCRE_LIBS}
+	${PCRE_LIBS}\
+	${MAD_LIBS}\
+	${LIBICONV}
+	
+##	\	/usr/local/readynas/lib/libz.so.1 -ldl
 endif
 
 libfuppes_la_SOURCES = \
@@ -107,6 +115,8 @@ libfuppes_la_SOURCES = \
 	lib/Common/RegEx.h\
   lib/Common/Common.cpp\
 	lib/Common/Common.h\
+  lib/Common/Exception.cpp\
+	lib/Common/Exception.h\
   lib/Common/md5.c\
 	lib/Common/md5.h\
   lib/Common/UUID.cpp\
@@ -117,6 +127,10 @@ libfuppes_la_SOURCES = \
 	lib/Common/XMLParser.h\
 	lib/Common/Process.cpp\
 	lib/Common/Process.h\
+	lib/Common/Thread.cpp\
+	lib/Common/Thread.h\
+	lib/Common/Socket.cpp\
+	lib/Common/Socket.h\
 	lib/Plugins/Plugin.cpp\
 	lib/Plugins/Plugin.h\
   lib/SSDP/UDPSocket.cpp\

@@ -84,7 +84,7 @@ class CSSDPCtrl: public IUDPSocket, IMSearchSession
 		bool							 m_isStarted;
     CUDPSocket         m_Listener;	
     CNotifyMsgFactory* m_pNotifyMsgFactory;
-    fuppesThread       msearch_thread;
+    //fuppesThread       msearch_thread;
     sockaddr_in        m_LastMulticastEp;  
     std::string        m_sIPAddress;    
     std::string        m_sHTTPServerURL;

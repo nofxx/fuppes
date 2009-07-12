@@ -31,6 +31,7 @@
 #endif
 
 #include <string>
+#include "../Common/Common.h"
 
 class CHTTPMessage;
 
@@ -39,7 +40,10 @@ class CHTTPParser
   public:
   	static bool parseHeader(std::string header, CHTTPMessage* message);
 		static void ConvertURLEncodeContentToPlain(CHTTPMessage* message);
-	
+
+		static bool					hasContentLength(char* buffer);
+		static fuppes_off_t getContentLength(char* buffer);
+		
   private:
 		static void parseCommonValues(std::string header, CHTTPMessage* message);
 		static void parseGetVars(std::string header, CHTTPMessage* message);		
