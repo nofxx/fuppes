@@ -385,8 +385,8 @@ void CVirtualContainerMgr::CreateVFoldersFromProperty(CXMLNode* pFoldersNode,
         break;
       case CONTAINER_ALBUM_MUSIC_ALBUM:
         pDetails->sAlbum  = SQLEscape(pDb->GetResult()->asString("VALUE"));
-        pDetails->sArtist = SQLEscape(pDb->GetResult()->asString("d.A_ARTIST"));
-        pDetails->sGenre  = SQLEscape(pDb->GetResult()->asString("d.A_GENRE"));
+        pDetails->sArtist = SQLEscape(pDb->GetResult()->asString("A_ARTIST"));
+        pDetails->sGenre  = SQLEscape(pDb->GetResult()->asString("A_GENRE"));
         break;      
       default:
         cout << "unhandled property '" << sProp << "'" << endl;
