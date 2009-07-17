@@ -37,6 +37,13 @@ using namespace fuppes;
 #include <sys/errno.h>
 #endif
 
+// win32 and os x have no MSG_NOSIGNAL
+// mac os x uses setsockopt(SO_NOSIGPIPE) instead
+// win32 does not need this at all
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
+#endif
+
 #define INITIAL_BUFFER_SIZE 16384  // 16 Kb
 
 SocketBase::SocketBase()
@@ -132,10 +139,10 @@ bool TCPSocket::connect()
 
 fuppes_off_t TCPSocket::send(std::string message)
 {
-	return send((const unsigned char*)message.c_str(), message.length());
+	return send(message.c_str(), message.length());
 }
 
-fuppes_off_t TCPSocket::send(const unsigned char* buffer, fuppes_off_t size)
+fuppes_off_t TCPSocket::send(const char* buffer, fuppes_off_t size)
 {
 	int						lastSend = 0;
   fuppes_off_t	fullSend = 0;

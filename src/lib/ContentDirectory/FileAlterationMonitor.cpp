@@ -332,19 +332,19 @@ void CInotifyMonitor::run()
 
 
 #ifdef WIN32
-fuppesThreadCallback WatchLoop(void* arg);
+//fuppesThreadCallback WatchLoop(void* arg);
 
 CWindowsFileMonitor::CWindowsFileMonitor(IFileAlterationMonitor* pEventHandler)
 :CFileAlterationMonitor(pEventHandler)
 {
-  m_monitorThread = (fuppesThread)NULL;
+  //m_monitorThread = (fuppesThread)NULL;
   m_active = true;
 }
 
 CWindowsFileMonitor::~CWindowsFileMonitor()
 {
-  fuppesThreadCancel(m_monitorThread);
-  fuppesThreadClose(m_monitorThread);
+  /*fuppesThreadCancel(m_monitorThread);
+  fuppesThreadClose(m_monitorThread);*/
 }
   
 bool CWindowsFileMonitor::addWatch(std::string path)
@@ -368,9 +368,9 @@ bool CWindowsFileMonitor::addWatch(std::string path)
     cout << "exception: " << ex.GetMessage() << endl;
   }*/
   
-  if(!m_monitorThread) {
+  /*if(!m_monitorThread) {
     fuppesThreadStart(m_monitorThread, WatchLoop);
-	}
+	}*/
   return true;
 }
   

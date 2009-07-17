@@ -61,6 +61,7 @@ int fuppes_decoder_file_open(plugin_info* plugin, const char* fileName, audio_se
 		
 	data->fd = fopen(fileName, "rb");
 	if(data->fd == NULL) {
+		plugin->log(0, __FILE__, __LINE__, "error opening file: %s\n", fileName);
 		free(plugin->user_data);
 		return 1;
 	}

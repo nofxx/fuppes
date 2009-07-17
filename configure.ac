@@ -255,6 +255,10 @@ if test "x$use_libavformat" = "xyes"; then
 			AC_DEFINE([FFMPEG_VERSION], [50], [])
 		fi
 
+
+		PKG_CHECK_MODULES(LIBAVCODEC, libavcodec, have_libavcodec=yes, have_libavcodec=no)
+		PKG_CHECK_MODULES(LIBAVUTIL, libavutil, have_libavutil=yes, have_libavutil=no)
+
   else
     AC_MSG_NOTICE([*** libavformat (FFmpeg) support disabled ***]);
   fi 

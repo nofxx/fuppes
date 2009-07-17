@@ -39,7 +39,7 @@ namespace fuppes {
 class Exception: public std::exception
 {
   public:
-    Exception(std::string exception, char* file, int line);    
+    Exception(const std::string exception, const std::string file, int line);    
     Exception(const std::string file, int line, const char* exception, ...);  
     ~Exception() throw() {};
 

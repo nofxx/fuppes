@@ -29,7 +29,7 @@
 
 using namespace fuppes;
 
-Exception::Exception(std::string exception, char* file, int line)
+Exception::Exception(const std::string exception, const std::string file, int line)
 : std::exception() {       
 	
 	m_file = file;

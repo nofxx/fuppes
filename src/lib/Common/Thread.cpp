@@ -101,9 +101,9 @@ bool Thread::start(void* arg /* = NULL*/)
 	m_stop = false;
 	
 #ifdef WIN32
-	m_handle = CreateThread(NULL, 0, &Thread::threadFunc, this, 0, NULL)
+	m_handle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)&Thread::threadFunc, this, 0, NULL);
 	m_running = (m_handle != NULL);
-#else
+#else 
 	int ret = pthread_create(&m_handle, NULL, &Thread::threadFunc, this);
   m_running = (0 == ret);
 #endif
@@ -118,9 +118,11 @@ bool Thread::close()
 	if(NULL == m_handle)
 		return true;
 	
+	m_stop = true;
+
 #ifdef WIN32
   bool bResult = false;
-  DWORD nErrNo = WaitForSingleObject(m_handle, 500);
+  DWORD nErrNo = WaitForSingleObject(m_handle, 5000);
   switch(nErrNo) {
     case WAIT_ABANDONED:
       /*cout << "WAIT_ABANDONED :: " << nErrNo << endl;*/
@@ -162,7 +164,11 @@ bool Thread::close()
 #endif
 }
 
+#ifdef WIN32
+DWORD Thread::threadFunc(void* thread)
+#else
 void* Thread::threadFunc(void* thread)
+#endif
 {
   Thread* pt = (Thread*)thread;	
 	pt->run();
@@ -172,6 +178,7 @@ void* Thread::threadFunc(void* thread)
 	
 #ifdef WIN32
 	ExitThread(0);
+	return 0;
 #else	
 	pthread_exit(NULL);
 #endif

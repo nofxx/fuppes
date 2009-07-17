@@ -31,6 +31,8 @@
 #endif
 
 #ifdef WIN32
+#pragma comment(lib,"shlwapi.lib")
+#include <shlwapi.h>
 #else
 #include <pthread.h>
 #include <unistd.h>
@@ -92,7 +94,11 @@ class Thread
 		virtual void run() { }
 		bool stopRequested() { return m_stop; }
 		
+		#ifdef WIN32
+    static DWORD threadFunc(void*);
+    #else
     static void* threadFunc(void*);
+    #endif
 		
    private:
 		bool close();

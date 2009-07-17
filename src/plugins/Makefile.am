@@ -63,10 +63,12 @@ libmetadata_libavformat_la_SOURCES = \
 	metadata_libavformat.c
 
 libmetadata_libavformat_la_CFLAGS = \
-	$(LIBAVFORMAT_CFLAGS)
+	$(LIBAVFORMAT_CFLAGS) \
+	$(LIBAVCODEC_CFLAGS)
 	
 libmetadata_libavformat_la_LDFLAGS = \
-	$(LIBAVFORMAT_LIBS)
+	$(LIBAVFORMAT_LIBS) \
+	$(LIBAVCODEC_LIBS)
 
 endif
 
@@ -190,11 +192,15 @@ libtranscoder_ffmpeg_la_SOURCES = \
 
 libtranscoder_ffmpeg_la_CXXFLAGS = \
 	$(LIBAVFORMAT_CFLAGS) \
+	$(LIBAVCODEC_CFLAGS) \
+	$(LIBAVUTIL_CFLAGS) \
 	$(LIBSWSCALE_CFLAGS) \
 	-D__STDC_CONSTANT_MACROS
 	
 libtranscoder_ffmpeg_la_LDFLAGS = \
 	$(LIBAVFORMAT_LIBS) \
+	$(LIBAVCODEC_LIBS) \
+	$(LIBAVUTIL_LIBS) \
 	$(LIBSWSCALE_LIBS)
 
 endif
@@ -263,10 +269,10 @@ libdecoder_musepack_la_SOURCES = \
 	decoder_musepack.c
 
 libdecoder_musepack_la_CFLAGS = \
-	$(FLAC_CFLAGS)
+	$(MUSEPACK_CFLAGS)
 	
 libdecoder_musepack_la_LDFLAGS = \
-	$(FLAC_LIBS)
+	$(MUSEPACK_LIBS)
 
 endif
 

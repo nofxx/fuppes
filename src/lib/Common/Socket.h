@@ -91,7 +91,7 @@ class TCPSocket: public SocketBase
 		
 		bool					connect();
 		fuppes_off_t	send(std::string message);
-		fuppes_off_t	send(const unsigned char* buffer, fuppes_off_t size);
+		fuppes_off_t	send(const char* buffer, fuppes_off_t size);
 		// timeout works only on nonblocking sockets and if "select()" is available
 		fuppes_off_t	receive(int timeout = 0);
 		

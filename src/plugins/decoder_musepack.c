@@ -182,7 +182,7 @@ int fuppes_decoder_file_open(plugin_info* plugin, const char* fileName, audio_se
 	mpc_streaminfo_init(&data->streamInfo);
   if(mpc_streaminfo_read(&data->streamInfo, &data->reader) != ERROR_CODE_OK) {	// MPC_STATUS_OK
 		plugin->log(0, __FILE__, __LINE__, "Not a valid musepack file: %s.\n", fileName);
-		flose(data->file);
+		fclose(data->file);
 		free(plugin->user_data);
     return 1;
   }
@@ -191,7 +191,7 @@ int fuppes_decoder_file_open(plugin_info* plugin, const char* fileName, audio_se
   mpc_decoder_setup(&data->decoder, &data->reader);
   if(!mpc_decoder_initialize(&data->decoder, &data->streamInfo)) {
 		plugin->log(0, __FILE__, __LINE__, "error initializing decoder: %s.\n", fileName);
-		flose(data->file);
+		fclose(data->file);
 		free(plugin->user_data);
     return 1;
   }  
