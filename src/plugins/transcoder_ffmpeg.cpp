@@ -69,6 +69,7 @@ extern "C" {
 void register_fuppes_plugin(plugin_info* info)
 {
 	strcpy(info->plugin_name, "ffmpeg");
+	strcpy(info->plugin_author, "Ulrich Voelkel");
 	info->plugin_type = PT_TRANSCODER;
 	
 	av_register_all();

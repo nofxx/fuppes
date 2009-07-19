@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            libmain.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -37,6 +38,7 @@
 #include "ContentDirectory/ContentDatabase.h"
 #include "ContentDirectory/VirtualContainerMgr.h"
 #include "DeviceSettings/DeviceIdentificationMgr.h"
+#include "Plugins/Plugin.h"
 
 #ifdef WIN32
 #include <shellapi.h>
@@ -56,13 +58,22 @@ void printHelp()
   CSharedLog::Print("    the Free UPnP Entertainment Service");
   CSharedLog::Print("      http://fuppes.ulrich-voelkel.de\n\n");
 	
+	CSharedLog::Print(" --friendly-name <name> set friendly name");
+	CSharedLog::Print(" --log-level [0-3] set log level (0-none, 1-normal, 2-extended, 3-debug)");
+	CSharedLog::Print(" --log-file <filename> set log file (default: none)");
+										
+#ifndef WIN32
 	CSharedLog::Print(" --temp-dir <dir> set temp directory (default: /tmp/fuppes)");
 	CSharedLog::Print(" --config-file <filename> use alternate config file (default ~/.fuppes/fuppes.cfg)");
 	CSharedLog::Print(" --database-file <filename> use alternate database file (default ~/.fuppes/fuppes.db)");
 	CSharedLog::Print(" --vfolder-config-file <filename> use alternate vfolder config file (default ~/.fuppes/vfolder.cfg)");
-	CSharedLog::Print(" --friendly-name <name> set friendly name");
-	CSharedLog::Print(" --log-level [0-3] set log level (0-none, 1-normal, 2-extended, 3-debug)");
-	CSharedLog::Print(" --log-file <filename> set log file (default: none)");
+	CSharedLog::Print(" --plugin-dir <dir> directory containing fuppes plugins (default $prefix/lib/fuppes");
+#else
+	CSharedLog::Print(" --temp-dir <dir> set temp directory (default: %TEMP%/fuppes)");
+	CSharedLog::Print(" --config-file <filename> use alternate config file (default %APPDATA%/FUPPES/fuppes.cfg)");
+	CSharedLog::Print(" --database-file <filename> use alternate database file (default %APPDATA%/FUPPES/fuppes.db)");
+	CSharedLog::Print(" --vfolder-config-file <filename> use alternate vfolder config file (default %APPDATA%/FUPPES/vfolder.cfg)");
+#endif
 }
 
 int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
@@ -141,7 +152,7 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   CSharedConfig::Shared()->SetVFolderConfigFileName(sVFolderFile);  
   CSharedConfig::Shared()->FriendlyName(sFriendlyName);
 	CSharedConfig::Shared()->TempDir(sTempDir);
-	//CSharedConfig::Shared()->pluginDir(sPluginDir);    
+	CSharedConfig::Shared()->pluginDir(sPluginDir);    
 
 	xmlInitParser();
 
@@ -154,11 +165,19 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
 	#ifdef WIN32
 	string appDir = argv[0];
 	cout << appDir << endl;
-	if(!CSharedConfig::Shared()->SetupConfig(appDir))  
+	if(!CSharedConfig::Shared()->SetupConfig(appDir)) {
 	#else
-	if(!CSharedConfig::Shared()->SetupConfig())
+	if(!CSharedConfig::Shared()->SetupConfig()) {
 	#endif
     return FUPPES_FALSE;
+  }                 
+                    
+
+	
+	if(!CDatabase::init("sqlite3")) {    
+    CSharedLog::Print("failed to initialize sqlite database plugin.");
+		return FUPPES_FALSE;
+  }
 
   return FUPPES_TRUE;
 }
@@ -301,7 +320,7 @@ void fuppes_print_info()
   cout << "  build at    : " << __DATE__ << " " << __TIME__ << endl;
   cout << "  build with  : " << __VERSION__ << endl;
   cout << "  address     : " << CSharedConfig::Shared()->GetIPv4Address() << endl;
-  cout << "  sqlite      : " << CContentDatabase::Shared()->GetLibVersion() << endl;
+  //cout << "  sqlite      : " << CContentDatabase::Shared()->GetLibVersion() << endl;
   cout << "  log-level   : " << CSharedLog::Shared()->GetLogLevel() << endl;
   cout << "  webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
   cout << endl;
@@ -309,115 +328,20 @@ void fuppes_print_info()
 	cout << "  " << CSharedConfig::Shared()->GetConfigFileName() << endl;
 	cout << endl;
 	
-#ifdef HAVE_FAAD
-	cout << "faad: enabled" << endl;
-#else
-	cout << "faad: disabled" << endl;
-#endif
+  cout << CPluginMgr::printInfo().c_str() << endl;
+  
 
-#ifdef HAVE_FLAC 
-	cout << "flac: enabled" << endl;
-#else
-	cout << "flac: disabled" << endl;
-#endif
-	
 #ifdef HAVE_ICONV
 	cout << "iconv: enabled" << endl;
 #else
 	cout << "iconv: disabled" << endl;
 #endif
 	
-#ifdef HAVE_IMAGEMAGICK_PP
-	cout << "ImageMagick++: enabled" << endl;
-#else
-	cout << "ImageMagick++: disabled" << endl;
-#endif
-
-#ifdef HAVE_IMAGEMAGICK_WAND
-	cout << "ImageMagick Wand: enabled" << endl;
-#else
-	cout << "ImageMagick Wand: disabled" << endl;
-#endif
-	
+#ifndef WIN32
 #ifdef HAVE_INOTIFY
 	cout << "inotify: enabled" << endl;
 #else
 	cout << "inotify: disabled" << endl;
-#endif
-	
-
-#ifdef HAVE_LAME
-	cout << "lame: enabled" << endl;
-#else
-	cout << "lame: disabled" << endl;
-#endif
-	
-
-#ifdef HAVE_LIBAVFORMAT
-	cout << "libavformat: enabled" << endl;
-#else
-	cout << "libavformat: disabled" << endl;
-#endif
-
-#ifdef HAVE_LIBNOTIFY
-	cout << "libnotify: enabled" << endl;
-#else
-	cout << "libnotify: disabled" << endl;
-#endif
-	
-
-#ifdef HAVE_MAD
-	cout << "mad: enabled" << endl;
-#else
-	cout << "mad: disabled" << endl;
-#endif
-	
-#ifdef HAVE_MP4FF_H
-	cout << "mp4ff: enabled" << endl;
-#else
-	cout << "mp4ff: disabled" << endl;
-#endif
-	
-#ifdef HAVE_MPEG4IP
-	cout << "mpeg4ip: enabled" << endl;
-#else
-	cout << "mpeg4ip: disabled" << endl;
-#endif
-	
-#ifdef HAVE_MUSEPACK
-	cout << "musepack: enabled" << endl;
-#else
-	cout << "musepack: disabled" << endl;
-#endif
-	
-#ifdef HAVE_SIMAGE
-	cout << "simage: enabled" << endl;
-#else
-	cout << "simage: disabled" << endl;
-#endif
-	
-#ifdef HAVE_SYS_INOTIFY_H
-	cout << "inotify: enabled" << endl;
-#else
-	cout << "inotify: disabled" << endl;
-#endif
-
-#ifdef HAVE_TAGLIB
-	cout << "taglib: enabled" << endl;
-#else
-	cout << "taglib: disabled" << endl;
-#endif
-
-#ifdef HAVE_TREMOR
-	cout << "tremor: enabled" << endl;
-#else
-	cout << "tremor: disabled" << endl;
-#endif
-
-#ifdef HAVE_TWOLAME
-	cout << "twolame: enabled" << endl;
-#else
-	cout << "twolame: disabled" << endl;
 #endif
 
 #ifdef HAVE_UUID
@@ -425,14 +349,7 @@ void fuppes_print_info()
 #else
 	cout << "uuid: disabled" << endl;
 #endif
-
-#ifdef HAVE_VORBIS
-	cout << "vorbis: enabled" << endl;
-#else
-	cout << "vorbis: disabled" << endl;
 #endif
-
-	
 }
 
 void fuppes_print_device_settings()

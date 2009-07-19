@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl $Id: $
 
-AC_INIT([fuppes], [0.633], [fuppes@ulrich-voelkel.de])
+AC_INIT([fuppes], [0.640], [fuppes@ulrich-voelkel.de])
 AM_CONFIG_HEADER(src/config.h)
 AM_INIT_AUTOMAKE([1.9])
 

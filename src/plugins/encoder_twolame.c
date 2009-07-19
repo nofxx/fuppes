@@ -38,6 +38,7 @@ extern "C" {
 void register_fuppes_plugin(plugin_info* plugin)
 {
 	strcpy(plugin->plugin_name, "twolame");
+	strcpy(info->plugin_author, "Ulrich Voelkel");
 	plugin->plugin_type = PT_AUDIO_ENCODER;
 }
 

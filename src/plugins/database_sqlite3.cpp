@@ -1,6 +1,6 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
- *            core_sqlite3.cpp
+ *            database_sqlite3.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -331,6 +331,7 @@ extern "C" {
 void register_fuppes_plugin(plugin_info* plugin)
 {
 	strcpy(plugin->plugin_name, "sqlite3");
+	strcpy(plugin->plugin_author, "Ulrich Voelkel");
 	plugin->plugin_type = PT_DATABASE_CONNECTION;
 }
 

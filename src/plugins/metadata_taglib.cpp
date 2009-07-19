@@ -200,18 +200,6 @@ int taglib_read_image(plugin_info* info, char** mimeType, unsigned char** buffer
 	
 	delete mpegFile;
 	return 0;
-  /*
-    TagLib::ID3v2::Tag *tag = pMpegfile->ID3v2Tag();
-    const TagLib::ID3v2::FrameList & ApicFrameList = tag->frameList("APIC");
-    if(ApicFrameList.isEmpty() 
-        || dynamic_cast<const TagLib::ID3v2::AttachedPictureFrame *>(ApicFrameList.front()) == NULL 
-      )
-        return false;
-    const TagLib::ID3v2::AttachedPictureFrame *ApicFrame = static_cast<const TagLib::ID3v2::AttachedPictureFrame *>(ApicFrameList.front());
-    wxString sMimeType(ConvA2W(ApicFrame->mimeType().toCString()));
-    const TagLib::ByteVector pic = ApicFrame->picture();
-    wxMemoryInputStream vMstream(pic.data(), pic.size());
-    return img.LoadFile(vMstream,sMimeType);*/
 }
 
 
@@ -222,6 +210,7 @@ extern "C" {
 void register_fuppes_plugin(plugin_info* info)
 {
 	strcpy(info->plugin_name, "taglib");
+	strcpy(info->plugin_author, "Ulrich Voelkel");
 	info->plugin_type = PT_METADATA;
 
 	/*add_extension(info, "mp3");

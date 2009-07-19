@@ -98,19 +98,22 @@ void CPluginMgr::init(std::string pluginDir)
 			plugin_info pluginInfo;
 			pluginInfo.plugin_type = PT_NONE;
 			pluginInfo.log = &CPlugin::logCb;
-
+			pluginInfo.plugin_name[0] = '\0';
+			pluginInfo.plugin_author[0] = '\0';
+			
 			fuppesLibHandle handle;
 			
 			//cout << "load: " << fileName << endl;
 			
 			handle = FuppesLoadLibrary(fileName);
 			if(handle == NULL) {
-				cout << "plugin handle is NULL" << endl;
+				//cout << "error loading library: "  << fileName << endl;
 				continue;
 			}
 			regPlugin = (registerPlugin_t)FuppesGetProcAddress(handle, "register_fuppes_plugin");	
 	
 			if(regPlugin == NULL) {
+				//cout << "library: "  << fileName << " is no valid fuppes plugin" << endl;
 				FuppesCloseLibrary(handle);
 				continue;
 			}
@@ -122,35 +125,35 @@ void CPluginMgr::init(std::string pluginDir)
 					plugin = new CDlnaPlugin(handle, &pluginInfo);
 					if(plugin->initPlugin()) {
 						m_instance->m_dlnaPlugin = (CDlnaPlugin*)plugin;
-						CSharedLog::Log(L_NORM, __FILE__, __LINE__, "registered dlna profile plugin");
+						CSharedLog::Log(L_EXT, __FILE__, __LINE__, "registered dlna profile plugin");
 					}					
 					break;
 				case PT_PRESENTATION:
 					plugin = new CPresentationPlugin(handle, &pluginInfo);
 					if(plugin->initPlugin()) {
 						m_instance->m_presentationPlugin = (CPresentationPlugin*)plugin;
-						CSharedLog::Log(L_NORM, __FILE__, __LINE__, "registered presentation plugin");
+						CSharedLog::Log(L_EXT, __FILE__, __LINE__, "registered presentation plugin");
 					}
 					break;					
 				case PT_METADATA:
 					plugin = new CMetadataPlugin(handle, &pluginInfo);
 				  if(plugin->initPlugin()) {
 						m_instance->m_metadataPlugins[ToLower(pluginInfo.plugin_name)] = (CMetadataPlugin*)plugin;
-						CSharedLog::Log(L_NORM, __FILE__, __LINE__, "registered metadata plugin \"%s\"", pluginInfo.plugin_name);
+						CSharedLog::Log(L_EXT, __FILE__, __LINE__, "registered metadata plugin \"%s\"", pluginInfo.plugin_name);
 					}
 					break;
 				case PT_AUDIO_DECODER:
 					plugin = new CAudioDecoderPlugin(handle, &pluginInfo);
 					if(plugin->initPlugin()) {
 						m_instance->m_audioDecoderPlugins[ToLower(pluginInfo.plugin_name)] = (CAudioDecoderPlugin*)plugin;
-						CSharedLog::Log(L_NORM, __FILE__, __LINE__, "registered audio decoder plugin \"%s\"", pluginInfo.plugin_name);
+						CSharedLog::Log(L_EXT, __FILE__, __LINE__, "registered audio decoder plugin \"%s\"", pluginInfo.plugin_name);
 					}
 					break;
 				case PT_AUDIO_ENCODER:
 					plugin = new CAudioEncoderPlugin(handle, &pluginInfo);
 					if(plugin->initPlugin()) {
 						m_instance->m_audioEncoderPlugins[ToLower(pluginInfo.plugin_name)] = (CAudioEncoderPlugin*)plugin;
-						CSharedLog::Log(L_NORM, __FILE__, __LINE__, "registered audio encoder plugin \"%s\"", pluginInfo.plugin_name);
+						CSharedLog::Log(L_EXT, __FILE__, __LINE__, "registered audio encoder plugin \"%s\"", pluginInfo.plugin_name);
 					}
 					break;
 				case PT_TRANSCODER:
@@ -158,14 +161,14 @@ void CPluginMgr::init(std::string pluginDir)
 					plugin = new CTranscoderPlugin(handle, &pluginInfo);
           if(plugin->initPlugin()) {
 						m_instance->m_transcoderPlugins[ToLower(pluginInfo.plugin_name)] = (CTranscoderPlugin*)plugin;
-						CSharedLog::Log(L_NORM, __FILE__, __LINE__, "registered transcoder plugin \"%s\"", pluginInfo.plugin_name);
+						CSharedLog::Log(L_EXT, __FILE__, __LINE__, "registered transcoder plugin \"%s\"", pluginInfo.plugin_name);
 					}
 					break;
 				case PT_DATABASE_CONNECTION:
 					plugin = new CDatabasePlugin(handle, &pluginInfo);
 				  if(plugin->initPlugin()) {
 						m_instance->m_databasePlugins[pluginInfo.plugin_name] = (CDatabasePlugin*)plugin;
-						CSharedLog::Log(L_NORM, __FILE__, __LINE__, "registered database plugin \"%s\"", pluginInfo.plugin_name);
+						CSharedLog::Log(L_EXT, __FILE__, __LINE__, "registered database plugin \"%s\"", pluginInfo.plugin_name);
 					}
 					break;
 	
@@ -267,6 +270,69 @@ CDatabasePlugin* CPluginMgr::databasePlugin(const std::string pluginName)
 
 	fuppesThreadUnlockMutex(&m_instance->m_mutex);
 	return plugin;
+}
+
+
+
+std::string CPluginMgr::printInfo()
+{
+	stringstream result;
+	CPlugin* plugin;
+	
+	result << "registered plugins" << endl;
+	result << "database:" << endl;
+	for(m_instance->m_databasePluginsIter = m_instance->m_databasePlugins.begin(); 
+			m_instance->m_databasePluginsIter != m_instance->m_databasePlugins.end(); 
+			m_instance->m_databasePluginsIter++) {
+		plugin = m_instance->m_databasePluginsIter->second;
+		result << "  " << plugin->name() << " (" << plugin->author() << ")" << endl;
+	}
+	result << endl;
+ 
+	result << "misc:" << endl;
+	if(m_instance->m_dlnaPlugin)
+		result << "  " << m_instance->m_dlnaPlugin->name() << endl;
+	if(m_instance->m_presentationPlugin)
+		result << "  " << m_instance->m_presentationPlugin->name() << endl;
+	result << endl;	
+	
+	result << "metadata:" << endl;
+	for(m_instance->m_metadataPluginsIter = m_instance->m_metadataPlugins.begin(); 
+			m_instance->m_metadataPluginsIter != m_instance->m_metadataPlugins.end(); 
+			m_instance->m_metadataPluginsIter++) {
+		plugin = m_instance->m_metadataPluginsIter->second;
+		result << "  " << plugin->name() << " (" << plugin->author() << ")" << endl;
+	}
+	result << endl;
+	
+	result << "transcoder:" << endl;
+	for(m_instance->m_transcoderPluginsIter = m_instance->m_transcoderPlugins.begin(); 
+			m_instance->m_transcoderPluginsIter != m_instance->m_transcoderPlugins.end(); 
+			m_instance->m_transcoderPluginsIter++) {
+		plugin = m_instance->m_transcoderPluginsIter->second;
+		result << "  " << plugin->name() << " (" << plugin->author() << ")" << endl;
+	}
+	result << endl;
+	
+	result << "audio decoder:" << endl;
+	for(m_instance->m_audioDecoderPluginsIter = m_instance->m_audioDecoderPlugins.begin(); 
+			m_instance->m_audioDecoderPluginsIter != m_instance->m_audioDecoderPlugins.end(); 
+			m_instance->m_audioDecoderPluginsIter++) {
+		plugin = m_instance->m_audioDecoderPluginsIter->second;
+		result << "  " << plugin->name() << " (" << plugin->author() << ")" << endl;
+	}
+	result << endl;
+
+	result << "audio encoder:" << endl;
+	for(m_instance->m_audioEncoderPluginsIter = m_instance->m_audioEncoderPlugins.begin(); 
+			m_instance->m_audioEncoderPluginsIter != m_instance->m_audioEncoderPlugins.end(); 
+			m_instance->m_audioEncoderPluginsIter++) {
+		plugin = m_instance->m_audioEncoderPluginsIter->second;
+		result << "  " << plugin->name() << " (" << plugin->author() << ")" << endl;
+	}
+	result << endl;
+	
+	return result.str();
 }
 
 

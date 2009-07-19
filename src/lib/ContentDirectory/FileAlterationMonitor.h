@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            FileAlterationMonitor.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007-2008 Ulrich Völkel <fuppes@ulrich-voelkel.de>
+ *  Copyright (C) 2007-2009 Ulrich Völkel <fuppes@ulrich-voelkel.de>
  ****************************************************************************/
 
 /*
@@ -37,7 +38,7 @@
 #endif
 
 #include <string>
-#include <list>
+#include <map>
 
 typedef enum {
 
@@ -194,8 +195,6 @@ class CDummyMonitor: public CFileAlterationMonitor
 #ifdef HAVE_INOTIFY
 class CInotifyMonitor: public CFileAlterationMonitor
 {
-  //friend fuppesThreadCallback WatchLoop(void* arg);
-  
   public:
     CInotifyMonitor(IFileAlterationMonitor* pEventHandler);
     virtual ~CInotifyMonitor();
@@ -205,8 +204,7 @@ class CInotifyMonitor: public CFileAlterationMonitor
     void  moveWatch(std::string fromPath, std::string toPath);
     
   private:
-    Inotify*                                m_pInotify;  
-    //fuppesThread                            m_monitorThread;
+    Inotify*                                m_pInotify;
 		void run();
     // path, watch
     std::map<std::string, InotifyWatch*>    m_watches;
@@ -219,22 +217,17 @@ class CWindowsFileMonitor: public CFileAlterationMonitor
 {
   public:
     CWindowsFileMonitor(IFileAlterationMonitor* pEventHandler);
-
     virtual ~CWindowsFileMonitor();
-    virtual bool  addWatch(std::string path);
-    virtual void  removeWatch(std::string path);
-    virtual void  moveWatch(std::string fromPath, std::string toPath);
+    
+    bool  addWatch(std::string path);
+    void  removeWatch(std::string path);
+    void  moveWatch(std::string fromPath, std::string toPath);
 		
 	private:
-    //fuppesThread                            m_monitorThread;
 		void run();
-    //std::map<std::string, InotifyWatch*>    m_watches;
+    std::map<std::string, HANDLE>    m_watches;
 };
 
-/*http://msdn.microsoft.com/en-us/library/aa365261(VS.85).aspx
-
-FindFirstChangeNotification
-FindNextChangeNotification */
 
 #endif
 

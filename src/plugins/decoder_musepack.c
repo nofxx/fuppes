@@ -149,6 +149,7 @@ void convertLE32to16(musepackData_t* data, MPC_SAMPLE_FORMAT* sample_buffer, cha
 void register_fuppes_plugin(plugin_info* plugin)
 {
 	strcpy(plugin->plugin_name, "musepack");
+	strcpy(plugin->plugin_author, "Ulrich Voelkel");
 	plugin->plugin_type = PT_AUDIO_DECODER;
 }
 

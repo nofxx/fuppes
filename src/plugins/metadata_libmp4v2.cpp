@@ -33,6 +33,7 @@ extern "C" {
 void register_fuppes_plugin(plugin_info* info)
 {
 	strcpy(info->plugin_name, "mp4v2");
+	strcpy(info->plugin_author, "Ulrich Voelkel");
 	info->plugin_type = PT_METADATA;
 }
 

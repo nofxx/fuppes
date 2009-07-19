@@ -289,6 +289,7 @@ extern "C" {
 void register_fuppes_plugin(plugin_info* plugin)
 {
 	strcpy(plugin->plugin_name, "mysql");
+	strcpy(plugin->plugin_author, "Ulrich Voelkel");
 	plugin->plugin_type = PT_DATABASE_CONNECTION;
 	
 	if(mysql_library_init(0, NULL, NULL) != 0) {

@@ -163,6 +163,7 @@ void FLAC_StreamDecoderErrorCallback(const FLAC__StreamDecoder* decoder,
 void register_fuppes_plugin(plugin_info* plugin)
 {
 	strcpy(plugin->plugin_name, "FLAC");
+	strcpy(plugin->plugin_author, "Ulrich Voelkel");
 	plugin->plugin_type = PT_AUDIO_DECODER;
 }
 

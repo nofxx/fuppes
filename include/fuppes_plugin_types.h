@@ -153,7 +153,7 @@ typedef void (*log_t)(int level, const char* file, int line, const char* format,
 
 typedef struct {
 	char					plugin_name[200];
-	char					plugin_author[200];
+	char					plugin_author[1000];
 	PLUGIN_TYPE		plugin_type;
 	void*					user_data;
 	log_t					log;

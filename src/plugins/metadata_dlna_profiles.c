@@ -32,6 +32,7 @@ extern "C" {
 void register_fuppes_plugin(plugin_info* info)
 {
 	strcpy(info->plugin_name, "dlna-profiles");
+	strcpy(info->plugin_author, "Ulrich Voelkel");
 	info->plugin_type = PT_DLNA;
 }
 

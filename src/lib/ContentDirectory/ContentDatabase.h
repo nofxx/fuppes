@@ -105,8 +105,7 @@ class CContentDatabase: public IFileAlterationMonitor
     int m_nLockCount;
   
     CFileAlterationMonitor* m_pFileAlterationMonitor;
-  
-    std::string   m_sDbFileName;
+
     bool          m_bInTransaction;
     bool Open();
     void Close();

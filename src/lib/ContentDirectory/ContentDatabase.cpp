@@ -76,8 +76,7 @@ CContentDatabase::CContentDatabase(bool p_bShared)
   m_bInTransaction 	= false;
   m_nLockCount 			= -1;
   
-	if(m_bShared) {            
-		m_sDbFileName 	  = CSharedConfig::Shared()->GetDbFileName();	
+	if(m_bShared) {
 		g_bIsRebuilding   = false;
     g_bFullRebuild    = true;
     g_bAddNew         = false;
@@ -122,7 +121,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 		return false;
 	}
   
-  bool bIsNewDb = !FileExists(m_sDbFileName);
+  bool bIsNewDb = !FileExists(CSharedConfig::Shared()->GetDbFileName());
   *p_bIsNewDB = bIsNewDb;  
   
   
@@ -249,16 +248,15 @@ void CContentDatabase::Unlock()
 bool CContentDatabase::Open()
 {  
 	CConnectionParams params;
-	params.type = "sqlite3";
-	params.filename = m_sDbFileName;
-	
+	//params.type = "sqlite3";
+	params.filename = CSharedConfig::Shared()->GetDbFileName();
 	/*params.type = "mysql";
 	params.hostname = "localhost";
 	params.username = "fuppes";
 	params.password = "fuppes";
 	params.dbname = "fuppes";*/
 	
-	if(!CDatabase::init(params))
+	if(!CDatabase::open(params))
 		return false;
 	
   /*if(!m_bShared) {	

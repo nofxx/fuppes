@@ -186,6 +186,7 @@ extern "C" {
 void register_fuppes_plugin(plugin_info* plugin)
 {
 	strcpy(plugin->plugin_name, "presentation");
+	strcpy(plugin->plugin_author, "Ulrich Voelkel");
 	plugin->plugin_type = PT_PRESENTATION;
 }
 

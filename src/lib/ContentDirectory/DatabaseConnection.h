@@ -35,7 +35,8 @@
 class CDatabase
 {
 	public:		
-		static bool init(const CConnectionParams params);
+		static bool init(const std::string type);
+		static bool open(const CConnectionParams params);
 		static void close();
 
 		static CSQLQuery* query();

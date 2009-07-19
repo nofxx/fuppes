@@ -1,14 +1,23 @@
 #
 # cross compile FUPPES for Windows using mingw
+# Copyright (C) 2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
 #
 # tested on debian using mingw32-4.2.1.dsfg-1 and mingw32-runtime-3.13-1
-# furthermore you need wine-1.1.15-1 and wine-bin-1.1.15-1 in order to
+# furthermore you need wine and wine-bin in order to
 # execute test programms build by configure scripts
-
+# autotools, wget and svn
 
 # settings
+
+# the build host
 HOST="i586-mingw32msvc"
+
+# target directory
 PREFIX="/usr/local/win32"
+
+# make command (e.g. "make -j 2")
+MAKE="make"
+
 
 
 # you should not need to change anything below
@@ -23,7 +32,7 @@ export WINEDLLPATH="$PREFIX/bin"
 
 # create target directory
 if ! test -d $PREFIX; then
-	echo "enter root password for target directory creation"
+  echo "enter root password for target directory creation"
   su -c "mkdir $PREFIX && chmod 777 $PREFIX"
 fi
 
@@ -37,9 +46,9 @@ cd sources/
 # $1 = paket name, $2 = file ext, $3 = url
 function loadpkt {
 
-	if ! test -d downloads; then
-		mkdir downloads
-	fi
+  if ! test -d downloads; then
+    mkdir downloads
+  fi
 
   SRC_PKT=$1$2
   if ! test -e downloads/$SRC_PKT; then
@@ -68,14 +77,14 @@ echo "build zlib? [Y/n]"
 HAVE_ZLIB="no"
 read build
 if test "$build" != "n"; then
-	HAVE_ZLIB="yes"
+  HAVE_ZLIB="yes"
 fi
 
 echo "build libiconv? [Y/n]"
 HAVE_ICONV="no"
 read build
 if test "$build" != "n"; then
-	HAVE_ICONV="yes"
+  HAVE_ICONV="yes"
 fi
 
 
@@ -84,42 +93,42 @@ echo "build taglib? [Y/n]"
 HAVE_TAGLIB="no"
 read build
 if test "$build" != "n"; then
-	HAVE_TAGLIB="yes"
+  HAVE_TAGLIB="yes"
 fi
 
 echo "build LAME? [Y/n]"
 HAVE_LAME="no"
 read build
 if test "$build" != "n"; then
-	HAVE_LAME="yes"
+  HAVE_LAME="yes"
 fi
 
 echo "build ogg/vorbis (libogg and libvorbisfile)? [Y/n]"
 HAVE_OGGVORBIS="no"
 read build
 if test "$build" != "n"; then
-	HAVE_OGGVORBIS="yes"
+  HAVE_OGGVORBIS="yes"
 fi
 
 echo "build FLAC? [Y/n]"
 HAVE_FLAC="no"
 read build
 if test "$build" != "n"; then
-	HAVE_FLAC="yes"
+  HAVE_FLAC="yes"
 fi
 
 echo "build MusePack mpc? [Y/n]"
 HAVE_MUSEPACK="no"
 read build
 if test "$build" != "n"; then
-	HAVE_MUSEPACK="yes"
+  HAVE_MUSEPACK="yes"
 fi
 
 #echo "build libmad? [Y/n]"
 HAVE_MAD="no"
 #read build
 #if test "$build" != "n"; then
-#	HAVE_MAD="yes"
+#  HAVE_MAD="yes"
 #fi
 
 
@@ -127,7 +136,17 @@ echo "build exiv2? [Y/n]"
 HAVE_EXIV2="no"
 read build
 if test "$build" != "n"; then
-	HAVE_EXIV2="yes"
+  HAVE_EXIV2="yes"
+fi
+
+
+#todo libtiff (imagemagick and simage) libungif (simage)
+
+echo "build simage? [Y/n]"
+HAVE_SIMAGE="no"
+read build
+if test "$build" != "n"; then
+  HAVE_SIMAGE="yes"
 fi
 
 
@@ -137,19 +156,19 @@ HAVE_JPEG="no"
 HAVE_PNG="no"
 read build
 if test "$build" != "n"; then
-	HAVE_IMAGEMAGICK="yes"
+  HAVE_IMAGEMAGICK="yes"
 
-	echo "build libjpeg? [Y/n]"
-	read build
-	if test "$build" != "n"; then
-		HAVE_JPEG="yes"	
-	fi
-	
-	echo "build libpng? [Y/n]"
-	read build
-	if test "$build" != "n"; then
-		HAVE_PNG="yes"	
-	fi
+  echo "build libjpeg? [Y/n]"
+  read build
+  if test "$build" != "n"; then
+    HAVE_JPEG="yes"  
+  fi
+  
+  echo "build libpng? [Y/n]"
+  read build
+  if test "$build" != "n"; then
+    HAVE_PNG="yes"  
+  fi
 fi
 
 
@@ -157,9 +176,17 @@ echo "build ffmpeg? [Y/n]"
 HAVE_FFMPEG="no"
 read build
 if test "$build" != "n"; then
-	HAVE_FFMPEG2="yes"
+  HAVE_FFMPEG2="yes"
 fi
 
+
+
+echo "strip libraries and executables? [Y/n]"
+DO_STRIP="no"
+read strip
+if test "$strip" != "n"; then
+  HDO_STRIP="yes"
+fi
 
 
 
@@ -185,52 +212,52 @@ AM_PROG_INSTALL_STRIP
 AC_OUTPUT([Makefile])" \
 > configure.ac
 
-echo "include_HEADERS = zlib.h zconf.h	
+echo "include_HEADERS = zlib.h zconf.h  
 
 lib_LTLIBRARIES = libz.la
 
 libz_la_SOURCES = \
-	adler32.h adler32.c \
-	compress.h compress.c \
-	crc32.h crc32.c \
-	gzio.h gzio.c \
-	uncompr.h uncompr.c \
-	deflate.h deflate.c \
-	trees.h trees.c \
-	zutil.h zutil.c \
-	inflate.h inflate.c \
-	infback.h infback.c \
-	inftrees.h inftrees.c \
-	inffast.h inffast.c
+  adler32.h adler32.c \
+  compress.h compress.c \
+  crc32.h crc32.c \
+  gzio.h gzio.c \
+  uncompr.h uncompr.c \
+  deflate.h deflate.c \
+  trees.h trees.c \
+  zutil.h zutil.c \
+  inflate.h inflate.c \
+  infback.h infback.c \
+  inftrees.h inftrees.c \
+  inffast.h inffast.c
 
 libz_la_LDFLAGS = -no-undefined" \
 > Makefile.am
 
 autoreconf -vfi
 ./configure --host=$HOST --prefix=$PREFIX
-make
+$MAKE
 make install
 cd ..
 
 else
-	echo "skipped zlib"
+  echo "skipped zlib"
 fi
 
 
 # libiconv 1.13 (recommended)
 if test "$HAVE_ICONV" == "yes"; then
 
-	echo "start building libiconv"
+  echo "start building libiconv"
 
-	loadpkt "libiconv-1.13" ".tar.gz" \
-		      "http://ftp.gnu.org/pub/gnu/libiconv/"
-	./configure --host=$HOST --prefix=$PREFIX
-	make
-	make install
-	cd ..
+  loadpkt "libiconv-1.13" ".tar.gz" \
+          "http://ftp.gnu.org/pub/gnu/libiconv/"
+  ./configure --host=$HOST --prefix=$PREFIX
+  $MAKE
+  make install
+  cd ..
 
 else
-	echo "skipped libiconv"
+  echo "skipped libiconv"
 fi
 
 
@@ -240,7 +267,7 @@ loadpkt "pcre-7.9" ".zip" \
         "ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/"
 ./configure --host=$HOST --prefix=$PREFIX \
 --enable-utf8 --enable-newline-is-anycrlf --disable-cpp
-make
+$MAKE
 make install
 cd ..
 
@@ -252,7 +279,7 @@ loadpkt "sqlite-amalgamation-3.6.16" ".tar.gz" \
 cd sqlite-3.6.16
 ./configure --host=$HOST --prefix=$PREFIX \
 --enable-tempstore=yes --enable-threadsafe
-make
+$MAKE
 make install
 cd ..
 
@@ -268,7 +295,7 @@ loadpkt "libxml2-2.6.32" ".tar.gz" \
 --with-push=yes --with-python=no --with-readline=no --with-regexps=no \
 --with-sax1=no --with-xinclude=no --with-xpath=no --with-xptr=no --with-modules=no \
 --with-valid=no --with-reader=yes --with-writer=yes
-make
+$MAKE
 make install
 cd ..
 
@@ -281,43 +308,43 @@ cd ..
 # taglib
 if test "$HAVE_TAGLIB" == "yes"; then
 
-	echo "start building taglib"
+  echo "start building taglib"
 
-	loadpkt "taglib-1.5" ".tar.gz" \
-		      "http://developer.kde.org/~wheeler/files/src/"
-	CXXFLAGS="$CXXFLAGS -DMAKE_TAGLIB_LIB" \
-	LDFLAGS="$LDFLAGS" \
-	./configure --host=$HOST --prefix=$PREFIX
-	make
-	make install
-	cd ..
-	
+  loadpkt "taglib-1.5" ".tar.gz" \
+          "http://developer.kde.org/~wheeler/files/src/"
+  CXXFLAGS="$CXXFLAGS -DMAKE_TAGLIB_LIB" \
+  LDFLAGS="$LDFLAGS" \
+  ./configure --host=$HOST --prefix=$PREFIX
+  $MAKE
+  make install
+  cd ..
+  
 else
-	echo "skipped taglib"
+  echo "skipped taglib"
 fi
 
 
 # LAME
 if test "$HAVE_LAME" == "yes"; then
 
-	echo "start building lame"
+  echo "start building lame"
 
-	loadpkt "lame-398-2" ".tar.gz" \
-		      "http://downloads.sourceforge.net/lame/"
+  loadpkt "lame-398-2" ".tar.gz" \
+          "http://downloads.sourceforge.net/lame/"
 
-	# we need to reconfigure the sources because of this bug
-	# http://git.savannah.gnu.org/gitweb/?p=autoconf.git;a=commitdiff;h=78dc34
+  # we need to reconfigure the sources because of this bug
+  # http://git.savannah.gnu.org/gitweb/?p=autoconf.git;a=commitdiff;h=78dc34
 
-	sed -i -e 's/AM_PATH_GTK(1.2.0, HAVE_GTK="yes", HAVE_GTK="no")/HAVE_GTK="no"\nGTK_CFLAGS=""\nAC_SUBST(GTK_CFLAGS)/' configure.in
-	autoreconf -vfi
-		      
-	./configure --host=$HOST --prefix=$PREFIX
-	make
-	make install
-	cd ..
+  sed -i -e 's/AM_PATH_GTK(1.2.0, HAVE_GTK="yes", HAVE_GTK="no")/HAVE_GTK="no"\nGTK_CFLAGS=""\nAC_SUBST(GTK_CFLAGS)/' configure.in
+  autoreconf -vfi
+          
+  ./configure --host=$HOST --prefix=$PREFIX
+  $MAKE
+  make install
+  cd ..
 
 else
-	echo "skipped LAME"
+  echo "skipped LAME"
 fi
 
 
@@ -330,7 +357,7 @@ loadpkt "libogg-1.1.4" ".tar.gz" \
         "http://downloads.xiph.org/releases/ogg/"
 autoreconf -vfi
 ./configure --host=$HOST --prefix=$PREFIX
-make
+$MAKE
 make install
 cd ..
 
@@ -339,12 +366,12 @@ echo "start building vorbis"
 loadpkt "libvorbis-1.2.3" ".tar.gz" \
         "http://downloads.xiph.org/releases/vorbis/"
 ./configure --host=$HOST --prefix=$PREFIX
-make
+$MAKE
 make install
 cd ..
 
 else
-	echo "skipped ogg/vorbis"
+  echo "skipped ogg/vorbis"
 fi
 
 
@@ -369,12 +396,12 @@ sed -i -e 's/libFLAC_la_LDFLAGS =/libFLAC_la_LDFLAGS = -no-undefined/' src/libFL
 autoreconf -vfi
 ./configure --host=$HOST --prefix=$PREFIX \
 --disable-xmms-plugin --disable-cpplibs
-make
+$MAKE
 make install
 cd ..
 
 else
-	echo "skipped FLAC"
+  echo "skipped FLAC"
 fi
 
 
@@ -386,19 +413,18 @@ echo "start building musepack"
 loadpkt "libmpcdec-1.2.6" ".tar.bz2" \
         "http://files.musepack.net/source/"
 
-#sed -i -e 's/AC_MSG_ERROR(\[working memcmp is not available.\])/echo "no memcmp"/' configure.ac
-
+sed -i -e 's/AC_MSG_ERROR(\[working memcmp is not available.\])/echo "no memcmp"/' configure.ac
 sed -i -e 's/AM_PROG_LIBTOOL/AM_PROG_LIBTOOL\nAC_PROG_CXX/' configure.ac
 
 autoreconf -vfi
 ./configure --host=$HOST --prefix=$PREFIX
-make
+$MAKE
 make install
 cp include/mpcdec/config_win32.h $PREFIX/include/mpcdec/
 cd ..
 
 else
-	echo "skipped MusePack"
+  echo "skipped MusePack"
 fi
 
 
@@ -407,19 +433,19 @@ if test "$HAVE_MAD" == "yes"; then
 
 #http://downloads.sourceforge.net/mad/libid3tag-0.15.1b.tar.gz
 
-	echo "start building mad"
+  echo "start building mad"
 
-	loadpkt "libmad-0.15.1b" ".tar.gz" \
-		      "http://downloads.sourceforge.net/mad/"
-	sed -i -e 's/libmad_la_LDFLAGS =/libmad_la_LDFLAGS = -no-undefined/' Makefile.am
-	aclocal
-	autoconf
-	automake --foreign
-	./configure --host=$HOST --prefix=$PREFIX
-	make
-	make install
-	mv $PREFIX/lib/libmad-0 $PREFIX/bin/libmad-0.dll
-	cd ..
+  loadpkt "libmad-0.15.1b" ".tar.gz" \
+          "http://downloads.sourceforge.net/mad/"
+  sed -i -e 's/libmad_la_LDFLAGS =/libmad_la_LDFLAGS = -no-undefined/' Makefile.am
+  aclocal
+  autoconf
+  automake --foreign
+  ./configure --host=$HOST --prefix=$PREFIX
+  $MAKE
+  make install
+  mv $PREFIX/lib/libmad-0 $PREFIX/bin/libmad-0.dll
+  cd ..
 
 echo "# Package Information for pkg-config
 
@@ -437,84 +463,102 @@ Cflags: -I\${includedir}" \
 > $PREFIX/lib/pkgconfig/mad.pc
 
 else
-	echo "skipped libmad"
+  echo "skipped libmad"
 fi
 
 
 # exiv2
 if test "$HAVE_EXIV2" == "yes"; then
 
-	echo "start building exiv2"
-	loadpkt "exiv2-0.18.2" ".tar.gz" \
-		      "http://www.exiv2.org/"
+  echo "start building exiv2"
+  loadpkt "exiv2-0.18.2" ".tar.gz" \
+          "http://www.exiv2.org/"
 
-	PARAMS="--disable-xmp --disable-visibility"
-	if test "$HAVE_ZLIB" != "yes"; then
-		PARAMS="$PARAMS --without-zlib"
-	fi
-	
-	./configure --host=$HOST --prefix=$PREFIX $PARAMS
+  PARAMS="--disable-xmp --disable-visibility"
+  if test "$HAVE_ZLIB" != "yes"; then
+    PARAMS="$PARAMS --without-zlib"
+  fi
+  
+  ./configure --host=$HOST --prefix=$PREFIX $PARAMS
 
-	sed -i -e 's/LDFLAGS = /LDFLAGS = -no-undefined /' config/config.mk
-	sed -i -e 's/-lm//' config/config.mk
-	make
-	mv src/.libs/exiv2 src/.libs/exiv2.exe
-	make install
-	cd ..
+  sed -i -e 's/LDFLAGS = /LDFLAGS = -no-undefined /' config/config.mk
+  sed -i -e 's/-lm//' config/config.mk
+  $MAKE
+  mv src/.libs/exiv2 src/.libs/exiv2.exe
+  make install
+  cd ..
 
 else
-	echo "skipped exiv2"
+  echo "skipped exiv2"
+fi
+
+#simage
+if test "$HAVE_SIMAGE" == "yes"; then
+
+  echo "start building simage"
+  loadpkt "simage-1.6.1" ".tar.gz" \
+          "http://ftp.coin3d.org/coin/src/all/"
+
+  ./configure --host=$HOST --prefix=$PREFIX
+  $MAKE
+  make install
+  cd ..
+
+else
+  echo "skipped simage"
 fi
 
 
 #libjpeg (for ImageMagick)
 if test "$HAVE_JPEG" == "yes"; then
-	echo "start building jpeg"	
-	loadpkt "jpegsrc.v7" ".tar.gz" \
+  echo "start building jpeg"  
+  loadpkt "jpegsrc.v7" ".tar.gz" \
           "http://www.ijg.org/files/"
-	cd jpeg-7
-	./configure --host=$HOST --prefix=$PREFIX
-	make
-	make install
-	cd ..
+  cd jpeg-7
+  ./configure --host=$HOST --prefix=$PREFIX
+  $MAKE
+  make install
+  cd ..
 
 else
-	echo "skipped libjpeg"
+  echo "skipped libjpeg"
 fi
 
 #libpng (for ImageMagick)
 if test "$HAVE_PNG" == "yes"; then
-	echo "start building png"
-	loadpkt "libpng-1.2.37" ".tar.bz2" \
-			    "http://prdownloads.sourceforge.net/libpng/"
-	./configure --host=$HOST --prefix=$PREFIX \
-	--with-libpng-compat=no
-	make
-	make install
-	cd ..
+  echo "start building png"
+  loadpkt "libpng-1.2.37" ".tar.bz2" \
+          "http://prdownloads.sourceforge.net/libpng/"
+  ./configure --host=$HOST --prefix=$PREFIX \
+  --with-libpng-compat=no
+  $MAKE
+  make install
+  cd ..
 
 else
-	echo "skipped libpng"
+  echo "skipped libpng"
 fi
 
 
 # ImageMagick
 if test "$HAVE_IMAGEMAGICK" == "yes"; then
 
-	echo "start building ImageMagick"
-	loadpkt "ImageMagick-6.5.4-2" ".tar.gz" \
-		      "ftp://ftp.imagemagick.org/pub/ImageMagick/"
-	./configure --host=$HOST --prefix=$PREFIX \
-	--disable-deprecated --without-perl --with-modules \
-	--without-x --without-gslib --with-magick-plus-plus=no \
-	--disable-installed
-	#--enable-embeddable
-	make
-	make install
-	cd ..
+  echo "start building ImageMagick"
+  loadpkt "ImageMagick-6.5.4-2" ".tar.gz" \
+          "ftp://ftp.imagemagick.org/pub/ImageMagick/"
+
+  # CFLAGS="-DHAVE_BOOLEAN $CFLAGS" \
+  ./configure --host=$HOST --prefix=$PREFIX \
+  --disable-deprecated --without-perl --with-modules \
+  --without-x --without-gslib --with-magick-plus-plus=no \
+  --disable-installed --enable-embeddable
+  
+  $MAKE CFLAGS="-DHAVE_BOOLEAN $CFLAGS"
+  make install
+  cd ..
 
 else
-	echo "skipped ImageMagick"
+  echo "skipped ImageMagick"
 fi
 
 
@@ -523,12 +567,12 @@ if test "$HAVE_FFMPEG" == "yes"; then
 
 echo "start building ffmpeg"
 
-if ! test -e ffmpeg-svn; then
-	svn co svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg-svn
-	cd ffmpeg-svn
+if ! test -d ffmpeg-svn; then
+  svn co svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg-svn
+  cd ffmpeg-svn
 else
-	cd ffmpeg-svn
-	svn update
+  cd ffmpeg-svn
+  svn update
 fi
 
 sed -i -e 's/__MINGW32_MINOR_VERSION >= 15/__MINGW32_MINOR_VERSION >= 13/' configure
@@ -539,12 +583,12 @@ sed -i -e 's/usleep/Sleep/' ffmpeg.c
 --enable-gpl --disable-ffmpeg --disable-ffplay --disable-ffserver \
 --disable-demuxer=dv1394 --disable-indevs
 
-make
+$MAKE
 make install
 cd ..
 
 else
-	echo "skipped ffmpeg"
+  echo "skipped ffmpeg"
 fi
 
 
@@ -554,5 +598,12 @@ fi
 cd ..
 ./configure --host=$HOST --prefix=$PREFIX \
 --enable-lame
-make
+$MAKE
 make install
+
+
+# strip libraries and executables
+if test "$DO_STRIP" == "yes"; then
+  $HOST-strip -s $PREFIX/bin/*
+  $HOST-strip -s $PREFIX/lib/bin/*
+fi

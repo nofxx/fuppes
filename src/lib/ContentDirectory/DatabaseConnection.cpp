@@ -36,23 +36,28 @@ static CConnectionParams connectionParams;
 //static fuppesThreadMutex mutex;
 static fuppes::Mutex mutex;
 
-bool CDatabase::init(const CConnectionParams params)
+bool CDatabase::init(const std::string type)
 {
 	if(m_connection)
 		return true;
 	
-	CDatabasePlugin* plugin = CPluginMgr::databasePlugin(params.type);
+	CDatabasePlugin* plugin = CPluginMgr::databasePlugin(type);
 	if(!plugin)
 		return false;
 	
 	CDatabaseConnection* db = plugin->createConnection();
-	if(db->open(params)) {
-		m_connection = db;
+	m_connection = db;
+	
+	return true;
+}
+
+bool CDatabase::open(const CConnectionParams params)
+{
+	if(m_connection->open(params)) {
 		connectionParams = params;
-		//fuppesThreadInitMutex(&mutex);
 		return true;
 	}
-	
+
 	return false;
 }
 

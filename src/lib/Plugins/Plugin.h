@@ -68,6 +68,8 @@ class CPluginMgr
 		static CAudioDecoderPlugin*		audioDecoderPlugin(std::string pluginName);
 		static CAudioEncoderPlugin*		audioEncoderPlugin(std::string pluginName);
 
+		static std::string						printInfo();
+		
 	private:
 		CPluginMgr();
 		static CPluginMgr* m_instance;
@@ -101,13 +103,12 @@ class CPlugin
 	public:
 		virtual ~CPlugin();
 		PLUGIN_TYPE		pluginType() { return m_pluginInfo.plugin_type; }
-		
 		virtual bool 	initPlugin() = 0;
-		/*virtual bool  openFile(std::string) { return false; }
-		virtual bool	readData(metadata_t*) { return false; }
-		virtual void	closeFile() {};*/
-	
-		static void  logCb(int level, const char* file, int line, const char* format, ...);
+		
+		std::string		name() { return std::string(m_pluginInfo.plugin_name); }
+		std::string		author() { return std::string(m_pluginInfo.plugin_author); }
+
+		static void		logCb(int level, const char* file, int line, const char* format, ...);
 		
 	protected:
 		fuppesLibHandle		m_handle;
@@ -270,7 +271,7 @@ class CAudioDecoderPlugin: public CPlugin, public CAudioDecoderBase
 		audioDecoderFileClose_t						m_fileClose;
 };
 
-class CAudioEncoderPlugin: public CPlugin
+class CAudioEncoderPlugin: public CPlugin, public CAudioEncoderBase
 {	
 	public:
 		CAudioEncoderPlugin(fuppesLibHandle handle, plugin_info* info): 		
@@ -280,6 +281,25 @@ class CAudioEncoderPlugin: public CPlugin
 		// from CPlugin
 		bool 	initPlugin();	
 	
+		// from CAudioEncoderBase
+		bool LoadLib() { return true; }
+    void SetAudioDetails(CAudioDetails* pAudioDetails) { }
+    void SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings) { }
+		void Init() { }    
+    int  EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead) {
+			return -1;
+		}
+		int  Flush() {
+			return -1;
+		}
+		unsigned char* GetEncodedBuffer() {
+			return NULL;
+		}
+		
+    unsigned int GuessContentLength(unsigned int p_nNumPcmSamples) {
+			return 0;
+		}
+		
 };
 
 

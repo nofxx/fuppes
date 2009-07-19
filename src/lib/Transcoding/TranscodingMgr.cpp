@@ -47,14 +47,6 @@
   //#include "VorbisWrapper.h"
   //#endif
 
-  #ifdef HAVE_MUSEPACK
-  #include "MpcWrapper.h"
-  #endif
-
-  #ifdef HAVE_FLAC
-  #include "FlacWrapper.h"
-  #endif
-
   #ifdef HAVE_FAAD
   #include "FaadWrapper.h"
   #endif
@@ -173,6 +165,7 @@ void CTranscodingMgr::SetDoUseLame(bool p_bDoUseLame)
 
 void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
 {
+  /*
   #ifdef DISABLE_TRANSCODING
   if(p_sHTMLVersion)
     *p_sHTMLVersion = "<p>compiled without transcoding support.</p>";
@@ -312,6 +305,7 @@ void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
     }
   }
   #endif
+  */
 }
 
 
