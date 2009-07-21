@@ -166,7 +166,7 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
 }
 
 
-std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentationPage, std::string p_sPageName)
+std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE /*p_nPresentationPage*/, std::string p_sPageName)
 {
   std::stringstream sResult; 
 	 
@@ -255,11 +255,11 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE p_nPresentatio
 }
 
 
-std::string CPresentationHandler::GetPageFooter(PRESENTATION_PAGE p_nPresentationPage)
+std::string CPresentationHandler::GetPageFooter(PRESENTATION_PAGE /*p_nPresentationPage*/)
 {
   std::stringstream sResult;
   
-  sResult << "<p style=\"padding-top: 20pt; text-align: center;\"><small>copyright &copy; 2005-2008 Ulrich V&ouml;lkel</small></p>";
+  sResult << "<p style=\"padding-top: 20pt; text-align: center;\"><small>copyright &copy; 2005-2009 Ulrich V&ouml;lkel</small></p>";
 
   sResult << "</div>" << endl; // #content
   sResult << "</div>" << endl; // #mainframe

@@ -210,7 +210,7 @@ int fuppes_decoder_set_out_endianess(plugin_info* plugin, ENDIANESS endianess)
 	return 0;
 }
 
-int fuppes_decoder_get_out_buffer_size(plugin_info* plugin)
+int fuppes_decoder_get_out_buffer_size(plugin_info* plugin __attribute__((unused)))
 {
 	return MPC_DECODER_BUFFER_LENGTH * 4;
 }
@@ -258,7 +258,7 @@ void fuppes_decoder_file_close(plugin_info* plugin)
 	plugin->user_data = NULL;
 }
 		
-void unregister_fuppes_plugin(plugin_info* info)
+void unregister_fuppes_plugin(plugin_info* plugin __attribute__((unused)))
 {
 }
 

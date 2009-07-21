@@ -52,7 +52,7 @@ std::string CConnectionManager::GetServiceDescription()
 
 void CConnectionManager::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut)
 {
-	CM_ERROR ret;
+	CM_ERROR ret = ERR_INVALID_ACTION;
 	string   res;
 	
 	switch(pUPnPAction->GetActionType()) {
@@ -101,27 +101,27 @@ void CConnectionManager::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage
   
 }
 
-CM_ERROR CConnectionManager::getProtocolInfo(CUPnPAction* action, std::string* result)
+CM_ERROR CConnectionManager::getProtocolInfo(CUPnPAction* /*action*/, std::string* /*result*/)
 {
 	return ERR_INVALID_ACTION;
 }
 
-CM_ERROR CConnectionManager::prepareForConnection(CUPnPAction* action, std::string* result)
+CM_ERROR CConnectionManager::prepareForConnection(CUPnPAction* /*action*/, std::string* /*result*/)
 {
 	return ERR_INVALID_ACTION;
 }
 
-CM_ERROR CConnectionManager::connectionComplete(CUPnPAction* action, std::string* result)
+CM_ERROR CConnectionManager::connectionComplete(CUPnPAction* /*action*/, std::string* /*result*/)
 {
 	return ERR_INVALID_ACTION;
 }
 
-CM_ERROR CConnectionManager::getCurrentConnectionIds(CUPnPAction* action, std::string* result)
+CM_ERROR CConnectionManager::getCurrentConnectionIds(CUPnPAction* /*action*/, std::string* /*result*/)
 {
 	return ERR_INVALID_ACTION;
 }
 
-CM_ERROR CConnectionManager::getCurrentConnectionInfo(CUPnPAction* action, std::string* result)
+CM_ERROR CConnectionManager::getCurrentConnectionInfo(CUPnPAction* /*action*/, std::string* /*result*/)
 {
 	return ERR_INVALID_ACTION;
 }

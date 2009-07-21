@@ -139,7 +139,7 @@ bool CTranscodingSettings::DoTranscode(std::string p_sACodec, std::string p_sVCo
   return false;
 }
 
-std::string  CTranscodingSettings::AudioCodec(std::string p_sACodec)
+std::string  CTranscodingSettings::AudioCodec(std::string /*p_sACodec*/)
 {
   //if(p_sACodec.empty()) {
     return sACodec;
@@ -584,7 +584,7 @@ TRANSCODING_TYPE CDeviceSettings::GetTranscodingType(std::string p_sExt)
   }
 }
 
-TRANSCODER_TYPE CDeviceSettings::GetTranscoderType(std::string p_sExt, std::string p_sACodec, std::string p_sVCodec)
+TRANSCODER_TYPE CDeviceSettings::GetTranscoderType(std::string p_sExt, std::string /*p_sACodec*/, std::string /*p_sVCodec*/)
 {
   m_FileSettingsIterator = m_FileSettings.find(p_sExt);
   if(m_FileSettingsIterator != m_FileSettings.end()) {

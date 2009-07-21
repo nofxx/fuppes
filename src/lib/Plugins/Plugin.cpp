@@ -62,13 +62,14 @@ void CPluginMgr::init(std::string pluginDir)
 		return;
 	}
 	
-	struct stat	Stat;
+	//struct stat	Stat;
 	string			fileName;
 	string			ext;
-	size_t			pos;	
+	//size_t			pos;	
 	CPlugin*		plugin = NULL;
 	
-	registerPlugin_t regPlugin;
+	registerPlugin_t		regPlugin;
+	unregisterPlugin_t	unregPlugin;
 	
   while((dirEnt = readdir(dir)) != NULL) {
 		
@@ -111,8 +112,9 @@ void CPluginMgr::init(std::string pluginDir)
 				continue;
 			}
 			regPlugin = (registerPlugin_t)FuppesGetProcAddress(handle, "register_fuppes_plugin");	
-	
-			if(regPlugin == NULL) {
+			unregPlugin = (unregisterPlugin_t)FuppesGetProcAddress(handle, "unregister_fuppes_plugin");	
+			
+			if(regPlugin == NULL || unregPlugin == NULL) {
 				//cout << "library: "  << fileName << " is no valid fuppes plugin" << endl;
 				FuppesCloseLibrary(handle);
 				continue;
@@ -172,6 +174,11 @@ void CPluginMgr::init(std::string pluginDir)
 					}
 					break;
 	
+				case PT_NONE:
+					unregPlugin(&pluginInfo);
+					FuppesCloseLibrary(handle);
+					break;
+					
 			}
 		}
 		catch(fuppes::Exception ex) {
@@ -526,7 +533,8 @@ bool CTranscoderPlugin::TranscodeFile(CFileSettings* pFileSettings, std::string 
 											pFileSettings->pImageSettings->Height(),
 											less, greater) == 0);
 	}
-		
+
+	return false;
 }
 
 

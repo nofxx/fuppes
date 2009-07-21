@@ -616,7 +616,7 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
           xmlTextWriterEndElement(pWriter);          
           xmlTextWriterStartElement(pWriter, BAD_CAST "transcode");
           xmlTextWriterWriteAttribute(pWriter, BAD_CAST "enabled", BAD_CAST "true");
-            xmlTextWriterStartElement(pWriter, BAD_CAST "http_encoding")>
+            xmlTextWriterStartElement(pWriter, BAD_CAST "http_encoding");
               xmlTextWriterWriteString(pWriter, BAD_CAST "stream");
             xmlTextWriterEndElement(pWriter);
           xmlTextWriterEndElement(pWriter);

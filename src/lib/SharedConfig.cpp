@@ -277,6 +277,7 @@ bool CSharedConfig::SetNetInterface(std::string p_sNetInterface)
 {
   m_pConfigFile->NetInterface(p_sNetInterface);
   m_sNetInterface = p_sNetInterface;
+	return true;
 }
 	
 bool CSharedConfig::SetHTTPPort(unsigned int p_nHTTPPort)
@@ -288,6 +289,7 @@ bool CSharedConfig::SetHTTPPort(unsigned int p_nHTTPPort)
   
   m_pConfigFile->HttpPort(p_nHTTPPort);
   m_nHTTPPort = p_nHTTPPort;
+	return true;
 }
 
 
@@ -376,11 +378,13 @@ std::string CSharedConfig::GetAllowedIP(unsigned int p_nIdx)
 bool CSharedConfig::AddAllowedIP(std::string p_sIPAddress)
 {
   m_pConfigFile->AddAllowedIp(p_sIPAddress);
+	return true;
 }
 
 bool CSharedConfig::RemoveAllowedIP(unsigned int p_nIndex)
 {
   m_pConfigFile->RemoveAllowedIp(p_nIndex);
+	return true;
 }
 
 
@@ -393,6 +397,7 @@ std::string CSharedConfig::GetLocalCharset()
 bool CSharedConfig::SetLocalCharset(std::string p_sCharset)
 {
   m_pConfigFile->LocalCharset(p_sCharset);
+	return true;
 }
 
 bool CSharedConfig::ReadConfigFile()
@@ -506,6 +511,8 @@ bool CSharedConfig::ResolveHostAndIP()
       return true;
     }
   } 
+	
+	return false;
 }
 
 bool CSharedConfig::ResolveIPByHostname()

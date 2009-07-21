@@ -38,7 +38,7 @@ using namespace std;
 
 bool g_bExitApp;
 
-void SignalHandler(int p_nSignal)
+void SignalHandler(int /*signal*/)
 {  
   g_bExitApp = true;
 }

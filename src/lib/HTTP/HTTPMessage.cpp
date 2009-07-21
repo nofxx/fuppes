@@ -795,7 +795,7 @@ bool CHTTPMessage::ParsePOSTMessage(std::string p_sMessage)
     CONTENT-TYPE: text/xml ; charset="utf-8"
     Content-Length: 467*/
 	
-  RegEx rxSOAP("SOAPACTION: *\"(.+)#(.+)\"", PCRE_CASELESS);
+  RegEx rxSOAP("SOAPACTION: *\"(.*)#(.+)\"", PCRE_CASELESS);
 	if(rxSOAP.Search(p_sMessage.c_str()))	{
 		
 		m_soapTarget = rxSOAP.Match(1);

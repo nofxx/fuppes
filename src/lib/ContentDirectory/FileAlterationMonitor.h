@@ -184,9 +184,9 @@ class CDummyMonitor: public CFileAlterationMonitor
       :CFileAlterationMonitor(pEventHandler) { m_active = false; }
 
     virtual ~CDummyMonitor() {}
-    virtual bool  addWatch(std::string path) { return true; }
-    virtual void  removeWatch(std::string path) { }
-    virtual void  moveWatch(std::string fromPath, std::string toPath) { }
+    virtual bool  addWatch(std::string /*path*/) { return true; }
+    virtual void  removeWatch(std::string /*path*/) { }
+    virtual void  moveWatch(std::string /*fromPath*/, std::string /*toPath*/) { }
 		
 	private:
 		void run() {}

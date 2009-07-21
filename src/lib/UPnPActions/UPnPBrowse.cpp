@@ -51,7 +51,5 @@ bool CUPnPBrowse::prepareSQL()
 		return true;
 	}
 	
-	
-	
-	
+	return false;
 }

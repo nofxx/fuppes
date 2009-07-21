@@ -59,7 +59,7 @@ int fuppes_dlna_get_image_profile(const char* ext, int width, int height, char* 
 	return -1;
 }
 
-void unregister_fuppes_plugin(plugin_info* info)
+void unregister_fuppes_plugin(plugin_info* plugin __attribute__((unused)))
 {
 }
 

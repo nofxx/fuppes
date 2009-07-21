@@ -31,22 +31,9 @@ extern "C" {
 #ifndef _FUPPES_PLUGIN_TYPES_H
 #define _FUPPES_PLUGIN_TYPES_H
 
-#include <stdlib.h>
-#include <string.h>
-	
-inline int set_value(char** out, const char* in)
-{	
-	if(strlen(in) == 0) {
-		return 0;
-	}
-	
-	int size = sizeof(char) * (strlen(in) + 1);
-	*out = (char*)realloc(*out, size);	
-	strcpy(*out, in);
-  return size;
-}
-	
-typedef enum tagPLUGIN_TYPE {
+
+
+typedef enum PLUGIN_TYPE {
 	PT_NONE,
 	PT_DLNA,
 	PT_METADATA,
@@ -84,66 +71,6 @@ typedef struct {
 	void* next;
 } result_set_t;
 
-static inline arg_list_t* arg_list_create() {
-	
-	arg_list_t* list = (arg_list_t*)malloc(sizeof(arg_list_t));
-	
-	list->key = (char*)malloc(sizeof(char));
-	list->key = '\0';
-	list->value = (char*)malloc(sizeof(char));
-	list->value = '\0';	
-
-	list->next = NULL;
-	
-	return list;
-}
-
-static inline void arg_list_set_values(arg_list_t* list, const char* key, const char* value)
-{
-	set_value(&list->key, key);
-	set_value(&list->value, key);	
-}
-
-static inline arg_list_t* arg_list_append(arg_list_t* list) {
-	while(list->next) {
-		list = (arg_list_t*)list->next;
-	}
-	list->next = arg_list_create();
-	return (arg_list_t*)list->next;
-}
-
-static inline void arg_list_free(arg_list_t* list) {
-	free(list->key);
-	free(list->value);
-	if(list->next) {
-		arg_list_free((arg_list_t*)list->next);
-	}
-	free(list);
-}
-
-
-static inline result_set_t* result_set_create() {
-	result_set_t* set = (result_set_t*)malloc(sizeof(result_set_t));
-	set->arg = arg_list_create();
-	set->next = NULL;
-	return set;
-}
-
-static inline void result_set_free(result_set_t* set) {
-	arg_list_free(set->arg);
-	if(set->next) {
-		result_set_free((result_set_t*)set->next);
-	}
-	free(set);
-}
-
-static inline result_set_t* result_set_append(result_set_t* set) {
-	while(set->next) {
-		set = (result_set_t*)set->next;
-	}
-	set->next = result_set_create();
-	return (result_set_t*)set->next;
-}
 
 
 
@@ -164,7 +91,7 @@ typedef struct {
 
 // METADATA
 
-typedef enum tagMETADATA_TYPE {
+typedef enum METADATA_TYPE {
 	MD_NONE,
 	MD_AUDIO,
 	MD_VIDEO,
@@ -198,69 +125,14 @@ typedef struct {
 	char*						video_codec;
 } metadata_t;
 
-static void init_metadata(metadata_t* metadata)
-{
-	metadata->type = MD_NONE;
-	
-	metadata->title = (char*)malloc(sizeof(char));
-	metadata->title[0] = '\0';
-	metadata->artist = (char*)malloc(sizeof(char));
-	metadata->artist[0] = '\0';
-	metadata->album = (char*)malloc(sizeof(char));
-	metadata->album[0] = '\0';
-	metadata->genre = (char*)malloc(sizeof(char));
-	metadata->genre[0] = '\0';
-	metadata->duration = (char*)malloc(sizeof(char));
-	metadata->duration[0] = '\0';
-	metadata->description = (char*)malloc(sizeof(char));
-	metadata->description[0] = '\0';
-	
-	metadata->track_no = 0;
-	metadata->year = 0;
-	metadata->channels = 0;
-	
-	metadata->has_image = 0;
-	metadata->image_mime_type = (char*)malloc(sizeof(char));
-	metadata->image_mime_type[0] = '\0';
-	
-	metadata->width = 0;
-	metadata->height = 0;
-	metadata->date = (char*)malloc(sizeof(char));
-	metadata->date[0] = '\0';	
-	
-	metadata->bitrate = 0;
-	metadata->samplerate = 0;
-  metadata->bits_per_sample = 0;
-	
-	metadata->audio_codec = (char*)malloc(sizeof(char));
-	metadata->audio_codec[0] = '\0';	
-	metadata->video_codec = (char*)malloc(sizeof(char));
-	metadata->video_codec[0] = '\0';
-}
-
-static void free_metadata(metadata_t* metadata)
-{
-	free(metadata->title);
-	free(metadata->artist);
-	free(metadata->album);
-	free(metadata->genre);
-	free(metadata->duration);
-	free(metadata->description);
-
-	free(metadata->date);
-	
-	free(metadata->audio_codec);
-	free(metadata->video_codec);
-	
-	free(metadata->image_mime_type);
-}
 
 // AUDIO
 
-typedef enum tagENDIANESS {
+typedef enum ENDIANESS {
   E_LITTLE_ENDIAN = 0,
   E_BIG_ENDIAN = 1
 } ENDIANESS;
+
 
 typedef struct {	
 	int					channels;
@@ -268,18 +140,6 @@ typedef struct {
   int    			bitrate;
   int					num_samples;	
 } audio_settings_t;
-
-static void init_audio_settings(audio_settings_t* settings)
-{
-	settings->channels = 0;
-	settings->samplerate = 0;	
-	settings->bitrate = 0;
-	settings->num_samples = 0;
-}
-
-static void free_audio_settings(audio_settings_t* settings)
-{
-}
 
 
 // PRESENTATION

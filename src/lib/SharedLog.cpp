@@ -90,6 +90,7 @@ bool CSharedLog::SetLogFileName(std::string p_sLogFileName)
   CSharedLog::m_sLogFileName = p_sLogFileName;
   m_fsLogFile = new ofstream();
   m_fsLogFile->open(CSharedLog::m_sLogFileName.c_str(), ios::out | ios::trunc);
+  return true;
 }
 
 void CSharedLog::SetLogLevel(int p_nLogLevel, bool p_bPrintLogLevel)

@@ -43,7 +43,7 @@ CWavEncoder::~CWavEncoder()
   }
 }
 
-int CWavEncoder::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead)
+int CWavEncoder::EncodeInterleaved(short int p_PcmIn[], int /*p_nNumSamples*/, int p_nBytesRead)
 {
   int nOffset = 0;
 
@@ -113,7 +113,7 @@ void CWavEncoder::WriteFileHeader()
     WRITE_U32(headbuf+40, size - 44);  
 }
 
-void CWavEncoder::SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings)
+void CWavEncoder::SetTranscodingSettings(CTranscodingSettings* /*pTranscodingSettings*/)
 {
   //#warning todo
 }

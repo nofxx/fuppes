@@ -108,14 +108,14 @@ bool Thread::start(void* arg /* = NULL*/)
   m_running = (0 == ret);
 #endif
 	
-	m_finished != m_running;
+	m_finished = !m_running;
 	return m_running;	
 }
 
 
 bool Thread::close()
 {
-	if(NULL == m_handle)
+	if(!m_handle)
 		return true;
 	
 	m_stop = true;

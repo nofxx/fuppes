@@ -29,6 +29,7 @@
 #include "../SharedLog.h"
 #include "../Transcoding/TranscodingMgr.h"
 #include "../DeviceSettings/DeviceIdentificationMgr.h"
+
 #include "../Plugins/Plugin.h"
 
 #include <sstream>

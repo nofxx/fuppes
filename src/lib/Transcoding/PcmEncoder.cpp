@@ -44,7 +44,7 @@ CPcmEncoder::~CPcmEncoder()
   }
 }
 
-void CPcmEncoder::SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings)
+void CPcmEncoder::SetTranscodingSettings(CTranscodingSettings* /*pTranscodingSettings*/)
 {
 }
 
@@ -57,7 +57,7 @@ void CPcmEncoder::SetAudioDetails(CAudioDetails* pAudioDetails)
   nNumSamples  = m_pAudioDetails->nNumPcmSamples;  
 }
 
-int CPcmEncoder::EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead)
+int CPcmEncoder::EncodeInterleaved(short int p_PcmIn[], int /*p_nNumSamples*/, int p_nBytesRead)
 {
   if(!m_sBuffer) {
     m_sBuffer = (unsigned char*)malloc(p_nBytesRead * sizeof(unsigned char*));

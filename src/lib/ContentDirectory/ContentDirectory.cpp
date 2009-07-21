@@ -982,7 +982,7 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
 void CContentDirectory::BuildAudioVideoBroadcastItemDescription(xmlTextWriterPtr pWriter,
                                                   CSQLResult* pSQLResult,
                                                   CUPnPBrowseSearchBase*  pUPnPBrowse,
-                                                  std::string p_sObjectID)
+                                                  std::string /*p_sObjectID*/)
 { 
 /* // title
 	xmlTextWriterStartElement(pWriter, BAD_CAST "dc:title");
@@ -1055,7 +1055,7 @@ void CContentDirectory::BuildPlaylistItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterEndElement(pWriter);  
 }
 
-void CContentDirectory::HandleUPnPGetSearchCapabilities(CUPnPAction* pAction, std::string* p_psResult)
+void CContentDirectory::HandleUPnPGetSearchCapabilities(CUPnPAction* /*pAction*/, std::string* p_psResult)
 {
   *p_psResult =  
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
@@ -1070,7 +1070,7 @@ void CContentDirectory::HandleUPnPGetSearchCapabilities(CUPnPAction* pAction, st
   //<SearchCaps>dc:title,dc:creator,upnp:artist,upnp:genre,upnp:album,dc:date,upnp:originalTrackNumber,upnp:class,@id,@refID,upnp:albumArtURI</SearchCaps>    
 } 
 
-void CContentDirectory::HandleUPnPGetSortCapabilities(CUPnPAction* pAction, std::string* p_psResult)
+void CContentDirectory::HandleUPnPGetSortCapabilities(CUPnPAction* /*pAction*/, std::string* p_psResult)
 {
   *p_psResult = 
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
@@ -1085,7 +1085,7 @@ void CContentDirectory::HandleUPnPGetSortCapabilities(CUPnPAction* pAction, std:
   // <SortCaps>dc:title,dc:creator,upnp:artist,upnp:genre,upnp:album,dc:date,upnp:originalTrackNumber,Philips:shuffle</SortCaps>
 }
 
-void CContentDirectory::HandleUPnPGetSortExtensionCapabilities(CUPnPAction* pAction, std::string* p_psResult)
+void CContentDirectory::HandleUPnPGetSortExtensionCapabilities(CUPnPAction* /*pAction*/, std::string* p_psResult)
 {
   *p_psResult = 
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
@@ -1098,7 +1098,7 @@ void CContentDirectory::HandleUPnPGetSortExtensionCapabilities(CUPnPAction* pAct
     "</s:Envelope>";
 }
 
-void CContentDirectory::HandleUPnPGetSystemUpdateID(CUPnPAction* pAction, std::string* p_psResult)
+void CContentDirectory::HandleUPnPGetSystemUpdateID(CUPnPAction* /*pAction*/, std::string* p_psResult)
 {
   *p_psResult =  
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
@@ -1298,7 +1298,7 @@ void CContentDirectory::HandeUPnPDestroyObject(CUPnPAction* pAction, std::string
 	delete qry;
 		
 #warning todo: error code
-  //*p_psResult =  TODO
+  *p_psResult = "";
 }
 
 

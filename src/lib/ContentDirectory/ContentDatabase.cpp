@@ -208,7 +208,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
       return false;*/
   }
 
-#ifdef OLD_DB
+
 	// setup file alteration monitor
 	if(m_pFileAlterationMonitor->isActive()) {
 		
@@ -218,7 +218,6 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 			Next();
 		}
 	}
-#endif
   return true;
 }
 
@@ -569,9 +568,7 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
           
           if(nObjId == 0) {
 
-#ifdef OLD_DB
-//            pDb->BeginTransaction();          
-#endif
+
 						
             nObjId = pDb->GetObjId();
 						OBJECT_TYPE folderType = CONTAINER_STORAGE_FOLDER;
@@ -609,10 +606,7 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
             sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID) " <<
                     "values (" << nObjId << ", " << p_nParentId << ")";          
             pDb->Insert(sSql.str());
-            
-#ifdef OLD_DB
-//            pDb->Commit();
-#endif
+
             
             pDb->fileAlterationMonitor()->addWatch(sTmp);
           }
@@ -1204,7 +1198,7 @@ void RebuildThread::run()
   qry->exec("vacuum");
   
   int i;
-  unsigned int nObjId;
+  unsigned int nObjId = 0;
   string sFileName;
   bool bInsert = true;
   

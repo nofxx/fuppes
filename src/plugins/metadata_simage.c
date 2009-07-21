@@ -80,7 +80,7 @@ void fuppes_metadata_file_close(plugin_info* plugin)
 	plugin->user_data = NULL;
 }
 
-void unregister_fuppes_plugin(plugin_info* info)
+void unregister_fuppes_plugin(plugin_info* plugin __attribute__((unused)))
 {
 }
 

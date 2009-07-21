@@ -84,6 +84,7 @@ struct CConnectionParams
 		username = params.username;
 		password = params.password;
 		dbname = params.dbname;
+		return *this;
 	}
 };
 

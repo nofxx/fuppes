@@ -297,12 +297,12 @@ void register_fuppes_plugin(plugin_info* plugin)
   }
 }
 
-CDatabaseConnection* fuppes_plugin_create_db_connection(plugin_info* plugin)
+CDatabaseConnection* fuppes_plugin_create_db_connection(plugin_info* plugin __attribute__((unused)))
 {
 	return new CMySQLConnection();
 }
 
-void unregister_fuppes_plugin(plugin_info* plugin)
+void unregister_fuppes_plugin(plugin_info* plugin __attribute__((unused)))
 {
   mysql_library_end();
 }

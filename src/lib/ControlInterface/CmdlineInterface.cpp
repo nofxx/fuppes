@@ -29,7 +29,7 @@
 #include <sstream>
 using namespace std;
 
-bool CCmdlineInterface::handleAction(std::string action)
+bool CCmdlineInterface::handleAction(std::string /*action*/)
 {
 	return false;
 }

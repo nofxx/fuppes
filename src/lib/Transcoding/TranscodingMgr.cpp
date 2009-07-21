@@ -163,7 +163,7 @@ void CTranscodingMgr::SetDoUseLame(bool p_bDoUseLame)
 }
 
 
-void CTranscodingMgr::PrintTranscodingSettings(std::string* p_sHTMLVersion)
+void CTranscodingMgr::PrintTranscodingSettings(std::string* /*p_sHTMLVersion*/)
 {
   /*
   #ifdef DISABLE_TRANSCODING

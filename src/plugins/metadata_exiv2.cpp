@@ -226,7 +226,7 @@ void fuppes_metadata_file_close(plugin_info* plugin)
 	exiv2_metadata_file_close(plugin);
 }
 
-void unregister_fuppes_plugin(plugin_info* info)
+void unregister_fuppes_plugin(plugin_info* plugin __attribute__((unused)))
 {
 }
 

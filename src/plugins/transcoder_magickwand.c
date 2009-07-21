@@ -127,7 +127,7 @@ int fuppes_transcoder_transcode_image_mem(plugin_info* plugin,
 	return 0;	
 }
 
-void unregister_fuppes_plugin(plugin_info* info)
+void unregister_fuppes_plugin(plugin_info* plugin __attribute__((unused)))
 {
 	MagickWandTerminus();
 }

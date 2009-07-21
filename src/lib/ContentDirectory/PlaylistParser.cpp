@@ -191,6 +191,7 @@ bool CPlaylistParser::ParsePLS(std::string p_sContent)
 
 	}
 		
+  return true;
 }
 
 bool CPlaylistParser::ParseRSS(std::string p_sContent)
@@ -270,7 +271,7 @@ std::string CPlaylistParser::FormatFileName(std::string p_sValue)
   if(p_sValue.length() <= 2)
     return p_sValue;
   
-  bool bRelative = false;
+  //bool bRelative = false;
   
   #ifdef WIN32  
   if(p_sValue.substr(0, 2).compare(".\\") == 0) {

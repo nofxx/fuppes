@@ -246,7 +246,7 @@ bool CHTTPRequestHandler::HandleGENAMessage(CHTTPMessage* pRequest, CHTTPMessage
 bool CHTTPRequestHandler::handleItemRequest(std::string p_sObjectId, CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {
   std::stringstream sSql;
-  OBJECT_TYPE       nObjectType;
+  //OBJECT_TYPE       nObjectType;
   std::string       sExt;
   std::string       sPath;
   std::string       sMimeType;
@@ -362,12 +362,11 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 	cout << pRequest->getVarAsInt("width") << "x" << pRequest->getVarAsInt("height") << endl;
 	
   std::stringstream sSql;
-  OBJECT_TYPE       nObjectType;
+  //OBJECT_TYPE       nObjectType;
   std::string       sExt;
   std::string       sPath;
   std::string       sMimeType;
   CSQLQuery*				qry = CDatabase::query();
-  bool              bResult     = true;  
   
   
   string sDevice = " and o.DEVICE is NULL ";
@@ -419,8 +418,8 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 	
 	int width = pRequest->getVarAsInt("width");
 	int height = pRequest->getVarAsInt("height");
-	int less = pRequest->getVarAsInt("less");
-	int greater = pRequest->getVarAsInt("greater");
+	/*int less = pRequest->getVarAsInt("less");
+	int greater = pRequest->getVarAsInt("greater");*/
 	
 	// transcode | scale request via GET
 	// and/or embedded image from audio file

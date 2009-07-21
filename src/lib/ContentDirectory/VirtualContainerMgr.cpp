@@ -496,7 +496,7 @@ void CVirtualContainerMgr::CreateVFoldersSplit(CXMLNode* pFoldersNode,
                                                CObjectDetails* pDetails,
                                                bool p_bContainerDetails,
 																							 bool p_bCreateRef,
-                                               std::string p_sFilter)
+                                               std::string /*p_sFilter*/)
 {
   string sFolders[] = {
     "0-9", "ABC", "DEF", "GHI", "JKL",
@@ -670,7 +670,7 @@ void CVirtualContainerMgr::CreateFolderMappings(CXMLNode* pNode,
                                                 std::string p_sDevice, 
                                                 unsigned int p_nParentId, 
 																								bool p_bCreateRef,
-                                                std::string p_sFilter)
+                                                std::string /*p_sFilter*/)
 {
   CContentDatabase* pDb;
   stringstream sSql;
@@ -800,8 +800,8 @@ void CVirtualContainerMgr::MapSharedDirsTo(CXMLNode* pNode,
   else if(p_nSharedParendId > 0)
     bFullExtend = true;
 
-  unsigned int nObjId;
-  unsigned int nSharedObjId;
+  unsigned int nObjId = 0;
+  unsigned int nSharedObjId = 0;
   
   //pIns->BeginTransaction();
   while(!pSel->Eof()) {

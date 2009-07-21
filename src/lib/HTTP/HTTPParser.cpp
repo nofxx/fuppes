@@ -198,7 +198,7 @@ void CHTTPParser::parseCommonValues(std::string header, CHTTPMessage* message)
 	}
 }
 
-void CHTTPParser::parseGetVars(std::string header, CHTTPMessage* message)
+void CHTTPParser::parseGetVars(std::string /*header*/, CHTTPMessage* message)
 {
 	// get vars already parsed
 	if(!message->m_getVars.empty()) {

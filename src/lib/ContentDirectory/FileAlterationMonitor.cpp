@@ -174,7 +174,7 @@ void CInotifyMonitor::run()
         continue;
       } 
       
-      FAM_EVENT_TYPE  type;
+      //FAM_EVENT_TYPE  type;
       eventPath = event.GetWatch()->GetPath() + event.GetName();            
       
 			// check if we have a pending MOVED_FROM event and

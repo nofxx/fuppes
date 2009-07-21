@@ -159,8 +159,10 @@ int Presentation::toString(char** szResult)
 
 
 void handle_request(plugin_info* plugin,
-									 const std::string url, arg_list_t* get, arg_list_t* post,
-									 int* error, char** mime_type, char** result, int* length)
+										const std::string url, 
+										arg_list_t* get __attribute__((unused)), 
+										arg_list_t* post __attribute__((unused)),
+										int* error, char** mime_type, char** result, int* length)
 {
 	Presentation pres(plugin);
 	
@@ -207,7 +209,7 @@ int fuppes_presentation_handle_request(plugin_info* plugin,
 	return 1;
 }
 
-void unregister_fuppes_plugin(plugin_info* plugin)
+void unregister_fuppes_plugin(plugin_info* plugin __attribute__((unused)))
 {
 }
 	

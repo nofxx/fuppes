@@ -5,6 +5,7 @@ AC_INIT([fuppes], [0.640], [fuppes@ulrich-voelkel.de])
 AM_CONFIG_HEADER(src/config.h)
 AM_INIT_AUTOMAKE([1.9])
 
+AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CC
 AC_PROG_CXX
 AC_DISABLE_STATIC
@@ -23,6 +24,9 @@ PKG_PROG_PKG_CONFIG
 
 FUPPES_CFLAGS=""
 FUPPES_LIBS=""
+
+CFLAGS="$CFLAGS -Wall -Wextra"
+CXXFLAGS="$CXXFLAGS -Wall -Wextra"
 
 # CHECK HOST
 is_windows=false

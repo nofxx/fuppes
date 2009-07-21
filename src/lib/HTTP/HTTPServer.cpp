@@ -468,12 +468,10 @@ bool ReceiveRequest(HTTPSession* p_Session, CHTTPMessage* p_Request)
   bool bDoReceive = true;
   bool bRecvErr   = false; 
   
-  unsigned int nLoopCnt = 0;
+  //unsigned int nLoopCnt = 0;
 
 #ifdef HAVE_SELECT
 	fd_set fds;
-	FD_ZERO(&fds);
-	FD_SET(p_Session->GetConnection(), &fds);
 #endif
 	
   // receive loop
@@ -483,8 +481,13 @@ bool ReceiveRequest(HTTPSession* p_Session, CHTTPMessage* p_Request)
     if(nRecvCnt == 30)
       break;
     
-#ifdef HAVE_SELECT		
+#ifdef HAVE_SELECT
+		FD_ZERO(&fds);
+		FD_SET(p_Session->GetConnection(), &fds);
+		
  		int sel = select(p_Session->GetConnection() + 1, &fds, NULL, NULL, NULL);
+		if(!FD_ISSET(p_Session->GetConnection(), &fds)  || sel <= 0)
+			continue;
 		//cout << "SELECT: " << sel << endl;
 #endif
 		

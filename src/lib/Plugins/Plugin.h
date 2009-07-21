@@ -35,11 +35,12 @@
 #include "../Common/Common.h"
 #include "../Transcoding/WrapperBase.h"
 
-
 #include "../../../include/fuppes_plugin.h"
+#include "../../../include/fuppes_plugin_types.h"
 #include "../../../include/fuppes_db_connection_plugin.h"
 
 typedef void (*registerPlugin_t)(plugin_info* info);
+typedef void (*unregisterPlugin_t)(plugin_info* info);
 
 class CDlnaPlugin;
 class CMetadataPlugin;
@@ -283,10 +284,10 @@ class CAudioEncoderPlugin: public CPlugin, public CAudioEncoderBase
 	
 		// from CAudioEncoderBase
 		bool LoadLib() { return true; }
-    void SetAudioDetails(CAudioDetails* pAudioDetails) { }
-    void SetTranscodingSettings(CTranscodingSettings* pTranscodingSettings) { }
+    void SetAudioDetails(CAudioDetails* /*pAudioDetails*/) { }
+    void SetTranscodingSettings(CTranscodingSettings* /*pTranscodingSettings*/) { }
 		void Init() { }    
-    int  EncodeInterleaved(short int p_PcmIn[], int p_nNumSamples, int p_nBytesRead) {
+    int  EncodeInterleaved(short int /*p_PcmIn*/[], int /*p_nNumSamples*/, int /*p_nBytesRead*/) {
 			return -1;
 		}
 		int  Flush() {
@@ -296,7 +297,7 @@ class CAudioEncoderPlugin: public CPlugin, public CAudioEncoderBase
 			return NULL;
 		}
 		
-    unsigned int GuessContentLength(unsigned int p_nNumPcmSamples) {
+    unsigned int GuessContentLength(unsigned int /*p_nNumPcmSamples*/) {
 			return 0;
 		}
 		

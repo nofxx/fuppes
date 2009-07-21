@@ -33,7 +33,7 @@
 #include "../Common/Common.h"
 #include "../SharedLog.h"
 #include "../DeviceSettings/DeviceSettings.h"
-#include "../../../include/fuppes_plugin.h"
+#include "../../../include/fuppes_plugin_types.h"
 
 struct CAudioDetails
 {
@@ -95,20 +95,26 @@ class CTranscodeSessionInfo
   E_BIG_ENDIAN = 1
 } ENDIANESS;*/
 
+
 class CAudioEncoderBase
 {
   public:
     CAudioEncoderBase() {
       // default input endianness is machine dependent
-      
+			
       /* determine endianness (clever trick courtesy of Nicholas Devillard,
        * (http://www.eso.org/~ndevilla/endian/) */
-      int testvar = 1;
+      /*int testvar = 1;
       if(*(char *)&testvar)
         m_nInEndianess = E_LITTLE_ENDIAN;
       else
-        m_nInEndianess = E_BIG_ENDIAN;
-                               
+        m_nInEndianess = E_BIG_ENDIAN;*/
+			#ifdef WORDS_BIGENDIAN
+      m_nInEndianess = E_BIG_ENDIAN;
+			#else
+			m_nInEndianess = E_LITTLE_ENDIAN;
+			#endif
+					
       m_pAudioDetails = NULL;
     };    
     
@@ -148,11 +154,17 @@ class CAudioDecoderBase
       
       /* determine endianness (clever trick courtesy of Nicholas Devillard,
        * (http://www.eso.org/~ndevilla/endian/) */
-      int testvar = 1;
+      /*int testvar = 1;
       if(*(char *)&testvar)
         m_nOutEndianess = E_LITTLE_ENDIAN;
       else
-        m_nOutEndianess = E_BIG_ENDIAN;
+        m_nOutEndianess = E_BIG_ENDIAN;*/
+					
+			#ifdef WORDS_BIGENDIAN
+      m_nOutEndianess = E_BIG_ENDIAN;
+			#else
+			m_nOutEndianess = E_LITTLE_ENDIAN;
+			#endif
     };
     
 	  virtual ~CAudioDecoderBase() {};
@@ -174,8 +186,8 @@ class CAudioDecoderBase
 class CTranscoderBase
 {
   public:
-	  virtual ~CTranscoderBase() {};
-    virtual bool Init(std::string p_sACodec, std::string p_sVCodec) {};
+	  virtual ~CTranscoderBase() {}
+    virtual bool Init(std::string /*p_sACodec*/, std::string /*p_sVCodec*/) { return false; }
 		virtual bool TranscodeMem(CFileSettings* pFileSettings, 
 															const unsigned char** inBuffer, 
 															size_t inSize, 

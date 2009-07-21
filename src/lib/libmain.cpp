@@ -293,7 +293,9 @@ void fuppes_get_http_server_address(char* sz_addr, int n_buff_size)
 {
   stringstream sAddr;
   sAddr << "http://" << pFuppes->GetHTTPServerURL();
-  strcpy(sz_addr, sAddr.str().c_str());
+	if(sAddr.str().length() < n_buff_size) {
+		strcpy(sz_addr, sAddr.str().c_str());
+	}
 }
 
 void fuppes_send_alive()

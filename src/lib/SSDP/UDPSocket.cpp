@@ -85,7 +85,7 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
 	flag = 1;
 	ret = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEPORT, &flag, sizeof(flag));
 	if(ret == -1) {
-		throw Exception(__FILE__, __LINE__, "failed to setsockopt: SO_REUSEPORT");
+		throw fuppes::Exception(__FILE__, __LINE__, "failed to setsockopt: SO_REUSEPORT");
 	}
 	#endif
 	

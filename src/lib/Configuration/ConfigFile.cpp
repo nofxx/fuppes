@@ -590,8 +590,8 @@ void CConfigFile::ParseImageSettings(CXMLNode* pISNode, CFileSettings* pFileSet)
 {
   int i;
   CXMLNode* pTmp;
-  int j;
-  CXMLNode* pChild;
+  //int j;
+  //CXMLNode* pChild;
   
   // delete existing (inherited) settings
   // if transcoding disabled

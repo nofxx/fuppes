@@ -29,7 +29,7 @@
 using namespace std;
 
 #ifndef WIN32
-void on_signal(int sig)
+void on_signal(int /*signal*/)
 {
 	pid_t pid;
 	int status;
@@ -71,7 +71,7 @@ void CProcessMgr::init()
 }
 
 #ifndef WIN32
-void CProcessMgr::signal(pid_t pid, int sig)
+void CProcessMgr::signal(pid_t pid, int /*signal*/)
 {
 	CProcess* proc = m_instance->m_processes[pid];	
 	if(proc != NULL) {

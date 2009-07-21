@@ -91,7 +91,7 @@ int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
 	//pVideoItem->nSize = pFormatCtx->file_size;	
   
 	char codec_name[128];
-	char buf1[32];
+	//char buf1[32];
 	int i;
 	for(i = 0; i < ((AVFormatContext*)plugin->user_data)->nb_streams; i++) {
 	  
@@ -171,7 +171,7 @@ void fuppes_metadata_file_close(plugin_info* plugin)
 	plugin->user_data = NULL;
 }
 
-void unregister_fuppes_plugin(plugin_info* info)
+void unregister_fuppes_plugin(plugin_info* plugin __attribute__((unused)))
 {
 }
 

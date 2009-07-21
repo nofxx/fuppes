@@ -204,7 +204,7 @@ bool CSQLiteConnection::commit()
 void CSQLiteConnection::rollback()
 {
 	CSQLQuery* qry = query();
-	bool result = qry->exec("rollback transaction");
+	qry->exec("rollback transaction");
 	delete qry;
 }
 
@@ -336,13 +336,13 @@ void register_fuppes_plugin(plugin_info* plugin)
 }
 
 
-CDatabaseConnection* fuppes_plugin_create_db_connection(plugin_info* plugin)
+CDatabaseConnection* fuppes_plugin_create_db_connection(plugin_info* plugin __attribute__((unused)))
 {
 	return new CSQLiteConnection();
 }
 
 
-void unregister_fuppes_plugin(plugin_info* plugin)
+void unregister_fuppes_plugin(plugin_info* plugin __attribute__((unused)))
 {
 }
 	
