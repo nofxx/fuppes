@@ -28,7 +28,6 @@ fuppes_LDFLAGS = \
 	${MAD_LIBS}\
 	${LIBICONV}
 
-## \	/usr/local/readynas/lib/libz.so.1 -ldl
 	
 if WIN32
 
@@ -59,8 +58,7 @@ fuppesd_LDFLAGS = \
 	${PCRE_LIBS}\
 	${MAD_LIBS}\
 	${LIBICONV}
-	
-##	\	/usr/local/readynas/lib/libz.so.1 -ldl
+
 endif
 
 libfuppes_la_SOURCES = \

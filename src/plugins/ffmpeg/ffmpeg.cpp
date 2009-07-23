@@ -1026,7 +1026,7 @@ int output_packet(AVInputStream *ist, int ist_index,
 #define LIBAVCODEC_VERSION_MINOR 0
 #endif
 
-#if LIBAVCODEC_VERSION_MINOR <= 11
+#if LIBAVCODEC_VERSION_MINOR >= 11
                     av_freep(subtitle_to_free->rects[i]->pict.data[0]);
                     av_freep(subtitle_to_free->rects[i]->pict.data[1]);
                     av_freep(subtitle_to_free->rects[i]);

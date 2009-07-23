@@ -20,6 +20,7 @@ fuppes_win_LDADD = \
 	./../libfuppes.la \
 	fuppes.res
 
+
 fuppes.res: fuppes.rc
 	$(WINDRES) -i fuppes.rc --input-format=rc -o fuppes.res -O coff
 

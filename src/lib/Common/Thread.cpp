@@ -119,9 +119,9 @@ bool Thread::close()
 		return true;
 	
 	m_stop = true;
-
+  bool result = false;
+	
 #ifdef WIN32
-  bool bResult = false;
   DWORD nErrNo = WaitForSingleObject(m_handle, 5000);
   switch(nErrNo) {
     case WAIT_ABANDONED:
@@ -130,7 +130,7 @@ bool Thread::close()
     case WAIT_OBJECT_0:
       //cout << "WAIT_OBJECT_0 :: " << nErrNo << endl;
       CloseHandle(m_handle);
-      bResult = true;
+      result = true;
       break;
     case WAIT_TIMEOUT:
       /*cout << "fuppesThreadClose() :: WAIT_TIMEOUT (" << nErrNo << ")" << endl; */
@@ -142,12 +142,11 @@ bool Thread::close()
       /*cout << "fuppesThreadClose - DEFAULT :: " << nErrNo << endl; */
       break;            
   }
-  return bResult;
 #else    
-  bool bResult = true;
+  result = true;
   int  nErrNo  = pthread_join(m_handle, NULL);  
   if (nErrNo != 0) {
-    bResult = false;
+    result = false;
     /*switch(nErrNo) {
       case EINVAL:
         cout << "pthread_join() :: " << nErrNo << " EINVAL = handle does not refer to a joinable thread" << endl;      
@@ -160,8 +159,11 @@ bool Thread::close()
         break;
     }*/
   }
-  return bResult;  
 #endif
+	
+	if(!m_finished)
+		m_finished = result;
+  return result;
 }
 
 #ifdef WIN32
