@@ -115,7 +115,7 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
   int use_sigpipe = 1;
   int nOpt = setsockopt(m_Socket, SOL_SOCKET, SO_NOSIGPIPE, &use_sigpipe, sizeof(use_sigpipe));	  
 	if(nOpt < 0)
-	  throw EException("failed to setsockopt(SO_NOSIGPIPE)", __FILE__, __LINE__);
+	  throw fuppes::Exception(__FILE__, __LINE__, "failed to setsockopt(SO_NOSIGPIPE)");
   #endif 
 
 	
