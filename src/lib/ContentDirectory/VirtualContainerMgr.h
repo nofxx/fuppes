@@ -33,8 +33,6 @@
 #include "../Common/Common.h"
 #include "../Common/Thread.h"
 #include "../Common/XMLParser.h"
-//#include "../UPnPActions/UPnPBrowse.h"
-//#include "ContentDatabase.h"
 #include "DatabaseConnection.h"
 
 class CObjectDetails {
