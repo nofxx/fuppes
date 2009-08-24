@@ -68,4 +68,13 @@ bool CExternalCmdWrapper::TranscodeFile(CFileSettings* pFileSettings, std::strin
 	return true;
 }
 
+void CExternalCmdWrapper::stop()
+{
+  if(!m_process)
+    return;
+
+  m_process->stop();
+}
+
+
 #endif // DISABLE_TRANSCODING

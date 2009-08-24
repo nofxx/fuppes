@@ -82,6 +82,9 @@ typedef struct {
 	char					plugin_name[200];
 	char					plugin_author[1000];
 	PLUGIN_TYPE		plugin_type;
+	char					plugin_version[100];
+	char					library_version[100];
+	
 	void*					user_data;
 	log_t					log;
 	ctrl_action_t	ctrl;

@@ -293,7 +293,7 @@ std::string CPresentationHandler::GetIndexHTML()
   sResult << "Version: " << CSharedConfig::Shared()->GetAppVersion() << "<br />" << endl;
   sResult << "Hostname: " << CSharedConfig::Shared()->GetHostname() << "<br />" << endl;
   sResult << "OS: " << CSharedConfig::Shared()->GetOSName() << " " << CSharedConfig::Shared()->GetOSVersion() << "<br />" << endl;
-  sResult << "SQLite: " << CContentDatabase::Shared()->GetLibVersion() << endl;
+  //sResult << "SQLite: " << CContentDatabase::Shared()->GetLibVersion() << endl;
   sResult << "</p>" << endl;
   
   sResult << "<p>" << endl;

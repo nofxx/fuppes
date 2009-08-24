@@ -195,6 +195,7 @@ class CTranscoderBase
 															size_t* outSize) = 0;
     virtual bool TranscodeFile(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile) = 0;
     virtual bool Threaded() = 0;
+		virtual void stop() = 0;
 };
 
 #endif // _WRAPPERBASE_H

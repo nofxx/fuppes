@@ -109,6 +109,9 @@ class CPlugin
 		std::string		name() { return std::string(m_pluginInfo.plugin_name); }
 		std::string		author() { return std::string(m_pluginInfo.plugin_author); }
 
+		std::string		pluginVersion() { return std::string(m_pluginInfo.plugin_version); }
+		std::string		libraryVersion() { return std::string(m_pluginInfo.library_version); }
+		
 		static void		logCb(int level, const char* file, int line, const char* format, ...);
 		
 	protected:
@@ -182,6 +185,8 @@ typedef int	 (*transcoderTranscodeImageMem_t)(plugin_info* plugin,
 																	int width, int height,
 																	int less,	int greater);
 
+typedef int	 (*transcoderStop_t)(plugin_info* plugin);
+
 class CTranscoderPlugin: public CPlugin, CTranscoderBase
 {
 	public:
@@ -208,11 +213,13 @@ class CTranscoderPlugin: public CPlugin, CTranscoderBase
 															size_t* outSize);
 		bool TranscodeFile(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile);
 		bool Threaded() { return true; }
-			
+		void stop();
+		
 		private:
 			transcoderTranscodeVideo_t			m_transcodeVideo;
 			transcoderTranscodeImageFile_t	m_transcodeImageFile;
 			transcoderTranscodeImageMem_t		m_transcodeImageMem;
+			transcoderStop_t								m_transcodeStop;
       std::string             m_audioCodec;
       std::string             m_videoCodec;
 };

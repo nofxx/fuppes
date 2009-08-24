@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007 - 2008 Ulrich Völkel <fuppes@ulrich-voelkel.de>
+ *  Copyright (C) 2007-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -142,11 +142,8 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
      //cout << endl;
 
   stringstream sSql;
-  CSQLQuery* qry = CDatabase::query();
-  unsigned int nObjId;
-    
-	CContentDatabase db;
-  nObjId = db.GetObjId();
+  CSQLQuery* qry = CDatabase::query();    
+	unsigned int nObjId = CContentDatabase::Shared()->GetObjId();
   
   qry->connection()->startTransaction();
     

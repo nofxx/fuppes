@@ -47,7 +47,8 @@ class CExternalCmdWrapper: public CTranscoderBase
 															size_t* /*outSize*/) { return false; }
     bool TranscodeFile(CFileSettings* pFileSettings, std::string p_sInFile, std::string* p_psOutFile);
     bool Threaded() { return true; }
-	
+	  void stop();
+    
 	private:
 		CProcess* m_process;
 	

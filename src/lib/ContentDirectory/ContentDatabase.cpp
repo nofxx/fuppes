@@ -27,6 +27,9 @@
 #include "../../config.h"
 #endif
 
+// increment this value if the database structure has changed
+#define DB_VERSION 1
+
 #include "ContentDatabase.h"
 #include "../SharedConfig.h"
 #include "../SharedLog.h"
@@ -56,7 +59,6 @@ static bool g_bFullRebuild;
 static bool g_bAddNew;
 static bool g_bRemoveMissing;
 
-unsigned int g_nObjId = 0;
 
 CContentDatabase* CContentDatabase::m_Instance = 0;
 
@@ -82,7 +84,7 @@ CContentDatabase::CContentDatabase(bool p_bShared)
     g_bAddNew         = false;
     g_bRemoveMissing  = false;    
     m_nLockCount 		  = 0;
-    
+    m_objectId				= 0;
     m_pFileAlterationMonitor = CFileAlterationMgr::Shared()->CreateMonitor(this);
     fuppesThreadInitMutex(&m_Mutex);
   }
@@ -110,11 +112,6 @@ CContentDatabase::~CContentDatabase()
   Close();
 }
 
-std::string CContentDatabase::GetLibVersion()
-{
-  return ""; //sqlite3_libversion();
-}
-
 bool CContentDatabase::Init(bool* p_bIsNewDB)
 {   
   if(!m_bShared) {
@@ -131,6 +128,15 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 	
   if(bIsNewDb) {
 
+		if(!Execute("CREATE TABLE FUPPES_DB_INFO ( "
+				"  VERSION INTEGER NOT NULL "
+				");"))   
+			return false;
+		
+		stringstream sql;
+		sql << "insert into FUPPES_DB_INFO (VERSION) values (" << DB_VERSION << ")";
+		Insert(sql.str());
+		
     if(!Execute("CREATE TABLE OBJECTS ( "
 				"  ID INTEGER PRIMARY KEY AUTOINCREMENT, "
 				"  OBJECT_ID INTEGER NOT NULL, "
@@ -209,6 +215,18 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
   }
 
 
+	Select("select VERSION from FUPPES_DB_INFO");
+	if(Eof()) {
+		CSharedLog::Shared()->UserError("no database version information found. remove the fuppes.db and restart fuppes");
+		return false;
+	}
+
+	if(GetResult()->asInt("VERSION") != DB_VERSION) {
+		CSharedLog::Shared()->UserError("database version mismatch. remove the fuppes.db and restart fuppes");
+		return false;
+	}
+
+	
 	// setup file alteration monitor
 	if(m_pFileAlterationMonitor->isActive()) {
 		
@@ -279,7 +297,7 @@ bool CContentDatabase::Open()
 	CSQLQuery* qry = CDatabase::query();
 	qry->select("select max(OBJECT_ID) as VALUE from OBJECTS where DEVICE is NULL");
   if(!qry->eof()) {  
-    g_nObjId = qry->result()->asUInt("VALUE");
+		Shared()->m_objectId = qry->result()->asUInt("VALUE");
   }
 	delete qry;
   
@@ -440,7 +458,7 @@ void CContentDatabase::UpdateDB()
 	CSQLQuery* qry = CDatabase::query();
 	qry->select("select max(OBJECT_ID) as VALUE from OBJECTS where DEVICE is NULL");
   if(!qry->eof()) {  
-    g_nObjId = qry->result()->asUInt("VALUE");
+    Shared()->m_objectId = qry->result()->asUInt("VALUE");
   }
 	delete qry;
 
@@ -462,7 +480,7 @@ void CContentDatabase::AddNew()
 	CSQLQuery* qry = CDatabase::query();
 	qry->select("select max(OBJECT_ID) as VALUE from OBJECTS where DEVICE is NULL");
   if(!qry->eof()) {  
-    g_nObjId = qry->result()->asUInt("VALUE");
+    Shared()->m_objectId = qry->result()->asUInt("VALUE");
   }
 	delete qry;
 	
@@ -492,7 +510,7 @@ bool CContentDatabase::IsRebuilding()
 
 unsigned int CContentDatabase::GetObjId()
 {
-  return ++g_nObjId;
+  return ++m_objectId;
 }
 
 void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_nParentId)
@@ -582,9 +600,6 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
 							folderType = CONTAINER_ALBUM_MUSIC_ALBUM;
 							if(artId == 0) {
 								InsertFile(pDb, nObjId, albumArt, true);
-							}
-							else {
-#warning todo hide
 							}
 						}
 	
@@ -910,7 +925,7 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
 	string fileName = p_sFileName.substr(path.length(), p_sFileName.length() - path.length());
   if(title.empty()) {
     title = ToUTF8(fileName);
-#warning make configurable
+#warning TODO: make configurable
 		title = StringReplace(title, "_", " ");
   }
   

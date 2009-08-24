@@ -176,6 +176,14 @@ int fuppes_transcoder_transcode(plugin_info* plugin,
 	return 0;
 }
 
+void fuppes_transcoder_stop(plugin_info* plugin)
+{
+  if(!plugin->user_data)
+    return;
+  
+  ((pluginData_t*)plugin->user_data)->ffmpeg->stop_requested = true;
+}
+
 void unregister_fuppes_plugin(plugin_info* plugin __attribute__((unused)))
 {
 }

@@ -172,6 +172,8 @@ class CFFmpeg {
   public:  
     CFFmpeg()
     {
+      stop_requested = false;
+      
       nb_input_files = 0;
       nb_output_files = 0;
       
@@ -440,7 +442,7 @@ class CFFmpeg {
   
     int ffmpeg_main(int argc, char **argv);
   
-  
+    
   
   
 void opt_format(const char *arg)
@@ -1711,6 +1713,8 @@ void opt_pass(const char *pass_str)
 
     int opt_counter;
 
+    bool stop_requested;
+  
 };
 
 #endif // _FUPPES_FFMPEG_H

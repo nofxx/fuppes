@@ -1597,13 +1597,16 @@ int av_encode(AVFormatContext **output_files,
     key = -1;
     pFFmpeg->timer_start = av_gettime();
 
-    for(; ;) { //received_sigterm == 0;) {
+   for( ; ; ) { //received_sigterm == 0;) {
         int file_index, ist_index;
         AVPacket pkt;
         double ipts_min;
         double opts_min;
 
     redo:
+        if(pFFmpeg->stop_requested)
+          break;
+        
         ipts_min= 1e100;
         opts_min= 1e100;
         /* if 'q' pressed, exits */
@@ -2262,7 +2265,7 @@ int CFFmpeg::ffmpeg_main(int argc, char* argv[])
 {    
     int i;
     int64_t ti;
-
+    stop_requested = false;
   
     for(i=0; i<CODEC_TYPE_NB; i++){
         avctx_opts[i]= avcodec_alloc_context2((CodecType)i);

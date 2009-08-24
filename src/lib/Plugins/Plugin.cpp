@@ -101,6 +101,8 @@ void CPluginMgr::init(std::string pluginDir)
 			pluginInfo.log = &CPlugin::logCb;
 			pluginInfo.plugin_name[0] = '\0';
 			pluginInfo.plugin_author[0] = '\0';
+			pluginInfo.plugin_version[0] = '\0';
+			pluginInfo.library_version[0] = '\0';
 			
 			fuppesLibHandle handle;
 			
@@ -292,7 +294,8 @@ std::string CPluginMgr::printInfo()
 			m_instance->m_databasePluginsIter != m_instance->m_databasePlugins.end(); 
 			m_instance->m_databasePluginsIter++) {
 		plugin = m_instance->m_databasePluginsIter->second;
-		result << "  " << plugin->name() << " (" << plugin->author() << ")" << endl;
+		result << "  \"" << plugin->name() << "\"\tlibrary version: " << plugin->libraryVersion() << endl <<
+							"\t\t(author: " << plugin->author() << " version: " << plugin->pluginVersion() << ")" << endl;
 	}
 	result << endl;
  
@@ -349,6 +352,10 @@ CPlugin::CPlugin(fuppesLibHandle handle, plugin_info* info)
 	m_pluginInfo.plugin_type = info->plugin_type;
 	strcpy(m_pluginInfo.plugin_name, info->plugin_name);
 	strcpy(m_pluginInfo.plugin_author, info->plugin_author);
+	
+	strcpy(m_pluginInfo.plugin_version, info->plugin_version);
+	strcpy(m_pluginInfo.library_version, info->library_version);
+	
 	m_pluginInfo.user_data = NULL;
 	m_pluginInfo.log = &CPlugin::logCb;
 	m_pluginInfo.ctrl = NULL;
@@ -473,6 +480,7 @@ CTranscoderPlugin::CTranscoderPlugin(CTranscoderPlugin* plugin)
 	m_transcodeVideo = plugin->m_transcodeVideo;
 	m_transcodeImageMem = plugin->m_transcodeImageMem;
 	m_transcodeImageFile = plugin->m_transcodeImageFile;
+	m_transcodeStop = plugin->m_transcodeStop;
 }
 
 bool CTranscoderPlugin::initPlugin()
@@ -480,10 +488,12 @@ bool CTranscoderPlugin::initPlugin()
 	m_transcodeVideo = NULL;
 	m_transcodeImageMem = NULL;
 	m_transcodeImageFile = NULL;
+	m_transcodeStop = NULL;
 	
 	m_transcodeVideo = (transcoderTranscodeVideo_t)FuppesGetProcAddress(m_handle, "fuppes_transcoder_transcode");
 	m_transcodeImageMem = (transcoderTranscodeImageMem_t)FuppesGetProcAddress(m_handle, "fuppes_transcoder_transcode_image_mem");
 	m_transcodeImageFile = (transcoderTranscodeImageFile_t)FuppesGetProcAddress(m_handle, "fuppes_transcoder_transcode_image_file");
+	m_transcodeStop = (transcoderStop_t)FuppesGetProcAddress(m_handle, "fuppes_transcoder_stop");
 	
 	if((m_transcodeVideo == NULL) && 
 		 ((m_transcodeImageFile == NULL) || (m_transcodeImageMem == NULL))) {
@@ -567,7 +577,15 @@ bool CTranscoderPlugin::TranscodeMem(CFileSettings* pFileSettings,
 
 }
 
-
+void CTranscoderPlugin::stop()
+{  
+	if(m_transcodeVideo == NULL || m_transcodeStop == NULL) {
+		return;
+	}
+	
+	m_transcodeStop(&m_pluginInfo);
+}
+	
 /**
  *  CAudioDecoderPlugin
  */

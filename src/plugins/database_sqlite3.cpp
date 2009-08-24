@@ -330,11 +330,13 @@ extern "C" {
 
 void register_fuppes_plugin(plugin_info* plugin)
 {
+	plugin->plugin_type = PT_DATABASE_CONNECTION;
+	
 	strcpy(plugin->plugin_name, "sqlite3");
 	strcpy(plugin->plugin_author, "Ulrich Voelkel");
-	plugin->plugin_type = PT_DATABASE_CONNECTION;
+	//strcpy(plugin->plugin_version, "");
+	strcpy(plugin->library_version, sqlite3_libversion());
 }
-
 
 CDatabaseConnection* fuppes_plugin_create_db_connection(plugin_info* plugin __attribute__((unused)))
 {

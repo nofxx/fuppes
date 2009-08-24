@@ -76,12 +76,14 @@ CTranscodingCacheObject::~CTranscodingCacheObject()
   if(m_bIsTranscoding) {                    
     m_bBreakTranscoding = true;    
   }
+
+  if(m_pTranscoder) {
+    m_pTranscoder->stop();
+  }
   
-  //if(m_TranscodeThread) {
-    if(TranscodeToFile()) {
-      //fuppesThreadCancel(m_TranscodeThread);
-			this->stop();
-    }
+  if(this->running()) {  
+  	this->stop();
+  }
     //fuppesThreadClose(m_TranscodeThread);        
   //}
     

@@ -52,8 +52,6 @@ class CContentDatabase: public IFileAlterationMonitor
   
     CContentDatabase(bool p_bShared = false);
     ~CContentDatabase();
-  
-    std::string GetLibVersion();
 
     bool Init(bool* p_bIsNewDB);
   
@@ -109,6 +107,8 @@ class CContentDatabase: public IFileAlterationMonitor
     bool          m_bInTransaction;
     bool Open();
     void Close();
+		
+		unsigned int	m_objectId;
 };
 
 #endif // _CONTENTDATABASE_H
