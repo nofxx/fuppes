@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -167,7 +167,23 @@ void register_fuppes_plugin(plugin_info* plugin)
 	plugin->plugin_type = PT_AUDIO_DECODER;
 }
 
-int fuppes_decoder_file_open(plugin_info* plugin, const char* fileName, audio_settings_t* settings)
+void fuppes_decoder_file_close(plugin_info* plugin)
+{
+	flacData_t* data = (flacData_t*)plugin->user_data;
+	
+	if(data->decoder) {
+		#ifdef HAVE_FLAC_FILEDECODER
+		FLAC__file_decoder_delete(data->decoder);
+		#else	
+		FLAC__stream_decoder_delete(data->decoder);
+		#endif
+	}
+	
+	free(plugin->user_data);
+	plugin->user_data = NULL;
+}
+
+int fuppes_decoder_file_open(plugin_info* plugin, const char* filename, audio_settings_t* settings)
 {	
 	plugin->user_data = malloc(sizeof(struct flacData_t));
 	flacData_t* data = (flacData_t*)plugin->user_data;
@@ -238,7 +254,7 @@ int fuppes_decoder_file_open(plugin_info* plugin, const char* fileName, audio_se
   data->decoder = FLAC__stream_decoder_new();
 
   FLAC__stream_decoder_init_file(data->decoder, 
-                               fileName, 
+                               filename, 
                                FLAC_StreamDecoderWriteCallback,
                                FLAC_StreamDecoderMetadataCallback,
                                FLAC_StreamDecoderErrorCallback, 
@@ -309,22 +325,6 @@ int fuppes_decoder_decode_interleaved(plugin_info* plugin, char* pcmOut, int buf
 	return -1;
 }
 
-void fuppes_decoder_file_close(plugin_info* plugin)
-{
-	flacData_t* data = (flacData_t*)plugin->user_data;
-	
-	if(data->decoder) {
-		#ifdef HAVE_FLAC_FILEDECODER
-		FLAC__file_decoder_delete(data->decoder);
-		#else	
-		FLAC__stream_decoder_delete(data->decoder);
-		#endif
-	}
-	
-	free(plugin->user_data);
-	plugin->user_data = NULL;
-}
-		
 void unregister_fuppes_plugin(plugin_info* plugin __attribute__((unused)))
 {
 }
