@@ -30,6 +30,7 @@
 #include "../SharedConfig.h"
 #include "../SharedLog.h"
 #include <iostream>
+#include <time.h>
 
 using namespace std;
 

@@ -38,6 +38,7 @@
 #include <iostream>
 #include <sstream>
 #include <libxml/xmlwriter.h>
+#include <time.h>
 
 using namespace std;
 

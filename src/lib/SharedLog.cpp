@@ -24,6 +24,7 @@
 #include "SharedLog.h"
 #include <iostream>
 #include <sstream>
+#include <time.h>
 #include "../config.h"
 
 #ifdef HAVE_LIBNOTIFY

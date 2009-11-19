@@ -25,6 +25,7 @@
 
 #include "Exception.h" 
 #include <sstream>
+#include <stdio.h>
 #include <stdarg.h>
 
 using namespace fuppes;
@@ -35,10 +36,6 @@ Exception::Exception(const std::string exception, const std::string file, int li
 	m_file = file;
 	m_line = line;
 	m_exception = exception;
-	
-  /*std::stringstream sRes;
-  sRes << exception << " (" << file << ", " << line << ")";
-  m_exception = sRes.str();*/
 };
 
 Exception::Exception(const std::string file, int line, const char* exception, ...)
@@ -50,7 +47,7 @@ Exception::Exception(const std::string file, int line, const char* exception, ..
   va_list args;
   char buffer[1024];
   va_start(args, exception);
-  vsnprintf(buffer, sizeof(buffer), exception, args);
+  ::vsnprintf(buffer, sizeof(buffer), exception, args);
   va_end(args);
   m_exception = buffer;
 };

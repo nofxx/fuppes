@@ -513,7 +513,7 @@ bool ReceiveRequest(HTTPSession* p_Session, CHTTPMessage* p_Request)
         break;      
       }
       else {
-        nLoopCnt++;        
+        //nLoopCnt++;        
         fuppesSleep(10);
         continue;
       }
@@ -522,7 +522,7 @@ bool ReceiveRequest(HTTPSession* p_Session, CHTTPMessage* p_Request)
 			//#ifdef FUPPES_TARGET_MAC_OSX
 			#if defined(BSD)
 			if(errno == EAGAIN) {
-				nLoopCnt++;
+				//nLoopCnt++;
 				fuppesSleep(10);
 				continue;
 			}
