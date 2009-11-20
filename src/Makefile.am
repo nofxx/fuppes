@@ -166,33 +166,29 @@ libfuppes_la_SOURCES = \
   lib/GENA/SubscriptionMgr.cpp\
   lib/GENA/EventNotification.cpp\
   lib/Presentation/PresentationHandler.cpp\
-	lib/Presentation/PresentationHandler.h\
+  lib/Presentation/PresentationHandler.h\
   lib/Transcoding/TranscodingMgr.cpp\
   lib/Transcoding/TranscodingCache.cpp\
   lib/Transcoding/LameWrapper.h\
   lib/Transcoding/LameWrapper.cpp\
   lib/Transcoding/TwoLameEncoder.h\
   lib/Transcoding/TwoLameEncoder.cpp\
-  lib/Transcoding/WavEncoder.h\
-  lib/Transcoding/WavEncoder.cpp\
-  lib/Transcoding/PcmEncoder.h\
-  lib/Transcoding/PcmEncoder.cpp\
   lib/Transcoding/FaadWrapper.h\
   lib/Transcoding/FaadWrapper.cpp\
   lib/Transcoding/MadDecoder.h\
   lib/Transcoding/MadDecoder.cpp\
-	lib/Transcoding/ExternalCmdWrapper.h\
+  lib/Transcoding/ExternalCmdWrapper.h\
   lib/Transcoding/ExternalCmdWrapper.cpp\
-	lib/DeviceSettings/DeviceSettings.cpp\
-	lib/DeviceSettings/DeviceIdentificationMgr.cpp\
-	lib/XMSMediaReceiverRegistrar.cpp\
-	lib/Configuration/ConfigFile.cpp\
-	lib/Configuration/ConfigFile.h\
+  lib/DeviceSettings/DeviceSettings.cpp\
+  lib/DeviceSettings/DeviceIdentificationMgr.cpp\
+  lib/XMSMediaReceiverRegistrar.cpp\
+  lib/Configuration/ConfigFile.cpp\
+  lib/Configuration/ConfigFile.h\
   lib/Configuration/DefaultConfig.h\
-	lib/SharedConfig.cpp\
+  lib/SharedConfig.cpp\
   lib/SharedLog.cpp\
-	lib/Fuppes.cpp\
-	lib/libmain.cpp\
+  lib/Fuppes.cpp\
+  lib/libmain.cpp\
   version.h
 
 if HAVE_INOTIFY

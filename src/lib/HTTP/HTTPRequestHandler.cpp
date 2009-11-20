@@ -358,8 +358,8 @@ bool CHTTPRequestHandler::handleItemRequest(std::string p_sObjectId, CHTTPMessag
 
 bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {
-	cout << "image request" << endl;
-	cout << pRequest->getVarAsInt("width") << "x" << pRequest->getVarAsInt("height") << endl;
+	/*cout << "image request" << endl;
+	cout << pRequest->getVarAsInt("width") << "x" << pRequest->getVarAsInt("height") << endl;*/
 	
   std::stringstream sSql;
   //OBJECT_TYPE       nObjectType;
@@ -431,6 +431,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 		unsigned char* inBuffer = (unsigned char*)malloc(1);
 		unsigned char* outBuffer = (unsigned char*)malloc(1);
 		char* mimeType = (char*)malloc(1);
+		memset(mimeType, 0, 1);
 		
 		// embedded image from audio file
 		if(audioFile) {
@@ -508,6 +509,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 		
 		pResponse->SetBinContent((char*)outBuffer, outSize);			
 		pResponse->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
+#warning todo: set correct mime type
 		pResponse->SetContentType(mimeType);
 		
 		free(inBuffer);

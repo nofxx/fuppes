@@ -57,6 +57,9 @@
 
 #endif
 
+/* 
+moved to fuppes_types.h because it's needed by some plugins
+
 #ifdef WIN32
   #if SIZEOF_LONG_INT == 8
   typedef long int fuppes_off_t;  
@@ -66,7 +69,10 @@
 #else
   typedef off_t fuppes_off_t;
 #endif
+*/
 
+#include "../../../include/fuppes_types.h"
+ 
 
 #define ASSERT assert
 

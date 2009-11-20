@@ -772,7 +772,7 @@ bool SendResponse(HTTPSession* p_Session, CHTTPMessage* p_Response, CHTTPMessage
     // send HTTP header when the first package is ready
     if(nCnt == 0) {      
       // send
-      nErr = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()));   
+      nErr = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), p_Response->GetHeaderAsString().length());
       CSharedLog::Log(L_DBG, __FILE__, __LINE__, "send header %s\n", p_Response->GetHeaderAsString().c_str());
     }
 

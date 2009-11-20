@@ -268,7 +268,8 @@ if test "x$use_libavformat" = "xyes"; then
   fi 
 fi
 AM_CONDITIONAL(LIBAVFORMAT_METADATA_PLUGIN, test "x$have_libavformat" = "xyes")
-AM_CONDITIONAL(FFMPEG_TRANSCODER_PLUGIN, test "x$have_libavformat" = "xyes")
+#AM_CONDITIONAL(FFMPEG_TRANSCODER_PLUGIN, test "x$have_libavformat" = "xyes")
+AM_CONDITIONAL(FFMPEG_TRANSCODER_PLUGIN, false)
 # end libavformat
 
 
@@ -646,6 +647,7 @@ m4/Makefile
 src/Makefile
 src/plugins/Makefile
 src/windows/Makefile
+include/Makefile
 ])
 
 dnl summary

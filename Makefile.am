@@ -4,34 +4,28 @@
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = \
-	m4 \
+  m4 \
+  include \
   src \
-	src/plugins \
-	src/windows
-
-noinst_HEADERS = \
-	include/fuppes.h
-
-include_HEADERS = \
-	include/fuppes_plugin.h \
-	include/fuppes_plugin_types.h \
-	include/fuppes_db_connection_plugin.h
+  src/plugins \
+  src/windows
 
 EXTRA_DIST = \
   README \
   COPYING \
-	AUTHORS \
-	ChangeLog \
-	INSTALL \
-	NEWS \
-	TODO \
+  AUTHORS \
+  ChangeLog \
+  INSTALL \
+  NEWS \
+  TODO \
   THANKS \
-	configure.ac \
-	Makefile.am \
-	src/Makefile.am \
-	src/plugins/Makefile.am \
-	src/windows/Makefile.am \
-	src/windows/fuppes.exe.Manifest \
-	src/windows/fuppes.ico \	
+  configure.ac \
+  Makefile.am \
+  src/Makefile.am \
+  src/plugins/Makefile.am \
+  src/windows/Makefile.am \
+  src/windows/fuppes.exe.Manifest \
+  src/windows/fuppes.ico \
+  include/Makefile.am \
   vfolder.cfg \
   crosscompile_win32.sh

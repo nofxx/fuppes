@@ -299,16 +299,16 @@ endif
 ##
 
 # pcm
-#lib_LTLIBRARIES += libencoder_pcm.la
-#libencoder_pcm_la_SOURCES = encoder_pcm.c
-#libencoder_pcm_la_CFLAGS =	
-#libencoder_pcm_la_LDFLAGS =
+lib_LTLIBRARIES += libencoder_pcm.la
+libencoder_pcm_la_SOURCES = encoder_pcm.c
+libencoder_pcm_la_CFLAGS =	
+libencoder_pcm_la_LDFLAGS =
 
 # wav
-#lib_LTLIBRARIES += libencoder_wav.la
-#libencoder_wav_la_SOURCES = encoder_wav.c
-#libencoder_wav_la_CFLAGS =	
-#libencoder_wav_la_LDFLAGS =
+lib_LTLIBRARIES += libencoder_wav.la
+libencoder_wav_la_SOURCES = encoder_wav.c
+libencoder_wav_la_CFLAGS =	
+libencoder_wav_la_LDFLAGS =
 
 
 

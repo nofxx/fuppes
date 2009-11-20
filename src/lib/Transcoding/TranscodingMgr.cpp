@@ -1,3 +1,4 @@
+/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            TranscodingMgr.cpp
  *
@@ -38,9 +39,6 @@
   #ifdef HAVE_TWOLAME
   #include "TwoLameEncoder.h"
   #endif
-
-  #include "PcmEncoder.h"
-  #include "WavEncoder.h"
 
   // decoder
   //#ifdef HAVE_VORBIS
@@ -329,11 +327,11 @@ CAudioEncoderBase* CTranscodingMgr::CreateAudioEncoder(ENCODER_TYPE p_nEncoderTy
       break;
     
     case ET_WAV:
-      pResult = (CAudioEncoderBase*)(new CWavEncoder());
+			pResult = CPluginMgr::audioEncoderPlugin("wav");
       break;
     
     case ET_PCM:
-      pResult = (CAudioEncoderBase*)(new CPcmEncoder());
+      pResult = CPluginMgr::audioEncoderPlugin("pcm");
       break;
     
     default:
@@ -372,7 +370,7 @@ CAudioDecoderBase* CTranscodingMgr::CreateAudioDecoder(DECODER_TYPE p_nDecoderTy
     case DT_FLAC:
       //#ifdef HAVE_FLAC
       //pResult = (CAudioDecoderBase*)(new CFLACDecoder());
-			pResult = CPluginMgr::audioDecoderPlugin("FLAC");
+      pResult = CPluginMgr::audioDecoderPlugin("FLAC");
       //#endif
       break;
     

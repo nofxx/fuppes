@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Plugin.cpp
  *
@@ -698,13 +698,13 @@ int CAudioDecoderPlugin::numPcmSamples()
 	return m_totalSamples(&m_pluginInfo);
 }
 
-int CAudioDecoderPlugin::decodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead)
+int CAudioDecoderPlugin::decodeInterleaved(char* pcm, int bufferSize, int* bytesConsumed)
 {
 	if(!m_decodeInterleaved) {
 		return -1;
 	}
 	
-	return m_decodeInterleaved(&m_pluginInfo, p_PcmOut, p_nBufferSize, p_nBytesRead);
+	return m_decodeInterleaved(&m_pluginInfo,pcm, bufferSize, bytesConsumed);
 }
 
 void CAudioDecoderPlugin::closeFile()
@@ -722,12 +722,94 @@ void CAudioDecoderPlugin::closeFile()
 CAudioEncoderPlugin::CAudioEncoderPlugin(CAudioEncoderPlugin* plugin)
 :CPlugin(plugin->m_handle, &plugin->m_pluginInfo) 
 {
+	m_setAudioSettings = plugin->m_setAudioSettings;
+	m_encodeInterleaved = plugin->m_encodeInterleaved;
+	m_getBuffer = plugin->m_getBuffer;
+	m_guessContentLength = plugin->m_guessContentLength;
 }
 
 bool CAudioEncoderPlugin::initPlugin()
 {	
+	m_setAudioSettings = NULL;
+	m_encodeInterleaved = NULL;
+	m_getBuffer = NULL;
+	m_guessContentLength = NULL;
+	
+	m_setAudioSettings = (audioEncoderSetAudioSettings_t)FuppesGetProcAddress(m_handle, "fuppes_encoder_set_audio_settings");
+	if(m_setAudioSettings == NULL) {
+		cout << "error load symbol 'fuppes_encoder_set_audio_settings'" << endl;
+		return false;
+	}
+
+	m_encodeInterleaved = (audioEncoderEncodeInterleaved_t)FuppesGetProcAddress(m_handle, "fuppes_encoder_encode_interleaved");
+	if(m_encodeInterleaved == NULL) {
+		cout << "error load symbol 'fuppes_encoder_encode_interleaved'" << endl;
+		return false;
+	}	
+
+	
+	m_getBuffer = (audioEncoderGetBuffer_t)FuppesGetProcAddress(m_handle, "fuppes_encoder_get_buffer");
+	if(m_getBuffer == NULL) {
+		cout << "error load symbol 'fuppes_encoder_get_buffer'" << endl;
+		return false;
+	}
+
+	m_guessContentLength = (audioEncoderGuessContentLength_t)FuppesGetProcAddress(m_handle, "fuppes_encoder_guess_content_length");
+	if(m_guessContentLength == NULL) {
+		cout << "error load symbol 'fuppes_encoder_guess_content_length'" << endl;
+	}
+
+	
+	
 	return true;
 }	
+
+void CAudioEncoderPlugin::SetAudioDetails(CAudioDetails* audioDetails)
+{
+	if(!m_setAudioSettings)
+		return;
+	
+	audio_settings_t settings;
+	init_audio_settings(&settings);
+
+	settings.channels			= audioDetails->nNumChannels;
+	settings.samplerate		= audioDetails->nSampleRate;
+	settings.bitrate			= audioDetails->nBitRate;
+	settings.num_samples	= audioDetails->nNumPcmSamples;
+
+	m_setAudioSettings(&m_pluginInfo, &settings);
+	free_audio_settings(&settings);
+}
+
+int CAudioEncoderPlugin::EncodeInterleaved(short int pcm[], int numSamples, int numBytes)
+{
+	if(!m_encodeInterleaved)
+		return -1;
+
+
+	return m_encodeInterleaved(&m_pluginInfo, (char*)pcm, numSamples, numBytes);	
+}
+
+int CAudioEncoderPlugin::Flush()
+{
+	return -1;
+}
+
+unsigned char* CAudioEncoderPlugin::GetEncodedBuffer()
+{
+	if(!m_getBuffer)
+		return NULL;
+
+	return (unsigned char*)m_getBuffer(&m_pluginInfo);
+}
+
+unsigned int CAudioEncoderPlugin::GuessContentLength(unsigned int numPcmSamples)
+{
+	if(!m_guessContentLength)
+		return 0;
+
+	return m_guessContentLength(&m_pluginInfo, numPcmSamples);
+}
 
 
 /**

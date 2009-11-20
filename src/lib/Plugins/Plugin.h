@@ -248,8 +248,14 @@ class CAudioDecoderPlugin: public CPlugin, public CAudioDecoderBase
     bool  openFile(std::string fileName, CAudioDetails* pAudioDetails);  
 		void	setOutEndianness(ENDIANESS endianess);
 		int		getOutBufferSize();
-    int   numPcmSamples();  
-    int   decodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_nBytesRead);  
+    int   numPcmSamples();
+		/*!
+		 * @param pcm the buffer to fill with the decoded pcm samples
+		 * @param the size of the <em>pcm</em> buffer
+		 * @param the number of bytes used from <em>pcm</em>
+		 * @return the number of decoded pcm samples
+		 */
+    int   decodeInterleaved(char* pcm, int bufferSize, int* bytesConsumed);  
     void  closeFile();
 		
 		// CAudioDecoderBase
@@ -279,6 +285,12 @@ class CAudioDecoderPlugin: public CPlugin, public CAudioDecoderBase
 		audioDecoderFileClose_t						m_fileClose;
 };
 
+
+typedef void  (*audioEncoderSetAudioSettings_t)(plugin_info* plugin, audio_settings_t* settings);
+typedef int	  (*audioEncoderEncodeInterleaved_t)(plugin_info* plugin, char* pcm, int numSamples, int numBytes);
+typedef char* (*audioEncoderGetBuffer_t)(plugin_info* plugin);
+typedef fuppes_off_t (*audioEncoderGuessContentLength_t)(plugin_info* plugin, unsigned int numSamples);
+
 class CAudioEncoderPlugin: public CPlugin, public CAudioEncoderBase
 {	
 	public:
@@ -291,22 +303,20 @@ class CAudioEncoderPlugin: public CPlugin, public CAudioEncoderBase
 	
 		// from CAudioEncoderBase
 		bool LoadLib() { return true; }
-    void SetAudioDetails(CAudioDetails* /*pAudioDetails*/) { }
+    void SetAudioDetails(CAudioDetails* audioDetails);
     void SetTranscodingSettings(CTranscodingSettings* /*pTranscodingSettings*/) { }
 		void Init() { }    
-    int  EncodeInterleaved(short int /*p_PcmIn*/[], int /*p_nNumSamples*/, int /*p_nBytesRead*/) {
-			return -1;
-		}
-		int  Flush() {
-			return -1;
-		}
-		unsigned char* GetEncodedBuffer() {
-			return NULL;
-		}
+    int  EncodeInterleaved(short int pcm[], int numSamples, int numBytes);
+		int  Flush();
+		unsigned char* GetEncodedBuffer();
 		
-    unsigned int GuessContentLength(unsigned int /*p_nNumPcmSamples*/) {
-			return 0;
-		}
+    unsigned int GuessContentLength(unsigned int numPcmSamples);
+
+	private:
+		audioEncoderSetAudioSettings_t		m_setAudioSettings;
+		audioEncoderEncodeInterleaved_t		m_encodeInterleaved;
+		audioEncoderGetBuffer_t						m_getBuffer;
+		audioEncoderGuessContentLength_t	m_guessContentLength;
 		
 };
 
