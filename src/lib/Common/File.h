@@ -1,10 +1,10 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
- *            encoder_twolame.c
+ *            File.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,41 +22,54 @@
  *  with this program; if not, write to the Free Software Foundation, Inc.,
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
- 
- #include "../../include/fuppes_plugin.h"
 
+#ifndef _FILE_H
+#define _FILE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-		
-#include <string.h>
-#include <twolame.h>
-
-#define TWOLAME_MAX_BUFFER 32768
-		
-void register_fuppes_plugin(plugin_info* plugin)
-{
-	strcpy(plugin->plugin_name, "twolame");
-	strcpy(info->plugin_author, "Ulrich Voelkel");
-	plugin->plugin_type = PT_AUDIO_ENCODER;
-}
-
-void unregister_fuppes_plugin(plugin_info* info)
-{
-}
-
-int fuppes_plugin_init_instance(plugin_info* plugin)
-{
-	return 1;
-}
-
-void fuppes_plugin_uninit_instance(plugin_info* plugin)
-{
-}
-
-
-#ifdef __cplusplus
-}
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
 #endif
 
+#include "../../../include/fuppes_types.h"
+
+
+#ifdef WIN32
+
+#else
+
+#endif
+
+#include <string>
+#include <fstream>
+
+namespace fuppes {
+
+class File
+{
+	enum OpenMode {
+		Closed		= 0,
+		Read			= 1,
+		Write			= 2,
+		ReadWrite = Read | Write,
+		Truncate  = 4,
+		Append		= 8,
+		Text			= 16
+	};
+	
+  public:
+		File(std::string fileName);
+		bool open(File::OpenMode mode);
+		void close();
+		fuppes_off_t size();
+		
+    static bool exists(std::string fileName);
+
+	private:
+		std::string   m_fileName;
+		OpenMode			m_openMode;
+    std::fstream  m_fstream;
+};
+
+}
+
+#endif // _FILE_H

@@ -231,6 +231,11 @@ int fuppes_stop()
 
 int fuppes_cleanup()
 {
+	CDatabase::close();	
+
+	delete CSharedConfig::Shared();
+	delete CSharedLog::Shared();	
+	
   xmlCleanupParser();
     
   // cleanup winsockets

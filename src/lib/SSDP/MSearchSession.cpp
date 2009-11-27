@@ -77,12 +77,12 @@ void CMSearchSession::Start()
 	begin_receive_unicast();
 	fuppesSleep(200);
 	send_multicast(m_pNotifyMsgFactory->msearch());
-  m_Timer.Start();
+  m_Timer.start();
 }
 
 void CMSearchSession::Stop()
 {
-  m_Timer.Stop();
+  m_Timer.stop();
 	end_receive_unicast();
 }
 

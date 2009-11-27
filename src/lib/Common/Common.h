@@ -38,6 +38,10 @@
 
 #include <libxml/xmlwriter.h>
 
+
+#include "File.h"
+#include "Directory.h"
+
 #ifdef WIN32
 
 /* This must be defined to use InitializeCriticalSectionAndSpinCount() */
@@ -78,10 +82,10 @@ moved to fuppes_types.h because it's needed by some plugins
 
 const std::string MIME_TYPE_TEXT_HTML = "text/html";
 
-bool FileExists(std::string p_sFileName);
-bool IsFile(std::string p_sFileName);
-bool DirectoryExists(std::string p_sDirName);
-bool IsDirectory(std::string p_sDirName);
+//bool FileExists(std::string p_sFileName);
+//bool IsFile(std::string p_sFileName);
+//bool DirectoryExists(std::string p_sDirName);
+//bool IsDirectory(std::string p_sDirName);
 bool CreateDirectory(std::string dir);
 
 std::string StringReplace(std::string p_sIn, std::string p_sSearch, std::string p_sReplace);
@@ -126,15 +130,11 @@ int  fuppesSocketClose(fuppesSocket p_SocketHandle);
 
 
 #ifdef WIN32
-//  typedef HANDLE            fuppesThread;
   typedef CRITICAL_SECTION  fuppesThreadMutex;
 #else
-//  typedef pthread_t         fuppesThread;
   typedef pthread_mutex_t   fuppesThreadMutex;
 #endif
 
-/*int  fuppesThreadCancel(fuppesThread p_ThreadHandle);
-bool fuppesThreadClose(fuppesThread p_ThreadHandle);*/
 
 void fuppesThreadInitMutex(fuppesThreadMutex* p_ThreadMutex);
 void fuppesThreadDestroyMutex(fuppesThreadMutex* p_ThreadMutex);
@@ -174,71 +174,13 @@ fuppesProcHandle  FuppesGetProcAddress(fuppesLibHandle p_LibHandle, std::string 
 bool              FuppesCloseLibrary(fuppesLibHandle p_LibHandle);
 
 
-
-
-
-
-
-
-
 #ifdef WIN32
 
-/* Common */
-//#define upnpSleep               Sleep
 #define upnpPathDelim           "\\"
-
-/* Sockets */
-/*#define upnpSocket              SOCKET
-#define upnpSocketSuccess       0
-#define upnpSocketClose         closesocket
-#define upnpSocketFlag(_x_)     const char _x_[256] = ""*/
-
-
-/* Threads */
-//#define fuppesThread                                        HANDLE
-//#define fuppesThreadStart(_handle_, _callback_)             _handle_ = CreateThread(NULL, 0, &_callback_, this, 0, NULL)
-//#define fuppesThreadClose(_handle_)                         WaitForSingleObject(_handle_, INFINITE); CloseHandle(_handle_)
-//#define fuppesThreadCancel(_handle_, _exit_code_)           TerminateThread(_handle_, _exit_code_);
-//#define fuppesThreadExit()                                  ExitThread(0);
-//#define fuppesThreadStartArg(_handle_, _callback_, _arg_)   _handle_ = CreateThread(NULL, 0, &_callback_, &_arg_, 0, NULL)
-//#define fuppesThreadCallback                                DWORD WINAPI
-
-//#define fuppesThreadMutex                                   CRITICAL_SECTION
-//#define fuppesThreadInitMutex(_mutex_)                      InitializeCriticalSection(_mutex_) //AndSpinCount(_mutex_, 0x80000400)
-//#define fuppesThreadLockMutex(_mutex_)                      EnterCriticalSection(_mutex_)
-//#define fuppesThreadUnlockMutex(_mutex_)                    LeaveCriticalSection(_mutex_)
-//#define fuppesThreadDestroyMutex(_mutex_)                   DeleteCriticalSection(_mutex_)
 
 #else
 
-
-
-/*#include <pthread.h>
-#include <unistd.h>*/
-
-/* Common */
-//#define upnpSleep               usleep
 #define upnpPathDelim           "/"
-
-/* Sockets */
-/*#define upnpSocket              int
-#define upnpSocketSuccess       -1
-#define upnpSocketClose(_socket_)         close(_socket_)*/
-
-/* Threads */
-//#define fuppesThread                                        pthread_t
-//#define fuppesThreadStart(_handle_, _callback_)             pthread_create(&_handle_, NULL, &_callback_, this);
-//#define fuppesThreadClose(_handle_)                         pthread_join(_handle_, NULL);
-//#define fuppesThreadCancel(_handle_, _exit_code_)           pthread_cancel(_handle_);
-//#define fuppesThreadExit()                                  pthread_exit(NULL);
-//#define fuppesThreadStartArg(_handle_, _callback_, _arg_)   pthread_create(&_handle_, NULL, &_callback_, &_arg_);
-//#define fuppesThreadCallback                                void*
-
-//#define fuppesThreadMutex                                   pthread_mutex_t
-//#define fuppesThreadInitMutex(_mutex_)                      pthread_mutex_init(_mutex_, NULL)
-//#define fuppesThreadLockMutex(_mutex_)                      pthread_mutex_lock(_mutex_)
-//#define fuppesThreadUnlockMutex(_mutex_)                    pthread_mutex_unlock(_mutex_)
-//#define fuppesThreadDestroyMutex(_mutex_)                   pthread_mutex_destroy(_mutex_)
 
 #endif
 

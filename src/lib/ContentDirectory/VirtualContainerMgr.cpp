@@ -26,6 +26,7 @@
 #include "VirtualContainerMgr.h"
 
 #include "../Common/Common.h"
+#include "../Common/File.h"
 #include "ContentDatabase.h"
 #include "../SharedConfig.h"
 #include "../SharedLog.h"
@@ -53,7 +54,7 @@ CVirtualContainerMgr::CVirtualContainerMgr()
   
 	m_nIdCounter    = 0;
   //m_RebuildThread = (fuppesThread)NULL;
-  if(!FileExists(CSharedConfig::Shared()->GetVFolderConfigFileName())) {
+  if(!fuppes::File::exists(CSharedConfig::Shared()->GetVFolderConfigFileName())) {
     CSharedLog::Log(L_NORM, __FILE__, __LINE__, "no vfolder.cfg file available");
     m_bVFolderCfgValid = false;
   }
@@ -506,16 +507,16 @@ void CVirtualContainerMgr::CreateVFoldersSplit(CXMLNode* pFoldersNode,
   };
                                                    
   string sFilter[] = {
-    " substr(%s, 0, 1) in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9) ", 
-    " upper(substr(%s, 0, 1)) in ('A', 'B', 'C') ",
-    " upper(substr(%s, 0, 1)) in ('D', 'E', 'F') ",
-    " upper(substr(%s, 0, 1)) in ('G', 'H', 'I') ",
-    " upper(substr(%s, 0, 1)) in ('J', 'K', 'L') ",
-    " upper(substr(%s, 0, 1)) in ('M', 'N', 'O') ",
-    " upper(substr(%s, 0, 1)) in ('P', 'Q', 'R') ",
-    " upper(substr(%s, 0, 1)) in ('S', 'T', 'U') ",
-    " upper(substr(%s, 0, 1)) in ('V', 'W', 'X') ",
-    " upper(substr(%s, 0, 1)) in ('Y', 'Z') ",
+    " substr(%s, 1, 1) in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9) ", 
+    " upper(substr(%s, 1, 1)) in ('A', 'B', 'C') ",
+    " upper(substr(%s, 1, 1)) in ('D', 'E', 'F') ",
+    " upper(substr(%s, 1, 1)) in ('G', 'H', 'I') ",
+    " upper(substr(%s, 1, 1)) in ('J', 'K', 'L') ",
+    " upper(substr(%s, 1, 1)) in ('M', 'N', 'O') ",
+    " upper(substr(%s, 1, 1)) in ('P', 'Q', 'R') ",
+    " upper(substr(%s, 1, 1)) in ('S', 'T', 'U') ",
+    " upper(substr(%s, 1, 1)) in ('V', 'W', 'X') ",
+    " upper(substr(%s, 1, 1)) in ('Y', 'Z') ",
     ""
   };
                                                    

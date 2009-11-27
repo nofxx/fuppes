@@ -1,9 +1,10 @@
+/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Fuppes.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -68,7 +69,7 @@ class CFuppes: public ISSDPCtrl, IHTTPServer, IUPnPDevice
     virtual ~CFuppes();
 
     void OnTimer(CUPnPDevice* pSender);
-	  void OnNewDevice(CUPnPDevice* pSender);
+	  void onUPnPDeviceDeviceReady(std::string uuid);
 
 
     CSSDPCtrl*                GetSSDPCtrl() { return m_pSSDPCtrl; }

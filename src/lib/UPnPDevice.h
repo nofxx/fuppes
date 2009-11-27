@@ -1,9 +1,10 @@
+/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            UPnPDevice.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -36,6 +37,7 @@
 #include "UPnPBase.h"
 #include "UPnPService.h"
 #include "Common/Timer.h"
+#include "Common/Thread.h"
 #include "HTTP/HTTPClient.h"
 
 using namespace std;
@@ -48,7 +50,8 @@ class IUPnPDevice
     virtual ~IUPnPDevice() {};
   
     virtual void OnTimer(CUPnPDevice* pSender) = 0;
-		virtual void OnNewDevice(CUPnPDevice* pSender) = 0;
+		//virtual void OnNewDevice(CUPnPDevice* pSender) = 0;
+    virtual void onUPnPDeviceDeviceReady(std::string uuid) = 0;
 };
 
 
@@ -70,7 +73,7 @@ class CUPnPDevice: public CUPnPBase, fuppes::ITimer, IHTTPClient
 
     void OnTimer();
 
-    fuppes::Timer* GetTimer() { return m_pTimer; }
+    fuppes::Timer* GetTimer() { return &m_timer; }
 
     CHTTPClient* GetHTTPClient() { return m_pHTTPClient; }
 
@@ -132,10 +135,11 @@ class CUPnPDevice: public CUPnPBase, fuppes::ITimer, IHTTPClient
 
 
 	private:
-    bool         m_bIsLocalDevice;
-    fuppes::Timer*      m_pTimer;
-    IUPnPDevice* m_pEventHandler;
-		CHTTPClient* m_pHTTPClient;
+    bool            m_bIsLocalDevice;
+    fuppes::Timer		m_timer;
+    IUPnPDevice*    m_pEventHandler;
+		CHTTPClient*    m_pHTTPClient;
+    fuppes::Mutex*  m_mutex;
   
   
 

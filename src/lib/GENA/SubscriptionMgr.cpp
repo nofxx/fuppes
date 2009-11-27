@@ -1,9 +1,10 @@
+/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            SubscriptionMgr.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2006-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -74,14 +75,14 @@ void CSubscription::AsyncReply()
         "<e:property>"
         "<SystemUpdateID>1</SystemUpdateID>"
         "</e:property>"
-        "<e:property>"
+			  "<e:property>"
         "<ContainerUpdateIDs></ContainerUpdateIDs>"
         "</e:property>"
         "<e:property>"
         "<TransferIDs></TransferIDs>"
         "</e:property>"
         "</e:propertyset>");
-    
+
      pNotification->SetCallback(m_sCallback);
      pNotification->SetSID(m_sSID);
 /*
@@ -345,23 +346,19 @@ bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* 
 
 void CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* pSubscription)
 {
-  // subscription type
-  RegEx rxSubscribe("([SUBSCRIBE|UNSUBSCRIBE]+)", PCRE_CASELESS);
-  if(!rxSubscribe.Search(pRequest->GetHeader().c_str()))
-    throw fuppes::Exception(__FILE__, __LINE__, "parsing subscription");
-  
-  // subscription target
-  RegEx rxTarget("[SUBSCRIBE|UNSUBSCRIBE] +(.+) +HTTP/1\\.[1|0]", PCRE_CASELESS);
-  if(rxTarget.Search(pRequest->GetHeader().c_str()))
-  {    
-    if (ToLower(rxTarget.Match(1)).compare("/upnpservices/contentdirectory/event/") == 0) {
+	
+	// subscription target
+  RegEx rxTarget("([SUBSCRIBE|UNSUBSCRIBE]+) +(http://[0-9|\\.]+:\\d+)*(/.+) +HTTP/1\\.[1|0]", PCRE_CASELESS);
+  if(rxTarget.Search(pRequest->GetHeader().c_str())) {
+    
+    if (ToLower(rxTarget.Match(3)).compare("/upnpservices/contentdirectory/event/") == 0) {
       pSubscription->SetSubscriptionTarget(UPNP_SERVICE_CONTENT_DIRECTORY);
     }
-    else if (ToLower(rxTarget.Match(1)).compare("/upnpservices/connectionmanager/event/") == 0) {
+    else if (ToLower(rxTarget.Match(3)).compare("/upnpservices/connectionmanager/event/") == 0) {
       pSubscription->SetSubscriptionTarget(UPNP_SERVICE_CONNECTION_MANAGER);
     }
     else {
-      throw fuppes::Exception(__FILE__, __LINE__, "unknown subscription target");
+      throw fuppes::Exception(__FILE__, __LINE__, "unknown subscription target :: %s", rxTarget.Match(3));
     }    
   }
   else {
@@ -374,35 +371,33 @@ void CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* 
   if(rxSID.Search(pRequest->GetHeader().c_str()))
     sSID = rxSID.Match(1);  
   
-  string sSubscribe = ToLower(rxSubscribe.Match(1));
-  if(sSubscribe.compare("subscribe") == 0)
-  {
-    if(sSID.length() == 0)
-    {
+  string sSubscribe = ToLower(rxTarget.Match(1));
+  if(sSubscribe.compare("subscribe") == 0) {
+		
+    if(sSID.length() == 0) {
       pSubscription->SetType(ST_SUBSCRIBE);
       
       RegEx rxCallback("CALLBACK: *<*(http://[A-Z|0-9|\\-|_|/|\\.|:]+)>*", PCRE_CASELESS);
       if(rxCallback.Search(pRequest->GetHeader().c_str())) {
                                                            
         string sCallback = rxCallback.Match(1);
-        if(sCallback[sCallback.length() - 1] != '/')
-          sCallback += "/";
+        // coherence does not like it when we modify the callback
+				/*if(sCallback[sCallback.length() - 1] != '/')
+          sCallback += "/";*/
         pSubscription->SetCallback(sCallback);
       }
       else {
         throw fuppes::Exception(__FILE__, __LINE__, "parsing subscription callback");
       }      
     }
-    else
-    {
+    else {
       pSubscription->SetType(ST_RENEW);
       pSubscription->SetSID(sSID);
     }
     
     pSubscription->SetTimeout(180);    
-  }
-  else if(sSubscribe.compare("unsubscribe") == 0)
-  {
+  } // subscribe
+  else if(sSubscribe.compare("unsubscribe") == 0) {
     pSubscription->SetType(ST_UNSUBSCRIBE);
     pSubscription->SetSID(sSID);
   }  

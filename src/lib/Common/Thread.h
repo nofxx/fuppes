@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Thread.h
  *
@@ -83,14 +83,18 @@ class Thread
 {
 	public:
 		Thread(std::string name = "");
-		~Thread();
+		virtual ~Thread();
 
     bool start(void* arg = NULL);
 		void stop() { m_stop = true; }
-    
+		bool close();
+
 		bool running() { return m_running; }
+
+		void name(std::string name) { m_name = name; }
+		std::string name() { return m_name; }
 		
-   protected:
+  protected:
 		virtual void run() { }
 		bool stopRequested() { return m_stop; }
 		
@@ -100,8 +104,7 @@ class Thread
     static void* threadFunc(void*);
     #endif
 		
-   private:
-		bool close();
+  private:
 
 		std::string m_name;
     void* m_arg;
@@ -112,7 +115,9 @@ class Thread
 	#ifdef WIN32
 		HANDLE		m_handle;
 	#else
-		pthread_t m_handle;
+		pthread_t				m_handle;
+		pthread_cond_t	m_exitCondition;
+		pthread_mutex_t m_mutex;
 	#endif
     
 };

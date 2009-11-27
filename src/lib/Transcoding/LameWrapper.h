@@ -126,7 +126,7 @@ extern "C"
 
 
 typedef struct LAME_BITRATE_MAPPING_t {
-  int   nBitRate;
+  unsigned int   nBitRate;
   float fLameRate;
 } LAME_BITRATE_MAPPING_t;
 

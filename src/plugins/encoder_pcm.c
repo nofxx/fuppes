@@ -60,6 +60,16 @@ void unregister_fuppes_plugin(plugin_info* plugin)
 	}
 }
 
+int fuppes_plugin_init_instance(plugin_info* plugin)
+{
+	return 1;
+}
+
+void fuppes_plugin_uninit_instance(plugin_info* plugin)
+{
+}
+
+
 
 void fuppes_encoder_set_audio_settings(plugin_info* plugin, audio_settings_t* settings)
 {

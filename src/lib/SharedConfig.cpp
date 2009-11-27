@@ -41,6 +41,7 @@
 #include "../version.h"
 
 #include "Common/Common.h"
+#include "Common/File.h"
 #include "Common/Exception.h"
 #include "Common/UUID.h"
 #include "Common/RegEx.h"
@@ -98,6 +99,8 @@ CSharedConfig::~CSharedConfig()
   if(m_pConfigFile != NULL) {
     delete m_pConfigFile;
   }
+
+	delete CDeviceIdentificationMgr::Shared();
 }
 
 
@@ -168,7 +171,7 @@ bool CSharedConfig::SetupConfig()
 		}
 	}
 	
-	if(!DirectoryExists(m_sTempDir)) {
+	if(!fuppes::Directory::exists(m_sTempDir)) {
     #ifdef WIN32
 		CreateDirectory(m_sTempDir.c_str(), NULL);
     #else
@@ -410,7 +413,7 @@ bool CSharedConfig::ReadConfigFile()
   
   // create config dir
   string sConfigDir = ExtractFilePath(m_sConfigFileName);
-  if(!DirectoryExists(sConfigDir)) {
+  if(!fuppes::Directory::exists(sConfigDir)) {
     #ifdef WIN32
     CreateDirectory(sConfigDir.c_str(), NULL);
     #else
@@ -419,7 +422,7 @@ bool CSharedConfig::ReadConfigFile()
   }
   
   // write default config
-  if(!FileExists(m_sConfigFileName)) {
+  if(!fuppes::File::exists(m_sConfigFileName)) {
     if(!m_pConfigFile->WriteDefaultConfig(m_sConfigFileName)) {
       CSharedLog::Log(L_NORM, __FILE__, __LINE__, "could not write default configuration to %s", m_sConfigFileName.c_str());
     }

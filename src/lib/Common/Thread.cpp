@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Thread.cpp
  *
@@ -25,11 +25,16 @@
 
 
 #include "Thread.h"
+//#include "UUID.h"
 #include "../SharedLog.h"
+
+#include <errno.h>
+#include <time.h>
 
 using namespace fuppes;
 
-Mutex::Mutex() {
+Mutex::Mutex() 
+{
 	m_locked = false;
 	
   #ifdef WIN32
@@ -39,7 +44,8 @@ Mutex::Mutex() {
   #endif
 }
 
-Mutex::~Mutex() {
+Mutex::~Mutex() 
+{
 	if(m_locked)
 		CSharedLog::Log(L_NORM, __FILE__, __LINE__, "WARNING: destroying locked mutex.");
 
@@ -50,7 +56,8 @@ Mutex::~Mutex() {
   #endif
 }
 
-void Mutex::lock() {
+void Mutex::lock() 
+{
 	#ifdef WIN32
   EnterCriticalSection(&m_mutex);
   #else
@@ -59,7 +66,8 @@ void Mutex::lock() {
 	m_locked = true;
 }
 
-void Mutex::unlock() {
+void Mutex::unlock() 
+{
   #ifdef WIN32
   LeaveCriticalSection(&m_mutex);
   #else
@@ -72,23 +80,35 @@ void Mutex::unlock() {
 
 
 
-Thread::Thread(std::string name /*= ""*/) {
-	m_name = name;
+Thread::Thread(std::string name /*= ""*/) 
+{
+	m_name = name; // + " " + GenerateUUID();
 	m_handle = NULL;
 	m_running = false;
-	m_finished = true;
+	m_finished = false;
 	m_stop = false;
+
+#ifndef WIN32
+	pthread_cond_init(&m_exitCondition, NULL);
+  pthread_mutex_init(&m_mutex, NULL);
+#endif
 }
 
-Thread::~Thread() {	
+Thread::~Thread() 
+{	
 
 	if(!close()) {
 		CSharedLog::Log(L_NORM, __FILE__, __LINE__, "error closing thread %s", m_name.c_str());
 	}
 		 
-	if(!m_finished) {
+	if(m_handle) {
 		CSharedLog::Log(L_NORM, __FILE__, __LINE__, "WARNING: destroying an unfinished thread %s", m_name.c_str());
 	}
+
+#ifndef WIN32
+  pthread_mutex_destroy(&m_mutex);
+	pthread_cond_destroy(&m_exitCondition);
+#endif
 }
 
 	
@@ -107,14 +127,15 @@ bool Thread::start(void* arg /* = NULL*/)
 	int ret = pthread_create(&m_handle, NULL, &Thread::threadFunc, this);
   m_running = (0 == ret);
 #endif
-	
-	m_finished = !m_running;
+
 	return m_running;	
 }
 
 
 bool Thread::close()
 {
+	//CSharedLog::Log(L_NORM, __FILE__, __LINE__, "close thread %s", m_name.c_str());
+	
 	if(!m_handle)
 		return true;
 	
@@ -144,8 +165,24 @@ bool Thread::close()
   }
 #else    
   result = true;
-  int  nErrNo  = pthread_join(m_handle, NULL);  
-  if (nErrNo != 0) {
+  int err = 0;
+
+	pthread_mutex_lock(&m_mutex);
+	if(!m_finished) {
+		timespec timeout;
+		clock_gettime(CLOCK_REALTIME, &timeout);		
+		timeout.tv_sec += 5;
+			
+		err = pthread_cond_timedwait(&m_exitCondition, &m_mutex, &timeout);
+		if(err == ETIMEDOUT && !m_finished) {
+			CSharedLog::Log(L_NORM, __FILE__, __LINE__, "FATAL ERROR: pthread_cond_timedwait failed on thread %s", m_name.c_str());
+			result = false;
+		}
+	}
+	pthread_mutex_unlock(&m_mutex);
+	
+	err = pthread_join(m_handle, NULL);  
+  if (err != 0) {
     result = false;
     /*switch(nErrNo) {
       case EINVAL:
@@ -160,9 +197,8 @@ bool Thread::close()
     }*/
   }
 #endif
-	
-	if(!m_finished)
-		m_finished = result;
+
+	m_handle = NULL;
   return result;
 }
 
@@ -172,16 +208,21 @@ DWORD Thread::threadFunc(void* thread)
 void* Thread::threadFunc(void* thread)
 #endif
 {
-  Thread* pt = (Thread*)thread;	
+  Thread* pt = (Thread*)thread;
 	pt->run();
 	
+#ifdef WIN32
+	pt->m_running = false;
+	pt->m_finished = true;
+	ExitThread(0);
+	return 0;
+#else
+	pthread_mutex_lock(&pt->m_mutex);
 	pt->m_running = false;
 	pt->m_finished = true;
 	
-#ifdef WIN32
-	ExitThread(0);
-	return 0;
-#else	
+	pthread_cond_signal(&pt->m_exitCondition);
+	pthread_mutex_unlock(&pt->m_mutex);
 	pthread_exit(NULL);
 #endif
 }

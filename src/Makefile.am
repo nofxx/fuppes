@@ -126,6 +126,10 @@ libfuppes_la_SOURCES = \
 	lib/Common/Process.h\
 	lib/Common/Thread.cpp\
 	lib/Common/Thread.h\
+  lib/Common/File.cpp\
+	lib/Common/File.h\
+  lib/Common/Directory.cpp\
+	lib/Common/Directory.h\
 	lib/Common/Socket.cpp\
 	lib/Common/Socket.h\
 	lib/Plugins/Plugin.cpp\

@@ -1,10 +1,10 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
- *            encoder_twolame.c
+ *            Directory.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,41 +22,36 @@
  *  with this program; if not, write to the Free Software Foundation, Inc.,
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
- 
- #include "../../include/fuppes_plugin.h"
 
+#ifndef _DIRECTORY_H
+#define _DIRECTORY_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-		
-#include <string.h>
-#include <twolame.h>
-
-#define TWOLAME_MAX_BUFFER 32768
-		
-void register_fuppes_plugin(plugin_info* plugin)
-{
-	strcpy(plugin->plugin_name, "twolame");
-	strcpy(info->plugin_author, "Ulrich Voelkel");
-	plugin->plugin_type = PT_AUDIO_ENCODER;
-}
-
-void unregister_fuppes_plugin(plugin_info* info)
-{
-}
-
-int fuppes_plugin_init_instance(plugin_info* plugin)
-{
-	return 1;
-}
-
-void fuppes_plugin_uninit_instance(plugin_info* plugin)
-{
-}
-
-
-#ifdef __cplusplus
-}
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
 #endif
 
+#include "../../../include/fuppes_types.h"
+
+
+#ifdef WIN32
+
+#else
+
+#endif
+
+#include <string>
+
+namespace fuppes {
+
+class Directory
+{
+  public:
+    static bool exists(std::string directory);
+
+	private:
+		static std::string appendTrailingSlash(std::string directory);
+};
+
+}
+
+#endif // _DIRECTORY_H

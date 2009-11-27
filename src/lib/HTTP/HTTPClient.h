@@ -49,7 +49,7 @@ class IHTTPClient
 	  virtual void OnAsyncReceiveMsg(CHTTPMessage* pMessage) = 0;
 };
 
-class CHTTPClient: private fuppes::Thread
+class CHTTPClient: public fuppes::Thread
 {
   public:
     CHTTPClient(IHTTPClient* pAsyncReceiveHandler = NULL);

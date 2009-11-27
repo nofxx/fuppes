@@ -1,3 +1,4 @@
+/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Timer.h
  *
@@ -36,18 +37,15 @@ class ITimer
     virtual ~ITimer() {}; 
 };
 
-class Timer: private Thread
+class Timer: public Thread
 {
   public:
     Timer(ITimer* p_OnTimerHandler);
     ~Timer();
 
-    void CallOnTimer();
     void SetInterval(unsigned int p_nSeconds);
     unsigned int GetInterval() { return m_nInterval; }
-    void Start();
-    void Stop();
-    void Reset();
+    void reset();
  		unsigned int GetCount();
 		
 		void run();

@@ -27,6 +27,7 @@
 #include "../Presentation/PresentationHandler.h"
 #include "../ContentDirectory/PlaylistFactory.h"
 #include "../Common/UUID.h"
+#include "../Common/File.h"
 #include "../GENA/SubscriptionMgr.h"
 #include "../SharedLog.h"
 #include "../ContentDirectory/FileDetails.h"
@@ -277,7 +278,7 @@ bool CHTTPRequestHandler::handleItemRequest(std::string p_sObjectId, CHTTPMessag
     sPath = qry->result()->asString("PATH") + qry->result()->asString("FILE_NAME");
     sExt  = ExtractFileExt(sPath);
     
-    if(!FileExists(sPath)) {
+    if(!fuppes::File::exists(sPath)) {
       CSharedLog::Log(L_EXT, __FILE__, __LINE__, "file: %s not found", sPath.c_str());
       bResult = false;
     }
@@ -408,7 +409,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 		return false;
 	}
     
-  if(!FileExists(sPath)) {
+  if(!fuppes::File::exists(sPath)) {
     CSharedLog::Log(L_EXT, __FILE__, __LINE__, "file: %s not found", sPath.c_str());
 		delete qry;
     return false;

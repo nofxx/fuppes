@@ -40,64 +40,64 @@ Name: transcoder_ffmpeg; Description: install ffmpeg plugin; GroupDescription: {
 Name: transcoder_magickwand; Description: install ImageMagick plugin; GroupDescription: {cm:TranscoderPlugins}; Flags: unchecked
 
 [Files]
-Source: ..\ChangeLog; DestDir: {app}; DestName: ChangeLog.txt
-Source: ..\AUTHORS; DestDir: {app}; DestName: AUTHORS.txt
-Source: ..\COPYING; DestDir: {app}; DestName: COPYING.txt
-Source: ..\setup\COPYING-VORBIS.txt; DestDir: {app}; Tasks: " decoder_vorbis"
-Source: ..\setup\COPYING-OGG.txt; DestDir: {app}; Tasks: " decoder_vorbis"
-Source: ..\setup\COPYING-FLAC.txt; DestDir: {app}; Tasks: " decoder_flac"
-Source: ..\setup\COPYING-MUSEPACK.txt; DestDir: {app}; Tasks: " decoder_musepack"
-Source: ..\setup\ImageMagick-License.txt; DestDir: {app}; Tasks: " metadata_magickwand transcoder_magickwand"
-Source: ..\..\win32\fuppes.exe; DestDir: {app}
-Source: ..\..\win32\fuppes-win.exe; DestDir: {app}
-Source: ..\..\win32\libfuppes-0.dll; DestDir: {app}
-Source: ..\..\win32\libiconv-2.dll; DestDir: {app}
-Source: ..\..\win32\libpcre-0.dll; DestDir: {app}
-Source: ..\..\win32\libxml2-2.dll; DestDir: {app}
-Source: ..\..\win32\libz-0.dll; DestDir: {app}
-Source: ..\..\win32\libdatabase_sqlite3-0.dll; DestDir: {app}
-Source: ..\..\win32\libsqlite3-0.dll; DestDir: {app}
-Source: ..\..\win32\libcore_presentation-0.dll; DestDir: {app}; Tasks: " presentation"
-Source: ..\..\win32\data\fuppes-small.png; DestDir: {app}\data
-Source: ..\..\win32\data\header-gradient.png; DestDir: {app}\data
-Source: ..\..\win32\data\header-gradient-small.png; DestDir: {app}\data
-Source: ..\..\win32\data\style.css; DestDir: {app}\data
-Source: ..\..\win32\libmetadata_dlna_profiles-0.dll; DestDir: {app}; Tasks: " metadata_dlna"
-Source: ..\..\win32\libmetadata_taglib-0.dll; DestDir: {app}; Tasks: " metadata_taglib"
-Source: ..\..\win32\libtag-1.dll; DestDir: {app}; Tasks: " metadata_taglib"
-Source: ..\..\win32\libmetadata_exiv2-0.dll; DestDir: {app}; Tasks: " metadata_exiv2"
-Source: ..\..\win32\libexiv2-5.dll; DestDir: {app}; Tasks: " metadata_exiv2"
-Source: ..\..\win32\libmetadata_simage-0.dll; DestDir: {app}; Tasks: " metadata_simage"
-Source: ..\..\win32\libsimage-20.dll; DestDir: {app}; Tasks: " metadata_simage"
-Source: ..\..\win32\libmetadata_libavformat-0.dll; DestDir: {app}; Tasks: " metadata_libavformat"
-Source: ..\..\win32\avformat-52.dll; DestDir: {app}; Tasks: " metadata_libavformat transcoder_ffmpeg"
-Source: ..\..\win32\avcodec-52.dll; DestDir: {app}; Tasks: " metadata_libavformat transcoder_ffmpeg"
-Source: ..\..\win32\avutil-50.dll; DestDir: {app}; Tasks: " metadata_libavformat transcoder_ffmpeg"
-Source: ..\..\win32\libmetadata_magickwand-0.dll; DestDir: {app}; Tasks: " metadata_magickwand"
-Source: ..\..\win32\libMagickWand-2.dll; DestDir: {app}; Tasks: " metadata_magickwand transcoder_magickwand"
-Source: ..\..\win32\libMagickCore-2.dll; DestDir: {app}; Tasks: " metadata_magickwand transcoder_magickwand"
-Source: ..\..\win32\libdecoder_vorbis-0.dll; DestDir: {app}; Tasks: " decoder_vorbis"
-Source: ..\..\win32\libvorbisfile-3.dll; DestDir: {app}; Tasks: " decoder_vorbis"
-Source: ..\..\win32\libvorbis-0.dll; DestDir: {app}; Tasks: " decoder_vorbis"
-Source: ..\..\win32\libogg-0.dll; DestDir: {app}; Tasks: " decoder_vorbis"
-Source: ..\..\win32\libdecoder_flac-0.dll; DestDir: {app}; Tasks: " decoder_flac"
-Source: ..\..\win32\libFLAC-8.dll; DestDir: {app}; Tasks: " decoder_flac"
-Source: ..\..\win32\libdecoder_musepack-0.dll; DestDir: {app}; Tasks: " decoder_musepack"
-Source: ..\..\win32\libmpcdec-5.dll; DestDir: {app}; Tasks: " decoder_musepack"
-Source: ..\..\win32\libtranscoder_ffmpeg-0.dll; DestDir: {app}; Tasks: " transcoder_ffmpeg"
-Source: ..\..\win32\swscale-0.dll; DestDir: {app}; Tasks: " transcoder_ffmpeg"
-Source: ..\..\win32\libtranscoder_magickwand-0.dll; DestDir: {app}; Tasks: " transcoder_magickwand"
+Source: ..\ChangeLog; DestDir: "{app}"; DestName: ChangeLog.txt
+Source: ..\AUTHORS; DestDir: "{app}"; DestName: AUTHORS.txt
+Source: ..\COPYING; DestDir: "{app}"; DestName: COPYING.txt
+Source: ..\setup\COPYING-VORBIS.txt; DestDir: "{app}"; Tasks: " decoder_vorbis"
+Source: ..\setup\COPYING-OGG.txt; DestDir: "{app}"; Tasks: " decoder_vorbis"
+Source: ..\setup\COPYING-FLAC.txt; DestDir: "{app}"; Tasks: " decoder_flac"
+Source: ..\setup\COPYING-MUSEPACK.txt; DestDir: "{app}"; Tasks: " decoder_musepack"
+Source: ..\setup\ImageMagick-License.txt; DestDir: "{app}"; Tasks: " metadata_magickwand transcoder_magickwand"
+Source: ..\..\win32\fuppes.exe; DestDir: "{app}"
+Source: ..\..\win32\fuppes-win.exe; DestDir: "{app}"
+Source: ..\..\win32\libfuppes-0.dll; DestDir: "{app}"
+Source: ..\..\win32\libiconv-2.dll; DestDir: "{app}"
+Source: ..\..\win32\libpcre-0.dll; DestDir: "{app}"
+Source: ..\..\win32\libxml2-2.dll; DestDir: "{app}"
+Source: ..\..\win32\libz-0.dll; DestDir: "{app}"
+Source: ..\..\win32\libdatabase_sqlite3-0.dll; DestDir: "{app}"
+Source: ..\..\win32\libsqlite3-0.dll; DestDir: "{app}"
+Source: ..\..\win32\libcore_presentation-0.dll; DestDir: "{app}"; Tasks: " presentation"
+Source: ..\..\win32\data\fuppes-small.png; DestDir: "{app}\data"
+Source: ..\..\win32\data\header-gradient.png; DestDir: "{app}\data"
+Source: ..\..\win32\data\header-gradient-small.png; DestDir: "{app}\data"
+Source: ..\..\win32\data\style.css; DestDir: "{app}\data"
+Source: ..\..\win32\libmetadata_dlna_profiles-0.dll; DestDir: "{app}"; Tasks: " metadata_dlna"
+Source: ..\..\win32\libmetadata_taglib-0.dll; DestDir: "{app}"; Tasks: " metadata_taglib"
+Source: ..\..\win32\libtag-1.dll; DestDir: "{app}"; Tasks: " metadata_taglib"
+Source: ..\..\win32\libmetadata_exiv2-0.dll; DestDir: "{app}"; Tasks: " metadata_exiv2"
+Source: ..\..\win32\libexiv2-5.dll; DestDir: "{app}"; Tasks: " metadata_exiv2"
+Source: ..\..\win32\libmetadata_simage-0.dll; DestDir: "{app}"; Tasks: " metadata_simage"
+Source: ..\..\win32\libsimage-20.dll; DestDir: "{app}"; Tasks: " metadata_simage"
+Source: ..\..\win32\libmetadata_libavformat-0.dll; DestDir: "{app}"; Tasks: " metadata_libavformat"
+Source: ..\..\win32\avformat-52.dll; DestDir: "{app}"; Tasks: " metadata_libavformat transcoder_ffmpeg"
+Source: ..\..\win32\avcodec-52.dll; DestDir: "{app}"; Tasks: " metadata_libavformat transcoder_ffmpeg"
+Source: ..\..\win32\avutil-50.dll; DestDir: "{app}"; Tasks: " metadata_libavformat transcoder_ffmpeg"
+Source: ..\..\win32\libmetadata_magickwand-0.dll; DestDir: "{app}"; Tasks: " metadata_magickwand"
+Source: ..\..\win32\libMagickWand-2.dll; DestDir: "{app}"; Tasks: " metadata_magickwand transcoder_magickwand"
+Source: ..\..\win32\libMagickCore-2.dll; DestDir: "{app}"; Tasks: " metadata_magickwand transcoder_magickwand"
+Source: ..\..\win32\libdecoder_vorbis-0.dll; DestDir: "{app}"; Tasks: " decoder_vorbis"
+Source: ..\..\win32\libvorbisfile-3.dll; DestDir: "{app}"; Tasks: " decoder_vorbis"
+Source: ..\..\win32\libvorbis-0.dll; DestDir: "{app}"; Tasks: " decoder_vorbis"
+Source: ..\..\win32\libogg-0.dll; DestDir: "{app}"; Tasks: " decoder_vorbis"
+Source: ..\..\win32\libdecoder_flac-0.dll; DestDir: "{app}"; Tasks: " decoder_flac"
+Source: ..\..\win32\libFLAC-8.dll; DestDir: "{app}"; Tasks: " decoder_flac"
+Source: ..\..\win32\libdecoder_musepack-0.dll; DestDir: "{app}"; Tasks: " decoder_musepack"
+Source: ..\..\win32\libmpcdec-5.dll; DestDir: "{app}"; Tasks: " decoder_musepack"
+Source: ..\..\win32\libtranscoder_ffmpeg-0.dll; DestDir: "{app}"; Tasks: " transcoder_ffmpeg"
+Source: ..\..\win32\swscale-0.dll; DestDir: "{app}"; Tasks: " transcoder_ffmpeg"
+Source: ..\..\win32\libtranscoder_magickwand-0.dll; DestDir: "{app}"; Tasks: " transcoder_magickwand"
 
 [Icons]
-Name: {group}\FUPPES; Filename: {app}\fuppes.exe; IconIndex: 0
+Name: {group}\FUPPES; Filename: "{app}\fuppes.exe"; IconIndex: 0
 Name: {group}\{cm:UninstallProgram,FUPPES}; Filename: {uninstallexe}
-Name: {userdesktop}\FUPPES; Filename: {app}\fuppes.exe; Tasks: desktopicon; IconIndex: 0
-Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\FUPPES; Filename: {app}\fuppes.exe; Tasks: quicklaunchicon; Languages: ; IconIndex: 0
+Name: {userdesktop}\FUPPES; Filename: "{app}\fuppes.exe"; Tasks: desktopicon; IconIndex: 0
+Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\FUPPES; Filename: "{app}\fuppes.exe"; Tasks: quicklaunchicon; Languages: ; IconIndex: 0
 Name: {group}\Edit configuration; Filename: {userappdata}\FUPPES\fuppes.cfg; Tasks: ; Languages: 
-Name: {group}\FUPPES (command line); Filename: {app}\fuppescmd.exe; IconIndex: 0
+Name: {group}\FUPPES (command line); Filename: "{app}\fuppescmd.exe"; IconIndex: 0
 
 [Run]
-Filename: {app}\fuppes.exe; Description: {cm:LaunchProgram,Free UPnP Entertainment Service}; Flags: nowait postinstall skipifsilent unchecked; Tasks: ; Languages: 
+Filename: "{app}\fuppes.exe"; Description: {cm:LaunchProgram,Free UPnP Entertainment Service}; Flags: nowait postinstall skipifsilent unchecked; Tasks: ; Languages: 
 [CustomMessages]
 MiscPlugins=miscellaneous plugins
 MetadataPlugins=metadata plugins

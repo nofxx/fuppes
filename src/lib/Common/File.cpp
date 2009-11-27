@@ -1,10 +1,10 @@
 /* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
- *            Timer.cpp
+ *            File.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,64 +22,61 @@
  *  with this program; if not, write to the Free Software Foundation, Inc.,
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
- 
 
-#include "Timer.h"
-#include "Common.h"
+
+#include "File.h"
+
+#include <sys/stat.h>
+#include <sys/types.h>
 
 using namespace fuppes;
 
-#include <string>
-#include <iostream>
-using namespace std;
 
-Timer::Timer(ITimer* p_OnTimerHandler)
+File::File(std::string fileName)
 {
-  m_pOnTimerHandler = p_OnTimerHandler;
-  m_nTickCount      = 0;
+	m_fileName = fileName;
+	m_openMode = Closed;
 }
 
-Timer::~Timer()
+bool File::open(File::OpenMode mode)
 {
-  close();
+	std::fstream::openmode openmode;
+
+	if(mode & Read)
+		openmode |= std::fstream::in;
+	if(mode & Write)
+		openmode |= std::fstream::out;
+	if(mode & Truncate)
+		openmode |= std::fstream::trunc;
+	if(mode & Append)
+		openmode |= std::fstream::app;
+	if(!mode & Text)
+		openmode |= std::fstream::binary;
+	
+	m_fstream.open(m_fileName.c_str(), openmode);
+	return m_fstream.is_open();
 }
 
-void Timer::SetInterval(unsigned int p_nSeconds)
+void File::close()
 {
-  m_nInterval = p_nSeconds;
+	m_fstream.close();
 }
 
-void Timer::reset()
+
+
+fuppes_off_t File::size()
 {
-	m_mutex.lock();
-  m_nTickCount = 0;
-	m_mutex.unlock();
+	struct stat Stat;  
+  if(stat(m_fileName.c_str(), &Stat) != 0)
+		return 0;
+
+	return Stat.st_size;
 }
 
-unsigned int Timer::GetCount()
+
+
+bool File::exists(std::string fileName) // static
 {
-  return (m_nInterval - m_nTickCount);
-}
-
-void Timer::incTicCount() {
-  m_mutex.lock();
-	m_nTickCount++;
-	m_mutex.unlock();
-}
-
-void Timer::run() {	
-
-	while(!this->stopRequested()&& (this->m_nTickCount <= this->GetInterval())) {
-
-		this->incTicCount();
-    fuppesSleep(1000);    
-    
-    if(!this->stopRequested() && (this->m_nTickCount >= (this->GetInterval() - 1))) {
-			if(m_pOnTimerHandler != NULL) {
-		    m_pOnTimerHandler->OnTimer(); 
-			}
-			reset();
-    }
-  }
-
+	struct stat Stat;  
+  return (stat(fileName.c_str(), &Stat) == 0 && S_ISREG(Stat.st_mode) != 0);
 }

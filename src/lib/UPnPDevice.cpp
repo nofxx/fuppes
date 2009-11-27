@@ -1,9 +1,10 @@
+/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            UPnPDevice.cpp
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -35,39 +36,48 @@
 using namespace std;
 
 CUPnPDevice::CUPnPDevice(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL, IUPnPDevice* pEventHandler):
-  CUPnPBase(nType, p_sHTTPServerURL)
+  CUPnPBase(nType, p_sHTTPServerURL), m_timer(this)
 {
   /* this constructor is for local devices only */
   m_bIsLocalDevice  = true;  
   m_pEventHandler   = pEventHandler;
   
-  m_pTimer = new fuppes::Timer(this);
 	m_pHTTPClient = NULL;
+  m_mutex = new fuppes::Mutex();
 }
 
 
 CUPnPDevice::CUPnPDevice(IUPnPDevice* pEventHandler, std::string p_sUUID):
-  CUPnPBase(UPNP_DEVICE_UNKNOWN, "")
+  CUPnPBase(UPNP_DEVICE_UNKNOWN, ""), m_timer(this)
 {
   /* this constructor is for remote devices only */
   m_bIsLocalDevice  = false;
   m_pEventHandler   = pEventHandler;
   m_sUUID						= p_sUUID;
 	
-  m_pTimer = new fuppes::Timer(this);
 	m_pHTTPClient = NULL;
+  m_mutex = new fuppes::Mutex();
 }
 
 CUPnPDevice::~CUPnPDevice()
-{
-  if(m_pHTTPClient)
+{	
+	m_timer.stop();
+  m_mutex->lock();
+	
+  if(m_pHTTPClient) {
+		//m_pHTTPClient->close();
 	  delete m_pHTTPClient;	
-	delete m_pTimer;
+	}
+
+  m_mutex->unlock();
+  delete m_mutex;  
 }
 
 
 void CUPnPDevice::OnTimer()
 {
+  fuppes::MutexLocker locker(m_mutex);
+
   //CSharedLog::Log(L_DBG, __FILE__, __LINE__, "OnTimer()");
   if(m_pEventHandler != NULL)
     m_pEventHandler->OnTimer(this);
@@ -75,14 +85,15 @@ void CUPnPDevice::OnTimer()
 
 void CUPnPDevice::OnAsyncReceiveMsg(CHTTPMessage* pMessage)
 {
+  fuppes::MutexLocker locker(m_mutex);
+  
  	if(ParseDescription(pMessage->GetContent())) {
-		if(m_pEventHandler) {
-		  m_pEventHandler->OnNewDevice(this);
-    }
+    GetTimer()->SetInterval(900);
+		CSharedLog::Log(L_EXT, __FILE__, __LINE__, "new device %s", m_sFriendlyName.c_str());
+		/*if(m_pEventHandler) {
+      m_pEventHandler->onUPnPDeviceDeviceReady(m_sUUID);
+    }*/
 	}
-	
-	/*delete m_pHTTPClient;
-	m_pHTTPClient = NULL;*/
 }
 
 
@@ -244,7 +255,7 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 						xmlTextWriterWriteString(writer, BAD_CAST "32");
 						xmlTextWriterEndElement(writer);
 						xmlTextWriterStartElement(writer, BAD_CAST "url");
-						xmlTextWriterWriteString(writer, BAD_CAST "/presentation/images/fuppes-small.png");
+						xmlTextWriterWriteString(writer, BAD_CAST "/presentation/fuppes-small.png");
 						xmlTextWriterEndElement(writer);
 					xmlTextWriterEndElement(writer);
 				xmlTextWriterEndElement(writer);

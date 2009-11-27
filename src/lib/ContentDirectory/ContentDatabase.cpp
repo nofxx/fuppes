@@ -36,6 +36,7 @@
 #include "FileDetails.h"
 #include "../Common/RegEx.h"
 #include "../Common/Common.h"
+#include "../Common/File.h"
 #include "iTunesImporter.h"
 #include "PlaylistParser.h"
 #include "../Plugins/Plugin.h"
@@ -119,7 +120,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 		return false;
 	}
   
-  bool bIsNewDb = !FileExists(CSharedConfig::Shared()->GetDbFileName());
+  bool bIsNewDb = !fuppes::File::exists(CSharedConfig::Shared()->GetDbFileName());
   *p_bIsNewDB = bIsNewDb;  
   
   
@@ -518,7 +519,7 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
 {
 	p_sDirectory = appendTrailingSlash(p_sDirectory);
 
-	if(!DirectoryExists(p_sDirectory))
+	if(!fuppes::Directory::exists(p_sDirectory))
 		return;
 	
   #ifdef WIN32
@@ -572,8 +573,8 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
         unsigned int nObjId = 0;
         
         /* directory */
-        if(IsDirectory(sTmp))
-        {				
+        if(fuppes::Directory::exists(sTmp)) {
+					
           sTmpFileName = ToUTF8(sTmpFileName);          
           sTmpFileName = SQLEscape(sTmpFileName);        
           
@@ -630,7 +631,7 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
           // recursively scan subdirectories
           DbScanDir(pDb, sTmp, nObjId);          
         }
-        else if(IsFile(sTmp) && CFileDetails::Shared()->IsSupportedFileExtension(sExt))
+        else if(fuppes::File::exists(sTmp) && CFileDetails::Shared()->IsSupportedFileExtension(sExt))
         {
 					unsigned int objId = GetObjectIDFromFileName(pDb, sTmp);
 					if(objId == 0) {
@@ -1089,7 +1090,7 @@ void ParsePlaylist(CSQLResult* pResult)
   CContentDatabase* pDb = new CContentDatabase();
   
   while(!Parser.Eof()) {
-    if(Parser.Entry()->bIsLocalFile && FileExists(Parser.Entry()->sFileName)) {       
+    if(Parser.Entry()->bIsLocalFile && fuppes::File::exists(Parser.Entry()->sFileName)) {       
             
       nObjectID = GetObjectIDFromFileName(pDb, Parser.Entry()->sFileName);
       
@@ -1180,13 +1181,13 @@ void RebuildThread::run()
 			CSQLResult* result = qry->result();
 
 			if(result->asUInt("TYPE") < ITEM) {
-				if(DirectoryExists(result->asString("PATH"))) {
+				if(fuppes::Directory::exists(result->asString("PATH"))) {
 					qry->next();
 					continue;
 				}
 			}
 			else {
-				if(FileExists(result->asString("PATH") + result->asString("FILE_NAME"))) {
+				if(fuppes::File::exists(result->asString("PATH") + result->asString("FILE_NAME"))) {
 					qry->next();
 					continue;
 				}
@@ -1222,10 +1223,10 @@ void RebuildThread::run()
 
 	CContentDatabase* db = new CContentDatabase();
 	
-  for(i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++)
-  {
-    if(DirectoryExists(CSharedConfig::Shared()->GetSharedDir(i)))
-    { 	
+  for(i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++) {
+		
+    if(fuppes::Directory::exists(CSharedConfig::Shared()->GetSharedDir(i))) { 	
+			
 			db->fileAlterationMonitor()->addWatch(CSharedConfig::Shared()->GetSharedDir(i));
       
       ExtractFolderFromPath(CSharedConfig::Shared()->GetSharedDir(i), &sFileName);

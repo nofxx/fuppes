@@ -30,6 +30,10 @@ extern "C" {
 #ifndef _FUPPES_TYPES_H
 #define _FUPPES_TYPES_H
 
+#ifndef WIN32
+#include <sys/types.h>
+#endif
+	
 typedef @FUPES_OFF_T@  fuppes_off_t;
 	
 	

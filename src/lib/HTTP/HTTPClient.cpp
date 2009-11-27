@@ -1,3 +1,4 @@
+/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            HTTPClient.cpp
  *
@@ -39,6 +40,7 @@
 using namespace std;
 
 CHTTPClient::CHTTPClient(IHTTPClient* pAsyncReceiveHandler)
+:Thread("HTTP client")
 {
   m_bIsAsync    = false;
   m_pAsyncReceiveHandler = pAsyncReceiveHandler;
@@ -46,9 +48,7 @@ CHTTPClient::CHTTPClient(IHTTPClient* pAsyncReceiveHandler)
 
 CHTTPClient::~CHTTPClient()
 {
-	if(this->running()) {
-		this->stop();
-	}
+	//close();
 }
 
 void CHTTPClient::run()
@@ -56,8 +56,12 @@ void CHTTPClient::run()
 	try {
 		// connect
 		m_socket.connect();
+
+		if(this->stopRequested())
+			return;
 		
 		// send message
+		//cout << m_sMessage << endl;
 		m_socket.send(m_sMessage);
 		
 		// receive response
@@ -107,7 +111,7 @@ void CHTTPClient::run()
 		} // while
 		
 		
-		if(complete && this->m_pAsyncReceiveHandler != NULL) {
+		if(complete && this->m_pAsyncReceiveHandler != NULL && !this->stopRequested()) {
 			Response.SetMessage(m_socket.buffer());
 			this->m_pAsyncReceiveHandler->OnAsyncReceiveMsg(&Response);
 		}

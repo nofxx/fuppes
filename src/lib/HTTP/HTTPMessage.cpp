@@ -190,7 +190,8 @@ std::string CHTTPMessage::GetHeaderAsString()
 	}		  
   
   
-  if(m_nHTTPMessageType != HTTP_MESSAGE_TYPE_GENA_OK)
+
+	if(m_nHTTPMessageType != HTTP_MESSAGE_TYPE_GENA_OK)
   {
     /* Content Type */
     sResult << "Content-Type: " << m_sHTTPContentType << "\r\n";
@@ -306,8 +307,9 @@ std::string CHTTPMessage::GetHeaderAsString()
     // subscription or renew    
     if(m_sGENASubscriptionID.length() > 0) { 
       sResult << "SID: uuid:" << m_sGENASubscriptionID << "\r\n";
-      sResult << "Timeout: Second-" << 180 << "\r\n";
+      sResult << "TIMEOUT: Second-" << 180 << "\r\n";
     }
+	  sResult << "Content-Length: 0\r\n";
   }
   
  	// server signature

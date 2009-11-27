@@ -25,6 +25,7 @@
 
 #include "Plugin.h"
 #include "../Common/Exception.h"
+#include "../Common/File.h"
 #include "../SharedLog.h"
 #include "../SharedConfig.h"
 
@@ -75,7 +76,7 @@ void CPluginMgr::init(std::string pluginDir)
 		
 		fileName = pluginDir + dirEnt->d_name;		
 		
-		if(!IsFile(fileName)) {
+		if(!fuppes::File::exists(fileName)) {
 			continue;
 		}
 		
@@ -359,12 +360,44 @@ CPlugin::CPlugin(fuppesLibHandle handle, plugin_info* info)
 	m_pluginInfo.user_data = NULL;
 	m_pluginInfo.log = &CPlugin::logCb;
 	m_pluginInfo.ctrl = NULL;
-	
+
+	m_pluginInitInstance = NULL;
+	m_pluginUninitInstance = NULL;
+
 	m_handle = handle;
+	
+	m_pluginInitInstance = (pluginInitInstance_t)FuppesGetProcAddress(m_handle, "fuppes_plugin_init_instance");
+	m_pluginUninitInstance = (pluginUninitInstance_t)FuppesGetProcAddress(m_handle, "fuppes_plugin_uninit_instance");
+}
+
+CPlugin::CPlugin(CPlugin* plugin)
+{
+	m_pluginInfo.plugin_type = plugin->m_pluginInfo.plugin_type;
+	strcpy(m_pluginInfo.plugin_name, plugin->m_pluginInfo.plugin_name);
+	strcpy(m_pluginInfo.plugin_author, plugin->m_pluginInfo.plugin_author);
+	
+	strcpy(m_pluginInfo.plugin_version, plugin->m_pluginInfo.plugin_version);
+	strcpy(m_pluginInfo.library_version, plugin->m_pluginInfo.library_version);
+	
+	m_pluginInfo.user_data = NULL;
+	m_pluginInfo.log = &CPlugin::logCb;
+	m_pluginInfo.ctrl = NULL;
+
+	m_pluginInitInstance = plugin->m_pluginInitInstance;
+	m_pluginUninitInstance = plugin->m_pluginUninitInstance;
+	
+	m_handle = plugin->m_handle;
+
+
+	if(m_pluginInitInstance)
+		m_pluginInitInstance(&m_pluginInfo);	
 }
 
 CPlugin::~CPlugin()
 {
+	if(m_pluginUninitInstance)
+		m_pluginUninitInstance(&m_pluginInfo);
+	
   if(m_pluginInfo.plugin_type == PT_METADATA || 
 		 m_pluginInfo.plugin_type == PT_DLNA) {
     FuppesCloseLibrary(m_handle);
@@ -591,7 +624,7 @@ void CTranscoderPlugin::stop()
  */
 
 CAudioDecoderPlugin::CAudioDecoderPlugin(CAudioDecoderPlugin* plugin)
-:CPlugin(plugin->m_handle, &plugin->m_pluginInfo) 
+:CPlugin(plugin) 
 {
 	//m_pluginInfo.user_data = malloc(1);
 	
@@ -720,7 +753,7 @@ void CAudioDecoderPlugin::closeFile()
  */
 
 CAudioEncoderPlugin::CAudioEncoderPlugin(CAudioEncoderPlugin* plugin)
-:CPlugin(plugin->m_handle, &plugin->m_pluginInfo) 
+:CPlugin(plugin) 
 {
 	m_setAudioSettings = plugin->m_setAudioSettings;
 	m_encodeInterleaved = plugin->m_encodeInterleaved;

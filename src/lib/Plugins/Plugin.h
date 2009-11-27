@@ -96,10 +96,14 @@ class CPluginMgr
 };
 
 // typedef void Log(int p_nLogLevel, const std::string p_sFileName, int p_nLineNumber, const char* p_szFormat, ...);
+
+typedef int (*pluginInitInstance_t)(plugin_info* plugin);
+typedef void (*pluginUninitInstance_t)(plugin_info* plugin);
 class CPlugin
 {
 	protected:
 		CPlugin(fuppesLibHandle handle, plugin_info* info);
+		CPlugin(CPlugin* plugin);
 	
 	public:
 		virtual ~CPlugin();
@@ -117,6 +121,9 @@ class CPlugin
 	protected:
 		fuppesLibHandle		m_handle;
 		plugin_info				m_pluginInfo;
+
+		pluginInitInstance_t		m_pluginInitInstance;
+		pluginUninitInstance_t	m_pluginUninitInstance;
 };
 
 

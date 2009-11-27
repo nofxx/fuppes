@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl $Id: $
 
-AC_INIT([fuppes], [0.640], [fuppes@ulrich-voelkel.de])
+AC_INIT([fuppes], [0.649], [fuppes@ulrich-voelkel.de])
 AM_CONFIG_HEADER(src/config.h)
 AM_INIT_AUTOMAKE([1.9])
 
@@ -84,7 +84,7 @@ PKG_CHECK_MODULES(PCRE, libpcre >= 5.0)
 PKG_CHECK_MODULES(LIBXML, libxml-2.0 >= 2.6.1)
 PKG_CHECK_MODULES(SQLITE3, sqlite3 >= 3.2)
 AC_CHECK_LIB(pthread, pthread_create, FUPPES_LIBS="$FUPPES_LIBS -lpthread")
-
+AC_CHECK_LIB(rt, clock_gettime, FUPPES_LIBS="$FUPPES_LIBS -lrt")
 
 echo ""
 echo "check recommended dependencies"
@@ -268,8 +268,16 @@ if test "x$use_libavformat" = "xyes"; then
   fi 
 fi
 AM_CONDITIONAL(LIBAVFORMAT_METADATA_PLUGIN, test "x$have_libavformat" = "xyes")
-#AM_CONDITIONAL(FFMPEG_TRANSCODER_PLUGIN, test "x$have_libavformat" = "xyes")
-AM_CONDITIONAL(FFMPEG_TRANSCODER_PLUGIN, false)
+
+
+have_transcoder_ffmpeg=no
+AC_ARG_ENABLE([transcoder-ffmpeg], [AC_HELP_STRING([--enable-transcoder-ffmpeg],
+    [enable ffmpeg video transcoder plugin [default=no]])],
+    [have_transcoder_ffmpeg=$enableval], [have_transcoder_ffmpeg='no'])
+if test "x$have_libavformat" = "xno" ; then
+	have_transcoder_ffmpeg=no
+fi
+AM_CONDITIONAL(FFMPEG_TRANSCODER_PLUGIN, test "x$have_transcoder_ffmpeg" = "xyes")
 # end libavformat
 
 
@@ -615,9 +623,9 @@ AM_CONDITIONAL(DLNA_SUPPORT, test "x$enable_dlna" = "xyes")
 AC_ARG_WITH([http-port],
     [AC_HELP_STRING([--with-http-port=PORT],
                     [set the default HTTP port])],
-    [with_http_port=$enableval], [with_http_port=''])
-if test "$with_http_port" != ''; then
-	CXXFLAGS="$CXXFLAGS -DDEFAULT_HTTP_PORT=$with_http_port"
+    [with_http_port=$withval], [with_http_port=''])
+if test "x$with_http_port" != 'x'; then
+	CXXFLAGS="$CXXFLAGS -DDEFAULT_HTTP_PORT=$withval"
 fi
 
 
@@ -716,7 +724,7 @@ echo ""
 #end audio transcoding
 
 echo "  video transcoding plugins"
-if test "x$have_libavformat" = "xyes"; then
+if test "x$have_transcoder_ffmpeg" = "xyes"; then
   echo "    ffmpeg     : enabled"
 else
   echo "    ffmpeg     : disabled"

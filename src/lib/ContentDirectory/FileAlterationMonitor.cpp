@@ -141,7 +141,7 @@ void CInotifyMonitor::run()
   
   
   std::string eventPath;
-  int         movedFromCookie = 0;
+  unsigned int         movedFromCookie = 0;
   std::string movedFromPath;
   std::string movedFromFile;
   bool        movedFromIsDir = false;

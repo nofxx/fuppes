@@ -54,17 +54,18 @@
 
 using namespace std;
 
-bool FileExists(std::string p_sFileName)
+/*bool FileExists(std::string p_sFileName)
 {
   struct stat Stat;  
   return (stat(p_sFileName.c_str(), &Stat) == 0 && S_ISREG(Stat.st_mode) != 0);
-}
+}*/
 
-bool IsFile(std::string p_sFileName)
+/*bool IsFile(std::string p_sFileName)
 { 
   return FileExists(p_sFileName);
-}
+}*/
 
+/*
 #ifdef WIN32
 bool DirectoryExists(std::string p_sDirName)
 {
@@ -99,16 +100,16 @@ bool DirectoryExists(std::string dirName)
   struct stat Stat;  
   return (stat(dirName.c_str(), &Stat) == 0 && S_ISDIR(Stat.st_mode) != 0);
 }
-#endif
+#endif*/
 
-bool IsDirectory(std::string p_sDirName)
+/*bool IsDirectory(std::string p_sDirName)
 {
   return DirectoryExists(p_sDirName);
-}
+}*/
 
 bool CreateDirectory(std::string dir)
 {
-  if(!DirectoryExists(dir)) {
+  if(!fuppes::Directory::exists(dir)) {
     #ifdef WIN32
 		CreateDirectory(dir.c_str(), NULL);
     #else
