@@ -201,7 +201,11 @@ void do_audio_out(AVFormatContext *s,
 
     if(pFFmpeg->audio_sync_method){
         double delta = get_sync_ipts(ost, pFFmpeg) * enc->sample_rate - ost->sync_opts
+#if LIBAVUTIL_VERSION_MAJOR < 50
                 - av_fifo_size(&ost->fifo)/(ost->st->codec->channels * 2);
+#else
+                - av_fifo_size(ost->fifo)/(ost->st->codec->channels * 2);
+#endif
         double idelta= delta*ist->st->codec->sample_rate / enc->sample_rate;
         int byte_delta= ((int)idelta)*2*ist->st->codec->channels;
 
@@ -244,7 +248,11 @@ void do_audio_out(AVFormatContext *s,
         }
     }else
         ost->sync_opts= lrintf(get_sync_ipts(ost, pFFmpeg) * enc->sample_rate)
-                        - av_fifo_size(&ost->fifo)/(ost->st->codec->channels * 2); //FIXME wrong
+#if LIBAVUTIL_VERSION_MAJOR < 50
+                        - av_fifo_size(&ost->fifo)/(ost->st->codec->channels * 2);
+#else
+                        - av_fifo_size(ost->fifo)/(ost->st->codec->channels * 2);
+#endif
 
     if (ost->audio_resample) {
         buftmp = audio_buf;
@@ -260,11 +268,19 @@ void do_audio_out(AVFormatContext *s,
     /* now encode as many frames as possible */
     if (enc->frame_size > 1) {
         /* output resampled raw samples */
+#if LIBAVUTIL_VERSION_MAJOR < 50
         av_fifo_write(&ost->fifo, buftmp, size_out);
+#else
+        av_fifo_generic_write(ost->fifo, buftmp, size_out, NULL);
+#endif
 
         frame_bytes = enc->frame_size * 2 * enc->channels;
 
+#if LIBAVUTIL_VERSION_MAJOR < 50
         while (av_fifo_read(&ost->fifo, audio_buf, frame_bytes) == 0) {
+#else
+        while (av_fifo_generic_read(ost->fifo, audio_buf, frame_bytes, NULL) == 0) {
+#endif
             AVPacket pkt;
             av_init_packet(&pkt);
 
@@ -1022,11 +1038,7 @@ int output_packet(AVInputStream *ist, int ist_index,
             if (subtitle_to_free->rects != NULL) {
                 for (i = 0; i < subtitle_to_free->num_rects; i++) {
 									
-#ifndef LIBAVCODEC_VERSION_MINOR
-#define LIBAVCODEC_VERSION_MINOR 0
-#endif
-
-#if LIBAVCODEC_VERSION_MINOR >= 11
+#if LIBAVFORMAT_BUILD >= ((52<<16)+(11<<8)+0)
                     av_freep(subtitle_to_free->rects[i]->pict.data[0]);
                     av_freep(subtitle_to_free->rects[i]->pict.data[1]);
                     av_freep(subtitle_to_free->rects[i]);
@@ -1065,13 +1077,21 @@ int output_packet(AVInputStream *ist, int ist_index,
 
                         switch(ost->st->codec->codec_type) {
                         case CODEC_TYPE_AUDIO:
+#if LIBAVUTIL_VERSION_MAJOR < 50
                             fifo_bytes = av_fifo_size(&ost->fifo);
+#else
+                            fifo_bytes = av_fifo_size(ost->fifo);
+#endif
                             ret = 0;
                             /* encode any samples remaining in fifo */
                             if(fifo_bytes > 0 && enc->codec->capabilities & CODEC_CAP_SMALL_LAST_FRAME) {
                                 int fs_tmp = enc->frame_size;
                                 enc->frame_size = fifo_bytes / (2 * enc->channels);
+#if LIBAVUTIL_VERSION_MAJOR < 50
                                 if(av_fifo_read(&ost->fifo, (uint8_t *)samples, fifo_bytes) == 0) {
+#else
+                                if(av_fifo_generic_read(ost->fifo, (uint8_t *)samples, fifo_bytes, NULL) == 0) {
+#endif
                                     ret = avcodec_encode_audio(enc, pFFmpeg->bit_buffer, pFFmpeg->bit_buffer_size, samples);
                                 }
                                 enc->frame_size = fs_tmp;
@@ -1320,7 +1340,11 @@ int av_encode(AVFormatContext **output_files,
         } else {
             switch(codec->codec_type) {
             case CODEC_TYPE_AUDIO:
+#if LIBAVUTIL_VERSION_MAJOR < 50
                 if (av_fifo_init(&ost->fifo, 2 * MAX_AUDIO_PACKET_SIZE))
+#else
+                if (ost->fifo = av_fifo_alloc(2 * MAX_AUDIO_PACKET_SIZE))
+#endif
                     goto fail;
 
                 if (codec->channels == icodec->channels &&
@@ -1780,8 +1804,12 @@ int av_encode(AVFormatContext **output_files,
                     fclose(ost->logfile);
                     ost->logfile = NULL;
                 }
+#if LIBAVUTIL_VERSION_MAJOR < 50
                 av_fifo_free(&ost->fifo); /* works even if fifo is not
                                              initialized but set to zero */
+#else
+                av_fifo_free(ost->fifo);
+#endif
                 av_free(ost->pict_tmp.data[0]);
 #ifdef HAVE_LIBSWSCALE
                 if (ost->video_resample)

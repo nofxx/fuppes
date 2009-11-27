@@ -121,7 +121,11 @@ typedef struct AVOutputStream {
     /* audio only */
     int audio_resample;
     ReSampleContext *resample; /* for audio resampling */
+#if LIBAVUTIL_VERSION_MAJOR < 50
     AVFifoBuffer fifo;     /* for compression: one audio fifo per codec */
+#else
+    AVFifoBuffer* fifo;
+#endif
     FILE *logfile;
 } AVOutputStream;
 
@@ -481,7 +485,11 @@ void opt_me_threshold(const char *arg)
 void opt_verbose(const char *arg)
 {
     verbose = atoi(arg);
+#if LIBAVUTIL_VERSION_MAJOR < 50
     av_log_level = atoi(arg);
+#else
+    av_log_set_level(atoi(arg));
+#endif
 }
 
 void opt_frame_rate(const char *arg)
@@ -1314,8 +1322,13 @@ int opt_default(const char *opt, const char *arg){
         ffm_nopts = 1;
 #endif
 
-    if(avctx_opts[0]->debug)
+    if(avctx_opts[0]->debug) {
+#if LIBAVUTIL_VERSION_MAJOR < 50
         av_log_level = AV_LOG_DEBUG;
+#else
+        av_log_set_level(AV_LOG_DEBUG);
+#endif
+    }
     return 0;
 }
 
