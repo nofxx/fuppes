@@ -119,6 +119,7 @@ sockaddr_in CMSearchSession:: GetLocalEndPoint()
 //fuppesThreadCallback HandleMSearchThread(void *arg);
 
 CHandleMSearchSession::CHandleMSearchSession(CSSDPMessage* pSSDPMessage, std::string p_sIPAddress, std::string p_sHTTPServerURL)
+:fuppes::Thread("m-search session")
 {
   m_bIsTerminated     = false;
   m_sIPAddress        = p_sIPAddress;

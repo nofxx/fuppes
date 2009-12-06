@@ -25,9 +25,6 @@ PKG_PROG_PKG_CONFIG
 FUPPES_CFLAGS=""
 FUPPES_LIBS=""
 
-CFLAGS="$CFLAGS -Wall -Wextra"
-CXXFLAGS="$CXXFLAGS -Wall -Wextra"
-
 # CHECK HOST
 is_windows=false
 build_daemon=true

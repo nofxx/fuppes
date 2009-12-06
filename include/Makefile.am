@@ -1,3 +1,6 @@
+
+include $(top_srcdir)/PreRules.am
+
 noinst_HEADERS = \
   fuppes.h
 

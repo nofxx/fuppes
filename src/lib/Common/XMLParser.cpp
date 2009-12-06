@@ -245,9 +245,7 @@ CXMLDocument::CXMLDocument()
 
 CXMLDocument::~CXMLDocument()
 {              
-  if(m_pRootNode != NULL) {
-    delete m_pRootNode;
-  }
+  delete m_pRootNode;
   
   if(m_pDoc != NULL) {
     xmlFreeDoc(m_pDoc);

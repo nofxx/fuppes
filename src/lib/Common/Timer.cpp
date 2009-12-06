@@ -34,6 +34,7 @@ using namespace fuppes;
 using namespace std;
 
 Timer::Timer(ITimer* p_OnTimerHandler)
+:fuppes::Thread("Timer")
 {
   m_pOnTimerHandler = p_OnTimerHandler;
   m_nTickCount      = 0;

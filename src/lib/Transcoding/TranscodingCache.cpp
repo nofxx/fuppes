@@ -44,6 +44,7 @@ using namespace std;
 //fuppesThreadCallback TranscodeThread(void *arg);
 
 CTranscodingCacheObject::CTranscodingCacheObject()
+:fuppes::Thread("TranscodingCacheObject")
 {
   m_nRefCount       = 0;    
   m_sBuffer         = NULL;
@@ -342,7 +343,7 @@ void CTranscodingCacheObject::run()
   unsigned int  nAppendCount    = 0;
   char*         szTmpBuff       = NULL;
   unsigned int  nTmpBuffSize    = 0;
-  unsigned int  nTmpValidBytes  = 0;
+  int  nTmpValidBytes  = 0;
     
   int           nBytesConsumed  = 0;
   
@@ -434,19 +435,21 @@ void CTranscodingCacheObject::run()
     // flush mp3
     nTmpValidBytes = pCacheObj->m_pAudioEncoder->Flush();
     pCacheObj->Lock();
-    
-    if(!pCacheObj->m_sBuffer) {
-      pCacheObj->m_sBuffer = (char*)malloc(nTmpValidBytes * sizeof(char));
-      pCacheObj->m_nBufferSize = nTmpValidBytes;
-    }
-    else if ((pCacheObj->m_nValidBytes + nTmpValidBytes) > pCacheObj->m_nBufferSize) {
-      pCacheObj->m_sBuffer = (char*)realloc(pCacheObj->m_sBuffer, (pCacheObj->m_nValidBytes + nTmpValidBytes) * sizeof(char));
-      pCacheObj->m_nBufferSize = pCacheObj->m_nValidBytes + nTmpValidBytes;
-    }
-    
-    memcpy(&pCacheObj->m_sBuffer[pCacheObj->m_nValidBytes], pCacheObj->m_pAudioEncoder->GetEncodedBuffer(), nTmpValidBytes);
-    pCacheObj->m_nValidBytes += nTmpValidBytes;
 
+    if(nTmpValidBytes > 0) {
+      if(!pCacheObj->m_sBuffer) {
+        pCacheObj->m_sBuffer = (char*)malloc(nTmpValidBytes * sizeof(char));
+        pCacheObj->m_nBufferSize = nTmpValidBytes;
+      }
+      else if ((pCacheObj->m_nValidBytes + nTmpValidBytes) > pCacheObj->m_nBufferSize) {
+        pCacheObj->m_sBuffer = (char*)realloc(pCacheObj->m_sBuffer, (pCacheObj->m_nValidBytes + nTmpValidBytes) * sizeof(char));
+        pCacheObj->m_nBufferSize = pCacheObj->m_nValidBytes + nTmpValidBytes;
+      }
+      
+      memcpy(&pCacheObj->m_sBuffer[pCacheObj->m_nValidBytes], pCacheObj->m_pAudioEncoder->GetEncodedBuffer(), nTmpValidBytes);
+      pCacheObj->m_nValidBytes += nTmpValidBytes;
+    }
+      
     pCacheObj->m_bIsComplete = true;          
     pCacheObj->Unlock();    
   }
@@ -514,6 +517,7 @@ CTranscodingCache* CTranscodingCache::Shared()
 }
 
 CTranscodingCache::CTranscodingCache()
+:fuppes::Thread("TranscodingCache")
 {
   //m_ReleaseThread = (fuppesThread)NULL;
   fuppesThreadInitMutex(&m_Mutex); 

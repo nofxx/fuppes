@@ -1,6 +1,8 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id: $
 
+include $(top_srcdir)/PreRules.am
+
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = \

@@ -109,6 +109,12 @@ void SignalHandler(int /*signal*/)
 
 int main(int argc, char* argv[])
 {
+#ifndef WIN32
+  if(!geteuid()) {
+    cout << "Do not run fuppes as the root user." << endl;
+    return -2;
+  }
+#endif
   g_bExitApp = false;
 
   // install signal handler
@@ -188,7 +194,7 @@ int main(int argc, char* argv[])
       PrintHelp();
     }
     else if (input == "i") {
-      fuppes_print_info();
+      cout << fuppes_print_info();
     }
     else if (input == "s") {
       fuppes_print_device_settings();
@@ -197,6 +203,7 @@ int main(int argc, char* argv[])
   
   cout << "[FUPPES] shutting down" << endl;
   fuppes_stop();
+  cout << "[FUPPES] stopped and now closing" << endl;
   fuppes_cleanup();
   cout << "[FUPPES] exit" << endl;
 		

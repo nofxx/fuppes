@@ -36,10 +36,20 @@ using namespace fuppes;
 
 bool Directory::exists(std::string directory) // static
 {
+#ifdef WIN32
+	directory = removeTrailingSlash(directory);
+	
+  struct _stat info;
+  memset(&info, 0, sizeof(info));
+
+  _stat(directory.c_str(), &info);
+  return ((info.st_mode & _S_IFDIR) != 0);	
+#else
 	directory = appendTrailingSlash(directory);
 	
 	struct stat Stat;  
   return (stat(directory.c_str(), &Stat) == 0 && S_ISDIR(Stat.st_mode) != 0);
+#endif
 }
 
 std::string Directory::appendTrailingSlash(std::string directory) // static
@@ -50,6 +60,19 @@ std::string Directory::appendTrailingSlash(std::string directory) // static
 	if(directory.substr(directory.length() - 1).compare(SLASH) != 0 &&
      directory.substr(directory.length() - 1).compare(BACKSLASH) != 0) {
 		directory += SLASH;
+	}
+
+	return directory;
+}
+
+std::string Directory::removeTrailingSlash(std::string directory) // static
+{
+	if(directory.length() <= 2)
+		return directory;
+
+	if(directory.substr(directory.length() - 1).compare(SLASH) == 0 ||
+     directory.substr(directory.length() - 1).compare(BACKSLASH) == 0) {
+		return directory.substr(0, directory.length() - 1);
 	}
 
 	return directory;

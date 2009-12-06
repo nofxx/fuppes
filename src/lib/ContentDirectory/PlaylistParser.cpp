@@ -190,6 +190,8 @@ bool CPlaylistParser::ParsePLS(std::string p_sContent)
     m_lEntries.push_back(pEntry);
 
 	}
+
+  // TODO Ensure that the Version is 2 otherwise return false
 		
   return true;
 }

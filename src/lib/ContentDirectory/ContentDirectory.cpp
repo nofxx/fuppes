@@ -1294,8 +1294,7 @@ void CContentDirectory::HandeUPnPDestroyObject(CUPnPAction* pAction, std::string
 
   
   // delete from db
-	CContentDatabase db;
-  db.deleteObject(pAction->GetObjectIDAsUInt());
+	CContentDatabase::Shared()->deleteObject(pAction->GetObjectIDAsUInt());
 	delete qry;
 		
 #warning todo: error code

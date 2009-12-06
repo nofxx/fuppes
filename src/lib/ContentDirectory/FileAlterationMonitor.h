@@ -155,7 +155,7 @@ class CFileAlterationMonitor: protected fuppes::Thread
     }
 			
   protected:
-    CFileAlterationMonitor(IFileAlterationMonitor* pEventHandler) { 
+    CFileAlterationMonitor(IFileAlterationMonitor* pEventHandler): fuppes::Thread("fam") { 
 			fuppesThreadInitMutex(&mutex);
 			m_pEventHandler = pEventHandler; 
 		}

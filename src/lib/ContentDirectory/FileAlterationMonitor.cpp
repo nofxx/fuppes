@@ -76,9 +76,6 @@ CInotifyMonitor::CInotifyMonitor(IFileAlterationMonitor* pEventHandler):
 
 CInotifyMonitor::~CInotifyMonitor()
 {
-	if(this->running())
-		this->stop();
-  
   delete m_pInotify;
 }
   
@@ -116,10 +113,15 @@ void CInotifyMonitor::removeWatch(std::string path)
     //cout << "watch not found: " << path << endl;
     return;
   }
-  
-  m_pInotify->Remove(iter->second);
-  delete iter->second;  
-  m_watches.erase(iter);  
+
+	try {
+	  m_pInotify->Remove(iter->second);
+		delete iter->second;  
+	  m_watches.erase(iter);  
+  }
+  catch(InotifyException &ex) {
+    cout << "exception: " << ex.GetMessage() << endl;
+  } 
 }
 
 void CInotifyMonitor::moveWatch(std::string fromPath, std::string toPath)

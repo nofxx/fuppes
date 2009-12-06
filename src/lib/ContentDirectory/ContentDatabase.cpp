@@ -67,44 +67,35 @@ CContentDatabase* CContentDatabase::m_Instance = 0;
 CContentDatabase* CContentDatabase::Shared()
 {
 	if(m_Instance == 0) {
-		m_Instance = new CContentDatabase(true);
+		m_Instance = new CContentDatabase();
   }
 	return m_Instance;
 }
 
-CContentDatabase::CContentDatabase(bool p_bShared)
+CContentDatabase::CContentDatabase()
 { 
 	//m_RebuildThread 	= (fuppesThread)NULL;	
 	m_RebuildThread		= NULL;
-  m_bShared       	= p_bShared;	
   m_bInTransaction 	= false;
   m_nLockCount 			= -1;
   
-	if(m_bShared) {
-		g_bIsRebuilding   = false;
-    g_bFullRebuild    = true;
-    g_bAddNew         = false;
-    g_bRemoveMissing  = false;    
-    m_nLockCount 		  = 0;
-    m_objectId				= 0;
-    m_pFileAlterationMonitor = CFileAlterationMgr::Shared()->CreateMonitor(this);
-    fuppesThreadInitMutex(&m_Mutex);
-  }
-    
-  if(!m_bShared) {
-    if(!Open())
-      cout << "FAILED OPENING DB FILE" << endl;
-  }
+	g_bIsRebuilding   = false;
+  g_bFullRebuild    = true;
+  g_bAddNew         = false;
+  g_bRemoveMissing  = false;    
+  m_nLockCount 		  = 0;
+  m_objectId				= 0;
+  m_pFileAlterationMonitor = CFileAlterationMgr::Shared()->CreateMonitor(this);
+  fuppesThreadInitMutex(&m_Mutex);
 }
  
 CContentDatabase::~CContentDatabase()
-{                            
-	if(m_bShared) {                  
-    fuppesThreadDestroyMutex(&m_Mutex);
-    delete m_pFileAlterationMonitor;    
-  }
+{                                       
+  fuppesThreadDestroyMutex(&m_Mutex);
+  delete m_pFileAlterationMonitor;    
+
 	
-	if(m_bShared && (m_RebuildThread != NULL)) { //(fuppesThread)NULL)) {
+	if(m_RebuildThread != NULL) { //(fuppesThread)NULL)) {
 	  //fuppesThreadClose(m_RebuildThread);
 		//m_RebuildThread = (fuppesThread)NULL;
 		delete m_RebuildThread;
@@ -115,11 +106,7 @@ CContentDatabase::~CContentDatabase()
 }
 
 bool CContentDatabase::Init(bool* p_bIsNewDB)
-{   
-  if(!m_bShared) {
-		return false;
-	}
-  
+{  
   bool bIsNewDb = !fuppes::File::exists(CSharedConfig::Shared()->GetDbFileName());
   *p_bIsNewDB = bIsNewDb;  
   
@@ -243,24 +230,12 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 
 void CContentDatabase::Lock()
 {
-  if(m_bShared) {
-    fuppesThreadLockMutex(&m_Mutex);
-    //m_nLockCount++;
-    //cout << "CDB LOCK: " << m_nLockCount << endl; fflush(stdout);    
-  }
-  else
-    CContentDatabase::Shared()->Lock();
+	fuppesThreadLockMutex(&m_Mutex);
 }
 
 void CContentDatabase::Unlock()
 {
-  if(m_bShared) {
-    //cout << "CDB UNLOCK: " << m_nLockCount << endl; fflush(stdout);
-    //m_nLockCount--;    
-    fuppesThreadUnlockMutex(&m_Mutex);    
-  }
-  else
-    CContentDatabase::Shared()->Unlock();
+  fuppesThreadUnlockMutex(&m_Mutex);
 }
 
 
@@ -308,9 +283,7 @@ bool CContentDatabase::Open()
 
 void CContentDatabase::Close()
 {
-  if(m_bShared) {
-		CDatabase::close();
-	}
+	CDatabase::close();
 }
 
 
@@ -411,9 +384,6 @@ void CContentDatabase::BuildDB()
 {     
   if(CContentDatabase::Shared()->IsRebuilding())
 	  return;
-	
-	if(!m_bShared)
-	  return;
 		
 	/*if(m_RebuildThread != (fuppesThread)NULL) {
 	  fuppesThreadClose(m_RebuildThread);
@@ -435,9 +405,6 @@ void CContentDatabase::RebuildDB()
   if(CContentDatabase::Shared()->IsRebuilding())
 	  return;
 	
-	if(!m_bShared)
-	  return;
-	
   g_bFullRebuild = true;
   g_bAddNew = false;
   g_bRemoveMissing = false;
@@ -448,9 +415,6 @@ void CContentDatabase::RebuildDB()
 void CContentDatabase::UpdateDB()
 {
   if(CContentDatabase::Shared()->IsRebuilding())
-    return;
-  
-  if(!m_bShared)
     return;
   
   g_bFullRebuild = false;
@@ -472,9 +436,6 @@ void CContentDatabase::AddNew()
   if(CContentDatabase::Shared()->IsRebuilding())
     return;
   
-  if(!m_bShared)
-    return;
-  
   g_bFullRebuild = false;
   g_bAddNew = true;
   g_bRemoveMissing = false;  
@@ -493,10 +454,7 @@ void CContentDatabase::RemoveMissing()
 {
   if(CContentDatabase::Shared()->IsRebuilding())
     return;
-  
-  if(!m_bShared)
-    return;
-  
+
   g_bFullRebuild = false;
   g_bAddNew = false;
   g_bRemoveMissing = true;  
@@ -927,8 +885,10 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
 	string fileName = p_sFileName.substr(path.length(), p_sFileName.length() - path.length());
   if(title.empty()) {
     title = ToUTF8(fileName);
+		title = TruncateFileExt(title);
 #warning TODO: make configurable
 		title = StringReplace(title, "_", " ");
+		title = StringReplace(title, ".", " ");
   }
   
   stringstream sSql;
@@ -989,7 +949,7 @@ unsigned int InsertURL(std::string p_sURL,
 	#warning FIXME: object type
 	nObjectType = ITEM_AUDIO_ITEM_AUDIO_BROADCAST;
 	
-	CContentDatabase* pDb = new CContentDatabase();          								 
+	CContentDatabase* pDb = CContentDatabase::Shared(); //new CContentDatabase();          								 
 	unsigned int nObjId = pDb->GetObjId();
 
   stringstream sSql;
@@ -1003,7 +963,7 @@ unsigned int InsertURL(std::string p_sURL,
   "'" << SQLEscape(p_sMimeType) << "');";
 
   pDb->Insert(sSql.str());
-  delete pDb;
+  //delete pDb;
   return nObjId;
 }
 
@@ -1060,7 +1020,7 @@ unsigned int GetObjectIDFromFileName(CContentDatabase* pDb, std::string p_sFileN
 
 bool MapPlaylistItem(unsigned int p_nPlaylistID, unsigned int p_nItemID)
 {
-  CContentDatabase* pDB = new CContentDatabase();
+  CContentDatabase* pDB = CContentDatabase::Shared(); //new CContentDatabase();
   
   stringstream sSql;  
   sSql <<
@@ -1070,7 +1030,7 @@ bool MapPlaylistItem(unsigned int p_nPlaylistID, unsigned int p_nItemID)
   
   pDB->Insert(sSql.str());
   
-  delete pDB;
+  //delete pDB;
 	return true;
 }
     
@@ -1087,7 +1047,7 @@ void ParsePlaylist(CSQLResult* pResult)
 
 	//cout << "playlist id: " << nPlaylistID << endl;
 		
-  CContentDatabase* pDb = new CContentDatabase();
+  CContentDatabase* pDb = CContentDatabase::Shared(); //new CContentDatabase();
   
   while(!Parser.Eof()) {
     if(Parser.Entry()->bIsLocalFile && fuppes::File::exists(Parser.Entry()->sFileName)) {       
@@ -1109,7 +1069,7 @@ void ParsePlaylist(CSQLResult* pResult)
     Parser.Next();
   }
   
-  delete pDb;
+  //delete pDb;
 }
 
 std::string ReadFile(std::string p_sFileName)
@@ -1221,7 +1181,7 @@ void RebuildThread::run()
   
   CSharedLog::Print("read shared directories");
 
-	CContentDatabase* db = new CContentDatabase();
+	CContentDatabase* db = CContentDatabase::Shared();
 	
   for(i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++) {
 		
@@ -1284,7 +1244,7 @@ void RebuildThread::run()
   BuildPlaylists();
   CSharedLog::Print("[DONE] parse playlists");
     
-  delete db;
+  //delete db;
 	delete qry;
   
   

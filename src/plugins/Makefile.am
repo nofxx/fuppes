@@ -1,3 +1,4 @@
+include $(top_srcdir)/PreRules.am
 
 libdir = @libdir@/fuppes
 
@@ -310,21 +311,11 @@ libencoder_wav_la_SOURCES = encoder_wav.c
 libencoder_wav_la_CFLAGS =	
 libencoder_wav_la_LDFLAGS =
 
-
-
 ## L.A.M.E. encoder
-#if LAME_ENCODER_PLUGIN
-
-#lib_LTLIBRARIES += libencoder_lame.la
-
-#libencoder_lame_la_SOURCES = \
-#	encoder_lame.c
-
-#libencoder_lame_la_CFLAGS = \
-#	$(LAME_H_DIR)
-	
-#libencoder_lame_la_LDFLAGS = \
-#	$(LAME_LIBS)
-
-#endif
+if LAME_ENCODER_PLUGIN
+lib_LTLIBRARIES += libencoder_lame.la
+libencoder_lame_la_SOURCES = encoder_lame.c
+libencoder_lame_la_CFLAGS = $(LAME_H_DIR)
+libencoder_lame_la_LDFLAGS = $(LAME_LIBS)
+endif
 

@@ -32,7 +32,7 @@ void parseFFmpegArgs(const char* args, char* argv[], int* argc)
 {
   std::string sParams = args;
   int     nChar = ' ';
-  char*   sChar = NULL;
+  const char*   sChar = NULL;
   std::string  sArg;  
   
   while((sChar = strchr(sParams.c_str(), nChar)) || !sParams.empty()) {    

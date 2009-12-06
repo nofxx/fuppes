@@ -356,16 +356,24 @@ bool CSharedConfig::IsAllowedIP(std::string p_sIPAddress)
     return true;
   
   // if no allowed ip is set all addresses are allowed
-  bool bResult = (AllowedIPCount() == 0);
-    
+  if (AllowedIPCount() == 0)
+		return true;
+
+
+
+	
   for(unsigned int i = 0; i < AllowedIPCount(); i++) { 
-    if(GetAllowedIP(i).compare(p_sIPAddress) == 0) {
-      bResult = true;
-      break;
-    }
+
+		string pattern = GetAllowedIP(i);
+		pattern = StringReplace(pattern, ".*.", "[255]");
+		pattern = StringReplace(pattern, "*", "255");
+
+		RegEx rxIp(pattern.c_str());
+		if(rxIp.Search(p_sIPAddress.c_str()))
+		  return true;
   }
   
-  return bResult;  
+  return false;  
 }
 
 unsigned int CSharedConfig::AllowedIPCount()

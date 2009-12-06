@@ -227,20 +227,9 @@ bool CHTTPRequestHandler::HandleSOAPAction(CHTTPMessage* pRequest, CHTTPMessage*
 
 bool CHTTPRequestHandler::HandleGENAMessage(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {
-  //return false;
-  //cout << pRequest->GetMessage() << endl;
-  CSubscriptionMgr* pMgr = new CSubscriptionMgr();  
-  pMgr->HandleSubscription(pRequest, pResponse);
-  delete pMgr;  
-  
+  CSubscriptionMgr::HandleSubscription(pRequest, pResponse);
   pResponse->SetVersion(pRequest->GetVersion());
-  pResponse->SetMessageType(HTTP_MESSAGE_TYPE_GENA_OK);
- 
-  //cout << pResponse->GetHeaderAsString() << endl;
-  /*string sID = GenerateUUID();
-  pResponse->SetGENASubscriptionID(sID);*/
-  
-  
+  pResponse->SetMessageType(HTTP_MESSAGE_TYPE_GENA_OK);  
   return true;
 }
 

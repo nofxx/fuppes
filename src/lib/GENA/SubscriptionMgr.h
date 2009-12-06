@@ -1,9 +1,10 @@
+/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            SubscriptionMgr.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2006-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -116,22 +117,19 @@ class CSubscriptionMgr: private fuppes::Thread
 {
   public:
     static CSubscriptionMgr* Shared();
-
-    CSubscriptionMgr(bool p_bSingelton = false);
     ~CSubscriptionMgr();
   
-    bool HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* pResponse);
-  
-    bool m_bDoLoop;
-  
-    std::map<std::string, CSubscription*>           m_Subscriptions;
-    std::map<std::string, CSubscription*>::iterator m_SubscriptionsIterator;  
+    static bool HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* pResponse);
   
   private:  
+    CSubscriptionMgr();
     static CSubscriptionMgr* m_pInstance;   
   
-    void ParseSubscription(CHTTPMessage* pRequest, CSubscription* pSubscription);  
-    
+    static void ParseSubscription(CHTTPMessage* pRequest, CSubscription* pSubscription);  
+
+    std::map<std::string, CSubscription*>           m_Subscriptions;
+    std::map<std::string, CSubscription*>::iterator m_SubscriptionsIterator;  
+		
     //fuppesThread m_MainLoop; 
 		void run();
 };

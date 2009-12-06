@@ -50,6 +50,7 @@ class Directory
 
 	private:
 		static std::string appendTrailingSlash(std::string directory);
+		static std::string removeTrailingSlash(std::string directory);
 };
 
 }

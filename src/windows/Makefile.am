@@ -1,6 +1,8 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id: $
 
+include $(top_srcdir)/PreRules.am
+
 if WIN32
 
 bin_PROGRAMS = fuppes-win

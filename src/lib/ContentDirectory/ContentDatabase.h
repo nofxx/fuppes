@@ -41,6 +41,10 @@
 
 class RebuildThread: public fuppes::Thread
 {
+	public:
+		RebuildThread() : fuppes::Thread("db rebuild thread") {
+		}
+	
 	private:
 		void run();
 };
@@ -49,8 +53,7 @@ class CContentDatabase: public IFileAlterationMonitor
 {
   public:
     static CContentDatabase* Shared();  
-  
-    CContentDatabase(bool p_bShared = false);
+ 
     ~CContentDatabase();
 
     bool Init(bool* p_bIsNewDB);
@@ -88,6 +91,7 @@ class CContentDatabase: public IFileAlterationMonitor
     void deleteContainer(std::string path);    
     
   private:    
+    CContentDatabase();
     void BuildDB();
     
 		void Lock();
@@ -98,7 +102,6 @@ class CContentDatabase: public IFileAlterationMonitor
 		RebuildThread*	 m_RebuildThread;
 
     //bool m_bIsRebuilding;
-		bool m_bShared;
     static CContentDatabase* m_Instance;
     int m_nLockCount;
   

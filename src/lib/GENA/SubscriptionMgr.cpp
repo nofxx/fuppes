@@ -273,35 +273,18 @@ CSubscriptionMgr* CSubscriptionMgr::m_pInstance = 0;
 CSubscriptionMgr* CSubscriptionMgr::Shared()
 {
   if(m_pInstance == 0)
-    m_pInstance = new CSubscriptionMgr(true);
+    m_pInstance = new CSubscriptionMgr();
   return m_pInstance;
 }
 
-CSubscriptionMgr::CSubscriptionMgr(bool p_bSingelton)
+CSubscriptionMgr::CSubscriptionMgr()
+:fuppes::Thread("SubscriptionMgr")
 { 
-  //m_MainLoop = (fuppesThread)NULL;
-  m_bDoLoop = true;
-  
-  // start main loop in singleton instance only
-  if(p_bSingelton && !this->running()) { // !m_MainLoop) {
-    CSharedLog::Log(L_DBG, __FILE__, __LINE__, "start CSubscriptionMgr MainLoop");
-    //fuppesThreadStartArg(m_MainLoop, MainLoop, *this);
-		this->start();
-  }
+	start();
 }
 
 CSubscriptionMgr::~CSubscriptionMgr()
 {
-  m_bDoLoop = false;
-	
-	if(this->running())
-		this->stop();
-	
-	/*if(m_MainLoop) {
-    fuppesThreadCancel(m_MainLoop);
-    fuppesThreadClose(m_MainLoop);
-    m_MainLoop = (fuppesThread)NULL;  
-  }*/
 }
 
 bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
@@ -310,7 +293,7 @@ bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* 
   
   CSubscription* pSubscription = new CSubscription();
   try {    
-    this->ParseSubscription(pRequest, pSubscription);
+    CSubscriptionMgr::ParseSubscription(pRequest, pSubscription);
   } 
   catch (fuppes::Exception ex) {
     CSharedLog::Log(L_EXT, __FILE__, __LINE__, ex.what().c_str());
@@ -411,12 +394,10 @@ void CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* 
 //fuppesThreadCallback MainLoop(void *arg)
 void CSubscriptionMgr::run()
 {
-  CSubscriptionMgr* pMgr = this; //(CSubscriptionMgr*)arg;
   CSubscription* pSubscr = NULL;
   std::map<std::string, CSubscription*>::iterator tmpIt;    
   
-  while(pMgr->m_bDoLoop && !this->stopRequested())
-  {
+  while(!this->stopRequested()) {
     //cout << "CSubscriptionMgr::MainLoop" << endl;
     
     CSubscriptionCache::Shared()->Lock();
@@ -436,10 +417,8 @@ void CSubscriptionMgr::run()
       
       pSubscr->DecTimeLeft();      
       
-      if(!pSubscr->m_bHandled)
-      {        
-        #warning todo: max send freq 0.5hz for "SystemUpdateID" and "ContainerUpdateIDs"
-        
+      if(!pSubscr->m_bHandled) {        
+        #warning todo: max send freq 0.5hz for "SystemUpdateID" and "ContainerUpdateIDs"        
         pSubscr->m_bHandled = true;        
         pSubscr->AsyncReply();
       }
@@ -456,12 +435,10 @@ void CSubscriptionMgr::run()
       }
     }
     
-    CSubscriptionCache::Shared()->Unlock();    
-    
+    CSubscriptionCache::Shared()->Unlock();
     fuppesSleep(1000);
   }
-  
-  //fuppesThreadExit();
+
 }
 
 /* SUBSCRIBE

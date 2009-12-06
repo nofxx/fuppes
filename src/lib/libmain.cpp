@@ -47,6 +47,7 @@
 
 #include <string.h>
 #include <string>
+#include <sstream>
 
 using namespace std;
 
@@ -172,8 +173,6 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
     return FUPPES_FALSE;
   }                 
                     
-
-	
 	if(!CDatabase::init("sqlite3")) {    
     CSharedLog::Print("failed to initialize sqlite database plugin.");
 		return FUPPES_FALSE;
@@ -210,6 +209,7 @@ int fuppes_start()
   try {
     pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUUID());
     CSharedConfig::Shared()->AddFuppesInstance(pFuppes);
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, fuppes_print_info());  // useful for bug reports
     return FUPPES_TRUE;
   }
   catch(fuppes::Exception ex) {
@@ -217,6 +217,7 @@ int fuppes_start()
     CSharedLog::Print("[exiting]");
     return FUPPES_FALSE;
   }
+
 }
 
 int fuppes_stop()
@@ -318,45 +319,49 @@ void fuppes_send_msearch()
   pFuppes->GetSSDPCtrl()->send_msearch();
 }
 
-void fuppes_print_info()
+const char* fuppes_print_info()
 {
-  cout << "general information:" << endl;
-  cout << "  version     : " << CSharedConfig::Shared()->GetAppVersion() << endl;
-  cout << "  hostname    : " << CSharedConfig::Shared()->GetHostname() << endl;
-  cout << "  OS          : " << CSharedConfig::Shared()->GetOSName() << " " << CSharedConfig::Shared()->GetOSVersion() << endl;
-  cout << "  build at    : " << __DATE__ << " " << __TIME__ << endl;
-  cout << "  build with  : " << __VERSION__ << endl;
-  cout << "  address     : " << CSharedConfig::Shared()->GetIPv4Address() << endl;
+  stringstream result;
+
+  result << "general information:" << endl;
+  result << "  version     : " << CSharedConfig::Shared()->GetAppVersion() << endl;
+  result << "  hostname    : " << CSharedConfig::Shared()->GetHostname() << endl;
+  result << "  OS          : " << CSharedConfig::Shared()->GetOSName() << " " << CSharedConfig::Shared()->GetOSVersion() << endl;
+  result << "  build at    : " << __DATE__ << " " << __TIME__ << endl;
+  result << "  build with  : " << __VERSION__ << endl;
+  result << "  address     : " << CSharedConfig::Shared()->GetIPv4Address() << endl;
   //cout << "  sqlite      : " << CContentDatabase::Shared()->GetLibVersion() << endl;
-  cout << "  log-level   : " << CSharedLog::Shared()->GetLogLevel() << endl;
-  cout << "  webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
-  cout << endl;
-	cout << "configuration file:" << endl;
-	cout << "  " << CSharedConfig::Shared()->GetConfigFileName() << endl;
-	cout << endl;
+  result << "  log-level   : " << CSharedLog::Shared()->GetLogLevel() << endl;
+  result << "  webinterface: http://" << pFuppes->GetHTTPServerURL() << "/" << endl;
+  result << endl;
+	result << "configuration file:" << endl;
+	result << "  " << CSharedConfig::Shared()->GetConfigFileName() << endl;
+	result << endl;
 	
-  cout << CPluginMgr::printInfo().c_str() << endl;
+  result << CPluginMgr::printInfo().c_str() << endl;
   
 
 #ifdef HAVE_ICONV
-	cout << "iconv: enabled" << endl;
+	result << "iconv: enabled" << endl;
 #else
-	cout << "iconv: disabled" << endl;
+	result << "iconv: disabled" << endl;
 #endif
 	
 #ifndef WIN32
 #ifdef HAVE_INOTIFY
-	cout << "inotify: enabled" << endl;
+	result << "inotify: enabled" << endl;
 #else
-	cout << "inotify: disabled" << endl;
+	result << "inotify: disabled" << endl;
 #endif
 
 #ifdef HAVE_UUID
-	cout << "uuid: enabled" << endl;
+	result << "uuid: enabled" << endl;
 #else
-	cout << "uuid: disabled" << endl;
+	result << "uuid: disabled" << endl;
 #endif
 #endif
+
+  return result.str().c_str();
 }
 
 void fuppes_print_device_settings()

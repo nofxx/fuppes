@@ -369,7 +369,7 @@ std::string CPresentationHandler::GetStatusHTML()
   //*p_psImgPath = "Status";
   
   //sResult
-  CContentDatabase* pDb = new CContentDatabase();
+  CContentDatabase* pDb = CContentDatabase::Shared(); // new CContentDatabase();
   std::stringstream sSQL;
   sSQL << "select TYPE, count(*) as VALUE from OBJECTS group by TYPE;";
   pDb->Select(sSQL.str());
@@ -414,7 +414,7 @@ std::string CPresentationHandler::GetStatusHTML()
   
   
   
-  sResult << "<h1>build options</h1>" <<
+  /*sResult << "<h1>build options</h1>" <<
   "<table>" <<    
     "<tr>" <<
       "<th>option</th>" <<
@@ -522,7 +522,7 @@ std::string CPresentationHandler::GetStatusHTML()
       "<td>false</td>" <<
       #endif     
     "</tr>" <<    
-  "</table>";    
+  "</table>";*/
   
   // system status
   sResult << "<h1>system status</h1>" << endl;  

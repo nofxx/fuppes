@@ -36,6 +36,9 @@
 
 using namespace std;
 
+/*
+ * only change this version number if old config files will fail to work
+ */
 const std::string NEEDED_CONFIGFILE_VERSION = "0.7.2.3";
 
 bool WriteDefaultConfigFile(std::string p_sFileName)
@@ -81,7 +84,11 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
   
       xmlTextWriterWriteComment(pWriter, BAD_CAST "list of ip addresses allowed to access fuppes. if empty all ips are allowed");
       xmlTextWriterStartElement(pWriter, BAD_CAST "allowed_ips");        
+        xmlTextWriterWriteComment(pWriter, BAD_CAST "These are examples of what data you can put between the ip tags where (* => anything, [x-y] => range)");
         xmlTextWriterWriteComment(pWriter, BAD_CAST "<ip>192.168.0.1</ip>");
+        xmlTextWriterWriteComment(pWriter, BAD_CAST "<ip>192.168.0.[20-100]</ip>");
+        xmlTextWriterWriteComment(pWriter, BAD_CAST "<ip>192.168.0.*</ip>");
+        xmlTextWriterWriteComment(pWriter, BAD_CAST "<ip>192.*.[0-2].[40-*]</ip>");
       xmlTextWriterEndElement(pWriter); 
   
     // end network
@@ -465,6 +472,17 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
             xmlTextWriterEndElement(pWriter);
             xmlTextWriterStartElement(pWriter, BAD_CAST "mime_type");
               xmlTextWriterWriteString(pWriter, BAD_CAST "video/x-ms-vob");
+            xmlTextWriterEndElement(pWriter);
+          xmlTextWriterEndElement(pWriter);
+
+          // mkv
+          xmlTextWriterStartElement(pWriter, BAD_CAST "file");
+            xmlTextWriterWriteAttribute(pWriter, BAD_CAST "ext", BAD_CAST "mkv");
+            xmlTextWriterStartElement(pWriter, BAD_CAST "type");
+              xmlTextWriterWriteString(pWriter, BAD_CAST "VIDEO_ITEM");
+            xmlTextWriterEndElement(pWriter);
+            xmlTextWriterStartElement(pWriter, BAD_CAST "mime_type");
+              xmlTextWriterWriteString(pWriter, BAD_CAST "video/x-matroska");
             xmlTextWriterEndElement(pWriter);
           xmlTextWriterEndElement(pWriter);
   

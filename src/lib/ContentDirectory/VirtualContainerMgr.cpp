@@ -49,6 +49,7 @@ CVirtualContainerMgr* CVirtualContainerMgr::Shared()
 }
 
 CVirtualContainerMgr::CVirtualContainerMgr()
+:fuppes::Thread("VirtualContainerMgr")
 {
   m_bVFolderCfgValid = true;
   
