@@ -30,6 +30,7 @@
 #include "../SharedLog.h"
 #include "../Common/Common.h"
 #include "../Common/RegEx.h"
+#include "../Plugins/Plugin.h"
 #include "VirtualContainerMgr.h"
 #include "libdlna/dlna.h"
 
@@ -919,7 +920,18 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:class");    
     xmlTextWriterWriteString(pWriter, BAD_CAST pUPnPBrowse->DeviceSettings()->ObjectTypeAsStr(sExt).c_str());
   xmlTextWriterEndElement(pWriter);      
-  
+
+	// albumArt
+	if(CPluginMgr::hasMetadataPlugin("ffmpegthumbnailer")) {
+		xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:albumArtURI");
+		  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "xmlns:dlna", BAD_CAST "urn:schemas-dlna-org:metadata-1-0/");
+			xmlTextWriterWriteAttribute(pWriter, BAD_CAST "dlna:profileID", BAD_CAST "JPEG_TN");
+			string url = "http://" + m_sHTTPServerURL + "/MediaServer/ImageItems/" + p_sObjectID + ".jpg?width=160&height=160";
+			xmlTextWriterWriteString(pWriter, BAD_CAST url.c_str());
+	  xmlTextWriterEndElement(pWriter);
+  }
+
+	
   // res
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");    
     
@@ -972,7 +984,7 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   if(!bTranscode && pUPnPBrowse->IncludeProperty("res@size") && !pSQLResult->isNull("SIZE")) {
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->asString("SIZE").c_str());
   }
-  
+	
   sExt = pUPnPBrowse->DeviceSettings()->Extension(sExt, pSQLResult->asString("A_CODEC"), pSQLResult->asString("V_CODEC"));
                                                     
   sTmp = "http://" + m_sHTTPServerURL + "/MediaServer/VideoItems/" + p_sObjectID + "." + sExt;  

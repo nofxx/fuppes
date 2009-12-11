@@ -153,12 +153,15 @@ bool CFileDetails::getMusicTrackDetails(std::string p_sFileName,
 	
 	//metadata_t metadata;
 	if(!audio || !audio->openFile(p_sFileName)) {
+		if(audio)
+			delete audio;		
 		return false;
 	}
 		
 	//init_metadata(metadata);			
 	if(!audio->readData(metadata)) {
 		//free_metadata(metadata);	
+		delete audio;
 		return false;
 	}
 
@@ -186,6 +189,7 @@ bool CFileDetails::getMusicTrackDetails(std::string p_sFileName,
 	}
 	
 	audio->closeFile();
+	delete audio;
 	//free_metadata(&metadata);
 	return true;	
 }
@@ -210,9 +214,12 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
 			
 			image->closeFile();
 			free_metadata(&metadata);
+			delete image;
 			return true;
 		}
 	}
+	if(image)
+		delete image;
 	
 	image = CPluginMgr::metadataPlugin("magickWand");
 	if(image && image->openFile(p_sFileName)) {
@@ -224,9 +231,13 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
 			
 			image->closeFile();
 			free_metadata(&metadata);
+			delete image;
 			return true;
 		}
 	}
+	if(image)
+		delete image;
+		
 	
 	image = CPluginMgr::metadataPlugin("simage");
 	if(image && image->openFile(p_sFileName)) {
@@ -237,9 +248,12 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
 			
 			image->closeFile();
 			free_metadata(&metadata);
+			delete image;
 			return true;
 		}
 	}
+	if(image)
+		delete image;
 	
 	free_metadata(&metadata);
 	return false;
@@ -250,7 +264,8 @@ bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoIt
 	string sExt = ExtractFileExt(p_sFileName);  
   if(!CDeviceIdentificationMgr::Shared()->DefaultDevice()->FileSettings(sExt)->ExtractMetadata())
     return false;
-	
+
+	bool result = false;
 	CMetadataPlugin* video = CPluginMgr::metadataPlugin("libavformat");
 	metadata_t metadata;
 	if(video && video->openFile(p_sFileName)) {
@@ -269,10 +284,12 @@ bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoIt
 			
 			video->closeFile();
 			free_metadata(&metadata);
-			return true;
+			result = true;
 		}
-		free_metadata(&metadata);
 	}
+
+	if(video)
+		delete video;
 	
-	return false;
+	return result;
 }

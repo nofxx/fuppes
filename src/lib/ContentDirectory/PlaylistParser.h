@@ -40,38 +40,72 @@ struct PlaylistEntry_t
   bool          bIsLocalFile;
 	std::string		sMimeType;
 	fuppes_off_t	nSize;
+  fuppes_off_t  length;
 		
 	std::string		sTitle;
 };
 
-class CPlaylistParser
+class BasePlaylistParser
 {
   public:
-    CPlaylistParser();
-    ~CPlaylistParser();
+    BasePlaylistParser(std::string p_sFileName);
+    ~BasePlaylistParser();
     
-    bool LoadPlaylist(std::string p_sFileName);
+    // Common functions
+    static BasePlaylistParser* Load(std::string p_sFileName);
   
     bool              Eof() { return m_bEof; }
     PlaylistEntry_t*  Entry();
     void              Next();
-    
-  private:
+
+    // abstract functions
+    virtual bool Parse(std::string p_sContent) = 0;
+    virtual int GetLengthSeconds(void) { return -1; }   // by default say that you don't know what the length is (no setter allowed)
+
+  protected:
     bool                        m_bEof;
     int                         m_nPosition;
     std::string                 m_sListPath;
-  
+
     std::list<PlaylistEntry_t*>            m_lEntries;
     std::list<PlaylistEntry_t*>::iterator  m_lEntriesIterator;
-  
+
     std::string FormatFileName(std::string p_sValue);
-  
+
     bool IsURL(std::string p_sValue);
     bool IsFile(std::string p_sValue);
-  
-    bool ParseM3U(std::string p_sContent);
-    bool ParsePLS(std::string p_sContent);
-		bool ParseRSS(std::string p_sContent);
+};
+
+class M3U_PlaylistParser : public BasePlaylistParser 
+{
+  public:
+    M3U_PlaylistParser(std::string p_sFileName) : BasePlaylistParser(p_sFileName) {}
+    virtual bool Parse(std::string p_sContent);
+    
+    virtual int GetLengthSeconds(void) { return playlistLength; }
+  private:
+    int playlistLength;
+};
+
+class PLS_PlaylistParser : public BasePlaylistParser 
+{
+  public:
+    PLS_PlaylistParser(std::string p_sFileName) : BasePlaylistParser(p_sFileName) {}
+    virtual bool Parse(std::string p_sContent);
+};
+
+class RSS_PlaylistParser : public BasePlaylistParser 
+{
+  public:
+    RSS_PlaylistParser(std::string p_sFileName) : BasePlaylistParser(p_sFileName) {}
+    virtual bool Parse(std::string p_sContent);
+};
+
+class WPL_PlaylistParser : public BasePlaylistParser 
+{
+  public:
+    WPL_PlaylistParser(std::string p_sFileName) : BasePlaylistParser(p_sFileName) {}
+    virtual bool Parse(std::string p_sContent);
 };
 
 #endif // _PLAYLISTPARSER_H

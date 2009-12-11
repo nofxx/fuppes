@@ -133,7 +133,7 @@ libmetadata_exiv2_la_SOURCES = \
 	metadata_exiv2.cpp
 
 libmetadata_exiv2_la_CXXFLAGS = \
-	$(EXIV2_CXXFLAGS)
+	$(EXIV2_CFLAGS)
 	
 libmetadata_exiv2_la_LDFLAGS = \
 	$(EXIV2_LIBS)
@@ -153,6 +153,23 @@ libmetadata_libmp4v2_la_CXXFLAGS = \
 	
 libmetadata_libmp4v2_la_LDFLAGS = \
 	$(MP4V2_LIBS)
+
+endif
+
+
+## ffmpegthumbnailer metadata extraction plugin
+if FFMPEGTHUMBNAILER_METADATA_PLUGIN
+
+lib_LTLIBRARIES += libmetadata_ffmpegthumbnailer.la
+
+libmetadata_ffmpegthumbnailer_la_SOURCES = \
+	metadata_ffmpegthumbnailer.cpp
+
+libmetadata_ffmpegthumbnailer_la_CXXFLAGS = \
+	$(FFMPEGTHUMBNAILER_CFLAGS)
+	
+libmetadata_ffmpegthumbnailer_la_LDFLAGS = \
+	$(FFMPEGTHUMBNAILER_LIBS)
 
 endif
 
@@ -312,10 +329,10 @@ libencoder_wav_la_CFLAGS =
 libencoder_wav_la_LDFLAGS =
 
 ## L.A.M.E. encoder
-if LAME_ENCODER_PLUGIN
-lib_LTLIBRARIES += libencoder_lame.la
-libencoder_lame_la_SOURCES = encoder_lame.c
-libencoder_lame_la_CFLAGS = $(LAME_H_DIR)
-libencoder_lame_la_LDFLAGS = $(LAME_LIBS)
-endif
+#if LAME_ENCODER_PLUGIN
+#lib_LTLIBRARIES += libencoder_lame.la
+#libencoder_lame_la_SOURCES = encoder_lame.c
+#libencoder_lame_la_CFLAGS = $(LAME_H_DIR)
+#libencoder_lame_la_LDFLAGS = $(LAME_LIBS)
+#endif
 

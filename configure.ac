@@ -153,6 +153,22 @@ AC_SUBST(TAGLIB_LIBS)
 
 
 #
+# libffmpegthumbnailer
+#
+have_ffmpegthumbnailer=no
+AC_ARG_ENABLE([ffmpegthumbnailer], [AC_HELP_STRING([--enable-ffmpegthumbnailer],
+    [enable ffmpegthumbnailer metadata plugin [default=yes]])],
+    [enable_ffmpegthumbnailer=$enableval], [enable_ffmpegthumbnailer='yes'])
+if test "x$enable_ffmpegthumbnailer" = "xyes" ; then
+  PKG_CHECK_MODULES(FFMPEGTHUMBNAILER, libffmpegthumbnailer >= 1.0.0, have_ffmpegthumbnailer=yes, have_ffmpegthumbnailer=no)
+fi
+AM_CONDITIONAL(FFMPEGTHUMBNAILER_METADATA_PLUGIN, test "x$have_ffmpegthumbnailer" = "xyes")
+AC_SUBST(FFMPEGTHUMBNAILER_CFLAGS)
+AC_SUBST(FFMPEGTHUMBNAILER_LIBS)
+
+
+
+#
 # ImageMagick (MagickWand)
 #
 have_magickwand=no
@@ -788,6 +804,15 @@ else
   echo "    libavformat   : disabled"
 fi
 echo ""
+
+
+# ffmpegthumbnailer
+if test "x$have_ffmpegthumbnailer" = "xyes"; then
+  echo "    ffmpegthumbnailer: enabled"
+else
+  echo "    ffmpegthumbnailer: disabled"
+fi
+
 #end metadata
 
 

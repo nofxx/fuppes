@@ -587,6 +587,17 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
             xmlTextWriterEndElement(pWriter);
           xmlTextWriterEndElement(pWriter);  
   
+          // wpl
+          xmlTextWriterStartElement(pWriter, BAD_CAST "file");
+            xmlTextWriterWriteAttribute(pWriter, BAD_CAST "ext", BAD_CAST "wpl");
+            xmlTextWriterStartElement(pWriter, BAD_CAST "type");
+              xmlTextWriterWriteString(pWriter, BAD_CAST "PLAYLIST");
+            xmlTextWriterEndElement(pWriter);
+            xmlTextWriterStartElement(pWriter, BAD_CAST "mime_type");
+              xmlTextWriterWriteString(pWriter, BAD_CAST "application/vnd.ms-wpl");
+            xmlTextWriterEndElement(pWriter);
+          xmlTextWriterEndElement(pWriter);  
+
         // end file_settings (default)
         xmlTextWriterEndElement(pWriter);  
         

@@ -192,6 +192,20 @@ void CPluginMgr::init(std::string pluginDir)
 	closedir(dir);
 }
 
+
+bool CPluginMgr::hasMetadataPlugin(std::string pluginName)
+{
+	bool result = false;
+	
+	fuppesThreadLockMutex(&m_instance->m_mutex);
+	pluginName = ToLower(pluginName);
+
+	result = (m_instance->m_metadataPlugins.find(pluginName) != m_instance->m_metadataPlugins.end());
+	
+	fuppesThreadUnlockMutex(&m_instance->m_mutex);
+	return result;
+}
+
 CMetadataPlugin* CPluginMgr::metadataPlugin(std::string pluginName)
 {
 	fuppesThreadLockMutex(&m_instance->m_mutex);
@@ -203,7 +217,7 @@ CMetadataPlugin* CPluginMgr::metadataPlugin(std::string pluginName)
 		m_instance->m_metadataPlugins.find(pluginName);
 	
 	if(m_instance->m_metadataPluginsIter != m_instance->m_metadataPlugins.end()) {
-		plugin = m_instance->m_metadataPlugins[pluginName];
+		plugin = new CMetadataPlugin(m_instance->m_metadataPlugins[pluginName]);
 	}
 	
 	fuppesThreadUnlockMutex(&m_instance->m_mutex);
@@ -446,6 +460,15 @@ bool CDlnaPlugin::getImageProfile(std::string ext, int width, int height, std::s
 /**
  *  CMetadataPlugin
  */
+
+CMetadataPlugin::CMetadataPlugin(CMetadataPlugin* plugin)
+:CPlugin(plugin->m_handle, &plugin->m_pluginInfo) 
+{
+	m_fileOpen	= plugin->m_fileOpen;
+	m_readData	= plugin->m_readData;
+	m_readImage = plugin->m_readImage;
+	m_fileClose = plugin->m_fileClose;
+}
 
 bool CMetadataPlugin::initPlugin()
 {

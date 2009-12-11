@@ -383,6 +383,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 	sPath = qry->result()->asString("PATH") + qry->result()->asString("FILE_NAME");
   sExt  = ExtractFileExt(sPath);	
 	bool audioFile = false;
+	bool videoFile;
 	
 	OBJECT_TYPE type = (OBJECT_TYPE)qry->result()->asInt("TYPE");
 	if(type >= ITEM_IMAGE_ITEM && type < ITEM_IMAGE_ITEM_MAX) {
@@ -391,6 +392,10 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 	else if(type >= ITEM_AUDIO_ITEM && type < ITEM_AUDIO_ITEM_MAX) {
 		//cout << "request image from audio file " << sPath << endl;
 		audioFile = true;
+	}
+	else if(type >= ITEM_VIDEO_ITEM && type < ITEM_VIDEO_ITEM_MAX) {
+		//cout << "request image from video file " << sPath << endl;
+		videoFile = true;
 	}
 	else {
 		CSharedLog::Log(L_EXT, __FILE__, __LINE__, "unsupported image request on object type %d", type);
@@ -413,7 +418,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 	
 	// transcode | scale request via GET
 	// and/or embedded image from audio file
-	if(width > 0 || height > 0 || audioFile) {
+	if(width > 0 || height > 0 || audioFile || videoFile) {
 		CSharedLog::Log(L_EXT, __FILE__, __LINE__, "GET transcode %s - %dx%d",  sPath.c_str(), width, height);
 		
 		size_t inSize = 0;
@@ -424,16 +429,32 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 		memset(mimeType, 0, 1);
 		
 		// embedded image from audio file
-		if(audioFile) {
-			
-			CMetadataPlugin* metadata = CPluginMgr::metadataPlugin("taglib");
-			if(!metadata) {
-				CSharedLog::Log(L_EXT, __FILE__, __LINE__, "metadata plugin %s not found", "taglib");
-				delete qry;
-				free(inBuffer);
-				free(outBuffer);
-				free(mimeType);
-		    return false;
+		bool transcode = true;
+		if(audioFile || videoFile) {
+
+			CMetadataPlugin* metadata = NULL;
+			if(audioFile) {
+				metadata = CPluginMgr::metadataPlugin("taglib");
+				if(!metadata) {
+					CSharedLog::Log(L_EXT, __FILE__, __LINE__, "metadata plugin %s not found", "taglib");
+					delete qry;
+					free(inBuffer);
+					free(outBuffer);
+					free(mimeType);
+				  return false;
+				}
+			}
+			else if(videoFile) {
+				metadata = CPluginMgr::metadataPlugin("ffmpegthumbnailer");
+				if(!metadata) {
+					CSharedLog::Log(L_EXT, __FILE__, __LINE__, "metadata plugin %s not found", "ffmpegthumbnailer");
+					delete qry;
+					free(inBuffer);
+					free(outBuffer);
+					free(mimeType);
+				  return false;
+				}
+				transcode = false;
 			}
 			
 			metadata->openFile(sPath);
@@ -448,6 +469,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 		    return false;
 			}
 			metadata->closeFile();
+			delete metadata;
 		} // embedded image
 		
 		else {
@@ -469,35 +491,40 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 			fsImg.read((char*)inBuffer, inSize);
 			fsImg.close();
 		} // image file
+
+		if(transcode) {		
+			CTranscoderBase* transcoder = CPluginMgr::transcoderPlugin("magickWand");
+			if(transcoder == NULL) {
+				CSharedLog::Log(L_EXT, __FILE__, __LINE__, "image magick transcoder not available");
+				delete qry;
+				free(inBuffer);
+				free(outBuffer);
+				free(mimeType);
+			  return false;
+			}
 		
+			CFileSettings* settings = new CFileSettings(pRequest->DeviceSettings()->FileSettings("jpeg"));
 		
-		CTranscoderBase* transcoder = CPluginMgr::transcoderPlugin("magickWand");
-		if(transcoder == NULL) {
-			CSharedLog::Log(L_EXT, __FILE__, __LINE__, "image magick transcoder not available");
-			delete qry;
-			free(inBuffer);
-			free(outBuffer);
-			free(mimeType);
-	    return false;
+			// fixme
+			if(!settings->pImageSettings) {
+				settings->pImageSettings = new CImageSettings();
+			}
+			settings->pImageSettings->nHeight = height;
+			settings->pImageSettings->nWidth = width;
+			settings->pImageSettings->bGreater = true;
+			settings->pImageSettings->bLess = true;
+		
+			transcoder->TranscodeMem(settings,
+															 (const unsigned char**)&inBuffer, inSize, &outBuffer, &outSize);
+			delete settings;
+			delete transcoder;
+
+			pResponse->SetBinContent((char*)outBuffer, outSize);
+		} else { // transcode
+			pResponse->SetBinContent((char*)inBuffer, inSize);
 		}
 		
-		CFileSettings* settings = new CFileSettings(pRequest->DeviceSettings()->FileSettings("jpeg"));
-		
-		// fixme
-		if(!settings->pImageSettings) {
-			settings->pImageSettings = new CImageSettings();
-		}
-		settings->pImageSettings->nHeight = height;
-		settings->pImageSettings->nWidth = width;
-		settings->pImageSettings->bGreater = true;
-		settings->pImageSettings->bLess = true;
-		
-		transcoder->TranscodeMem(settings,
-														 (const unsigned char**)&inBuffer, inSize, &outBuffer, &outSize);
-		delete settings;
-		delete transcoder;
-		
-		pResponse->SetBinContent((char*)outBuffer, outSize);			
+
 		pResponse->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
 #warning todo: set correct mime type
 		pResponse->SetContentType(mimeType);

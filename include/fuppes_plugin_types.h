@@ -101,6 +101,12 @@ typedef enum METADATA_TYPE {
 	MD_IMAGE
 } METADATA_TYPE;
 
+typedef enum METADATA_PLUGIN_CAPABILITIES {
+	MDC_UNKNOWN		= 0,
+	MDC_METADATA	= 1 << 0,
+	MDC_IMAGE			= 1 << 1
+} METADATA_PLUGIN_CAPABILITIES;
+
 typedef struct {
 	METADATA_TYPE		type;
 	char*						title;

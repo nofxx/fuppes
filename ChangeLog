@@ -1,3 +1,11 @@
+Version
+
+  * fixed subscription parsing for coherence UPnP framework
+  * initial support for wpl playlists (Robert Massaioli)
+  * initial ffmpegthumbnailer plugin
+
+
+
 Version SVN-640 2009-07-19
 
   * exiv2 plugin from Ben Rees

@@ -1037,8 +1037,8 @@ bool MapPlaylistItem(unsigned int p_nPlaylistID, unsigned int p_nItemID)
 
 void ParsePlaylist(CSQLResult* pResult)
 {
-  CPlaylistParser Parser;
-  if(!Parser.LoadPlaylist(pResult->asString("PATH") + pResult->asString("FILE_NAME"))) {
+  BasePlaylistParser* Parser = BasePlaylistParser::Load(pResult->asString("PATH") + pResult->asString("FILE_NAME"));
+  if(Parser == NULL) {
     return;
   }
 
@@ -1049,52 +1049,28 @@ void ParsePlaylist(CSQLResult* pResult)
 		
   CContentDatabase* pDb = CContentDatabase::Shared(); //new CContentDatabase();
   
-  while(!Parser.Eof()) {
-    if(Parser.Entry()->bIsLocalFile && fuppes::File::exists(Parser.Entry()->sFileName)) {       
+  while(!Parser->Eof()) {
+    if(Parser->Entry()->bIsLocalFile && fuppes::File::exists(Parser->Entry()->sFileName)) {       
             
-      nObjectID = GetObjectIDFromFileName(pDb, Parser.Entry()->sFileName);
+      nObjectID = GetObjectIDFromFileName(pDb, Parser->Entry()->sFileName);
       
       if(nObjectID == 0) {        
-        nObjectID = InsertFile(pDb, nPlaylistID, Parser.Entry()->sFileName);
+        nObjectID = InsertFile(pDb, nPlaylistID, Parser->Entry()->sFileName);
       }            
       else {
         MapPlaylistItem(nPlaylistID, nObjectID);
       }
     }
-    else if(!Parser.Entry()->bIsLocalFile) {
-      nObjectID = InsertURL(Parser.Entry()->sFileName, Parser.Entry()->sTitle, Parser.Entry()->sMimeType);
+    else if(!Parser->Entry()->bIsLocalFile) {
+      nObjectID = InsertURL(Parser->Entry()->sFileName, Parser->Entry()->sTitle, Parser->Entry()->sMimeType);
 			MapPlaylistItem(nPlaylistID, nObjectID);
     }    
     
-    Parser.Next();
+    Parser->Next();
   }
   
+  delete Parser;
   //delete pDb;
-}
-
-std::string ReadFile(std::string p_sFileName)
-{
-  fstream fsPlaylist;
-  char*   szBuf;
-  long    nSize;  
-  string  sResult;
-  
-  fsPlaylist.open(p_sFileName.c_str(), ios::in);
-  if(fsPlaylist.fail())
-    return ""; 
-   
-  fsPlaylist.seekg(0, ios::end); 
-  nSize = streamoff(fsPlaylist.tellg()); 
-  fsPlaylist.seekg(0, ios::beg);
-  szBuf = new char[nSize + 1];  
-  fsPlaylist.read(szBuf, nSize); 
-  szBuf[nSize] = '\0';
-  fsPlaylist.close();
-    
-  sResult = szBuf;
-  delete[] szBuf;  
-   
-  return sResult;
 }
 
 //fuppesThreadCallback BuildLoop(void* arg)

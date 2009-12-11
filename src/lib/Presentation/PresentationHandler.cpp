@@ -684,7 +684,7 @@ std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)
   
   // playlist representation
   /*sResult << "<h2>playlist representation</h2>" << endl;
-  sResult << "<p>Choose how playlist items are represented. <br />\"file\" sends playlists as real playlist files (m3u or pls)<br />" <<
+  sResult << "<p>Choose how playlist items are represented. <br />\"file\" sends playlists as real playlist files (m3u, pls or wpl for a full list see the wiki)<br />" <<
              "\"container\" represents playlists as containers including the playlist items.<br />" << endl;
              if(CSharedConfig::Shared()->GetDisplaySettings().bShowPlaylistsAsContainers)  
              {

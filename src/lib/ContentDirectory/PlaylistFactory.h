@@ -38,6 +38,7 @@ class CPlaylistFactory
   private:
     std::string BuildPLS(std::string p_sObjectId);
     std::string BuildM3U(std::string p_sObjectId);
+    std::string BuildWPL(std::string p_sObjectId);
 };
 
 #endif /* _PLAYLISTFACTORY_H */

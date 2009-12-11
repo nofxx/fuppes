@@ -57,18 +57,22 @@ class CPluginMgr
 {
 	public:
 		static void init(std::string pluginDir);
-	
+
 		// returns a reference to a single plugin instance
 		static CDlnaPlugin*						dlnaPlugin() { return m_instance->m_dlnaPlugin; }
-		static CMetadataPlugin*				metadataPlugin(std::string pluginName);
 		static CPresentationPlugin*		presentationPlugin() { return m_instance->m_presentationPlugin; }
 		static CDatabasePlugin*				databasePlugin(const std::string pluginName);
-		
+
 		// returns a new instance of the plugin that must be deleted by caller
+		static CMetadataPlugin*				metadataPlugin(std::string pluginName);
 		static CTranscoderBase*				transcoderPlugin(std::string pluginName);
 		static CAudioDecoderPlugin*		audioDecoderPlugin(std::string pluginName);
 		static CAudioEncoderPlugin*		audioEncoderPlugin(std::string pluginName);
 
+
+
+		static bool hasMetadataPlugin(std::string pluginName);
+		
 		static std::string						printInfo();
 		
 	private:
@@ -152,6 +156,7 @@ class CMetadataPlugin: public CPlugin
 	public:
 		CMetadataPlugin(fuppesLibHandle handle, plugin_info* info): 
 			CPlugin(handle, info) {}
+		CMetadataPlugin(CMetadataPlugin* plugin);
 	
 		bool initPlugin();
 	
