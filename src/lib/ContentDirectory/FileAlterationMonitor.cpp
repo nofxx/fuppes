@@ -93,7 +93,7 @@ bool CInotifyMonitor::addWatch(std::string path)
     m_watches[path] = pWatch;
   }
   catch(InotifyException &ex) {
-    cout << "exception: " << ex.GetMessage() << endl;
+    cout << "addWatch :: exception: " << ex.GetMessage() << endl << path << endl;
   }
   
 	if(!this->running()) {
@@ -120,7 +120,7 @@ void CInotifyMonitor::removeWatch(std::string path)
 	  m_watches.erase(iter);  
   }
   catch(InotifyException &ex) {
-    cout << "exception: " << ex.GetMessage() << endl;
+		cout << "removeWatch :: exception: " << ex.GetMessage() << endl << path << endl;
   } 
 }
 
@@ -169,7 +169,7 @@ void CInotifyMonitor::run()
     while(pInotify->m_pInotify->GetEvent(&event)) {
       
       if(event.IsType(IN_IGNORED)) {
-        cout << "inotify: IN_IGNORED" << endl;        
+        //cout << "inotify: IN_IGNORED" << endl;        
         /*string sDump;
         event.DumpTypes(sDump);
         cout << "cookie: " << event.GetCookie() << " mask: " << sDump << endl;*/        

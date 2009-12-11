@@ -73,12 +73,13 @@ class CPluginMgr
 
 		static bool hasMetadataPlugin(std::string pluginName);
 		
-		static std::string						printInfo();
+		static std::string						printInfo(bool html = false);
 		
 	private:
 		CPluginMgr();
-		static CPluginMgr* m_instance;
-		fuppesThreadMutex	 m_mutex;
+		std::string					m_pluginDir;
+		static CPluginMgr*	m_instance;
+		fuppesThreadMutex		m_mutex;
 		
 		std::map<std::string, CMetadataPlugin*> m_metadataPlugins;
 		std::map<std::string, CMetadataPlugin*>::iterator m_metadataPluginsIter;

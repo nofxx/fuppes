@@ -57,7 +57,8 @@ void CPluginMgr::init(std::string pluginDir)
 
 	DIR*    dir;
   dirent* dirEnt;
-	
+
+	m_instance->m_pluginDir = pluginDir;
   dir = opendir(pluginDir.c_str());
 	if(dir == NULL) {
 		return;
@@ -298,64 +299,77 @@ CDatabasePlugin* CPluginMgr::databasePlugin(const std::string pluginName)
 
 
 
-std::string CPluginMgr::printInfo()
+std::string CPluginMgr::printInfo(bool html /*= false*/)
 {
 	stringstream result;
 	CPlugin* plugin;
+
+
+	string br;
+	if(html)
+		result << "<br />" << endl;
+	else
+		result << endl;
+	br = result.str();
+	result.clear();
+
+
+	result << "plugin dir: " << br << m_instance->m_pluginDir << br << br;
 	
-	result << "registered plugins" << endl;
-	result << "database:" << endl;
+	if(!html)
+		result << "registered plugins" << br;
+	
+	result << "database:" << br;
 	for(m_instance->m_databasePluginsIter = m_instance->m_databasePlugins.begin(); 
 			m_instance->m_databasePluginsIter != m_instance->m_databasePlugins.end(); 
 			m_instance->m_databasePluginsIter++) {
 		plugin = m_instance->m_databasePluginsIter->second;
-		result << "  \"" << plugin->name() << "\"\tlibrary version: " << plugin->libraryVersion() << endl <<
-							"\t\t(author: " << plugin->author() << " version: " << plugin->pluginVersion() << ")" << endl;
+		result << "  \"" << plugin->name() << "\"\tlibrary version: " << plugin->libraryVersion() << br;
 	}
-	result << endl;
+	result << br;
  
-	result << "misc:" << endl;
+	result << "misc:" << br;
 	if(m_instance->m_dlnaPlugin)
-		result << "  " << m_instance->m_dlnaPlugin->name() << endl;
+		result << "  " << m_instance->m_dlnaPlugin->name() << br;
 	if(m_instance->m_presentationPlugin)
-		result << "  " << m_instance->m_presentationPlugin->name() << endl;
-	result << endl;	
+		result << "  " << m_instance->m_presentationPlugin->name() << br;
+	result << br;	
 	
-	result << "metadata:" << endl;
+	result << "metadata:" << br;
 	for(m_instance->m_metadataPluginsIter = m_instance->m_metadataPlugins.begin(); 
 			m_instance->m_metadataPluginsIter != m_instance->m_metadataPlugins.end(); 
 			m_instance->m_metadataPluginsIter++) {
 		plugin = m_instance->m_metadataPluginsIter->second;
-		result << "  " << plugin->name() << " (" << plugin->author() << ")" << endl;
+		result << "  " << plugin->name() << br;
 	}
-	result << endl;
+	result << br;
 	
-	result << "transcoder:" << endl;
+	result << "transcoder:" << br;
 	for(m_instance->m_transcoderPluginsIter = m_instance->m_transcoderPlugins.begin(); 
 			m_instance->m_transcoderPluginsIter != m_instance->m_transcoderPlugins.end(); 
 			m_instance->m_transcoderPluginsIter++) {
 		plugin = m_instance->m_transcoderPluginsIter->second;
-		result << "  " << plugin->name() << " (" << plugin->author() << ")" << endl;
+		result << "  " << plugin->name() << br;
 	}
-	result << endl;
+	result << br;
 	
-	result << "audio decoder:" << endl;
+	result << "audio decoder:" << br;
 	for(m_instance->m_audioDecoderPluginsIter = m_instance->m_audioDecoderPlugins.begin(); 
 			m_instance->m_audioDecoderPluginsIter != m_instance->m_audioDecoderPlugins.end(); 
 			m_instance->m_audioDecoderPluginsIter++) {
 		plugin = m_instance->m_audioDecoderPluginsIter->second;
-		result << "  " << plugin->name() << " (" << plugin->author() << ")" << endl;
+		result << "  " << plugin->name() << br;
 	}
-	result << endl;
+	result << br;
 
-	result << "audio encoder:" << endl;
+	result << "audio encoder:" << br;
 	for(m_instance->m_audioEncoderPluginsIter = m_instance->m_audioEncoderPlugins.begin(); 
 			m_instance->m_audioEncoderPluginsIter != m_instance->m_audioEncoderPlugins.end(); 
 			m_instance->m_audioEncoderPluginsIter++) {
 		plugin = m_instance->m_audioEncoderPluginsIter->second;
-		result << "  " << plugin->name() << " (" << plugin->author() << ")" << endl;
+		result << "  " << plugin->name() << br;
 	}
-	result << endl;
+	result << br;
 	
 	return result.str();
 }

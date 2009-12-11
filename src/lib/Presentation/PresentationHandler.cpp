@@ -37,6 +37,7 @@
 #include "../Transcoding/TranscodingMgr.h"
 #include "../HTTP/HTTPParser.h"
 #include "../DeviceSettings/DeviceIdentificationMgr.h"
+#include "../Plugins/Plugin.h"
 
 #include <sstream>
 #include <fstream>
@@ -403,7 +404,7 @@ std::string CPresentationHandler::GetStatusHTML()
       "</tbody>" << endl <<   
     "</table>" << endl;
 
-  delete pDb;
+  //delete pDb;
   // end Database status
   
   
@@ -412,6 +413,8 @@ std::string CPresentationHandler::GetStatusHTML()
   CTranscodingMgr::Shared()->PrintTranscodingSettings(&sTranscoding);
   sResult << sTranscoding;
   
+
+  sResult << "<h1>plugins</h1>" << CPluginMgr::printInfo(true);
   
   
   /*sResult << "<h1>build options</h1>" <<
