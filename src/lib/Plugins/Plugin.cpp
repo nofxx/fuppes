@@ -426,8 +426,7 @@ CPlugin::~CPlugin()
 	if(m_pluginUninitInstance)
 		m_pluginUninitInstance(&m_pluginInfo);
 	
-  if(m_pluginInfo.plugin_type == PT_METADATA || 
-		 m_pluginInfo.plugin_type == PT_DLNA) {
+  if(m_pluginInfo.plugin_type == PT_DLNA) {
     FuppesCloseLibrary(m_handle);
   }
 }

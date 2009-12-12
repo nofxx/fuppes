@@ -29,7 +29,11 @@
 #include "../SharedLog.h"
 
 #include <errno.h>
+#ifdef HAVE_CLOCK_GETTIME
 #include <time.h>
+#else
+#include <sys/time.h>
+#endif
 
 using namespace fuppes;
 
@@ -169,15 +173,24 @@ bool Thread::close()
 
 	pthread_mutex_lock(&m_mutex);
 	if(!m_finished) {
+	
+
 		timespec timeout;
+#ifdef HAVE_CLOCK_GETTIME
 		clock_gettime(CLOCK_REALTIME, &timeout);		
 		timeout.tv_sec += 5;
-			
+#else
+		timeval time;
+		gettimeofday(&time, NULL);
+		timeout.tv_sec = time.tv_sec + 5;
+#endif
+		
 		err = pthread_cond_timedwait(&m_exitCondition, &m_mutex, &timeout);
 		if(err == ETIMEDOUT && !m_finished) {
 			CSharedLog::Log(L_NORM, __FILE__, __LINE__, "FATAL ERROR: pthread_cond_timedwait failed on thread %s", m_name.c_str());
 			result = false;
 		}
+		
 	}
 	pthread_mutex_unlock(&m_mutex);
 	

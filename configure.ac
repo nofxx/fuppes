@@ -81,7 +81,14 @@ PKG_CHECK_MODULES(PCRE, libpcre >= 5.0)
 PKG_CHECK_MODULES(LIBXML, libxml-2.0 >= 2.6.1)
 PKG_CHECK_MODULES(SQLITE3, sqlite3 >= 3.2)
 AC_CHECK_LIB(pthread, pthread_create, FUPPES_LIBS="$FUPPES_LIBS -lpthread")
-AC_CHECK_LIB(rt, clock_gettime, FUPPES_LIBS="$FUPPES_LIBS -lrt")
+
+have_clock_gettime=no
+AH_TEMPLATE([HAVE_CLOCK_GETTIME], [])
+AC_CHECK_LIB(rt, clock_gettime, have_clock_gettime=yes)
+if test "x$have_clock_gettime" = "xyes"; then
+	FUPPES_LIBS="$FUPPES_LIBS -lrt"
+	AC_DEFINE([HAVE_CLOCK_GETTIME], [1], [])
+fi
 
 echo ""
 echo "check recommended dependencies"
