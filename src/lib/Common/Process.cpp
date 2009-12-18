@@ -1,3 +1,4 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Process.cpp
  *
@@ -69,6 +70,16 @@ void CProcessMgr::init()
 	::signal(SIGCHLD, &on_signal);
 	#endif
 }
+
+void CProcessMgr::uninit()
+{
+	if(m_instance == 0)
+    return;
+  
+  delete m_instance;
+  m_instance = NULL;
+}
+
 
 #ifndef WIN32
 void CProcessMgr::signal(pid_t pid, int /*signal*/)

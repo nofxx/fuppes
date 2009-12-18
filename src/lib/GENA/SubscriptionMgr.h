@@ -1,4 +1,4 @@
-/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            SubscriptionMgr.h
  *
@@ -129,9 +129,8 @@ class CSubscriptionMgr: private fuppes::Thread
 
     std::map<std::string, CSubscription*>           m_Subscriptions;
     std::map<std::string, CSubscription*>::iterator m_SubscriptionsIterator;  
-		
-    //fuppesThread m_MainLoop; 
+
 		void run();
 };
 
-#endif /* _SUBSCRIPTIONMGR_H */
+#endif // _SUBSCRIPTIONMGR_H

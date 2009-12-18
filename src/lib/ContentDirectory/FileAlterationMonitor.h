@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            FileAlterationMonitor.h
  *
@@ -38,6 +38,7 @@
 #endif
 
 #include <string>
+#include <sstream>
 #include <map>
 
 typedef enum {
@@ -104,7 +105,44 @@ class CFileAlterationEvent
     std::string     oldPath() { return m_oldPath; }
     std::string     oldFile() { return m_oldFile; }
     std::string     oldFullPath() { return m_oldPath + m_oldFile; }
-    
+
+		static std::string toString(CFileAlterationEvent* event) {
+
+			std::stringstream result;
+			result << "FAM-EVENT ";
+			result << (event->isDir() ? "(DIR)" : "(FILE)");
+			
+			result << " - type:";
+			if(event->type() == FAM_UNKNOWN) {
+				result << " FAM_UNKNOWN";
+			}
+			if((event->type() & FAM_CREATE) == FAM_CREATE) {
+				result << " FAM_CREATE";
+			}
+			if((event->type() & FAM_DELETE) == FAM_DELETE) {
+				result << " FAM_DELETE";
+			}
+			if((event->type() & FAM_MOVE) == FAM_MOVE) {
+				result << " FAM_MOVE";
+			}
+			if((event->type() & FAM_MODIFY) == FAM_MODIFY) {
+				result << " FAM_MODIFY";
+			}
+			result << std::endl;
+			
+			result << " path: " << event->path() << std::endl;
+			result << (event->isDir() ? " dir : " : " file: ") << event->file() << std::endl;
+
+			
+			if((event->type() & FAM_MOVE) == FAM_MOVE) {
+				result << std::endl;
+				result << " old path: " << event->oldPath() << std::endl;
+				result << (event->isDir() ? " old dir : " : " old file: ") << event->oldFile() << std::endl;
+			}
+
+			return result.str();
+		}
+	 
   private:
     int               m_type;
     bool              m_isDir;
@@ -135,24 +173,7 @@ class CFileAlterationMonitor: protected fuppes::Thread
     
     bool isActive() { return m_active; }
     
-    /*void famEvent(FAM_EVENT_TYPE eventType, std::string path, std::string name, std::string oldPath = "", std::string oldName = "")	{
-			if(!m_pEventHandler) {
-				return;
-			}
-			
-      appendTrailingSlash(&path);
-      appendTrailingSlash(&oldPath);      
-      
-			fuppesThreadLockMutex(&mutex);
-			m_pEventHandler->FamEvent(eventType, path, name, oldPath, oldName);
-			fuppesThreadUnlockMutex(&mutex);
-		}*/
-    
-    void FamEvent(CFileAlterationEvent* event) {
-      fuppesThreadLockMutex(&mutex);
-			m_pEventHandler->FamEvent(event);
-			fuppesThreadUnlockMutex(&mutex);
-    }
+    void FamEvent(CFileAlterationEvent* event);
 			
   protected:
     CFileAlterationMonitor(IFileAlterationMonitor* pEventHandler): fuppes::Thread("fam") { 

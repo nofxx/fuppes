@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            SharedConfig.cpp
  *
@@ -101,6 +101,10 @@ CSharedConfig::~CSharedConfig()
   }
 
 	delete CDeviceIdentificationMgr::Shared();
+	delete CTranscodingMgr::Shared();
+
+	CProcessMgr::uninit();
+	CPluginMgr::uninit();
 }
 
 

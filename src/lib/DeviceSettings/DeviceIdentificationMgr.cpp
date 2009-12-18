@@ -1,3 +1,4 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            DeviceIdentificationMgr.cpp
  * 
@@ -44,7 +45,14 @@ CDeviceIdentificationMgr::CDeviceIdentificationMgr()
 
 CDeviceIdentificationMgr::~CDeviceIdentificationMgr()
 {
-  #warning todo: cleanup
+
+  for(m_SettingsIt = m_Settings.begin();
+      m_SettingsIt != m_Settings.end();
+      m_SettingsIt++) {
+    delete *m_SettingsIt;
+  }
+  m_Settings.clear();
+  
   delete m_pDefaultSettings;
 }
 

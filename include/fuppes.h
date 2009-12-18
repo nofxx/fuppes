@@ -1,15 +1,17 @@
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            fuppes.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -85,6 +87,10 @@ void fuppes_print_device_settings();
   
 void fuppes_set_loglevel(int n_log_level);
 void fuppes_inc_loglevel();
+
+/* look at SharedLog.h fuppes::Log::Sender for possible sender values */
+void fuppes_activate_log_sender(const char* sender);
+void fuppes_deactivate_log_sender(const char* sender);
   
 void fuppes_rebuild_db();
 void fuppes_update_db();

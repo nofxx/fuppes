@@ -1,3 +1,4 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            MSearchSession.cpp
  * 
@@ -50,7 +51,8 @@ CMSearchSession::CMSearchSession(std::string p_sIPAddress, IMSearchSession* pRec
 
 CMSearchSession::~CMSearchSession()
 {
-  m_UdpSocket.TeardownSocket();  
+  m_UdpSocket.close();
+  m_UdpSocket.TeardownSocket();
 }
 
 void CMSearchSession::OnUDPSocketStarted()
@@ -155,7 +157,7 @@ void CHandleMSearchSession::run()
  
   if(pSession->GetSSDPMessage()->GetMSearchST() != M_SEARCH_ST_UNSUPPORTED)
   {    
-    CSharedLog::Shared()->ExtendedLog("CHandleMSearchSession", "unicasting response");
+    //CSharedLog::Shared()->ExtendedLog("CHandleMSearchSession", "unicasting response");
      
     /*cout << "HandleMSearch - MX = " << pSession->GetSSDPMessage()->GetMX() << endl;
     fflush(stdout);*/
@@ -227,7 +229,7 @@ void CHandleMSearchSession::run()
     }
       
     Sock.TeardownSocket();
-    CSharedLog::Shared()->ExtendedLog("CHandleMSearchSession", "done");
+    //CSharedLog::Shared()->ExtendedLog("CHandleMSearchSession", "done");
   }  
   
   /*cout << "HandleMSearchThread DONE" << endl;

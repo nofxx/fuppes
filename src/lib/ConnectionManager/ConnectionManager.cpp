@@ -30,14 +30,20 @@ using namespace std;
 CConnectionManagerCore* CConnectionManagerCore::m_instance = 0;
 
 
-void CConnectionManagerCore::init()
+void CConnectionManagerCore::init() // static
 {
 	if(m_instance == 0) {
 		m_instance = new CConnectionManagerCore();
 	}
 }
 
-
+void CConnectionManagerCore::uninit() // static
+{
+	if(m_instance == 0)
+		return;
+  delete m_instance;
+  m_instance = NULL;
+}
 
 
 CConnectionManager::CConnectionManager(std::string p_sHTTPServerURL):

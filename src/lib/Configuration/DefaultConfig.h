@@ -680,6 +680,25 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
 				xmlTextWriterStartElement(pWriter, BAD_CAST "show_empty_resolution");
         xmlTextWriterWriteString(pWriter, BAD_CAST "true");
         xmlTextWriterEndElement(pWriter);
+
+        // non standard mime types
+        xmlTextWriterWriteComment(pWriter, BAD_CAST "This section is for the mime types that the makers of the XBox changed from standards.");
+        
+        xmlTextWriterStartElement(pWriter, BAD_CAST "file_settings");
+          
+          // avi
+          xmlTextWriterStartElement(pWriter, BAD_CAST "file");
+            xmlTextWriterWriteAttribute(pWriter, BAD_CAST "ext", BAD_CAST "avi");
+            xmlTextWriterStartElement(pWriter, BAD_CAST "type");
+              xmlTextWriterWriteString(pWriter, BAD_CAST "VIDEO_ITEM");
+            xmlTextWriterEndElement(pWriter);
+            xmlTextWriterStartElement(pWriter, BAD_CAST "mime_type");
+              xmlTextWriterWriteString(pWriter, BAD_CAST "video/avi");
+            xmlTextWriterEndElement(pWriter);
+          xmlTextWriterEndElement(pWriter);
+
+        xmlTextWriterEndElement(pWriter);  
+
 		
 				// description_values
 				xmlTextWriterStartElement(pWriter, BAD_CAST "description_values");

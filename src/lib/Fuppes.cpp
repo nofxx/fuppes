@@ -1,4 +1,4 @@
-/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Fuppes.cpp
  * 
@@ -124,7 +124,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
 	
 	// XMSMediaReceiverRegistrar
 	try {
-	  m_pXMSMediaReceiverRegistrar = new CXMSMediaReceiverRegistrar();
+	  m_pXMSMediaReceiverRegistrar = new CXMSMediaReceiverRegistrar(m_pHTTPServer->GetURL());
 		m_pMediaServer->AddUPnPService(m_pXMSMediaReceiverRegistrar);
 	}
 	catch(fuppes::Exception ex) {
@@ -195,6 +195,10 @@ CFuppes::~CFuppes()
   delete CSubscriptionMgr::Shared();
   delete CContentDatabase::Shared();
   delete CVirtualContainerMgr::Shared();
+
+	CConnectionManagerCore::uninit();
+  delete CFileDetails::Shared();
+  //delete CTranscodingMgr::Shared();
 }
 
 void CFuppes::CleanupTimedOutDevices()
@@ -328,8 +332,8 @@ void CFuppes::HandleSSDPAlive(CSSDPMessage* pMessage)
   if(m_RemoteDeviceIterator != m_RemoteDevices.end()) {
     
     m_RemoteDevices[pMessage->GetUUID()]->GetTimer()->reset();
-    CSharedLog::Log(L_EXT, __FILE__, __LINE__,
-        "received \"Notify-Alive\" from known device id: %s", pMessage->GetUUID().c_str());
+    /*CSharedLog::Log(L_EXT, __FILE__, __LINE__,
+        "received \"Notify-Alive\" from known device id: %s", pMessage->GetUUID().c_str());*/
   }
   // new device
   else {    
@@ -395,6 +399,7 @@ bool CFuppes::HandleHTTPRequest(CHTTPMessage* pMessageIn, CHTTPMessage* pMessage
   if(ToLower(strRequest).compare("/description.xml") == 0) {
     pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml"); // HTTP_CONTENT_TYPE_TEXT_XML
     pMessageOut->SetContent(m_pMediaServer->GetDeviceDescription(pMessageIn));
+		//cout << m_pMediaServer->GetDeviceDescription(pMessageIn) << endl;
     return true;
   }
 

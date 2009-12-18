@@ -1,9 +1,10 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            DeviceSettings.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -204,6 +205,7 @@ struct CFileSettings {
   
   CFileSettings();
   CFileSettings(CFileSettings* pFileSettings);
+  ~CFileSettings();
   
   std::string   MimeType(std::string p_sACodec = "", std::string p_sVCodec = "");
   std::string   DLNA();
@@ -267,6 +269,7 @@ class CDeviceSettings
   public:
 	  CDeviceSettings(std::string p_sDeviceName);
     CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSettings);
+    ~CDeviceSettings();
 		
 		bool HasUserAgent(std::string p_sUserAgent);
     bool HasIP(std::string p_sIPAddress);	

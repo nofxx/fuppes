@@ -1,4 +1,4 @@
-/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Fuppes.h
  * 
@@ -38,7 +38,7 @@
 #include "UPnPDevice.h"
 #include "ContentDirectory/ContentDirectory.h"
 #include "ConnectionManager/ConnectionManager.h"
-#include "XMSMediaReceiverRegistrar.h"
+#include "XMSMediaReceiverRegistrar/XMSMediaReceiverRegistrar.h"
 
 class CFuppes;
 class CHTTPMessage;

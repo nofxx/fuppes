@@ -52,10 +52,10 @@ int read_image(const char* fileName, char** mimeType, unsigned char** buffer, si
 	*buffer = (unsigned char*)realloc(*buffer, *size);
 	
 	size_t offset = 0;
-	for(int i = 0; i < data.size(); i++) {
-		memcpy(&(*buffer)[offset], &data.at(i), sizeof(uint8_t));
-		offset += sizeof(uint8_t);
-	}	
+	//for(int i = 0; i < data.size(); i++) {
+		memcpy(&(*buffer)[offset], &data.at(0), sizeof(uint8_t) * data.size());
+		/*offset += sizeof(uint8_t);
+	}	*/
 	return 0;
 }
 

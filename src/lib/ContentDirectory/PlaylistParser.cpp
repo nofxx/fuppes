@@ -1,3 +1,4 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            PlaylistParser.cpp
  *
@@ -154,7 +155,7 @@ bool M3U_PlaylistParser::Parse(std::string p_sContent)
       }
 
       //  #EXTINF:123,Sample title
-      pEntry->length = atoi(rxData.Match(1));
+      pEntry->length = atoi(rxData.Match(1).c_str());
       playlistLength += pEntry->length;
 
       pEntry->sTitle = rxData.Match(2);
@@ -179,6 +180,7 @@ bool M3U_PlaylistParser::Parse(std::string p_sContent)
     
   if(!m_lEntries.empty()) {
     m_bEof = false;
+    m_lEntriesIterator = m_lEntries.begin();
   }
   return true;
 }
@@ -191,7 +193,7 @@ bool PLS_PlaylistParser::Parse(std::string p_sContent)
 	int numEntries = 0;
 		
 	if(rxNumEntries.Search(p_sContent.c_str())) {
-		numEntries = atoi(rxNumEntries.Match(1));
+		numEntries = atoi(rxNumEntries.Match(1).c_str());
 	}
 		
 	if(numEntries == 0)
@@ -224,6 +226,7 @@ bool PLS_PlaylistParser::Parse(std::string p_sContent)
 
   if(!m_lEntries.empty()) {
     m_bEof = false;
+    m_lEntriesIterator = m_lEntries.begin();
   }
 		
   return true;
@@ -304,6 +307,7 @@ bool RSS_PlaylistParser::Parse(std::string p_sContent)
 		
   if(!m_lEntries.empty()) {
     m_bEof = false;
+    m_lEntriesIterator = m_lEntries.begin();
   }
 
 	return true;
@@ -357,6 +361,7 @@ bool WPL_PlaylistParser::Parse(std::string p_sContent)
 
   if(!m_lEntries.empty()) {
     m_bEof = false;
+    m_lEntriesIterator = m_lEntries.begin();
   }
 
   delete pDoc;

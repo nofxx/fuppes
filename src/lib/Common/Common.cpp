@@ -1,9 +1,10 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Common.cpp
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -286,7 +287,7 @@ bool SplitURL(std::string p_sURL, std::string* p_sIPAddress, unsigned int* p_nPo
   {    
     (*p_sIPAddress) = rxSplit.Match(1);
     if(rxSplit.SubStrings() == 3)
-      *p_nPort = atoi(rxSplit.Match(2));
+      *p_nPort = atoi(rxSplit.Match(2).c_str());
     else
       *p_nPort = 80;
     

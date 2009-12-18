@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            libmain.cpp
  *
@@ -50,6 +50,7 @@
 #include <sstream>
 
 using namespace std;
+using namespace fuppes;
 
 CFuppes* pFuppes = 0;
 
@@ -209,7 +210,7 @@ int fuppes_start()
   try {
     pFuppes = new CFuppes(CSharedConfig::Shared()->GetIPv4Address(), CSharedConfig::Shared()->GetUUID());
     CSharedConfig::Shared()->AddFuppesInstance(pFuppes);
-    CSharedLog::Log(L_EXT, __FILE__, __LINE__, fuppes_print_info());  // useful for bug reports
+    //CSharedLog::Log(L_EXT, __FILE__, __LINE__, fuppes_print_info());  // useful for bug reports
     return FUPPES_TRUE;
   }
   catch(fuppes::Exception ex) {
@@ -235,7 +236,8 @@ int fuppes_cleanup()
 	CDatabase::close();	
 
 	delete CSharedConfig::Shared();
-	delete CSharedLog::Shared();	
+	delete CSharedLog::Shared();
+  Log::uninit();
 	
   xmlCleanupParser();
     
@@ -268,6 +270,18 @@ void fuppes_set_loglevel(int n_log_level)
 void fuppes_inc_loglevel()
 {
   CSharedLog::Shared()->ToggleLog();
+}
+
+void fuppes_activate_log_sender(const char* sender)
+{
+	Log::Sender tmp = Log::stringToSender(sender);
+	Log::addActiveSender(tmp);
+}
+
+void fuppes_deactivate_log_sender(const char* sender)
+{
+	Log::Sender tmp = Log::stringToSender(sender);
+	Log::removeActiveSender(tmp);
 }
 
 void fuppes_rebuild_db()

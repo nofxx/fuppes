@@ -1,4 +1,4 @@
-/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            UPnPDevice.cpp
  * 
@@ -281,8 +281,8 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 						"<serviceType>urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1</serviceType>" <<
 						"<serviceId>urn:microsoft.com:serviceId:X_MS_MediaReceiverRegistrar</serviceId>" <<
 						"<SCPDURL>/UPnPServices/" << pTmp->GetUPnPDeviceTypeAsString() << "/description.xml</SCPDURL>" <<
-						"<controlURL>/UPnPServices/" << pTmp->GetUPnPDeviceTypeAsString() << "/control</controlURL>" <<
-						"<eventSubURL>/UPnPServices/" << pTmp->GetUPnPDeviceTypeAsString() << "/event</eventSubURL>" <<
+						"<controlURL>/UPnPServices/" << pTmp->GetUPnPDeviceTypeAsString() << "/control/</controlURL>" <<
+						"<eventSubURL>/UPnPServices/" << pTmp->GetUPnPDeviceTypeAsString() << "/event/</eventSubURL>" <<
 						"</service>";
 												
 					xmlTextWriterWriteRaw(writer, BAD_CAST sDescription.str().c_str());

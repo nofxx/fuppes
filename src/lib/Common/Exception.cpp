@@ -31,16 +31,43 @@
 using namespace fuppes;
 
 Exception::Exception(const std::string exception, const std::string file, int line)
-: std::exception() {       
-	
+: std::exception() 
+{
+	m_sender = Log::unknown;	
 	m_file = file;
 	m_line = line;
 	m_exception = exception;
 };
 
 Exception::Exception(const std::string file, int line, const char* exception, ...)
-: std::exception() {       
+: std::exception() 
+{
+	m_sender = Log::unknown;	
+	m_file = file;
+	m_line = line;
 	
+  va_list args;
+  char buffer[1024];
+  va_start(args, exception);
+  ::vsnprintf(buffer, sizeof(buffer), exception, args);
+  va_end(args);
+  m_exception = buffer;
+};
+
+
+Exception::Exception(Log::Sender sender, const std::string file, int line, std::string exception)
+: std::exception()
+{       
+	m_sender = sender;
+	m_file = file;
+	m_line = line;
+	m_exception = exception;
+};
+
+Exception::Exception(Log::Sender sender, const std::string file, int line, const char* exception, ...)
+: std::exception() 
+{
+	m_sender = sender;	
 	m_file = file;
 	m_line = line;
 	

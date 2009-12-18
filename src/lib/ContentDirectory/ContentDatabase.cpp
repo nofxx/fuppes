@@ -92,7 +92,8 @@ CContentDatabase::CContentDatabase()
 CContentDatabase::~CContentDatabase()
 {                                       
   fuppesThreadDestroyMutex(&m_Mutex);
-  delete m_pFileAlterationMonitor;    
+  delete m_pFileAlterationMonitor;
+	delete CFileAlterationMgr::Shared();
 
 	
 	if(m_RebuildThread != NULL) { //(fuppesThread)NULL)) {
@@ -284,6 +285,7 @@ bool CContentDatabase::Open()
 void CContentDatabase::Close()
 {
 	CDatabase::close();
+	ClearResult();
 }
 
 
@@ -1357,7 +1359,7 @@ void CContentDatabase::FamEvent(CFileAlterationEvent* event)
 		sSql.str("");
 
     string newPath;  
-    CContentDatabase db; 
+    //CContentDatabase db; 
 
 		while(!qry->eof()) {
 			CSQLResult* result = qry->result();
@@ -1374,7 +1376,7 @@ void CContentDatabase::FamEvent(CFileAlterationEvent* event)
         "where ID = " << result->asString("ID");
       
       //cout << sSql.str() << endl;
-      db.Execute(sSql.str());
+      Execute(sSql.str());
       sSql.str("");
 
 			qry->next();

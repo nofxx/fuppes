@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            UPnPActionFactory.cpp
  *
@@ -148,7 +148,17 @@ CUPnPAction* CUPnPActionFactory::buildActionFromString(std::string p_sContent, C
 	  else if(sName.compare("IsValidated") == 0) {
 	    pAction = new CUPnPAction(UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR, UPNP_IS_VALIDATED, p_sContent);      
 	  }
-		pAction->DeviceSettings(pDeviceSettings);
+		else if(sName.compare("RegisterDevice") == 0) {
+	    pAction = new CUPnPAction(UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR, UPNP_REGISTER_DEVICE, p_sContent);      
+	  }
+		else {
+      cout << "unhandled XMS ACTION: " << sName << endl;
+      pAction = NULL;
+		}
+		
+    if(pAction) {
+      pAction->DeviceSettings(pDeviceSettings);
+    }
 	}
 	
 	if(!pAction) {
@@ -185,9 +195,9 @@ bool CUPnPActionFactory::parseBrowseAction(CUPnPBrowse* pAction)
     // Xbox 360 does a browse using ContainerID instead of ObjectID for Pictures
     sRxObjId = "<ContainerID.*>(.+)</ContainerID>";
   }    
-  RegEx rxObjId(sRxObjId.c_str());
-  if(rxObjId.Search(pAction->GetContent().c_str())) {
-		if(strlen(rxObjId.Match(1)) > 10)
+  RegEx rxObjId(sRxObjId);
+  if(rxObjId.Search(pAction->GetContent())) {
+		if(rxObjId.Match(1).length() > 10)
 			return false;
 
     pAction->m_sObjectId = rxObjId.Match(1);
@@ -196,7 +206,7 @@ bool CUPnPActionFactory::parseBrowseAction(CUPnPBrowse* pAction)
   /* Browse flag */
   pAction->m_nBrowseFlag = UPNP_BROWSE_FLAG_UNKNOWN;    
   RegEx rxBrowseFlag("<BrowseFlag.*>(.+)</BrowseFlag>");
-  if(rxBrowseFlag.Search(pAction->GetContent().c_str()))
+  if(rxBrowseFlag.Search(pAction->GetContent()))
   {
     string sMatch = rxBrowseFlag.Match(1);
     if(sMatch.compare("BrowseMetadata") == 0)
@@ -207,20 +217,20 @@ bool CUPnPActionFactory::parseBrowseAction(CUPnPBrowse* pAction)
   
   /* Filter */
   RegEx rxFilter("<Filter.*>(.+)</Filter>");
-  if(rxFilter.Search(pAction->GetContent().c_str()))  
+  if(rxFilter.Search(pAction->GetContent()))  
     pAction->m_sFilter = rxFilter.Match(1);  
   else
     pAction->m_sFilter = "";
 
   /* Starting index */
   RegEx rxStartIdx("<StartingIndex.*>(.+)</StartingIndex>");
-  if(rxStartIdx.Search(pAction->GetContent().c_str()))  
-    pAction->m_nStartingIndex = atoi(rxStartIdx.Match(1));
+  if(rxStartIdx.Search(pAction->GetContent()))  
+    pAction->m_nStartingIndex = atoi(rxStartIdx.Match(1).c_str());
 
   /* Requested count */
   RegEx rxReqCnt("<RequestedCount.*>(.+)</RequestedCount>");
-  if(rxReqCnt.Search(pAction->GetContent().c_str()))  
-    pAction->m_nRequestedCount = atoi(rxReqCnt.Match(1));  
+  if(rxReqCnt.Search(pAction->GetContent()))  
+    pAction->m_nRequestedCount = atoi(rxReqCnt.Match(1).c_str());  
   
 	parseSortCriteria(pAction);
 
@@ -246,30 +256,30 @@ bool CUPnPActionFactory::parseSearchAction(CUPnPSearch* pAction)
   
   // Container ID
   RegEx rxContainerID("<ContainerID.*>(.+)</ContainerID>");
-  if (rxContainerID.Search(pAction->GetContent().c_str()))
+  if (rxContainerID.Search(pAction->GetContent()))
     pAction->m_sObjectId = rxContainerID.Match(1);
 	
 	// Search Criteria
 	RegEx rxSearchCriteria("<SearchCriteria.*>(.+)</SearchCriteria>");
-	if(rxSearchCriteria.Search(pAction->GetContent().c_str()))
+	if(rxSearchCriteria.Search(pAction->GetContent()))
 	  pAction->m_sSearchCriteria = rxSearchCriteria.Match(1);
 	
   // Filter
   RegEx rxFilter("<Filter.*>(.+)</Filter>");
-  if(rxFilter.Search(pAction->GetContent().c_str()))  
+  if(rxFilter.Search(pAction->GetContent()))  
     pAction->m_sFilter = rxFilter.Match(1);  
   else
     pAction->m_sFilter = "";
 
   // Starting index
   RegEx rxStartIdx("<StartingIndex.*>(.+)</StartingIndex>");
-  if(rxStartIdx.Search(pAction->GetContent().c_str()))  
-    pAction->m_nStartingIndex = atoi(rxStartIdx.Match(1));
+  if(rxStartIdx.Search(pAction->GetContent()))  
+    pAction->m_nStartingIndex = atoi(rxStartIdx.Match(1).c_str());
 
   // Requested count
   RegEx rxReqCnt("<RequestedCount.*>(.+)</RequestedCount>");
-  if(rxReqCnt.Search(pAction->GetContent().c_str()))  
-    pAction->m_nRequestedCount = atoi(rxReqCnt.Match(1)); 
+  if(rxReqCnt.Search(pAction->GetContent()))  
+    pAction->m_nRequestedCount = atoi(rxReqCnt.Match(1).c_str()); 
 
   // sort cirteria
 	parseSortCriteria(pAction);

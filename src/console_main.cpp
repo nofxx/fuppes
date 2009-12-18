@@ -1,9 +1,10 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            console_main.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -111,8 +112,9 @@ int main(int argc, char* argv[])
 {
 #ifndef WIN32
   if(!geteuid()) {
-    cout << "Do not run fuppes as the root user." << endl;
-    return -2;
+    cout << "WARNING: Do not run fuppes as the root user." << endl;
+    cout << "future versions of fuppes will not allow this" << endl;
+    //return -2;
   }
 #endif
   g_bExitApp = false;
@@ -147,7 +149,10 @@ int main(int argc, char* argv[])
   #endif
   cout << endl;
 
-  string input = "";
+  string input;
+  string cmd;
+  string param;
+
   #ifdef WIN32
   while(input != "q")
   #else
@@ -155,6 +160,8 @@ int main(int argc, char* argv[])
   #endif
   {
     input = "";
+    cmd = "";
+    param = "";
     #ifdef WIN32
     getline(cin, input);
     #else
@@ -168,6 +175,12 @@ int main(int argc, char* argv[])
     }
     while ((nRes != 10) && (nRes != 13) && !g_bExitApp);
     #endif
+
+    size_t pos;
+    if((pos = input.find(" ")) != string::npos) {
+      cmd = input.substr(0, pos);
+      param = input.substr(pos + 1);
+    }
     
     if (input == "m") {
       fuppes_send_msearch();
@@ -181,6 +194,13 @@ int main(int argc, char* argv[])
     else if (input == "l") {
       fuppes_inc_loglevel();
     }
+      else if (cmd == "la") {
+        fuppes_activate_log_sender(param.c_str());
+      }
+      else if (cmd == "ld") {
+        fuppes_deactivate_log_sender(param.c_str());
+      }
+    
     else if(input == "r") {
       fuppes_rebuild_db();
     }

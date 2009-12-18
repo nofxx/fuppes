@@ -31,7 +31,7 @@
 #endif
 
 #ifdef WIN32
-#pragma comment(lib,"shlwapi.lib")
+//#pragma comment(lib,"shlwapi.lib")
 #include <shlwapi.h>
 #else
 #include <pthread.h>

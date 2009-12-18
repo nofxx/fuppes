@@ -47,9 +47,11 @@
 /* This must be defined to use InitializeCriticalSectionAndSpinCount() */
 //#define _WIN32_WINNT 0x0410 // Windows 98 or later
 
+/*
 #pragma comment(lib,"Wsock32.lib") 
 #pragma comment(lib,"Ws2_32.lib")
 #pragma comment(lib,"shlwapi.lib")
+*/
 
 #include <winsock2.h>
 #include <ws2tcpip.h>

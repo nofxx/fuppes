@@ -32,22 +32,27 @@
 
 #include <exception>
 #include <string>
+#include "../SharedLog.h"
 
 
 namespace fuppes {
-
+	
 class Exception: public std::exception
-{
+{	
   public:
-    Exception(const std::string exception, const std::string file, int line);    
-    Exception(const std::string file, int line, const char* exception, ...);  
-    ~Exception() throw() {};
+    Exception(const std::string exception, const std::string file, int line);
+    Exception(const std::string file, int line, const char* exception, ...);
+    Exception(Log::Sender sender, const std::string file, int line, std::string exception);
+    Exception(Log::Sender sender, const std::string file, int line, const char* exception, ...);
+		~Exception() throw() {};
 
+		Log::Sender sender() { return m_sender; }
 		std::string what() { return m_exception; }
 		std::string	file() { return m_file; }
 		int					line() { return m_line; }
 		
   private:
+		Log::Sender m_sender;
 		std::string m_file;
 		int					m_line;
     std::string m_exception;

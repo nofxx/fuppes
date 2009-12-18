@@ -47,6 +47,32 @@ void ErrorCallback(const char* sz_err)
   pMainForm->Error(sz_err);
 }
 
+
+std::string wstrtostr(const std::wstring &wstr)
+{
+  // Convert a Unicode string to an ASCII string
+  std::string strTo;
+  char *szTo = new char[wstr.length() + 1];
+  szTo[wstr.size()] = '\0';
+  WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, szTo, (int)wstr.length(), NULL, NULL);
+  strTo = szTo;
+  delete[] szTo;
+  return strTo;
+}
+
+std::wstring strtowstr(const std::string &str)
+{
+  // Convert an ASCII string to a Unicode String
+  std::wstring wstrTo;
+  wchar_t *wszTo = new wchar_t[str.length() + 1];
+  wszTo[str.size()] = L'\0';
+  MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, wszTo, (int)str.length());
+  wstrTo = wszTo;
+  delete[] wszTo;
+  return wstrTo;
+}
+
+
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgument, int nWindowStyle)
 {
   MSG messages;
@@ -56,17 +82,26 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgu
   fuppes_set_notify_callback(NotifyCallback);
   fuppes_set_error_callback(ErrorCallback);
 
+  int argc;  
+  LPWSTR *szArglist;
+  szArglist = CommandLineToArgvW(GetCommandLineW(), &argc);  
   
-   LPWSTR *szArglist;
-   int nArgs;
+  char* argv[100];
+  for(int i = 0; i < argc; i++) {
+    argv[i] = (char*)malloc(wstrtostr(szArglist[i]).length());
+    strcpy(argv[i], wstrtostr(szArglist[i]).c_str());
+  }
+  LocalFree(szArglist);
 
-   szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);  
-  
   // fuppes_init()
-  if(fuppes_init(0, (char**)szArglist, LogCallback) == FUPPES_FALSE) {    
+  if(fuppes_init(argc, argv, LogCallback) == FUPPES_FALSE) {    
     pMainForm->HideTrayIcon();
     delete pMainForm;
     return 1;
+  }
+
+  for(int i = 0; i < argc; i++) {
+    free(argv[i]);
   }
 
 

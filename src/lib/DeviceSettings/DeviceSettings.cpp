@@ -1,9 +1,10 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            DeviceSettings.cpp
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -24,10 +25,10 @@
 
 #include "DeviceSettings.h"
 #include "../Common/RegEx.h"
-#include <iostream>
 
 #define DEFAULT_RELEASE_DELAY 4
 
+//#include <iostream>
 using namespace std;
 
 CImageSettings::CImageSettings()
@@ -170,7 +171,7 @@ std::string  CTranscodingSettings::VideoCodec(std::string p_sVCodec)
 
 
 CFileSettings::CFileSettings() 
-{
+{ 
   pTranscodingSettings  = NULL;
   pImageSettings        = NULL;
   bEnabled              = true; 
@@ -178,7 +179,7 @@ CFileSettings::CFileSettings()
 }
 
 CFileSettings::CFileSettings(CFileSettings* pFileSettings)
-{
+{ 
   pTranscodingSettings = NULL;
   pImageSettings = NULL;
   
@@ -195,6 +196,14 @@ CFileSettings::CFileSettings(CFileSettings* pFileSettings)
   nType     = pFileSettings->nType;
   
   bExtractMetadata = pFileSettings->bExtractMetadata;
+}
+
+CFileSettings::~CFileSettings()
+{ 
+  if(pTranscodingSettings)
+    delete pTranscodingSettings;
+  if(pImageSettings)
+    delete pImageSettings;
 }
 
 std::string CFileSettings::ObjectTypeAsStr() 
@@ -431,13 +440,23 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSe
     m_FileSettingsIterator = m_FileSettings.find(pSettings->m_FileSettingsIterator->first);
     
     if(m_FileSettingsIterator != m_FileSettings.end()) {
-      m_FileSettings[pSettings->m_FileSettingsIterator->first] = m_FileSettingsIterator->second;
+      //m_FileSettings[pSettings->m_FileSettingsIterator->first] = m_FileSettingsIterator->second;
     }
     else {    
       m_FileSettings[pSettings->m_FileSettingsIterator->first] =
           new CFileSettings(pSettings->m_FileSettingsIterator->second);
     }
   }  
+}
+
+CDeviceSettings::~CDeviceSettings()
+{
+  for(m_FileSettingsIterator = m_FileSettings.begin();
+      m_FileSettingsIterator != m_FileSettings.end();
+      m_FileSettingsIterator++) {
+    delete m_FileSettingsIterator->second;
+  }
+  m_FileSettings.clear();
 }
 
 bool CDeviceSettings::HasUserAgent(std::string p_sUserAgent)
@@ -492,7 +511,7 @@ void CDeviceSettings::AddExt(CFileSettings* pFileSettings, std::string p_sExt)
   if(m_FileSettingsIterator != m_FileSettings.end()) {
     return;
   }
-  m_FileSettings[p_sExt] = pFileSettings;
+  m_FileSettings[p_sExt] = new CFileSettings(pFileSettings);
 }
 
 

@@ -105,9 +105,6 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/WrapperBase.h\
   lib/Transcoding/TranscodingMgr.h\
   lib/Transcoding/TranscodingCache.h\
-	lib/DeviceSettings/DeviceSettings.h\
-	lib/DeviceSettings/DeviceIdentificationMgr.h\
-	lib/XMSMediaReceiverRegistrar.h\
 	lib/SharedConfig.h\
   lib/SharedLog.h\
 	lib/Fuppes.h\
@@ -185,11 +182,17 @@ libfuppes_la_SOURCES = \
   lib/Transcoding/MadDecoder.cpp\
   lib/Transcoding/ExternalCmdWrapper.h\
   lib/Transcoding/ExternalCmdWrapper.cpp\
+  lib/DeviceSettings/DeviceSettings.h\
   lib/DeviceSettings/DeviceSettings.cpp\
+  lib/DeviceSettings/DeviceIdentificationMgr.h\
   lib/DeviceSettings/DeviceIdentificationMgr.cpp\
-  lib/XMSMediaReceiverRegistrar.cpp\
-  lib/Configuration/ConfigFile.cpp\
+  lib/DeviceSettings/MacAddressTable.h\
+  lib/DeviceSettings/MacAddressTable.cpp\
+ 	lib/XMSMediaReceiverRegistrar/XMSMediaReceiverRegistrar.h\
+  lib/XMSMediaReceiverRegistrar/XMSMediaReceiverRegistrar.cpp\
+  lib/XMSMediaReceiverRegistrar/XMSMediaReceiverRegistrarDescription.cpp\
   lib/Configuration/ConfigFile.h\
+  lib/Configuration/ConfigFile.cpp\
   lib/Configuration/DefaultConfig.h\
   lib/SharedConfig.cpp\
   lib/SharedLog.cpp\

@@ -1,3 +1,4 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Process.h
  *
@@ -44,10 +45,10 @@ class CProcess;
 class CProcessMgr {
 	
 	public:
-		CProcessMgr();
 		~CProcessMgr();
 	
 		static void	init();
+ 		static void	uninit();
 		#ifndef WIN32
 		static void signal(pid_t pid, int sig);
 		#endif
@@ -56,6 +57,7 @@ class CProcessMgr {
 		static void unregister_proc(CProcess* proc);
 	
 	private:
+ 		CProcessMgr();
 		static CProcessMgr* 									m_instance;
 	
 		#ifndef WIN32

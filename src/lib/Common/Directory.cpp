@@ -29,6 +29,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#ifdef WIN32
+#include <string.h>
+#endif
+
 using namespace fuppes;
 
 #define SLASH "/"

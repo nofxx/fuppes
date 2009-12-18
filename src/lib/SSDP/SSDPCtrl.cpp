@@ -1,3 +1,4 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            SSDPCtrl.cpp
  *
@@ -27,8 +28,7 @@
 #include <sstream>
  
 using namespace std;
-
-const std::string LOGNAME = "SSDPDCtrl";
+using namespace fuppes;
  
 CSSDPCtrl::CSSDPCtrl(std::string p_sIPAddress, std::string p_sHTTPServerURL)
 {
@@ -130,10 +130,11 @@ void CSSDPCtrl::CleanupSessions()
 
 void CSSDPCtrl::send_msearch()
 {
+#warning todo: store sessions and cleanup on shutdown
   CMSearchSession* pSession = new CMSearchSession(m_sIPAddress, this, m_pNotifyMsgFactory);
   m_LastMulticastEp = pSession->GetLocalEndPoint();
   pSession->Start();  
-  CleanupSessions();  
+  CleanupSessions();
 }
 
 void CSSDPCtrl::send_alive()
@@ -249,7 +250,8 @@ void CSSDPCtrl::OnSessionReceive(CSSDPMessage* pMessage)
   fuppesThreadLockMutex(&m_SessionReceiveMutex);  
   
   /* logging */
-  CSharedLog::Log(L_DBG, __FILE__, __LINE__, pMessage->GetMessage().c_str());
+  //CSharedLog::Log(L_DBG, __FILE__, __LINE__, pMessage->GetMessage().c_str());
+	Log::log(Log::ssdp, Log::debug, __FILE__, __LINE__, pMessage->GetMessage());
   
   /* pass message to the main fuppes instance */
   if(NULL != m_pReceiveHandler)
@@ -277,11 +279,12 @@ void CSSDPCtrl::OnSessionTimeOut(CMSearchSession* pSender)
 void CSSDPCtrl::HandleMSearch(CSSDPMessage* pSSDPMessage)
 {
   fuppesThreadLockMutex(&m_SessionTimedOutMutex);      
-     
-  CSharedLog::Shared()->DebugLog(LOGNAME, pSSDPMessage->GetMessage());
+
   stringstream sLog;
-  sLog << "received m-search from: \"" << inet_ntoa(pSSDPMessage->GetRemoteEndPoint().sin_addr) << ":" << ntohs(pSSDPMessage->GetRemoteEndPoint().sin_port) << "\"";      
-  CSharedLog::Shared()->ExtendedLog(LOGNAME, sLog.str());      
+  sLog << "received m-search from: \"" << inet_ntoa(pSSDPMessage->GetRemoteEndPoint().sin_addr) << ":" << ntohs(pSSDPMessage->GetRemoteEndPoint().sin_port) << "\"";
+  Log::log(Log::ssdp, Log::extended, __FILE__, __LINE__, sLog.str());
+  Log::log(Log::ssdp, Log::debug, __FILE__, __LINE__, pSSDPMessage->GetMessage());
+
   
   //cout << pSSDPMessage->GetMSearchST() << " - " << M_SEARCH_ST_UNSUPPORTED << endl;
   

@@ -1,15 +1,17 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            SharedLog.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -26,6 +28,7 @@
 #include <sstream>
 #include <time.h>
 #include "../config.h"
+#include "Common/Exception.h"
 
 #ifdef HAVE_LIBNOTIFY
 #include <libnotify/notify.h>
@@ -34,6 +37,116 @@
 #endif
 
 using namespace std;
+using namespace fuppes;
+
+std::string Log::senderToString(Log::Sender sender) // static
+{
+	switch(sender) {
+    case Log::unknown:
+      return "unknown";
+    case Log::http:
+      return "http";
+    case Log::soap:
+      return "soap";
+    case Log::gena:
+      return "gena";
+    case Log::ssdp:
+      return "ssdp";
+    case Log::fam:
+      return "fam";
+    case Log::plugin:
+      return "plugin";
+		default:
+			return "unknown";
+	};	
+}
+
+Log::Sender Log::stringToSender(std::string sender) // static
+{
+  if(sender == "unknown")
+    return Log::unknown;
+  else if(sender == "http")
+    return Log::http;
+  else if(sender == "soap")
+    return Log::soap;
+  else if(sender == "gena")
+    return Log::gena;
+  else if(sender == "ssdp")
+    return Log::ssdp;
+  else if(sender == "fam")
+    return Log::fam;
+  else if(sender == "plugin")
+    return Log::plugin;
+  else
+    return Log::unknown;
+}
+
+
+Log* Log::m_instance = NULL;
+
+void Log::init() // static
+{
+  if(m_instance != NULL)
+    return;
+  
+  m_instance = new Log();  
+  /*m_instance->m_logSenders.push_back(Log::http);
+  m_instance->m_logSenders.push_back(Log::ssdp);
+  m_instance->m_logSenders.push_back(Log::fam);*/
+}
+
+void Log::uninit() // static
+{
+  if(m_instance == NULL)
+    return;
+  
+  delete m_instance;
+  m_instance = NULL;
+}
+
+void Log::log(Log::Sender sender, Log::Level level, const std::string fileName, int lineNo, const char* format, ...) // static
+{
+  bool active = false;
+  std::list<Log::Sender>::iterator iter = m_instance->m_logSenders.begin();
+  for(; iter != m_instance->m_logSenders.end(); iter++) {
+    if(*iter == sender) {
+      active = true;
+      break;
+    }
+  }
+
+  if(!active) {
+    //cout << "Log sender: " << Log::senderToString(sender) << " not active" << endl;
+    return;
+  }
+  
+	va_list args;
+  va_start(args, format);
+	CSharedLog::LogArgs(0, fileName, lineNo, format, args);
+	va_end(args);
+}
+
+void Log::log(Log::Sender sender, Log::Level level, const std::string fileName, int lineNo, const std::string msg) // static
+{
+  bool active = false;
+  std::list<Log::Sender>::iterator iter = m_instance->m_logSenders.begin();
+  for(; iter != m_instance->m_logSenders.end(); iter++) {
+    if(*iter == sender) {
+      active = true;
+      break;
+    }
+  }
+
+  if(!active) {
+    //cout << "Log sender: " << Log::senderToString(sender) << " not active" << endl;
+    return;
+  }
+
+	string out = "[" + Log::senderToString(sender) + "] " + msg;
+	CSharedLog::Log(0, fileName, lineNo, out);
+}
+
+
 
 CSharedLog* CSharedLog::m_Instance = 0;
 ofstream*   CSharedLog::m_fsLogFile = NULL;
@@ -49,6 +162,7 @@ CSharedLog* CSharedLog::Shared()
 
 CSharedLog::CSharedLog()
 {
+  Log::init();
   SetLogLevel(1, false);
   
 	
@@ -166,22 +280,22 @@ void CSharedLog::ToggleLog()
   SetLogLevel(m_nLogLevel);
 }
 
-void CSharedLog::Log(std::string p_sSender, std::string p_sMessage)
+/*void CSharedLog::Log(std::string p_sSender, std::string p_sMessage)
 {
   #ifndef DISABLELOG  
   if(m_bShowLog)
-  {
+  {*/
     //fuppesThreadLockMutex(&m_Mutex);
     /*stringstream sLog;
     sLog << "[" << p_sSender << "] " << p_sMessage << std::endl;
     cout << sLog.str() << endl;
     fflush(stdout);*/
-			
+		/*	
 		CSharedLog::Log(L_NORM, "", 0, "[%s] %s", p_sSender.c_str(), p_sMessage.c_str());
     //fuppesThreadUnlockMutex(&m_Mutex);    
   }  
   #endif
-}
+}*/
 
 
 
@@ -238,7 +352,7 @@ std::string CSharedLog::UserInput(std::string p_sMessage)
 }
 
 
-void CSharedLog::ExtendedLog(std::string p_sSender, std::string p_sMessage)
+/*void CSharedLog::ExtendedLog(std::string p_sSender, std::string p_sMessage)
 {
   if(m_bShowExtendedLog)
 		CSharedLog::Log(L_EXT, "", 0, "[%s] %s", p_sSender.c_str(), p_sMessage.c_str());
@@ -250,9 +364,9 @@ void CSharedLog::DebugLog(std::string p_sSender, std::string p_sMessage)
   if(m_bShowDebugLog)
 		CSharedLog::Log(L_DBG, "", 0, "[%s] %s", p_sSender.c_str(), p_sMessage.c_str());
     //this->Log(p_sSender, p_sMessage);
-}
+}*/
 
-void CSharedLog::Warning(std::string p_sSender, std::string p_sMessage)
+/*void CSharedLog::Warning(std::string p_sSender, std::string p_sMessage)
 {
   #ifndef DISABLELOG  
   if(m_bShowLog)
@@ -280,7 +394,7 @@ void CSharedLog::Error(std::string p_sSender, std::string p_sMessage)
 		CSharedLog::Log(L_EXT, "", 0, "[ERROR :: %s] %s", p_sSender.c_str(), p_sMessage.c_str());
   }
   #endif
-}
+}*/
 
 void CSharedLog::Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber)
 {

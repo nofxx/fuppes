@@ -76,16 +76,18 @@
 #include <pcre.h>
 #endif
 
+#include <string>
+
 class RegEx
 {
    public:
       /////////////////////////////////
-      RegEx(const char * regex, int options = 0)
+      RegEx(std::string regex, int options = 0)
       {
          const char * error;
          int          erroffset;
 
-         re = pcre_compile(regex, options, &error, &erroffset, NULL);
+         re = pcre_compile(regex.c_str(), options, &error, &erroffset, NULL);
          if (re == NULL)
             throw error;
          pe = pcre_study(re, 0, &error);
@@ -112,29 +114,35 @@ class RegEx
       }
 
       /////////////////////////////////
-      bool Search(const char * subject, int len = -1, int options = 0)
+      bool Search(std::string subject, int len = -1, int options = 0)
       {
          ClearMatchList();
-         return pcre_exec(re, pe, lastsubject = subject, slen = (len >= 0) ? len : (int)strlen(subject), 0, options, ovector, 3*substrcount) > 0;
+         return pcre_exec(re, pe, (lastsubject = subject).c_str(), slen = (len >= 0) ? len : subject.length(), 0, options, ovector, 3*substrcount) > 0;
       }
-
+      bool search(std::string subject, int len = -1, int options = 0) {
+        return Search(subject, len, options);
+      }
+      
       /////////////////////////////////
       bool SearchAgain(int options = 0)
       {
          ClearMatchList();
-         return pcre_exec(re, pe, lastsubject, slen, ovector[1], options, ovector, 3*substrcount) > 0;
+         return pcre_exec(re, pe, lastsubject.c_str(), slen, ovector[1], options, ovector, 3*substrcount) > 0;
       }
 
       /////////////////////////////////
-      const char * Match(int i = 1)
+      std::string Match(int i = 1)
       {
          if (i < 0)
             return lastsubject;
          if (matchlist == NULL)
-            pcre_get_substring_list(lastsubject, ovector, substrcount, &matchlist);
+            pcre_get_substring_list(lastsubject.c_str(), ovector, substrcount, &matchlist);
          return matchlist[i];
       }
-
+      std::string match(int i = 1) {
+        return Match(i);
+      }
+    
    private:
       inline void ClearMatchList(void)
       {
@@ -146,7 +154,7 @@ class RegEx
       pcre_extra * pe;
       int substrcount;
       int * ovector;
-      const char * lastsubject;
+      std::string lastsubject;
       int slen;
       const char * * matchlist;
 };

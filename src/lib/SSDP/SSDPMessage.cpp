@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            SSDPMessage.cpp
  *
@@ -166,15 +166,15 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
     {
       /* MX (required) */
       RegEx rxMX("MX: *([0-9]*)", PCRE_CASELESS);
-      if(rxMX.Search(m_sMessage.c_str()))      
-        m_nMX = atoi(rxMX.Match(1));
+      if(rxMX.Search(m_sMessage))      
+        m_nMX = atoi(rxMX.Match(1).c_str());
       else
         return false;
       
       /* ST (required) */
       m_nMSearchST = M_SEARCH_ST_UNSUPPORTED;
       RegEx rxST("\r\nST: *(.*)\r\n", PCRE_CASELESS);
-      if(rxST.Search(m_sMessage.c_str()))
+      if(rxST.Search(m_sMessage))
       {
         m_sST = ToLower(rxST.Match(1));        
 
@@ -196,7 +196,7 @@ bool CSSDPMessage::SetMessage(std::string p_sMessage)
 
       /* MAN (required) */
       RegEx rxMAN("MAN: *(.*)", PCRE_CASELESS);
-      if(rxMAN.Search(m_sMessage.c_str()))      
+      if(rxMAN.Search(m_sMessage))      
         m_sMAN = rxMAN.Match(1);
       else
         return false;

@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            FileAlterationMonitor.cpp
  *
@@ -30,8 +30,24 @@
 #include <sys/inotify.h>
 #endif
 
+#include "../SharedLog.h"
+using namespace fuppes;
+
+#ifdef WIN32
 #include <iostream>
 using namespace std;
+#endif
+
+
+void CFileAlterationMonitor::FamEvent(CFileAlterationEvent* event) 
+{
+	Log::log(Log::fam, Log::debug, __FILE__, __LINE__, CFileAlterationEvent::toString(event));
+  fuppesThreadLockMutex(&mutex);
+	m_pEventHandler->FamEvent(event);
+	fuppesThreadUnlockMutex(&mutex);
+}
+
+
 
 CFileAlterationMgr* CFileAlterationMgr::m_Instance = 0;
 
@@ -76,6 +92,13 @@ CInotifyMonitor::CInotifyMonitor(IFileAlterationMonitor* pEventHandler):
 
 CInotifyMonitor::~CInotifyMonitor()
 {
+  std::map<std::string, InotifyWatch*>::iterator iter;
+  for(iter = m_watches.begin(); iter != m_watches.end(); iter++) {
+	  m_pInotify->Remove(iter->second);
+    delete iter->second;
+  }
+  m_watches.clear();
+  
   delete m_pInotify;
 }
   
@@ -86,14 +109,17 @@ bool CInotifyMonitor::addWatch(std::string path)
     //cout << "watch already exists: " << path << endl;
     return false;
   }
-  
+
+	Log::log(Log::fam, Log::extended, __FILE__, __LINE__, "add watch \"%s\"", path.c_str());
+	
   try {     // IN_UNMOUNT
 		InotifyWatch* pWatch = new InotifyWatch(path, IN_CREATE | IN_DELETE | IN_MOVE | IN_CLOSE_WRITE); // IN_MODIFY 
     m_pInotify->Add(pWatch);
     m_watches[path] = pWatch;
   }
   catch(InotifyException &ex) {
-    cout << "addWatch :: exception: " << ex.GetMessage() << endl << path << endl;
+    //cout << "addWatch :: exception: " << ex.GetMessage() << endl << path << endl;
+		Log::log(Log::fam, Log::normal, __FILE__, __LINE__, "addWatch :: exception \"%s\"", ex.GetMessage().c_str());
   }
   
 	if(!this->running()) {
@@ -107,7 +133,8 @@ void CInotifyMonitor::removeWatch(std::string path)
 {
   appendTrailingSlash(&path);
   //cout << "remove watch: " << path << endl;
-  
+	Log::log(Log::fam, Log::extended, __FILE__, __LINE__, "remove watch \"%s\"", path.c_str());
+	
   std::map<std::string, InotifyWatch*>::iterator iter;
   if((iter = m_watches.find(path)) == m_watches.end()) {
     //cout << "watch not found: " << path << endl;
@@ -120,7 +147,8 @@ void CInotifyMonitor::removeWatch(std::string path)
 	  m_watches.erase(iter);  
   }
   catch(InotifyException &ex) {
-		cout << "removeWatch :: exception: " << ex.GetMessage() << endl << path << endl;
+		//cout << "removeWatch :: exception: " << ex.GetMessage() << endl << path << endl;
+		Log::log(Log::fam, Log::normal, __FILE__, __LINE__, "removeWatch :: exception \"%s\"", ex.GetMessage().c_str());
   } 
 }
 
@@ -152,6 +180,8 @@ void CInotifyMonitor::run()
   // path, event
   std::map<std::string, CFileAlterationEvent*>            events;
   std::map<std::string, CFileAlterationEvent*>::iterator  eventsIter;  
+
+  size_t numEvents;
   
   while(!this->stopRequested()) {
   
@@ -161,12 +191,25 @@ void CInotifyMonitor::run()
       pInotify->m_pInotify->WaitForEvents();
     }
     catch(InotifyException &ex) {
-      cout << "exception" << ex.GetMessage() << endl;
+      //cout << "exception" << ex.GetMessage() << endl;
+			Log::log(Log::fam, Log::normal, __FILE__, __LINE__, "exception \"%s\"", ex.GetMessage().c_str());
     }
+
+    if(this->stopRequested())
+      break;
     
-    //cout << "got " << pInotify->m_pInotify->GetEventCount() << " events" << endl;
+    numEvents = pInotify->m_pInotify->GetEventCount();
+    Log::log(Log::fam, Log::debug, __FILE__, __LINE__, "got %d events", numEvents);
     
     while(pInotify->m_pInotify->GetEvent(&event)) {
+
+
+      std::string types;
+      event.DumpTypes(types);
+      //cout << "event: " << "cookie: " << event.GetCookie() << " types: " << types << endl;
+
+      Log::log(Log::fam, Log::debug, __FILE__, __LINE__, 
+        "event :: cookie: %d types: %s", event.GetCookie(), types.c_str());
       
       if(event.IsType(IN_IGNORED)) {
         //cout << "inotify: IN_IGNORED" << endl;        
@@ -184,7 +227,7 @@ void CInotifyMonitor::run()
       // I assume that a MOVED_FROM is directly followed
       // by a MOVED_TO if moved inside watched dirs.
       // I hope this assumption is correct!?
-      if(movedFromCookie > 0 && !event.IsType(IN_MOVED_TO)) {       
+      if(movedFromCookie > 0 && !event.IsType(IN_MOVED_TO)) {    
         famEvent.m_type  = FAM_DELETE;
         famEvent.m_path  = movedFromPath;
         famEvent.m_file  = movedFromFile;        

@@ -331,7 +331,7 @@ void CUDPSocket::run()
 			pSSDPMessage.SetRemoteEndPoint(remote_ep);
 	  	pSSDPMessage.SetLocalEndPoint(udp_sock->GetLocalEndPoint());
 			
-      if(pSSDPMessage.SetMessage(buffer)) {
+      if(pSSDPMessage.SetMessage(buffer) && !this->stopRequested()) {
 		  	udp_sock->CallOnReceive(&pSSDPMessage);
       }
       else {

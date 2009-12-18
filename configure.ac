@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl $Id: $
 
-AC_INIT([fuppes], [0.649], [fuppes@ulrich-voelkel.de])
+AC_INIT([fuppes], [0.655], [fuppes@ulrich-voelkel.de])
 AM_CONFIG_HEADER(src/config.h)
 AM_INIT_AUTOMAKE([1.9])
 
@@ -432,7 +432,10 @@ AC_ARG_WITH(musepack-dir, AC_HELP_STRING([--with-musepack-dir=path],
 
 if test "x$enable_musepack" = "xyes" ; then
     AC_CHECK_HEADERS(${MPC_H_DIR}mpcdec/config_types.h, have_mpc=yes, have_mpc=no)
-    if test "x$have_mpc" = "xyes"; then      
+    #if test "x$have_mpc" = "xno"; then
+    #  AC_CHECK_HEADERS(${MPC_H_DIR}mpc/mpc_types.h, have_mpc=yes, have_mpc=no)
+    #fi
+    if test "x$have_mpc" = "xyes"; then
       MUSEPACK_LIBS="-lmpcdec"      
 		fi
 fi
@@ -681,7 +684,7 @@ include/Makefile
 dnl summary
 
 echo ""
-echo "  SUMMARY"
+echo "CONFIGURATION SUMMARY"
 echo ""
 
 
@@ -745,18 +748,18 @@ echo ""
 
 echo "  video transcoding plugins"
 if test "x$have_transcoder_ffmpeg" = "xyes"; then
-  echo "    ffmpeg     : enabled"
+  echo "    ffmpeg             : enabled"
 else
-  echo "    ffmpeg     : disabled"
+  echo "    ffmpeg             : disabled"
 fi
 echo ""
 
 
 echo "  image conversion/rescaling plugins"
 if test "x$have_magickwand" = "xyes"; then
-  echo "    ImageMagick: enabled  (Wand C-API)"
+  echo "    ImageMagick        : enabled  (Wand C-API)"
 else
-  echo "    ImageMagick: disabled (Wand C-API)"
+  echo "    ImageMagick        : disabled (Wand C-API)"
 fi
 echo ""
 #end image conversion/rescaling
@@ -765,16 +768,16 @@ echo ""
 echo "  audio metadata extraction plugins"
 # taglib
 if test "x$have_taglib" = "xyes"; then
-  echo "    taglib        : enabled  (mp3, ogg, flac & mpc)"
+  echo "    taglib             : enabled  (mp3, ogg, flac & mpc)"
 else
-  echo "    taglib        : disabled (mp3, ogg, flac & mpc)"
+  echo "    taglib             : disabled (mp3, ogg, flac & mpc)"
 fi
 
 # mpeg4ip
 if test "x$have_mpeg4ip" = "xyes"; then
-  echo "    mpeg4ip/mp4v2 : enabled  (mp4/m4a)"
+  echo "    mpeg4ip/mp4v2      : enabled  (mp4/m4a)"
 else
-  echo "    mpeg4ip/mp4v2 : disabled (mp4/m4a)"
+  echo "    mpeg4ip/mp4v2      : disabled (mp4/m4a)"
 fi
 echo ""
 
@@ -782,23 +785,23 @@ echo ""
 echo "  image metadata extraction plugins"
 # Exiv2
 if test "x$have_exiv2" = "xyes"; then
-  echo "    Exiv2         : enabled"
+  echo "    Exiv2              : enabled"
 else
-  echo "    Exiv2         : disabled"
+  echo "    Exiv2              : disabled"
 fi
 
 # ImageMagick
 if test "x$have_magickwand" = "xyes"; then
-  echo "    ImageMagick   : enabled  (Wand C-API)"
+  echo "    ImageMagick        : enabled  (Wand C-API)"
 else
-  echo "    ImageMagick   : disabled (Wand C-API)"
+  echo "    ImageMagick        : disabled (Wand C-API)"
 fi
 
 # simage
 if test "x$have_simage" = "xyes"; then
-  echo "    simage        : enabled  (jpeg, png, gif, tiff, rgb, pic, tga, eps)"
+  echo "    simage             : enabled  (jpeg, png, gif, tiff, rgb, pic, tga, eps)"
 else
-  echo "    simage        : disabled (jpeg, png, gif, tiff, rgb, pic, tga, eps)"
+  echo "    simage             : disabled (jpeg, png, gif, tiff, rgb, pic, tga, eps)"
 fi
 echo ""
 
@@ -806,19 +809,18 @@ echo ""
 echo "  video metadata extraction plugins"
 # libavformat
 if test "x$have_libavformat" = "xyes"; then
-  echo "    libavformat   : enabled"
+  echo "    libavformat        : enabled"
 else
-  echo "    libavformat   : disabled"
+  echo "    libavformat        : disabled"
 fi
-echo ""
-
 
 # ffmpegthumbnailer
 if test "x$have_ffmpegthumbnailer" = "xyes"; then
-  echo "    ffmpegthumbnailer: enabled"
+  echo "    ffmpegthumbnailer  : enabled"
 else
-  echo "    ffmpegthumbnailer: disabled"
+  echo "    ffmpegthumbnailer  : disabled"
 fi
+echo ""
 
 #end metadata
 
@@ -827,17 +829,17 @@ echo "  miscellaneous"
 
 # iconv
 if test "x$am_func_iconv" = "xyes"; then
-  echo "    iconv      : enabled (charset conversion)"
+  echo "    iconv              : enabled (charset conversion)"
 else
-  echo "    iconv      : disabled (charset conversion)"
+  echo "    iconv              : disabled (charset conversion)"
 fi
 
 # uuid
 if test x$is_windows = xfalse; then
 if test "x$have_uuid" = "xyes"; then
-  echo "    uuid       : enabled"
+  echo "    uuid               : enabled"
 else
-  echo "    uuid       : disabled"
+  echo "    uuid               : disabled"
 fi
 fi
 
@@ -850,9 +852,9 @@ fi
 
 # inotify
 if test "x$have_inotify" = "xyes"; then
-  echo "    inotify    : enabled"
+  echo "    inotify            : enabled"
 else
-  echo "    inotify    : disabled"
+  echo "    inotify            : disabled"
 fi
 
 

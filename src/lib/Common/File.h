@@ -1,4 +1,4 @@
-/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            File.h
  *
@@ -46,24 +46,27 @@ namespace fuppes {
 
 class File
 {
-	enum OpenMode {
-		Closed		= 0,
-		Read			= 1,
-		Write			= 2,
-		ReadWrite = Read | Write,
-		Truncate  = 4,
-		Append		= 8,
-		Text			= 16
-	};
-	
   public:
-		File(std::string fileName);
-		bool open(File::OpenMode mode);
-		void close();
-		fuppes_off_t size();
-		
-    static bool exists(std::string fileName);
 
+	  enum OpenMode {
+		  Closed		= 0,
+		  Read			= 1,
+		  Write			= 2,
+		  ReadWrite = Read | Write,
+		  Truncate  = 4,
+		  Append		= 8,
+		  Text			= 16
+	  };
+	
+		File(std::string fileName);
+		bool          open(File::OpenMode mode);
+		void          close();
+		fuppes_off_t  size();
+    bool          getline(std::string& line);
+
+    
+    static bool exists(std::string fileName);
+    
 	private:
 		std::string   m_fileName;
 		OpenMode			m_openMode;

@@ -1,6 +1,5 @@
-/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
- *            DeviceIdentificationMgr.h
+ *            XMSMediaReceiverRegistrar.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -21,43 +20,25 @@
  *  with this program; if not, write to the Free Software Foundation, Inc.,
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-
-#ifndef _DEVICEIDENTIFICATIONMGR_H
-#define _DEVICEIDENTIFICATIONMGR_H
+ 
+#ifndef _XMSMEDIARECEIVERREGISTRAR_H
+#define _XMSMEDIARECEIVERREGISTRAR_H
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
 
-#include "DeviceSettings.h"
-#include "../HTTP/HTTPMessage.h"
-#include <list>
+#include "../UPnPService.h"
 
-class CDeviceIdentificationMgr
+class CXMSMediaReceiverRegistrar: public CUPnPService
 {
   public:
-	  static CDeviceIdentificationMgr* Shared();
-    ~CDeviceIdentificationMgr();
-
-		void Initialize();
+    CXMSMediaReceiverRegistrar(std::string HTTPServerURL);
+    ~CXMSMediaReceiverRegistrar();
 		
-		void IdentifyDevice(CHTTPMessage* pDeviceMessage);
-    CDeviceSettings* GetSettingsForInitialization(std::string p_sDeviceName);
-    void PrintSettings(std::string* p_sOut = NULL);
-  
-    CDeviceSettings* DefaultDevice() { return m_pDefaultSettings; }
-  
-  private:
-		CDeviceIdentificationMgr();
-	  static CDeviceIdentificationMgr* m_pInstance;
-		
-    void PrintSetting(CDeviceSettings* pSettings, std::string* p_sOut = NULL);
-
-  
-		CDeviceSettings* m_pDefaultSettings;
-		std::list<CDeviceSettings*> m_Settings;
-		std::list<CDeviceSettings*>::const_iterator m_SettingsIt;
+		std::string GetServiceDescription();
+    void HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut);
 
 };
 
-#endif // _DEVICEIDENTIFICATIONMGR_H
+#endif // _XMSMEDIARECEIVERREGISTRAR_H

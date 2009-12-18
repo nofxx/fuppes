@@ -62,7 +62,7 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
   std::string sPageName = "undefined";
   
   if((pMessage->GetRequest().compare("/") == 0) || (ToLower(pMessage->GetRequest()).compare("/index.html") == 0)) {    
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send index.html");
+    //CSharedLog::Shared()->ExtendedLog(LOGNAME, "send index.html");
     nPresentationPage = PRESENTATION_PAGE_INDEX;
     sContent = this->GetIndexHTML();
     sPageName = "Start";
@@ -75,7 +75,7 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
 	
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/about.html") == 0)
   {
-    CSharedLog::Shared()->ExtendedLog(LOGNAME, "send about.html");
+    //CSharedLog::Shared()->ExtendedLog(LOGNAME, "send about.html");
     nPresentationPage = PRESENTATION_PAGE_ABOUT;
     sContent = this->GetAboutHTML();
     sPageName = "About";

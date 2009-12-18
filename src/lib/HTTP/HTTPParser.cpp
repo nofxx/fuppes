@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C;++ indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            HTTPParser.cpp
  *
@@ -43,15 +43,15 @@ bool CHTTPParser::parseHeader(std::string header, CHTTPMessage* message)
   RegEx rxResponse("HTTP/1\\.([1|0]) +(\\d+) +(.+)", PCRE_CASELESS);
  	
 	// it's a request
-  if(rxRequest.Search(header.c_str())) { 
+  if(rxRequest.Search(header)) { 
     sType    = rxRequest.Match(1);
-    nVersion = atoi(rxRequest.Match(3));
+    nVersion = atoi(rxRequest.Match(3).c_str());
 		message->m_sRequest = rxRequest.Match(2);
   }
 	// it's a response
-  else if(rxResponse.Search(header.c_str())) {
+  else if(rxResponse.Search(header)) {
 		sType    = rxResponse.Match(2);
-		nVersion = atoi(rxResponse.Match(1));
+		nVersion = atoi(rxResponse.Match(1).c_str());
 		message->m_sRequest = rxRequest.Match(3);
 	}
 	else {    

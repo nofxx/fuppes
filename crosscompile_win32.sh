@@ -13,12 +13,11 @@
 HOST="i586-mingw32msvc"
 
 # target directory
-PREFIX="/usr/local/win32"
+PREFIX=`pwd`"/win32"
 
 # make command (e.g. "make -j 2")
 MAKE="make"
-
-
+MAKE_INSTALL="make install"
 
 # you should not need to change anything below
 
@@ -32,15 +31,16 @@ export WINEDLLPATH="$PREFIX/bin"
 
 # create target directory
 if ! test -d $PREFIX; then
-  echo "enter root password for target directory creation"
-  su -c "mkdir $PREFIX && chmod 777 $PREFIX"
+  #echo "enter root password for target directory creation"
+  #su -c "mkdir $PREFIX && chmod 777 $PREFIX"
+  mkdir $PREFIX
 fi
 
 # create source directory
-if ! test -d sources; then
-  mkdir sources
+if ! test -d $PREFIX"/sources"; then
+  mkdir $PREFIX"/sources"
 fi
-cd sources/
+cd $PREFIX"/sources"/
 
 
 # $1 = paket name, $2 = file ext, $3 = url
@@ -272,11 +272,11 @@ make install
 cd ..
 
 
-# SQLite 3.6.16 (required)
+# SQLite 3.6.21 (required)
 echo "start building sqlite"
-loadpkt "sqlite-amalgamation-3.6.16" ".tar.gz" \
+loadpkt "sqlite-amalgamation-3.6.21" ".tar.gz" \
         "http://www.sqlite.org/"
-cd sqlite-3.6.16
+cd sqlite-3.6.21
 ./configure --host=$HOST --prefix=$PREFIX \
 --enable-tempstore=yes --enable-threadsafe
 $MAKE
@@ -310,7 +310,7 @@ if test "$HAVE_TAGLIB" == "yes"; then
 
   echo "start building taglib"
 
-  loadpkt "taglib-1.5" ".tar.gz" \
+  loadpkt "taglib-1.6.1" ".tar.gz" \
           "http://developer.kde.org/~wheeler/files/src/"
   CXXFLAGS="$CXXFLAGS -DMAKE_TAGLIB_LIB" \
   LDFLAGS="$LDFLAGS" \
@@ -416,6 +416,13 @@ loadpkt "libmpcdec-1.2.6" ".tar.bz2" \
 sed -i -e 's/AC_MSG_ERROR(\[working memcmp is not available.\])/echo "no memcmp"/' configure.ac
 sed -i -e 's/AM_PROG_LIBTOOL/AM_PROG_LIBTOOL\nAC_PROG_CXX/' configure.ac
 
+#loadpkt "musepack_src_r435" ".tar.gz" \
+#        "http://files.musepack.net/source/"
+
+#sed -i -e 's/\\/\n/' Makefile.am
+#sed -i -e 's/\tmpcchap/#/' Makefile.am
+
+
 autoreconf -vfi
 ./configure --host=$HOST --prefix=$PREFIX
 $MAKE
@@ -492,6 +499,8 @@ else
   echo "skipped exiv2"
 fi
 
+# todo libtiff & libungif
+
 #simage
 if test "$HAVE_SIMAGE" == "yes"; then
 
@@ -527,7 +536,7 @@ fi
 #libpng (for ImageMagick)
 if test "$HAVE_PNG" == "yes"; then
   echo "start building png"
-  loadpkt "libpng-1.2.37" ".tar.bz2" \
+  loadpkt "libpng-1.2.41" ".tar.bz2" \
           "http://prdownloads.sourceforge.net/libpng/"
   ./configure --host=$HOST --prefix=$PREFIX \
   --with-libpng-compat=no
@@ -544,7 +553,7 @@ fi
 if test "$HAVE_IMAGEMAGICK" == "yes"; then
 
   echo "start building ImageMagick"
-  loadpkt "ImageMagick-6.5.4-2" ".tar.gz" \
+  loadpkt "ImageMagick-6.5.8-5" ".tar.gz" \
           "ftp://ftp.imagemagick.org/pub/ImageMagick/"
 
   # CFLAGS="-DHAVE_BOOLEAN $CFLAGS" \
@@ -592,10 +601,31 @@ else
 fi
 
 
+if test "$HAVE_FFMPEGTHUMBNAILER" == "yes"; then
+
+  echo "start building ffmpegthumbnailer"
+  loadpkt "ffmpegthumbnailer-1.5.5" ".tar.gz" \
+          "http://ffmpegthumbnailer.googlecode.com/files/"
+
+
+  sed -i -e 's/-version-info 3:2:0/-no-undefined -version-info 3:2:0/' Makefile.am
+
+  autoreconf -vfi
+  ./configure --host=$HOST --prefix=$PREFIX
+  $MAKE
+  $MAKE_INSTALL
+  cd ..
+
+else
+  echo "skipped ffmpegthumbnailer"
+fi
+
+
+
 
 
 # FUPPES
-cd ..
+cd $PREFIX/..
 ./configure --host=$HOST --prefix=$PREFIX \
 --enable-lame
 $MAKE

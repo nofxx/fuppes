@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            UPnPAction.h
  *
@@ -63,8 +63,9 @@ typedef enum UPNP_CONNECTION_MANAGER_ACTIONS {
 } UPNP_CONNECTION_MANAGER_ACTIONS;
 
 typedef enum UPNP_X_MS_MEDIA_RECEIVER_REGISTRAR_ACTIONS {
-  UPNP_IS_AUTHORIZED = 1,
-  UPNP_IS_VALIDATED  = 2
+  UPNP_IS_AUTHORIZED		= 1,
+  UPNP_IS_VALIDATED			= 2,
+  UPNP_REGISTER_DEVICE	= 3
 } UPNP_X_MS_MEDIA_RECEIVER_REGISTRAR_ACTIONS;
 
 

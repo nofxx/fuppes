@@ -1,4 +1,4 @@
-/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            File.cpp
  *
@@ -62,8 +62,6 @@ void File::close()
 	m_fstream.close();
 }
 
-
-
 fuppes_off_t File::size()
 {
 	struct stat Stat;  
@@ -73,6 +71,13 @@ fuppes_off_t File::size()
 	return Stat.st_size;
 }
 
+bool File::getline(std::string& line)
+{
+  if(!m_fstream.is_open())
+    return false;
+
+  return std::getline(m_fstream, line);
+}
 
 
 bool File::exists(std::string fileName) // static

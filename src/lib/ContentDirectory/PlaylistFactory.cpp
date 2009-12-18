@@ -70,7 +70,6 @@ std::string CPlaylistFactory::BuildPlaylist(std::string p_sObjectId)
 std::string CPlaylistFactory::BuildPLS(std::string p_sObjectId)
 {
   std::stringstream sResult;  
-  std::stringstream sSql;    
   CSQLResult*    pRes      = NULL;
   unsigned int      nObjectId = HexToInt(p_sObjectId);
 	CSQLQuery* qry = CDatabase::query();

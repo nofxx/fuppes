@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            HTTPRequestHandler.cpp
  *
@@ -36,10 +36,10 @@
 #include "../Plugins/Plugin.h"
 #include "../Transcoding/TranscodingMgr.h"
 
-#include <iostream>
+//#include <iostream>
 #include <sstream>
-
 using namespace std;
+using namespace fuppes;
 
 CHTTPRequestHandler::CHTTPRequestHandler(std::string p_sHTTPServerURL)
 {
@@ -66,12 +66,14 @@ bool CHTTPRequestHandler::HandleRequest(CHTTPMessage* pRequest, CHTTPMessage* pR
     // SOAP
     case HTTP_MESSAGE_TYPE_POST_SOAP_ACTION:
       bResult = this->HandleSOAPAction(pRequest, pResponse);
+			Log::log(Log::soap, Log::debug, __FILE__, __LINE__, "RESPONSE:\n" + pResponse->GetMessageAsString());
       break;
       
     // GENA
     case HTTP_MESSAGE_TYPE_SUBSCRIBE:
       bResult = this->HandleGENAMessage(pRequest, pResponse);
-      break;
+			Log::log(Log::gena, Log::debug, __FILE__, __LINE__, "RESPONSE:\n" + pResponse->GetMessageAsString());
+			break;
     
     default :
       bResult = false;    
@@ -83,8 +85,8 @@ bool CHTTPRequestHandler::HandleRequest(CHTTPMessage* pRequest, CHTTPMessage* pR
 
 bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {
-  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "HandleHTTPRequest() :: %s ", pRequest->GetRequest().c_str());
-
+	Log::log(Log::http, Log::debug, __FILE__, __LINE__, "REQUEST:\n" + pRequest->GetHeader());
+	
   string sRequest = pRequest->GetRequest();  
   bool   bResult  = false;  
   
@@ -102,7 +104,7 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
     return true;
   }
 
-  //ConnectionManager description
+  // ConnectionManager description
   if(sRequest.compare("/UPnPServices/ConnectionManager/description.xml") == 0) {
     pResponse->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml");
 
@@ -111,7 +113,16 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
     delete pMgr;
     return true;
   }
-  
+
+	// XMSMediaReceiverRegistrar description
+  if(sRequest.compare("/UPnPServices/XMSMediaReceiverRegistrar/description.xml") == 0) {
+    pResponse->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml");
+
+    CXMSMediaReceiverRegistrar* reg = new CXMSMediaReceiverRegistrar(m_sHTTPServerURL);
+    pResponse->SetContent(reg->GetServiceDescription());
+    delete reg;
+    return true;
+  }
   
   // Presentation
   if(
@@ -182,6 +193,8 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
     
 bool CHTTPRequestHandler::HandleSOAPAction(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {  
+	Log::log(Log::soap, Log::debug, __FILE__, __LINE__, "REQUEST:\n" + pRequest->GetHeader());
+	
   // get UPnP action
   CUPnPAction* pAction = NULL;
   pAction = pRequest->GetAction();
@@ -213,7 +226,7 @@ bool CHTTPRequestHandler::HandleSOAPAction(CHTTPMessage* pRequest, CHTTPMessage*
       delete pMgr;
       break;    
 		case UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR:
-      pXMS = new CXMSMediaReceiverRegistrar();
+      pXMS = new CXMSMediaReceiverRegistrar(m_sHTTPServerURL);
       pXMS->HandleUPnPAction(pAction, pResponse);
       delete pXMS;
       break;
@@ -383,7 +396,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 	sPath = qry->result()->asString("PATH") + qry->result()->asString("FILE_NAME");
   sExt  = ExtractFileExt(sPath);	
 	bool audioFile = false;
-	bool videoFile;
+	bool videoFile = false;
 	
 	OBJECT_TYPE type = (OBJECT_TYPE)qry->result()->asInt("TYPE");
 	if(type >= ITEM_IMAGE_ITEM && type < ITEM_IMAGE_ITEM_MAX) {

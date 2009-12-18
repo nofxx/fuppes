@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Plugin.h
  *
@@ -57,6 +57,7 @@ class CPluginMgr
 {
 	public:
 		static void init(std::string pluginDir);
+		static void uninit();
 
 		// returns a reference to a single plugin instance
 		static CDlnaPlugin*						dlnaPlugin() { return m_instance->m_dlnaPlugin; }
@@ -106,6 +107,8 @@ typedef int (*pluginInitInstance_t)(plugin_info* plugin);
 typedef void (*pluginUninitInstance_t)(plugin_info* plugin);
 class CPlugin
 {
+  friend class CPluginMgr;
+  
 	protected:
 		CPlugin(fuppesLibHandle handle, plugin_info* info);
 		CPlugin(CPlugin* plugin);
@@ -114,6 +117,7 @@ class CPlugin
 		virtual ~CPlugin();
 		PLUGIN_TYPE		pluginType() { return m_pluginInfo.plugin_type; }
 		virtual bool 	initPlugin() = 0;
+    void          uninit();
 		
 		std::string		name() { return std::string(m_pluginInfo.plugin_name); }
 		std::string		author() { return std::string(m_pluginInfo.plugin_author); }
@@ -129,6 +133,7 @@ class CPlugin
 
 		pluginInitInstance_t		m_pluginInitInstance;
 		pluginUninitInstance_t	m_pluginUninitInstance;
+    unregisterPlugin_t      m_unregisterPlugin;
 };
 
 

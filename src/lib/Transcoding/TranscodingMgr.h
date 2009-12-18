@@ -1,3 +1,4 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            TranscodingMgr.h
  *
@@ -73,7 +74,6 @@ class CTranscodingMgr
   
   private:
     CTranscodingMgr();
-    ~CTranscodingMgr();
   
     static CTranscodingMgr* m_Instance;
   

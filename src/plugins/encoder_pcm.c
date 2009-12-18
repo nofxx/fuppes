@@ -53,6 +53,9 @@ void register_fuppes_plugin(plugin_info* plugin)
 
 void unregister_fuppes_plugin(plugin_info* plugin)
 {
+	if(plugin->user_data == NULL)
+		return;
+	
 	if(((pcmSettings_t*)plugin->user_data)->buffer) {
 		free(((pcmSettings_t*)plugin->user_data)->buffer);
 		((pcmSettings_t*)plugin->user_data)->buffer = NULL;

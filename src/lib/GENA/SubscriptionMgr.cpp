@@ -1,4 +1,4 @@
-/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            SubscriptionMgr.cpp
  *
@@ -28,6 +28,8 @@
 #include "../Common/UUID.h"
 #include "../Common/Exception.h"
 #include "../SharedLog.h"
+
+using namespace fuppes;
 
 CSubscription::CSubscription()
 { 
@@ -168,8 +170,32 @@ CONTENT-TYPE: text/html
 */    
     
       break;
-    
-    default:
+
+		case UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR :      
+  		pNotification->SetContent("");    
+   		pNotification->SetCallback(m_sCallback);
+   		pNotification->SetSID(m_sSID);    
+
+/*
+			 <e:propertyset xmlns:e="urn:schemas-upnp-org:event-1-0" xmlns:s="urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1">
+<e:property>
+ <s:AuthorizationGrantedUpdateID xmlns:dt="urn:schemas-microsoft-com:datatypes" dt:dt="ui4">1</s:AuthorizationGrantedUpdateID>
+</e:property>
+<e:property>
+ <s:AuthorizationDeniedUpdateID xmlns:dt="urn:schemas-microsoft-com:datatypes" dt:dt="ui4">1</s:AuthorizationDeniedUpdateID>
+</e:property>
+<e:property>
+ <s:ValidationSucceededUpdateID xmlns:dt="urn:schemas-microsoft-com:datatypes" dt:dt="ui4">1</s:ValidationSucceededUpdateID>
+</e:property>
+<e:property>
+<s:ValidationRevokedUpdateID xmlns:dt="urn:schemas-microsoft-com:datatypes" dt:dt="ui4">1</s:ValidationRevokedUpdateID>
+</e:property>
+</e:propertyset>
+			 */
+			
+   		break;
+			
+		default:
       break;
   }
   
@@ -195,6 +221,13 @@ CSubscriptionCache::CSubscriptionCache()
 
 CSubscriptionCache::~CSubscriptionCache()
 {
+  for(m_SubscriptionsIterator = m_Subscriptions.begin();
+      m_SubscriptionsIterator != m_Subscriptions.end();
+      m_SubscriptionsIterator++) {
+    delete m_SubscriptionsIterator->second;
+  }
+  m_Subscriptions.clear();
+  
   fuppesThreadDestroyMutex(&m_Mutex);
 }
 
@@ -289,7 +322,7 @@ CSubscriptionMgr::~CSubscriptionMgr()
 
 bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
 {
-  CSharedLog::Log(L_DBG, __FILE__, __LINE__, pRequest->GetHeader().c_str()); 
+	Log::log(Log::gena, Log::debug, __FILE__, __LINE__, "REQUEST:\n" + pRequest->GetHeader());
   
   CSubscription* pSubscription = new CSubscription();
   try {    
@@ -340,8 +373,11 @@ void CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* 
     else if (ToLower(rxTarget.Match(3)).compare("/upnpservices/connectionmanager/event/") == 0) {
       pSubscription->SetSubscriptionTarget(UPNP_SERVICE_CONNECTION_MANAGER);
     }
+		else if (ToLower(rxTarget.Match(3)).compare("/upnpservices/xmsmediareceiverregistrar/event/") == 0) {
+      pSubscription->SetSubscriptionTarget(UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR);
+    }
     else {
-      throw fuppes::Exception(__FILE__, __LINE__, "unknown subscription target :: %s", rxTarget.Match(3));
+      throw fuppes::Exception(__FILE__, __LINE__, "unknown subscription target :: %s", rxTarget.Match(3).c_str());
     }    
   }
   else {
@@ -362,12 +398,7 @@ void CSubscriptionMgr::ParseSubscription(CHTTPMessage* pRequest, CSubscription* 
       
       RegEx rxCallback("CALLBACK: *<*(http://[A-Z|0-9|\\-|_|/|\\.|:]+)>*", PCRE_CASELESS);
       if(rxCallback.Search(pRequest->GetHeader().c_str())) {
-                                                           
-        string sCallback = rxCallback.Match(1);
-        // coherence does not like it when we modify the callback
-				/*if(sCallback[sCallback.length() - 1] != '/')
-          sCallback += "/";*/
-        pSubscription->SetCallback(sCallback);
+        pSubscription->SetCallback(rxCallback.Match(1));
       }
       else {
         throw fuppes::Exception(__FILE__, __LINE__, "parsing subscription callback");

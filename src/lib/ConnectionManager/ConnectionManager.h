@@ -44,6 +44,7 @@ class CConnectionManagerCore
 {
 	public:
 		static void init();
+    static void uninit();
 	
 	private:
 		static CConnectionManagerCore* m_instance;

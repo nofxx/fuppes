@@ -36,9 +36,9 @@ void register_fuppes_plugin(plugin_info* info)
 	strcpy(info->plugin_author, "Ulrich Voelkel");
 	info->plugin_type = PT_TRANSCODER;
 	
-	#ifdef WIN32
+	//#ifdef WIN32
 	MagickWandGenesis();
-	#endif
+	//#endif
 }
  
 /*
@@ -66,9 +66,9 @@ int fuppes_transcoder_transcode_image_file(plugin_info* plugin,
 	
 */
 
-	MagickWand* wand = NewMagickWand();
+	/*MagickWand* wand = NewMagickWand();
 	
-	MagickRelinquishMemory(wand);
+	MagickRelinquishMemory(wand);*/
 
 	
 	return -1;
@@ -94,7 +94,6 @@ int fuppes_transcoder_transcode_image_mem(plugin_info* plugin,
 		wand = DestroyMagickWand(wand);
 		return -1;
 	}
-	// wand = DestroyMagickWand(wand);
 
 	//printf("magickWand %d\n", 2);
 	

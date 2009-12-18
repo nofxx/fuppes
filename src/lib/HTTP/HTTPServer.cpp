@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            HTTPServer.cpp
  * 
@@ -32,6 +32,7 @@
 #include "../Common/RegEx.h"
 #include "../Common/Exception.h"
 #include "../DeviceSettings/DeviceIdentificationMgr.h"
+#include "../DeviceSettings/MacAddressTable.h"
 
 #include <iostream>
 #include <sstream>
@@ -70,6 +71,7 @@
 #endif
 
 using namespace std;
+using namespace fuppes;
 
 //fuppesThreadCallback AcceptLoop(void *arg);
 //fuppesThreadCallback SessionLoop(void *arg);
@@ -147,7 +149,8 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
   // fetch local end point to get port number on random ports
 	socklen_t size = sizeof(local_ep);
 	getsockname(m_Socket, (struct sockaddr*)&local_ep, &size);
-    
+
+  MacAddressTable::init();
 } // CHTTPServer()
 
 
@@ -155,7 +158,7 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 CHTTPServer::~CHTTPServer()
 {
   Stop();
-	//fuppesThreadDestroyMutex(&m_ReceiveMutex);  
+  MacAddressTable::uninit();
 } // ~CHTTPServer()
 
 
@@ -398,6 +401,11 @@ void HTTPSession::run()
   stringstream sLog;
   
 	pRequest->SetRemoteEndPoint(pSession->GetRemoteEndPoint());
+  std::string ip = inet_ntoa(pSession->GetRemoteEndPoint().sin_addr);    
+	
+	string mac;
+	MacAddressTable::mac(ip, mac);
+	cout << "IP: " << ip << " MAC: " << mac << endl;
 	
   while(bKeepAlive)
   {  
@@ -412,8 +420,7 @@ void HTTPSession::run()
     // end receive
     
     // check if requesting IP is allowed to access
-    std::string sIP = inet_ntoa(pSession->GetRemoteEndPoint().sin_addr);    
-    if(CSharedConfig::Shared()->IsAllowedIP(sIP)) {
+    if(CSharedConfig::Shared()->IsAllowedIP(ip)) {
       // build response
       bResult = pHandler->HandleRequest(pRequest, pResponse);
       if(!bResult)

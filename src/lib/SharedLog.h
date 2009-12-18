@@ -1,15 +1,17 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            SharedLog.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -28,28 +30,94 @@
 #include "../config.h"
 #endif
 
-//#include "Common/Common.h"
 #include "Common/Thread.h"
-#include "Common/Exception.h"
 #include <string>
 #include <stdarg.h>
 #include <iostream>
 #include <fstream>
+#include <list>
 
-/*#define L_NORMAL   0
+#define L_NORM 1
+#define L_EXT  2
+#define L_DBG  3
 
-#define L_EXTENDED 1
-#define L_EXTENDED_ERR 2
-#define L_EXTENDED_WARN 3
-#define L_DEBUG    4
+class CSharedLog;
 
-#define L_ERROR    5
-#define L_WARNING  6
-#define L_CRITICAL 7*/
+namespace fuppes {
 
-#define L_NORM 0
-#define L_EXT  1
-#define L_DBG  2
+	class Exception;
+	
+  class Log {
+
+		public:
+
+			enum Sender {
+				unknown,
+				http,
+        soap,
+        gena,
+				ssdp,
+				fam,
+				plugin
+			};
+		
+		  enum Level {
+		    none			= 0,
+		    normal		= 1,
+		    extended	= 2,
+		    debug			= 3
+		  };
+
+			static std::string senderToString(Log::Sender sender);
+			static Log::Sender stringToSender(std::string sender);
+      
+      static void init();
+      static void uninit();
+      
+		  static void log(Log::Sender sender, 
+		    Log::Level level, 
+		    const std::string fileName, 
+		    int lineNo,
+		    const char* format,
+		    ...);
+			
+			static void log(Log::Sender sender, 
+		    Log::Level level, 
+		    const std::string fileName, 
+		    int lineNo,
+		    const std::string msg);
+
+      static bool isActiveSender(Log::Sender sender) {
+        std::list<Log::Sender>::iterator iter;
+        for(iter = m_instance->m_logSenders.begin(); 
+            iter != m_instance->m_logSenders.end(); 
+            iter++) {
+          if(*iter == sender)
+            return true;
+        }
+        return false;
+      }
+
+      static void addActiveSender(Log::Sender sender) {
+        if(sender == Log::unknown || isActiveSender(sender))
+          return;
+        m_instance->m_logSenders.push_back(sender);
+      }
+
+      static void removeActiveSender(Log::Sender sender) {
+        if(!isActiveSender(sender))
+          return;
+        
+        m_instance->m_logSenders.remove(sender);
+      }
+
+    private:
+      static Log* m_instance;
+      std::list<Log::Sender> m_logSenders;
+  };
+
+}
+
 
 class CSharedLog
 {
@@ -81,13 +149,13 @@ public:
   std::string UserInput(std::string p_sMessage);
   
   // deprecated
-  void  Log(std::string p_sSender, std::string p_sMessage);
-  void  ExtendedLog(std::string p_sSender, std::string p_sMessage);
-  void  DebugLog(std::string p_sSender, std::string p_sMessage);
+  //void  Log(std::string p_sSender, std::string p_sMessage);
+  //void  ExtendedLog(std::string p_sSender, std::string p_sMessage);
+  //void  DebugLog(std::string p_sSender, std::string p_sMessage);
   //void  Log(std::string p_sSender, std::string p_asMessages[], unsigned int p_nCount, std::string p_sSeparator = "");    
-  void  Warning(std::string p_sSender, std::string p_sMessage);
-  void  Critical(std::string p_sSender, std::string p_sMessage);
-  void  Error(std::string p_sSender, std::string p_sMessage);
+  //void  Warning(std::string p_sSender, std::string p_sMessage);
+  //void  Critical(std::string p_sSender, std::string p_sMessage);
+  //void  Error(std::string p_sSender, std::string p_sMessage);
 
   
   void  Log(int nLogLevel, std::string p_sMessage, char* p_szFileName, int p_nLineNumber);
