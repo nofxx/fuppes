@@ -197,8 +197,7 @@ libfuppes_la_SOURCES = \
   lib/SharedConfig.cpp\
   lib/SharedLog.cpp\
   lib/Fuppes.cpp\
-  lib/libmain.cpp\
-  version.h
+  lib/libmain.cpp
 
 if HAVE_INOTIFY
 libfuppes_la_SOURCES += \
@@ -214,17 +213,6 @@ libfuppes_la_LDFLAGS = \
 	${PCRE_LIBS}\
 	${MAD_LIBS}\
 	${LIBICONV}
-
-
-BUILT_SOURCES += version.h
-
-version.h: Makefile
-	if test -e "../version.sh"; then \
-		../version.sh; \
-	fi
-
-CLEANFILES += \
-	version.h
 
 pixmapsdir = $(datadir)/fuppes
 dist_pixmaps_DATA = \

@@ -173,8 +173,9 @@ void CHTTPServer::Start()
     throw fuppes::Exception(__FILE__, __LINE__, "failed to listen on socket");
   }
 
+  HTTPSessionStore::init();
+  
   // start accept thread
-  //fuppesThreadStart(accept_thread, AcceptLoop);
 	start();
   m_bIsRunning = true;
   
@@ -199,11 +200,13 @@ void CHTTPServer::Stop()
   }*/
    
   // kill all remaining connections
-  CleanupSessions();
+  //CleanupSessions();
 
   // close socket
   fuppesSocketClose(m_Socket);
   m_bIsRunning = false;
+
+  HTTPSessionStore::uninit();
   
   CSharedLog::Log(L_EXT, __FILE__, __LINE__, "HTTPServer stopped");
 } // Stop()
@@ -241,7 +244,7 @@ bool CHTTPServer::CallOnReceive(CHTTPMessage* pMessageIn, CHTTPMessage* pMessage
 /**
  * closes finished session threads
  */
-void CHTTPServer::CleanupSessions()
+/*void CHTTPServer::CleanupSessions()
 {
   if(m_ThreadList.empty())
     return;
@@ -251,7 +254,7 @@ void CHTTPServer::CleanupSessions()
   {
     if(m_ThreadList.empty())
       break;
-    
+    */
     // ... and close terminated threads
     /*CHTTPSessionInfo* pInfo = *m_ThreadListIterator;   
     if(pInfo && pInfo->m_bIsTerminated && fuppesThreadClose(pInfo->GetThreadHandle()))
@@ -263,7 +266,7 @@ void CHTTPServer::CleanupSessions()
       delete pInfo; 
       continue;
     } */       
-
+/*
     HTTPSession* pInfo = *m_ThreadListIterator;   
     if(pInfo && pInfo->m_bIsTerminated)
     {           
@@ -277,7 +280,7 @@ void CHTTPServer::CleanupSessions()
 		
     m_ThreadListIterator++;    
   }
-}
+}*/
 
 /**
  * the HTTPServer's AcceptLoop constantly
@@ -348,17 +351,10 @@ void CHTTPServer::run()
 		  //#ifdef FUPPES_TARGET_MAC_OSX
 			#if defined(BSD)
       pthread_testcancel();
-			fuppesSleep(10);
+			msleep(10);
 			#endif
 			continue;
 		}
-  
-		#ifdef USE_SO_NOSIGPIPE	
-		int flag = 1;
-    int nOpt = setsockopt(nConnection, SOL_SOCKET, SO_NOSIGPIPE, &flag, sizeof(flag));
-	  if(nOpt < 0)
-	    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "setsockopt(SO_NOSIGPIPE)");
-		#endif
 			
     // start session thread ...
     /*CHTTPSessionInfo* pSession = new CHTTPSessionInfo(pHTTPServer, nConnection, remote_ep, pHTTPServer->GetURL());      
@@ -370,30 +366,106 @@ void CHTTPServer::run()
     
     // ... and store the thread in the session list
     //pHTTPServer->m_ThreadList.push_back(pSession);
-		pHTTPServer->m_ThreadList.push_back(session);
+		//pHTTPServer->m_ThreadList.push_back(session);
 		
     // cleanup closed sessions
-    pHTTPServer->CleanupSessions();
+    //pHTTPServer->CleanupSessions();
 	}  
 
 	pHTTPServer->m_isStarted = false;
 	
   CSharedLog::Log(L_DBG, __FILE__, __LINE__, "exiting accept loop");
-  pHTTPServer->CleanupSessions();
+  //pHTTPServer->CleanupSessions();
 	//fuppesThreadExit();
 	
 } // AcceptLoop
+
+
+HTTPSessionStore* HTTPSessionStore::m_instance = NULL;
+
+void HTTPSessionStore::init() // static
+{
+  if(m_instance != NULL)
+    return;
+
+  m_instance = new HTTPSessionStore();
+  m_instance->start();  
+}
+
+void HTTPSessionStore::uninit() // static
+{
+  if(m_instance == NULL)
+    return;
+
+#warning todo: clear unfinished sessions
+  m_instance->stop();  
+  cout << m_instance->m_finishedSessions.size() << " finished sessions left" << endl;
+  cout << m_instance->m_sessions.size() << " running sessions left" << endl;
+  
+  delete m_instance;
+  m_instance = NULL;
+}
+
+void HTTPSessionStore::append(HTTPSession* session) // static
+{
+  if(m_instance == NULL)
+    return;
+  
+  MutexLocker locker(&m_instance->m_mutex);
+  m_instance->m_sessions.push_back(session);
+}
+
+void HTTPSessionStore::finished(HTTPSession* session) // static
+{
+  if(m_instance == NULL)
+    return;
+  
+  MutexLocker locker(&m_instance->m_mutex);
+  m_instance->m_sessions.remove(session);
+  m_instance->m_finishedSessions.push_back(session);
+}
+
+
+void HTTPSessionStore::run()
+{
+  while(!stopRequested()) {
+    m_mutex.lock();
+    
+    for(m_finishedSessionsIterator = m_finishedSessions.begin();
+        m_finishedSessionsIterator != m_finishedSessions.end();
+        m_finishedSessionsIterator++) {
+      delete *m_finishedSessionsIterator;          
+    }
+    m_finishedSessions.clear();
+
+    m_mutex.unlock();
+    msleep(2000);
+  }
+}
+
 
 /** Session-loop
   */
 //fuppesThreadCallback SessionLoop(void *arg)
 void HTTPSession::run()
 {
-  //CHTTPSessionInfo*    pSession  = (CHTTPSessionInfo*)arg;
-	HTTPSession*    pSession  = this;    
-  CHTTPMessage*        pRequest  = new CHTTPMessage();   
-  CHTTPMessage*        pResponse = new CHTTPMessage();
-  CHTTPRequestHandler* pHandler  = new CHTTPRequestHandler(pSession->GetHTTPServerURL());
+  HTTPSessionStore::append(this);
+  
+	#ifdef USE_SO_NOSIGPIPE	
+	int flag = 1;
+  int nOpt = setsockopt(nConnection, SOL_SOCKET, SO_NOSIGPIPE, &flag, sizeof(flag));
+  if(nOpt < 0) {
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "setsockopt(SO_NOSIGPIPE)");
+    HTTPSessionStore::finished(this);
+    return;
+  }
+	#endif
+  
+  
+	HTTPSession*          pSession   = this;    
+  CHTTPMessage*         pRequest   = new CHTTPMessage();   
+  CHTTPMessage*         pResponse  = new CHTTPMessage();
+  CHTTPRequestHandler*  pHandler   = new CHTTPRequestHandler(pSession->GetHTTPServerURL());
   
   bool bKeepAlive = true;
   bool bResult    = false;
@@ -402,10 +474,12 @@ void HTTPSession::run()
   
 	pRequest->SetRemoteEndPoint(pSession->GetRemoteEndPoint());
   std::string ip = inet_ntoa(pSession->GetRemoteEndPoint().sin_addr);    
-	
+
+  /*
 	string mac;
 	MacAddressTable::mac(ip, mac);
 	cout << "IP: " << ip << " MAC: " << mac << endl;
+  */
 	
   while(bKeepAlive)
   {  
@@ -454,7 +528,8 @@ void HTTPSession::run()
   
   // exit thread
   pSession->m_bIsTerminated = true;
-  //fuppesThreadExit();  
+  //fuppesThreadExit();
+  HTTPSessionStore::finished(this);
 }
 
 

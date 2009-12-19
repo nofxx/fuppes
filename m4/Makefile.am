@@ -1,1 +1,2 @@
-EXTRA_DIST = iconv.m4
+EXTRA_DIST = iconv.m4 \
+						 version.sh

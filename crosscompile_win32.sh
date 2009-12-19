@@ -16,7 +16,7 @@ HOST="i586-mingw32msvc"
 PREFIX=`pwd`"/win32"
 
 # make command (e.g. "make -j 2")
-MAKE="make"
+MAKE="make -j 2"
 MAKE_INSTALL="make install"
 
 # you should not need to change anything below
@@ -37,33 +37,33 @@ if ! test -d $PREFIX; then
 fi
 
 # create source directory
-if ! test -d $PREFIX"/sources"; then
-  mkdir $PREFIX"/sources"
+if ! test -d $PREFIX"/src"; then
+  mkdir $PREFIX"/src"
 fi
-cd $PREFIX"/sources"/
+cd $PREFIX"/src"/
 
 
 # $1 = paket name, $2 = file ext, $3 = url
 function loadpkt {
 
-  if ! test -d downloads; then
-    mkdir downloads
+  if ! test -d ../downloads; then
+    mkdir ../downloads
   fi
 
   SRC_PKT=$1$2
-  if ! test -e downloads/$SRC_PKT; then
-    wget --directory-prefix=downloads/ $3$SRC_PKT
+  if ! test -e ../downloads/$SRC_PKT; then
+    wget --directory-prefix=../downloads/ $3$SRC_PKT
   fi
 
   case $2 in
     ".tar.gz")
-      tar -xvzf downloads/$1$2
+      tar -xvzf ../downloads/$1$2
     ;;
     ".tar.bz2")
-      tar -xvjf downloads/$1$2
+      tar -xvjf ../downloads/$1$2
     ;;
     ".zip")
-      unzip -o downloads/$1$2
+      unzip -o ../downloads/$1$2
     ;;
   esac
 
@@ -176,12 +176,19 @@ echo "build ffmpeg? [Y/n]"
 HAVE_FFMPEG="no"
 read build
 if test "$build" != "n"; then
-  HAVE_FFMPEG2="yes"
+  HAVE_FFMPEG="yes"
+
+  echo "build libffmpegthumbnailer? [Y/n]"
+  read build
+  if test "$build" != "n"; then
+    HAVE_FFMPEGTHUMBNAILER="yes"
+  fi
+
 fi
 
 
 
-echo "strip libraries and executables? [Y/n]"
+echo "strip and touch libraries and executables? [Y/n]"
 DO_STRIP="no"
 read strip
 if test "$strip" != "n"; then
@@ -524,6 +531,7 @@ if test "$HAVE_JPEG" == "yes"; then
   loadpkt "jpegsrc.v7" ".tar.gz" \
           "http://www.ijg.org/files/"
   cd jpeg-7
+  sed -i -e 's/typedef int boolean/typedef char boolean/' jmorecfg.h
   ./configure --host=$HOST --prefix=$PREFIX
   $MAKE
   make install
@@ -556,14 +564,20 @@ if test "$HAVE_IMAGEMAGICK" == "yes"; then
   loadpkt "ImageMagick-6.5.8-5" ".tar.gz" \
           "ftp://ftp.imagemagick.org/pub/ImageMagick/"
 
-  # CFLAGS="-DHAVE_BOOLEAN $CFLAGS" \
+  sed -i -e 's/"\*.la"/"\*.dll"/' magick/module.c
+  sed -i -e 's/"%s.la"/"%s.dll"/' magick/module.c
+  sed -i -e 's/GetEnvironmentValue("MAGICK_CODER_MODULE_PATH")/ConstantString(".\\\\magick-modules")/' magick/module.c
+  sed -i -e 's/GetEnvironmentValue("MAGICK_CODER_FILTER_PATH")/ConstantString(".\\\\magick-filters")/' magick/module.c
+
+
   ./configure --host=$HOST --prefix=$PREFIX \
   --disable-deprecated --without-perl --with-modules \
   --without-x --without-gslib --with-magick-plus-plus=no \
-  --disable-installed --enable-embeddable
+  --with-quantum-depth=8 --enable-embeddable
+  #--disable-installed 
   
   $MAKE CFLAGS="-DHAVE_BOOLEAN $CFLAGS"
-  make install
+  $MAKE_INSTALL
   cd ..
 
 else
@@ -571,7 +585,6 @@ else
 fi
 
 
-# ffmpeg rev 19439 - 2009-07-16 00:51
 if test "$HAVE_FFMPEG" == "yes"; then
 
 echo "start building ffmpeg"
@@ -593,7 +606,7 @@ sed -i -e 's/usleep/Sleep/' ffmpeg.c
 --disable-demuxer=dv1394 --disable-indevs
 
 $MAKE
-make install
+$MAKE_INSTALL
 cd ..
 
 else
@@ -604,11 +617,10 @@ fi
 if test "$HAVE_FFMPEGTHUMBNAILER" == "yes"; then
 
   echo "start building ffmpegthumbnailer"
-  loadpkt "ffmpegthumbnailer-1.5.5" ".tar.gz" \
+  loadpkt "ffmpegthumbnailer-1.5.6" ".tar.gz" \
           "http://ffmpegthumbnailer.googlecode.com/files/"
 
-
-  sed -i -e 's/-version-info 3:2:0/-no-undefined -version-info 3:2:0/' Makefile.am
+  sed -i -e 's/-version-info 3:3:0/-no-undefined -version-info 3:3:0/' Makefile.am
 
   autoreconf -vfi
   ./configure --host=$HOST --prefix=$PREFIX
@@ -627,13 +639,17 @@ fi
 # FUPPES
 cd $PREFIX/..
 ./configure --host=$HOST --prefix=$PREFIX \
---enable-lame
+--enable-lame --enable-transcoder-ffmpeg
 $MAKE
-make install
+$MAKE_INSTALL
 
 
 # strip libraries and executables
 if test "$DO_STRIP" == "yes"; then
   $HOST-strip -s $PREFIX/bin/*
   $HOST-strip -s $PREFIX/lib/bin/*
+  touch $PREFIX/bin/*
+  touch $PREFIX/lib/bin/*
+  touch $PREFIX/share/fuppes/*
 fi
+

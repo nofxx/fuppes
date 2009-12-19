@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            HTTPServer.h
  * 
@@ -58,41 +58,6 @@ class IHTTPServer
 	  virtual bool OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut) = 0;
 };
 
-/*class CHTTPSessionInfo
-{
-
-  public:
-
-    CHTTPSessionInfo(CHTTPServer* pHTTPServer, upnpSocket p_Connection, struct sockaddr_in p_RemoteEndPoint, std::string p_sHTTPServerURL)
-    {
-      m_pHTTPServer    = pHTTPServer;
-      m_Connection     = p_Connection;    
-      m_bIsTerminated  = false;
-      m_RemoteEndPoint = p_RemoteEndPoint;
-      m_sServerURL     = p_sHTTPServerURL;
-    }
-
-    fuppesSocket GetConnection() { return m_Connection;  }
-    CHTTPServer* GetHTTPServer() { return m_pHTTPServer; }
-    std::string  GetHTTPServerURL() { return m_sServerURL; }    
-    fuppesThread GetThreadHandle() { return m_ThreadHandle; }
-    void         SetThreadHandle(fuppesThread p_ThreadHandle) { m_ThreadHandle = p_ThreadHandle; }
-    struct sockaddr_in GetRemoteEndPoint() { return m_RemoteEndPoint; }
-  
-    bool m_bIsTerminated;
-       
-  private:
-  
-    void CleanupSessions();
-
-    CHTTPServer*        m_pHTTPServer;
-    fuppesSocket        m_Connection;
-    fuppesThread        m_ThreadHandle;
-    struct sockaddr_in  m_RemoteEndPoint;
-    std::string         m_sServerURL;
-
-};*/
-
 class HTTPSession: public fuppes::Thread
 {
 	public:
@@ -129,6 +94,28 @@ class HTTPSession: public fuppes::Thread
 		
 };
 
+class HTTPSessionStore: public fuppes::Thread
+{
+  public:
+    HTTPSessionStore():Thread("HTTPSessionStore") {
+    }
+    static void append(HTTPSession* session);
+    static void finished(HTTPSession* session);
+
+    static void init();
+    static void uninit();
+    
+  private:
+    static HTTPSessionStore* m_instance;
+  	void run();
+
+    fuppes::Mutex                        m_mutex;
+    std::list<HTTPSession*>              m_sessions;
+    std::list<HTTPSession*>::iterator    m_sessionsIterator;
+    std::list<HTTPSession*>              m_finishedSessions;
+    std::list<HTTPSession*>::iterator    m_finishedSessionsIterator;
+};
+
 class CHTTPServer: public fuppes::Thread
 {
 
@@ -140,7 +127,7 @@ class CHTTPServer: public fuppes::Thread
     void          Stop();
     fuppesSocket  GetSocket() { return m_Socket; }
     std::string   GetURL();	
-    void          CleanupSessions();
+    //void          CleanupSessions();
 
     bool				  SetReceiveHandler(IHTTPServer* pHandler);
     bool          CallOnReceive(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);

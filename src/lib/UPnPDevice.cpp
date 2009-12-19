@@ -390,7 +390,7 @@ bool CUPnPDevice::ParseDescription(std::string p_sDescription)
   //cout << __FILE__ << " parse: " << p_sDescription << endl;
 	
   xmlDocPtr pDoc = NULL;
-  pDoc = xmlReadMemory(p_sDescription.c_str(), p_sDescription.length(), "", NULL, XML_PARSE_NOWARNING);
+  pDoc = xmlReadMemory(p_sDescription.c_str(), p_sDescription.length(), "", NULL, XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
   if(!pDoc) {
     CSharedLog::Log(L_DBG, __FILE__, __LINE__, "xml parser error");
     return false;    

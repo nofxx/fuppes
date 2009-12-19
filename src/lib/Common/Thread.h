@@ -1,4 +1,4 @@
-/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Thread.h
  *
@@ -103,6 +103,8 @@ class Thread
     #else
     static void* threadFunc(void*);
     #endif
+
+    void msleep(unsigned int milliseconds);
 		
   private:
 

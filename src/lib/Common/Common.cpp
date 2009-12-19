@@ -46,6 +46,9 @@
 #include <algorithm>
 #include <cctype>
 #include <fcntl.h>
+#ifndef WIN32
+#include <dlfcn.h>
+#endif
 
 #ifdef HAVE_ICONV
 #include <iconv.h>

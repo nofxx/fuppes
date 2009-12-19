@@ -1,9 +1,13 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl $Id: $
 
-AC_INIT([fuppes], [0.655], [fuppes@ulrich-voelkel.de])
+m4_include([m4/version.m4])
+AC_INIT([fuppes], VERSION_NUMBER, [fuppes@ulrich-voelkel.de])
 AM_CONFIG_HEADER(src/config.h)
 AM_INIT_AUTOMAKE([1.9])
+
+AH_TEMPLATE([FUPPES_VERSION], [The Current Version Number of FUPPES])
+AC_DEFINE([FUPPES_VERSION], "[VERSION_NUMBER]")
 
 AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CC

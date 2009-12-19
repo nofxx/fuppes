@@ -131,15 +131,10 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
     )
   {
 		CPresentationPlugin* pres = CPluginMgr::presentationPlugin();
-		if(!pres) {
-			CSharedLog::Log(L_NORM, __FILE__, __LINE__, "no presentation plugin available");
-   		//return false;			
-		}
-		else if(pres->handleRequest(pRequest, pResponse)) {
-			return true;
+    if(pres && pres->handleRequest(pRequest, pResponse)) {
+   		return true;
 		}
 
-#warning remove
     CPresentationHandler* pHandler = new CPresentationHandler();
     pHandler->OnReceivePresentationRequest(pRequest, pResponse);
     delete pHandler;    

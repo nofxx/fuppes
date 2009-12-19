@@ -1,4 +1,4 @@
-/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Thread.cpp
  *
@@ -239,3 +239,16 @@ void* Thread::threadFunc(void* thread)
 	pthread_exit(NULL);
 #endif
 }
+
+void Thread::msleep(unsigned int milliseconds)
+{
+  #ifdef WIN32
+  Sleep(milliseconds);
+  #else
+  if(milliseconds < 1000)
+    usleep(milliseconds * 1000);
+  else
+    sleep(milliseconds / 1000);  
+  #endif
+}
+
