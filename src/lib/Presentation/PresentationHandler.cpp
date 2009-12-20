@@ -32,6 +32,7 @@
 #include "../SharedLog.h"
 #include "../Common/Common.h"
 #include "../ContentDirectory/ContentDatabase.h"
+#include "../ContentDirectory/DatabaseConnection.h"
 #include "../ContentDirectory/VirtualContainerMgr.h"
 #include "../ContentDirectory/FileDetails.h"
 #include "../Transcoding/TranscodingMgr.h"
@@ -370,11 +371,16 @@ std::string CPresentationHandler::GetStatusHTML()
   //*p_psImgPath = "Status";
   
   //sResult
-  CContentDatabase* pDb = CContentDatabase::Shared(); // new CContentDatabase();
+  //CContentDatabase* pDb = CContentDatabase::Shared(); // new CContentDatabase();
+
+  OBJECT_TYPE nType = OBJECT_TYPE_UNKNOWN;
+  
   std::stringstream sSQL;
   sSQL << "select TYPE, count(*) as VALUE from OBJECTS group by TYPE;";
-  pDb->Select(sSQL.str());
-  OBJECT_TYPE nType = OBJECT_TYPE_UNKNOWN;  
+
+	CSQLQuery* qry = CDatabase::query();
+	qry->select(sSQL.str());
+  
   
   // Database status
   sResult << "<h1>database status</h1>" << endl;  
@@ -387,19 +393,20 @@ std::string CPresentationHandler::GetStatusHTML()
         "</tr>" << endl <<
       "</thead>" << endl << 
       "<tbody>" << endl;  
-  
-  while (!pDb->Eof())
-  {
+
+
+  while(!qry->eof()) {
+    nType = (OBJECT_TYPE)qry->result()->asInt("TYPE");
+    
     sResult << "<tr>" << endl;
-    
-    nType = (OBJECT_TYPE)atoi(pDb->GetResult()->asString("TYPE").c_str());
     sResult << "<td>" << CFileDetails::Shared()->GetObjectTypeAsStr(nType) << "</td>" << endl;
-    sResult << "<td>" << pDb->GetResult()->asString("VALUE") << "</td>" << endl;
-    pDb->Next();
-    
+    sResult << "<td>" << qry->result()->asString("VALUE") << "</td>" << endl;    
     sResult << "</tr>" << endl;
+    
+    qry->next();
   }
-  
+	delete qry;
+    
   sResult <<
       "</tbody>" << endl <<   
     "</table>" << endl;
