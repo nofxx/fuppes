@@ -206,6 +206,10 @@ bool CUPnPSearch::prepareSQL()
 				  sProp = "d.A_GENRE";
 					bNumericProp = false;
 				}
+				else if(sProp.compare("upnp:album") == 0) {
+				  sProp = "d.A_ALBUM";
+					bNumericProp = false;
+				}
         else if(sProp.compare("res:protocolInfo") == 0) {
 				  sPrevLog = sLogOp;
 					continue;

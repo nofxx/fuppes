@@ -337,7 +337,13 @@ bool CUPnPActionFactory::parseSortCriteria(CUPnPBrowseSearchBase* action)
 		else if(part.compare("upnp:artist") == 0) {
 			part = " d.A_ARTIST " + ext;
 		}
-		else if(part.compare("dc:title") == 0) {
+		else if(part.compare("upnp:genre") == 0) {
+			part = " d.A_GENRE " + ext;
+		}
+		else if(part.compare("upnp:album") == 0) {
+			part = " d.A_ALBUM " + ext;
+		}
+    else if(part.compare("dc:title") == 0) {
 			part = " o.TITLE " + ext;
 		}
 		else if(part.compare("upnp:originalTrackNumber") == 0) {

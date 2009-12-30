@@ -1075,7 +1075,7 @@ void CContentDirectory::HandleUPnPGetSearchCapabilities(CUPnPAction* /*pAction*/
     "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
     "  <s:Body>"
     "    <u:GetSearchCapabilitiesResponse xmlns:u=\"urn:schemas-upnp-org:service:ContentDirectory:1\">"
-    "      <SearchCaps>dc:title,upnp:class,upnp:artist</SearchCaps>"
+    "      <SearchCaps>dc:title,upnp:class,upnp:artist,upnp:genre,upnp:album</SearchCaps>"
     "    </u:GetSearchCapabilitiesResponse>"
     "  </s:Body>"
     "</s:Envelope>";
@@ -1090,7 +1090,7 @@ void CContentDirectory::HandleUPnPGetSortCapabilities(CUPnPAction* /*pAction*/, 
     "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
     "  <s:Body>"
     "    <u:GetSortCapabilitiesResponse xmlns:u=\"urn:schemas-upnp-org:service:ContentDirectory:1\">"
-    "      <SortCaps>upnp:class,dc:title,upnp:artist,upnp:originalTrackNumber</SortCaps>"
+    "      <SortCaps>upnp:class,dc:title,upnp:artist,upnp:genre,upnp:album,upnp:originalTrackNumber</SortCaps>"
     "    </u:GetSortCapabilitiesResponse>"
     "  </s:Body>"
     "</s:Envelope>";
