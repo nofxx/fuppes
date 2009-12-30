@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            ContentDatabase.cpp
  *
@@ -890,7 +890,7 @@ unsigned int InsertFile(CContentDatabase* pDb, unsigned int p_nParentId, std::st
 		title = TruncateFileExt(title);
 #warning TODO: make configurable
 		title = StringReplace(title, "_", " ");
-		title = StringReplace(title, ".", " ");
+		//title = StringReplace(title, ".", " ");
   }
   
   stringstream sSql;
@@ -1050,6 +1050,14 @@ void ParsePlaylist(CSQLResult* pResult)
 	//cout << "playlist id: " << nPlaylistID << endl;
 		
   CContentDatabase* pDb = CContentDatabase::Shared(); //new CContentDatabase();
+
+#warning FIXME
+  /*
+   we need to move the ref_id field from the objects table to the mapping table.
+   the problem is that playlist items don't have a correct ref id and therefore search queries like
+   upnp:class derivedfrom "object.item" and :refID exists false
+   will get files that are also in playlists at least twice
+   */
   
   while(!Parser->Eof()) {
     if(Parser->Entry()->bIsLocalFile && fuppes::File::exists(Parser->Entry()->sFileName)) {       

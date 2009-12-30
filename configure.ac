@@ -52,6 +52,11 @@ AM_CONDITIONAL([BUILD_DAEMON], [test x$build_daemon = xtrue])
 AM_CONDITIONAL([WINDOWS_BUILD], [test x$is_windows = xtrue])
 AM_CONDITIONAL([WIN32], [test x$is_windows = xtrue])
 
+AC_ARG_ENABLE([windows-service], [AC_HELP_STRING([--enable-windows-service],
+    [build windows service [default=no]])],
+    [enable_windows_service=$enableval], [enable_windows_service='no'])
+AM_CONDITIONAL([WINDOWS_SERVICE], [test "x$enable_windows_service" = "xyes" -a "x$is_windows" = "xtrue"])
+
 
 dnl Checks for header files.
 
@@ -580,7 +585,7 @@ AC_SUBST(MAD_LIBS)
 if test "x$transcoding" = "xno"; then
   ENABLE_TRANSCODING="false"
   CXXFLAGS="$CXXFLAGS -DDISABLE_TRANSCODING"
-  AC_MSG_NOTICE(Transcoding disabled");     
+  AC_MSG_NOTICE("Transcoding disabled");     
 fi
 AM_CONDITIONAL(DISABLE_TRANSCODING, test x$ENABLE_TRANSCODING = xfalse)
 

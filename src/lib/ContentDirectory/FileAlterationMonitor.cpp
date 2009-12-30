@@ -385,7 +385,7 @@ CWindowsFileMonitor::~CWindowsFileMonitor()
 bool CWindowsFileMonitor::addWatch(std::string path)
 {
   appendTrailingSlash(&path);
-	cout << "create watch: " << path << endl;
+	//cout << "create watch: " << path << endl;
 
 
 	// todo: create watch and store in m_watches map
@@ -399,7 +399,7 @@ bool CWindowsFileMonitor::addWatch(std::string path)
 void CWindowsFileMonitor::removeWatch(std::string path)
 {
   appendTrailingSlash(&path);
-  cout << "remove watch: " << path << endl;
+  //cout << "remove watch: " << path << endl;
 
 	// todo: destroy watch and remove from m_watches map
 	
@@ -411,7 +411,7 @@ void CWindowsFileMonitor::moveWatch(std::string fromPath, std::string toPath)
   appendTrailingSlash(&fromPath);
   appendTrailingSlash(&toPath);
 
-  cout << "move watch: " << fromPath << " to: " << toPath << endl;
+  //cout << "move watch: " << fromPath << " to: " << toPath << endl;
 
   removeWatch(fromPath);
   addWatch(toPath);

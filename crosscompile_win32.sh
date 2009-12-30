@@ -28,6 +28,8 @@ export LDFLAGS="-L$PREFIX/lib"
 export PKG_CONFIG_LIBDIR="$PREFIX/lib/pkgconfig"
 export WINEDLLPATH="$PREFIX/bin"
 
+FUPPES_DIR=`pwd`
+
 
 # create target directory
 if ! test -d $PREFIX; then
@@ -243,7 +245,7 @@ libz_la_LDFLAGS = -no-undefined" \
 autoreconf -vfi
 ./configure --host=$HOST --prefix=$PREFIX
 $MAKE
-make install
+$MAKE_INSTALL
 cd ..
 
 else
@@ -637,9 +639,9 @@ fi
 
 
 # FUPPES
-cd $PREFIX/..
+cd $FUPPES_DIR
 ./configure --host=$HOST --prefix=$PREFIX \
---enable-lame --enable-transcoder-ffmpeg
+--enable-lame --enable-transcoder-ffmpeg --enable-windows-service
 $MAKE
 $MAKE_INSTALL
 

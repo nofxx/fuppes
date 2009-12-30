@@ -453,7 +453,7 @@ void HTTPSession::run()
   
 	#ifdef USE_SO_NOSIGPIPE	
 	int flag = 1;
-  int nOpt = setsockopt(nConnection, SOL_SOCKET, SO_NOSIGPIPE, &flag, sizeof(flag));
+  int nOpt = setsockopt(m_Connection, SOL_SOCKET, SO_NOSIGPIPE, &flag, sizeof(flag));
   if(nOpt < 0) {
     CSharedLog::Log(L_EXT, __FILE__, __LINE__, "setsockopt(SO_NOSIGPIPE)");
     HTTPSessionStore::finished(this);

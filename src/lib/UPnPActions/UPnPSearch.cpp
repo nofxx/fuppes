@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            UPnPSearch.cpp
  *
@@ -91,10 +91,6 @@ bool CUPnPSearch::prepareSQL()
 	if(m_query.length() > 0 && m_queryCount.length() > 0) {
 		return true;
 	}
-	
-	/*std::string sTest;
-	sTest = "(upnp:class contains \"object.item.imageItem\") and (dc:title = \"test \\\"dahhummm\\\" [xyz] §$%&(abc) titel\") or author exists true and (title exists false and (author = \"test\" or author = \"dings\"))";
-*/
 
   string sOpenBr;
 	string sProp;
@@ -237,8 +233,7 @@ bool CUPnPSearch::prepareSQL()
 				else {
 				  bBuildOK = false;
 				}
-				
-				
+
 				// trim value
 				//cout << "Val: " << sVal << " => ";
 			  sVal = sVal.substr(1, sVal.length() - 2);
@@ -248,10 +243,12 @@ bool CUPnPSearch::prepareSQL()
 				if(sProp.compare("o.TYPE") == 0) { 
           sOp = "in";
           
-          #warning todo: use values from ContentDatabase.h
-				  /*if(sVal.compare("object.item") == 0)
-						
-					else*/ if(sVal.compare("object.item.imageItem") == 0)
+          #warning todo: use values from UPnPObjectTypes.h
+				  if(sVal.compare("object.item") == 0) {
+						sOp = ">=";
+						sVal = "100";
+					}
+					else if(sVal.compare("object.item.imageItem") == 0)
 					  sVal = "(110, 111)";
 					else if(sVal.compare("object.item.audioItem") == 0)
 					  sVal = "(120, 121, 122)";	
@@ -318,5 +315,7 @@ bool CUPnPSearch::prepareSQL()
   // in a count request  
 	m_query += sSql.str();
 
+  //cout << m_query << endl;
+  
   return true;
 }

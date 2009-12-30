@@ -53,13 +53,9 @@ void CXMSMediaReceiverRegistrar::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTT
 			"      <Result>1</Result>"
 			"    </u:IsAuthorizedResponse>"
 			"  </s:Body>"
-			"</s:Envelope>";    
-
-/* twonky 5 sends the following to WMP 11
-   <?xml version="1.0" encoding="utf-8" ?><SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><SOAP-ENV:Body><m:IsAuthorizedResponse xmlns:m="urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1"><Result xmlns:dt="urn:schemas-microsoft-com:datatypes" dt:dt="int">1</Result></m:IsAuthorizedResponse></SOAP-ENV:Body></SOAP-ENV:Envelope>
-*/
-    
+			"</s:Envelope>";
 	}
+  
 	else if(pUPnPAction->GetActionType() == UPNP_IS_VALIDATED) {
 	  sContent =
   		"<?xml version=\"1.0\" encoding=\"utf-8\"?>"
@@ -70,11 +66,6 @@ void CXMSMediaReceiverRegistrar::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTT
 			"    </u:IsValidatedResponse>"
 			"  </s:Body>"
 			"</s:Envelope>";
-
-/* twonky 5 <> wmp 11
-<?xml version="1.0" encoding="utf-8" ?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><m:IsValidatedResponse xmlns:m="urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1"><Result>1</Result></m:IsValidatedResponse></s:Body></s:Envelope>
-*/
-    
 	}
 
 	else if(pUPnPAction->GetActionType() == UPNP_REGISTER_DEVICE) {
@@ -94,9 +85,6 @@ void CXMSMediaReceiverRegistrar::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTT
       "    </SOAP-ENV:Fault>"
       "  </SOAP-ENV:Body>"
       "</SOAP-ENV:Envelope>";
-/* twonky 5 <> wmp 11
-<?xml version="1.0" encoding="utf-8" ?><SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Client</faultcode><faultstring>UPnPError</faultstring><detail><u:UPnPError xmlns:u="urn:schemas-upnp-org:control-1-0"><u:errorCode>501</u:errorCode><u:errorDescription>Action Failed</u:errorDescription></u:UPnPError></detail></SOAP-ENV:Fault></SOAP-ENV:Body></SOAP-ENV:Envelope>
-*/
 	}
   
   if(!sContent.empty())

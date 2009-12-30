@@ -23,6 +23,26 @@ fuppes_win_LDADD = \
 	fuppes.res
 
 
+
+if WINDOWS_SERVICE
+
+bin_PROGRAMS += fuppes-svc
+
+fuppes_svc_SOURCES = \
+	WinService.cpp \
+	fuppes.rc
+
+fuppes_svc_LDFLAGS = \
+	-mwindows
+	-advapi32
+
+fuppes_svc_LDADD = \
+	./../libfuppes.la \
+	fuppes.res
+
+endif # WINDOWS_SERVICE
+
+
 fuppes.res: fuppes.rc
 	$(WINDRES) -i fuppes.rc --input-format=rc -o fuppes.res -O coff
 
