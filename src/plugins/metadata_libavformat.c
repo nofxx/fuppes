@@ -1,9 +1,10 @@
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            metadata_libavformat.c
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2008-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -37,13 +38,21 @@ extern "C" {
 #endif
 
 #include <string.h>
-	
+#include <stdarg.h>
+
+
+/*void av_log_callback(void* ptr, int* level, const char* fmt, va_list vl)
+{
+}*/
+    
 void register_fuppes_plugin(plugin_info* info)
 {
 	strcpy(info->plugin_name, "libavformat");
 	strcpy(info->plugin_author, "Ulrich Voelkel");
 	info->plugin_type = PT_METADATA;
-	
+
+  //av_log_set_callback(&av_log_callback);
+  av_log_set_level(AV_LOG_QUIET);
 	av_register_all();
 }
 

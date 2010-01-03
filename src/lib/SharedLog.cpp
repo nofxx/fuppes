@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -54,6 +54,14 @@ std::string Log::senderToString(Log::Sender sender) // static
       return "ssdp";
     case Log::fam:
       return "fam";
+
+    case Log::contentdir:
+      return "contentdir";
+    case Log::contentdb:
+      return "contentdb";
+    case Log::sql:
+      return "sql";
+
     case Log::plugin:
       return "plugin";
 		default:
@@ -75,6 +83,14 @@ Log::Sender Log::stringToSender(std::string sender) // static
     return Log::ssdp;
   else if(sender == "fam")
     return Log::fam;
+  
+  else if(sender == "contentdir")
+    return Log::contentdir;
+  else if(sender == "contentdb")
+    return Log::contentdb;
+  else if(sender == "sql")
+    return Log::sql;
+  
   else if(sender == "plugin")
     return Log::plugin;
   else

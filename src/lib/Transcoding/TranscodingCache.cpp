@@ -84,6 +84,7 @@ CTranscodingCacheObject::~CTranscodingCacheObject()
   
   if(this->running()) {  
   	this->stop();
+    this->close();
   }
     //fuppesThreadClose(m_TranscodeThread);        
   //}

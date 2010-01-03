@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -58,6 +58,9 @@ namespace fuppes {
         gena,
 				ssdp,
 				fam,
+        contentdir,
+        contentdb,
+        sql,
 				plugin
 			};
 		

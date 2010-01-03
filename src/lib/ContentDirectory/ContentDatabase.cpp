@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -55,6 +55,7 @@
 #include <sys/stat.h>
 
 using namespace std;
+using namespace fuppes;
 
 static bool g_bIsRebuilding;
 static bool g_bFullRebuild;
@@ -481,7 +482,10 @@ void DbScanDir(CContentDatabase* pDb, std::string p_sDirectory, long long int p_
 
 	if(!fuppes::Directory::exists(p_sDirectory))
 		return;
-	
+
+  Log::log(Log::contentdb, Log::extended, __FILE__, __LINE__, "read dir \"%s\"", p_sDirectory.c_str());
+  
+  
   #ifdef WIN32
   char szTemp[MAX_PATH];
   strcpy(szTemp, p_sDirectory.c_str());
