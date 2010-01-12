@@ -1,9 +1,12 @@
-Version
+Version SVN-660 2010-01-11
 
   * fixed subscription parsing for coherence UPnP framework
   * initial support for wpl playlists (Robert Massaioli)
   * initial ffmpegthumbnailer plugin
-
+  * initial windows service
+  * WMP 11 support
+  * cleanup and bugfixes
+  * added album & genre search/sort capabilities
 
 
 Version SVN-640 2009-07-19

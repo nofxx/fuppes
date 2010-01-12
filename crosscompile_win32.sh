@@ -194,7 +194,7 @@ echo "strip and touch libraries and executables? [Y/n]"
 DO_STRIP="no"
 read strip
 if test "$strip" != "n"; then
-  HDO_STRIP="yes"
+  DO_STRIP="yes"
 fi
 
 

@@ -65,11 +65,13 @@ libmetadata_libavformat_la_SOURCES = \
 
 libmetadata_libavformat_la_CFLAGS = \
 	$(LIBAVFORMAT_CFLAGS) \
-	$(LIBAVCODEC_CFLAGS)
+	$(LIBAVCODEC_CFLAGS) \
+	$(LIBAVUTIL_CFLAGS)
 	
 libmetadata_libavformat_la_LDFLAGS = \
 	$(LIBAVFORMAT_LIBS) \
-	$(LIBAVCODEC_LIBS)
+	$(LIBAVCODEC_LIBS) \
+	$(LIBAVUTIL_LIBS)
 
 endif
 
