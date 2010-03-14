@@ -53,6 +53,7 @@ CHTTPMessage::CHTTPMessage()
   m_bIsBinary           = false;
   m_nRangeStart         = 0;
   m_nRangeEnd           = 0;
+	m_hasRange						= false;
   m_nHTTPConnection     = HTTP_CONNECTION_UNKNOWN;
   m_pUPnPAction         = NULL;
 	m_pDeviceSettings			= NULL;
@@ -85,8 +86,10 @@ CHTTPMessage::~CHTTPMessage()
   }  
   #endif
 
-  if(m_fsFile.is_open())
-    m_fsFile.close();
+  /*if(m_fsFile.is_open())
+    m_fsFile.close();*/
+	if(m_file.isOpen())
+		m_file.close();
 }
 
 void CHTTPMessage::SetMessage(HTTP_MESSAGE_TYPE nMsgType, std::string p_sContentType)
@@ -211,7 +214,7 @@ std::string CHTTPMessage::GetHeaderAsString()
          (m_nTransferEncoding != HTTP_TRANSFER_ENCODING_CHUNKED))
       {      
         // ranges
-        if((m_nRangeStart > 0) || (m_nRangeEnd > 0))
+        if(m_nHTTPMessageType == HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT) // (m_nRangeStart > 0) || (m_nRangeEnd > 0))
         {
           if(m_nRangeEnd < m_nBinContentLength) {
             sResult << "Content-Length: " << m_nRangeEnd - m_nRangeStart + 1 << "\r\n";
@@ -285,9 +288,12 @@ std::string CHTTPMessage::GetHeaderAsString()
       sResult << "Accept-Ranges: none\r\n";
     }
 
-    
-    /* Connection */
-    sResult << "Connection: close\r\n";    
+		// cache
+    sResult << "Pragma: no-cache\r\n";
+    sResult << "Cache-control: no-cache\r\n";
+		
+    // connection
+    sResult << "Connection: close\r\n";
 	
     // date
     char   szTime[30];
@@ -295,7 +301,7 @@ std::string CHTTPMessage::GetHeaderAsString()
     strftime(szTime, 30,"%a, %d %b %Y %H:%M:%S GMT" , gmtime(&tTime));   
   	sResult << "DATE: " << szTime << "\r\n";	
 	
-	  /* dlna */
+	  // dlna
     sResult << "contentFeatures.dlna.org: \r\n";
     sResult << "EXT:\r\n";    
   }
@@ -315,7 +321,7 @@ std::string CHTTPMessage::GetHeaderAsString()
  	// server signature
   sResult << 
     "Server: " << CSharedConfig::Shared()->GetOSName() << "/" << CSharedConfig::Shared()->GetOSVersion() << ", " <<
-    "UPnP/1.0, " << CSharedConfig::Shared()->GetAppFullname() << "/" << CSharedConfig::Shared()->GetAppVersion() << "\r\n";  
+    "UPnP/1.0, " << CSharedConfig::Shared()->GetAppName() << "/" << CSharedConfig::Shared()->GetAppVersion() << "\r\n";  
 	
 	sResult << "\r\n";
   
@@ -345,13 +351,16 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
 {
   // read from file
   #ifndef DISABLE_TRANSCODING
-  if(m_pTranscodingSessionInfo == NULL && m_fsFile.is_open()) {    
+  //if(m_pTranscodingSessionInfo == NULL && m_fsFile.is_open()) {
+	if(m_pTranscodingSessionInfo == NULL && m_file.isOpen()) {        
   #else
-  if(m_fsFile.is_open()) {    
+  //if(m_fsFile.is_open()) {
+	if(m_file.isOpen()) {
   #endif
     
     if((p_nOffset > 0) && (p_nOffset != m_nBinContentPosition)) {
-      m_fsFile.seekg(p_nOffset, ios::beg);
+      //m_fsFile.seekg(p_nOffset, ios::beg);
+			m_file.seek(p_nOffset);
       m_nBinContentPosition = p_nOffset;
     }
       
@@ -361,7 +370,8 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     else
       nRead = p_nSize;
 
-    m_fsFile.read(p_sContentChunk, nRead);   
+    //m_fsFile.read(p_sContentChunk, nRead);   
+		m_file.read(p_sContentChunk, nRead);
       
     m_nBinContentPosition += nRead;
     m_nBytesConsumed  = nRead;
@@ -486,7 +496,7 @@ unsigned int CHTTPMessage::GetBinContentChunk(char* p_sContentChunk, unsigned in
     
       fstream fsTmp;        
       fsTmp.open(m_pTranscodingCacheObj->m_sOutFileName.c_str(), ios::binary|ios::in);
-      if(m_fsFile.fail() != 1) { 
+      if(fsTmp.fail() != 1) { 
         fsTmp.seekg(m_nBinContentPosition, ios::beg);   
           
         fsTmp.read(p_sContentChunk, nRest);
@@ -660,6 +670,7 @@ bool CHTTPMessage::BuildFromString(std::string p_sMessage)
   RegEx rxRANGE("RANGE: +BYTES=(\\d*)(-\\d*)", PCRE_CASELESS);
   if(rxRANGE.Search(p_sMessage.c_str()))
   {
+		m_hasRange = true;
     string sMatch1 = rxRANGE.Match(1);    
     string sMatch2;
     if(rxRANGE.SubStrings() > 2)
@@ -699,18 +710,28 @@ bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
 {
   m_bIsBinary = true;  
 
+	m_file.setFileName(p_sFileName);
+	if(m_file.open(fuppes::File::Read)) {
+		m_nBinContentLength = m_file.size();    
+    return (m_nBinContentLength >= 0);
+	}
+	else {
+    return false;
+	}
+
+
+	/*
   m_fsFile.open(p_sFileName.c_str(), ios::binary|ios::in);
-  if(m_fsFile.fail() != 1) { 
+  //if(m_fsFile.fail() != 1) {
+	if(!m_fsFile.is_open()) {  
     m_fsFile.seekg(0, ios::end); 
     m_nBinContentLength = streamoff(m_fsFile.tellg()); 
     m_fsFile.seekg(0, ios::beg);
-    
-    return true;
+    return (m_nBinContentLength >= 0);
   } 
   else {
-    
     return false;
-  }	
+  }	*/
 }
 
 

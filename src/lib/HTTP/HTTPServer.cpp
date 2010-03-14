@@ -652,17 +652,16 @@ bool ReceiveRequest(HTTPSession* p_Session, CHTTPMessage* p_Request)
 		// got the full header
 		if(((szPos = strstr(szMsg, "\r\n\r\n")) != NULL) && !bGotHeader) {
 			
-			nHeaderPos = szPos - szMsg;
+			nHeaderPos = (szPos - szMsg) + strlen("\r\n\r\n");
 			szHeader = (char*)malloc((nHeaderPos + 1) * sizeof(char*));
 			strncpy(szHeader, szMsg, nHeaderPos);
 			szHeader[nHeaderPos] = '\0';
-
+      
 			p_Request->SetHeader(szHeader);
-			
+
 			free(szHeader);
 			szHeader = NULL;
 			bGotHeader = true;
-			nHeaderPos += 4;
 		}
     // header is incomplete (continue receiving)
     else if(!bGotHeader) {
@@ -670,30 +669,74 @@ bool ReceiveRequest(HTTPSession* p_Session, CHTTPMessage* p_Request)
       continue;
     }
 
+    //cout << "GOT HEADER: " <<  szMsg << "encoding: " << p_Request->GetTransferEncoding() << endl;
+
     // check content length
-    RegEx rxContentLength("CONTENT-LENGTH: *(\\d+)", PCRE_CASELESS);
-    if(rxContentLength.Search(p_Request->GetHeader().c_str())) {
-      string sContentLength = rxContentLength.Match(1);    
-      nContentLength = ::atoi(sContentLength.c_str());
-    }
-		
-    // check if we received the full content
-    if((nBytesReceived - nHeaderPos) < nContentLength) {
+    if(p_Request->GetTransferEncoding() == HTTP_TRANSFER_ENCODING_NONE) {
       
-      // xbox 360: sends a content length of 3 but only 2 bytes of data
-      if((p_Request->DeviceSettings()->Xbox360Support()) && (nContentLength == 3)) {
-        bDoReceive = false;
+      RegEx rxContentLength("CONTENT-LENGTH: *(\\d+)", PCRE_CASELESS);
+      if(rxContentLength.Search(p_Request->GetHeader().c_str())) {
+        string sContentLength = rxContentLength.Match(1);    
+        nContentLength = ::atoi(sContentLength.c_str());
+      }
+		
+      // check if we received the full content
+      if((nBytesReceived - nHeaderPos) < nContentLength) {
+        
+        // xbox 360: sends a content length of 3 but only 2 bytes of data
+        if((p_Request->DeviceSettings()->Xbox360Support()) && (nContentLength == 3)) {
+          bDoReceive = false;
+        }
+        else {
+          // content incomplete (continue receiving)
+          continue;
+        }
       }
       else {
-        // content incomplete (continue receiving)
-        continue;
+        // full content. message is complete
+        bDoReceive = false;      
       }
-    }
-    else {
-      // full content. message is complete
-      bDoReceive = false;      
-    }
-                  
+      
+    } // Transfer-encoding == NONE
+    else if(p_Request->GetTransferEncoding() == HTTP_TRANSFER_ENCODING_CHUNKED) {
+
+      int offset = nBytesReceived - 1;
+      if(szMsg[offset] == '\n')
+        offset--;
+      else
+        continue;
+      if(szMsg[offset] == '\r')
+        offset--;
+      else
+        continue;
+      while(szMsg[offset] == ' ' && offset > 0)
+        offset--;
+      if(szMsg[offset] != '0')
+        continue;
+
+      string msg = &szMsg[nHeaderPos];
+      memset(&szMsg[nHeaderPos], '\0', nBytesReceived - nHeaderPos);
+
+      size_t pos;
+      unsigned int size;
+      unsigned int msgOffset = 0;
+      while((pos = msg.find("\r\n")) != string::npos) {
+
+        size = HexToInt(msg.substr(0, pos));
+        msg = msg.substr(pos + 2);
+  
+        if(size == 0)
+          continue;
+        
+        strncpy(&szMsg[nHeaderPos + msgOffset], msg.c_str(), size);
+        msgOffset += size;        
+        msg = msg.substr(size);
+      }
+
+      bDoReceive = false;  
+    } // Transfer-encoding == CHUNKED
+
+    
     if(nTmpRecv == 0)      
       nRecvCnt++;
 
@@ -728,7 +771,8 @@ bool SendResponse(HTTPSession* p_Session, CHTTPMessage* p_Response, CHTTPMessage
   if(!p_Response->IsBinary())
   { 
 	  // log
-    CSharedLog::Log(L_DBG, __FILE__, __LINE__, "send response %s\n", p_Response->GetMessageAsString().c_str());
+    //CSharedLog::Log(L_DBG, __FILE__, __LINE__, "send response %s\n", p_Response->GetMessageAsString().c_str());
+    Log::log(Log::http, Log::debug, __FILE__, __LINE__, "send response %s\n", p_Response->GetMessageAsString().c_str());
         
     // send
     nRet = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetMessageAsString().c_str(), (int)strlen(p_Response->GetMessageAsString().c_str()));
@@ -794,7 +838,14 @@ bool SendResponse(HTTPSession* p_Session, CHTTPMessage* p_Response, CHTTPMessage
 		// set HTTP 206 partial content
     p_Response->SetMessageType(HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT);          
   }
-	
+
+  // the above does not work if range: 0 - is requested
+  // therefore we set explicitly set 206 if the request contains a range field
+  // this whole mess needs to be cleaned up
+  if(p_Request->hasRange()) {
+    p_Response->SetMessageType(HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT);          
+  }
+  
 	// set range end
   if(p_Request->GetRangeEnd() > 0) {
     p_Response->SetRangeEnd(p_Request->GetRangeEnd());

@@ -49,7 +49,15 @@ using namespace std;
 CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
 {
   CSharedLog::Log(L_EXT, __FILE__, __LINE__, "starting UPnP subsystem");
- 
+
+
+  m_pHTTPServer = NULL;
+  m_pSSDPCtrl = NULL;
+  m_pMediaServer = NULL;
+  m_pContentDirectory = NULL;
+  m_pConnectionManager = NULL;
+  m_pXMSMediaReceiverRegistrar = NULL;
+  
   // set member
   m_sIPAddress                  = p_sIPAddress;
   m_sUUID                       = p_sUUID;
@@ -101,7 +109,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
   }
 	  
   /* Create MediaServer */
-  m_pMediaServer = new CMediaServer(m_pHTTPServer->GetURL(), this);	  
+  m_pMediaServer = new CMediaServer(m_pHTTPServer->GetURL(), p_sUUID, this);	  
   
   /* create ContentDirectory */
   try {
@@ -116,7 +124,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
   try {
     m_pConnectionManager = new CConnectionManager(m_pHTTPServer->GetURL()); 
     m_pMediaServer->AddUPnPService(m_pConnectionManager);
-		CConnectionManagerCore::init();
+		//CConnectionManagerCore::init();
   }
   catch(fuppes::Exception ex) {
     throw;
@@ -158,46 +166,56 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
 CFuppes::~CFuppes()
 {  
   CSharedLog::Log(L_EXT, __FILE__, __LINE__, "deleting FUPPES instance");
-  
-  /* multicast notify-byebye */
-  CSharedLog::Shared()->Log(L_EXT, __FILE__, __LINE__, "multicasting byebye messages");
-  m_pSSDPCtrl->send_byebye();  
-  
-  /* stop SSDP-controller */
-  CSharedLog::Shared()->Log(L_EXT, __FILE__, __LINE__, "stopping SSDP controller");
-  m_pSSDPCtrl->Stop();
 
+  if(m_pSSDPCtrl) {
+    /* multicast notify-byebye */
+    CSharedLog::Shared()->Log(L_EXT, __FILE__, __LINE__, "multicasting byebye messages");
+    m_pSSDPCtrl->send_byebye();  
+    
+    /* stop SSDP-controller */
+    CSharedLog::Shared()->Log(L_EXT, __FILE__, __LINE__, "stopping SSDP controller");
+    m_pSSDPCtrl->Stop();
+  }
+    
   /* stop HTTP-server */
-  CSharedLog::Shared()->Log(L_EXT, __FILE__, __LINE__, "stopping HTTP server");
-  m_pHTTPServer->Stop();
+  if(m_pHTTPServer) {
+    CSharedLog::Shared()->Log(L_EXT, __FILE__, __LINE__, "stopping HTTP server");
+    m_pHTTPServer->Stop();
+  }
 
-  CleanupTimedOutDevices();
-
+  
   m_RemoteDeviceIterator = m_RemoteDevices.begin();
   while(m_RemoteDeviceIterator != m_RemoteDevices.end()) {
 		delete m_RemoteDeviceIterator->second;
 		m_RemoteDeviceIterator++;
   }
   m_RemoteDevices.clear();
+  CleanupTimedOutDevices();
   
   
   fuppesThreadDestroyMutex(&m_OnTimerMutex);
   fuppesThreadDestroyMutex(&m_RemoteDevicesMutex);
   
   /* destroy objects */
-  delete m_pConnectionManager;
-  delete m_pXMSMediaReceiverRegistrar;
-  delete m_pContentDirectory;
-  delete m_pMediaServer;
-  delete m_pSSDPCtrl;
-  delete m_pHTTPServer;
+  if(m_pConnectionManager)
+    delete m_pConnectionManager;
+  if(m_pXMSMediaReceiverRegistrar)
+    delete m_pXMSMediaReceiverRegistrar;
+  if(m_pContentDirectory)
+    delete m_pContentDirectory;
+  if(m_pMediaServer)
+    delete m_pMediaServer;
+  if(m_pSSDPCtrl)
+    delete m_pSSDPCtrl;
+  if(m_pHTTPServer)
+    delete m_pHTTPServer;
 
-  delete CSubscriptionMgr::Shared();
+  CSubscriptionMgr::deleteInstance();
   delete CContentDatabase::Shared();
   delete CVirtualContainerMgr::Shared();
 
-	CConnectionManagerCore::uninit();
-  delete CFileDetails::Shared();
+	//CConnectionManagerCore::deleteInstance();
+  CFileDetails::deleteInstance();
   //delete CTranscodingMgr::Shared();
 }
 

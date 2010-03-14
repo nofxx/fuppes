@@ -71,10 +71,10 @@ void CXMSMediaReceiverRegistrar::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTT
 	else if(pUPnPAction->GetActionType() == UPNP_REGISTER_DEVICE) {
 	  sContent =
   		"<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
-      "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
-      "  <SOAP-ENV:Body>"
-      "    <SOAP-ENV:Fault>"
-      "      <faultcode>SOAP-ENV:Client</faultcode>"
+      "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
+      "  <s:Body>"
+      "    <s:Fault>"
+      "      <faultcode>s:Client</faultcode>"
       "      <faultstring>UPnPError</faultstring>"
       "      <detail>"
       "        <u:UPnPError xmlns:u=\"urn:schemas-upnp-org:control-1-0\">"
@@ -82,9 +82,9 @@ void CXMSMediaReceiverRegistrar::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTT
       "          <u:errorDescription>Action Failed</u:errorDescription>"
       "        </u:UPnPError>"
       "      </detail>"
-      "    </SOAP-ENV:Fault>"
-      "  </SOAP-ENV:Body>"
-      "</SOAP-ENV:Envelope>";
+      "    </s:Fault>"
+      "  </s:Body>"
+      "</s:Envelope>";
 	}
   
   if(!sContent.empty())

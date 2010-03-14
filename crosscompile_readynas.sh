@@ -1,19 +1,19 @@
 #
-# cross compile FUPPES for Windows using mingw
-# Copyright (C) 2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+# cross compile FUPPES for Netgear ReadyNas
+# Copyright (C) 2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
 #
-# tested on debian using mingw32-4.2.1.dsfg-1 and mingw32-runtime-3.13-1
-# furthermore you need wine and wine-bin in order to
-# execute test programms build by configure scripts
-# autotools, wget and svn
+
+# get the compiler from here:
+# http://www.readynas.com/download/development/readynas-cross-3.3.5.tar.gz
+
 
 # settings
 
 # the build host
-HOST="i586-mingw32msvc"
+HOST="sparc-linux"
 
 # target directory
-PREFIX=`pwd`"/win32"
+PREFIX=`pwd`"/readynas"
 
 # make command (e.g. "make -j 2")
 MAKE="make -j 2"
@@ -74,134 +74,22 @@ function loadpkt {
 
 
 
-# collect build info
-echo "build zlib? [Y/n]"
-HAVE_ZLIB="no"
-read build
-if test "$build" != "n"; then
-  HAVE_ZLIB="yes"
-fi
-
-echo "build libiconv? [Y/n]"
-HAVE_ICONV="no"
-read build
-if test "$build" != "n"; then
-  HAVE_ICONV="yes"
-fi
+HAVE_ZLIB="yes"
+HAVE_ICONV="yes"
+HAVE_TAGLIB="yes"
 
 
-
-echo "build taglib? [Y/n]"
-HAVE_TAGLIB="no"
-read build
-if test "$build" != "n"; then
-  HAVE_TAGLIB="yes"
-fi
-
-echo "build LAME? [Y/n]"
-HAVE_LAME="no"
-read build
-if test "$build" != "n"; then
-  HAVE_LAME="yes"
-fi
-
-echo "build ogg/vorbis (libogg and libvorbisfile)? [Y/n]"
-HAVE_OGGVORBIS="no"
-read build
-if test "$build" != "n"; then
-  HAVE_OGGVORBIS="yes"
-fi
-
-echo "build FLAC? [Y/n]"
-HAVE_FLAC="no"
-read build
-if test "$build" != "n"; then
-  HAVE_FLAC="yes"
-fi
-
-echo "build MusePack mpc? [Y/n]"
-HAVE_MUSEPACK="no"
-read build
-if test "$build" != "n"; then
-  HAVE_MUSEPACK="yes"
-fi
-
-#echo "build libmad? [Y/n]"
-HAVE_MAD="no"
-#read build
-#if test "$build" != "n"; then
-#  HAVE_MAD="yes"
-#fi
+HAVE_JPEG="yes"
+HAVE_FFMPEG="yes"
+HAVE_FFMPEGTHUMBNAILER="yes"
 
 
-echo "build exiv2? [Y/n]"
-HAVE_EXIV2="no"
-read build
-if test "$build" != "n"; then
-  HAVE_EXIV2="yes"
-fi
-
-
-#todo libtiff (imagemagick and simage) libungif (simage)
-
-echo "build simage? [Y/n]"
-HAVE_SIMAGE="no"
-read build
-if test "$build" != "n"; then
-  HAVE_SIMAGE="yes"
-fi
-
-
-echo "build ImageMagick? [Y/n]"
-HAVE_IMAGEMAGICK="no"
-HAVE_JPEG="no"
-HAVE_PNG="no"
-read build
-if test "$build" != "n"; then
-  HAVE_IMAGEMAGICK="yes"
-
-  echo "build libjpeg? [Y/n]"
-  read build
-  if test "$build" != "n"; then
-    HAVE_JPEG="yes"  
-  fi
-  
-  echo "build libpng? [Y/n]"
-  read build
-  if test "$build" != "n"; then
-    HAVE_PNG="yes"  
-  fi
-fi
-
-
-echo "build ffmpeg? [Y/n]"
-HAVE_FFMPEG="no"
-read build
-if test "$build" != "n"; then
-  HAVE_FFMPEG="yes"
-
-  echo "build libffmpegthumbnailer? [Y/n]"
-  read build
-  if test "$build" != "n"; then
-    HAVE_FFMPEGTHUMBNAILER="yes"
-  fi
-
-fi
-
-
-
-echo "strip and touch libraries and executables? [Y/n]"
-DO_STRIP="no"
-read strip
-if test "$strip" != "n"; then
-  DO_STRIP="yes"
-fi
-
-
+HAVE_SCREEN="yes"
 
 
 # zlib 1.2.3 (for taglib, exiv2, imagemagick & co.) 
 # strongly recommended
+
 if test "$HAVE_ZLIB" == "yes"; then
 
 echo "start building zlib"
@@ -270,6 +158,7 @@ else
 fi
 
 
+
 # PCRE 7.9 (required)
 echo "start building pcre"
 loadpkt "pcre-7.9" ".zip" \
@@ -311,6 +200,8 @@ loadpkt "libxml2-2.6.32" ".tar.gz" \
 $MAKE
 $MAKE_INSTALL
 cd ..
+
+
 
 
 
@@ -512,16 +403,17 @@ else
   echo "skipped exiv2"
 fi
 
+# todo libtiff & libungif
 
 
 
-#libjpeg (for ImageMagick and ffmpegthumbnailer)
+
+#libjpeg (for ImageMagick, simage and ffmpegthumbnailer)
 if test "$HAVE_JPEG" == "yes"; then
   echo "start building jpeg"  
   loadpkt "jpegsrc.v7" ".tar.gz" \
           "http://www.ijg.org/files/"
   cd jpeg-7
-  sed -i -e 's/typedef int boolean/typedef char boolean/' jmorecfg.h
   ./configure --host=$HOST --prefix=$PREFIX
   $MAKE
   $MAKE_INSTALL
@@ -531,7 +423,7 @@ else
   echo "skipped libjpeg"
 fi
 
-#libpng (for ImageMagick and simage)
+#libpng (for ImageMagick, simage and ffmpegthumbnailer)
 if test "$HAVE_PNG" == "yes"; then
   echo "start building png"
   loadpkt "libpng-1.2.41" ".tar.bz2" \
@@ -546,8 +438,6 @@ else
   echo "skipped libpng"
 fi
 
-
-# todo libtiff & libungif
 
 #simage
 if test "$HAVE_SIMAGE" == "yes"; then
@@ -594,6 +484,8 @@ else
 fi
 
 
+# So. 24 Jan :: rev 21414
+
 if test "$HAVE_FFMPEG" == "yes"; then
 
 echo "start building ffmpeg"
@@ -606,13 +498,26 @@ else
   svn update
 fi
 
-sed -i -e 's/__MINGW32_MINOR_VERSION >= 15/__MINGW32_MINOR_VERSION >= 13/' configure
-sed -i -e 's/usleep/Sleep/' ffmpeg.c
+#sed -i -e 's/__MINGW32_MINOR_VERSION >= 15/__MINGW32_MINOR_VERSION >= 13/' configure
+#sed -i -e 's/usleep/Sleep/' ffmpeg.c
  
-./configure --prefix=$PREFIX --enable-cross-compile --target-os=mingw32 \
---enable-memalign-hack --cross-prefix=$HOST- --enable-shared \
+./configure --prefix=$PREFIX --enable-cross-compile --target-os=linux --arch=sparc \
+--cross-prefix=$HOST- --enable-shared \
 --enable-gpl --disable-ffmpeg --disable-ffplay --disable-ffserver \
---disable-demuxer=dv1394 --disable-indevs
+--disable-demuxer=dv1394 --disable-indevs \
+--disable-decoder=flv --disable-encoder=flv --disable-demuxer=flv \
+--disable-muxer=flv \
+--as=/usr/bin/sparc-linux-as
+
+
+#./configure --prefix=$PREFIX --enable-cross-compile  \
+# --cross-prefix=$HOST- --enable-shared \
+#--disable-static --disable-ffmpeg --disable-ffplay --disable-ffserver \
+#--disable-demuxer=dv1394 --disable-indevs --arch=sparc  \
+#--disable-decoder=flv --disable-encoder=flv --disable-demuxer=flv \
+#--disable-muxer=flv
+
+
 
 $MAKE
 $MAKE_INSTALL
@@ -629,10 +534,7 @@ if test "$HAVE_FFMPEGTHUMBNAILER" == "yes"; then
   loadpkt "ffmpegthumbnailer-1.5.6" ".tar.gz" \
           "http://ffmpegthumbnailer.googlecode.com/files/"
 
-  sed -i -e 's/-version-info 3:3:0/-no-undefined -version-info 3:3:0/' Makefile.am
-
-  autoreconf -vfi
-  ./configure --host=$HOST --prefix=$PREFIX
+  LIBS="$LIBS -lz" ./configure --host=$HOST --prefix=$PREFIX 
   $MAKE
   $MAKE_INSTALL
   cd ..
@@ -647,8 +549,15 @@ fi
 
 # FUPPES
 cd $FUPPES_DIR
-./configure --host=$HOST --prefix=$PREFIX \
---enable-lame --enable-transcoder-ffmpeg --enable-windows-service
+
+# add /usr/include for inotify support
+#export CFLAGS="$CFLAGS -I/usr/include"
+#export CPPFLAGS="$CPPFLAGS -I/usr/include"
+
+#mkdir readynas/include/sys
+#cp /usr/include/sys/inotify.h readynas/include/sys/
+
+./configure --host=$HOST --prefix=$PREFIX
 $MAKE
 $MAKE_INSTALL
 
@@ -661,4 +570,31 @@ if test "$DO_STRIP" == "yes"; then
   touch $PREFIX/lib/bin/*
   touch $PREFIX/share/fuppes/*
 fi
+
+
+
+
+if test "$HAVE_SCREEN" == "yes"; then
+
+
+  cd $PREFIX
+  cd src
+
+  loadpkt "screen-4.0.3" ".tar.gz" \
+          "http://ftp.gnu.org/gnu/screen/"
+  
+
+  # patch from http://bugs.gentoo.org/attachment.cgi?id=173051&action=view
+  wget -O crosscompile.patch "http://bugs.gentoo.org/attachment.cgi?id=173051&action=view" 
+  patch -p0 -i crosscompile.patch 
+
+
+  ./configure --host=$HOST --prefix=$PREFIX
+  $MAKE
+  $MAKE_INSTALL
+  cd ..
+
+fi
+
+
 

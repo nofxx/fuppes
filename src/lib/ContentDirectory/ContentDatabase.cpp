@@ -293,20 +293,11 @@ void CContentDatabase::Close()
 void CContentDatabase::ClearResult()
 {
   // clear old results
-  for(m_ResultListIterator = m_ResultList.begin(); m_ResultListIterator != m_ResultList.end();)
-  {
-    if(m_ResultList.empty())
-      break;
-    
-    CSQLResult* pResult = *m_ResultListIterator;
-    std::list<CSQLResult*>::iterator tmpIt = m_ResultListIterator;          
-    ++tmpIt;
-    m_ResultList.erase(m_ResultListIterator);
-    m_ResultListIterator = tmpIt;
-    delete pResult;
-  } 
-  
-  m_ResultList.clear();
+  while (!m_ResultList.empty()) {
+    delete m_ResultList.front();
+    m_ResultList.pop_front();
+  }
+
   m_nRowsReturned = 0;
 }
 
@@ -363,7 +354,7 @@ CSQLResult* CContentDatabase::GetResult()
 void CContentDatabase::Next()
 {
   if(m_ResultListIterator != m_ResultList.end()) {
-    m_ResultListIterator++;
+    ++m_ResultListIterator;
   } 
 }
 
@@ -1270,23 +1261,25 @@ void CContentDatabase::FamEvent(CFileAlterationEvent* event)
   
   //cout << "[ContentDatabase] fam event: ";
   
+  /*
   switch(event->type()) {
     case FAM_CREATE:
-      //cout << "CREATE";
+      cout << "CREATE";
       break;
     case FAM_DELETE:
-      //cout << "DELETE";
+      cout << "DELETE";
       break;
     case FAM_MOVE:
-      //cout << "MOVE - " << event->oldFullPath();
+      cout << "MOVE - " << event->oldFullPath();
       break;
     case FAM_MODIFY:
-      //cout << "MODIFY";
+      cout << "MODIFY";
       break;
     default:
-      //cout << "UNKNOWN";
+      cout << "UNKNOWN";
       break;
   }
+  */
   
   //cout << (event->isDir() ? " DIR " : " FILE ") << endl;
   //cout << event->fullPath() << endl << endl;

@@ -31,6 +31,7 @@
 #endif
 
 #include "../Common/Common.h"
+#include "../Common/File.h"
 #include "../DeviceSettings/DeviceSettings.h"
 #include "../UPnPActions/UPnPAction.h"
 #include "../Transcoding/TranscodingCache.h"
@@ -226,6 +227,7 @@ class CHTTPMessage
 
     fuppes_off_t      GetRangeStart() { return m_nRangeStart; }
     fuppes_off_t      GetRangeEnd() { return m_nRangeEnd; }
+		bool							hasRange() { return m_hasRange; }
     void              SetRangeStart(fuppes_off_t p_nRangeStart) { m_nRangeStart = p_nRangeStart; }
     void              SetRangeEnd(fuppes_off_t p_nRangeEnd) { m_nRangeEnd = p_nRangeEnd; }
     HTTP_CONNECTION   GetHTTPConnection() { return m_nHTTPConnection; }
@@ -312,9 +314,11 @@ private:
     HTTP_TRANSFER_ENCODING m_nTransferEncoding;
   
 	  CUPnPAction*       m_pUPnPAction;
-    std::fstream       m_fsFile;
+    //std::fstream       m_fsFile;
+		fuppes::File  		 m_file;
     fuppes_off_t       m_nRangeStart;
     fuppes_off_t       m_nRangeEnd;
+		bool							 m_hasRange;
     fuppes_off_t       m_nBinContentPosition;  
   
 		std::map<std::string, std::string> 						m_getVars;

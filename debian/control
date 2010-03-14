@@ -1,35 +1,56 @@
 Source: fuppes
 Section: net
 Priority: extra
-Maintainer: Ulrich Völkel <fuppes@ulrich-voelkel.de>
-Build-Depends: debhelper (>= 7), autotools-dev
-Standards-Version: 3.7.3
+Maintainer: Robert Massaioli <robertmassaioli@gmail.com>
+Build-Depends: debhelper (>= 7), autotools-dev, 
+                pkg-config, 
+                libxml2-dev, 
+                libsqlite3-dev, 
+                libavformat-dev, 
+                ffmpeg, 
+                libtwolame-dev, 
+                libmpcdec-dev, 
+                libfaad-dev, 
+                libtag1-dev, 
+                uuid-dev, 
+                libmp3lame-dev, 
+                libmagick++-dev, 
+                libmad0-dev, 
+                libmpeg4ip-dev, 
+                libmp4v2-dev
+Standards-Version: 3.8.3
 Homepage: http://fuppes.ulrich-voelkel.de/
 
 Package: fuppes
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: FUPPES UPnP server executables
- <insert long description, indented with spaces>
+Depends: ${shlibs:Depends}, ${misc:Depends}, adduser, fuppes-database-plugin-sqlite3 | fuppes-database-plugin-mysql
+Description: Free UPnP Entertainment Service
+ FUPPES (Free Universal Plug and Play Entertainment Service)
+ is a media server which will stream your Audio and Video
+ files to and UPnP supporting device. Fuppes comes with 
+ playlist support and a number of other features.
+ .
+ For more configuration information see the FUPPES wiki.
 
 Package: libfuppes0
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: FUPPES UPnP server core library
- <insert long description, indented with spaces>
+ The server core library.
 
 Package: fuppes-dev
 Architecture: all
+Depends: ${misc:Depends}
 Description: FUPPES UPnP server: development files
- <insert long description, indented with spaces>
+ Development files for those wishing to write addons for fuppes.
 
 
 
-Package: fuppes-core-plugin-presentation
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: FUPPES UPnP server plugin: basic webinterface
- <insert long description, indented with spaces>
+#Package: fuppes-core-plugin-presentation
+#Architecture: any
+#Depends: ${shlibs:Depends}, ${misc:Depends}
+#Description: FUPPES UPnP server plugin: basic webinterface
+# The basic webinterface plugin.
 
 
 
@@ -37,51 +58,51 @@ Package: fuppes-database-plugin-sqlite3
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: FUPPES UPnP server plugin: sqlite3 db-backend
- <insert long description, indented with spaces>
+ This plugin allows the user to use sqlite3 as the fuppes db.
 
-Package: fuppes-database-plugin-mysql
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: FUPPES UPnP server plugin: mysql db-backend
- <insert long description, indented with spaces>
+#Package: fuppes-database-plugin-mysql
+#Architecture: any
+#Depends: ${shlibs:Depends}, ${misc:Depends}
+#Description: FUPPES UPnP server plugin: MySQL db-backend
+# This plugin allows the user to use MySQL as the fuppes db.
 
 
 
-Package: fuppes-metadata-plugin-dlna
+Package: libfuppes-metadata-plugin-dlna
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: FUPPES UPnP server plugin: DLNA metadata
- <insert long description, indented with spaces>
+ The dlna plugin for fuppes that allows DLNA use.
 
 Package: fuppes-metadata-plugin-exiv2
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: FUPPES UPnP server plugin: exiv2 metadata
- <insert long description, indented with spaces>  
+ This plugin provides Exiv2 support to fuppes.
  
 Package: fuppes-metadata-plugin-libavformat
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: FUPPES UPnP server plugin: libavformat metadata
- <insert long description, indented with spaces> 
+ This allows fuppes to make use of libavformat.
  
 Package: fuppes-metadata-plugin-libmp4v2
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: FUPPES UPnP server plugin: libmp4v2 metadata
- <insert long description, indented with spaces>
+ This allows fuppes to make use of mp4v2.
  
 Package: fuppes-metadata-plugin-magick
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: FUPPES UPnP server plugin: imagemagick metadata
- <insert long description, indented with spaces> 
+ This plugin allows fuppes to employ image magick to read metadata.
  
 Package: fuppes-metadata-plugin-taglib
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: FUPPES UPnP server plugin: taglib metadata
- <insert long description, indented with spaces>
+ This plugin allows fuppes to employ taglib.
  
 
 
@@ -90,13 +111,13 @@ Package: fuppes-transcode-plugin-magick
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: FUPPES UPnP server plugin: magick transcoder
- <insert long description, indented with spaces>
+ This plugin allows fuppes to transcode media using image magick.
 
 Package: fuppes-transcode-plugin-ffmpeg
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: FUPPES UPnP server plugin: ffmpeg video transcoder
- <insert long description, indented with spaces>
+ This plugin allows fuppes to transcode media using ffmpeg.
 
 
 
@@ -107,11 +128,11 @@ Description: FUPPES UPnP server plugin: ffmpeg video transcoder
 #Description: FUPPES UPnP server plugin: ogg/vorbis audio decoder
 # <insert long description, indented with spaces>
 
-#Package: fuppes-decoder-plugin-flac
-#Architecture: any
-#Depends: ${shlibs:Depends}, ${misc:Depends}
-#Description: FUPPES UPnP server plugin: F.L.A.C. audio decoder
-# <insert long description, indented with spaces>
+Package: fuppes-decoder-plugin-flac
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: FUPPES UPnP server plugin: F.L.A.C. audio decoder
+ This plugin allows fuppes to use flac as an audio decoder.
 
 
 
@@ -120,7 +141,7 @@ Description: FUPPES UPnP server plugin: ffmpeg video transcoder
 #Architecture: any
 #Depends: ${shlibs:Depends}, ${misc:Depends}
 #Description: FUPPES UPnP server plugin: twolame audio encoder
-# <insert long description, indented with spaces>
+# This plugin allows fuppes to use twolame as an audio encoder.
 
 
 
@@ -128,5 +149,4 @@ Description: FUPPES UPnP server plugin: ffmpeg video transcoder
 #Architecture: all
 #Description: Documentation for fuppes
 # <insert long description, indented with spaces>
-
 

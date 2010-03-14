@@ -15,6 +15,7 @@ AC_PROG_CXX
 AC_DISABLE_STATIC
 #AC_DISABLE_SHARED
 AC_LIBTOOL_WIN32_DLL
+AC_LIBTOOL_DLOPEN
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 AM_PROG_INSTALL_STRIP
@@ -133,34 +134,15 @@ echo ""
 echo "check optional stuff"
 echo ""
 
-
-# TAGLIB	
+#
+# TAGLIB
+#
 have_taglib=no
 AC_ARG_ENABLE([taglib], [AC_HELP_STRING([--enable-taglib],
     [enable taglib metadata plugin [default=yes]])],
     [enable_taglib=$enableval], [enable_taglib='yes'])
 if test "x$enable_taglib" = "xyes" ; then
-
-	TAGLIB_CFLAGS=""
-	TAGLIB_LIBS=""
-
-	if test -z "$TAGLIB_CONFIG"; then
-		AC_PATH_PROG(TAGLIB_CONFIG, taglib-config, no, $prefix/bin/)
-	fi
-
-	if test "$TAGLIB_CONFIG" != "no" ; then   
-
-		AC_MSG_CHECKING(TAGLIB_CFLAGS)
-		TAGLIB_CFLAGS=`$TAGLIB_CONFIG --cflags`
-		AC_MSG_RESULT($TAGLIB_CFLAGS)
-	
-		AC_MSG_CHECKING(TAGLIB_LIBS)
-		TAGLIB_LIBS=`$TAGLIB_CONFIG --libs`
-		AC_MSG_RESULT($TAGLIB_LIBS)
-	
-		have_taglib=yes
-	fi
-
+  PKG_CHECK_MODULES(TAGLIB, taglib >= 1.6, have_taglib=yes, have_taglib=no)
 fi
 AM_CONDITIONAL(TAGLIB_METADATA_PLUGIN, test "x$have_taglib" = "xyes")
 AC_SUBST(TAGLIB_CFLAGS)
@@ -176,7 +158,7 @@ AC_ARG_ENABLE([ffmpegthumbnailer], [AC_HELP_STRING([--enable-ffmpegthumbnailer],
     [enable ffmpegthumbnailer metadata plugin [default=yes]])],
     [enable_ffmpegthumbnailer=$enableval], [enable_ffmpegthumbnailer='yes'])
 if test "x$enable_ffmpegthumbnailer" = "xyes" ; then
-  PKG_CHECK_MODULES(FFMPEGTHUMBNAILER, libffmpegthumbnailer >= 1.0.0, have_ffmpegthumbnailer=yes, have_ffmpegthumbnailer=no)
+  PKG_CHECK_MODULES(FFMPEGTHUMBNAILER, libffmpegthumbnailer >= 2.0.0, have_ffmpegthumbnailer=yes, have_ffmpegthumbnailer=no)
 fi
 AM_CONDITIONAL(FFMPEGTHUMBNAILER_METADATA_PLUGIN, test "x$have_ffmpegthumbnailer" = "xyes")
 AC_SUBST(FFMPEGTHUMBNAILER_CFLAGS)

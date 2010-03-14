@@ -26,14 +26,15 @@
 
 #include "../../include/fuppes_plugin.h"
 
-#include <videothumbnailer.h>
-#include <imagetypes.h>
+#include <libffmpegthumbnailer/videothumbnailer.h>
+#include <libffmpegthumbnailer/imagetypes.h>
 
 #include <vector>
 #include <iostream>
 #include <exception>
 using namespace std;
 
+using namespace ffmpegthumbnailer;
 
 int read_image(const char* fileName, char** mimeType, unsigned char** buffer, size_t* size)
 {
@@ -100,7 +101,7 @@ void fuppes_metadata_file_close(plugin_info* plugin)
 	free(plugin->user_data);
 }
 
-void unregister_fuppes_plugin(plugin_info* plugin __attribute__((unused)))
+void unregister_fuppes_plugin(plugin_info* plugin) // __attribute__((unused))
 {
 }
 

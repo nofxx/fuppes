@@ -269,6 +269,7 @@ bool CHTTPRequestHandler::handleItemRequest(std::string p_sObjectId, CHTTPMessag
   
   if(!qry->eof())
   {
+    // TODO Object Types are still on the too list
     //nObjectType = (OBJECT_TYPE)atoi(pDb->GetResult()->asString("TYPE").c_str());
     //cout << "OBJECT_TYPE: " << nObjectType << endl;
         
@@ -513,7 +514,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 		
 			CFileSettings* settings = new CFileSettings(pRequest->DeviceSettings()->FileSettings("jpeg"));
 		
-			// fixme
+			// TODO fixme
 			if(!settings->pImageSettings) {
 				settings->pImageSettings = new CImageSettings();
 			}
@@ -534,7 +535,8 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 		
 
 		pResponse->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
-#warning todo: set correct mime type
+#warning todo: set correct mime type 
+    // the current mimeType variable only holds a dummy mime type set above
 		pResponse->SetContentType(mimeType);
 		
 		free(inBuffer);

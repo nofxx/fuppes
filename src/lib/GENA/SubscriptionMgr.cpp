@@ -310,6 +310,14 @@ CSubscriptionMgr* CSubscriptionMgr::Shared()
   return m_pInstance;
 }
 
+void CSubscriptionMgr::deleteInstance() // static
+{
+  if(m_pInstance == 0)
+    return;
+  delete m_pInstance;
+  m_pInstance = NULL;
+}
+
 CSubscriptionMgr::CSubscriptionMgr()
 :fuppes::Thread("SubscriptionMgr")
 { 

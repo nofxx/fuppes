@@ -78,7 +78,6 @@ CSharedConfig* CSharedConfig::Shared()
 CSharedConfig::CSharedConfig()
 {
   m_pConfigFile = NULL;
-  m_sUUID       = "";
   
   // ./configure --enable-default-http-port=PORT
   #ifdef DEFAULT_HTTP_PORT
@@ -86,8 +85,6 @@ CSharedConfig::CSharedConfig()
   #else
   m_nHTTPPort = 0;
   #endif
-  
-  m_pluginDir = "";
 }
 
 CSharedConfig::~CSharedConfig()
@@ -113,13 +110,16 @@ bool CSharedConfig::SetupConfig(std::string applicationDir)
 		 (applicationDir.substr(applicationDir.length() - 1).compare(upnpPathDelim) != 0)) {
     applicationDir += upnpPathDelim;
 	}
-	m_dataDir 	= applicationDir + "data/";
-	m_pluginDir = applicationDir;
+  if(m_dataDir.empty())  
+    m_dataDir 	= applicationDir + "data/";
+	if(m_pluginDir.empty())
+    m_pluginDir = applicationDir;
 #else
 bool CSharedConfig::SetupConfig()
 { 
-	m_dataDir 	= string(FUPPES_DATADIR) + "/";
-	if(m_pluginDir.length() == 0)
+  if(m_dataDir.empty())  
+  	m_dataDir 	= string(FUPPES_DATADIR) + "/";
+	if(m_pluginDir.empty())
 		m_pluginDir = string(FUPPES_PLUGINDIR) + "/";
 #endif
 

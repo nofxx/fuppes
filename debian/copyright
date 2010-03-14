@@ -1,17 +1,18 @@
-This package was debianized by Ulrich Völkel <fuppes@ulrich-voelkel.de> on
-Thu, 23 Oct 2008 15:08:35 +0200.
+This package was debianized by:
 
-It was downloaded from <url://example.com>
+    Robert Massaioli <robertmassaioli@gmail.com> on Thu, 21 Jan 2010 17:21:37 +1100
 
-Upstream Author(s):
+It was downloaded from: 
 
-    <put author's name and email here>
-    <likewise for another author>
+  <http://sourceforge.net/projects/fuppes/>
+
+Upstream Author:
+
+    Ulrich Völkel <fuppes@ulrich-voelkel.de>
 
 Copyright:
 
-    <Copyright (C) YYYY Name OfAuthor>
-    <likewise for another author>
+    <Copyright (C) 2009 Ulrich Völkel>
 
 License:
 
@@ -30,11 +31,11 @@ License:
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 
 On Debian systems, the complete text of the GNU General
-Public License can be found in `/usr/share/common-licenses/GPL'.
+Public License version 2 can be found in `/usr/share/common-licenses/GPL-2'.
 
-The Debian packaging is (C) 2008, Ulrich Völkel <fuppes@ulrich-voelkel.de> and
-is licensed under the GPL, see above.
+The Debian packaging is:
 
+    Copyright (C) 2010 Robert Massaioli <robertmassaioli@gmail.com>
 
-# Please also look if there are files or directories which have a
-# different copyright/license attached and list them here.
+and is licensed under the GPL version 3, 
+see `/usr/share/common-licenses/GPL-3'.

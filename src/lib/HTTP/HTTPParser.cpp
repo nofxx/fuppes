@@ -196,6 +196,14 @@ void CHTTPParser::parseCommonValues(std::string header, CHTTPMessage* message)
 	if(rxUserAgent.Search(header.c_str())) {
 		message->m_sUserAgent = rxUserAgent.Match(1);
 	}
+
+  RegEx rxTransferEncoding("Transfer-Encoding: *(\\w+)\r\n", PCRE_CASELESS);
+	if(rxTransferEncoding.Search(header)) {
+    string encoding = ToLower(rxTransferEncoding.Match(1));
+    if(encoding == "chunked")
+      message->m_nTransferEncoding = HTTP_TRANSFER_ENCODING_CHUNKED;
+	}
+  
 }
 
 void CHTTPParser::parseGetVars(std::string /*header*/, CHTTPMessage* message)

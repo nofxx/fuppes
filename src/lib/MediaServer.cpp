@@ -22,35 +22,11 @@
  */
  
 #include "MediaServer.h"
-#include "SharedConfig.h"
 
-#include <iostream>
-#include <sstream>
-
-using namespace std;
-
-CMediaServer::CMediaServer(std::string p_sHTTPServerURL, IUPnPDevice* pOnTimerHandler):
+CMediaServer::CMediaServer(std::string p_sHTTPServerURL, std::string uuid, IUPnPDevice* pOnTimerHandler):
   CUPnPDevice(UPNP_DEVICE_MEDIA_SERVER, p_sHTTPServerURL, pOnTimerHandler)
 {
-  /*m_sFriendlyName = CSharedConfig::Shared()->FriendlyName();
-
-	if(!CSharedConfig::Shared()->ConfigFile()->MediaServerSettings()->Manufacturer.empty()) {
-  	m_sManufacturer = CSharedConfig::Shared()->ConfigFile()->MediaServerSettings()->Manufacturer;
-	}
-	else {
-		m_sManufacturer = "Ulrich Voelkel";
-	}
-  m_sManufacturerURL  = "http://www.ulrich-voelkel.de";      
-  m_sModelDescription = "Free UPnP Media Server licensed under the terms of the GPL";
-
-  m_sModelName = "Free UPnP Entertainment Service " + CSharedConfig::Shared()->GetAppVersion();
-
-  m_sModelNumber = CSharedConfig::Shared()->GetAppVersion();
-
-  m_sModelURL        = "http://fuppes.sourceforge.net";
-  m_sSerialNumber    = "012345678910";*/
-  m_sUUID  			     = CSharedConfig::Shared()->GetUUID();
-  //m_sUPC				     = "";
+  m_sUUID  			     = uuid;
   m_sPresentationURL = "index.html";      
 }
   

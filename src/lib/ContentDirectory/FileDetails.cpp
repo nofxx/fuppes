@@ -46,6 +46,14 @@ CFileDetails* CFileDetails::Shared()
 	return m_Instance;
 }
 
+void CFileDetails::deleteInstance() // static
+{
+  if(m_Instance == 0)
+    return;
+  delete m_Instance;
+  m_Instance = NULL;
+}
+
 CFileDetails::CFileDetails()
 {
 }

@@ -80,7 +80,7 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
     throw fuppes::Exception(__FILE__, __LINE__, "failed to setsockopt: SO_REUSEADDR");
   }
 
-	#if defined(BSD)
+	#if defined(BSD) || defined(__APPLE__)
 	// bug #1864791 - avoid locking the multicast port on OS X
 	flag = 1;
 	ret = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEPORT, &flag, sizeof(flag));
@@ -113,7 +113,7 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
 	/* Bind socket */
 	ret = bind(m_Socket, (struct sockaddr*)&m_LocalEndpoint, sizeof(m_LocalEndpoint)); 
   if(ret == -1) {
-    throw fuppes::Exception(__FILE__, __LINE__, "failed to bind socket");
+    throw fuppes::Exception(__FILE__, __LINE__, "failed to bind udp socket %s", p_sIPAddress.c_str());
   }
 	
 	/* Get random port */

@@ -76,19 +76,11 @@ class CMySQLQuery: public CSQLQuery
 		off_t lastInsertId() { return m_lastInsertId; }
 		
 		void clear() {
-			for(m_ResultListIterator = m_ResultList.begin(); m_ResultListIterator != m_ResultList.end();) {
-				if(m_ResultList.empty())
-				  break;
-				
-				CSQLResult* pResult = *m_ResultListIterator;
-				std::list<CSQLResult*>::iterator tmpIt = m_ResultListIterator;          
-				++tmpIt;
-				m_ResultList.erase(m_ResultListIterator);
-				m_ResultListIterator = tmpIt;
-				delete pResult;
-			} 
+      while (!m_ResultList.empty()) {
+        delete m_ResultList.front();
+        m_ResultList.pop_front();
+      }
 		
-			m_ResultList.clear();
 			m_rowsReturned = 0;
 		}
 		

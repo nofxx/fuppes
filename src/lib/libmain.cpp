@@ -1,10 +1,10 @@
-/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            libmain.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -70,6 +70,7 @@ void printHelp()
 	CSharedLog::Print(" --database-file <filename> use alternate database file (default ~/.fuppes/fuppes.db)");
 	CSharedLog::Print(" --vfolder-config-file <filename> use alternate vfolder config file (default ~/.fuppes/vfolder.cfg)");
 	CSharedLog::Print(" --plugin-dir <dir> directory containing fuppes plugins (default $prefix/lib/fuppes");
+ 	CSharedLog::Print(" --data-dir <dir> directory containing fuppes images and css (default $prefix/share/fuppes");
 #else
 	CSharedLog::Print(" --temp-dir <dir> set temp directory (default: %TEMP%/fuppes)");
 	CSharedLog::Print(" --config-file <filename> use alternate config file (default %APPDATA%/FUPPES/fuppes.cfg)");
@@ -103,6 +104,7 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
 	string sTempDir;
   int    nLogLevel = 1;
   string sPluginDir;
+  string sDataDir;
   
   #warning todo: check params
   
@@ -143,6 +145,9 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
     else if((strcmp(argv[i], "--plugin-dir") == 0) && (argc > i + 1)) {
       sPluginDir = argv[i + 1];
     }
+    else if((strcmp(argv[i], "--data-dir") == 0) && (argc > i + 1)) {
+      sDataDir = argv[i + 1];
+    }
   }
   
   CSharedLog::SetLogFileName(sLogFileName);
@@ -154,7 +159,8 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   CSharedConfig::Shared()->SetVFolderConfigFileName(sVFolderFile);  
   CSharedConfig::Shared()->FriendlyName(sFriendlyName);
 	CSharedConfig::Shared()->TempDir(sTempDir);
-	CSharedConfig::Shared()->pluginDir(sPluginDir);    
+	CSharedConfig::Shared()->pluginDir(sPluginDir);
+	CSharedConfig::Shared()->dataDir(sDataDir);
 
 	xmlInitParser();
 
@@ -177,7 +183,11 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
 	if(!CDatabase::init("sqlite3")) {    
     CSharedLog::Print("failed to initialize sqlite database plugin.");
 		return FUPPES_FALSE;
+  } else if(!CDatabase::init("mysql")) {    
+    CSharedLog::Print("failed to initialize sqlite database plugin.");
+		return FUPPES_FALSE;
   }
+
 
   return FUPPES_TRUE;
 }

@@ -36,30 +36,77 @@ File::File(std::string fileName)
 {
 	m_fileName = fileName;
 	m_openMode = Closed;
+  m_file = NULL;
+}
+
+File::~File()
+{
+  if(isOpen())
+    close();
+}
+
+void File::setFileName(std::string fileName)
+{
+  m_fileName = fileName;
 }
 
 bool File::open(File::OpenMode mode)
 {
-	std::fstream::openmode openmode;
+	std::string openmode;
 
 	if(mode & Read)
-		openmode |= std::fstream::in;
-	if(mode & Write)
-		openmode |= std::fstream::out;
+		openmode += "r";
+	/*if(mode & Write)
+		openmode += "a";
 	if(mode & Truncate)
-		openmode |= std::fstream::trunc;
+		openmode |= "w";
 	if(mode & Append)
-		openmode |= std::fstream::app;
+		openmode += "a";*/
 	if(!mode & Text)
-		openmode |= std::fstream::binary;
+		openmode += "b";
 	
-	m_fstream.open(m_fileName.c_str(), openmode);
-	return m_fstream.is_open();
+/*
+"r"	Open a file for reading. The file must exist.
+"w"	Create an empty file for writing. If a file with the same name already exists its content is erased and the file is treated as a new empty file.
+"a"	Append to a file. Writing operations append data at the end of the file. The file is created if it does not exist.
+"r+"	Open a file for update both reading and writing. The file must exist.
+"w+"	Create an empty file for both reading and writing. If a file with the same name already exists its content is erased and the file is treated as a new empty file.
+"a+"	Open a file for reading and appending. All writing operations are performed at the end of the file, protecting the previous content to be overwritten. You can reposition (fseek, rewind) the internal pointer to anywhere in the file for reading, but writing operations will move it back to the end of file. The file is created if it does not exist.
+*/
+
+  m_file = fopen(m_fileName.c_str(), openmode.c_str());
+  return isOpen();;
+
+	/*m_fstream.open(m_fileName.c_str(), openmode);
+	return m_fstream.is_open();*/
+}
+
+bool File::isOpen()
+{
+  return (m_file != NULL);
 }
 
 void File::close()
 {
-	m_fstream.close();
+  fclose(m_file);
+  m_file = NULL;
+	//m_fstream.close();
+}
+
+bool File::seek(fuppes_off_t offset)
+{
+  if(!m_file)
+    return false;
+
+  return (fseeko(m_file, offset, SEEK_SET) == 0);
+}
+
+fuppes_off_t File::read(char* buffer, fuppes_off_t length)
+{
+  if(!m_file)
+    return false;
+
+  return fread(buffer, 1, length, m_file);
 }
 
 fuppes_off_t File::size()
@@ -71,13 +118,13 @@ fuppes_off_t File::size()
 	return Stat.st_size;
 }
 
-bool File::getline(std::string& line)
+/*bool File::getline(std::string& line)
 {
   if(!m_fstream.is_open())
     return false;
 
   return std::getline(m_fstream, line);
-}
+}*/
 
 
 bool File::exists(std::string fileName) // static

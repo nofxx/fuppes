@@ -184,7 +184,7 @@ static inline void init_audio_settings(audio_settings_t* settings)
 	settings->num_samples = 0;
 }
 
-static inline void free_audio_settings(audio_settings_t* settings __attribute__((unused)))
+static inline void free_audio_settings(audio_settings_t* settings ) // __attribute__((unused))
 {
 }
 

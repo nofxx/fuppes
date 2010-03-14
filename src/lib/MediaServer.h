@@ -33,7 +33,7 @@
 class CMediaServer: public CUPnPDevice
 {
   public:
-    CMediaServer(std::string p_sHTTPServerURL, IUPnPDevice* pOnTimerHandler);
+    CMediaServer(std::string p_sHTTPServerURL, std::string uuid, IUPnPDevice* pOnTimerHandler);
     ~CMediaServer();
 };
 

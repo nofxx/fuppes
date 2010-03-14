@@ -105,8 +105,10 @@ class CSharedConfig
   
 		void TempDir(std::string p_sTempDir) { m_sTempDir = p_sTempDir; }
 		std::string TempDir() { return m_sTempDir; }
-		
+
+		void dataDir(std::string dir) { m_dataDir = appendTrailingSlash(dir); }
 		std::string dataDir() { return m_dataDir; }
+		
 		void pluginDir(std::string dir) { m_pluginDir = appendTrailingSlash(dir); }
 		std::string pluginDir() { return m_pluginDir; }
 	

@@ -540,6 +540,8 @@ OBJECT_TYPE CDeviceSettings::ObjectType(std::string p_sExt)
 
 bool CDeviceSettings::DoTranscode(std::string p_sExt, std::string p_sACodec, std::string p_sVCodec)
 {
+  bool performTranscode = false;
+
   m_FileSettingsIterator = m_FileSettings.find(p_sExt);
   if(m_FileSettingsIterator != m_FileSettings.end()) {
     if(
@@ -554,20 +556,16 @@ bool CDeviceSettings::DoTranscode(std::string p_sExt, std::string p_sACodec, std
         return m_FileSettingsIterator->second->pTranscodingSettings->DoTranscode(p_sACodec, p_sVCodec);
       }
       else {
-        return true;
+        performTranscode = true;
       }
     }
     else if (m_FileSettingsIterator->second->pImageSettings &&
         m_FileSettingsIterator->second->pImageSettings->Enabled()) {
-      return true;
-    }
-    else {
-      return false;
+      performTranscode = true;
     }
   }
-  else {
-    return false;
-  }
+
+  return performTranscode;
 }
 
 

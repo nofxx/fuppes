@@ -31,9 +31,11 @@ extern "C" {
 
 #if FFMPEG_VERSION >= 52 && !defined(OLD_INCLUDES_PATH)
 #include <libavformat/avformat.h>
+#include <libavutil/avutil.h>
 #include <libavcodec/avcodec.h>
 #else
 #include <avformat.h>
+#include <avutil.h>
 #include <avcodec.h>
 #endif
 
@@ -52,7 +54,12 @@ void register_fuppes_plugin(plugin_info* info)
 	info->plugin_type = PT_METADATA;
 
   //av_log_set_callback(&av_log_callback);
+#if LIBAVUTIL_VERSION_INT < (50 << 16)
+  av_log_level = AV_LOG_QUIET;
+#else
   av_log_set_level(AV_LOG_QUIET);
+#endif
+
 	av_register_all();
 }
 

@@ -145,6 +145,8 @@ class CFileDetails
 		~CFileDetails();
 				
     static CFileDetails* Shared();
+		static void deleteInstance();
+		
     OBJECT_TYPE GetObjectType(std::string p_sFileName);    
     std::string GetObjectTypeAsStr(OBJECT_TYPE p_nObjectType);
     std::string GetContainerTypeAsStr(OBJECT_TYPE p_nContainerType);

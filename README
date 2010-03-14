@@ -1,121 +1,33 @@
-  FUPPES - the Free UPnP Entertainment Service  
+== Introduction ==
 
-  http://fuppes.ulrich-voelkel.de/
-  http://sourceforge.net/projects/fuppes/
+Welcome to, and thankyou for downloading, FUPPES (Free UPnP Entertainment Service)!
 
-  copyright (C) 2005 - 2008 Ulrich Völkel <fuppes@ulrich-voelkel.de>
-
-
-For information how to compile and install the software read the file INSTALL
-shipped with this package.
+FUPPES is a free, multiplatform UPnP A/V Media Server. FUPPES supports a wide 
+range of UPnP MediaRenderers as well as on-the-fly transcoding of various audio, 
+video and image formats. FUPPES also includesbasic DLNA support.
 
 
-dependencies:
+== Basic Installation ==
 
-  PCRE library (BSD license):
-  http://pcre.org/
-  http://gnuwin32.sourceforge.net/packages/pcre.htm
+FUPPES uses standard GNU automake and as such all it requires to install is a:
 
-  libxml2 library (MIT license):
-  http://xmlsoft.org/
+  autoreconf -vfi   # step 1
+  ./configure       # step 2
+  make              # step 3
+  make install      # step 4
 
-  SQLite (public domain)
-  http://sqlite.org/
-	
-optional (recommended) libs:
-	
-	UUID library (as-is) (e2fsporgs)
-  Copyright (C) 1996, 1997, 1998 Theodore Ts'o
-	
-  TagLib (LGPL 2.1)
-  http://developer.kde.org/~wheeler/taglib.html
-	
-	ImageMagick (GPL like)
-	http://imagemagick.org
-	
-	ffmpeg
-	
-	libnotification
-
-to use transcoding capabilities you need
-  
-    The non-mp3 encoder:
-      LAME (LGPL)
-      http://lame.sourceforge.net/
-  
-	  or
-	
-		MPEG Audio Layer 2 encoder:
-		  TwoLAME (LGPL)
-			http://www.twolame.org/
-		
-  and depeding on which formats you want to transcode one or more
-  of the following libraries
-  
-    For OGG/Voribs support:
-      Vorbis (libvorbis) (Xiph License/Xiph's variant of the BSD License)
-      http://xiph.org/
-  
-    For Musepack/MPC support:
-      libmpcdec (BSD license):
-      http://musepack.net/
-      
-    For FLAC support:
-      libFLAC (Xiph License/Xiph's variant of the BSD License)
-      http://flac.sourceforge.net/
-  
-
-using:
-
-  regex.hpp 1.0 Copyright (c) 2003 Peter Petersen (pp@on-time.de)
-  Simple C++ wrapper for PCRE
-
-  BASE64 decoding functions
-  taken from: http://www.adp-gmbh.ch/cpp/common/base64.html
-  modified to handle line breaks
-
-  RFC1321-based (RSA-free) MD5 library (as-is) 
-  http://sourceforge.net/projects/libmd5-rfc/
-
-  parts of libdlna-0.2.3 (LGPL)
-  http://libdlna.geexbox.org/
-
-win32 binary package comes with:
-
-  pcre3.dll
-  Copyright (c) 2006 University of Cambridge
-  http://pcre.org
-  http://gnuwin32.sourceforge.net/packages/pcre.htm
-
-  sqlite3.dll - sqlite-3.3.7
-  Copyright (c), http://sqlite.org/
-
-  mpcdec.dll - libmpcdec-1.2.2
-  Copyright (c), The Musepack Development Team
-  http://www.musepack.net
-  see COPYING-MUSEPACK for details
-
-  vorbisfile.dll - libvorbis-1.1.1 and libogg-1.1.2
-  Copyright (c), The Xiph.Org Foundation
-  http://www.xiph.org/
-  see COPYING-VORBIS and COPYING-OGG for details
-
-  libFLAC.dll - libflac-1.1.2
-  Copyright (c), 2001,2002,2003,2004,2005  Josh Coalson
-  http://flac.sourceforge.net/
-  see COPYING-FLAC for details
+It should be noted that before step 2 you may like to try './configure --help' to see
+what your options are and then run './configure' with the options that you want.
+And on Debian based systems you will likely need to prefix the 'sudo' command 
+to the 'make install' so that it will run with the right privileges.
 
 
-  libavfromat (svn revision 9027)
+== Security Notice ==
 
+The only times that fuppes will require 'root' priveliges are:
 
-mpcdec.dll, vorbisfile.dll, libFLAC.dll and sqlite3.dll are compiled by myself.
-The DevC++ project files can be found under http://fuppes.ulrich-voelkel.de.
+  1) When you are dealing with the init.d script.
+  2) When you are installing a packaged version of fuppes.
+  3) When you are running make install.
 
-
-The "Free UPnP Entertainment Service" is distributed under the terms of the
-GPL (GNU General Public License) version 2.
-For detailed License-Information read the file COPYING shipped with this package.
-
-UPnP is a trademark of the UPnP Implementers Corporation.
-Other names and brands may be trademarks or registered trademarks of others.
+For security reasons fuppes should not be run as root at any other time.

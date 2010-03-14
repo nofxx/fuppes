@@ -19,6 +19,7 @@ elif test -d ".git"; then
   # currently git is used for development, therefore a version number of zero will do fine
   # you should not be giving this to anyone and therefore a version number of 0.0 will let them
   # know that it is completely unstable
+  test $revision || revision=`git describe --tags HEAD | sed 's/^v//' | sed 's/-[^-]*$//'`
   test $revision || revision="0.0"
 
 else

@@ -40,15 +40,17 @@ typedef enum CM_ERROR {
 	ERR_ACTION_FAILED		= 501
 } CM_ERROR;
 
+/*
 class CConnectionManagerCore
 {
 	public:
 		static void init();
-    static void uninit();
+    static void deleteInstance();
 	
 	private:
 		static CConnectionManagerCore* m_instance;
 };
+*/
 
 class CConnectionManager: public CUPnPService
 {

@@ -58,11 +58,17 @@ class File
 		  Text			= 16
 	  };
 	
-		File(std::string fileName);
+		File(std::string fileName = "");
+    ~File();
+    void          setFileName(std::string fileName);
 		bool          open(File::OpenMode mode);
 		void          close();
 		fuppes_off_t  size();
-    bool          getline(std::string& line);
+    bool          isOpen();
+
+    bool          seek(fuppes_off_t);
+    fuppes_off_t  read(char* buffer, fuppes_off_t length);
+    //bool          getline(std::string& line);
 
     
     static bool exists(std::string fileName);
@@ -70,7 +76,8 @@ class File
 	private:
 		std::string   m_fileName;
 		OpenMode			m_openMode;
-    std::fstream  m_fstream;
+    //std::fstream  m_fstream;
+    FILE*         m_file;
 };
 
 }

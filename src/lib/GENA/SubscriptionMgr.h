@@ -117,6 +117,7 @@ class CSubscriptionMgr: private fuppes::Thread
 {
   public:
     static CSubscriptionMgr* Shared();
+    static void deleteInstance();
     ~CSubscriptionMgr();
   
     static bool HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* pResponse);

@@ -37,6 +37,7 @@ class CTranscodingMgr
 {
   public:
     static CTranscodingMgr* Shared();
+    static void deleteInstance();
   
     bool IsTranscodingAvailable();
   

@@ -33,8 +33,6 @@ endif
 config.status: configure
 	dh_testdir
 	# Add here commands to configure the package.
-	#autoreconf -vfi
-	#./configure --prefix=/usr 
 ifneq "$(wildcard /usr/share/misc/config.sub)" ""
 	cp -f /usr/share/misc/config.sub config.sub
 endif
@@ -42,7 +40,8 @@ ifneq "$(wildcard /usr/share/misc/config.guess)" ""
 	cp -f /usr/share/misc/config.guess config.guess
 endif
 	./configure $(CROSS) --prefix=/usr \
-	--mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info CFLAGS="$(CFLAGS)" 
+	--mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info CFLAGS="$(CFLAGS)" \
+	--enable-transcoder-ffmpeg --enable-mad --enable-faad --enable-twolame
 	#LDFLAGS="-Wl,-z,defs" --disable-transcoding \
 
 
@@ -78,7 +77,6 @@ install: install-indep install-arch
 install-indep:
 	dh_testdir
 	dh_testroot
-	#dh_clean -k -i
 	dh_installdirs -i
 
 	# Add here commands to install the indep part of the package into
@@ -86,13 +84,16 @@ install-indep:
 	#INSTALLDOC#
 
 	dh_install -i
-	dh_clean -k -i
+	#dh_clean -k -i
+	dh_prep
 
 install-arch:
 	dh_testdir
 	dh_testroot
-	dh_clean -k -s
+	#dh_clean -k -s
+	dh_prep
 	dh_installdirs -s
+	dh_bash-completion
 
 	# Add here commands to install the arch part of the package into
 	# debian/tmp.

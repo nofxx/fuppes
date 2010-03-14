@@ -105,7 +105,7 @@ std::string MacAddressTable::getMac(std::string ip) // static
   
   return MAC_UNKNOWN;
 #else
-  File file("/proc/net/arp");
+  /*File file("/proc/net/arp");
   if(file.open(File::Read)) {
     std::string line;
     RegEx rx("([\\d|\\.]+) +0x\\d +0x\\d +([\\d|\\w|:]+)");
@@ -119,7 +119,7 @@ std::string MacAddressTable::getMac(std::string ip) // static
       }
     }
     file.close();
-  }
+  }*/
 
   return MAC_UNKNOWN;
 #endif  

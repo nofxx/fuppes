@@ -1,4 +1,5 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+// vim: set sw=2 et :
 /***************************************************************************
  *            VirtualContainerMgr.cpp
  *
@@ -204,7 +205,7 @@ void CVirtualContainerMgr::CreateChildItems(CXMLNode* pParentNode,
 {
   CXMLNode* pNode;
   int i;
-  bool bDetails = false;                                              
+  bool bDetails = false;  // this variable is not required                                              
                                               
   for(i = 0; i < pParentNode->ChildCount(); i++) {
     pNode = pParentNode->ChildNode(i);

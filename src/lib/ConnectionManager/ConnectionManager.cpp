@@ -26,9 +26,8 @@
 #include "ConnectionManagerDescription.cpp"
 
 using namespace std;
-
+/*
 CConnectionManagerCore* CConnectionManagerCore::m_instance = 0;
-
 
 void CConnectionManagerCore::init() // static
 {
@@ -37,14 +36,14 @@ void CConnectionManagerCore::init() // static
 	}
 }
 
-void CConnectionManagerCore::uninit() // static
+void CConnectionManagerCore::deleteInstance() // static
 {
 	if(m_instance == 0)
 		return;
   delete m_instance;
   m_instance = NULL;
 }
-
+*/
 
 CConnectionManager::CConnectionManager(std::string p_sHTTPServerURL):
 	CUPnPService(UPNP_SERVICE_CONNECTION_MANAGER, p_sHTTPServerURL)

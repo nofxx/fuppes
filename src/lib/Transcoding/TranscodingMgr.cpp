@@ -66,11 +66,19 @@ using namespace std;
 
 CTranscodingMgr* CTranscodingMgr::m_Instance = 0;
 
-CTranscodingMgr* CTranscodingMgr::Shared()
+CTranscodingMgr* CTranscodingMgr::Shared() // static
 {
 	if (m_Instance == 0)
 		m_Instance = new CTranscodingMgr();
 	return m_Instance;
+}
+
+void CTranscodingMgr::deleteInstance() // static
+{
+  if(m_Instance == 0)
+    return;
+  delete m_Instance;
+  m_Instance = NULL;
 }
 
 CTranscodingMgr::CTranscodingMgr()
