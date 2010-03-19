@@ -306,7 +306,7 @@ class CDeviceSettings
     bool        EnableDeviceIcon() { return m_bEnableDeviceIcon; }  
     bool        Xbox360Support() { return m_bXBox360Support; }    
 		bool        ShowPlaylistAsContainer() { return m_bShowPlaylistAsContainer; }		
-    bool        DLNAEnabled() { return m_bDLNAEnabled; }
+    bool        DLNAEnabled() { return MediaServerSettings()->UseDLNA; }
     bool				ShowEmptyResolution() { return m_bShowEmptyResolution; }
 		
     std::string  VirtualFolderDevice() { return m_sVirtualFolderDevice; }
@@ -320,7 +320,7 @@ class CDeviceSettings
 		
 		bool m_bShowPlaylistAsContainer;
 		bool m_bXBox360Support;
-    bool m_bDLNAEnabled;  
+    //bool m_bDLNAEnabled;  
     bool m_bEnableDeviceIcon;
 		bool m_bShowEmptyResolution;
 		

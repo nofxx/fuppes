@@ -374,7 +374,7 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
 
   m_bShowPlaylistAsContainer	= false;
 	m_bXBox360Support						= false;
-	m_bDLNAEnabled            	= false; 
+	//m_bDLNAEnabled            	= false; 
   m_bEnableDeviceIcon       	= false;
 	m_bShowEmptyResolution			= false;
 
@@ -407,7 +407,7 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSe
   
   m_bShowPlaylistAsContainer = pSettings->m_bShowPlaylistAsContainer;
   m_bXBox360Support          = pSettings->m_bXBox360Support;
-  m_bDLNAEnabled             = pSettings->m_bDLNAEnabled;
+  //m_bDLNAEnabled             = pSettings->m_bDLNAEnabled;
   m_bEnableDeviceIcon        = pSettings->m_bEnableDeviceIcon;
 	m_bShowEmptyResolution		 = pSettings->m_bShowEmptyResolution;
   

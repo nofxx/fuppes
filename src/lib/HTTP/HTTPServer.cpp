@@ -700,17 +700,19 @@ bool ReceiveRequest(HTTPSession* p_Session, CHTTPMessage* p_Request)
     } // Transfer-encoding == NONE
     else if(p_Request->GetTransferEncoding() == HTTP_TRANSFER_ENCODING_CHUNKED) {
 
+      // size (hex) CRLF
+      // data CRLF
+      // 0 (possible whitespace) CRLF
+      // CRLF
+
       int offset = nBytesReceived - 1;
-      if(szMsg[offset] == '\n')
-        offset--;
-      else
-        continue;
-      if(szMsg[offset] == '\r')
-        offset--;
-      else
-        continue;
+      if(szMsg[offset] == '\n') offset--; else continue;
+      if(szMsg[offset] == '\r') offset--; else continue;
+      if(szMsg[offset] == '\n') offset--; else continue;
+      if(szMsg[offset] == '\r') offset--; else continue;
       while(szMsg[offset] == ' ' && offset > 0)
         offset--;
+
       if(szMsg[offset] != '0')
         continue;
 
@@ -724,7 +726,7 @@ bool ReceiveRequest(HTTPSession* p_Session, CHTTPMessage* p_Request)
 
         size = HexToInt(msg.substr(0, pos));
         msg = msg.substr(pos + 2);
-  
+
         if(size == 0)
           continue;
         

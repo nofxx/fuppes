@@ -321,7 +321,7 @@ void CConfigFile::SetupDeviceIdentificationMgr(CXMLNode* pDeviceSettingsNode, bo
 			}
 			// dlna
       else if(pTmp->Name().compare("enable_dlna") == 0) {
-        pSettings->m_bDLNAEnabled = (pTmp->Value().compare("true") == 0);
+        pSettings->MediaServerSettings()->UseDLNA = (pTmp->Value().compare("true") == 0);
       }
 			// transocding_release_delay
       else if(pTmp->Name().compare("transcoding_release_delay") == 0) {

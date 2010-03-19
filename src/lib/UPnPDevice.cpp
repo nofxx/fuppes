@@ -251,9 +251,9 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 						xmlTextWriterStartElement(writer, BAD_CAST "height");
 						xmlTextWriterWriteString(writer, BAD_CAST "50");
 						xmlTextWriterEndElement(writer);
-						xmlTextWriterStartElement(writer, BAD_CAST "height");
-						xmlTextWriterWriteString(writer, BAD_CAST "32");
-						xmlTextWriterEndElement(writer);
+						xmlTextWriterStartElement(writer, BAD_CAST "depth");
+						xmlTextWriterWriteString(writer, BAD_CAST "32"); // 24 ?
+						xmlTextWriterEndElement(writer);        
 						xmlTextWriterStartElement(writer, BAD_CAST "url");
 						xmlTextWriterWriteString(writer, BAD_CAST "/presentation/fuppes-small.png");
 						xmlTextWriterEndElement(writer);
