@@ -1,10 +1,10 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            database_sqlite3.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2009-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -26,6 +26,8 @@
 #include "../../include/fuppes_plugin.h"
 #include "../../include/fuppes_db_connection_plugin.h"
 
+#include "database_sqlite3_sql.h"
+
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -35,21 +37,31 @@
 class CSQLiteConnection: public CDatabaseConnection
 {
 	public:
-		CSQLiteConnection();
+		CSQLiteConnection(plugin_info* plugin);
 		~CSQLiteConnection();
 
-		virtual bool startTransaction();
-		virtual bool commit();
-		virtual void rollback();
+		bool startTransaction();
+		bool commit();
+		void rollback();
+
+		const char* getStatement(fuppes_sql_no number) {
+
+//std::cout << "get statement: " << number << std::endl;
+			
+			return sqlite3_statements[number].sql;
+		}
+
+		bool setup();
 		
 	private:
-		bool				open(const CConnectionParams params);
-		CSQLQuery*	query();
+		bool				connect(const CConnectionParams params);
+		ISQLQuery*	query();
 
-		sqlite3*  m_handle;
+		sqlite3*			m_handle;
+		plugin_info*	m_plugin;
 };
 
-class CSQLiteQuery: public CSQLQuery
+class CSQLiteQuery: public ISQLQuery
 {
 	friend class CSQLiteConnection;
 	
@@ -80,10 +92,16 @@ class CSQLiteQuery: public CSQLQuery
 			}		
 			m_ResultList.clear();
 			m_rowsReturned = 0;
+			m_ResultListIterator = m_ResultList.end();
 		}
 
 		CDatabaseConnection* connection() { return m_connection; }
-		
+
+
+    unsigned int size() {
+      return m_ResultList.size();
+    }
+    
 	private:
 		CSQLiteQuery(CDatabaseConnection* connection, sqlite3* handle);		
 		sqlite3* m_handle;
@@ -141,7 +159,7 @@ class CSQLiteResult: public CSQLResult
 			}			
 			return result;
 		}
-
+    
   private:
     std::map<std::string, std::string> m_FieldValues;
     std::map<std::string, std::string>::iterator m_FieldValuesIterator;  
@@ -150,21 +168,25 @@ class CSQLiteResult: public CSQLResult
 
 
 
-CSQLiteConnection::CSQLiteConnection() //:CDatabaseConnection()
+CSQLiteConnection::CSQLiteConnection(plugin_info* plugin) //:CDatabaseConnection()
 {
 	m_handle = NULL;
+	m_plugin = plugin;
 }
 
 CSQLiteConnection::~CSQLiteConnection()
 {
+  //std::cout << "~CSQLiteConnection" << std::endl;
 	if(!m_handle)
 		return;
 	
-	sqlite3_close(m_handle);
+	sqlite3_close(m_handle);  
 }
 
-bool CSQLiteConnection::open(const CConnectionParams params)
+bool CSQLiteConnection::connect(const CConnectionParams params)
 {
+  //std::cout << "open sqlite3 db file: " << params.filename << ":" << std::endl;
+  
 	if(sqlite3_open(params.filename.c_str(), &m_handle) != SQLITE_OK) {
     fprintf(stderr, "Can't create/open database: %s\n", sqlite3_errmsg(m_handle));
     sqlite3_close(m_handle);
@@ -180,14 +202,19 @@ bool CSQLiteConnection::open(const CConnectionParams params)
 	return true;
 }
 
-CSQLQuery* CSQLiteConnection::query()
+bool CSQLiteConnection::setup()
+{
+	return true;
+}
+
+ISQLQuery* CSQLiteConnection::query()
 {	
 	return new CSQLiteQuery(this, m_handle);
 }
 
 bool CSQLiteConnection::startTransaction()
 {
-	CSQLQuery* qry = query();
+	ISQLQuery* qry = query();
 	bool result = qry->exec("begin transaction");
 	delete qry;
 	return result;
@@ -195,7 +222,7 @@ bool CSQLiteConnection::startTransaction()
 
 bool CSQLiteConnection::commit()
 {
-	CSQLQuery* qry = query();
+	ISQLQuery* qry = query();
 	bool result = qry->exec("commit transaction");
 	delete qry;
 	return result;
@@ -203,7 +230,7 @@ bool CSQLiteConnection::commit()
 
 void CSQLiteConnection::rollback()
 {
-	CSQLQuery* qry = query();
+	ISQLQuery* qry = query();
 	qry->exec("rollback transaction");
 	delete qry;
 }
@@ -228,7 +255,9 @@ bool CSQLiteQuery::select(const std::string sql)
   int nTry = 0;
   
   //CSharedLog::Log(L_DBG, __FILE__, __LINE__, "SELECT %s", p_sStatement.c_str());
-  
+
+	//std::cout << "select: " << sql << std::endl;
+	
   do {
     nResult = sqlite3_get_table(m_handle, sql.c_str(), &szResult, &nRows, &nCols, &szErr);
     if(nTry > 0) {      
@@ -244,6 +273,7 @@ bool CSQLiteQuery::select(const std::string sql)
     
   if(nResult != SQLITE_OK) {
     //CSharedLog::Log(L_DBG, __FILE__, __LINE__, "SQL error: %s, Statement: %s\n", szErr, p_sStatement.c_str());
+		std::cout << "SQL select error: " << szErr << " :: " << sql << std::endl;
     sqlite3_free(szErr);
     return false;
   }
@@ -256,7 +286,7 @@ bool CSQLiteQuery::select(const std::string sql)
     pResult = new CSQLiteResult();
           
     for(int j = 0; j < nCols; j++) {        
-      pResult->m_FieldValues[std::string(szResult[j])] =  std::string(szResult[(i * nCols) + j] ? szResult[(i * nCols) + j] : "NULL");
+      pResult->m_FieldValues[std::string(szResult[j])] =  std::string(szResult[(i * nCols) + j] ? szResult[(i * nCols) + j] : "");
     }
     
     m_ResultList.push_back(pResult);
@@ -275,6 +305,8 @@ bool CSQLiteQuery::exec(const std::string sql)
   bool  bRetry = true;
   bool	result = false;
   int nResult;  
+
+	//std::cout << "exec: " << sql << std::endl;
 	
   while(bRetry) {  
     
@@ -299,6 +331,7 @@ bool CSQLiteQuery::exec(const std::string sql)
       default:
         bRetry = false;
 				result = false;
+				std::cout << "SQL exec error: " << szErr << " :: " << sql << std::endl;
         //CSharedLog::Log(L_NORM, __FILE__, __LINE__, "CContentDatabase::Insert - insert :: SQL error: %s\nStatement: %s", szErr, p_sStatement.c_str());
         sqlite3_free(szErr);
         //nResult = 0;
@@ -338,13 +371,13 @@ void register_fuppes_plugin(plugin_info* plugin)
 	strcpy(plugin->library_version, sqlite3_libversion());
 }
 
-CDatabaseConnection* fuppes_plugin_create_db_connection(plugin_info* plugin __attribute__((unused)))
+CDatabaseConnection* fuppes_plugin_create_db_connection(plugin_info* plugin ) // __attribute__((unused))
 {
-	return new CSQLiteConnection();
+	return new CSQLiteConnection(plugin);
 }
 
 
-void unregister_fuppes_plugin(plugin_info* plugin __attribute__((unused)))
+void unregister_fuppes_plugin(plugin_info* plugin ) // __attribute__((unused))
 {
 }
 	

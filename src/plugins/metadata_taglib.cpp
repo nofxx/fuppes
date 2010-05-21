@@ -88,16 +88,17 @@ void taglib_get_duration(plugin_info* info, metadata_t* metadata)
 	TagLib::String sTmp;
 
 	long length = ((TagLib::FileRef*)info->user_data)->audioProperties()->length();  
-  int hours, mins, secs;
+  /*int hours, mins, secs;
     
   secs  = length % 60;
   length /= 60;
   mins  = length % 60;
-  hours = length / 60;  
+  hours = length / 60;  */
 
   char szDuration[12];
-	sprintf(szDuration, "%02d:%02d:%02d.00", hours, mins, secs);
-	szDuration[11] = '\0';
+	/*sprintf(szDuration, "%02d:%02d:%02d.00", hours, mins, secs);
+	szDuration[11] = '\0';*/
+	sprintf(szDuration, "%d000", length);
 
 	set_value(&metadata->duration, szDuration);
 }

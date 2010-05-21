@@ -56,7 +56,8 @@ class CHTTPMessage;
 class CPluginMgr
 {
 	public:
-		static void init(std::string pluginDir);
+    static void init(void);
+    static bool try_init(std::string fileName);
 		static void uninit();
 
 		// returns a reference to a single plugin instance
@@ -77,6 +78,8 @@ class CPluginMgr
 		static std::string						printInfo(bool html = false);
 		
 	private:
+    bool init_plugin(std::string fileName);
+
 		CPluginMgr();
 		std::string					m_pluginDir;
 		static CPluginMgr*	m_instance;

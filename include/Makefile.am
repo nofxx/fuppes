@@ -26,6 +26,5 @@ fuppes_off_t = off_t
 endif
 
 fuppes_types.h: fuppes_types.h.in
-	sed \
-  -e "s|\@FUPES_OFF_T\@|$(fuppes_off_t)|" \
-  $< > $@
+	$(SED) -e "s|\@FUPPES_OFF_T\@|$(fuppes_off_t)|" fuppes_types.h.in > $@
+

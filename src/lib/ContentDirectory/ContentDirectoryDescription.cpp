@@ -187,7 +187,7 @@ static const std::string  sContentDirectoryDescription =
 "</argumentList>"
 "</action>"
 ""
-"	<action>"
+/*"	<action>"
 "<name>CreateObject</name>"
 ""
 "	<argumentList>"
@@ -386,7 +386,7 @@ static const std::string  sContentDirectoryDescription =
 "<relatedStateVariable>A_ARG_TYPE_ObjectID</relatedStateVariable>"
 "</argument>"
 "</argumentList>"
-"</action>"
+"</action>"*/
 //"<!-- Declarations for other actions added by UPnP vendor (if any) go here -->"
 "</actionList>"
 ""

@@ -10,7 +10,10 @@ SUBDIRS = \
   include \
   src \
   src/plugins \
-  src/windows
+  src/windows \
+  resources \
+  config \
+  test
 
 EXTRA_DIST = \
   README \
@@ -29,5 +32,9 @@ EXTRA_DIST = \
   src/windows/fuppes.exe.Manifest \
   src/windows/fuppes.ico \
   include/Makefile.am \
-  vfolder.cfg \
-  crosscompile_win32.sh
+  resources/Makefile.am \
+  config/Makefile.am \
+  crosscompile_win32.sh \
+  test/Makefile.am \
+	man/fuppes.1\
+	man/fuppesd.1

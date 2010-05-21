@@ -82,7 +82,7 @@ int fuppes_is_started();
 
 const char* fuppes_get_version();
 
-const char* fuppes_print_info();
+void fuppes_print_info();
 void fuppes_print_device_settings();
   
 void fuppes_set_loglevel(int n_log_level);
@@ -99,7 +99,7 @@ void fuppes_update_db_remove_missing();
   
 void fuppes_rebuild_vcontainers();
 
-void fuppes_get_http_server_address(char* sz_addr, int n_buff_size);
+void fuppes_get_http_server_address(char* sz_addr, unsigned int n_buff_size);
 
 void fuppes_send_alive();
 void fuppes_send_byebye();

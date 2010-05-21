@@ -30,7 +30,11 @@ extern "C" {
 #endif
 		
 #include <string.h>
+#ifdef MUSEPACK2
+#include <mpc/mpcdec.h>
+#else
 #include <mpcdec/mpcdec.h>
+#endif
 //#include <mpc/mpcdec.h>
 
 // 1.2.x defines TRUE & FALSE

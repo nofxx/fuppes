@@ -87,15 +87,17 @@ int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
 	  int hours, mins, secs, us;
 		secs = ((AVFormatContext*)plugin->user_data)->duration / AV_TIME_BASE;
 		us   = ((AVFormatContext*)plugin->user_data)->duration % AV_TIME_BASE;
-		mins = secs / 60;
+		/*mins = secs / 60;
 		secs %= 60;
 		hours = mins / 60;
-		mins %= 60;
+		mins %= 60;*/
 	
 		char szDuration[12];
-	  sprintf(szDuration, "%02d:%02d:%02d.%02d", hours, mins, secs, (10 * us) / AV_TIME_BASE);
-	  szDuration[11] = '\0';
-		
+	  /*sprintf(szDuration, "%02d:%02d:%02d.%02d", hours, mins, secs, (10 * us) / AV_TIME_BASE);
+	  szDuration[11] = '\0';*/
+
+    sprintf(szDuration, "%d%03d", secs, (10 * us) / AV_TIME_BASE);
+    
 		set_value(&metadata->duration, szDuration);
 	}
 	

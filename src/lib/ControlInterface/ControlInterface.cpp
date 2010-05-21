@@ -33,22 +33,22 @@ using namespace std;
 
 int	CControlInterface::action(std::string action, stringList* args, stringList* result)
 {
-	CFuppes* fuppes = CSharedConfig::Shared()->GetFuppesInstance(0);
+	//CFuppes* fuppes = CSharedConfig::Shared()->GetFuppesInstance(0);
 	
 	if(action.compare("get_version") == 0) {		
 		(*result)["version"] = CSharedConfig::Shared()->GetAppVersion();
 	}
 	else if(action.compare("get_friendly_name") == 0) {		
-		(*result)["friendly_name"] = CSharedConfig::Shared()->FriendlyName();
+		(*result)["friendly_name"] = CSharedConfig::Shared()->globalSettings->GetFriendlyName();
 	}
 	else if(action.compare("get_data_dir") == 0) {		
 		(*result)["data_dir"] = CSharedConfig::Shared()->dataDir();
 	}
 	else if(action.compare("get_hostname") == 0) {		
-		(*result)["hostname"] = CSharedConfig::Shared()->GetHostname();
+		(*result)["hostname"] = CSharedConfig::Shared()->networkSettings->GetHostname();
 	}
 	else if(action.compare("get_ip_address") == 0) {
-		(*result)["ip_address"] = CSharedConfig::Shared()->GetIPv4Address();
+		(*result)["ip_address"] = CSharedConfig::Shared()->networkSettings->GetIPv4Address();
 	}
 	
 	else {

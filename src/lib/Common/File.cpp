@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2009-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -28,6 +28,10 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#ifndef WIN32
+#include <unistd.h>
+#endif
 
 using namespace fuppes;
 
@@ -118,17 +122,131 @@ fuppes_off_t File::size()
 	return Stat.st_size;
 }
 
-/*bool File::getline(std::string& line)
+bool File::getline(std::string& line)
 {
-  if(!m_fstream.is_open())
+  if(!m_file)
     return false;
 
-  return std::getline(m_fstream, line);
-}*/
+  fuppes_off_t start;
+  start = ftell(m_file);
+  int c;
+  do {
+    c = fgetc(m_file);
+    if (c == 10 || c == 13) {
+      break;
+    }
+  } while (c != EOF);
+
+  fuppes_off_t end;
+  end = ftell(m_file);
+
+  if(end > start) {
+    seek(start);
+
+    char* buffer = new char[end - start + 1];
+    read(buffer, end - start);
+    buffer[end - start] = '\0';
+    line = buffer;
+    delete buffer;
+    return true;    
+  }
+
+  return false;
+}
 
 
 bool File::exists(std::string fileName) // static
 {
 	struct stat Stat;  
   return (stat(fileName.c_str(), &Stat) == 0 && S_ISREG(Stat.st_mode) != 0);
+}
+
+bool File::readable(std::string fileName) // static
+{
+	struct stat Stat;
+  bool isReadable = false;
+
+  if(stat(fileName.c_str(), &Stat) == 0 && S_ISREG(Stat.st_mode)) {
+#ifndef WIN32
+    // check other then group
+    if(Stat.st_mode & S_IROTH) {
+      isReadable = true;  // I am an other
+    }
+    if(!isReadable && (Stat.st_mode & S_IRGRP)) {
+      if (getgid() == Stat.st_gid) {
+        isReadable = true;
+      }
+    }
+    if(!isReadable && (Stat.st_mode & S_IRUSR)) {
+      if (getuid() == Stat.st_uid) {
+        isReadable = true;
+      }
+    }
+#else
+    // TODO i'm pretty sure that you can read and write to all windows files, correct me if i'm wrong
+    isReadable = true;
+#endif
+  }
+
+  return isReadable;
+}
+
+bool File::writable(std::string fileName) // static
+{
+	struct stat Stat;
+  bool isWritable = false;
+
+  if(stat(fileName.c_str(), &Stat) == 0 && S_ISREG(Stat.st_mode)) {
+#ifndef WIN32
+    // check other then group
+    if(Stat.st_mode & S_IWOTH) {
+      isWritable = true;  // I am an other
+    }
+    if(!isWritable && (Stat.st_mode & S_IWGRP)) {
+      if (getgid() == Stat.st_gid) {
+        isWritable = true;
+      }
+    }
+    if(!isWritable && (Stat.st_mode & S_IWUSR)) {
+      if (getuid() == Stat.st_uid) {
+        isWritable = true;
+      }
+    }
+#else
+    // TODO i'm pretty sure that you can read and write to all windows files, correct me if i'm wrong
+    isWritable = true;
+#endif
+  }
+
+  return isWritable;
+}
+
+bool File::executable(std::string fileName) // static
+{
+	struct stat Stat;
+  bool isExecutable = false;
+
+  if(stat(fileName.c_str(), &Stat) == 0 && S_ISREG(Stat.st_mode)) {
+#ifndef WIN32
+    // check other then group
+    if(Stat.st_mode & S_IXOTH) {
+      isExecutable = true;  // I am an other
+    }
+    if(!isExecutable && (Stat.st_mode & S_IXGRP)) {
+      if (getgid() == Stat.st_gid) {
+        isExecutable = true;
+      }
+    }
+    if(!isExecutable && (Stat.st_mode & S_IXUSR)) {
+      if (getuid() == Stat.st_uid) {
+        isExecutable = true;
+      }
+    }
+#else
+    // TODO i'm pretty sure that you can read and write to all windows files, correct me if i'm wrong
+    isExecutable = true;
+#endif
+  }
+
+  return isExecutable;
 }

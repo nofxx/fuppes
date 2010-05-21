@@ -38,6 +38,50 @@
 
 class UPnPActionFactory;
 
+
+/* ContentDirectory v1 actions
+
+ GetSearchCapabilities                  R
+ GetSortCapabilities                    R
+ GetSystemUpdateID                      R
+ Browse                                 R
+ Search                                 O
+ CreateObject                           O
+ DestroyObject                          O
+ UpdateObject                           O
+ ImportResource                         O
+ ExportResource                         O
+ StopTransferResource                   O
+ GetTransferProgress                    O
+ DeleteResource                         O
+ CreateReference                        O
+
+*/
+
+/* ContentDirectory v3 actions
+ 
+GetSearchCapabilities()                                                         R
+GetSortCapabilities()                                                           R
+GetSortExtensionCapabilities()                                                  O
+GetFeatureList()                                                                R
+GetSystemUpdateID()                                                             R
+GetServiceResetToken()                                                          R
+Browse()                                                                        R
+Search()                                                                        O
+CreateObject()                                                                  O
+DestroyObject()                                                                 O
+UpdateObject()                                                                  O
+MoveObject()                                                                    O
+ImportResource()                                                                O
+ExportResource()                                                                O
+DeleteResource()                                                                O
+StopTransferResource()                                                          O
+GetTransferProgress()                                                           O
+CreateReference()                                                               O
+FreeFormQuery()                                                                 O
+GetFreeFormQueryCapabilities()                                                  O
+*/
+
 typedef enum UPNP_CONTENT_DIRECTORY_ACTIONS {
   UPNP_UNKNWON                  				= 0,
   UPNP_BROWSE									  				= 1,
@@ -46,18 +90,22 @@ typedef enum UPNP_CONTENT_DIRECTORY_ACTIONS {
 	UPNP_GET_SORT_CAPABILITIES    				= 4,
 	UPNP_GET_SORT_EXTENSION_CAPABILITIES	= 5,
   UPNP_GET_SYSTEM_UPDATE_ID		  				= 6,
-	UPNP_GET_PROTOCOL_INFO		    				= 7,
+  
+	//UPNP_GET_PROTOCOL_INFO		    				= 7,
 	UPNP_DESTROY_OBJECT                   = 8
 } UPNP_CONTENT_DIRECTORY_ACTIONS;
 
 typedef enum UPNP_AV_TRANSPORT_ACTIONS {
 } UPNP_AV_TRANSPORT_ACTIONS;
 
+
+
+
 typedef enum UPNP_CONNECTION_MANAGER_ACTIONS {	
   CMA_UNKNOWN                     = 0,  
   CMA_GET_PROTOCOL_INFO           = 1,
-  CMA_PREPARE_FOR_CONNECTION      = 2,
-  CMA_CONNECTION_COMPLETE         = 3,
+  //CMA_PREPARE_FOR_CONNECTION      = 2,
+  //CMA_CONNECTION_COMPLETE         = 3,
   CMA_GET_CURRENT_CONNECTION_IDS  = 4,
   CMA_GET_CURRENT_CONNECTION_INFO = 5	
 } UPNP_CONNECTION_MANAGER_ACTIONS;

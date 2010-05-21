@@ -13,14 +13,16 @@ INCLUDES = \
   ${LIBXML_CFLAGS}\
   ${PCRE_CFLAGS}\
 	-DFUPPES_DATADIR=\"$(datadir)/fuppes\" \
-	-DFUPPES_PLUGINDIR=\"$(libdir)/fuppes\"
+	-DFUPPES_PLUGINDIR=\"$(libdir)/fuppes\" \
+	-DFUPPES_SYSCONFDIR=\"$(sysconfdir)/fuppes\"
+
 
 lib_LTLIBRARIES = libfuppes.la
 
 bin_PROGRAMS = fuppes
 
 fuppes_SOURCES = console_main.cpp
-fuppes_LDADD = ./libfuppes.la
+fuppes_LDADD = ./libfuppes.la $(LIBADD_DL)
 fuppes_DEPENDENCIES = ./libfuppes.la
 fuppes_LDFLAGS = \
 	$(FUPPES_LIBS)\
@@ -30,7 +32,7 @@ fuppes_LDFLAGS = \
 	${MAD_LIBS}\
 	${LIBICONV}
 
-	
+
 if WIN32
 
 fuppes_LDADD += \
@@ -51,7 +53,7 @@ endif
 if BUILD_DAEMON
 bin_PROGRAMS += fuppesd
 fuppesd_SOURCES = daemon_main.cpp
-fuppesd_LDADD = ./libfuppes.la
+fuppesd_LDADD = ./libfuppes.la $(LIBADD_DL)
 fuppesd_DEPENDENCIES = ./libfuppes.la
 fuppesd_LDFLAGS = \
 	$(FUPPES_LIBS)\
@@ -96,6 +98,10 @@ libfuppes_la_SOURCES = \
   lib/ContentDirectory/DatabaseConnection.cpp\
   lib/ContentDirectory/ContentDatabase.h\
   lib/ContentDirectory/ContentDatabase.cpp\
+  lib/ContentDirectory/DatabaseObject.h\
+  lib/ContentDirectory/DatabaseObject.cpp\
+  lib/ContentDirectory/UpdateThread.h\
+  lib/ContentDirectory/UpdateThread.cpp\
   lib/ContentDirectory/ContentDirectory.h\
   lib/ContentDirectory/ContentDirectory.cpp\
   lib/ContentDirectory/ContentDirectoryDescription.cpp\
@@ -160,8 +166,10 @@ libfuppes_la_SOURCES = \
 	lib/MediaServer.cpp\
 	lib/ContentDirectory/FileAlterationMonitor.cpp\
 	lib/ContentDirectory/FileAlterationMonitor.h\
-	lib/ContentDirectory/VirtualContainerMgr.cpp\
-	lib/ContentDirectory/VirtualContainerMgr.h\
+	lib/ContentDirectory/FileAlterationHandler.cpp\
+	lib/ContentDirectory/FileAlterationHandler.h\
+	lib/ContentDirectory/HotPlug.cpp\
+	lib/ContentDirectory/HotPlug.h\
 	lib/ContentDirectory/iTunesImporter.cpp\
 	lib/ContentDirectory/iTunesImporter.h\
   lib/ConnectionManager/ConnectionManager.cpp\
@@ -191,21 +199,47 @@ libfuppes_la_SOURCES = \
  	lib/XMSMediaReceiverRegistrar/XMSMediaReceiverRegistrar.h\
   lib/XMSMediaReceiverRegistrar/XMSMediaReceiverRegistrar.cpp\
   lib/XMSMediaReceiverRegistrar/XMSMediaReceiverRegistrarDescription.cpp\
-  lib/Configuration/ConfigFile.h\
-  lib/Configuration/ConfigFile.cpp\
+  lib/Configuration/DeviceConfigFile.h\
+  lib/Configuration/DeviceConfigFile.cpp\
+  lib/Configuration/ConfigSettings.h\
+  lib/Configuration/ConfigSettings.cpp\
   lib/Configuration/DefaultConfig.h\
+	lib/Configuration/SharedObjects.h\
+	lib/Configuration/SharedObjects.cpp\
+	lib/Configuration/NetworkSettings.h\
+	lib/Configuration/NetworkSettings.cpp\
+	lib/Configuration/GlobalSettings.h\
+	lib/Configuration/GlobalSettings.cpp\
+	lib/Configuration/DeviceMapping.h\
+	lib/Configuration/DeviceMapping.cpp\
+	lib/Configuration/ContentDirectoryConfig.h\
+	lib/Configuration/ContentDirectoryConfig.cpp\
+	lib/Configuration/DatabaseSettings.h\
+	lib/Configuration/DatabaseSettings.cpp\
+	lib/Configuration/TranscodingSettings.h\
+	lib/Configuration/TranscodingSettings.cpp\
+	lib/Configuration/PathFinder.h\
+	lib/Configuration/PathFinder.cpp\
   lib/SharedConfig.cpp\
   lib/SharedLog.cpp\
+  lib/Log.h\
+  lib/Log.cpp\
   lib/Fuppes.cpp\
   lib/libmain.cpp
 
-if HAVE_INOTIFY
+if HAVE_VFOLDER
 libfuppes_la_SOURCES += \
-  lib/ContentDirectory/inotify-cxx-0.7.2/inotify-cxx.h \
-  lib/ContentDirectory/inotify-cxx-0.7.2/inotify-cxx.cpp
+	lib/ContentDirectory/VirtualContainerMgr.h \
+  lib/ContentDirectory/VirtualContainerMgr.cpp
 endif
 
+if HAVE_INOTIFY
+libfuppes_la_SOURCES += \
+  lib/ContentDirectory/inotify-cxx-0.7.3/inotify-cxx.h \
+  lib/ContentDirectory/inotify-cxx-0.7.3/inotify-cxx.cpp
+endif
 
+libfuppes_la_LIBADD = $(LIBADD_DL)
 libfuppes_la_LDFLAGS = \
 	$(FUPPES_LIBS)\
 	${UUID_LIBS}\
@@ -214,9 +248,11 @@ libfuppes_la_LDFLAGS = \
 	${MAD_LIBS}\
 	${LIBICONV}
 
-pixmapsdir = $(datadir)/fuppes
-dist_pixmaps_DATA = \
-	lib/Presentation/style.css \
-	lib/Presentation/fuppes-small.png \
-	lib/Presentation/header-gradient.png \
-	lib/Presentation/header-gradient-small.png
+# pixmapsdir = $(datadir)$(datadir)/fuppes
+# dist_pixmaps_DATA = \
+#  ../resources/style.css \
+#  ../resources/fuppes-small.jpg \
+#  ../resources/fuppes-small.png \
+#  ../resources/header-gradient.png \
+#  ../resources/header-gradient-small.png
+

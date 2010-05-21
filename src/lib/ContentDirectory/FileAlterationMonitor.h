@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007-2009 Ulrich Völkel <fuppes@ulrich-voelkel.de>
+ *  Copyright (C) 2007-2010 Ulrich Völkel <fuppes@ulrich-voelkel.de>
  ****************************************************************************/
 
 /*
@@ -34,7 +34,7 @@
 #include "../Common/Thread.h"
 
 #ifdef HAVE_INOTIFY
-#include "inotify-cxx-0.7.2/inotify-cxx.h"
+#include "inotify-cxx-0.7.3/inotify-cxx.h"
 #endif
 
 #include <string>
@@ -46,20 +46,21 @@ typedef enum {
   FAM_UNKNOWN   = 0,
   FAM_CREATE    = 1,
   FAM_DELETE    = 2,
-  FAM_MOVE      = 4,
-  FAM_MODIFY    = 8
+  FAM_MOVE      = 3,
+  FAM_MODIFY    = 4
+    
+  //FAM_UNMOUNT   = 5
     
 }FAM_EVENT_TYPE;
 
 /*
  dir events:
-    FAM_CREATE              = new dir created
-    FAM_CREATE | FAM_MOVE   = dir moved in from unwatched dir
+    FAM_CREATE              = new dir created / dir moved in from unwatched dir
     FAM_MOVE                = dir moved inside watched dirs
     FAM_DELETE              = dir deleted / moved outside watched dirs
  
  file events:
-    FAM_CREATE              = new file created / moved in from unwatched dir
+    FAM_CREATE              = new file created / file moved in from unwatched dir
     FAM_MOVE                = file moved inside watched dirs
     FAM_DELETE              = file deleted / moved outside watched dirs
     FAM_MODIFY              = file modified 
@@ -67,11 +68,17 @@ typedef enum {
 
 
 class CFileAlterationMonitor;
+
 #ifdef HAVE_INOTIFY
 class CInotifyMonitor;
 #endif
+
 #ifdef WIN32
 class CWindowsFileMonitor;
+#endif
+
+#ifdef HAVE_KQUEUE
+class KqueueMonitor;
 #endif
 
 class CFileAlterationEvent
@@ -94,17 +101,19 @@ class CFileAlterationEvent
       m_isDir = false;
     }
     
-    int             type() { return m_type; }
+    FAM_EVENT_TYPE  type() { return m_type; }
     bool            isDir() { return m_isDir; }
 
     std::string     path() { return m_path; }
     std::string     file() { return m_file; }
-    std::string     fullPath() { return m_path + m_file; }
+    std::string     dir() { return m_file; }
+    //std::string     fullPath() { return m_path + m_file; }
     
     // for moved events
     std::string     oldPath() { return m_oldPath; }
     std::string     oldFile() { return m_oldFile; }
-    std::string     oldFullPath() { return m_oldPath + m_oldFile; }
+    std::string     oldDir() { return m_oldFile; }
+    //std::string     oldFullPath() { return m_oldPath + m_oldFile; }
 
 		static std::string toString(CFileAlterationEvent* event) {
 
@@ -113,20 +122,22 @@ class CFileAlterationEvent
 			result << (event->isDir() ? "(DIR)" : "(FILE)");
 			
 			result << " - type:";
-			if(event->type() == FAM_UNKNOWN) {
-				result << " FAM_UNKNOWN";
-			}
-			if((event->type() & FAM_CREATE) == FAM_CREATE) {
-				result << " FAM_CREATE";
-			}
-			if((event->type() & FAM_DELETE) == FAM_DELETE) {
-				result << " FAM_DELETE";
-			}
-			if((event->type() & FAM_MOVE) == FAM_MOVE) {
-				result << " FAM_MOVE";
-			}
-			if((event->type() & FAM_MODIFY) == FAM_MODIFY) {
-				result << " FAM_MODIFY";
+      switch(event->type()) {
+        case FAM_UNKNOWN:
+  				result << " FAM_UNKNOWN";
+          break;
+        case FAM_CREATE:
+          result << " FAM_CREATE";
+          break;
+        case FAM_DELETE:
+          result << " FAM_DELETE";
+          break;
+        case FAM_MOVE:
+  				result << " FAM_MOVE";
+          break;
+        case FAM_MODIFY:
+  				result << " FAM_MODIFY";
+          break;
 			}
 			result << std::endl;
 			
@@ -134,7 +145,7 @@ class CFileAlterationEvent
 			result << (event->isDir() ? " dir : " : " file: ") << event->file() << std::endl;
 
 			
-			if((event->type() & FAM_MOVE) == FAM_MOVE) {
+			if(event->type() == FAM_MOVE) {
 				result << std::endl;
 				result << " old path: " << event->oldPath() << std::endl;
 				result << (event->isDir() ? " old dir : " : " old file: ") << event->oldFile() << std::endl;
@@ -144,7 +155,7 @@ class CFileAlterationEvent
 		}
 	 
   private:
-    int               m_type;
+    FAM_EVENT_TYPE    m_type;
     bool              m_isDir;
     
     std::string       m_path;
@@ -157,7 +168,7 @@ class IFileAlterationMonitor
 {
   public:
     //virtual void FamEvent(FAM_EVENT_TYPE eventType, std::string path, std::string name, std::string oldPath = "", std::string oldName = "") = 0;
-     virtual void FamEvent(CFileAlterationEvent* event) = 0;
+     virtual void famEvent(CFileAlterationEvent* event) = 0;
 };
 
 class CFileAlterationMonitor: protected fuppes::Thread
@@ -173,10 +184,10 @@ class CFileAlterationMonitor: protected fuppes::Thread
     
     bool isActive() { return m_active; }
     
-    void FamEvent(CFileAlterationEvent* event);
+    void famEvent(CFileAlterationEvent* event);
 			
   protected:
-    CFileAlterationMonitor(IFileAlterationMonitor* pEventHandler): fuppes::Thread("fam") { 
+    CFileAlterationMonitor(IFileAlterationMonitor* pEventHandler): fuppes::Thread("FileAlterationMonitor") { 
 			fuppesThreadInitMutex(&mutex);
 			m_pEventHandler = pEventHandler; 
 		}
@@ -190,12 +201,13 @@ class CFileAlterationMonitor: protected fuppes::Thread
 class CFileAlterationMgr
 {
   public:
-    static CFileAlterationMgr* Shared();
+    /*static CFileAlterationMgr* Shared();
+    static void deleteInstance();*/
+    
+    static CFileAlterationMonitor* CreateMonitor(IFileAlterationMonitor* pEventHandler);
   
-    CFileAlterationMonitor* CreateMonitor(IFileAlterationMonitor* pEventHandler);
-  
-  private:
-    static CFileAlterationMgr* m_Instance;
+  /*private:
+    static CFileAlterationMgr* m_Instance;*/
 };
 
 class CDummyMonitor: public CFileAlterationMonitor
@@ -230,7 +242,7 @@ class CInotifyMonitor: public CFileAlterationMonitor
     // path, watch
     std::map<std::string, InotifyWatch*>    m_watches;
 };
-#endif
+#endif // HAVE_INOTIFY
 
 
 #ifdef WIN32
@@ -248,9 +260,29 @@ class CWindowsFileMonitor: public CFileAlterationMonitor
 		void run();
     std::map<std::string, HANDLE>    m_watches;
 };
+#endif // WIN32
 
 
-#endif
+
+
+#ifdef HAVE_KQUEUE
+/*
+class KqueueMonitor: public CFileAlterationMonitor
+{
+  public:
+    KqueueMonitor(IFileAlterationMonitor* pEventHandler);
+    virtual ~KqueueMonitor();
+    
+    bool  addWatch(std::string path);
+    void  removeWatch(std::string path);
+    void  moveWatch(std::string fromPath, std::string toPath);
+		
+	private:
+		void run();
+};
+*/
+#endif // HAVE_KQUEUE
+
 
 
 #endif // _FILEALTERATIONMONITOR_H

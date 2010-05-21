@@ -4,7 +4,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -28,55 +28,54 @@
 #include "Common/Common.h"
 #include "Common/RegEx.h"
 #include "SharedLog.h"
+#include "DeviceSettings/MacAddressTable.h"
 
 #include <sstream>
-#include <iostream>
 #include <libxml/xmlwriter.h>
+
+/*#include <iostream>
+#include <stdio.h>*/
 
 using namespace std;
 
 CUPnPDevice::CUPnPDevice(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL, IUPnPDevice* pEventHandler):
-  CUPnPBase(nType, p_sHTTPServerURL), m_timer(this)
+  CUPnPBase(nType, 1, p_sHTTPServerURL), m_timer(this)
 {
   /* this constructor is for local devices only */
   m_bIsLocalDevice  = true;  
   m_pEventHandler   = pEventHandler;
-  
+  m_descriptionAvailable = true;
 	m_pHTTPClient = NULL;
-  m_mutex = new fuppes::Mutex();
 }
 
 
 CUPnPDevice::CUPnPDevice(IUPnPDevice* pEventHandler, std::string p_sUUID):
-  CUPnPBase(UPNP_DEVICE_UNKNOWN, ""), m_timer(this)
+  CUPnPBase(UPNP_DEVICE_UNKNOWN, 0, ""), m_timer(this)
 {
   /* this constructor is for remote devices only */
   m_bIsLocalDevice  = false;
   m_pEventHandler   = pEventHandler;
   m_sUUID						= p_sUUID;
-	
+  m_descriptionAvailable = false;
 	m_pHTTPClient = NULL;
-  m_mutex = new fuppes::Mutex();
 }
 
 CUPnPDevice::~CUPnPDevice()
 {	
 	m_timer.stop();
-  m_mutex->lock();
+  m_mutex.lock();
 	
   if(m_pHTTPClient) {
-		//m_pHTTPClient->close();
 	  delete m_pHTTPClient;	
 	}
 
-  m_mutex->unlock();
-  delete m_mutex;  
+  m_mutex.unlock();
 }
 
 
 void CUPnPDevice::OnTimer()
 {
-  fuppes::MutexLocker locker(m_mutex);
+  fuppes::MutexLocker locker(&m_mutex);
 
   //CSharedLog::Log(L_DBG, __FILE__, __LINE__, "OnTimer()");
   if(m_pEventHandler != NULL)
@@ -85,15 +84,29 @@ void CUPnPDevice::OnTimer()
 
 void CUPnPDevice::OnAsyncReceiveMsg(CHTTPMessage* pMessage)
 {
-  fuppes::MutexLocker locker(m_mutex);
-  
- 	if(ParseDescription(pMessage->GetContent())) {
+  fuppes::MutexLocker locker(&m_mutex);
+
+  m_descriptionAvailable = ParseDescription(pMessage->GetContent());
+ 	if(m_descriptionAvailable) {
     GetTimer()->SetInterval(900);
 		CSharedLog::Log(L_EXT, __FILE__, __LINE__, "new device %s", m_sFriendlyName.c_str());
 		/*if(m_pEventHandler) {
       m_pEventHandler->onUPnPDeviceDeviceReady(m_sUUID);
     }*/
+
+
+    // get the device mac address
+    if(fuppes::MacAddressTable::mac(pMessage->GetRemoteIPAddress(), m_macAddress)) {
+
+      // todo:
+      // at this point we have the complete device description and the device's mac address
+      // so let's make a suggestion which device setting to use.
+      cout << "FriendlyName: " << GetFriendlyName() << " MAC: " << m_macAddress << endl;
+    }
+     
 	}
+
+
 }
 
 
@@ -101,9 +114,15 @@ void CUPnPDevice::OnAsyncReceiveMsg(CHTTPMessage* pMessage)
 void CUPnPDevice::BuildFromDescriptionURL(std::string p_sDescriptionURL)
 {	
   if(!m_pHTTPClient)
-	  m_pHTTPClient = new CHTTPClient(this);
-		
-	m_pHTTPClient->AsyncGet(p_sDescriptionURL);
+	  m_pHTTPClient = new CHTTPClient(this, "CUPnPDevice");
+
+  m_descriptionUrl = p_sDescriptionURL;
+	if(m_pHTTPClient->AsyncGet(p_sDescriptionURL)) {
+    stringstream url;
+    url << "http://" << m_pHTTPClient->socket()->remoteAddress() << ":" << 
+      m_pHTTPClient->socket()->remotePort() << "/";
+    m_sHTTPServerURL = url.str();
+  }
 }
 
 /* AddUPnPService */
@@ -128,8 +147,8 @@ CUPnPService* CUPnPDevice::GetUPnPService(int p_nIndex)
   return m_vUPnPServices[p_nIndex];
 }
 
-/* GetDeviceDescription */
-std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
+
+std::string CUPnPDevice::localDeviceDescription(CHTTPMessage* pRequest)
 {		
 	xmlTextWriterPtr writer;
 	xmlBufferPtr buf;
@@ -166,7 +185,13 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 
 		// device
 		xmlTextWriterStartElement(writer, BAD_CAST "device");
-		
+
+			// deviceType
+			string sType = "urn:schemas-upnp-org:device:" + GetUPnPDeviceTypeAsString() + ":1";
+			xmlTextWriterStartElement(writer, BAD_CAST "deviceType");
+			xmlTextWriterWriteString(writer, BAD_CAST sType.c_str());			
+      xmlTextWriterEndElement(writer);
+  
 			// UDN
 			string sUDN = "uuid:" + m_sUUID;
 			xmlTextWriterStartElement(writer, BAD_CAST "UDN");      
@@ -188,13 +213,6 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->ManufacturerURL.c_str());
 			xmlTextWriterEndElement(writer);
 			
-      // modelDescription
-			if(pRequest->DeviceSettings()->MediaServerSettings()->UseModelDescription) {
-				xmlTextWriterStartElement(writer, BAD_CAST "modelDescription");      
-				xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->ModelDescription.c_str());
-				xmlTextWriterEndElement(writer);
-			}
-			
 			// modelName
 			xmlTextWriterStartElement(writer, BAD_CAST "modelName");
 			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->ModelName.c_str());
@@ -209,19 +227,20 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 			xmlTextWriterStartElement(writer, BAD_CAST "modelURL");
 			xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->ModelURL.c_str());
 			xmlTextWriterEndElement(writer);
-		
+
+      // modelDescription
+			if(pRequest->DeviceSettings()->MediaServerSettings()->UseModelDescription) {
+				xmlTextWriterStartElement(writer, BAD_CAST "modelDescription");      
+				xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->ModelDescription.c_str());
+				xmlTextWriterEndElement(writer);
+			}
+  
 			// serialNumber
 		  if(pRequest->DeviceSettings()->MediaServerSettings()->UseSerialNumber) {
 				xmlTextWriterStartElement(writer, BAD_CAST "serialNumber");
 				xmlTextWriterWriteString(writer, BAD_CAST pRequest->DeviceSettings()->MediaServerSettings()->SerialNumber.c_str());
 				xmlTextWriterEndElement(writer);
 			}
-		
-			// deviceType
-			string sType = "urn:schemas-upnp-org:device:" + GetUPnPDeviceTypeAsString() + ":1";
-			xmlTextWriterStartElement(writer, BAD_CAST "deviceType");
-			xmlTextWriterWriteString(writer, BAD_CAST sType.c_str());			
-      xmlTextWriterEndElement(writer);
 		
 			// UPC
 		  if(pRequest->DeviceSettings()->MediaServerSettings()->UseUPC) {
@@ -236,11 +255,18 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
       	xmlTextWriterWriteString(writer, BAD_CAST "DMS-1.00");
 				xmlTextWriterEndElement(writer);
 			}
-		
+
+      // presentationURL
+      xmlTextWriterStartElement(writer, BAD_CAST "presentationURL");
+      xmlTextWriterWriteString(writer, BAD_CAST m_sPresentationURL.c_str());
+			xmlTextWriterEndElement(writer);
+
       // iconList
       if(pRequest->DeviceSettings()->EnableDeviceIcon()) {
   
 				xmlTextWriterStartElement(writer, BAD_CAST "iconList");
+        
+          // 50x50 png
 					xmlTextWriterStartElement(writer, BAD_CAST "icon");
 						xmlTextWriterStartElement(writer, BAD_CAST "mimetype");
 						xmlTextWriterWriteString(writer, BAD_CAST "image/png");
@@ -252,12 +278,32 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 						xmlTextWriterWriteString(writer, BAD_CAST "50");
 						xmlTextWriterEndElement(writer);
 						xmlTextWriterStartElement(writer, BAD_CAST "depth");
-						xmlTextWriterWriteString(writer, BAD_CAST "32"); // 24 ?
+						xmlTextWriterWriteString(writer, BAD_CAST "24");
 						xmlTextWriterEndElement(writer);        
 						xmlTextWriterStartElement(writer, BAD_CAST "url");
-						xmlTextWriterWriteString(writer, BAD_CAST "/presentation/fuppes-small.png");
+						xmlTextWriterWriteString(writer, BAD_CAST "/presentation/fuppes-icon-50x50.png");
 						xmlTextWriterEndElement(writer);
 					xmlTextWriterEndElement(writer);
+
+          // 50x50 jpeg
+					xmlTextWriterStartElement(writer, BAD_CAST "icon");
+						xmlTextWriterStartElement(writer, BAD_CAST "mimetype");
+						xmlTextWriterWriteString(writer, BAD_CAST "image/jpeg");
+						xmlTextWriterEndElement(writer);
+						xmlTextWriterStartElement(writer, BAD_CAST "width");
+						xmlTextWriterWriteString(writer, BAD_CAST "50");
+						xmlTextWriterEndElement(writer);
+						xmlTextWriterStartElement(writer, BAD_CAST "height");
+						xmlTextWriterWriteString(writer, BAD_CAST "50");
+						xmlTextWriterEndElement(writer);
+						xmlTextWriterStartElement(writer, BAD_CAST "depth");
+						xmlTextWriterWriteString(writer, BAD_CAST "24");
+						xmlTextWriterEndElement(writer);        
+						xmlTextWriterStartElement(writer, BAD_CAST "url");
+						xmlTextWriterWriteString(writer, BAD_CAST "/presentation/fuppes-icon-50x50.jpg");
+						xmlTextWriterEndElement(writer);
+					xmlTextWriterEndElement(writer);
+        
 				xmlTextWriterEndElement(writer);
         
       } // icon list
@@ -328,11 +374,6 @@ std::string CUPnPDevice::GetDeviceDescription(CHTTPMessage* pRequest)
 			
 			/* end serviceList */
 			xmlTextWriterEndElement(writer);
-			
-      /* presentationURL */
-      xmlTextWriterStartElement(writer, BAD_CAST "presentationURL");
-      xmlTextWriterWriteString(writer, BAD_CAST m_sPresentationURL.c_str());
-			xmlTextWriterEndElement(writer);
       
 		/* end device */
 		xmlTextWriterEndElement(writer);
@@ -395,16 +436,23 @@ bool CUPnPDevice::ParseDescription(std::string p_sDescription)
     CSharedLog::Log(L_DBG, __FILE__, __LINE__, "xml parser error");
     return false;    
   }
-    
+
+
+  bool result = true;
+  
   xmlNode* pRootNode = NULL;  
   xmlNode* pTmpNode  = NULL;   
   pRootNode = xmlDocGetRootElement(pDoc);  
   
 	// friendlyName
 	pTmpNode = FindNode("friendlyName", pRootNode, true);
-	if(pTmpNode && pTmpNode->children)
+	if(pTmpNode && pTmpNode->children) {
 	  m_sFriendlyName = (char*)pTmpNode->children->content;
-
+  }
+  else {
+    result = false;
+  }
+  
 	// UDN
 	pTmpNode = FindNode("UDN", pRootNode, true);
 	if(pTmpNode && pTmpNode->children) {
@@ -416,11 +464,21 @@ bool CUPnPDevice::ParseDescription(std::string p_sDescription)
 	if(pTmpNode && pTmpNode->children) {
 	  string sDevType = ToLower((char*)pTmpNode->children->content);
 
-    if(sDevType.compare("urn:schemas-upnp-org:device:mediarenderer:1") == 0)    
+    size_t pos = sDevType.find_last_of(":");    
+    if(pos != string::npos) {
+      string tmp = sDevType.substr(pos + 1, sDevType.length());
+      sDevType = sDevType.substr(0, pos);
+      m_UPnPDeviceVersion = atoi(tmp.c_str());
+    }
+    
+    if(sDevType.compare("urn:schemas-upnp-org:device:mediarenderer") == 0)    
       m_nUPnPDeviceType = UPNP_DEVICE_MEDIA_RENDERER;
-    else if(sDevType.compare("urn:schemas-upnp-org:device:mediaserver:1") == 0)    
+    else if(sDevType.compare("urn:schemas-upnp-org:device:mediaserver") == 0)    
       m_nUPnPDeviceType = UPNP_DEVICE_MEDIA_SERVER;
 	}
+  else {
+    result = false;
+  }
 		
 			  
 				
@@ -450,5 +508,5 @@ bool CUPnPDevice::ParseDescription(std::string p_sDescription)
     //m_sUUID = rxUUID.Match(1);
   }*/
 
-  return true;
+  return result;
 }

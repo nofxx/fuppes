@@ -136,18 +136,7 @@ int main(int argc, char* argv[])
   char szHTTP[100];
   fuppes_get_http_server_address(szHTTP, 100);
   cout << "webinterface: " << szHTTP << endl;
-  cout << endl;
-  cout << "r = rebuild database" << endl;
-	cout << "u = update database" << endl;
-  cout << "i = print system info" << endl;
-  cout << "h = print help" << endl;
-  cout << endl;
-  #ifdef WIN32
-  cout << "press \"q\" to quit" << endl;
-  #else
-  cout << "press \"ctrl-c\" or \"q\" to quit" << endl;
-  #endif
-  cout << endl;
+  PrintHelp();
 
   string input;
   string cmd;
@@ -214,10 +203,14 @@ int main(int argc, char* argv[])
       PrintHelp();
     }
     else if (input == "i") {
-      cout << fuppes_print_info();
+      fuppes_print_info();
     }
     else if (input == "s") {
       fuppes_print_device_settings();
+    }
+    else if (input == "restart") {
+      fuppes_stop();
+      fuppes_start();
     }
   }  // while (!g_bExitApp)
   

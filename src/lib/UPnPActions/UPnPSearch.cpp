@@ -29,7 +29,9 @@
 //#include "../ContentDirectory/ContentDatabase.h"
 #include "../ContentDirectory/UPnPObjectTypes.h"
 #include "../ContentDirectory/DatabaseConnection.h"
+#ifdef HAVE_VFOLDER
 #include "../ContentDirectory/VirtualContainerMgr.h"
+#endif
 
 #include <sstream>
 #include <iostream>
@@ -55,17 +57,18 @@ std::string CUPnPSearch::getQuery(bool count /*= false*/)
 
 
 
-void BuildParentIdList(CSQLQuery* qry, std::string p_sIds, std::string p_sDevice, std::string* m_sParentIds)
+void BuildParentIdList(SQLQuery* qry, std::string p_sIds, std::string p_sDevice, std::string* m_sParentIds)
 {
   // read child ids of p_sIds
-  stringstream sSql;
+/*  stringstream sSql;
   sSql << 
-    "select OBJECT_ID from MAP_OBJECTS " <<
+    "select OBJECT_ID from OBJECTS " <<
     "where " <<
     "  PARENT_ID in (" << p_sIds << ") and " <<
-    "  DEVICE " << p_sDevice;  
-    
-  qry->select(sSql.str());
+    "  DEVICE " << p_sDevice;  */
+
+  string sql = qry->build(SQL_SEARCH_GET_CHILDREN_OBJECT_IDS, p_sIds, p_sDevice);  
+  qry->select(sql);
   if(qry->eof()) {
     return;
   }
@@ -106,50 +109,58 @@ bool CUPnPSearch::prepareSQL()
   bool   bFirst = true;
   
   stringstream sSql;
-
-  string sDevice = " is NULL ";
+  SQLQuery qry;
+  
+  string sDevice; // = " is NULL ";
   
   unsigned int nContainerId = GetObjectIDAsUInt(); //GetContainerIdAsUInt();
   if(nContainerId > 0) {
+#ifdef HAVE_VFOLDER
     if(CVirtualContainerMgr::isVirtualContainer(nContainerId, DeviceSettings()->VirtualFolderDevice())) {
       bVirtualSearch = true;
-      sDevice = " = '" + DeviceSettings()->VirtualFolderDevice() + "' ";
+      sDevice = DeviceSettings()->VirtualFolderDevice();//sDevice = " = '" + DeviceSettings()->VirtualFolderDevice() + "' ";
     }
+#endif
     
     if(m_sParentIds.length() == 0) {
-			CSQLQuery* qry = CDatabase::query();
       stringstream sIds;
       sIds << nContainerId;    
-      BuildParentIdList(qry, sIds.str(), sDevice, &m_sParentIds);      
+      BuildParentIdList(&qry, sIds.str(), sDevice, &m_sParentIds);      
       m_sParentIds = m_sParentIds + sIds.str();      
-      delete qry;
-      
       //cout << "PARENT ID LIST: " << m_sParentIds << endl; fflush(stdout);
     }
   }
-	else if(nContainerId == 0) {
+#ifdef HAVE_VFOLDER
+  else if(nContainerId == 0) {
 		if(CVirtualContainerMgr::hasVirtualChildren(nContainerId, DeviceSettings()->VirtualFolderDevice())) {
       bVirtualSearch = true;
-      sDevice = " = '" + DeviceSettings()->VirtualFolderDevice() + "' ";
+      //sDevice = " = '" + DeviceSettings()->VirtualFolderDevice() + "' ";
+     sDevice = DeviceSettings()->VirtualFolderDevice();
     }
 	}
+#endif
   
   
-	m_query = "select * ";
-	m_queryCount  = "select count(*) as COUNT ";
-	
-  sSql <<
+	m_query = qry.build(SQL_SEARCH_PART_SELECT_FIELDS, 0, sDevice); //"select * ";
+	m_queryCount  = qry.build(SQL_SEARCH_PART_SELECT_COUNT, 0, sDevice); //"select count(*) as COUNT ";
+
+
+  
+  /*sSql <<
     "from " <<
     "  MAP_OBJECTS m, OBJECTS o " <<
     "  left join OBJECT_DETAILS d on (d.ID = o.DETAIL_ID) " <<
     "where " <<
     "  o.DEVICE " << sDevice << " and " <<
     "  m.DEVICE " << sDevice << " and " <<
-    "  o.OBJECT_ID = m.OBJECT_ID ";  
+    "  o.OBJECT_ID = m.OBJECT_ID "; */
+
+
+  sSql << qry.build(SQL_SEARCH_PART_FROM, 0, sDevice);
   
   if(m_sParentIds.length() > 0) {
     sSql << " and " <<
-      "  m.PARENT_ID in (" << m_sParentIds << ") ";        
+      "  PARENT_ID in (" << m_sParentIds << ") ";        
   }
   
 	m_sSearchCriteria = StringReplace(m_sSearchCriteria, "&quot;", "\"");
@@ -174,7 +185,7 @@ bool CUPnPSearch::prepareSQL()
 				if(sProp.compare(":refID") == 0) {
 					bBuildOK = true;
 
-					sProp = "o.REF_ID";
+					sProp = "REF_ID";
 						
 					if(sVal.compare("true") == 0)
 					  sOp = "is not";
@@ -191,23 +202,23 @@ bool CUPnPSearch::prepareSQL()
 				
 				// replace property
 				if(sProp.compare("upnp:class") == 0) {
-				  sProp = "o.TYPE";
+				  sProp = "TYPE";
 					bNumericProp = true;
 				}
 				else if(sProp.compare("dc:title") == 0) {
-				  sProp = "o.TITLE";
+				  sProp = "TITLE";
 					bNumericProp = false;
 				}
         else if(sProp.compare("upnp:artist") == 0) {
-				  sProp = "d.A_ARTIST";
+				  sProp = "A_ARTIST";
 					bNumericProp = false;
 				}
 				else if(sProp.compare("upnp:genre") == 0) {
-				  sProp = "d.A_GENRE";
+				  sProp = "A_GENRE";
 					bNumericProp = false;
 				}
 				else if(sProp.compare("upnp:album") == 0) {
-				  sProp = "d.A_ALBUM";
+				  sProp = "A_ALBUM";
 					bNumericProp = false;
 				}
         else if(sProp.compare("res:protocolInfo") == 0) {
@@ -244,7 +255,7 @@ bool CUPnPSearch::prepareSQL()
 				//cout << sVal << endl;
 				
 				// replace value
-				if(sProp.compare("o.TYPE") == 0) { 
+				if(sProp.compare("TYPE") == 0) { 
           sOp = "in";
           
           #warning todo: use values from UPnPObjectTypes.h

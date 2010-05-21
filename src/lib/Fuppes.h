@@ -39,6 +39,7 @@
 #include "ContentDirectory/ContentDirectory.h"
 #include "ConnectionManager/ConnectionManager.h"
 #include "XMSMediaReceiverRegistrar/XMSMediaReceiverRegistrar.h"
+#include "Common/Common.h"
 
 class CFuppes;
 class CHTTPMessage;
@@ -78,7 +79,9 @@ class CFuppes: public ISSDPCtrl, IHTTPServer, IUPnPDevice
     std::string               GetIPAddress();
     std::vector<CUPnPDevice*> GetRemoteDevices();
     std::string               GetUUID() { return m_sUUID; }
-		
+
+    fuppes::DateTime          startTime() { return m_startTime; }
+    
   private:
 
     CSSDPCtrl*            m_pSSDPCtrl;
@@ -108,6 +111,8 @@ class CFuppes: public ISSDPCtrl, IHTTPServer, IUPnPDevice
     bool OnHTTPServerReceiveMsg(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
     bool HandleHTTPRequest(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);
     //bool HandleHTTPPostSOAPAction(CHTTPMessage* pMessageIn, CHTTPMessage* pMessageOut);  
+
+    fuppes::DateTime      m_startTime;
 };
 
 #endif // __FUPPES_H

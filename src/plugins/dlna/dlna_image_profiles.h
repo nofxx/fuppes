@@ -24,8 +24,12 @@
 
 int dlna_get_image_profile_jpeg(int width, int height, char* profile, char* mimeType)
 {
+  if(width <= 0 && height <= 0) {
+    return -1;
+  }
+  
 	strcpy(mimeType, "image/jpeg");
-	
+
   if(width <= 48 && height <= 48) {
 		strcpy(profile, "JPEG_SM_ICO");
 		return 0;
@@ -57,5 +61,9 @@ int dlna_get_image_profile_jpeg(int width, int height, char* profile, char* mime
 
 int dlna_get_image_profile_png(int width, int height, char* profile, char* mimeType)
 {
+  if(width <= 0 && height <= 0) {
+    return -1;
+  }
+  
 	return -1;
 }

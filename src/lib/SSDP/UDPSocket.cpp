@@ -56,6 +56,9 @@ CUDPSocket::~CUDPSocket()
 {
   /* Cleanup */
   TeardownSocket();
+
+  stop();
+  close();
 }
 
 /* SetupSocket */

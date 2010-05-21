@@ -40,17 +40,78 @@
 #endif
 
 #include <string>
+#include <vector>
+
+#include <dirent.h>
+
 
 namespace fuppes {
+
+class DirEntry;
+
+typedef std::vector<DirEntry> DirEntryList;
 
 class Directory
 {
   public:
-    static bool exists(std::string directory);
+    static bool create(std::string directory);
+    static bool remove(std::string directory);
 
-	private:
+    static bool exists(std::string directory);
+    static bool readable(std::string directory);
+    static bool writable(std::string directory);
+    static bool searchable(std::string directory);
+
+    static bool walk(std::vector<std::string>* paths, bool (*step)(std::string));
+		
+		Directory(std::string path);
+		bool open();
+		DirEntryList dirEntryList();
+		void close();
+		
 		static std::string appendTrailingSlash(std::string directory);
 		static std::string removeTrailingSlash(std::string directory);
+
+	private:
+
+		std::string		m_path;
+		DIR*  				m_dir;
+};
+
+
+class DirEntry
+{
+	friend class Directory;
+	
+	public:
+		
+		enum Type {
+			Directory,
+			File,
+			Symlink			
+		};
+
+		DirEntry::Type	type() { return m_type; }
+		std::string			path() { return m_path; }
+		std::string			name() { return m_name; }
+
+		std::string absolutePath() { return (m_type == DirEntry::Directory ? m_path : m_path + m_name); }
+		
+		DirEntry& operator=(const DirEntry& entry) {
+			m_type = entry.m_type;
+			
+			m_path = entry.m_path;
+			m_name = entry.m_name;      
+	  	return *this;
+	  }
+
+		
+	private:
+		DirEntry::Type		m_type;
+		
+		std::string				m_path;
+		std::string				m_name;
+
 };
 
 }

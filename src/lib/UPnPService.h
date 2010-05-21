@@ -1,3 +1,4 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            UPnPService.h
  * 
@@ -8,8 +9,9 @@
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -39,7 +41,7 @@ class CUPnPService: public CUPnPBase
      *  @param  nType  the device type
      *  @param  p_sHTTPServerURL  URL of the HTTP server
      */
-    CUPnPService(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL);
+    CUPnPService(UPNP_DEVICE_TYPE nType, int version, std::string p_sHTTPServerURL);
 		
     /** destructor
      */

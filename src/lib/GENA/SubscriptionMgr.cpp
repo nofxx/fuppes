@@ -28,6 +28,7 @@
 #include "../Common/UUID.h"
 #include "../Common/Exception.h"
 #include "../SharedLog.h"
+#include "../ContentDirectory/ContentDatabase.h"
 
 using namespace fuppes;
 
@@ -58,7 +59,7 @@ void CSubscription::DecTimeLeft()
 CHTTPClient* CSubscription::GetHTTPClient()
 {
   if(!m_pHTTPClient)
-    m_pHTTPClient = new CHTTPClient();
+    m_pHTTPClient = new CHTTPClient(NULL, "CSubscription");
   return m_pHTTPClient;
 }
 
@@ -70,12 +71,13 @@ void CSubscription::AsyncReply()
   
   switch(m_nSubscriptionTarget)
   {
-    case UPNP_SERVICE_CONTENT_DIRECTORY :
-      
-      pNotification->SetContent(
+    case UPNP_SERVICE_CONTENT_DIRECTORY : {
+
+      stringstream content;
+      content <<
         "<e:propertyset xmlns:e=\"urn:schemas-upnp-org:event-1-0\">"
         "<e:property>"
-        "<SystemUpdateID>1</SystemUpdateID>"
+        "<SystemUpdateID>" << CContentDatabase::systemUpdateId() << "</SystemUpdateID>"
         "</e:property>"
 			  "<e:property>"
         "<ContainerUpdateIDs></ContainerUpdateIDs>"
@@ -83,8 +85,9 @@ void CSubscription::AsyncReply()
         "<e:property>"
         "<TransferIDs></TransferIDs>"
         "</e:property>"
-        "</e:propertyset>");
-
+        "</e:propertyset>";  
+     pNotification->SetContent(content.str());
+      
      pNotification->SetCallback(m_sCallback);
      pNotification->SetSID(m_sSID);
 /*
@@ -116,8 +119,7 @@ CONTENT-TYPE: text/html
 
 <html><body><h1>200 OK</h1></body></html>
 */
-    
-      break;
+      } break;
     case UPNP_SERVICE_CONNECTION_MANAGER :
       
       pNotification->SetContent(
@@ -206,11 +208,20 @@ CONTENT-TYPE: text/html
 
 CSubscriptionCache* CSubscriptionCache::m_pInstance = 0;
 
-CSubscriptionCache* CSubscriptionCache::Shared()
+CSubscriptionCache* CSubscriptionCache::Shared() // static
 {
   if(m_pInstance == 0)
     m_pInstance = new CSubscriptionCache();
   return m_pInstance;
+}
+
+void CSubscriptionCache::deleteInstance() // static
+{
+  if(m_pInstance == 0)
+    return;
+
+  delete m_pInstance;
+  m_pInstance = NULL;
 }
 
 
@@ -326,6 +337,9 @@ CSubscriptionMgr::CSubscriptionMgr()
 
 CSubscriptionMgr::~CSubscriptionMgr()
 {
+  // stop and close thread
+  stop();
+  close();
 }
 
 bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* pResponse)
@@ -337,7 +351,7 @@ bool CSubscriptionMgr::HandleSubscription(CHTTPMessage* pRequest, CHTTPMessage* 
     CSubscriptionMgr::ParseSubscription(pRequest, pSubscription);
   } 
   catch (fuppes::Exception ex) {
-    CSharedLog::Log(L_EXT, __FILE__, __LINE__, ex.what().c_str());
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, ex.what());
     
     delete pSubscription;
     return false;
@@ -457,7 +471,7 @@ void CSubscriptionMgr::run()
       pSubscr->DecTimeLeft();      
       
       if(!pSubscr->m_bHandled) {        
-        #warning todo: max send freq 0.5hz for "SystemUpdateID" and "ContainerUpdateIDs"        
+        #warning todo: max send freq 5Hz for "SystemUpdateID" and "ContainerUpdateIDs"        
         pSubscr->m_bHandled = true;        
         pSubscr->AsyncReply();
       }
@@ -475,7 +489,7 @@ void CSubscriptionMgr::run()
     }
     
     CSubscriptionCache::Shared()->Unlock();
-    fuppesSleep(1000);
+    fuppesSleep(200);
   }
 
 }

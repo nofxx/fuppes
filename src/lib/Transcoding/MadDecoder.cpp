@@ -52,8 +52,8 @@ bool CMadDecoder::LoadLib()
   std::string sLibName = "libmad.so";
   #endif
   
-  if(!CSharedConfig::Shared()->MadLibName().empty()) {
-    sLibName = CSharedConfig::Shared()->MadLibName();
+  if(!CSharedConfig::Shared()->transcodingSettings->MadLibName().empty()) {
+    sLibName = CSharedConfig::Shared()->transcodingSettings->MadLibName();
   }  
   
   CSharedLog::Log(L_EXT, __FILE__, __LINE__, "try opening %s", sLibName.c_str());

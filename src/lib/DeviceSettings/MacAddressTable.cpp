@@ -29,6 +29,10 @@
 
 using namespace fuppes;
 
+
+#include <iostream>
+using namespace std;
+
 #define MAC_UNKNOWN "00:00:00:00:00:00"
 
 MacAddressTable* MacAddressTable::m_instance = NULL;
@@ -105,11 +109,13 @@ std::string MacAddressTable::getMac(std::string ip) // static
   
   return MAC_UNKNOWN;
 #else
-  /*File file("/proc/net/arp");
+
+  File file("/proc/net/arp");
   if(file.open(File::Read)) {
     std::string line;
     RegEx rx("([\\d|\\.]+) +0x\\d +0x\\d +([\\d|\\w|:]+)");
     while(file.getline(line)) {
+
       if(!rx.search(line))
         continue;
 
@@ -119,7 +125,7 @@ std::string MacAddressTable::getMac(std::string ip) // static
       }
     }
     file.close();
-  }*/
+  }
 
   return MAC_UNKNOWN;
 #endif  

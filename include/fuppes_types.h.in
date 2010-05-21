@@ -34,8 +34,9 @@ extern "C" {
 #include <sys/types.h>
 #endif
 	
-typedef @FUPES_OFF_T@  fuppes_off_t;
+typedef @FUPPES_OFF_T@  fuppes_off_t;
 	
+typedef unsigned int		object_id_t;
 	
 #endif //_FUPPES_TYPES_H
 

@@ -215,7 +215,7 @@ int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
 	
     return exiv2ReadExif(plugin, metadata);
     
-#warning TODO IPTC metadata  	
+#warning todo IPTC metadata  	
 /* Should check to see all fields are complete - if not
  * could try looking them up in the IPTC data instead?
  */

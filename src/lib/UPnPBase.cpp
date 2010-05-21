@@ -1,3 +1,4 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            UPnPBase.cpp
  *
@@ -27,11 +28,12 @@
 #include "SharedLog.h"
 
 /* constructor */
-CUPnPBase::CUPnPBase(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL)
+CUPnPBase::CUPnPBase(UPNP_DEVICE_TYPE nType, int version, std::string p_sHTTPServerURL)
 {
   /* Save data */
   m_nUPnPDeviceType = nType;
   m_sHTTPServerURL  = p_sHTTPServerURL;
+  m_UPnPDeviceVersion = version;
 }
 
 std::string	CUPnPBase::GetUPnPDeviceTypeAsString()

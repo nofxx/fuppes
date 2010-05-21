@@ -11,14 +11,21 @@ Build-Depends: debhelper (>= 7), autotools-dev,
                 libtwolame-dev, 
                 libmpcdec-dev, 
                 libfaad-dev, 
+                libflac-dev,
                 libtag1-dev, 
                 uuid-dev, 
                 libmp3lame-dev, 
                 libmagick++-dev, 
                 libmad0-dev, 
                 libmpeg4ip-dev, 
-                libmp4v2-dev
+                libmp4v2-dev,
+                libexiv2-dev,
+                libpcre3-dev,
+                bash-completion,
+                devtodo
 Standards-Version: 3.8.3
+Vcs-Git: git://git.debian.org/git/collab-maint/fuppes.git
+Vcs-Browser: http://git.debian.org/?p=collab-maint/fuppes.git
 Homepage: http://fuppes.ulrich-voelkel.de/
 
 Package: fuppes
@@ -62,7 +69,7 @@ Description: FUPPES UPnP server plugin: sqlite3 db-backend
 
 #Package: fuppes-database-plugin-mysql
 #Architecture: any
-#Depends: ${shlibs:Depends}, ${misc:Depends}
+#Depends: ${shlibs:Depends}, ${misc:Depends}, mysql-server
 #Description: FUPPES UPnP server plugin: MySQL db-backend
 # This plugin allows the user to use MySQL as the fuppes db.
 

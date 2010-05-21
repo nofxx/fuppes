@@ -49,7 +49,8 @@
 
 #endif
 
-#include "Common.h"
+//#include "Common.h"
+#include "../../../include/fuppes_types.h"
 #include <string>
 
 namespace fuppes {
@@ -62,6 +63,8 @@ class SocketBase
 		
 	public:
 		bool setNonBlocking();
+		bool setBlocking();
+		bool isBlocking() { return !m_nonBlocking; }
 		bool close();
 
 	protected:		
@@ -86,7 +89,7 @@ class UDPSocket: private SocketBase
 class TCPSocket: public SocketBase
 {
 	public:
-		TCPSocket();
+		TCPSocket(std::string ipv4Address = "");
 		~TCPSocket();
 		
 		bool					connect();
@@ -101,9 +104,12 @@ class TCPSocket: public SocketBase
 		
 		std::string		localAddress() { return inet_ntoa(m_localEndpoint.sin_addr); }
 		int						localPort() { return ntohs(m_localEndpoint.sin_port); }
-		
+
+		std::string		remoteAddress() { return m_remoteAddress; }
 		void					remoteAddress(std::string address) { m_remoteAddress = address; }
+		unsigned int	remotePort() { return m_remotePort; }
 		void					remotePort(unsigned int port) { m_remotePort = port; }
+		sockaddr_in		remoteEndpoint() { return m_remoteEndpoint; }
 		
 	private:
     sockaddr_in  m_localEndpoint;

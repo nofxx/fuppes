@@ -1,4 +1,4 @@
-/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Timer.cpp
  *
@@ -59,7 +59,7 @@ void Timer::reset()
 
 unsigned int Timer::GetCount()
 {
-  return (m_nInterval - m_nTickCount);
+  return (m_nInterval - (m_nTickCount / 10));
 }
 
 void Timer::incTicCount() {
@@ -70,12 +70,12 @@ void Timer::incTicCount() {
 
 void Timer::run() {	
 
-	while(!this->stopRequested()&& (this->m_nTickCount <= this->GetInterval())) {
+	while(!this->stopRequested()&& ((this->m_nTickCount / 10) <= this->GetInterval())) {
 
 		this->incTicCount();
-    fuppesSleep(1000);    
+    fuppesSleep(100);    
     
-    if(!this->stopRequested() && (this->m_nTickCount >= (this->GetInterval() - 1))) {
+    if(!this->stopRequested() && ((this->m_nTickCount / 10) >= (this->GetInterval() - 1))) {
 			if(m_pOnTimerHandler != NULL) {
 		    m_pOnTimerHandler->OnTimer(); 
 			}

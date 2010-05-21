@@ -79,7 +79,7 @@ class CSSDPCtrl: public IUDPSocket, IMSearchSession
 
     void HandleMSearch(CSSDPMessage* pSSDPMessage);  
   
-    void CleanupSessions();
+    void CleanupSessions(bool clearRunning = false);
   
 		bool							 m_isStarted;
     CUDPSocket         m_Listener;	
@@ -91,7 +91,10 @@ class CSSDPCtrl: public IUDPSocket, IMSearchSession
     ISSDPCtrl*         m_pReceiveHandler;
     fuppesThreadMutex  m_SessionReceiveMutex;
     fuppesThreadMutex  m_SessionTimedOutMutex;
-  
+
+    std::list<CMSearchSession*> m_RunningSessionList;    
+    std::list<CMSearchSession*>::iterator m_RunningSessionListIterator;
+    
     std::list<CMSearchSession*> m_SessionList;    
     std::list<CMSearchSession*>::iterator m_SessionListIterator;
     

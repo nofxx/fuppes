@@ -69,7 +69,7 @@ void CSSDPCtrl::Start()
 
 void CSSDPCtrl::Stop()
 {	
-  CleanupSessions();
+  CleanupSessions(true);
 	m_Listener.EndReceive();  
   CSharedLog::Log(L_EXT, __FILE__, __LINE__, "SSDPController stopped");
 }
@@ -79,7 +79,7 @@ CUDPSocket* CSSDPCtrl::get_socket()
 	return &m_Listener;
 }
 
-void CSSDPCtrl::CleanupSessions()
+void CSSDPCtrl::CleanupSessions(bool clearRunning /*= false*/)
 {
   CSharedLog::Log(L_DBG, __FILE__, __LINE__, "CleanupSessions");
   fuppesThreadLockMutex(&m_SessionTimedOutMutex); 
@@ -107,7 +107,25 @@ void CSSDPCtrl::CleanupSessions()
       }  
     }
   }
-     
+
+
+  if(clearRunning && m_RunningSessionList.size() > 0)
+  {  
+    for(m_RunningSessionListIterator = m_RunningSessionList.begin();
+        m_RunningSessionListIterator != m_RunningSessionList.end(); )
+    {
+      if(m_RunningSessionList.size() == 0)
+        break;
+                  
+      std::list<CMSearchSession*>::iterator tmpIt = m_RunningSessionListIterator;
+      ++tmpIt;      
+      CMSearchSession* pSession = *m_RunningSessionListIterator;   
+      m_RunningSessionList.erase(m_RunningSessionListIterator);
+      m_RunningSessionListIterator = tmpIt;
+      delete pSession;
+    }  
+  }
+  
   if(m_SessionList.size() > 0)
   {  
     for(m_SessionListIterator = m_SessionList.begin();
@@ -130,10 +148,18 @@ void CSSDPCtrl::CleanupSessions()
 
 void CSSDPCtrl::send_msearch()
 {
-#warning todo: store sessions and cleanup on shutdown
+//#warning todo: store sessions and cleanup on shutdown
+
+  
+  
   CMSearchSession* pSession = new CMSearchSession(m_sIPAddress, this, m_pNotifyMsgFactory);
   m_LastMulticastEp = pSession->GetLocalEndPoint();
-  pSession->Start();  
+  pSession->Start();
+
+  fuppesThreadLockMutex(&m_SessionTimedOutMutex); 
+  m_RunningSessionList.push_back(pSession);
+  fuppesThreadUnlockMutex(&m_SessionTimedOutMutex); 
+  
   CleanupSessions();
 }
 
@@ -268,7 +294,22 @@ void CSSDPCtrl::OnSessionTimeOut(CMSearchSession* pSender)
   /* lock timeout mutex */
   fuppesThreadLockMutex(&m_SessionTimedOutMutex); 
   
-  //CSharedLog::Shared()->ExtendedLog(LOGNAME, "OnSessionTimeOut()");  
+
+  // remove from running session list ...
+  for(m_RunningSessionListIterator = m_RunningSessionList.begin();
+      m_RunningSessionListIterator != m_RunningSessionList.end(); 
+      m_RunningSessionListIterator++) {
+          
+     CMSearchSession* tmp = *m_RunningSessionListIterator;
+     if(tmp != pSender)
+      continue;
+          
+     m_RunningSessionList.erase(m_RunningSessionListIterator);
+     break;
+  }
+
+
+  // ... and append to timed out session list
   m_SessionList.push_back(pSender);
   
   /* unlock timeout mutex */

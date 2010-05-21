@@ -50,6 +50,6 @@ std::string CUPnPBrowseSearchBase::getSortOrder()
 		return m_sortCriteriaSQL;
 	}
 	else {
-		return " o.TITLE asc ";
+		return " TITLE asc ";
 	}
 }

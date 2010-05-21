@@ -1,4 +1,4 @@
-/* -*- Mode: C++; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            UPnPDevice.h
  * 
@@ -77,7 +77,11 @@ class CUPnPDevice: public CUPnPBase, fuppes::ITimer, IHTTPClient
 
     CHTTPClient* GetHTTPClient() { return m_pHTTPClient; }
 
+    bool isLocalDevice() { return m_bIsLocalDevice; }
 
+    bool descriptionAvailable() { return m_descriptionAvailable; }
+      
+    
     /** gets a device description from a specific URL and builds the device
      *  @param  p_sDescriptionURL URL where we can get the device description message
      *  @return returns true on success otherwise false
@@ -106,7 +110,7 @@ class CUPnPDevice: public CUPnPBase, fuppes::ITimer, IHTTPClient
     /** returns the whole device description
      *  @return  the device descripition as string
      */
-    std::string GetDeviceDescription(CHTTPMessage* pRequest);		
+    std::string localDeviceDescription(CHTTPMessage* pRequest);		
 
     /** returns the friendly name of this device
      *  @return  name of the device
@@ -118,8 +122,18 @@ class CUPnPDevice: public CUPnPBase, fuppes::ITimer, IHTTPClient
      */  
     std::string GetUUID() { return m_sUUID; }
   
-    bool GetIsLocalDevice() { return m_bIsLocalDevice; }
+   
+    std::string manufacturer() { return m_sManufacturer; }
+    
+    std::string manufacturerUrl() { return m_sManufacturerURL; }
+    
+    std::string presentationUrl() { return m_sPresentationURL; }
 
+
+    std::string macAddress() { return m_macAddress; }
+
+    std::string descriptionUrl() { return m_descriptionUrl; }
+    
   protected:
     std::string   m_sFriendlyName;
     std::string   m_sManufacturer;
@@ -135,13 +149,20 @@ class CUPnPDevice: public CUPnPBase, fuppes::ITimer, IHTTPClient
 
 
 	private:
+
+    std::string     m_descriptionUrl;
+    bool            m_descriptionAvailable;
+    std::string     m_macAddress;
+    
     bool            m_bIsLocalDevice;
     fuppes::Timer		m_timer;
     IUPnPDevice*    m_pEventHandler;
 		CHTTPClient*    m_pHTTPClient;
-    fuppes::Mutex*  m_mutex;
+    fuppes::Mutex		m_mutex;
   
-  
+
+    
+
 
 	//UPNP_DEVICE_TYPE           m_nUPnPDeviceType;			
 	std::vector<CUPnPService*> m_vUPnPServices;

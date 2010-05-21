@@ -21,7 +21,8 @@ lib_LTLIBRARIES =
 lib_LTLIBRARIES += libdatabase_sqlite3.la
 
 libdatabase_sqlite3_la_SOURCES = \
-	database_sqlite3.cpp
+	database_sqlite3.cpp \
+	database_sqlite3_sql.h
 
 libdatabase_sqlite3_la_CXXFLAGS = \
 	$(SQLITE3_CFLAGS)
@@ -36,7 +37,8 @@ if MYSQL_DATABASE_PLUGIN
 lib_LTLIBRARIES += libdatabase_mysql.la
 
 libdatabase_mysql_la_SOURCES = \
-	database_mysql.cpp
+	database_mysql.cpp \
+	database_mysql_sql.h
 
 libdatabase_mysql_la_CXXFLAGS = \
 	$(MYSQL_CFLAGS)

@@ -37,89 +37,17 @@
 #include <fstream>
 #include <list>
 
+// TODO there should be a description here of exactly when to use the different log levels
 #define L_NORM 1
 #define L_EXT  2
 #define L_DBG  3
 
-class CSharedLog;
 
-namespace fuppes {
+#include "Log.h"
 
-	class Exception;
-	
-  class Log {
-
-		public:
-
-			enum Sender {
-				unknown,
-				http,
-        soap,
-        gena,
-				ssdp,
-				fam,
-        contentdir,
-        contentdb,
-        sql,
-				plugin
-			};
-		
-		  enum Level {
-		    none			= 0,
-		    normal		= 1,
-		    extended	= 2,
-		    debug			= 3
-		  };
-
-			static std::string senderToString(Log::Sender sender);
-			static Log::Sender stringToSender(std::string sender);
-      
-      static void init();
-      static void uninit();
-      
-		  static void log(Log::Sender sender, 
-		    Log::Level level, 
-		    const std::string fileName, 
-		    int lineNo,
-		    const char* format,
-		    ...);
-			
-			static void log(Log::Sender sender, 
-		    Log::Level level, 
-		    const std::string fileName, 
-		    int lineNo,
-		    const std::string msg);
-
-      static bool isActiveSender(Log::Sender sender) {
-        std::list<Log::Sender>::iterator iter;
-        for(iter = m_instance->m_logSenders.begin(); 
-            iter != m_instance->m_logSenders.end(); 
-            iter++) {
-          if(*iter == sender)
-            return true;
-        }
-        return false;
-      }
-
-      static void addActiveSender(Log::Sender sender) {
-        if(sender == Log::unknown || isActiveSender(sender))
-          return;
-        m_instance->m_logSenders.push_back(sender);
-      }
-
-      static void removeActiveSender(Log::Sender sender) {
-        if(!isActiveSender(sender))
-          return;
-        
-        m_instance->m_logSenders.remove(sender);
-      }
-
-    private:
-      static Log* m_instance;
-      std::list<Log::Sender> m_logSenders;
-  };
-
-}
+/*
+CSharedLog is deprecated :: use Log from Log.h instead 
+*/
 
 
 class CSharedLog
@@ -179,10 +107,18 @@ public:
   
   void  ToggleLog();
   
-
+  /*
+   * Log Files should come with an inbuilt log level system
+  void ResetIndentLevel(void);
+  void IncreaseIndentLevel(void);
+  bool DecreaseIndentLevel(void);
+  void SpacesPerIndent(int i);
+  */
 
 private:
 	
+  int indentLevel, spacesPerIndent;
+
   static CSharedLog*  m_Instance;
   //fuppesThreadMutex   m_Mutex;
 	fuppes::Mutex				m_mutex;

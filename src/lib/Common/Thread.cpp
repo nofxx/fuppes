@@ -26,7 +26,9 @@
 
 #include "Thread.h"
 //#include "UUID.h"
-#include "../SharedLog.h"
+#include "../Log.h"
+
+#include "Exception.h"
 
 #include <errno.h>
 #ifdef HAVE_CLOCK_GETTIME
@@ -34,6 +36,11 @@
 #else
 #include <sys/time.h>
 #endif
+
+
+#include <iostream>
+using namespace std;
+#include <stdio.h>
 
 using namespace fuppes;
 
@@ -51,7 +58,7 @@ Mutex::Mutex()
 Mutex::~Mutex() 
 {
 	if(m_locked)
-		CSharedLog::Log(L_NORM, __FILE__, __LINE__, "WARNING: destroying locked mutex.");
+    Log::error(Log::unknown, Log::normal, __FILE__, __LINE__, "WARNING: destroying locked mutex.");
 
 	#ifdef WIN32
   DeleteCriticalSection(&m_mutex);
@@ -84,7 +91,7 @@ void Mutex::unlock()
 
 
 
-Thread::Thread(std::string name /*= ""*/) 
+Thread::Thread(std::string name) 
 {
 	m_name = name; // + " " + GenerateUUID();
 	m_handle = NULL;
@@ -101,12 +108,13 @@ Thread::Thread(std::string name /*= ""*/)
 Thread::~Thread() 
 {	
 
-	if(!close()) {
-		CSharedLog::Log(L_NORM, __FILE__, __LINE__, "error closing thread %s", m_name.c_str());
-	}
+	/*if(!close()) {
+    Log::error(Log::unknown, Log::normal, __FILE__, __LINE__, "error closing thread %s", m_name.c_str());
+	}*/
 		 
 	if(m_handle) {
-		CSharedLog::Log(L_NORM, __FILE__, __LINE__, "WARNING: destroying an unfinished thread %s", m_name.c_str());
+    //Log::error(Log::unknown, Log::normal, __FILE__, __LINE__, "FATAL: destroying an unfinished thread %s", m_name.c_str());
+    throw Exception(__FILE__, __LINE__, "destroying an unfinished thread %s", m_name.c_str()); 
 	}
 
 #ifndef WIN32
@@ -123,7 +131,7 @@ bool Thread::start(void* arg /* = NULL*/)
 	
   m_arg = arg;
 	m_stop = false;
-	
+  
 #ifdef WIN32
 	m_handle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)&Thread::threadFunc, this, 0, NULL);
 	m_running = (m_handle != NULL);
@@ -187,7 +195,7 @@ bool Thread::close()
 		
 		err = pthread_cond_timedwait(&m_exitCondition, &m_mutex, &timeout);
 		if(err == ETIMEDOUT && !m_finished) {
-			CSharedLog::Log(L_NORM, __FILE__, __LINE__, "FATAL ERROR: pthread_cond_timedwait failed on thread %s", m_name.c_str());
+      Log::error(Log::unknown, Log::normal, __FILE__, __LINE__, "FATAL ERROR: pthread_cond_timedwait failed on thread %s", m_name.c_str());
 			result = false;
 		}
 		
@@ -220,8 +228,8 @@ DWORD Thread::threadFunc(void* thread)
 #else
 void* Thread::threadFunc(void* thread)
 #endif
-{
-  Thread* pt = (Thread*)thread;
+{  
+  Thread* pt = static_cast<Thread*>(thread);
 	pt->run();
 	
 #ifdef WIN32
@@ -251,4 +259,3 @@ void Thread::msleep(unsigned int milliseconds)
     sleep(milliseconds / 1000);  
   #endif
 }
-

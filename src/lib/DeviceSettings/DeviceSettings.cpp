@@ -176,6 +176,7 @@ CFileSettings::CFileSettings()
   pImageSettings        = NULL;
   bEnabled              = true; 
   bExtractMetadata      = true;
+  nType                 = OBJECT_TYPE_UNKNOWN;
 }
 
 CFileSettings::CFileSettings(CFileSettings* pFileSettings)
@@ -194,6 +195,7 @@ CFileSettings::CFileSettings(CFileSettings* pFileSettings)
   sMimeType = pFileSettings->sMimeType;
   sDLNA     = pFileSettings->sDLNA;
   nType     = pFileSettings->nType;
+  sExt      = pFileSettings->sExt;
   
   bExtractMetadata = pFileSettings->bExtractMetadata;
 }
@@ -372,7 +374,8 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
   m_sDeviceName = p_sDeviceName;
   m_sVirtualFolderDevice = "default";
 
-  m_bShowPlaylistAsContainer	= false;
+  //m_bShowPlaylistAsContainer	= false;
+  m_playlistStyle             = container;
 	m_bXBox360Support						= false;
 	//m_bDLNAEnabled            	= false; 
   m_bEnableDeviceIcon       	= false;
@@ -405,7 +408,8 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSe
   m_sDeviceName = p_sDeviceName;
   m_sVirtualFolderDevice = pSettings->m_sVirtualFolderDevice;
   
-  m_bShowPlaylistAsContainer = pSettings->m_bShowPlaylistAsContainer;
+  //m_bShowPlaylistAsContainer = pSettings->m_bShowPlaylistAsContainer;
+  m_playlistStyle             = pSettings->m_playlistStyle;
   m_bXBox360Support          = pSettings->m_bXBox360Support;
   //m_bDLNAEnabled             = pSettings->m_bDLNAEnabled;
   m_bEnableDeviceIcon        = pSettings->m_bEnableDeviceIcon;
@@ -459,6 +463,7 @@ CDeviceSettings::~CDeviceSettings()
   m_FileSettings.clear();
 }
 
+/*
 bool CDeviceSettings::HasUserAgent(std::string p_sUserAgent)
 {
   bool   bResult = false;
@@ -493,6 +498,7 @@ bool CDeviceSettings::HasIP(std::string p_sIPAddress)
 	}
 	return false;
 }
+*/
 
 CFileSettings* CDeviceSettings::FileSettings(std::string p_sExt) {
   

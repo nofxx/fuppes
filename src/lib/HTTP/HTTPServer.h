@@ -61,6 +61,7 @@ class IHTTPServer
 class HTTPSession: public fuppes::Thread
 {
 	public:
+    virtual ~HTTPSession();
 		void run();
 		
     HTTPSession(CHTTPServer* pHTTPServer, fuppesSocket p_Connection, struct sockaddr_in p_RemoteEndPoint, std::string p_sHTTPServerURL)

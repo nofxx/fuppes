@@ -42,6 +42,7 @@ class CXMLNode
     
     int ChildCount();
     CXMLNode* ChildNode(int p_nIdx);
+    CXMLNode* parent() { return m_pParent; }
     CXMLNode* FindNodeByName(std::string p_sName, 
                              bool p_bRecursive = false);
     CXMLNode* FindNodeByValue(std::string p_sName, 

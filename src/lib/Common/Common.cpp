@@ -4,7 +4,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -57,73 +57,7 @@
 #include <errno.h>
 
 using namespace std;
-
-/*bool FileExists(std::string p_sFileName)
-{
-  struct stat Stat;  
-  return (stat(p_sFileName.c_str(), &Stat) == 0 && S_ISREG(Stat.st_mode) != 0);
-}*/
-
-/*bool IsFile(std::string p_sFileName)
-{ 
-  return FileExists(p_sFileName);
-}*/
-
-/*
-#ifdef WIN32
-bool DirectoryExists(std::string p_sDirName)
-{
-  // remove trailing backslash
-  if((p_sDirName.length() > 2) &&
-     (p_sDirName.substr(p_sDirName.length() - 1).compare(upnpPathDelim) == 0) &&
-     (p_sDirName.substr(p_sDirName.length() - 2, 1).compare(":") != 0)
-    ) {
-    p_sDirName = p_sDirName.substr(0, p_sDirName.length() - 1);                                           
-  }
-  
-  // Get file information
-  struct _stat info;
-  memset(&info, 0, sizeof(info));
-
-  // Check directory exists
-  _stat(p_sDirName.c_str(), &info);
-  if(0 == (info.st_mode & _S_IFDIR)) {
-    return false;
-  }
-  
-  return true;
-}
-#else
-bool DirectoryExists(std::string dirName)
-{
-	if((dirName.length() > 2) &&
-     (dirName.substr(dirName.length() - 1).compare(upnpPathDelim) != 0)) {
-    dirName += upnpPathDelim;
-  }
-	
-  struct stat Stat;  
-  return (stat(dirName.c_str(), &Stat) == 0 && S_ISDIR(Stat.st_mode) != 0);
-}
-#endif*/
-
-/*bool IsDirectory(std::string p_sDirName)
-{
-  return DirectoryExists(p_sDirName);
-}*/
-
-bool CreateDirectory(std::string dir)
-{
-  if(!fuppes::Directory::exists(dir)) {
-    #ifdef WIN32
-		CreateDirectory(dir.c_str(), NULL);
-    #else
-		int ret = mkdir(dir.c_str(), S_IRWXU | S_IRWXG);
-		return (ret == 0);
-    #endif
-  }
-  
-  return true;
-}
+using namespace fuppes;
 
 std::string MD5Sum(std::string p_sFileName)
 {
@@ -454,10 +388,10 @@ std::string ToUTF8(std::string p_sValue, std::string p_sEncoding)
 	iconv_t icv; 
 	 
 	if(p_sEncoding.length() == 0) {
-    if(CSharedConfig::Shared()->GetLocalCharset().compare("UTF-8") == 0)
+    if(CSharedConfig::Shared()->contentDirectory->GetLocalCharset().compare("UTF-8") == 0)
       return p_sValue;
   
-		icv = iconv_open("UTF-8", CSharedConfig::Shared()->GetLocalCharset().c_str());
+		icv = iconv_open("UTF-8", CSharedConfig::Shared()->contentDirectory->GetLocalCharset().c_str());
 	}
 	else {
     if(p_sEncoding.compare("UTF-8") == 0)
@@ -529,9 +463,6 @@ std::string URLEncodeValueToPlain(std::string p_sValue)
 	
 	return sResult;
 }
-
-
-
 
 void fuppesSleep(unsigned int p_nMilliseconds)
 {
@@ -674,6 +605,7 @@ fuppesProcHandle  FuppesGetProcAddress(fuppesLibHandle p_LibHandle, std::string 
   #ifdef WIN32
   return GetProcAddress(p_LibHandle, p_sProcName.c_str());
   #else
+  dlerror();
   return dlsym(p_LibHandle, p_sProcName.c_str());
   #endif
 }
@@ -686,3 +618,108 @@ bool FuppesCloseLibrary(fuppesLibHandle p_LibHandle)
   return dlclose(p_LibHandle);
   #endif
 }
+
+
+
+using namespace fuppes;
+
+
+DateTime DateTime::now() // static
+{
+  DateTime result;
+
+  #ifndef WIN32
+  result.m_time = time(NULL);
+/*  time_t now;
+  char nowtime[26];
+  time(&now);  
+  ctime_r(&now, nowtime);
+  nowtime[24] = '\0';
+  result.m_string = nowtime;*/
+  #else		
+
+  FIXME
+  
+/*  char timeStr[9];   
+  _strtime(timeStr);	
+  result.m_string = timeStr;
+*/
+  #endif  
+
+  return result;
+}
+
+std::string DateTime::toString() 
+{ 
+#ifndef WIN32
+  return ctime(&m_time);
+#else  
+  return m_string;
+#endif
+}
+
+int DateTime::toInt() 
+{ 
+#ifndef WIN32
+  return m_time;
+#else  
+  return m_string;
+#endif
+}
+
+DateTime& DateTime::operator=(const DateTime &dateTime) 
+{
+  if (this == &dateTime)
+    return *this;
+
+	m_time = dateTime.m_time;
+  return *this;
+}
+
+
+
+std::string FormatHelper::msToUpnpDuration(int ms) // static
+{
+  int s = ms / 1000;
+  ms = ms % 1000;      
+  int m = s / 60;
+  s = s % 60;
+  int h = m / 60;
+  m = m % 60;
+
+
+  char out[13]; // hh:ii:ss.mmm
+  sprintf(out, "%.2d:%.2d:%2.d.%.3d", h, m, s, ms);
+
+  return out;
+}
+
+std::string FormatHelper::fileNameToTitle(std::string fileName) // static
+{
+  fileName = ToUTF8(fileName);
+  fileName = TruncateFileExt(fileName);
+  
+  #warning todo: make configurable which character replaces what
+	fileName = StringReplace(fileName, "_", " ");
+  
+  return fileName;
+}
+
+
+StringList String::split(std::string in, std::string delimiter) // static
+{
+  StringList result;
+
+  string::size_type pos;  
+  while(in.length() > 0 && ((pos = in.find_first_of(delimiter)) != string::npos)) {
+    result.push_back(TrimWhiteSpace(in.substr(0, pos)));
+    in = in.substr(pos + 1, in.length());
+  }
+
+  if(in.length() > 0) {
+    result.push_back(TrimWhiteSpace(in));
+  }
+
+  return result;
+}
+

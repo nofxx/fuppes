@@ -49,7 +49,7 @@ class BasePlaylistParser
 {
   public:
     BasePlaylistParser(std::string p_sFileName);
-    ~BasePlaylistParser();
+    virtual ~BasePlaylistParser();
     
     // Common functions
     static BasePlaylistParser* Load(std::string p_sFileName);

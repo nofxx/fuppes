@@ -33,11 +33,11 @@
 
 #include "../ControlInterface/ControlInterface.h"
 
-#include <dirent.h>
 #include <sys/stat.h>
 #include <errno.h>
 
 #include <iostream>
+
 using namespace std;
 using namespace fuppes;
 
@@ -49,156 +49,222 @@ CPluginMgr::CPluginMgr()
 	m_presentationPlugin = NULL;
 }
 
-void CPluginMgr::init(std::string pluginDir)
+void CPluginMgr::init(void) {
+
+  //Log::addActiveSender(Log::plugin);
+
+
+  Directory dir(CSharedConfig::Shared()->pluginDirectory());
+  dir.open();
+  DirEntryList entryList = dir.dirEntryList();
+  for(unsigned int i = 0; i < entryList.size(); i++) {
+    if(entryList.at(i).type() == DirEntry::File)
+      try_init(entryList.at(i).absolutePath());
+  }
+  dir.close();
+  
+  //Log::removeActiveSender(Log::plugin);
+}
+
+bool CPluginMgr::try_init(string fileName)
 {
+  //cout << "filename: " << fileName << endl;
 	if(m_instance == 0) {
 		m_instance = new CPluginMgr();
 		fuppesThreadInitMutex(&m_instance->m_mutex);
 	}
 
-	DIR*    dir;
-  dirent* dirEnt;
+  if(!File::exists(fileName)) return false; // next file
+  
+  string ext = ExtractFileExt(fileName);
+  if(ext.empty()) return false; // next file
+  
+  #ifdef WIN32
+  if(ext.compare("dll") != 0) {
+    return false;
+  }
+  #else
+  if((ext.compare("so") != 0) &&
+     (ext.compare("dylib") != 0)) {
+    return false;
+  }
+  #endif
+  
+  m_instance->init_plugin(fileName);
+  return false;
+}
 
-	m_instance->m_pluginDir = pluginDir;
-  dir = opendir(pluginDir.c_str());
-	if(dir == NULL) {
-		return;
-	}
-	
-	//struct stat	Stat;
-	string			fileName;
-	string			ext;
-	//size_t			pos;	
+bool CPluginMgr::init_plugin(string fileName) {
 	CPlugin*		plugin = NULL;
 	
 	registerPlugin_t		regPlugin;
 	unregisterPlugin_t	unregPlugin;
-	
-  while((dirEnt = readdir(dir)) != NULL) {
-		
-		fileName = pluginDir + dirEnt->d_name;		
-		
-		if(!fuppes::File::exists(fileName)) {
-			continue;
-		}
-		
-		ext = ExtractFileExt(fileName);
-		if(ext.empty()) {
-			continue;
-		}
-		
-		#ifdef WIN32
-		if(ext.compare("dll") != 0) {
-			continue;
-		}
-		#else
-		if((ext.compare("so") != 0) &&
-			 (ext.compare("dylib") != 0)) {
-			continue;
-		}
-		#endif
-		
-		try {
-			plugin_info pluginInfo;
-			pluginInfo.plugin_type = PT_NONE;
-			pluginInfo.log = &CPlugin::logCb;
-			pluginInfo.plugin_name[0] = '\0';
-			pluginInfo.plugin_author[0] = '\0';
-			pluginInfo.plugin_version[0] = '\0';
-			pluginInfo.library_version[0] = '\0';
-			
-			fuppesLibHandle handle;
-			
-			//cout << "load: " << fileName << endl;
-			
-			handle = FuppesLoadLibrary(fileName);
-			if(handle == NULL) {
-				//cout << "error loading library: "  << fileName << endl;
-				continue;
-			}
-			regPlugin = (registerPlugin_t)FuppesGetProcAddress(handle, "register_fuppes_plugin");	
-			unregPlugin = (unregisterPlugin_t)FuppesGetProcAddress(handle, "unregister_fuppes_plugin");	
-			
-			if(regPlugin == NULL || unregPlugin == NULL) {
-				//cout << "library: "  << fileName << " is no valid fuppes plugin" << endl;
-				FuppesCloseLibrary(handle);
-				continue;
-			}
+  try {
+    plugin_info pluginInfo;
+    pluginInfo.plugin_type = PT_NONE;
+    pluginInfo.log = &CPlugin::logCb;
+    pluginInfo.plugin_name[0] = '\0';
+    pluginInfo.plugin_author[0] = '\0';
+    pluginInfo.plugin_version[0] = '\0';
+    pluginInfo.library_version[0] = '\0';
+    
+    fuppesLibHandle handle;
+    
+    //cout << "plugin load: " << fileName << endl;
+    
+    handle = FuppesLoadLibrary(fileName);
+    if(handle == NULL) {
+      //cout << "error loading library: "  << fileName << endl;
+      return false;
+    }
 
-			regPlugin(&pluginInfo);
 
-			switch(pluginInfo.plugin_type) {
-				case PT_DLNA:
-					plugin = new CDlnaPlugin(handle, &pluginInfo);
-					if(plugin->initPlugin()) {
-						m_instance->m_dlnaPlugin = (CDlnaPlugin*)plugin;
-						//CSharedLog::Log(L_EXT, __FILE__, __LINE__, "registered dlna profile plugin");
-						Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, "registered dlna profile plugin");
-					}					
-					break;
-				case PT_PRESENTATION:
-					plugin = new CPresentationPlugin(handle, &pluginInfo);
-					if(plugin->initPlugin()) {
-						m_instance->m_presentationPlugin = (CPresentationPlugin*)plugin;
-						//CSharedLog::Log(L_EXT, __FILE__, __LINE__, "registered presentation plugin");
-						Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, "registered presentation plugin");
-					}
-					break;					
-				case PT_METADATA:
-					plugin = new CMetadataPlugin(handle, &pluginInfo);
-				  if(plugin->initPlugin()) {
-						m_instance->m_metadataPlugins[ToLower(pluginInfo.plugin_name)] = (CMetadataPlugin*)plugin;
-						//CSharedLog::Log(L_EXT, __FILE__, __LINE__, "registered metadata plugin \"%s\"", pluginInfo.plugin_name);
-						Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, "registered metadata plugin \"%s\"", pluginInfo.plugin_name);
-					}
-					break;
-				case PT_AUDIO_DECODER:
-					plugin = new CAudioDecoderPlugin(handle, &pluginInfo);
-					if(plugin->initPlugin()) {
-						m_instance->m_audioDecoderPlugins[ToLower(pluginInfo.plugin_name)] = (CAudioDecoderPlugin*)plugin;
-						//CSharedLog::Log(L_EXT, __FILE__, __LINE__, "registered audio decoder plugin \"%s\"", pluginInfo.plugin_name);
-						Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, "registered audio decoder plugin \"%s\"", pluginInfo.plugin_name);
-					}
-					break;
-				case PT_AUDIO_ENCODER:
-					plugin = new CAudioEncoderPlugin(handle, &pluginInfo);
-					if(plugin->initPlugin()) {
-						m_instance->m_audioEncoderPlugins[ToLower(pluginInfo.plugin_name)] = (CAudioEncoderPlugin*)plugin;
-						//CSharedLog::Log(L_EXT, __FILE__, __LINE__, "registered audio encoder plugin \"%s\"", pluginInfo.plugin_name);
-						Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, "registered audio encoder plugin \"%s\"", pluginInfo.plugin_name);
-					}
-					break;
-				case PT_TRANSCODER:
-				case PT_THREADED_TRANSCODER:
-					plugin = new CTranscoderPlugin(handle, &pluginInfo);
+    //cout << "plugin: " << fileName << " handle:" << handle << endl;
+    
+    regPlugin = (registerPlugin_t)FuppesGetProcAddress(handle, "register_fuppes_plugin");	
+
+    char* error;
+    if ((error = dlerror()) != NULL)  {
+      fprintf (stderr, "%s\n", error);
+      regPlugin = NULL;
+    }
+    
+    unregPlugin = (unregisterPlugin_t)FuppesGetProcAddress(handle, "unregister_fuppes_plugin");	
+
+    if ((error = dlerror()) != NULL)  {
+      fprintf (stderr, "%s\n", error);
+      unregPlugin = NULL;
+    }
+    
+    if(regPlugin == NULL || unregPlugin == NULL) {
+      //cout << "library: "  << fileName << " is no valid fuppes plugin" << endl;
+      FuppesCloseLibrary(handle);
+      return false;
+    }
+
+    regPlugin(&pluginInfo);
+
+    switch(pluginInfo.plugin_type) {
+      case PT_DLNA:
+        if(m_instance->m_dlnaPlugin == NULL) {
+          plugin = new CDlnaPlugin(handle, &pluginInfo);
           if(plugin->initPlugin()) {
-						m_instance->m_transcoderPlugins[ToLower(pluginInfo.plugin_name)] = (CTranscoderPlugin*)plugin;
-						//CSharedLog::Log(L_EXT, __FILE__, __LINE__, "registered transcoder plugin \"%s\"", pluginInfo.plugin_name);
-						Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, "registered transcoder plugin \"%s\"", pluginInfo.plugin_name);
-					}
-					break;
-				case PT_DATABASE_CONNECTION:
-					plugin = new CDatabasePlugin(handle, &pluginInfo);
-				  if(plugin->initPlugin()) {
-						m_instance->m_databasePlugins[pluginInfo.plugin_name] = (CDatabasePlugin*)plugin;
-						//CSharedLog::Log(L_EXT, __FILE__, __LINE__, "registered database plugin \"%s\"", pluginInfo.plugin_name);
-						Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, "registered database plugin \"%s\"", pluginInfo.plugin_name);
-					}
-					break;
-	
-				case PT_NONE:
-					unregPlugin(&pluginInfo);
-					FuppesCloseLibrary(handle);
-					break;
-					
-			}
-		}
-		catch(fuppes::Exception ex) {
-		}
-		
-	} // while
+            m_instance->m_dlnaPlugin = (CDlnaPlugin*)plugin;
+            Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, 
+                "registered dlna profile plugin (%s)",
+                fileName.c_str());
+          }					
+        } else {
+          Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, 
+              "Already registered similar dlna plugin. Skipping '%s'", 
+              fileName.c_str());
+        }
+        break;
+      case PT_PRESENTATION:
+        if(m_instance->m_presentationPlugin == NULL) {
+          plugin = new CPresentationPlugin(handle, &pluginInfo);
+          if(plugin->initPlugin()) {
+            m_instance->m_presentationPlugin = (CPresentationPlugin*)plugin;
+            Log::log(Log::plugin, Log::extended, __FILE__, __LINE__,
+                "registered presentation plugin (%s)",
+                fileName.c_str());
+          }
+        } else {
+          Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, 
+              "Already registered similar presentation plugin. Skipping '%s'", 
+              fileName.c_str());
+        }
+        break;					
+      case PT_METADATA:
+        if(m_instance->m_metadataPlugins.find(ToLower(pluginInfo.plugin_name)) == m_instance->m_metadataPlugins.end()) {
+          plugin = new CMetadataPlugin(handle, &pluginInfo);
+          if(plugin->initPlugin()) {
+            m_instance->m_metadataPlugins[ToLower(pluginInfo.plugin_name)] = (CMetadataPlugin*)plugin;
+            Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, 
+                "registered metadata plugin \"%s\" (%s)", 
+                pluginInfo.plugin_name,
+                fileName.c_str());
+          }
+        } else {
+          Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, 
+              "Already registered similar metadata plugin. Skipping '%s'", 
+              fileName.c_str());
+        }
+        break;
+      case PT_AUDIO_DECODER:
+        if(m_instance->m_audioDecoderPlugins.find(ToLower(pluginInfo.plugin_name)) == m_instance->m_audioDecoderPlugins.end()) {
+          plugin = new CAudioDecoderPlugin(handle, &pluginInfo);
+          if(plugin->initPlugin()) {
+            m_instance->m_audioDecoderPlugins[ToLower(pluginInfo.plugin_name)] = (CAudioDecoderPlugin*)plugin;
+            Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, 
+                "registered audio decoder plugin \"%s\" (%s)", 
+                pluginInfo.plugin_name,
+                fileName.c_str());
+          }
+        } else {
+          Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, 
+              "Already registered similar audio decoder plugin. Skipping '%s'", 
+              fileName.c_str());
+        }
+        break;
+      case PT_AUDIO_ENCODER:
+        if(m_instance->m_audioEncoderPlugins.find(ToLower(pluginInfo.plugin_name)) == m_instance->m_audioEncoderPlugins.end()) {
+          plugin = new CAudioEncoderPlugin(handle, &pluginInfo);
+          if(plugin->initPlugin()) {
+            m_instance->m_audioEncoderPlugins[ToLower(pluginInfo.plugin_name)] = (CAudioEncoderPlugin*)plugin;
+            Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, "registered audio encoder plugin \"%s\"", pluginInfo.plugin_name);
+          }
+        } else {
+          Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, 
+              "Already registered similar audio encoder plugin. Skipping '%s'", 
+              fileName.c_str());
+        }
+        break;
+      case PT_TRANSCODER:
+      case PT_THREADED_TRANSCODER:
+        if(m_instance->m_transcoderPlugins.find(ToLower(pluginInfo.plugin_name)) == m_instance->m_transcoderPlugins.end()) {
+          plugin = new CTranscoderPlugin(handle, &pluginInfo);
+          if(plugin->initPlugin()) {
+            m_instance->m_transcoderPlugins[ToLower(pluginInfo.plugin_name)] = (CTranscoderPlugin*)plugin;
+            Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, 
+                "registered transcoder plugin \"%s\" (%s)", 
+                pluginInfo.plugin_name,
+                fileName.c_str());
+          }
+        } else {
+          Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, 
+              "Already registered similar transcoder plugin. Skipping '%s'", 
+              fileName.c_str());
+        }
+        break;
+      case PT_DATABASE_CONNECTION:
+        if(m_instance->m_databasePlugins.find(ToLower(pluginInfo.plugin_name)) == m_instance->m_databasePlugins.end()) {
+          plugin = new CDatabasePlugin(handle, &pluginInfo);
+          if(plugin->initPlugin()) {
+            m_instance->m_databasePlugins[pluginInfo.plugin_name] = (CDatabasePlugin*)plugin;
+            Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, 
+                "registered database plugin \"%s\" (%s)", 
+                pluginInfo.plugin_name,
+                fileName.c_str());
+          }
+        } else {
+          Log::log(Log::plugin, Log::extended, __FILE__, __LINE__, 
+              "Already registered similar database plugin. Skipping '%s'", 
+              fileName.c_str());
+        }
+        break;
 
-	closedir(dir);
+      case PT_NONE:
+        unregPlugin(&pluginInfo);
+        FuppesCloseLibrary(handle);
+        return false; 
+    }
+  }
+  catch(fuppes::Exception ex) {
+    return false;
+  }
+
+  return true;
 }
 
 void CPluginMgr::uninit() // static
@@ -385,8 +451,6 @@ std::string CPluginMgr::printInfo(bool html /*= false*/)
 	result.clear();
 
 
-	result << "plugin dir: " << br << m_instance->m_pluginDir << br << br;
-	
 	if(!html)
 		result << "registered plugins" << br;
 	
@@ -512,6 +576,8 @@ void CPlugin::uninit()
   if(m_handle == NULL)
     return;
 
+  //cout << "plugin: uninit handle:" << m_handle << endl;
+  
   m_unregisterPlugin(&m_pluginInfo);
   FuppesCloseLibrary(m_handle);
   m_handle = NULL;

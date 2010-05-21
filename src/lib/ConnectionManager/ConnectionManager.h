@@ -40,17 +40,15 @@ typedef enum CM_ERROR {
 	ERR_ACTION_FAILED		= 501
 } CM_ERROR;
 
-/*
 class CConnectionManagerCore
 {
 	public:
 		static void init();
-    static void deleteInstance();
+    static void uninit();
 	
 	private:
 		static CConnectionManagerCore* m_instance;
 };
-*/
 
 class CConnectionManager: public CUPnPService
 {
@@ -62,11 +60,11 @@ class CConnectionManager: public CUPnPService
 																	 CHTTPMessage* pMessageOut);
 	
 	private:
-		CM_ERROR	getProtocolInfo(CUPnPAction* action, std::string* result);
+		CM_ERROR	getProtocolInfo(CUPnPAction* action, std::string& result);
 		CM_ERROR	prepareForConnection(CUPnPAction* action, std::string* result);
 		CM_ERROR	connectionComplete(CUPnPAction* action, std::string* result);
-		CM_ERROR	getCurrentConnectionIds(CUPnPAction* action, std::string* result);
-		CM_ERROR	getCurrentConnectionInfo(CUPnPAction* action, std::string* result);
+		CM_ERROR	getCurrentConnectionIds(CUPnPAction* action, std::string& result);
+		CM_ERROR	getCurrentConnectionInfo(CUPnPAction* action, std::string& result);
 };
 
 #endif // _CONNECTIONMANAGER_H

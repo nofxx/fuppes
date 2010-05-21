@@ -9,8 +9,9 @@
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -23,10 +24,13 @@
  */
  
 #include "DeviceIdentificationMgr.h"
-#include "../SharedLog.h"
+#include "../Log.h"
 #include "../SharedConfig.h"
+#include "../Configuration/DeviceMapping.h"
+#include "MacAddressTable.h"
 #include <iostream>
 
+using namespace fuppes;
 using namespace std;
  
 CDeviceIdentificationMgr* CDeviceIdentificationMgr::m_pInstance = 0;
@@ -48,7 +52,7 @@ CDeviceIdentificationMgr::~CDeviceIdentificationMgr()
 
   for(m_SettingsIt = m_Settings.begin();
       m_SettingsIt != m_Settings.end();
-      m_SettingsIt++) {
+      ++m_SettingsIt) {
     delete *m_SettingsIt;
   }
   m_Settings.clear();
@@ -71,7 +75,11 @@ void ReplaceDescriptionVars(std::string* p_sValue)
 	}	
 	// hostname (%h)
 	while((pos = sValue.find("%h")) != string::npos) {
-		sValue = sValue.replace(pos, 2, CSharedConfig::Shared()->GetHostname());
+		sValue = sValue.replace(pos, 2, CSharedConfig::Shared()->networkSettings->GetHostname());
+	}
+  // ip address (%i)
+	while((pos = sValue.find("%i")) != string::npos) {
+		sValue = sValue.replace(pos, 2, CSharedConfig::Shared()->networkSettings->GetIPv4Address());
 	}
 		
   *p_sValue = sValue;
@@ -88,7 +96,7 @@ void CDeviceIdentificationMgr::Initialize()
 	CDeviceSettings* pSettings;
 	for(m_SettingsIt = m_Settings.begin(); 
 			m_SettingsIt != m_Settings.end(); 
-			m_SettingsIt++)
+			++m_SettingsIt)
 	{
 	  pSettings = *m_SettingsIt;
 
@@ -102,31 +110,42 @@ void CDeviceIdentificationMgr::Initialize()
 
 void CDeviceIdentificationMgr::IdentifyDevice(CHTTPMessage* pDeviceMessage)
 {  
-	CDeviceSettings* pSettings;
-	for(m_SettingsIt = m_Settings.begin(); m_SettingsIt != m_Settings.end(); m_SettingsIt++)
-	{
-	  pSettings = *m_SettingsIt;		
-		
-		if(pSettings->HasIP(pDeviceMessage->GetRemoteIPAddress())) {
-		  pDeviceMessage->DeviceSettings(pSettings);      
-			break;
-		}
-		
-		if(pSettings->HasUserAgent(pDeviceMessage->m_sUserAgent)) {
-		  pDeviceMessage->DeviceSettings(pSettings);      
-			break;
-		}		
-	}
+  assert(pDeviceMessage != NULL);
+  DeviceMapping* devmap = CSharedConfig::Shared()->deviceMapping;
+
+  string mac;
+  bool foundMatch = false;
+  // search the MAC Adresses first
+  for(vector<struct mapping>::const_iterator it = devmap->macAddrs.begin(); !foundMatch && it != devmap->macAddrs.end(); ++it) {
+
+    if(!MacAddressTable::mac(pDeviceMessage->GetRemoteIPAddress(), mac))
+      continue;
+
+    if (it->value.compare(mac) == 0) {
+      pDeviceMessage->DeviceSettings(it->device);
+      foundMatch = true;
+    }
+  }
+
+  // Then search the IP Adresses
+  for(vector<struct mapping>::const_iterator it = devmap->ipAddrs.begin(); !foundMatch && it != devmap->ipAddrs.end(); ++it) {
+    if (it->value.compare(pDeviceMessage->GetRemoteIPAddress()) == 0) {
+      pDeviceMessage->DeviceSettings(it->device);
+      foundMatch = true;
+    }
+  }
 	
-	if(!pDeviceMessage->DeviceSettings()) {
+  // ... just use the default device
+	if(!foundMatch) {
   	pDeviceMessage->DeviceSettings(m_pDefaultSettings);    
   }
 
-  CSharedLog::Log(L_EXT, __FILE__, __LINE__,
-    "device settings \"%s\"\n\tip: %s\n\tuser agent: %s",
+  Log::log(Log::config, Log::extended, __FILE__, __LINE__,
+    "HTTP Request using device settings \"%s\"\n\tip: %s\n\tuser agent: %s\n\tmac address: %s",
     pDeviceMessage->DeviceSettings()->m_sDeviceName.c_str(),
     pDeviceMessage->GetRemoteIPAddress().c_str(),
-    pDeviceMessage->m_sUserAgent.c_str());
+    pDeviceMessage->m_sUserAgent.c_str(),
+    mac.c_str());
 }
 
 
@@ -139,15 +158,14 @@ CDeviceSettings* CDeviceIdentificationMgr::GetSettingsForInitialization(std::str
     return m_pDefaultSettings;
   }
   
-	for(m_SettingsIt = m_Settings.begin(); m_SettingsIt != m_Settings.end(); m_SettingsIt++)	{    
-    
+	for(m_SettingsIt = m_Settings.begin(); m_SettingsIt != m_Settings.end(); ++m_SettingsIt)	{    
     if((*m_SettingsIt)->m_sDeviceName.compare(p_sDeviceName) == 0) {
       pSettings = *m_SettingsIt;
       break;
     }
   }
   
-  // create new setting
+  // no in does not - create new default settings
   if(!pSettings) {
     pSettings = new CDeviceSettings(p_sDeviceName, m_pDefaultSettings);
     m_Settings.push_back(pSettings);
@@ -291,7 +309,7 @@ void CDeviceIdentificationMgr::PrintSettings(std::string* p_sOut)
   
   for(m_SettingsIt = m_Settings.begin(); 
       m_SettingsIt != m_Settings.end(); 
-      m_SettingsIt++)	{    
+      ++m_SettingsIt)	{    
 
     pSettings = *m_SettingsIt;
       

@@ -1,10 +1,10 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
- *            DatabaseCommection.h
+ *            DatabaseConnection.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2009-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -32,18 +32,60 @@
 
 #include "../../../include/fuppes_db_connection_plugin.h"
 
+
+typedef ISQLQuery CSQLQuery;
+
+class SQLQuery
+{
+	public:
+		SQLQuery();
+		~SQLQuery();
+
+    std::string build(fuppes_sql_no queryNo, std::string objectId, std::string device = "");
+    std::string build(fuppes_sql_no queryNo, unsigned int objectId, std::string device = "");
+    
+		bool select(const std::string sql);
+    bool exec(const std::string sql);
+		fuppes_off_t insert(const std::string sql);
+		
+    bool eof();
+		void next();
+		CSQLResult* result();
+		fuppes_off_t lastInsertId();
+		void clear();
+		
+    CDatabaseConnection* connection();
+
+   unsigned int size();
+    
+	private:
+		ISQLQuery*	m_query;
+};
+
 class CDatabase
 {
-	public:		
-		static bool init(const std::string type);
-		static bool open(const CConnectionParams params);
+	public:
+    /**
+     * establish database connection
+     */
+		static bool connect(const CConnectionParams params);
+    /**
+     * 
+     */
+ 		static bool setup();
+    /**
+     * close database connection
+     */
 		static void close();
 
-		static CSQLQuery* query();
+		static ISQLQuery* query();
 		static CDatabaseConnection* connection(bool create = false);
-		
+
+    static CConnectionParams connectionParams();
+    
 	private:
 		static CDatabaseConnection* m_connection;
+    //static CConnectionParams    m_connectionParams;    
 };
 
 #endif // _DATABASECONNECTION_H

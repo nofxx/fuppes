@@ -1,10 +1,10 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            core_mysql.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2009-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -23,17 +23,37 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+
+
+
+/*
+if THREAD_SAFE_CLIENT is defined then fuppes uses the same connection for all queries
+otherwise it uses a single connection per query 
+*/
+#define THREAD_SAFE_CLIENT 1
+//#undef THREAD_SAFE_CLIENT
+
 #include "../../include/fuppes_plugin.h"
 #include "../../include/fuppes_db_connection_plugin.h"
+
+#include "database_mysql_sql.h"
 
 #include <string>
 #include <sstream>
 #include <iostream>
 
+using namespace std;
+
+#include <assert.h>
 #include <mysql.h>
+
+#if !defined(WIN32) && defined(THREAD_SAFE_CLIENT)
+#include <pthread.h>
+#endif
 
 // http://dev.mysql.com/doc/refman/5.1/en/c.html
 
+// http://dev.mysql.com/doc/refman/5.1/en/threaded-clients.html
 
 class CMySQLConnection: public CDatabaseConnection
 {
@@ -41,24 +61,91 @@ class CMySQLConnection: public CDatabaseConnection
 		CMySQLConnection();
 		~CMySQLConnection();
 
-		virtual bool startTransaction();
-		virtual bool commit();
-		virtual void rollback();
-		
+		bool startTransaction();
+		bool commit();
+		void rollback();
+
+		const char* getStatement(fuppes_sql_no number) {
+      //cout << "MYSQL GET STATEMENT: " << mysql_sql[number].sql << endl; 
+			return mysql_sql[number].sql;
+		}
+
+		bool setup();
+
+#ifdef THREAD_SAFE_CLIENT
+    void lock() { 
+    	#ifdef WIN32
+      EnterCriticalSection(&m_mutex);
+      #else
+      pthread_mutex_lock(&m_mutex);
+      #endif
+    }
+    void unlock() { 
+      #ifdef WIN32
+      LeaveCriticalSection(&m_mutex);
+      #else
+      pthread_mutex_unlock(&m_mutex);
+      #endif
+    }
+#endif
+
+
+
+    void check();
+    
 	private:
-		bool				open(const CConnectionParams params);
-		CSQLQuery*	query();
+		bool				connect(const CConnectionParams params);
+		ISQLQuery*	query();
 
 		MYSQL				m_handle;
+    CConnectionParams m_params;
+
+#ifdef THREAD_SAFE_CLIENT
+		#ifdef WIN32
+		CRITICAL_SECTION  m_mutex;
+		#else
+		pthread_mutex_t   m_mutex;
+		#endif
+#endif
+
+#ifndef WIN32
+    time_t            m_lastQueryTime;
+#else
+    FIXME
+#endif
+
+    int getLastQuerySeconds() {
+      
+      int sec = 0;
+
+#ifndef WIN32
+      // calc seconds since last query
+      time_t now = time(NULL);
+      sec = now - m_lastQueryTime;
+
+      // set last query time to now
+      m_lastQueryTime = now;
+#else
+      FIXME
+#endif
+      //cout << "last mysql query: " << sec << " seconds ago" << endl;
+      return sec;
+    }
+      
+    unsigned long     m_mysqlThreadId;
+    
 };
 
-class CMySQLQuery: public CSQLQuery
+class CMySQLQuery: public ISQLQuery
 {
 	friend class CMySQLConnection;
 	
 	public:
 		~CMySQLQuery() {
 			clear();
+#ifndef THREAD_SAFE_CLIENT
+      delete m_connection;
+#endif
 		}
 
 		virtual bool select(const std::string sql);
@@ -82,14 +169,19 @@ class CMySQLQuery: public CSQLQuery
       }
 		
 			m_rowsReturned = 0;
+			m_ResultListIterator = m_ResultList.end();
 		}
 		
 		CDatabaseConnection* connection() { return m_connection; }
-		
+
+    unsigned int size() {
+      return m_ResultList.size();
+    }
+    
 	private:
 		CMySQLQuery(CDatabaseConnection* connection, MYSQL* handle);		
 		MYSQL* m_handle;
-		CDatabaseConnection* m_connection;		
+		CMySQLConnection* m_connection;		
 		
 		off_t		m_lastInsertId;
 		
@@ -141,7 +233,7 @@ class CMySQLResult: public CSQLResult
 			}			
 			return result;
 		}
-
+    
   private:
     std::map<std::string, std::string> m_FieldValues;
     std::map<std::string, std::string>::iterator m_FieldValuesIterator;  
@@ -152,16 +244,55 @@ class CMySQLResult: public CSQLResult
 
 CMySQLConnection::CMySQLConnection()
 {
+
+//cout << "CMySQLConnection" << endl;
+  
+#ifdef THREAD_SAFE_CLIENT
+  #ifdef WIN32
+  InitializeCriticalSection(&m_mutex);
+  #else
+  pthread_mutex_init(&m_mutex, NULL);
+  #endif
+#endif
+  
 	mysql_init(&m_handle);
+
+
+  // int mysql_options(MYSQL *mysql, enum mysql_option option, const void *arg)
+
+  // http://dev.mysql.com/doc/refman/5.1/en/auto-reconnect.html
+  
+  // enable auto reconnect
+  my_bool reconnect = 1;
+  mysql_options(&m_handle, MYSQL_OPT_RECONNECT, &reconnect);
+
+#ifndef WIN32
+  m_lastQueryTime = 0;
+#else
+  FIXME
+#endif
+  
+  m_mysqlThreadId = 0;
 }
 
 CMySQLConnection::~CMySQLConnection()
 {
+//cout << "~CMySQLConnection" << endl;
+  
 	mysql_close(&m_handle);
+
+#ifdef THREAD_SAFE_CLIENT
+	#ifdef WIN32
+  DeleteCriticalSection(&m_mutex);
+  #else
+  pthread_mutex_destroy(&m_mutex);
+  #endif
+#endif
 }
 
-bool CMySQLConnection::open(const CConnectionParams params)
+bool CMySQLConnection::connect(const CConnectionParams params)
 {
+  m_params = params;
 	if(!mysql_real_connect(&m_handle, 
 												 params.hostname.c_str(),
 												 params.username.c_str(),
@@ -170,13 +301,67 @@ bool CMySQLConnection::open(const CConnectionParams params)
     fprintf(stderr, "Failed to connect to database: Error: %s\n", mysql_error(&m_handle));
 		return false;
 	}
-	
+
+
+  check();  
+
+  return true;
+}
+
+
+void CMySQLConnection::check()
+{
+
+
+  int last = getLastQuerySeconds();
+
+  //cout << "CMySQLConnection::check(): thread id: " << m_mysqlThreadId << " last: " << last <<  endl;
+  
+  // if the last query was 5 seconds or more ago we check if the connection
+  // was rebuild and reset our connection settings
+  if(last < 5) {
+    //cout << "RETURN 1" << endl;
+    return;
+  }
+
+  // if the last query was more than 5 seconds ago we
+  // ping the server to reconnect if necessary
+  mysql_ping(&m_handle);
+
+  // check if the thread id has changed
+  // if so we got a reconnect
+  unsigned long id = mysql_thread_id(&m_handle);
+  if(id == m_mysqlThreadId) {
+    //cout << "RETURN 2" << endl;
+    return;
+  }
+
+
+  m_mysqlThreadId = id;
+
+  mysql_query(&m_handle, "SET NAMES 'utf8'");
+
+  //cout << "RETURN 3 new thread id: " << m_mysqlThreadId << endl;
+}
+    
+
+bool CMySQLConnection::setup()
+{
 	return true;
 }
 
-CSQLQuery* CMySQLConnection::query()
+ISQLQuery* CMySQLConnection::query()
 {	
-	return new CMySQLQuery(this, &m_handle);
+
+  CMySQLConnection* connection;
+#ifdef THREAD_SAFE_CLIENT
+  connection = this;
+#else
+  connection = new CMySQLConnection();
+  connection->connect(m_params);
+#endif
+
+	return new CMySQLQuery(connection, &m_handle);
 }
 
 bool CMySQLConnection::startTransaction()
@@ -197,26 +382,45 @@ void CMySQLConnection::rollback()
 CMySQLQuery::CMySQLQuery(CDatabaseConnection* connection, MYSQL* handle)
 {
 	m_handle = handle;
-	m_connection = connection;
+	m_connection = (CMySQLConnection*)connection;
 }
 
 bool CMySQLQuery::select(const std::string sql)
 {
 	clear();
-	
-	if(mysql_query(m_handle, sql.c_str()) != 0) {
-		std::cout << "mysql: query error " << mysql_error(m_handle) << std::endl;
-		return false;
-	}
-	
+
 	MYSQL_RES* res;
 	MYSQL_ROW row;
 	MYSQL_FIELD *fields;
 	unsigned int num_fields;
 	unsigned int i;
+  
+//cout << "MYSQLQUERY: " << sql << endl;
+
+  m_connection->check();
+  
+#ifdef THREAD_SAFE_CLIENT
+  // when using a single connection in a multithreaded application the
+  // connection must be locked between mysql_query and mysql_store_result
+  m_connection->lock();
+#endif
+  
+	if(mysql_query(m_handle, sql.c_str()) != 0) {
+		std::cout << "mysql: query error " << sql << std::endl << mysql_error(m_handle) << std::endl;
+    assert(true == false);
+#ifdef THREAD_SAFE_CLIENT
+    m_connection->unlock();
+#endif
+		return false;
+	}
 	
 	res = mysql_store_result(m_handle);	
-	num_fields = mysql_num_fields(res);
+
+#ifdef THREAD_SAFE_CLIENT
+  m_connection->unlock();
+#endif
+
+  num_fields = mysql_num_fields(res);
 	fields = mysql_fetch_fields(res);
 	
 	CMySQLResult* pResult;
@@ -253,7 +457,8 @@ bool CMySQLQuery::select(const std::string sql)
 
 bool CMySQLQuery::exec(const std::string sql)
 {
-	
+  m_connection->check();
+  
 	if(mysql_query(m_handle, sql.c_str()) != 0) {
 		std::cout << "mysql: exec error : " << sql << std::endl;
 		return false;
@@ -264,12 +469,15 @@ bool CMySQLQuery::exec(const std::string sql)
 
 off_t CMySQLQuery::insert(const std::string sql)
 {
+  m_connection->check();
+  
 	if(mysql_query(m_handle, sql.c_str()) != 0) {
 		std::cout << "mysql: insert error : " << sql << std::endl;
 		return 0;
   }
 
-	return mysql_insert_id(m_handle);
+  m_lastInsertId = mysql_insert_id(m_handle);
+	return m_lastInsertId;
 }
 
 
@@ -302,54 +510,3 @@ void unregister_fuppes_plugin(plugin_info* plugin __attribute__((unused)))
 #ifdef __cplusplus
 }
 #endif
-
-/*
-CREATE TABLE OBJECTS(
-	ID INTEGER AUTO_INCREMENT ,
-	OBJECT_ID INTEGER NOT NULL ,
-	DETAIL_ID INTEGER DEFAULT NULL ,
-	TYPE INTEGER NOT NULL ,
-	DEVICE TEXT DEFAULT NULL ,
-	PATH TEXT NOT NULL ,
-	FILE_NAME TEXT DEFAULT NULL ,
-	TITLE TEXT DEFAULT NULL ,
-	MD5 TEXT DEFAULT NULL ,
-	MIME_TYPE TEXT DEFAULT NULL ,
-	REF_ID INTEGER DEFAULT NULL ,
-	PRIMARY KEY ( ID )
-);
-
-
-CREATE TABLE OBJECT_DETAILS (
-	ID INTEGER AUTO_INCREMENT,
-	AV_BITRATE INTEGER, 
-	AV_DURATION TEXT, 
-	A_ALBUM TEXT, 
-	A_ARTIST TEXT, 
-	A_CHANNELS INTEGER, 
-	A_DESCRIPTION TEXT, 
-	A_GENRE TEXT, 
-	A_SAMPLERATE INTEGER, 
-	A_TRACK_NO INTEGER, 
-	DATE TEXT, 
-	IV_HEIGHT INTEGER, 
-	IV_WIDTH INTEGER, 
-	A_CODEC TEXT, 
-	V_CODEC TEXT, 
-	ALBUM_ART_ID INTEGER, 
-	ALBUM_ART_MIME_TYPE TEXT, 
-	SIZE INTEGER DEFAULT 0, 
-	DLNA_PROFILE TEXT DEFAULT NULL,
-	DLNA_MIME_TYPE TEXT DEFAULT NULL,
-	PRIMARY KEY ( ID )
-);
- 
-CREATE TABLE MAP_OBJECTS (
-	ID INTEGER AUTO_INCREMENT, 
-	OBJECT_ID INTEGER NOT NULL, 
-	PARENT_ID INTEGER NOT NULL, 
-	DEVICE TEXT,
-	PRIMARY KEY ( ID )
-);
- 
-*/

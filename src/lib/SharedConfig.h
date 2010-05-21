@@ -40,14 +40,43 @@
   #define FUPPES_TARGET_MAC_OSX
 #endif
 
+#define CONFIG_NAME "fuppes.cfg"
+#define VFOLDER_DIR "vfolders"
+#define DEVICE_DIR "devices"
+
+#define DB_NAME "fuppes.db"
+#define UUID_NAME "UUID.txt"
+
+// Errors that could happen when reading the global config file
+#define READERROR_CONFIG_DEPRECATED 1
+#define READERROR_SHARED_OBJECTS    2
+#define READERROR_NETWORK           3
+#define READERROR_GLOBAL_SETTINGS   4
+#define READERROR_DEVICE_MAPPING    5
+#define READERROR_CONTENT_DIRECTORY 6
+#define READERROR_DATABASE_DEFAULT  7
+#define READERROR_DATABASE_FAIL     8
+#define READERROR_TRANSCODING       9
+#define READERROR_PLUGINDIRS        10
 
 #include <string>
 #include <vector>
 
-#include "Configuration/ConfigFile.h"
+#include "Configuration/PathFinder.h"
+#include "Configuration/SharedObjects.h"
+#include "Configuration/NetworkSettings.h"
+#include "Configuration/GlobalSettings.h"
+#include "Configuration/DeviceMapping.h"
+#include "Configuration/ContentDirectoryConfig.h"
+#include "Configuration/DatabaseSettings.h"
+#include "Configuration/TranscodingSettings.h"
+
+#include "DeviceSettings/DeviceSettings.h"
+#include "../../include/fuppes_db_connection_plugin.h"
 
 class CFuppes;
 
+// SharedConfig is way too huge, it needs to have many smaller modules worth of settings.
 class CSharedConfig
 {
   protected:
@@ -66,71 +95,42 @@ class CSharedConfig
 
     void PrintTranscodingSettings();  
 
+    // The Object in control of paths
+    PathFinder* pathFinder;
+
+		// there is absolutely no need for more than one plugin dir
+    //PluginDirectories* pluginDirectories;
+		std::string				pluginDirectory() { return m_pluginDirectory; }
+		void							setPluginDirectory(std::string dir) { m_pluginDirectory = dir; }
+
+    // Make the smaller objects that we will use
+    SharedObjects* sharedObjects;
+    NetworkSettings* networkSettings;
+    GlobalSettings* globalSettings;
+    DeviceMapping* deviceMapping;
+    ContentDirectory* contentDirectory;
+    DatabaseSettings* databaseSettings;
+    TranscodingSettings* transcodingSettings;
+
+    // Instance Settings
     std::string GetAppName();
     std::string GetAppFullname();
     std::string GetAppVersion();
-	
-    std::string FriendlyName();
-    void        FriendlyName(std::string p_sFriendlyName);
-    
-  
-    std::string GetHostname();
-    std::string GetUUID();
-  
     std::string GetOSName();
     std::string GetOSVersion();
-  
-    std::string GetLocalCharset();
-    bool SetLocalCharset(std::string p_sCharset);
-	
-    std::string GetIPv4Address() { return m_sIP; }
-    std::string GetNetInterface() { return m_sNetInterface; }
-    bool SetNetInterface(std::string p_sNetInterface);
-  
-    unsigned int GetHTTPPort() { return m_nHTTPPort; }
-    bool SetHTTPPort(unsigned int p_nHTTPPort);
-  
+
+    // Command Line Options
+    void SetConfigFileName(std::string p_sConfigFileName) {
+      if (!p_sConfigFileName.empty()) m_sFileName = p_sConfigFileName;
+    }  
+    std::string GetConfigFileName() { return m_sFileName; }
+
     //std::string GetConfigDir();
-  
-    void SetConfigDir(std::string p_sConfigDir) { m_sConfigDir = p_sConfigDir; }
-  
-    void SetConfigFileName(std::string p_sConfigFileName) { m_sConfigFileName = p_sConfigFileName; }  
-    std::string GetConfigFileName() { return m_sConfigFileName; }
-  
-    void SetDbFileName(std::string p_sDbFileName) { m_sDbFileName = p_sDbFileName; }
-    std::string GetDbFileName() { return m_sDbFileName; }
-  
-    void SetVFolderConfigFileName(std::string p_sVFolderFileName) { m_sVFolderFileName = p_sVFolderFileName; }
-    std::string GetVFolderConfigFileName() { return m_sVFolderFileName; }
-  
-		void TempDir(std::string p_sTempDir) { m_sTempDir = p_sTempDir; }
-		std::string TempDir() { return m_sTempDir; }
 
 		void dataDir(std::string dir) { m_dataDir = appendTrailingSlash(dir); }
 		std::string dataDir() { return m_dataDir; }
 		
-		void pluginDir(std::string dir) { m_pluginDir = appendTrailingSlash(dir); }
-		std::string pluginDir() { return m_pluginDir; }
-	
-    // shared dir
-    int SharedDirCount();
-    std::string GetSharedDir(int p_nIdx);  
-    void AddSharedDirectory(std::string p_sDirectory);
-    void RemoveSharedDirectory(int p_nIdx);
-  
-    // shared iTunes
-    int SharedITunesCount();
-    std::string GetSharedITunes(int p_nIdx);  
-    void AddSharedITunes(std::string p_sITunes);
-    void RemoveSharedITunes(int p_nIdx);
-  
-    // allowed ip
-    unsigned int AllowedIPCount();
-    std::string GetAllowedIP(unsigned int p_nIdx);
-    bool IsAllowedIP(std::string p_sIPAddress);  
-    bool AddAllowedIP(std::string p_sIPAddress);
-    bool RemoveAllowedIP(unsigned int p_nIndex);  
-  
+    std::string GetUUID();
   
 		// album art
 		static bool isAlbumArtFile(const std::string fileName);
@@ -138,53 +138,37 @@ class CSharedConfig
     unsigned int GetFuppesInstanceCount();
     CFuppes* GetFuppesInstance(unsigned int p_nIndex);
     void AddFuppesInstance(CFuppes* pFuppes);
-  
-  	
-		CConfigFile* ConfigFile() { return m_pConfigFile; }
-		
-    /*bool UseImageMagick() { return m_pConfigFile->UseImageMagick(); }
-    bool UseTaglib()      { return m_pConfigFile->UseTaglib(); }
-    bool UseLibAvFormat() { return m_pConfigFile->UseLibAvFormat(); }*/
-
-    std::string LameLibName() { return m_pConfigFile->LameLibName(); }
-    std::string TwoLameLibName() { return m_pConfigFile->TwoLameLibName(); }
-    std::string VorbisLibName() { return m_pConfigFile->VorbisLibName(); }
-    std::string MpcLibName() { return m_pConfigFile->MpcLibName(); }
-    std::string FlacLibName() { return m_pConfigFile->FlacLibName(); }
-    std::string FaadLibName() { return m_pConfigFile->FaadLibName(); }
-		std::string Mp4ffLibName() { return m_pConfigFile->Mp4ffLibName(); }
-		std::string MadLibName() { return m_pConfigFile->MadLibName(); }  
     
     std::string CreateTempFileName();
-  
+
+    bool WriteDefaultConfig(std::string p_sFileName);
+
+    // Flushes all unsaved changes to the XMLFile
+    bool Save(void);
+
   private:
     static CSharedConfig* m_Instance;    
+    CXMLDocument* m_pDoc;
       
-    std::string   m_sFriendlyName;
-  
-    CConfigFile*  m_pConfigFile;
-    std::string   m_sConfigDir;
-    std::string   m_sConfigFileName;
-    std::string   m_sDbFileName;
-    std::string   m_sVFolderFileName;
+    std::string   m_sFileName;
+    std::string   m_sBaseConfigFile;
 
-    std::string   m_sHostname;
-    std::string   m_sIP;
-    std::string   m_sNetInterface;
     std::string   m_sUUID;
     std::string   m_sOSName;
     std::string   m_sOSVersion;  
-    std::string   m_sTempDir;
 		std::string		m_dataDir;
-		std::string		m_pluginDir;
-    unsigned int  m_nHTTPPort;
 
     std::vector<CFuppes*> m_vFuppesInstances;
 
+
+		std::string				m_pluginDirectory;
+		
+    // Actually parsing the config files
     bool ReadConfigFile();
-    bool ResolveHostAndIP();
-    bool ResolveIPByHostname();
-    bool ResolveIPByInterface(std::string p_sInterfaceName);
+
+    bool FindConfigPaths(void);
+    bool CreateConfigFile(void);
+
     void GetOSInfo();  
 };
 

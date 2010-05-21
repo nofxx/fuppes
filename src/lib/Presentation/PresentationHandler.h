@@ -1,3 +1,4 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            PresentationHandler.h
  *
@@ -42,17 +43,19 @@ typedef enum tagPRESENTATION_PAGE
   PRESENTATION_PAGE_UNKNOWN,
   PRESENTATION_BINARY_IMAGE,
 	PRESENTATION_STYLESHEET,
+  PRESENTATION_JAVASCRIPT,
   PRESENTATION_PAGE_INDEX,
   PRESENTATION_PAGE_ABOUT,
   PRESENTATION_PAGE_HELP,
   PRESENTATION_PAGE_OPTIONS,
-  PRESENTATION_PAGE_STATUS
+  PRESENTATION_PAGE_STATUS,
+  PRESENTATION_PAGE_JSTEST
 }PRESENTATION_PAGE;
 
 class CPresentationHandler
 {
   public:
-    CPresentationHandler();
+    CPresentationHandler(std::string httpServerUrl);
     virtual ~CPresentationHandler();
 
 
@@ -98,6 +101,12 @@ class CPresentationHandler
      */
     std::string BuildFuppesDeviceList(CFuppes* pFuppes);
 
+    std::string buildObjectStatusTable();
+
+    std::string GetJsTestHTML();
+
+
+    std::string m_httpServerUrl;
 };
 
 #endif // _PRESENTATIONHANDLER_H

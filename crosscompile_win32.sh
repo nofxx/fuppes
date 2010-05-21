@@ -626,12 +626,12 @@ fi
 if test "$HAVE_FFMPEGTHUMBNAILER" == "yes"; then
 
   echo "start building ffmpegthumbnailer"
-  loadpkt "ffmpegthumbnailer-1.5.6" ".tar.gz" \
+  loadpkt "ffmpegthumbnailer-2.0.0" ".tar.gz" \
           "http://ffmpegthumbnailer.googlecode.com/files/"
 
-  sed -i -e 's/-version-info 3:3:0/-no-undefined -version-info 3:3:0/' Makefile.am
-
-  autoreconf -vfi
+  #sed -i -e 's/-version-info 3:3:0/-no-undefined -version-info 3:3:0/' Makefile.am
+  #autoreconf -vfi
+  
   ./configure --host=$HOST --prefix=$PREFIX
   $MAKE
   $MAKE_INSTALL

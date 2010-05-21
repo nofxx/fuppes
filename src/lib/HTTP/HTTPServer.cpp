@@ -138,13 +138,13 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
   // set local end point
 	local_ep.sin_family      = AF_INET;
 	local_ep.sin_addr.s_addr = inet_addr(p_sIPAddress.c_str());
-	local_ep.sin_port				 = htons(CSharedConfig::Shared()->GetHTTPPort());
+	local_ep.sin_port				 = htons(CSharedConfig::Shared()->networkSettings->GetHTTPPort());
 	memset(&(local_ep.sin_zero), '\0', 8);
 	
   // bind the socket
 	nRet = bind(m_Socket, (struct sockaddr*)&local_ep, sizeof(local_ep));	
   if(nRet == -1)
-    throw fuppes::Exception(__FILE__, __LINE__, "failed to bind socket to : %s:%d", p_sIPAddress.c_str(), CSharedConfig::Shared()->GetHTTPPort());
+    throw fuppes::Exception(__FILE__, __LINE__, "failed to bind socket to : %s:%d", p_sIPAddress.c_str(), CSharedConfig::Shared()->networkSettings->GetHTTPPort());
   
   // fetch local end point to get port number on random ports
 	socklen_t size = sizeof(local_ep);
@@ -191,7 +191,9 @@ void CHTTPServer::Stop()
 
   // stop accept thread
   m_bBreakAccept = true;
-	stop();
+
+  close(); // stop and close thread
+  
 	//wait();
   /*if(accept_thread) {
     fuppesThreadCancel(accept_thread);
@@ -398,10 +400,13 @@ void HTTPSessionStore::uninit() // static
     return;
 
 #warning todo: clear unfinished sessions
-  m_instance->stop();  
+
+  // stop and close thread
+  m_instance->close();
   cout << m_instance->m_finishedSessions.size() << " finished sessions left" << endl;
   cout << m_instance->m_sessions.size() << " running sessions left" << endl;
-  
+
+
   delete m_instance;
   m_instance = NULL;
 }
@@ -439,10 +444,16 @@ void HTTPSessionStore::run()
     m_finishedSessions.clear();
 
     m_mutex.unlock();
-    msleep(2000);
+    msleep(500);
   }
 }
 
+
+HTTPSession::~HTTPSession()
+{
+  // stop and close thread
+  close();
+}
 
 /** Session-loop
   */
@@ -481,7 +492,7 @@ void HTTPSession::run()
 	cout << "IP: " << ip << " MAC: " << mac << endl;
   */
 	
-  while(bKeepAlive)
+  while(bKeepAlive && !this->stopRequested())
   {  
     // receive HTTP-request
     bResult = ReceiveRequest(pSession, pRequest);  
@@ -494,7 +505,7 @@ void HTTPSession::run()
     // end receive
     
     // check if requesting IP is allowed to access
-    if(CSharedConfig::Shared()->IsAllowedIP(ip)) {
+    if(CSharedConfig::Shared()->networkSettings->IsAllowedIP(ip)) {
       // build response
       bResult = pHandler->HandleRequest(pRequest, pResponse);
       if(!bResult)
@@ -774,7 +785,7 @@ bool SendResponse(HTTPSession* p_Session, CHTTPMessage* p_Response, CHTTPMessage
   { 
 	  // log
     //CSharedLog::Log(L_DBG, __FILE__, __LINE__, "send response %s\n", p_Response->GetMessageAsString().c_str());
-    Log::log(Log::http, Log::debug, __FILE__, __LINE__, "send response %s\n", p_Response->GetMessageAsString().c_str());
+    //Log::log(Log::http, Log::debug, __FILE__, __LINE__, "send response %s\n", p_Response->GetMessageAsString().c_str());
         
     // send
     nRet = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetMessageAsString().c_str(), (int)strlen(p_Response->GetMessageAsString().c_str()));

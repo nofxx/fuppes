@@ -1,9 +1,10 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            PresentationHandler.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -33,7 +34,9 @@
 #include "../Common/Common.h"
 #include "../ContentDirectory/ContentDatabase.h"
 #include "../ContentDirectory/DatabaseConnection.h"
+#ifdef HAVE_VFOLDER
 #include "../ContentDirectory/VirtualContainerMgr.h"
+#endif
 #include "../ContentDirectory/FileDetails.h"
 #include "../Transcoding/TranscodingMgr.h"
 #include "../HTTP/HTTPParser.h"
@@ -47,8 +50,9 @@
 const std::string LOGNAME = "PresentationHandler"; 
 
 
-CPresentationHandler::CPresentationHandler()
+CPresentationHandler::CPresentationHandler(std::string httpServerUrl)
 {
+  m_httpServerUrl = httpServerUrl;
 }
 
 CPresentationHandler::~CPresentationHandler()
@@ -98,7 +102,11 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
   }
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html?db=update") == 0) {
     CSharedConfig::Shared()->Refresh();
-    if(!CContentDatabase::Shared()->IsRebuilding() && !CVirtualContainerMgr::Shared()->IsRebuilding())
+    if(!CContentDatabase::Shared()->IsRebuilding() 
+#ifdef HAVE_VFOLDER
+      && !CVirtualContainerMgr::Shared()->IsRebuilding()
+#endif
+      )
       CContentDatabase::Shared()->UpdateDB();
 
     nPresentationPage = PRESENTATION_PAGE_OPTIONS;
@@ -107,8 +115,14 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
   }
 	else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html?vcont=rebuild") == 0) {
     CSharedConfig::Shared()->Refresh();
-    if(!CContentDatabase::Shared()->IsRebuilding() && !CVirtualContainerMgr::Shared()->IsRebuilding())
+    if(!CContentDatabase::Shared()->IsRebuilding() 
+#ifdef HAVE_VFOLDER
+      && !CVirtualContainerMgr::Shared()->IsRebuilding()
+#endif
+      )
+#ifdef HAVE_VFOLDER
       CVirtualContainerMgr::Shared()->RebuildContainerList();
+#endif
 
     nPresentationPage = PRESENTATION_PAGE_OPTIONS;
     sContent = this->GetOptionsHTML();
@@ -123,29 +137,63 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
     nPresentationPage = PRESENTATION_PAGE_STATUS;
     sContent = this->GetConfigHTML(pMessage);
     sPageName = "Configuration";
-  }        
+  }
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/jstest.html") == 0) {
+    nPresentationPage = PRESENTATION_PAGE_JSTEST;
+    sContent = this->GetJsTestHTML();
+    sPageName = "Configuration";
+  }
+
+#warning todo add http cache fields to the response header
   
-  
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/fuppes-small.png") == 0) {
+  // device icons
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/fuppes-icon-50x50.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
-		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "fuppes-small.png");
-  }  
+		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "fuppes-icon-50x50.png");
+    pResult->SetContentType("image/png");
+  }
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/fuppes-icon-50x50.jpg") == 0) {
+    nPresentationPage = PRESENTATION_BINARY_IMAGE;
+		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "fuppes-icon-50x50.jpg");
+    pResult->SetContentType("image/jpeg");
+  }
+  // webinterface images
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/fuppes-logo.png") == 0) {
+    nPresentationPage = PRESENTATION_BINARY_IMAGE;
+		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "fuppes-logo.png");
+    pResult->SetContentType("image/png");
+  }
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/header-gradient.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
 		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "header-gradient.png");
+    pResult->SetContentType("image/png");
   }  
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/header-gradient-small.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
 		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "header-gradient-small.png");
+    pResult->SetContentType("image/png");
+  }
+
+  // mootools
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/mootools-1.2.4-core-yc.js") == 0) {
+    nPresentationPage = PRESENTATION_JAVASCRIPT;
+		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "mootools-1.2.4-core-yc.js");
+  }
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/fuppes.js") == 0) {
+    nPresentationPage = PRESENTATION_JAVASCRIPT;
+		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "fuppes.js");
   }
   
   if(nPresentationPage == PRESENTATION_BINARY_IMAGE) {
     pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    
-    pResult->SetContentType("image/png"); // HTTP_CONTENT_TYPE_IMAGE_PNG
   }
 	else if(nPresentationPage == PRESENTATION_STYLESHEET) {
     pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    
     pResult->SetContentType("text/css");
+  }
+  else if(nPresentationPage == PRESENTATION_JAVASCRIPT) {
+    pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    
+    pResult->SetContentType("text/javascript");
   }
   else if((nPresentationPage != PRESENTATION_BINARY_IMAGE) && (nPresentationPage != PRESENTATION_PAGE_UNKNOWN))
   {   
@@ -176,38 +224,17 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE /*p_nPresentat
   sResult << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n";
   sResult << "<head>";  
   sResult << "<title>" << CSharedConfig::Shared()->GetAppName() << " - " << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion();
-  sResult << " (" << CSharedConfig::Shared()->GetHostname() << ")";
+  sResult << " (" << CSharedConfig::Shared()->networkSettings->GetHostname() << ")";
   sResult << "</title>" << endl;
 
 	//sResult << "<meta http-equiv=\"Content-Script-Type\" content=\"text/javascript\">" << endl;
 	sResult << "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">" << endl;
   sResult << "<meta http-equiv=\"Content-Style-Type\" content=\"text/css\">" << endl; 
 	sResult << "<link href=\"/presentation/style.css\" rel=\"stylesheet\" type=\"text/css\" media=\"screen\" />" << endl;
-	
+
+	sResult << "<script type=\"text/javascript\" src=\"/presentation/mootools-1.2.4-core-yc.js\"></script>" << endl;
+	sResult << "<script type=\"text/javascript\" src=\"/presentation/fuppes.js\"></script>" << endl;
   
-  /*sResult << "<script type=\"text/javascript\"> \r\n"
-    "function Toggle(Id) { \r\n"
-    "  var remote = document.getElementById('Remote'+Id);"
-    "  var img    = document.getElementById('Pic'+Id);\r\n"
-    "  if (remote.style.display == 'none') { \r\n"
-    "    remote.style.display = '';"
-    "    img.src = \"minus.gif\";"
-    "  }"
-    "  else {"
-    "    remote.style.display = 'none';"
-    "    img.src = \"plus.gif\";"
-    "  }"
-    "} \r\n";
-    
-  sResult << 
-    "function CloseAll(Count) { "
-    "  var i = 0; "
-    "  for(i = 0; i < Count; i++) { "
-    "    Toggle(i); "
-    "  } "
-    "}"; */
-    
-  //sResult << "</script>";  
   sResult << "</head>";
   /* header end */
   
@@ -217,15 +244,16 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE /*p_nPresentat
   //pFuppes->GetRemoteDevices().size()
   
   /* title */
-  sResult << "<div id=\"title\">" << endl;
-  sResult << "<img src=\"/presentation/fuppes-small.png\" style=\"float: left; margin-top: 10px; margin-left: 5px;\" />" << endl;
-  
+  sResult << "<div id=\"header\">" << endl;
+
+  sResult << "<div id=\"logo\"></div>" << endl;
+
   sResult << "<p>" << endl <<
     "FUPPES - Free UPnP Entertainment Service<br />" << endl <<
     "<span>" <<
     "Version: " << CSharedConfig::Shared()->GetAppVersion() << " &bull; " <<
-    "Host: "    << CSharedConfig::Shared()->GetHostname() << " &bull; " <<
-    "Address: " << CSharedConfig::Shared()->GetIPv4Address() <<
+    "Host: "    << CSharedConfig::Shared()->networkSettings->GetHostname() << " &bull; " <<
+    "Address: " << CSharedConfig::Shared()->networkSettings->GetIPv4Address() <<
     "</span>"   << endl <<
     "</p>" << endl;
   
@@ -261,7 +289,7 @@ std::string CPresentationHandler::GetPageFooter(PRESENTATION_PAGE /*p_nPresentat
 {
   std::stringstream sResult;
   
-  sResult << "<p style=\"padding-top: 20pt; text-align: center;\"><small>copyright &copy; 2005-2009 Ulrich V&ouml;lkel</small></p>";
+  sResult << "<p style=\"padding-top: 20pt; text-align: center;\"><small>copyright &copy; 2005-2010 Ulrich V&ouml;lkel</small></p>";
 
   sResult << "</div>" << endl; // #content
   sResult << "</div>" << endl; // #mainframe
@@ -293,20 +321,42 @@ std::string CPresentationHandler::GetIndexHTML()
   
   sResult << "<p>" << endl;
   sResult << "Version: " << CSharedConfig::Shared()->GetAppVersion() << "<br />" << endl;
-  sResult << "Hostname: " << CSharedConfig::Shared()->GetHostname() << "<br />" << endl;
+  sResult << "Hostname: " << CSharedConfig::Shared()->networkSettings->GetHostname() << "<br />" << endl;
   sResult << "OS: " << CSharedConfig::Shared()->GetOSName() << " " << CSharedConfig::Shared()->GetOSVersion() << "<br />" << endl;
   //sResult << "SQLite: " << CContentDatabase::Shared()->GetLibVersion() << endl;
   sResult << "</p>" << endl;
   
   sResult << "<p>" << endl;
-  sResult << "build at: " << __DATE__ << " - " << __TIME__ "<br />" << endl;
+  sResult << "build at: " << __DATE__ << " - " << __TIME__ << "<br />" << endl;
   sResult << "build with: " << __VERSION__ << endl;
   sResult << "</p>" << endl;
   
   sResult << "<p>" << endl;
   sResult << "<a href=\"http://sourceforge.net/projects/fuppes/\">http://sourceforge.net/projects/fuppes/</a><br />" << endl;
   sResult << "</p>" << endl;
+
+
+  // uptime
+  fuppes::DateTime now = fuppes::DateTime::now();
+  int uptime = now.toInt() - CSharedConfig::Shared()->GetFuppesInstance(0)->startTime().toInt();
+
+
+  int days;
+  int hours;
+  int minutes;
+  int seconds;
+
+  seconds = uptime % 60;
+  minutes = uptime / 60;
+  hours = minutes / 60;
+  minutes = minutes % 60;
+  days = hours / 24;
+  hours = hours % 24;
+
   
+  sResult << "<p>" << endl;
+  sResult << "uptime: " << days << " days " << hours << " hours " << minutes << " minutes " << seconds << " seconds" << "<br />" << endl;
+  sResult << "</p>" << endl;
   
   sResult << "<h1>remote devices</h1>";
   sResult << BuildFuppesDeviceList(CSharedConfig::Shared()->GetFuppesInstance(0));
@@ -348,16 +398,24 @@ std::string CPresentationHandler::GetOptionsHTML()
 
   //((CFuppes*)m_vFuppesInstances[0])->GetContentDirectory()->BuildDB();
   sResult << "<h1>database options</h1>" << endl;
-  if(!CContentDatabase::Shared()->IsRebuilding() && !CVirtualContainerMgr::Shared()->IsRebuilding())  {
+  if(!CContentDatabase::Shared()->IsRebuilding() 
+#ifdef HAVE_VFOLDER
+    && !CVirtualContainerMgr::Shared()->IsRebuilding()
+#endif
+    )  {
     sResult << "<a href=\"/presentation/options.html?db=rebuild\">rebuild database</a><br />" << endl;
     sResult << "<a href=\"/presentation/options.html?db=update\">update database</a><br />" << endl;
+#ifdef HAVE_VFOLDER
 		sResult << "<a href=\"/presentation/options.html?vcont=rebuild\">rebuild virtual container</a>" << endl;
+#endif
   }
   else {
 		if(CContentDatabase::Shared()->IsRebuilding())
 			sResult << "database rebuild/update in progress" << endl;
+#ifdef HAVE_VFOLDER
 		else if(CVirtualContainerMgr::Shared()->IsRebuilding())
 			sResult << "virtual container rebuild in progress" << endl;
+#endif
 	}
   
   return sResult.str().c_str();
@@ -366,24 +424,45 @@ std::string CPresentationHandler::GetOptionsHTML()
 std::string CPresentationHandler::GetStatusHTML()
 {
   std::stringstream sResult;  
-  
-  //sResult << "<h2>Status</h2>" << endl;
-  //*p_psImgPath = "Status";
-  
-  //sResult
-  //CContentDatabase* pDb = CContentDatabase::Shared(); // new CContentDatabase();
-
-  OBJECT_TYPE nType = OBJECT_TYPE_UNKNOWN;
-  
-  std::stringstream sSQL;
-  sSQL << "select TYPE, count(*) as VALUE from OBJECTS group by TYPE;";
-
-	CSQLQuery* qry = CDatabase::query();
-	qry->select(sSQL.str());
-  
-  
+ 
   // Database status
   sResult << "<h1>database status</h1>" << endl;  
+  sResult << buildObjectStatusTable();
+
+  // transcoding  
+  string sTranscoding;
+  sResult << "<h1>transcoding</h1>";
+  CTranscodingMgr::Shared()->PrintTranscodingSettings(&sTranscoding);
+  sResult << sTranscoding;
+  
+  // plugins
+  sResult << "<h1>plugins</h1>" << CPluginMgr::printInfo(true);
+  
+  // system status
+  sResult << "<h1>system status</h1>" << endl;  
+  
+  sResult << "<p>" << endl;
+  sResult << "UUID: " << CSharedConfig::Shared()->GetFuppesInstance(0)->GetUUID() << "<br />";    
+  sResult << "</p>" << endl;
+  
+  // device settings
+  sResult << "<h1>device settings</h1>" << endl;
+  string sDeviceSettings;
+  CDeviceIdentificationMgr::Shared()->PrintSettings(&sDeviceSettings);
+  sResult << sDeviceSettings << endl;
+  
+  return sResult.str();  
+}
+
+std::string CPresentationHandler::buildObjectStatusTable()
+{
+  OBJECT_TYPE nType = OBJECT_TYPE_UNKNOWN;
+  std::stringstream sResult;
+  
+	SQLQuery qry;
+  string sql = qry.build(SQL_GET_OBJECT_TYPE_COUNT, 0);
+	qry.select(sql);
+  
   sResult << 
     "<table rules=\"all\" style=\"font-size: 10pt; border-style: solid; border-width: 1px; border-color: #000000;\" cellspacing=\"0\" width=\"400\">" << endl <<
       "<thead>" << endl <<
@@ -395,168 +474,30 @@ std::string CPresentationHandler::GetStatusHTML()
       "<tbody>" << endl;  
 
 
-  while(!qry->eof()) {
-    nType = (OBJECT_TYPE)qry->result()->asInt("TYPE");
+  while(!qry.eof()) {
+    nType = (OBJECT_TYPE)qry.result()->asInt("TYPE");
     
     sResult << "<tr>" << endl;
     sResult << "<td>" << CFileDetails::Shared()->GetObjectTypeAsStr(nType) << "</td>" << endl;
-    sResult << "<td>" << qry->result()->asString("VALUE") << "</td>" << endl;    
+    sResult << "<td>" << qry.result()->asString("VALUE") << "</td>" << endl;    
     sResult << "</tr>" << endl;
     
-    qry->next();
+    qry.next();
   }
-	delete qry;
     
   sResult <<
       "</tbody>" << endl <<   
     "</table>" << endl;
 
-  //delete pDb;
-  // end Database status
-  
-  
-  string sTranscoding;
-  sResult << "<h1>transcoding</h1>";
-  CTranscodingMgr::Shared()->PrintTranscodingSettings(&sTranscoding);
-  sResult << sTranscoding;
-  
+  return sResult.str();
 
-  sResult << "<h1>plugins</h1>" << CPluginMgr::printInfo(true);
-  
-  
-  /*sResult << "<h1>build options</h1>" <<
-  "<table>" <<    
-    "<tr>" <<
-      "<th>option</th>" <<
-      "<th>enabled</th>" <<
-    "</tr>" <<
-    "<tr>" <<
-      "<td>iconv</td>" <<
-      #ifdef HAVE_ICONV
-      "<td>true</td>" <<
-      #else
-      "<td>false</td>" <<
-      #endif
-    "</tr>" <<
-    #ifndef WIN32
-    "<tr>" <<
-      "<td>uuid</td>" <<
-      #ifdef HAVE_UUID
-      "<td>true</td>" <<
-      #else
-      "<td>false</td>" <<
-      #endif
-    "</tr>" <<
-    #endif
-    "<tr>" <<
-      "<td>taglib</td>" <<
-      #ifdef HAVE_TAGLIB
-      "<td>true</td>" <<
-      #else
-      "<td>false</td>" <<
-      #endif     
-    "</tr>" <<
-    "<tr>" <<
-      "<td>imageMagick</td>" <<
-      #ifdef HAVE_IMAGEMAGICK
-      "<td>true</td>" <<
-      #else
-      "<td>false</td>" <<
-      #endif      
-    "</tr>" <<
-    "<tr>" <<
-      "<td>libavformat (ffmpeg)</td>" <<
-      #ifdef HAVE_LIBAVFORMAT
-      "<td>true</td>" <<
-      #else
-      "<td>false</td>" <<
-      #endif    
-    "</tr>" <<   
-    "<tr>" <<
-      "<td>video transcoding (experimental)</td>" <<
-      #ifdef ENABLE_VIDEO_TRANSCODING
-      "<td>true</td>" <<
-      #else
-      "<td>false</td>" <<
-      #endif    
-    "</tr>" <<   
-    "<tr>" <<
-      "<td>lame</td>" <<
-      #ifdef HAVE_LAME
-      "<td>true</td>" <<
-      #else
-      "<td>false</td>" <<
-      #endif      
-    "</tr>" << 
-    "<tr>" <<
-      "<td>twolame</td>" <<
-      #ifdef HAVE_TWOLAME
-      "<td>true</td>" <<
-      #else
-      "<td>false</td>" <<
-      #endif     
-    "</tr>" <<  
-    "<tr>" <<
-      "<td>ogg/vorbis</td>" <<
-      #ifdef HAVE_VORBIS
-      "<td>true</td>" <<
-      #else
-      "<td>false</td>" <<
-      #endif     
-    "</tr>" << 
-    "<tr>" <<
-      "<td>musepack</td>" <<
-      #ifdef HAVE_MUSEPACK
-      "<td>true</td>" <<
-      #else
-      "<td>false</td>" <<
-      #endif     
-    "</tr>" <<
-    "<tr>" <<
-      "<td>flac</td>" <<
-      #ifdef HAVE_FLAC
-      "<td>true</td>" <<
-      #else
-      "<td>false</td>" <<
-      #endif     
-    "</tr>" <<    
-    "<tr>" <<
-      "<td>flac</td>" <<
-      #ifdef HAVE_FAAD
-      #ifdef HAVE_MP4FF_H
-      "<td>true (aac/mp4)</td>" <<
-      #else
-      "<td>true (aac/NO mp4)</td>" <<
-      #endif
-      #else
-      "<td>false</td>" <<
-      #endif     
-    "</tr>" <<    
-  "</table>";*/
-  
-  // system status
-  sResult << "<h1>system status</h1>" << endl;  
-  
-  sResult << "<p>" << endl;
-  sResult << "UUID: " << CSharedConfig::Shared()->GetFuppesInstance(0)->GetUUID() << "<br />";    
-  sResult << "</p>" << endl;
-  // end system status
-  
-  
-  // device settings
-  sResult << "<h1>device settings</h1>" << endl;
-  string sDeviceSettings;
-  CDeviceIdentificationMgr::Shared()->PrintSettings(&sDeviceSettings);
-  sResult << sDeviceSettings << endl;
-  // end device settings
-  
-  return sResult.str().c_str();  
 }
-
 
 std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)
 {
   std::stringstream sResult;  
+
+  CSharedConfig* sharedCfg = CSharedConfig::Shared();
 
   // handle config changes
   if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_POST)
@@ -570,17 +511,17 @@ std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)
 	
     // remove shared objects(s)
     stringstream sVar;
-    for(int i = CSharedConfig::Shared()->SharedDirCount() - 1; i >= 0; i--) {
+    for(int i = sharedCfg->sharedObjects->SharedDirCount() - 1; i >= 0; i--) {
       sVar << "shared_dir_" << i;      
       if(pRequest->PostVarExists(sVar.str()))      
-        CSharedConfig::Shared()->RemoveSharedDirectory(i);      
+        sharedCfg->sharedObjects->RemoveSharedDirectory(i);      
       sVar.str("");
     }    
     
-    for(int i = CSharedConfig::Shared()->SharedITunesCount() - 1; i >= 0; i--) {
+    for(int i = sharedCfg->sharedObjects->SharedITunesCount() - 1; i >= 0; i--) {
       sVar << "shared_itunes_" << i;      
       if(pRequest->PostVarExists(sVar.str()))      
-        CSharedConfig::Shared()->RemoveSharedITunes(i);      
+        sharedCfg->sharedObjects->RemoveSharedITunes(i);      
       sVar.str("");
     }    
     
@@ -588,16 +529,16 @@ std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)
     if(pRequest->PostVarExists("new_obj") && (pRequest->GetPostVar("new_obj").length() > 0))
     {     
       if(pRequest->GetPostVar("new_obj_type").compare("dir") == 0) {
-        CSharedConfig::Shared()->AddSharedDirectory(pRequest->GetPostVar("new_obj"));
+        sharedCfg->sharedObjects->AddSharedDirectory(pRequest->GetPostVar("new_obj"));
       }
       else if(pRequest->GetPostVar("new_obj_type").compare("itunes") == 0) {
-        CSharedConfig::Shared()->AddSharedITunes(pRequest->GetPostVar("new_obj"));
+        sharedCfg->sharedObjects->AddSharedITunes(pRequest->GetPostVar("new_obj"));
       }
     }
 
     // local_charset
     if(pRequest->PostVarExists("local_charset")) {
-      CSharedConfig::Shared()->SetLocalCharset(pRequest->GetPostVar("local_charset"));
+      sharedCfg->contentDirectory->SetLocalCharset(pRequest->GetPostVar("local_charset"));
     }    
     
     /* playlist_representation */
@@ -615,32 +556,32 @@ std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)
     
     // ip address
     if(pRequest->PostVarExists("net_interface") && (pRequest->GetPostVar("net_interface").length() > 0)) {
-      CSharedConfig::Shared()->SetNetInterface(pRequest->GetPostVar("net_interface"));
+      sharedCfg->networkSettings->SetNetInterface(pRequest->GetPostVar("net_interface"));
     }
     
     // http port
     if(pRequest->PostVarExists("http_port") && (pRequest->GetPostVar("http_port").length() > 0)) {
       int nHTTPPort = atoi(pRequest->GetPostVar("http_port").c_str());      
-      CSharedConfig::Shared()->SetHTTPPort(nHTTPPort);
+      sharedCfg->networkSettings->SetHTTPPort(nHTTPPort);
     }
     
     // add allowed ip
     if(pRequest->PostVarExists("new_allowed_ip") && (pRequest->GetPostVar("new_allowed_ip").length() > 0)) {     
-      CSharedConfig::Shared()->AddAllowedIP(pRequest->GetPostVar("new_allowed_ip"));
+      sharedCfg->networkSettings->AddAllowedIP(pRequest->GetPostVar("new_allowed_ip"));
     }
     
     // remove allowed ip
-    for(int i = CSharedConfig::Shared()->AllowedIPCount() - 1; i >= 0; i--) {
+    for(int i = sharedCfg->networkSettings->AllowedIPCount() - 1; i >= 0; i--) {
       sVar << "allowed_ip_" << i;      
       if(pRequest->PostVarExists(sVar.str()))      
-        CSharedConfig::Shared()->RemoveAllowedIP(i);      
+        sharedCfg->networkSettings->RemoveAllowedIP(i);      
       sVar.str("");
     }        
   }
   
   
   sResult << "<strong>Device and file settings are currently not configurable via this webinterface.<br />";
-  sResult << "Please edit the file: " << CSharedConfig::Shared()->GetConfigFileName() << "</strong>" << endl;
+  sResult << "Please edit the file: " << sharedCfg->GetConfigFileName() << "</strong>" << endl;
   
   /* show config page */
   sResult << "<h1>ContentDirectory settings</h1>" << endl;
@@ -662,21 +603,20 @@ std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)
                "<tbody>" << endl;
   
   // dirs
-  int i;
-  for(i = 0; i < CSharedConfig::Shared()->SharedDirCount(); i++) {
+  for(int i = 0; i < sharedCfg->sharedObjects->SharedDirCount(); i++) {
     sResult << "<tr>" << endl;    
     sResult << "<td><input type=\"checkbox\" name=\"shared_dir_" << i << "\" value=\"remove\"></td>" << endl;
     sResult << "<td>dir</td>" << endl;
-    sResult << "<td>" << CSharedConfig::Shared()->GetSharedDir(i) << "</td>" << endl;
+    sResult << "<td>" << sharedCfg->sharedObjects->GetSharedDir(i) << "</td>" << endl;
     sResult << "</tr>" << endl;
   }
   
   // itunes
-  for(i = 0; i < CSharedConfig::Shared()->SharedITunesCount(); i++) {
+  for(int i = 0; i < sharedCfg->sharedObjects->SharedITunesCount(); i++) {
     sResult << "<tr>" << endl;    
     sResult << "<td><input type=\"checkbox\" name=\"shared_itunes_" << i << "\" value=\"remove\"></td>" << endl;   
     sResult << "<td>iTunes</td>" << endl;    
-    sResult << "<td>" << CSharedConfig::Shared()->GetSharedITunes(i) << "</td>" << endl;
+    sResult << "<td>" << sharedCfg->sharedObjects->GetSharedITunes(i) << "</td>" << endl;
     sResult << "</tr>" << endl;
   }  
   
@@ -696,7 +636,7 @@ std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)
   /*sResult << "<h2>playlist representation</h2>" << endl;
   sResult << "<p>Choose how playlist items are represented. <br />\"file\" sends playlists as real playlist files (m3u, pls or wpl for a full list see the wiki)<br />" <<
              "\"container\" represents playlists as containers including the playlist items.<br />" << endl;
-             if(CSharedConfig::Shared()->GetDisplaySettings().bShowPlaylistsAsContainers)  
+             if(sharedCfg->GetDisplaySettings().bShowPlaylistsAsContainers)  
              {
                sResult << "<input type=\"radio\" name=\"playlist_representation\" value=\"file\"> file<br />" << endl <<
                           "<input type=\"radio\" name=\"playlist_representation\" value=\"container\" checked=\"checked\"> container<br />" << endl;
@@ -718,7 +658,7 @@ std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)
              "</p>" << endl;
              
   sResult << "<p>" << endl <<
-             "<input name=\"local_charset\" value=\"" << CSharedConfig::Shared()->GetLocalCharset() << "\"/><br />" << endl;
+             "<input name=\"local_charset\" value=\"" << sharedCfg->contentDirectory->GetLocalCharset() << "\"/><br />" << endl;
   sResult << "<input type=\"submit\" />" << endl <<             
              "</p>" << endl;              
              
@@ -729,10 +669,10 @@ std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)
              "some devices can't handle an unlimited length.<br />" << endl <<
              "(e.g. the Telegent TG 100 crashes on receiving file names larger then 101 characters.)<br />" << endl <<
              "0 or empty means unlimited length. a value greater 0 sets the maximum number of characters to be sent.</p>" << endl;
-  //sResult << "<p><strong>Max file name length: " << CSharedConfig::Shared()->GetMaxFileNameLength() << "</strong></p>" << endl;  
+  //sResult << "<p><strong>Max file name length: " << sharedCfg->GetMaxFileNameLength() << "</strong></p>" << endl;  
   
     sResult << "<p>" <<  
-               "<input name=\"max_file_name_length\" value=\"" << CSharedConfig::Shared()->GetMaxFileNameLength() << "\" />" << endl <<
+               "<input name=\"max_file_name_length\" value=\"" << sharedCfg->GetMaxFileNameLength() << "\" />" << endl <<
                "<br />" << endl <<
                "<input type=\"submit\" />" << endl <<             
              "</p>" << endl;  */
@@ -742,8 +682,8 @@ std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)
   
   sResult << "<h2>IP address or network interface name (e.g. eth0, wlan1, ...)/HTTP port</h2>" << endl;  
   sResult << "<p>" <<  
-               "<input name=\"net_interface\" value=\"" << CSharedConfig::Shared()->GetNetInterface() << "\" />" << endl <<  
-               "<input name=\"http_port\" value=\"" << CSharedConfig::Shared()->GetHTTPPort() << "\" />" << endl <<
+               "<input name=\"net_interface\" value=\"" << sharedCfg->networkSettings->GetNetInterface() << "\" />" << endl <<  
+               "<input name=\"http_port\" value=\"" << sharedCfg->networkSettings->GetHTTPPort() << "\" />" << endl <<
                "<br />" << endl <<
                "<input type=\"submit\" />" << endl <<             
              "</p>" << endl;  
@@ -763,10 +703,10 @@ std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)
                  "</tr>" <<
                "</thead>" << endl <<
                "<tbody>" << endl;
-  for(unsigned int i = 0; i < CSharedConfig::Shared()->AllowedIPCount(); i++) {
+  for(unsigned int i = 0; i < sharedCfg->networkSettings->AllowedIPCount(); i++) {
     sResult << "<tr>" << endl;    
     sResult << "<td><input type=\"checkbox\" name=\"allowed_ip_" << i << "\" value=\"remove\"></td>" << endl;   
-    sResult << "<td>" << CSharedConfig::Shared()->GetAllowedIP(i) << "</td>" << endl;
+    sResult << "<td>" << sharedCfg->networkSettings->GetAllowedIP(i) << "</td>" << endl;
     sResult << "</tr>" << endl;
   }
   
@@ -788,51 +728,126 @@ std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)
 /* BuildFuppesDeviceList */
 std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes)
 {
-  stringstream sResult;
+  stringstream result;
 
-  for(unsigned int i = 0; i < pFuppes->GetRemoteDevices().size(); i++)
-  {
+  // sort the devices
+  std::list<CUPnPDevice*> devices;
+  for(unsigned int i = 0; i < pFuppes->GetRemoteDevices().size(); i++) {
+
     CUPnPDevice* pDevice = pFuppes->GetRemoteDevices()[i];
-    
-    sResult << 
-      "<table rules=\"all\" cellspacing=\"0\" width=\"400\">" <<
-        "<thead>";
-    /*sResult << "<tr><th colspan=\"2\"><a href=\"javascript:Klappen(" << i << ")\"><img src=\"plus.gif\" id=\"Pic" << i << "\" border=\"0\">x</a> ";
-    sResult<< pDevice->GetFriendlyName() << "</th></tr>" << endl;*/
-    sResult << "<tr><th colspan=\"2\">" <<
-                 
-                 /*"<div style=\"float: left;\">";
-                 switch(pDevice->GetDeviceType())
-                 {
-                   case UPNP_DEVICE_TYPE_MEDIA_SERVER:
-                     sResult << "<img src=\"" << p_sImgPath << "device-type-media-server.png\" />";
-                     break;
-                   default:
-                     sResult << "<img src=\"" << p_sImgPath << "device-type-unknown.png\" />";                  
-                 }                      
-                 sResult << "</div>" <<  */       
-    
-                 /*"<div style=\"float: right;\">" <<
-                 "<a href=\"javascript:Toggle(" << i << ")\"><!--<img src=\"plus.gif\" id=\"Pic" << i << "\" border=\"0\">-->x</a> " <<
-                 "</div>" << */
-    
-                 pDevice->GetFriendlyName() <<
-               "</th></tr>" << endl;
-    sResult << "</thead>" << endl;
-    
-    sResult << "<tbody id=\"Remote" << i << "\">" << endl; // style=\"display: none;\"
-    //sResult << "<tbody>" << endl;
-    
-    
-    sResult << "<tr><td>Type</td><td>" << pDevice->GetUPnPDeviceTypeAsString() << "</td></tr>" << endl;
-    sResult << "<tr><td>UUID</td><td>" << pDevice->GetUUID() << "</td></tr>" << endl;
-    sResult << "<tr><td>Time Out</td><td style=\"border-style: solid; border-width: 1px;\">" << pDevice->GetTimer()->GetCount() / 60 << "min. " << pDevice->GetTimer()->GetCount() % 60 << "sec.</td></tr>" << endl;
-    //sResult << "<tr><td>Status</td><td>"   << "<i>todo</i>" << "</td></tr>" << endl;
-    
-    sResult << 
-        "<tbody>" <<
-      "</table><br />"  << endl;    
+    if(pDevice->descriptionAvailable())
+      devices.push_front(pDevice);
+    else
+      devices.push_back(pDevice);
   }
+
+
+  std::list<CUPnPDevice*>::iterator iter;
+  int count = 0;
+  for(iter = devices.begin(); iter != devices.end(); iter++) {
+    
+    CUPnPDevice* pDevice = *iter;
+
+    result << "<div class=\"remote-device\">" << endl;
+
+    // icon
+    result << "<div class=\"remote-device-icon\">";
+      if(pDevice->descriptionAvailable()) {
+        result << "device icon";
+      }
+      else {
+       result << "icon loading";
+      }
+    result << "</div>" << endl;
+
+ 
+    // friendly name    
+    result << "<div class=\"remote-device-friendly-name\">";
+    result << pDevice->GetFriendlyName();
+    result << "</div>" << endl;
+
+
+    result << "<div class=\"remote-device-info\">";
+    result << pDevice->GetUPnPDeviceTypeAsString() << " : " << pDevice->GetUPnPDeviceVersion();    
+    result << "</div>" << endl;
+
+    result << "<a href=\"javascript:deviceDetails(" << count << ");\">";
+    result << "details";
+    result << "</a>" << endl;
+
+    // details
+    result << "<div class=\"remote-device-details\" id=\"remote-device-details-" << count << "\">";
+
+
+    result << "<table>" << endl;
+
+    result << "<tr><th colspan=\"2\">details</th></tr>" << endl;
+    
+    // uuid
+    result << "<tr><td>uuid</td><td>";
+    result << pDevice->GetUUID();
+    result << "</td></tr>" << endl;
+    
+    // timeout
+    result << "<tr><td>timeout</td><td>";
+    result << pDevice->GetTimer()->GetCount() / 60 << "min. " << pDevice->GetTimer()->GetCount() % 60 << "sec.";
+    result << "</td></tr>" << endl;
+    
+    // ip : port
+
+    // presentation url
+    result << "<tr><td>presentation</td><td>";
+    result << pDevice->presentationUrl() << "<br />";
+    result << "</td></tr>" << endl;
+    
+    // manufacturer
+    result << "<tr><td>manufacturer</td><td>";
+    result << pDevice->manufacturer() << "<br />";
+    result << "</td></tr>" << endl;
+    
+    // manufacturerUrl
+    result << "<tr><td>manufacturerUrl</td><td>";
+    result << pDevice->manufacturerUrl() << "<br />";
+    result << "</td></tr>" << endl;
+
+
+
+    // descriptionUrl
+    result << "<tr><td>descriptionUrl</td><td>";
+    result << pDevice->descriptionUrl() << "<br />";
+    result << "</td></tr>" << endl;
+    
+
+    result << "</table>" << endl;
+    
+    result << "</div>" << endl; //details
+    
+
+    result << "</div>" << endl; // remote-device
+
+    count++;
+  }
+
+  result << "<div id=\"remote-device-count\" style=\"display: none;\">" << count << "</div>";
   
-  return sResult.str().c_str();
+  return result.str();
+}
+
+
+std::string CPresentationHandler::GetJsTestHTML()
+{
+  std::stringstream sResult;
+  
+  sResult << "<h1>JS test</h1>";
+
+  sResult << "<div>";
+
+  sResult << "<a href=\"javascript:browseDirectChildren(0, 0, 20);\">browse</a>"; // objectId, startIdx, requestCnt
+  sResult << "<div id=\"browse-result\">";
+
+  sResult << "</div>";
+  
+  sResult << "</div>";
+  
+  return sResult.str();
 }

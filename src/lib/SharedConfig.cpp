@@ -27,28 +27,18 @@
 
 #include "SharedConfig.h"
 
-#ifndef WIN32
-#include <unistd.h>
-#include <sys/param.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <net/if.h>
-#endif
-
 #include "Common/Common.h"
 #include "Common/File.h"
-#include "Common/Exception.h"
+#include "Common/Directory.h"
 #include "Common/UUID.h"
-#include "Common/RegEx.h"
+#include "Common/Process.h"
 #include "SharedLog.h"
 
 #include "Transcoding/TranscodingMgr.h"
 #include "DeviceSettings/DeviceIdentificationMgr.h"
 #include "Plugins/Plugin.h"
-#include "Common/Process.h"
+
+#include "Configuration/DefaultConfig.h"
 
 #include <sys/types.h>
 #include <fcntl.h>
@@ -60,11 +50,10 @@
 #include <sys/utsname.h>
 #endif
 
-#ifndef MAXHOSTNAMELEN
-#define MAXHOSTNAMELEN     256
-#endif
-
 using namespace std;
+using namespace fuppes;
+
+static void PrintConfigReadErrors(int error);
 
 CSharedConfig* CSharedConfig::m_Instance = 0;
 
@@ -77,29 +66,92 @@ CSharedConfig* CSharedConfig::Shared()
 
 CSharedConfig::CSharedConfig()
 {
-  m_pConfigFile = NULL;
+  m_sFileName = CONFIG_NAME;
+  m_pDoc = NULL;
+
+  pathFinder = new PathFinder();
+  pathFinder->SetupDefaultPaths();
+
+  /*pluginDirectories = new PluginDirectories();
+  pluginDirectories->SetupDefaultPaths();*/
   
-  // ./configure --enable-default-http-port=PORT
-  #ifdef DEFAULT_HTTP_PORT
-  m_nHTTPPort = DEFAULT_HTTP_PORT;
-  #else
-  m_nHTTPPort = 0;
-  #endif
+  // Create all of the smaller objects
+  sharedObjects = new SharedObjects();
+  networkSettings = new NetworkSettings();
+  globalSettings = new GlobalSettings();
+  deviceMapping = new DeviceMapping();
+  contentDirectory = new ContentDirectory();
+  databaseSettings = new DatabaseSettings();
+  transcodingSettings = new TranscodingSettings();
 }
 
 CSharedConfig::~CSharedConfig()
 {  
-  if(m_pConfigFile != NULL) {
-    delete m_pConfigFile;
-  }
-
 	delete CDeviceIdentificationMgr::Shared();
 	delete CTranscodingMgr::Shared();
+
+  // delete all of the smaller objects
+  delete sharedObjects;
+  delete networkSettings;
+  delete globalSettings;
+  delete deviceMapping;
+  delete contentDirectory;
+  delete databaseSettings;
+  delete transcodingSettings;
+
+  //delete pluginDirectories;
+  delete pathFinder;
 
 	CProcessMgr::uninit();
 	CPluginMgr::uninit();
 }
 
+bool CSharedConfig::FindConfigPaths(void)
+{
+  m_sBaseConfigFile = pathFinder->findInPath(m_sFileName, File::readable);
+  if(m_sBaseConfigFile.empty()) {
+    CSharedLog::Log(L_NORM, __FILE__, __LINE__, "Could not find a readable config file.");
+    return false;
+  }
+  
+  Log::log(Log::config, Log::normal, __FILE__, __LINE__, "Shared (Base) Config File: %s", m_sBaseConfigFile.c_str());
+  cout << "Shared (Base) Config File:" << m_sBaseConfigFile << endl;
+  return true;
+}
+
+bool CSharedConfig::CreateConfigFile(void)
+{
+  // find a writable directory in the path to see if we can do that first
+  m_sBaseConfigFile = pathFinder->findInPath("", Directory::writable); 
+  if (!m_sBaseConfigFile.empty()) {
+    m_sBaseConfigFile += m_sFileName;
+    
+    // Try and write the default config file
+    if(!WriteDefaultConfig(m_sBaseConfigFile)) {
+      CSharedLog::Log(L_NORM, __FILE__, __LINE__, "could not write default configuration to %s", m_sBaseConfigFile.c_str());
+    } else {
+      CSharedLog::Log(L_EXT, __FILE__, __LINE__, "wrote default configuration to %s", m_sBaseConfigFile.c_str());
+      return true;
+    }
+  }
+
+  // create config dir because it might not have been 
+  // - the default config dir should always be the first one in the list
+  string sConfigDir = pathFinder->DefaultPath();
+  if(Directory::create(sConfigDir)) {
+    sConfigDir += m_sFileName;
+    // Try and write the default config file
+    if(!WriteDefaultConfig(sConfigDir)) {
+      CSharedLog::Log(L_NORM, __FILE__, __LINE__, "could not write default configuration to %s", sConfigDir.c_str());
+    }
+    else {
+      CSharedLog::Log(L_EXT, __FILE__, __LINE__, "wrote default configuration to %s", sConfigDir.c_str());
+      return true;
+    }
+  }
+
+  return false;
+}
 
 #ifdef WIN32
 bool CSharedConfig::SetupConfig(std::string applicationDir)
@@ -112,78 +164,34 @@ bool CSharedConfig::SetupConfig(std::string applicationDir)
 	}
   if(m_dataDir.empty())  
     m_dataDir 	= applicationDir + "data/";
-	if(m_pluginDir.empty())
-    m_pluginDir = applicationDir;
+
+  //pluginDirectories->AddPluginPath(applicationDir);
+  m_pluginDirectory = applicationDir;
 #else
 bool CSharedConfig::SetupConfig()
 { 
   if(m_dataDir.empty())  
   	m_dataDir 	= string(FUPPES_DATADIR) + "/";
-	if(m_pluginDir.empty())
-		m_pluginDir = string(FUPPES_PLUGINDIR) + "/";
+
+  //pluginDirectories->AddPluginPath(string(FUPPES_PLUGINDIR) + "/");
+  m_pluginDirectory = string(FUPPES_PLUGINDIR) + "/";
 #endif
 
-  // set config dir
-  if(m_sConfigDir.empty()) {
-    #ifdef WIN32
-    m_sConfigDir = string(getenv("APPDATA")) + "\\FUPPES\\";
-    #else
-    m_sConfigDir = string(getenv("HOME")) + "/.fuppes/";
-    #endif  
+  // this sets the default search path for config files
+  // and then sets them
+  if(!FindConfigPaths()) {
+    if(!CreateConfigFile()) {
+      // We have a serious problem, we should probably quit now
+      return false;
+    }
   }
-		
-  // build file names
-  if(m_sConfigFileName.empty()) {
-    m_sConfigFileName = m_sConfigDir + "fuppes.cfg";
-  }
-  
-  if(m_sDbFileName.empty()) {
-    m_sDbFileName = m_sConfigDir + "fuppes.db";
-  }
-  
-  if(m_sVFolderFileName.empty()) {
-    m_sVFolderFileName = m_sConfigDir + "vfolder.cfg";
-  }
-  
+
   // read the config file
   if(!ReadConfigFile()) {
+    Log::error(Log::config, Log::normal, __FILE__, __LINE__, "The config file failed to load properly.");
     return false;
 	}
-  
-	#warning todo: system checks (e.g. XP firewall)
 
-  // setup temp dir
-  if(m_sTempDir.empty()) {
-    #ifdef WIN32
-    m_sTempDir = getenv("TEMP") + string("\\fuppes\\");
-    #else
-    char* szTmp = getenv("TEMP");
-    if(szTmp != NULL)
-      m_sTempDir = string(szTmp) + "/fuppes/";
-    else
-      m_sTempDir = "/tmp/fuppes/";      
-    #endif
-  }
-	else {
-		if((m_sTempDir.length() > 1) && 
-			 (m_sTempDir.substr(m_sTempDir.length() - 1).compare(upnpPathDelim) != 0)) {
-      m_sTempDir += upnpPathDelim;
-		}
-	}
-	
-	if(!fuppes::Directory::exists(m_sTempDir)) {
-    #ifdef WIN32
-		CreateDirectory(m_sTempDir.c_str(), NULL);
-    #else
-		mkdir(m_sTempDir.c_str(), S_IRWXU | S_IRWXG);
-    #endif
-  }
-	
-  // Network settings
-  if(!ResolveHostAndIP()) {  
-    return false;
-  }
-  
   // read OS information
   GetOSInfo();
   
@@ -198,16 +206,15 @@ bool CSharedConfig::SetupConfig()
 
 	CProcessMgr::init();
 
-	CPluginMgr::init(m_pluginDir);
+	CPluginMgr::init();
 	
   return true;
 }
 
 bool CSharedConfig::Refresh()
 {  
-  delete m_pConfigFile;
-  m_pConfigFile = NULL;
-  
+  // TODO: What needs to be cleaned here before a refresh?
+
   // ... and read the config file
   return ReadConfigFile();
 }
@@ -243,32 +250,19 @@ string CSharedConfig::GetAppVersion()
 	return FUPPES_VERSION;
 }
 
-void CSharedConfig::FriendlyName(std::string p_sFriendlyName)
-{
-  m_sFriendlyName = p_sFriendlyName;
-}
-
-std::string CSharedConfig::FriendlyName()
-{
-  if(m_sFriendlyName.empty()) {
-    m_sFriendlyName = GetAppName() + " " + GetAppVersion() + " (" + GetHostname() + ")";
-  }
-  
-  return m_sFriendlyName;
-}
-
-string CSharedConfig::GetHostname()
-{
-  return m_sHostname;
-}
-
 string CSharedConfig::GetUUID()
 {
 	if(m_sUUID.empty()) {
-		if(m_pConfigFile->useFixedUUID()) {
-			m_sUUID = GenerateUUID(m_sConfigDir + "uuid.txt");
+    bool foundDir = false;
+		if(globalSettings->UseFixedUUID()) {
+      string uuidDir = pathFinder->findInPath("", Directory::exists);
+      if (!uuidDir.empty()) {
+			    m_sUUID = GenerateUUID(uuidDir + UUID_NAME);
+          foundDir = true;
+      }
 		}
-		else {
+		
+    if(!foundDir) { // if you could not find a place to put the file or if no file should be made
 			m_sUUID = GenerateUUID();
 		}
 	}
@@ -276,292 +270,146 @@ string CSharedConfig::GetUUID()
   return m_sUUID; 
 }
 
-bool CSharedConfig::SetNetInterface(std::string p_sNetInterface)
-{
-  m_pConfigFile->NetInterface(p_sNetInterface);
-  m_sNetInterface = p_sNetInterface;
-	return true;
-}
-	
-bool CSharedConfig::SetHTTPPort(unsigned int p_nHTTPPort)
-{
-  if(p_nHTTPPort > 0 && p_nHTTPPort <= 1024) {
-    CSharedLog::Shared()->UserError("please set port to \"0\" or a number greater \"1024\"");
-    return false;
-  }
-  
-  m_pConfigFile->HttpPort(p_nHTTPPort);
-  m_nHTTPPort = p_nHTTPPort;
-	return true;
-}
-
-
-
-// shared dirs
-int CSharedConfig::SharedDirCount()
-{
-  return m_pConfigFile->SharedDirCount();
-}
-
-std::string CSharedConfig::GetSharedDir(int p_nIdx)
-{
-  string sDir = m_pConfigFile->SharedDir(p_nIdx);
-  if(sDir.length() > 1 && sDir.substr(sDir.length() - 1).compare(upnpPathDelim) != 0) {
-    sDir += upnpPathDelim;
-  }
-  return sDir.c_str();
-}
-
-void CSharedConfig::AddSharedDirectory(std::string p_sDirectory)
-{  
-  m_pConfigFile->AddSharedDir(ToUTF8(p_sDirectory));
-}
-
-void CSharedConfig::RemoveSharedDirectory(int p_nIdx)
-{
-  m_pConfigFile->RemoveSharedDir(p_nIdx);
-}
-
-
-// shared iTunes
-int CSharedConfig::SharedITunesCount()
-{
-  return m_pConfigFile->SharedITunesCount();
-}
-
-std::string CSharedConfig::GetSharedITunes(int p_nIdx)
-{
-  return m_pConfigFile->SharedITunes(p_nIdx);  
-}
-
-void CSharedConfig::AddSharedITunes(std::string p_sITunes)
-{
-  m_pConfigFile->AddSharedITunes(ToUTF8(p_sITunes));
-}
-
-void CSharedConfig::RemoveSharedITunes(int p_nIdx)
-{
-  m_pConfigFile->RemoveSharedITunes(p_nIdx);
-}
-
-
-
-
-
-
-bool CSharedConfig::IsAllowedIP(std::string p_sIPAddress)
-{
-  // the host's address is always allowed to access
-  if(p_sIPAddress.compare(m_sIP) == 0)
-    return true;
-  
-  // if no allowed ip is set all addresses are allowed
-  if (AllowedIPCount() == 0)
-		return true;
-
-
-
-	
-  for(unsigned int i = 0; i < AllowedIPCount(); i++) { 
-
-		string pattern = GetAllowedIP(i);
-		pattern = StringReplace(pattern, ".*.", "[255]");
-		pattern = StringReplace(pattern, "*", "255");
-
-		RegEx rxIp(pattern.c_str());
-		if(rxIp.Search(p_sIPAddress.c_str()))
-		  return true;
-  }
-  
-  return false;  
-}
-
-unsigned int CSharedConfig::AllowedIPCount()
-{
-  return m_pConfigFile->AllowedIpsCount(); //m_vAllowedIPs.size();
-}
-
-std::string CSharedConfig::GetAllowedIP(unsigned int p_nIdx)
-{
-  return m_pConfigFile->AllowedIp(p_nIdx); //m_vAllowedIPs[p_nIdx];
-}
-
-bool CSharedConfig::AddAllowedIP(std::string p_sIPAddress)
-{
-  m_pConfigFile->AddAllowedIp(p_sIPAddress);
-	return true;
-}
-
-bool CSharedConfig::RemoveAllowedIP(unsigned int p_nIndex)
-{
-  m_pConfigFile->RemoveAllowedIp(p_nIndex);
-	return true;
-}
-
-
-
-std::string CSharedConfig::GetLocalCharset()
-{  
-  return m_pConfigFile->LocalCharset();
-}
-
-bool CSharedConfig::SetLocalCharset(std::string p_sCharset)
-{
-  m_pConfigFile->LocalCharset(p_sCharset);
-	return true;
-}
-
 bool CSharedConfig::ReadConfigFile()
 {
-  string sErrorMsg;
-  
-  if(m_pConfigFile == NULL) {
-    m_pConfigFile = new CConfigFile();
-  }
-  
-  // create config dir
-  string sConfigDir = ExtractFilePath(m_sConfigFileName);
-  if(!fuppes::Directory::exists(sConfigDir)) {
-    #ifdef WIN32
-    CreateDirectory(sConfigDir.c_str(), NULL);
-    #else
-    mkdir(sConfigDir.c_str(), S_IRWXU | S_IRWXG);
-    #endif
-  }
-  
-  // write default config
-  if(!fuppes::File::exists(m_sConfigFileName)) {
-    if(!m_pConfigFile->WriteDefaultConfig(m_sConfigFileName)) {
-      CSharedLog::Log(L_NORM, __FILE__, __LINE__, "could not write default configuration to %s", m_sConfigFileName.c_str());
-    }
-    else {
-      CSharedLog::Log(L_EXT, __FILE__, __LINE__, "wrote default configuration to %s", m_sConfigFileName.c_str());
-    }
-  }
-  
-  // load config file
-  if(m_pConfigFile->Load(m_sConfigFileName, &sErrorMsg) != CF_OK) {
-    CSharedLog::Log(L_NORM, __FILE__, __LINE__, sErrorMsg.c_str());
+  if(m_pDoc != NULL) delete m_pDoc;
+  m_pDoc = new CXMLDocument();
+
+  // Load the XML file
+  if(!m_pDoc->LoadFromFile(m_sBaseConfigFile)) {    
+    //*p_psErrorMsg = "parse error"; log instead
+    delete m_pDoc;
+    m_pDoc = NULL;
     return false;
   }
 
-  // get values from config
-  if(m_pConfigFile->HttpPort() > 0) {
-    m_nHTTPPort = m_pConfigFile->HttpPort();
-  }
-
-	if(m_sTempDir.empty()) {
-		m_sTempDir = m_pConfigFile->TempDir();
-	}
-  
-  return true;
-}
-
-bool CSharedConfig::ResolveHostAndIP()
-{
-  bool bNew = false;
-  
-  // get hostname
-  char szName[MAXHOSTNAMELEN]; 
-  int  nRet = gethostname(szName, MAXHOSTNAMELEN);  
-  if(nRet != 0) {
-    throw fuppes::Exception(__FILE__, __LINE__, "can't resolve hostname");
-  }
-  m_sHostname = szName;
-
-  // get interface
-  m_sNetInterface = m_pConfigFile->NetInterface();
-  if(m_sNetInterface.empty()) {
-    ResolveIPByHostname();    
-  }
-
-  // empty or localhost
-  if(m_sNetInterface.empty()) {
-        
-    if(m_sIP.empty() || (m_sIP.compare("127.0.0.1") == 0)) {
-        
-    string sMsg;
-    
-    if(m_sIP.compare("127.0.0.1") == 0) {
-      sMsg = string("detected ip 127.0.0.1. it's possible but senseless.\n");
-    }
-        
-		#ifdef WIN32
-		sMsg += string("please enter the ip address of your lan adapter:\n");
-		#else
-    sMsg += string("please enter the ip address or name (e.g. eth0, wlan1, ...) of your lan adapter:\n");
-    #endif    
-    m_sNetInterface = CSharedLog::Shared()->UserInput(sMsg);
-    bNew = true;
-    
-    }
-    else {
-      m_sNetInterface = m_sIP;
-    }    
-  }
-    
-  if(m_sNetInterface.empty()) {
+  CXMLNode* pRootNode = m_pDoc->RootNode();
+  if(pRootNode == NULL) {
+    //*p_psErrorMsg = "parse error";
+    delete m_pDoc;
+    m_pDoc = NULL;
     return false;
   }
   
-  
-  // ip or iface name   
-  RegEx rxIP("\\d+\\.\\d+\\.\\d+\\.\\d");
-	if(rxIP.Search(m_sNetInterface.c_str())) {
-    m_sIP = m_sNetInterface;
-    if(bNew) {
-      m_pConfigFile->NetInterface(m_sNetInterface);
-    }
-    return true;
+  string sVersion = pRootNode->Attribute("version");
+  if(sVersion.compare(NEEDED_CONFIGFILE_VERSION) != 0) {
+    //*p_psErrorMsg = "configuration deprecated";
+    PrintConfigReadErrors(READERROR_CONFIG_DEPRECATED);
+    delete m_pDoc;
+    m_pDoc = NULL;
+    return false;
   }
-  else {    
-    if(ResolveIPByInterface(m_sNetInterface)) {
-      if(bNew) {
-        m_pConfigFile->NetInterface(m_sNetInterface);
-      }
-      return true;
-    }
-  } 
-	
-	return false;
-}
-
-bool CSharedConfig::ResolveIPByHostname()
-{
-    in_addr* addr;
-    struct hostent* host;
-     
-    host = gethostbyname(m_sHostname.c_str());
-    if(host != NULL)
-    {
-      addr = (struct in_addr*)host->h_addr;
-      m_sIP = inet_ntoa(*addr);
-      return true;
-    }
-    else {
-			return false;
-		}
-}
-
-bool CSharedConfig::ResolveIPByInterface(std::string p_sInterfaceName)
-{
-  #ifdef WIN32
-  return true;
-  #else
-  struct ifreq ifa;
-  struct sockaddr_in *saddr;
-  int       fd;
   
-  strcpy (ifa.ifr_name, p_sInterfaceName.c_str());
-  if(((fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) || ioctl(fd, SIOCGIFADDR, &ifa)) {
-		cout << "[ERROR] can't resolve ip from interface \"" << p_sInterfaceName << "\"." << endl;
-		return false;
-	}
-  saddr = (struct sockaddr_in*)&ifa.ifr_addr;
-  m_sIP = inet_ntoa(saddr->sin_addr);  
-  //cout << "address of iface: " << p_sInterfaceName << " = " << m_sIP << endl;  
+  // These have to be updated with the right nodes
+  CXMLNode* pTmp;
+
+  pTmp = pRootNode->FindNodeByName("shared_objects");
+  if (pTmp) {	
+    sharedObjects->Init(pTmp);
+  } else {
+    PrintConfigReadErrors(READERROR_SHARED_OBJECTS);
+  }
+
+  pTmp = pRootNode->FindNodeByName("network");
+  if (pTmp) {	
+    networkSettings->Init(pTmp);
+  } else {
+    PrintConfigReadErrors(READERROR_NETWORK);
+    delete m_pDoc;
+    m_pDoc = NULL;
+    return false;
+  }
+
+  pTmp = pRootNode->FindNodeByName("global_settings");
+  if (pTmp) {	
+	  globalSettings->Init(pTmp);
+  } else {
+    PrintConfigReadErrors(READERROR_GLOBAL_SETTINGS);
+  }
+
+  pTmp = pRootNode->FindNodeByName("device_mapping");
+  if (pTmp) {	
+    deviceMapping->Init(pTmp);
+  } else {
+    PrintConfigReadErrors(READERROR_DEVICE_MAPPING);
+    delete m_pDoc;
+    m_pDoc = NULL;
+    return false;
+  }
+
+  pTmp = pRootNode->FindNodeByName("content_directory");
+  if (pTmp) {	
+    contentDirectory->Init(pTmp);
+  } else {
+    PrintConfigReadErrors(READERROR_CONTENT_DIRECTORY);
+  }
+
+  pTmp = pRootNode->FindNodeByName("database");
+  if (pTmp) {	
+    databaseSettings->Init(pTmp);
+  } else if(databaseSettings->UseDefaultSettings()) {
+    PrintConfigReadErrors(READERROR_DATABASE_DEFAULT);
+  } else {
+    PrintConfigReadErrors(READERROR_DATABASE_FAIL);
+    delete m_pDoc;
+    m_pDoc = NULL;
+    return false;
+  }
+
+  pTmp = pRootNode->FindNodeByName("transcoding");
+  if (pTmp) {	
+	  transcodingSettings->Init(pTmp);
+  } else {
+    PrintConfigReadErrors(READERROR_TRANSCODING);
+  }
+
+  /*
+  pTmp = pRootNode->FindNodeByName("plugin_directories");
+  if (pTmp) {	
+	  pluginDirectories->Init(pTmp);
+  } else {
+    PrintConfigReadErrors(READERROR_PLUGINDIRS);
+  }*/
+
   return true;
-  #endif
+}
+
+static void PrintConfigReadErrors(int error) {
+  switch (error) {
+    case READERROR_CONFIG_DEPRECATED:
+      Log::error(Log::config, Log::normal, __FILE__, __LINE__, "ERROR: The config file is deprecated.");
+      break;
+    case READERROR_SHARED_OBJECTS:
+      Log::error(Log::config, Log::normal, __FILE__, __LINE__, "Warning: Could not find any shared_objects in the config file. It seems unlikely that this would be desirable.");
+      break;
+    case READERROR_NETWORK:
+      Log::error(Log::config, Log::normal, __FILE__, __LINE__, "ERROR: The Network settings could not be found in the config file. They are required.");
+      break;
+    case READERROR_GLOBAL_SETTINGS:
+      Log::error(Log::config, Log::normal, __FILE__, __LINE__, "Warning: The Global settings could not be read.");
+      break;
+    case READERROR_DEVICE_MAPPING:
+      Log::error(Log::config, Log::normal, __FILE__, __LINE__, "ERROR: A device mapping could not be found and one is required. Even an empty device mapping will work. (The empty device mapping makes everything use the default device)");
+      break;
+    case READERROR_CONTENT_DIRECTORY:
+      Log::error(Log::config, Log::normal, __FILE__, __LINE__, "Warning: The Content Directory settings could not be read.");
+      break;
+    case READERROR_DATABASE_DEFAULT:
+      Log::error(Log::config, Log::normal, __FILE__, __LINE__, "Warning: The Database settings could not be read but the default settings are being used.");
+      break;
+    case READERROR_DATABASE_FAIL:
+      Log::error(Log::config, Log::normal, __FILE__, __LINE__, "ERROR: The Database Settings could not be found and the default ones did not work. Fuppes needs a database to run so these settings need to be avaliable.");
+      break;
+    case READERROR_TRANSCODING:
+      Log::error(Log::config, Log::normal, __FILE__, __LINE__, "Warning: The Transcoding settings could not be read.");
+      break;
+    case READERROR_PLUGINDIRS:
+      Log::log(Log::config, Log::normal, __FILE__, __LINE__, "Warning: The Plugin directory settings could not be read.");
+      break;
+    default:
+      // wow...an error on the error
+      break;
+  }
 }
 
 void CSharedConfig::PrintTranscodingSettings()
@@ -590,7 +438,7 @@ void CSharedConfig::GetOSInfo()
     m_sOSVersion = "?";
   }
   else {
-    int nMajor = osinfo.dwMajorVersion;
+    iint nMajor = osinfo.dwMajorVersion;
     int nMinor = osinfo.dwMinorVersion;
     int nBuild = osinfo.dwBuildNumber; 
     
@@ -611,7 +459,7 @@ static int nTmpCnt = 0;
 std::string CSharedConfig::CreateTempFileName()
 {
   stringstream sResult;
-  sResult << m_sTempDir << nTmpCnt;
+  sResult << globalSettings->GetTempDir() << nTmpCnt;
   nTmpCnt++;
   return sResult.str().c_str();
 }
@@ -620,14 +468,25 @@ std::string CSharedConfig::CreateTempFileName()
 bool CSharedConfig::isAlbumArtFile(const std::string fileName)
 {
 	string name = ToLower(fileName);
-#warning todo
+#warning todo: What is left to do?
 	if(name.compare("cover.jpg") == 0 ||
 		 name.compare("cover.png") == 0 ||
 		 name.compare(".folder.jpg") == 0 ||
 		 name.compare(".folder.png") == 0 ||
+     name.compare("folder.jpg") == 0 ||
+		 name.compare("folder.png") == 0 ||
 		 name.compare("front.jpg") == 0 ||
 		 name.compare("front.png") == 0)
 		return true;
 	
 	return false;
+}
+
+bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)
+{
+  return WriteDefaultConfigFile(p_sFileName);
+}
+
+bool CSharedConfig::Save(void) {
+  return m_pDoc->Save();
 }

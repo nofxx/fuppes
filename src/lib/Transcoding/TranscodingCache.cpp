@@ -344,7 +344,7 @@ void CTranscodingCacheObject::run()
   unsigned int  nAppendCount    = 0;
   char*         szTmpBuff       = NULL;
   unsigned int  nTmpBuffSize    = 0;
-  int  nTmpValidBytes  = 0;
+  unsigned int  nTmpValidBytes  = 0;
     
   int           nBytesConsumed  = 0;
   

@@ -10,7 +10,7 @@ typedef enum tagOBJECT_TYPE
   
   CONTAINER_STORAGE_FOLDER = 1,
   
-  //CONTAINER_PERSON = 10,
+  CONTAINER_PERSON = 10,
     CONTAINER_PERSON_MUSIC_ARTIST = 11,
     
   /* "object.container.playlistContainer" and "object.item.playlistItem”

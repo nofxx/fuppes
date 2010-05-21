@@ -26,6 +26,7 @@
 #include "Fuppes.h"
 
 #include <iostream>
+#include <cassert>
 //#include <fstream>
 
 #include "Common/Common.h"
@@ -37,7 +38,9 @@
 #include "GENA/SubscriptionMgr.h"
 
 #include "ContentDirectory/ContentDatabase.h"
+#ifdef HAVE_VFOLDER
 #include "ContentDirectory/VirtualContainerMgr.h"
+#endif
 
 using namespace std;
 
@@ -73,6 +76,16 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
   if(bIsNewDB) {
     CContentDatabase::Shared()->RebuildDB();
   }
+
+  // init file details
+  try {
+    CFileDetails::Shared();
+  }
+  catch(fuppes::Exception ex) {    
+    throw;
+  }  
+  
+  
   
   /* init HTTP-server */
   CSharedLog::Log(L_EXT, __FILE__, __LINE__, "init http-server");
@@ -103,6 +116,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
   /* init SubscriptionMgr */
   try {
     CSubscriptionMgr::Shared();
+    CSubscriptionCache::Shared();
   }
   catch(fuppes::Exception ex) {
     throw;
@@ -124,7 +138,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
   try {
     m_pConnectionManager = new CConnectionManager(m_pHTTPServer->GetURL()); 
     m_pMediaServer->AddUPnPService(m_pConnectionManager);
-		//CConnectionManagerCore::init();
+		CConnectionManagerCore::init();
   }
   catch(fuppes::Exception ex) {
     throw;
@@ -147,7 +161,9 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
   CSharedLog::Log(L_EXT, __FILE__, __LINE__, "UPnP subsystem started");
 
   // init virtual containers
+#ifdef HAVE_VFOLDER
 	CVirtualContainerMgr::Shared();
+#endif
 	
 	/* if everything is up and running, multicast alive messages
   and search for other devices */       
@@ -159,6 +175,8 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
   /* start alive timer */
   m_pMediaServer->GetTimer()->SetInterval(840);  // 900 sec = 15 min
   m_pMediaServer->GetTimer()->start();
+
+  m_startTime = fuppes::DateTime::now();
 }
 
 /** destructor
@@ -167,6 +185,10 @@ CFuppes::~CFuppes()
 {  
   CSharedLog::Log(L_EXT, __FILE__, __LINE__, "deleting FUPPES instance");
 
+
+
+  
+  cout << "delete SSDP" << endl;
   if(m_pSSDPCtrl) {
     /* multicast notify-byebye */
     CSharedLog::Shared()->Log(L_EXT, __FILE__, __LINE__, "multicasting byebye messages");
@@ -176,13 +198,18 @@ CFuppes::~CFuppes()
     CSharedLog::Shared()->Log(L_EXT, __FILE__, __LINE__, "stopping SSDP controller");
     m_pSSDPCtrl->Stop();
   }
-    
+
+  cout << "stop HTTP Server" << endl;
   /* stop HTTP-server */
   if(m_pHTTPServer) {
     CSharedLog::Shared()->Log(L_EXT, __FILE__, __LINE__, "stopping HTTP server");
-    m_pHTTPServer->Stop();
+    m_pHTTPServer->stop(); // stop thread execution
   }
 
+
+
+  
+    cout << "delete devices" << endl;
   
   m_RemoteDeviceIterator = m_RemoteDevices.begin();
   while(m_RemoteDeviceIterator != m_RemoteDevices.end()) {
@@ -197,25 +224,54 @@ CFuppes::~CFuppes()
   fuppesThreadDestroyMutex(&m_RemoteDevicesMutex);
   
   /* destroy objects */
+  cout << "delete pConnectionManager" << endl;
   if(m_pConnectionManager)
     delete m_pConnectionManager;
+
+  cout << "delete pXMSMediaReceiverRegistrar" << endl;
   if(m_pXMSMediaReceiverRegistrar)
     delete m_pXMSMediaReceiverRegistrar;
+
+  cout << "delete pContentDirectory" << endl;
   if(m_pContentDirectory)
     delete m_pContentDirectory;
+
+  cout << "delete pMediaServer" << endl;
   if(m_pMediaServer)
     delete m_pMediaServer;
+
+  cout << "delete pSSDPCtrl" << endl;
   if(m_pSSDPCtrl)
     delete m_pSSDPCtrl;
-  if(m_pHTTPServer)
+
+  cout << "delete pHTTPServer" << endl;
+  if(m_pHTTPServer) {
+    m_pHTTPServer->Stop();
     delete m_pHTTPServer;
+  }
+  
 
+  cout << "delete CSubscriptionMgr" << endl;
   CSubscriptionMgr::deleteInstance();
-  delete CContentDatabase::Shared();
-  delete CVirtualContainerMgr::Shared();
 
-	//CConnectionManagerCore::deleteInstance();
+  cout << "delete CSubscriptionCache" << endl;
+  CSubscriptionCache::deleteInstance();
+  
+  cout << "delete CContentDatabase" << endl;
+  delete CContentDatabase::Shared();
+#ifdef HAVE_FOLDER
+  delete CVirtualContainerMgr::Shared();
+#endif
+
+  cout << "delete CConnectionManagerCore" << endl;
+	CConnectionManagerCore::uninit();
+  
+  //cout << "delete CFileAlterationMgr" << endl;
+  //CFileAlterationMgr::deleteInstance();
+  cout << "CFileDetails CConnectionManagerCore" << endl;
   CFileDetails::deleteInstance();
+
+
   //delete CTranscodingMgr::Shared();
 }
 
@@ -242,7 +298,7 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
 	CleanupTimedOutDevices();
 	
   // local device must send alive message
-  if(pSender->GetIsLocalDevice()) {                                  
+  if(pSender->isLocalDevice()) {                                  
     
     CSharedLog::Log(L_EXT, __FILE__, __LINE__, "device: %s send timed alive",  + pSender->GetUUID().c_str());
     m_pSSDPCtrl->send_alive();    
@@ -280,6 +336,7 @@ void CFuppes::OnTimer(CUPnPDevice* pSender)
  */
 std::string CFuppes::GetHTTPServerURL()
 {
+  assert(m_pHTTPServer != NULL);
   return m_pHTTPServer->GetURL();
 }
 
@@ -416,7 +473,7 @@ bool CFuppes::HandleHTTPRequest(CHTTPMessage* pMessageIn, CHTTPMessage* pMessage
   // Root description
   if(ToLower(strRequest).compare("/description.xml") == 0) {
     pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml"); // HTTP_CONTENT_TYPE_TEXT_XML
-    pMessageOut->SetContent(m_pMediaServer->GetDeviceDescription(pMessageIn));
+    pMessageOut->SetContent(m_pMediaServer->localDeviceDescription(pMessageIn));
 		//cout << m_pMediaServer->GetDeviceDescription(pMessageIn) << endl;
     return true;
   }

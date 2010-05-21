@@ -1,2 +1,2 @@
-AM_CFLAGS=-Wall -Werror
-AM_CXXFLAGS=-Wall -Wextra
+AM_CFLAGS=-Wall
+AM_CXXFLAGS=-Wall

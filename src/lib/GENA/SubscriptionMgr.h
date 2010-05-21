@@ -93,6 +93,7 @@ class CSubscriptionCache
 {
   public:
     static CSubscriptionCache* Shared();
+    static void deleteInstance();
   
     void AddSubscription(CSubscription* pSubscription);
     bool RenewSubscription(std::string pSID);
@@ -108,7 +109,7 @@ class CSubscriptionCache
     CSubscriptionCache();
     ~CSubscriptionCache();
   
-public:  
+  public:  
     std::map<std::string, CSubscription*>           m_Subscriptions;  
     std::map<std::string, CSubscription*>::iterator m_SubscriptionsIterator;  
 };

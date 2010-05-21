@@ -1,5 +1,5 @@
-fuppes (0.631) unstable; urgency=low
+fuppes (0.660-1) unstable; urgency=low
 
-  * Initial Release.
+  * Initial release (Closes: #426048)
 
- -- Ulrich Völkel <fuppes@ulrich-voelkel.de>  Thu, 23 Oct 2008 15:08:35 +0200
+ -- Robert Massaioli <robertmassaioli@gmail.com>  Fri, 18 Dec 2009 14:29:51 +1100

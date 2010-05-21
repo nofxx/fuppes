@@ -104,10 +104,10 @@ CUPnPAction* CUPnPActionFactory::buildActionFromString(std::string p_sContent, C
       pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_SYSTEM_UPDATE_ID, p_sContent);
       pAction->DeviceSettings(pDeviceSettings);
     }  
-    else if(sName.compare("GetProtocolInfo") == 0) {
+    /*else if(sName.compare("GetProtocolInfo") == 0) {
       pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_GET_PROTOCOL_INFO, p_sContent);
       pAction->DeviceSettings(pDeviceSettings);
-    }
+    }*/
     else if(sName.compare("DestroyObject") == 0) {
       pAction = new CUPnPAction(UPNP_SERVICE_CONTENT_DIRECTORY, UPNP_DESTROY_OBJECT, p_sContent);
       pAction->DeviceSettings(pDeviceSettings);
@@ -121,12 +121,12 @@ CUPnPAction* CUPnPActionFactory::buildActionFromString(std::string p_sContent, C
 		if(sName.compare("GetProtocolInfo") == 0) {
 		  pAction = new CUPnPAction(UPNP_SERVICE_CONNECTION_MANAGER, CMA_GET_PROTOCOL_INFO, p_sContent);
 		}
-		else if(sName.compare("PrepareForConnection") == 0) {
+		/*else if(sName.compare("PrepareForConnection") == 0) {
 			pAction = new CUPnPAction(UPNP_SERVICE_CONNECTION_MANAGER, CMA_PREPARE_FOR_CONNECTION, p_sContent);
 		}
 		else if(sName.compare("ConnectionComplete") == 0) {
 			pAction = new CUPnPAction(UPNP_SERVICE_CONNECTION_MANAGER, CMA_CONNECTION_COMPLETE, p_sContent);
-		}
+		}*/
 		else if(sName.compare("GetCurrentConnectionIDs") == 0) {
 			pAction = new CUPnPAction(UPNP_SERVICE_CONNECTION_MANAGER, CMA_GET_CURRENT_CONNECTION_IDS, p_sContent);
 		}
@@ -297,7 +297,7 @@ bool CUPnPActionFactory::parseSortCriteria(CUPnPBrowseSearchBase* action)
 	if(!rxSort.Search(action->GetContent().c_str())) {
 	
 		// sort by title if no sort criteria found
-		action->m_sortCriteriaSQL = " d.A_TRACK_NO, o.TITLE asc ";
+		action->m_sortCriteriaSQL = " A_TRACK_NO, TITLE asc ";
 		return false;
 	}
 	
@@ -332,22 +332,22 @@ bool CUPnPActionFactory::parseSortCriteria(CUPnPBrowseSearchBase* action)
 		
 		// replace fields
 		if(part.compare("upnp:class") == 0) {
-			part = " o.TYPE " + ext;
+			part = " TYPE " + ext;
 		}
 		else if(part.compare("upnp:artist") == 0) {
-			part = " d.A_ARTIST " + ext;
+			part = " A_ARTIST " + ext;
 		}
 		else if(part.compare("upnp:genre") == 0) {
-			part = " d.A_GENRE " + ext;
+			part = " A_GENRE " + ext;
 		}
 		else if(part.compare("upnp:album") == 0) {
-			part = " d.A_ALBUM " + ext;
+			part = " A_ALBUM " + ext;
 		}
     else if(part.compare("dc:title") == 0) {
-			part = " o.TITLE " + ext;
+			part = " TITLE " + ext;
 		}
 		else if(part.compare("upnp:originalTrackNumber") == 0) {
-			part = " d.A_TRACK_NO " + ext;
+			part = " A_TRACK_NO " + ext;
 		}
 		// unhandled
 		else {

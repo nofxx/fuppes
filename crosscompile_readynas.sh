@@ -3,7 +3,7 @@
 # Copyright (C) 2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
 #
 
-# get the compiler from here:
+# get the compiler from:
 # http://www.readynas.com/download/development/readynas-cross-3.3.5.tar.gz
 
 
@@ -26,7 +26,6 @@ export CFLAGS="-I$PREFIX/include $CFLAGS"
 export CPPFLAGS="-I$PREFIX/include $CPPFLAGS"
 export LDFLAGS="-L$PREFIX/lib"
 export PKG_CONFIG_LIBDIR="$PREFIX/lib/pkgconfig"
-export WINEDLLPATH="$PREFIX/bin"
 
 FUPPES_DIR=`pwd`
 
@@ -75,16 +74,20 @@ function loadpkt {
 
 
 HAVE_ZLIB="yes"
+HAVE_UUID="no"
 HAVE_ICONV="yes"
 HAVE_TAGLIB="yes"
 
 
 HAVE_JPEG="yes"
+HAVE_PNG="yes"
+
+HAVE_SIMAGE="no"
+HAVE_IMAGEMAGICK="yes"
+
 HAVE_FFMPEG="yes"
 HAVE_FFMPEGTHUMBNAILER="yes"
 
-
-HAVE_SCREEN="yes"
 
 
 # zlib 1.2.3 (for taglib, exiv2, imagemagick & co.) 
@@ -95,7 +98,7 @@ if test "$HAVE_ZLIB" == "yes"; then
 echo "start building zlib"
 
 loadpkt "zlib-1.2.3" ".tar.gz" \
-        "http://www.zlib.net/"
+          "http://prdownloads.sourceforge.net/libpng/"
 
 echo "AC_INIT([zlib], [1.2.3], [fuppes@ulrich-voelkel.de])
 AM_INIT_AUTOMAKE([foreign])
@@ -130,6 +133,48 @@ libz_la_SOURCES = \
 libz_la_LDFLAGS = -no-undefined" \
 > Makefile.am
 
+
+# zlib 1.2.4 currently (31. March 2010) does not work with ffmpeg
+
+#loadpkt "zlib-1.2.4" ".tar.gz" \
+#        "http://www.zlib.net/"
+
+#echo "AC_INIT([zlib], [1.2.4], [fuppes@ulrich-voelkel.de])
+#AM_INIT_AUTOMAKE([foreign])
+
+#AC_PROG_CC
+#AC_LIBTOOL_WIN32_DLL
+#AC_PROG_LIBTOOL
+#AC_PROG_INSTALL
+#AM_PROG_INSTALL_STRIP
+
+#AC_OUTPUT([Makefile])" \
+#> configure.ac
+
+#echo "include_HEADERS = zlib.h zconf.h  
+
+#lib_LTLIBRARIES = libz.la
+
+#libz_la_SOURCES = \
+#  adler32.c \
+#  compress.c \
+#  crc32.h crc32.c \
+#  deflate.h deflate.c \
+#  gzclose.c \
+#  gzlib.c \
+#  gzread.c \
+#  gzwrite.c \
+#  infback.c \
+#  inffast.h inffast.c \
+#  inflate.h inflate.c \
+#  inftrees.h inftrees.c \
+#  trees.h trees.c \
+#  uncompr.c \
+#  zutil.h zutil.c
+
+#libz_la_LDFLAGS = -no-undefined" \
+#> Makefile.am
+
 autoreconf -vfi
 ./configure --host=$HOST --prefix=$PREFIX
 $MAKE
@@ -138,6 +183,24 @@ cd ..
 
 else
   echo "skipped zlib"
+fi
+
+
+if test "$HAVE_UUID" == "yes"; then
+
+  loadpkt "e2fsprogs-1.41.11" ".tar.gz" \
+          "http://prdownloads.sourceforge.net/e2fsprogs/"
+        
+  ./configure --host=$HOST --prefix=$PREFIX \
+  --disable-testio-debug  --disable-imager \
+  --disable-resizer --disable-tls --disable-uuidd --disable-nls --disable-rpath
+  $MAKE
+  cd lib/uuid/
+  $MAKE_INSTALL
+  cd ../..
+
+else
+  echo "skipped libuuid (e2fsprogs)"
 fi
 
 
@@ -170,11 +233,11 @@ $MAKE_INSTALL
 cd ..
 
 
-# SQLite 3.6.21 (required)
+# SQLite 3.6.23 (required)
 echo "start building sqlite"
-loadpkt "sqlite-amalgamation-3.6.21" ".tar.gz" \
+loadpkt "sqlite-amalgamation-3.6.23.1" ".tar.gz" \
         "http://www.sqlite.org/"
-cd sqlite-3.6.21
+cd sqlite-3.6.23.1
 ./configure --host=$HOST --prefix=$PREFIX \
 --enable-tempstore=yes --enable-threadsafe
 $MAKE
@@ -228,156 +291,6 @@ else
 fi
 
 
-# LAME
-if test "$HAVE_LAME" == "yes"; then
-
-  echo "start building lame"
-
-  loadpkt "lame-398-2" ".tar.gz" \
-          "http://downloads.sourceforge.net/lame/"
-
-  # we need to reconfigure the sources because of this bug
-  # http://git.savannah.gnu.org/gitweb/?p=autoconf.git;a=commitdiff;h=78dc34
-
-  sed -i -e 's/AM_PATH_GTK(1.2.0, HAVE_GTK="yes", HAVE_GTK="no")/HAVE_GTK="no"\nGTK_CFLAGS=""\nAC_SUBST(GTK_CFLAGS)/' configure.in
-  autoreconf -vfi
-          
-  ./configure --host=$HOST --prefix=$PREFIX
-  $MAKE
-  $MAKE_INSTALL
-  cd ..
-
-else
-  echo "skipped LAME"
-fi
-
-
-# ogg/vorbis
-if test "$HAVE_OGGVORBIS" == "yes"; then
-
-# ogg
-echo "start building ogg"
-loadpkt "libogg-1.1.4" ".tar.gz" \
-        "http://downloads.xiph.org/releases/ogg/"
-autoreconf -vfi
-./configure --host=$HOST --prefix=$PREFIX
-$MAKE
-$MAKE_INSTALL
-cd ..
-
-# vorbis
-echo "start building vorbis"
-loadpkt "libvorbis-1.2.3" ".tar.gz" \
-        "http://downloads.xiph.org/releases/vorbis/"
-./configure --host=$HOST --prefix=$PREFIX
-$MAKE
-$MAKE_INSTALL
-cd ..
-
-else
-  echo "skipped ogg/vorbis"
-fi
-
-
-# FLAC
-if test "$HAVE_FLAC" == "yes"; then
-
-#http://sourceforge.net/tracker/index.php?func=detail&aid=2000973&group_id=13478&atid=313478
-
-echo "start building flac"
-
-loadpkt "flac-1.2.1" ".tar.gz" \
-        "http://downloads.sourceforge.net/flac/"
-
-sed -i -e 's/!defined __MINGW32__ &&/ /' include/share/alloc.h
-
-sed -i -e 's/AM_MAINTAINER_MODE/AM_MAINTAINER_MODE\nAC_LIBTOOL_WIN32_DLL/' configure.in
-sed -i -e 's/AM_PATH_XMMS/echo "xmms"\n# AM_PATH_XMMS/' configure.in
-
-sed -i -e 's/@OGG_LIBS@/@OGG_LIBS@ -lws2_32/' src/libFLAC/Makefile.am 
-sed -i -e 's/libFLAC_la_LDFLAGS =/libFLAC_la_LDFLAGS = -no-undefined/' src/libFLAC/Makefile.am 
-
-autoreconf -vfi
-./configure --host=$HOST --prefix=$PREFIX \
---disable-xmms-plugin --disable-cpplibs
-$MAKE
-$MAKE_INSTALL
-cd ..
-
-else
-  echo "skipped FLAC"
-fi
-
-
-# musepack
-if test "$HAVE_MUSEPACK" == "yes"; then
-
-echo "start building musepack"
-
-loadpkt "libmpcdec-1.2.6" ".tar.bz2" \
-        "http://files.musepack.net/source/"
-
-sed -i -e 's/AC_MSG_ERROR(\[working memcmp is not available.\])/echo "no memcmp"/' configure.ac
-sed -i -e 's/AM_PROG_LIBTOOL/AM_PROG_LIBTOOL\nAC_PROG_CXX/' configure.ac
-
-#loadpkt "musepack_src_r435" ".tar.gz" \
-#        "http://files.musepack.net/source/"
-
-#sed -i -e 's/\\/\n/' Makefile.am
-#sed -i -e 's/\tmpcchap/#/' Makefile.am
-
-
-autoreconf -vfi
-./configure --host=$HOST --prefix=$PREFIX
-$MAKE
-$MAKE_INSTALL
-cp include/mpcdec/config_win32.h $PREFIX/include/mpcdec/
-cd ..
-
-else
-  echo "skipped MusePack"
-fi
-
-
-# MAD
-if test "$HAVE_MAD" == "yes"; then
-
-#http://downloads.sourceforge.net/mad/libid3tag-0.15.1b.tar.gz
-
-  echo "start building mad"
-
-  loadpkt "libmad-0.15.1b" ".tar.gz" \
-          "http://downloads.sourceforge.net/mad/"
-  sed -i -e 's/libmad_la_LDFLAGS =/libmad_la_LDFLAGS = -no-undefined/' Makefile.am
-  aclocal
-  autoconf
-  automake --foreign
-  ./configure --host=$HOST --prefix=$PREFIX
-  $MAKE
-  $MAKE_INSTALL
-  mv $PREFIX/lib/libmad-0 $PREFIX/bin/libmad-0.dll
-  cd ..
-
-echo "# Package Information for pkg-config
-
-prefix=$PREFIX
-exec_prefix=\${prefix}
-libdir=\${exec_prefix}/lib
-includedir=\${prefix}/include
-
-Name: mad
-Description: MPEG Audio Decoder
-Requires:
-Version: 0.15.0b
-Libs: -L\${libdir} -lmad
-Cflags: -I\${includedir}" \
-> $PREFIX/lib/pkgconfig/mad.pc
-
-else
-  echo "skipped libmad"
-fi
-
-
 # exiv2
 if test "$HAVE_EXIV2" == "yes"; then
 
@@ -406,8 +319,6 @@ fi
 # todo libtiff & libungif
 
 
-
-
 #libjpeg (for ImageMagick, simage and ffmpegthumbnailer)
 if test "$HAVE_JPEG" == "yes"; then
   echo "start building jpeg"  
@@ -426,10 +337,9 @@ fi
 #libpng (for ImageMagick, simage and ffmpegthumbnailer)
 if test "$HAVE_PNG" == "yes"; then
   echo "start building png"
-  loadpkt "libpng-1.2.41" ".tar.bz2" \
+  loadpkt "libpng-1.4.1" ".tar.bz2" \
           "http://prdownloads.sourceforge.net/libpng/"
-  ./configure --host=$HOST --prefix=$PREFIX \
-  --with-libpng-compat=no
+  ./configure --host=$HOST --prefix=$PREFIX
   $MAKE
   $MAKE_INSTALL
   cd ..
@@ -460,13 +370,8 @@ fi
 if test "$HAVE_IMAGEMAGICK" == "yes"; then
 
   echo "start building ImageMagick"
-  loadpkt "ImageMagick-6.5.8-5" ".tar.gz" \
+  loadpkt "ImageMagick-6.6.0-9" ".tar.gz" \
           "ftp://ftp.imagemagick.org/pub/ImageMagick/"
-
-  sed -i -e 's/"\*.la"/"\*.dll"/' magick/module.c
-  sed -i -e 's/"%s.la"/"%s.dll"/' magick/module.c
-  sed -i -e 's/GetEnvironmentValue("MAGICK_CODER_MODULE_PATH")/ConstantString(".\\\\magick-modules")/' magick/module.c
-  sed -i -e 's/GetEnvironmentValue("MAGICK_CODER_FILTER_PATH")/ConstantString(".\\\\magick-filters")/' magick/module.c
 
 
   ./configure --host=$HOST --prefix=$PREFIX \
@@ -475,7 +380,11 @@ if test "$HAVE_IMAGEMAGICK" == "yes"; then
   --with-quantum-depth=8 --enable-embeddable
   #--disable-installed 
   
-  $MAKE CFLAGS="-DHAVE_BOOLEAN $CFLAGS"
+  #sed -i -e 's/GetEnvironmentValue("MAGICK_CODER_MODULE_PATH")/ConstantString(".\\\\magick-modules")/' magick/module.c
+  #sed -i -e 's/GetEnvironmentValue("MAGICK_CODER_FILTER_PATH")/ConstantString(".\\\\magick-filters")/' magick/module.c
+  
+  
+  $MAKE
   $MAKE_INSTALL
   cd ..
 
@@ -531,10 +440,10 @@ fi
 if test "$HAVE_FFMPEGTHUMBNAILER" == "yes"; then
 
   echo "start building ffmpegthumbnailer"
-  loadpkt "ffmpegthumbnailer-1.5.6" ".tar.gz" \
+  loadpkt "ffmpegthumbnailer-2.0.0" ".tar.gz" \
           "http://ffmpegthumbnailer.googlecode.com/files/"
 
-  LIBS="$LIBS -lz" ./configure --host=$HOST --prefix=$PREFIX 
+  ./configure --host=$HOST --prefix=$PREFIX 
   $MAKE
   $MAKE_INSTALL
   cd ..
@@ -550,14 +459,11 @@ fi
 # FUPPES
 cd $FUPPES_DIR
 
-# add /usr/include for inotify support
-#export CFLAGS="$CFLAGS -I/usr/include"
-#export CPPFLAGS="$CPPFLAGS -I/usr/include"
 
-#mkdir readynas/include/sys
-#cp /usr/include/sys/inotify.h readynas/include/sys/
-
-./configure --host=$HOST --prefix=$PREFIX
+#CPPFLAGS="$CPPFLAGS -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE=1" \
+LIBS="$LIBS -ldl -lz" \
+./configure --host=$HOST --prefix=$PREFIX --disable-vfolder \
+--enable-force-inotify=yes --disable-taglib
 $MAKE
 $MAKE_INSTALL
 
@@ -565,36 +471,9 @@ $MAKE_INSTALL
 # strip libraries and executables
 if test "$DO_STRIP" == "yes"; then
   $HOST-strip -s $PREFIX/bin/*
-  $HOST-strip -s $PREFIX/lib/bin/*
+  $HOST-strip -s $PREFIX/lib/*
+  $HOST-strip -s $PREFIX/lib/fuppes/*
   touch $PREFIX/bin/*
-  touch $PREFIX/lib/bin/*
+  touch $PREFIX/lib/fuppes/*
   touch $PREFIX/share/fuppes/*
 fi
-
-
-
-
-if test "$HAVE_SCREEN" == "yes"; then
-
-
-  cd $PREFIX
-  cd src
-
-  loadpkt "screen-4.0.3" ".tar.gz" \
-          "http://ftp.gnu.org/gnu/screen/"
-  
-
-  # patch from http://bugs.gentoo.org/attachment.cgi?id=173051&action=view
-  wget -O crosscompile.patch "http://bugs.gentoo.org/attachment.cgi?id=173051&action=view" 
-  patch -p0 -i crosscompile.patch 
-
-
-  ./configure --host=$HOST --prefix=$PREFIX
-  $MAKE
-  $MAKE_INSTALL
-  cd ..
-
-fi
-
-
-

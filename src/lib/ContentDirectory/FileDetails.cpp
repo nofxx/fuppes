@@ -204,6 +204,11 @@ bool CFileDetails::getMusicTrackDetails(std::string p_sFileName,
 
 bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageItem)
 {
+	if(!CPluginMgr::hasMetadataPlugin("exiv2") && 
+	 	 !CPluginMgr::hasMetadataPlugin("magickWand") &&
+     !CPluginMgr::hasMetadataPlugin("simage"))
+		return false;
+	
 	string sExt = ExtractFileExt(p_sFileName);  
   if(!CDeviceIdentificationMgr::Shared()->DefaultDevice()->FileSettings(sExt)->ExtractMetadata())
     return false;

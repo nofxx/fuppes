@@ -25,7 +25,7 @@ static const std::string  sConnectionManagerDescription =
 "</argument>"
 "</argumentList>"
 "</action>"
-"<action>"
+/*"<action>"
 "<name>PrepareForConnection</name>"
 "<argumentList>"
 "<argument>"
@@ -66,7 +66,7 @@ static const std::string  sConnectionManagerDescription =
 "<direction>in</direction> <relatedStateVariable>A_ARG_TYPE_ConnectionID</relatedStateVariable>"
 "</argument>"
 "</argumentList>"
-"</action>"
+"</action>"*/
 "<action>"
 "<name>GetCurrentConnectionIDs</name>"
 "<argumentList>"

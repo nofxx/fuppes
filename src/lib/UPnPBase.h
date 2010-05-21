@@ -1,3 +1,4 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            UPnPBase.h
  *
@@ -50,9 +51,10 @@ class CUPnPBase
 
     /** constructor
      *  @param  nType  the device type
+     *  @param  version  the device version
      *  @param  p_sHTTPServerURL  URL of the HTTP server
      */
-    CUPnPBase(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL);  
+    CUPnPBase(UPNP_DEVICE_TYPE nType, int version, std::string p_sHTTPServerURL);  
 
 
   public:
@@ -63,10 +65,12 @@ class CUPnPBase
     std::string GetUPnPDeviceTypeAsString();
 	  UPNP_DEVICE_TYPE GetUPnPDeviceType() { return m_nUPnPDeviceType; }
 
+    int GetUPnPDeviceVersion() { return m_UPnPDeviceVersion; }
   
   protected:
-    std::string m_sHTTPServerURL;
-    UPNP_DEVICE_TYPE m_nUPnPDeviceType;
+    std::string       m_sHTTPServerURL;
+    UPNP_DEVICE_TYPE  m_nUPnPDeviceType;
+    int               m_UPnPDeviceVersion;
 
 };
 

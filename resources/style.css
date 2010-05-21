@@ -8,7 +8,7 @@ body {
   background:    #EAEAEA;
 }
 
-#title {
+#header {
   position:           absolute;
   height:             80px;
   top:                5px;
@@ -21,7 +21,16 @@ body {
   background-repeat:  repeat-x;
 }
 
-#title p {
+#logo {
+  background-image:   url("/presentation/fuppes-logo.png");
+	float: left;
+	margin-top: 10px;
+	margin-left: 5px;
+	width: 50px;
+	height: 50px;
+}
+
+#header p {
   font-size:      large;
   margin-top:     20px;
   margin-left:    65px;
@@ -29,7 +38,7 @@ body {
   padding:        0px;
 }
 
-#title p span {
+#header p span {
   font-size:    small;
   margin-left:  10px;
   padding:      0px;
@@ -111,3 +120,41 @@ td {
   border-color: #26334C;
 }
 
+
+/* remote devices */
+.remote-device {
+  border: 1px solid #26334C;
+  width: 40%;
+  margin-bottom: 10px;
+}
+
+.remote-device .remote-device-icon {
+  border: 1px solid black;
+  width: 50px;
+  height: 50px;
+  float: left;
+}
+
+.remote-device .remote-device-friendly-name {
+  border: 1px solid black;
+  font-weight: bold;
+  margin-left: 50px;
+  text-align: center;
+}
+
+.remote-device .remote-device-info {
+  clear: left;
+}
+
+.remote-device .remote-device-details {
+  display: none;
+}
+
+.remote-device .remote-device-details table {
+  width: 100%;
+  border-width: 0px;
+}
+
+.remote-device .remote-device-details table tr td {
+  border-width: 0px;
+}

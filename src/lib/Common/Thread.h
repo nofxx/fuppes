@@ -82,7 +82,7 @@ class MutexLocker
 class Thread
 {
 	public:
-		Thread(std::string name = "");
+		Thread(std::string name);
 		virtual ~Thread();
 
     bool start(void* arg = NULL);
@@ -90,12 +90,13 @@ class Thread
 		bool close();
 
 		bool running() { return m_running; }
+		bool finished() { return m_finished; }
 
 		void name(std::string name) { m_name = name; }
 		std::string name() { return m_name; }
 		
   protected:
-		virtual void run() { }
+		virtual void run() = 0;
 		bool stopRequested() { return m_stop; }
 		
 		#ifdef WIN32
@@ -104,10 +105,10 @@ class Thread
     static void* threadFunc(void*);
     #endif
 
-    void msleep(unsigned int milliseconds);
+    void msleep(unsigned int milliseconds);    
 		
   private:
-
+    
 		std::string m_name;
     void* m_arg;
 		bool	m_running;

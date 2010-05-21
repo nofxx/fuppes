@@ -64,11 +64,9 @@ dnl Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h netinet/in.h string.h sys/ioctl.h sys/param.h sys/socket.h unistd.h sys/utsname.h syslog.h])
-dnl AC_CHECK_FUNC(select)
-AC_CHECK_FUNCS(select)
+AC_CHECK_FUNCS([select], [], AC_ERROR([select not found]))
 
 dnl Checks for typedefs, structures, and compiler characteristics.
-
 AC_CHECK_SIZEOF(off_t)
 AC_CHECK_SIZEOF(long long int)
 AC_CHECK_SIZEOF(unsigned long long int)
@@ -78,6 +76,25 @@ AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(unsigned int)
 AC_CHECK_SIZEOF(short)
 AC_CHECK_SIZEOF(unsigned short)
+
+
+dnl expand paths and add them to config.h
+
+#SYSCONFDIR=`eval echo $sysconfdir/fuppes`
+#AH_TEMPLATE([FUPPES_SYSCONFDIR], [])
+#AC_DEFINE_UNQUOTED([FUPPES_SYSCONFDIR], "[$SYSCONFDIR]", [])
+
+#DATADIR=`eval echo $datadir/fuppes`
+#AH_TEMPLATE([FUPPES_DATADIR], [])
+#AC_DEFINE_UNQUOTED([FUPPES_DATADIR], "[$DATADIR]", [])
+
+#PLUGINDIR=`eval echo $libdir/fuppes`
+#AH_TEMPLATE([FUPPES_PLUGINDIR], [])
+#AC_DEFINE_UNQUOTED([FUPPES_PLUGINDIR], "[$PLUGINDIR]", [])
+
+
+
+	
 
 
 
@@ -626,6 +643,18 @@ AC_SUBST(MYSQL_LIBS)
 
 dnl Checks for Additional stuffs.
 
+# virtual folder
+have_vfolder=no
+AC_ARG_ENABLE([vfolder], [AC_HELP_STRING([--enable-vfolder],
+    [enable virtual folder support [default=yes]])],
+    [have_vfolder=$enableval], [have_vfolder='yes'])
+if test "x$have_vfolder" = "xyes" ; then
+	AH_TEMPLATE([HAVE_VFOLDER], [])
+	AC_DEFINE([HAVE_VFOLDER], [1], [])
+fi
+AM_CONDITIONAL(HAVE_VFOLDER, test "x$have_vfolder" = "xyes")
+
+
 # DLNA
 AC_ARG_ENABLE([dlna], [AC_HELP_STRING([--enable-dlna],
     [enable dlna support [default=yes]])],
@@ -643,7 +672,7 @@ if test "x$with_http_port" != 'x'; then
 fi
 
 
-# inotify
+# inotify (linux only)
 have_inotify=no
 AH_TEMPLATE([HAVE_INOTIFY], [inotify support])
 AC_ARG_ENABLE([inotify], [AC_HELP_STRING([--enable-inotify],
@@ -657,11 +686,52 @@ if test "x$enable_inotify" = "xyes" ; then
 fi
 AM_CONDITIONAL([HAVE_INOTIFY], [test "x$have_inotify" = "xyes"])
 
+# kqueue (bsd, os x)
+have_kqueue=no
+AH_TEMPLATE([HAVE_KQUEUE], [kqueue support])
+AC_ARG_ENABLE([kqueue], [AC_HELP_STRING([--enable-kqueue],
+    [enable kqueue support (bsd, os x) [default=yes]])],
+    [enable_kqueue=$enableval], [enable_kqueue='yes'])
+if test "x$enable_kqueue" = "xyes" ; then
+  AC_CHECK_FUNC(kqueue,
+			have_kqueue=yes
+			AC_DEFINE([HAVE_KQUEUE], [1], []), 
+			have_kqueue=no)
+fi
+AM_CONDITIONAL([HAVE_KQUEUE], [test "x$have_kqueue" = "xyes"])
 
+
+
+# dbus (to detect device addition/removal)
+have_dbus=no
+AH_TEMPLATE([HAVE_DBUS], [dbus support])
+AC_ARG_ENABLE([dbus], [AC_HELP_STRING([--enable-dbus],
+    [enable dbus [default=yes]])],
+    [enable_dbus=$enableval], [enable_dbus='yes'])
+if test "x$enable_dbus" = "xyes" ; then
+  PKG_CHECK_MODULES(DBUS, dbus-1 >= 1.2, 
+    have_dbus=yes
+    AC_DEFINE([HAVE_DBUS], [1], []), 
+    have_dbus=no)
+fi
+AM_CONDITIONAL(HAVE_DBUS, test "x$have_dbus" = "xyes")
+AC_SUBST(DBUS_CFLAGS)
+AC_SUBST(DBUS_LIBS)
+FUPPES_CFLAGS="$FUPPES_CFLAGS $DBUS_CFLAGS"
+FUPPES_LIBS="$FUPPES_LIBS $DBUS_LIBS"
+
+
+
+# build tests
+AC_ARG_ENABLE([tests], [AC_HELP_STRING([--enable-tests],
+    [enable tests [default=no]])],
+    [enable_tests=$enableval], [enable_tests='no'])
+AM_CONDITIONAL([BUILD_TESTS], [test "x$enable_tests" = "xyes"])
 
 
 AC_SUBST(FUPPES_LIBS)
 AC_SUBST(FUPPES_CFLAGS)
+
 
 AC_OUTPUT([
 Makefile
@@ -670,6 +740,9 @@ src/Makefile
 src/plugins/Makefile
 src/windows/Makefile
 include/Makefile
+resources/Makefile
+config/Makefile
+test/Makefile
 ])
 
 dnl summary
@@ -816,6 +889,16 @@ echo ""
 #end metadata
 
 
+echo "  database plugins"
+# mysql
+if test "x$have_mysql" = "xyes"; then
+  echo "    mysql              : enabled"
+else
+  echo "    mysql              : disabled"
+fi
+echo ""
+
+
 echo "  miscellaneous"
 
 # iconv
@@ -834,18 +917,18 @@ else
 fi
 fi
 
-# mysql
-#if test "x$have_mysql" = "xyes"; then
-#  echo "    mysql      : enabled"
-#else
-#  echo "    mysql      : disabled"
-#fi
-
 # inotify
 if test "x$have_inotify" = "xyes"; then
   echo "    inotify            : enabled"
 else
   echo "    inotify            : disabled"
+fi
+
+# vfolder
+if test "x$have_vfolder" = "xyes"; then
+  echo "    vfolder            : enabled"
+else
+  echo "    vfolder            : disabled"
 fi
 
 

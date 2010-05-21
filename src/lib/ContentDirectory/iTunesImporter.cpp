@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            iTunesImporter.cpp
  *
@@ -74,7 +74,8 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
   int i;
   CXMLNode* pNode;
   SAudioItem track;
-  string sFileName;
+  string fileName;
+	string path;
  
   pNode = pDict->FindNodeByValue("key", "Track Type", false);
   if(!pNode) {
@@ -122,19 +123,21 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
       track.nSampleRate = atoi(pDict->ChildNode(i + 1)->Value().c_str());
     }
     else if(pNode->Value().compare("Location") == 0) {
-      sFileName = pDict->ChildNode(i + 1)->Value();
+      fileName = pDict->ChildNode(i + 1)->Value();
       //cout << "*" << sFileName << "*" << endl;
       
       //cout << "*" << sFileName << "*" << endl;
       #ifdef WIN32
-			sFileName = sFileName.substr(string("file://localhost/").length(), sFileName.length());
-      sFileName = StringReplace(sFileName, "/", "\\");
+			fileName = fileName.substr(string("file://localhost/").length(), fileName.length());
+      fileName = StringReplace(fileName, "/", "\\");
 			#else
-			sFileName = sFileName.substr(string("file://localhost").length(), sFileName.length());
+			fileName = fileName.substr(string("file://localhost").length(), fileName.length());
       #endif
-      sFileName = URLEncodeValueToPlain(sFileName); //StringReplace(sFileName, "%20", " ");
+      fileName = URLEncodeValueToPlain(fileName); //StringReplace(sFileName, "%20", " ");
       //cout << "*" << sFileName << "*" << endl;
-        
+
+		  path = ExtractFilePath(fileName);
+			fileName = fileName.substr(path.length(), fileName.length() - path.length());  
     }
       
    
@@ -171,8 +174,8 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
           nObjId << ", " <<
           nDetailId << ", " <<
           ITEM_AUDIO_ITEM_MUSIC_TRACK << ", " <<
-          "'" << SQLEscape(sFileName) << "', " <<
-          "'" << SQLEscape(sFileName) << "', " <<
+          "'" << SQLEscape(path) << "', " <<
+          "'" << SQLEscape(fileName) << "', " <<
           "'" << SQLEscape(track.sTitle) << "', " <<
           "'n/a', " <<
           "'" << "obsolete" << "') ";

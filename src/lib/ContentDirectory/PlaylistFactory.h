@@ -1,9 +1,10 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            PlaylistFactory.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2006-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -30,15 +31,19 @@
 
 #include <string>
 
-class CPlaylistFactory
+class PlaylistFactory
 {
   public:
-    std::string BuildPlaylist(std::string p_sObjectId);
+    PlaylistFactory(std::string httpServerUrl);
+    std::string BuildPlaylist(std::string objectId, std::string ext);
   
   private:
     std::string BuildPLS(std::string p_sObjectId);
     std::string BuildM3U(std::string p_sObjectId);
     std::string BuildWPL(std::string p_sObjectId);
+    std::string BuildXSPF(std::string p_sObjectId);
+
+    std::string m_httpServerUrl;
 };
 
-#endif /* _PLAYLISTFACTORY_H */
+#endif // _PLAYLISTFACTORY_H

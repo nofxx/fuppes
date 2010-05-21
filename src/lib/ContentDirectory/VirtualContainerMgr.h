@@ -1,10 +1,10 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            VirtualContainerMgr.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -35,6 +35,7 @@
 #include "../Common/XMLParser.h"
 #include "DatabaseConnection.h"
 
+
 class CObjectDetails {
   public:
     bool Empty() { return sAlbum.length() == 0 && sArtist.length() == 0 && sGenre.length() == 0; }
@@ -45,26 +46,26 @@ class CObjectDetails {
 };
 
 
-
-
 class CVirtualContainerMgr: private fuppes::Thread
 {
   public:
 	  static CVirtualContainerMgr* Shared();
     ~CVirtualContainerMgr();
 				
-    static bool isVirtualContainer(unsigned int p_nContainerId, std::string p_sDevice, CSQLQuery* qry = NULL);
-    static bool hasVirtualChildren(unsigned int p_nParentId, std::string p_sDevice, CSQLQuery* qry = NULL);
+    static bool isVirtualContainer(unsigned int p_nContainerId, std::string p_sDevice, SQLQuery* qry = NULL);
+    static bool hasVirtualChildren(unsigned int p_nParentId, std::string p_sDevice, SQLQuery* qry = NULL);
 	  int  GetChildCount(unsigned int p_nParentId, std::string p_sDevice);
   
     void RebuildContainerList();
     bool IsRebuilding();
   
-    void CreateChildItems(CXMLNode* pParentNode, CSQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef, std::string p_sFilter = "");
+    void CreateChildItems(CXMLNode* pParentNode, SQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef, std::string p_sFilter = "");
   
 	private:
 	  CVirtualContainerMgr();
     
+    bool HandleFile(std::string file, SQLQuery* qry);
+
 	  static CVirtualContainerMgr* m_pInstance;  
     
     bool          m_bVFolderCfgValid;
@@ -78,13 +79,13 @@ class CVirtualContainerMgr: private fuppes::Thread
 		unsigned short m_nIdCounter;
 		#endif
 		
-    void CreateSingleVFolder(CXMLNode* pFolderNode, CSQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef);
-    void CreateSingleVFolderFolder(CXMLNode* pNode, CSQLQuery* pIns, std::string p_sDevice, unsigned int p_nObjectId, unsigned int p_nParentId, bool p_bCreateRef);
-    void CreateVFoldersFromProperty(CXMLNode* pFoldersNode, CSQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef, std::string p_sFilter = "");
-    void CreateVFoldersSplit(CXMLNode* pFoldersNode, CSQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef, std::string p_sFilter = "");
-    void CreateItemMappings(CXMLNode* pNode, CSQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, bool p_bCreateRef, std::string p_sFilter = "");
-    void CreateFolderMappings(CXMLNode* pNode, CSQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, bool p_bCreateRef, std::string p_sFilter = "");
-    void MapSharedDirsTo(CXMLNode* pNode, CSQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, unsigned int p_nSharedParendId = 0);
+    void CreateSingleVFolder(CXMLNode* pFolderNode, SQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef, std::string vcontainerPath);
+    void CreateSingleVFolderFolder(CXMLNode* pNode, SQLQuery* pIns, std::string p_sDevice, unsigned int p_nObjectId, unsigned int p_nParentId, bool p_bCreateRef);
+    void CreateVFoldersFromProperty(CXMLNode* pFoldersNode, SQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef, std::string vcontainerPath, std::string p_sFilter = "");
+    void CreateVFoldersSplit(CXMLNode* pFoldersNode, SQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, CObjectDetails* pDetails, bool p_bContainerDetails, bool p_bCreateRef, std::string p_sFilter = "");
+    void CreateItemMappings(CXMLNode* pNode, SQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, bool p_bCreateRef, std::string vcontainerPath, std::string p_sFilter = "");
+    void CreateFolderMappings(CXMLNode* pNode, SQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, bool p_bCreateRef, std::string p_sFilter = "");
+    void MapSharedDirsTo(CXMLNode* pNode, SQLQuery* pIns, std::string p_sDevice, unsigned int p_nParentId, unsigned int p_nSharedParendId = 0);
   
 		unsigned int GetId() { m_nIdCounter--; return m_nIdCounter; }		
 };

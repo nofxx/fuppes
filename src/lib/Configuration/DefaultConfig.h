@@ -39,7 +39,7 @@ using namespace std;
 /*
  * only change this version number if old config files will fail to work
  */
-const std::string NEEDED_CONFIGFILE_VERSION = "0.7.2.3";
+const std::string NEEDED_CONFIGFILE_VERSION = "0.8";
 
 bool WriteDefaultConfigFile(std::string p_sFileName)
 {
@@ -95,6 +95,38 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
     xmlTextWriterEndElement(pWriter);
 
 
+    // database
+    xmlTextWriterWriteComment(pWriter, BAD_CAST "type = sqlite3 or mysql");
+    xmlTextWriterStartElement(pWriter, BAD_CAST "database");
+      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "type", BAD_CAST "sqlite3");   
+        
+      xmlTextWriterWriteComment(pWriter, BAD_CAST "sqlite3");
+  
+      xmlTextWriterStartElement(pWriter, BAD_CAST "file");
+      xmlTextWriterEndElement(pWriter); 
+      
+      xmlTextWriterWriteComment(pWriter, BAD_CAST "mysql");
+  
+      xmlTextWriterStartElement(pWriter, BAD_CAST "hostname");
+      xmlTextWriterEndElement(pWriter); 
+      xmlTextWriterStartElement(pWriter, BAD_CAST "username");
+      xmlTextWriterEndElement(pWriter); 
+      xmlTextWriterStartElement(pWriter, BAD_CAST "password");
+      xmlTextWriterEndElement(pWriter); 
+      xmlTextWriterStartElement(pWriter, BAD_CAST "dbname");
+      xmlTextWriterEndElement(pWriter); 
+
+      xmlTextWriterWriteComment(pWriter, BAD_CAST "common");
+  
+      xmlTextWriterStartElement(pWriter, BAD_CAST "readonly");
+      xmlTextWriterWriteString(pWriter, BAD_CAST "false");
+      xmlTextWriterEndElement(pWriter); 
+  
+    // end database
+    xmlTextWriterEndElement(pWriter);
+  
+
+  
     // content directory
     xmlTextWriterStartElement(pWriter, BAD_CAST "content_directory");
     
@@ -109,7 +141,7 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
       xmlTextWriterEndElement(pWriter); 
     
       // libs for metadata extraction
-      xmlTextWriterWriteComment(pWriter, BAD_CAST "libs used for metadata extraction when building the database. [true|false]");
+      /*xmlTextWriterWriteComment(pWriter, BAD_CAST "libs used for metadata extraction when building the database. [true|false]");
       xmlTextWriterStartElement(pWriter, BAD_CAST "use_imagemagick");
       xmlTextWriterWriteString(pWriter, BAD_CAST "true");
       xmlTextWriterEndElement(pWriter);  
@@ -118,7 +150,7 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
       xmlTextWriterEndElement(pWriter);
       xmlTextWriterStartElement(pWriter, BAD_CAST "use_libavformat");
       xmlTextWriterWriteString(pWriter, BAD_CAST "true");
-      xmlTextWriterEndElement(pWriter); 
+      xmlTextWriterEndElement(pWriter);*/
   
     // end content directory
     xmlTextWriterEndElement(pWriter);
@@ -161,7 +193,7 @@ bool WriteDefaultConfigFile(std::string p_sFileName)
         xmlTextWriterEndElement(pWriter);
     
         // playlist_style
-        xmlTextWriterWriteComment(pWriter, BAD_CAST "[file|container]");
+        xmlTextWriterWriteComment(pWriter, BAD_CAST "[file|container|pls|m3u|wpl|xspf]");
         xmlTextWriterStartElement(pWriter, BAD_CAST "playlist_style");
         xmlTextWriterWriteString(pWriter, BAD_CAST "file"); // [file|container]
         xmlTextWriterEndElement(pWriter);

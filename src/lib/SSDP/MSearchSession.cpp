@@ -134,8 +134,9 @@ CHandleMSearchSession::CHandleMSearchSession(CSSDPMessage* pSSDPMessage, std::st
    
 CHandleMSearchSession::~CHandleMSearchSession()
 {
-  /*if(m_Thread)
-    fuppesThreadClose(m_Thread);*/
+  // stop and close thread
+  close();
+  
   delete m_pSSDPMessage;
   delete m_pNotifyMsgFactory;
 }

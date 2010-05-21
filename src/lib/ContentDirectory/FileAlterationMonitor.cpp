@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007-2009 Ulrich Völkel <fuppes@ulrich-voelkel.de>
+ *  Copyright (C) 2007-2010 Ulrich Völkel <fuppes@ulrich-voelkel.de>
  ****************************************************************************/
 
 /*
@@ -33,31 +33,42 @@
 #include "../SharedLog.h"
 using namespace fuppes;
 
-#ifdef WIN32
+//#ifdef WIN32
 #include <iostream>
 using namespace std;
-#endif
+//#endif
 
 
-void CFileAlterationMonitor::FamEvent(CFileAlterationEvent* event) 
+void CFileAlterationMonitor::famEvent(CFileAlterationEvent* event) 
 {
-	Log::log(Log::fam, Log::debug, __FILE__, __LINE__, CFileAlterationEvent::toString(event));
-  fuppesThreadLockMutex(&mutex);
-	m_pEventHandler->FamEvent(event);
-	fuppesThreadUnlockMutex(&mutex);
+  if(m_pEventHandler == NULL)
+    return;
+  
+	Log::log(Log::fam, Log::debug, __FILE__, __LINE__, CFileAlterationEvent::toString(event));  
+  //fuppesThreadLockMutex(&mutex);
+	m_pEventHandler->famEvent(event);
+	//fuppesThreadUnlockMutex(&mutex);
 }
 
 
 
-CFileAlterationMgr* CFileAlterationMgr::m_Instance = 0;
+/*CFileAlterationMgr* CFileAlterationMgr::m_Instance = 0;
 
-CFileAlterationMgr* CFileAlterationMgr::Shared()
+CFileAlterationMgr* CFileAlterationMgr::Shared() // static
 {
   if(m_Instance == 0) {
     m_Instance = new CFileAlterationMgr();
   }
   return m_Instance;  
 }
+
+void CFileAlterationMgr::deleteInstance() // static
+{
+  if(m_Instance == 0)
+    return;
+  delete m_Instance;
+  m_Instance = NULL;
+}*/
 
 CFileAlterationMonitor* CFileAlterationMgr::CreateMonitor(IFileAlterationMonitor* pEventHandler)
 {
@@ -92,6 +103,8 @@ CInotifyMonitor::CInotifyMonitor(IFileAlterationMonitor* pEventHandler):
 
 CInotifyMonitor::~CInotifyMonitor()
 {
+  close();
+  
   std::map<std::string, InotifyWatch*>::iterator iter;
   for(iter = m_watches.begin(); iter != m_watches.end(); iter++) {
 	  m_pInotify->Remove(iter->second);
@@ -103,22 +116,26 @@ CInotifyMonitor::~CInotifyMonitor()
 }
   
 bool CInotifyMonitor::addWatch(std::string path)
-{
-  appendTrailingSlash(&path);  
+{  
+  appendTrailingSlash(&path);
+  cout << "add watch: " << path << endl;
   if(m_watches.find(path) != m_watches.end()) {
     //cout << "watch already exists: " << path << endl;
     return false;
   }
 
 	Log::log(Log::fam, Log::extended, __FILE__, __LINE__, "add watch \"%s\"", path.c_str());
-	
-  try {     // IN_UNMOUNT
-		InotifyWatch* pWatch = new InotifyWatch(path, IN_CREATE | IN_DELETE | IN_MOVE | IN_CLOSE_WRITE); // IN_MODIFY 
+
+  InotifyWatch* pWatch = NULL;
+  try { // IN_UNMOUNT
+		pWatch = new InotifyWatch(path, IN_CREATE | IN_DELETE | IN_MOVE | IN_CLOSE_WRITE); // IN_MODIFY 
     m_pInotify->Add(pWatch);
     m_watches[path] = pWatch;
   }
   catch(InotifyException &ex) {
     //cout << "addWatch :: exception: " << ex.GetMessage() << endl << path << endl;
+    if(pWatch)
+      delete pWatch;
 		Log::log(Log::fam, Log::normal, __FILE__, __LINE__, "addWatch :: exception \"%s\"", ex.GetMessage().c_str());
   }
   
@@ -132,7 +149,7 @@ bool CInotifyMonitor::addWatch(std::string path)
 void CInotifyMonitor::removeWatch(std::string path)
 {
   appendTrailingSlash(&path);
-  //cout << "remove watch: " << path << endl;
+  cout << "remove watch: " << path << endl;
 	Log::log(Log::fam, Log::extended, __FILE__, __LINE__, "remove watch \"%s\"", path.c_str());
 	
   std::map<std::string, InotifyWatch*>::iterator iter;
@@ -141,6 +158,35 @@ void CInotifyMonitor::removeWatch(std::string path)
     return;
   }
 
+
+  std::string tmpPath;
+
+  // iterate over all watches ...
+  for(iter = m_watches.begin();
+      iter != m_watches.end(); ) {
+
+    // ... check if the watche's path contains 'path'
+    tmpPath = iter->first;
+    if(tmpPath.length() >= path.length() &&
+       tmpPath.substr(0, path.length()).compare(path) == 0) {
+
+       cout << "delete watch: " << iter->first << endl;
+         
+       // delete the watch
+       m_pInotify->Remove(iter->second);
+       delete iter->second;
+
+       // remove the map entry
+       m_watches.erase(iter++);
+    }
+    else {
+      ++iter;
+    }
+        
+  }
+  
+
+  /*
 	try {
 	  m_pInotify->Remove(iter->second);
 		delete iter->second;  
@@ -150,6 +196,7 @@ void CInotifyMonitor::removeWatch(std::string path)
 		//cout << "removeWatch :: exception: " << ex.GetMessage() << endl << path << endl;
 		Log::log(Log::fam, Log::normal, __FILE__, __LINE__, "removeWatch :: exception \"%s\"", ex.GetMessage().c_str());
   } 
+*/
 }
 
 void CInotifyMonitor::moveWatch(std::string fromPath, std::string toPath)
@@ -157,10 +204,59 @@ void CInotifyMonitor::moveWatch(std::string fromPath, std::string toPath)
   appendTrailingSlash(&fromPath);
   appendTrailingSlash(&toPath);
 
-  //cout << "move watch: " << fromPath << " to: " << toPath << endl;
+  cout << "move watch: " << fromPath << " to: " << toPath << endl;
+
+  std::map<std::string, InotifyWatch*>::iterator iter;
+  if((iter = m_watches.find(fromPath)) == m_watches.end()) {
+    //cout << "watch not found: " << path << endl;
+    return;
+  }
+
+
+  string path;
+  InotifyWatch* watch;
+
+  std::list<InotifyWatch*> tmpStore;
+  std::list<InotifyWatch*>::iterator tmpStoreIter;
+
+  // iterate over all watches ...
+  for(iter = m_watches.begin();
+      iter != m_watches.end(); ) {
+
+    // ... check if the path contains 'fromPath'
+    path = iter->first;
+    if(path.length() >= fromPath.length() &&
+       path.substr(0, fromPath.length()).compare(fromPath) == 0) {
+
+       // modify the watch and store it in a temp list 
+       watch = iter->second;
+       path = toPath + path.substr(fromPath.length(), path.length());
+       watch->SetPath(path);
+       cout << "set watch path: " << path << endl;
+       tmpStore.push_back(watch);
+
+       // remove the map entry
+       m_watches.erase(iter++);
+    }
+    else {
+      ++iter;
+    }
+        
+  }
+
+  // append watches from our temp list
+  for(tmpStoreIter = tmpStore.begin();
+      tmpStoreIter != tmpStore.end();
+      ++tmpStoreIter) {
+    watch = *tmpStoreIter;
+    m_watches[watch->GetPath()] = watch;
+  }
   
-  removeWatch(fromPath);
+  
+  
+/*  removeWatch(fromPath);
   addWatch(toPath);
+  */
 }
 
 //fuppesThreadCallback WatchLoop(void* arg)    
@@ -168,13 +264,14 @@ void CInotifyMonitor::run()
 {
   CInotifyMonitor* pInotify = this; //(CInotifyMonitor*)arg;
   InotifyEvent event;
+  InotifyEvent peek;
   
   
-  std::string eventPath;
-  unsigned int         movedFromCookie = 0;
-  std::string movedFromPath;
-  std::string movedFromFile;
-  bool        movedFromIsDir = false;
+  std::string   absEventPath;
+  unsigned int  movedFromCookie = 0;
+  std::string   movedFromPath;
+  std::string   movedFromFile;
+  bool          movedFromIsDir = false;
   
   CFileAlterationEvent   famEvent;
   // path, event
@@ -182,16 +279,16 @@ void CInotifyMonitor::run()
   std::map<std::string, CFileAlterationEvent*>::iterator  eventsIter;  
 
   size_t numEvents;
+
+  pInotify->m_pInotify->SetNonBlock(true);
   
   while(!this->stopRequested()) {
   
-    //cout << "wait for events" << endl;
-    
+    // wait for events
     try {    
       pInotify->m_pInotify->WaitForEvents();
     }
     catch(InotifyException &ex) {
-      //cout << "exception" << ex.GetMessage() << endl;
 			Log::log(Log::fam, Log::normal, __FILE__, __LINE__, "exception \"%s\"", ex.GetMessage().c_str());
     }
 
@@ -199,18 +296,24 @@ void CInotifyMonitor::run()
       break;
     
     numEvents = pInotify->m_pInotify->GetEventCount();
+
+    if(numEvents == 0) {
+      msleep(100);
+      continue;
+    }    
     Log::log(Log::fam, Log::debug, __FILE__, __LINE__, "got %d events", numEvents);
-    
+
+    // process events
     while(pInotify->m_pInotify->GetEvent(&event)) {
 
 
       std::string types;
       event.DumpTypes(types);
       //cout << "event: " << "cookie: " << event.GetCookie() << " types: " << types << endl;
-
       Log::log(Log::fam, Log::debug, __FILE__, __LINE__, 
         "event :: cookie: %d types: %s", event.GetCookie(), types.c_str());
-      
+
+
       if(event.IsType(IN_IGNORED)) {
         //cout << "inotify: IN_IGNORED" << endl;        
         /*string sDump;
@@ -218,92 +321,88 @@ void CInotifyMonitor::run()
         cout << "cookie: " << event.GetCookie() << " mask: " << sDump << endl;*/        
         continue;
       } 
+
       
-      //FAM_EVENT_TYPE  type;
-      eventPath = event.GetWatch()->GetPath() + event.GetName();            
-      
-			// check if we have a pending MOVED_FROM event and
-      // throw a delete if the current event is no MOVED_TO.
-      // I assume that a MOVED_FROM is directly followed
-      // by a MOVED_TO if moved inside watched dirs.
-      // I hope this assumption is correct!?
-      if(movedFromCookie > 0 && !event.IsType(IN_MOVED_TO)) {    
-        famEvent.m_type  = FAM_DELETE;
-        famEvent.m_path  = movedFromPath;
-        famEvent.m_file  = movedFromFile;        
-        famEvent.m_isDir = movedFromIsDir;
-        if(movedFromIsDir) {          
-    			pInotify->removeWatch(movedFromPath + movedFromFile);          
-        }
-        pInotify->FamEvent(&famEvent);        
-        movedFromCookie = 0;
+      // build absolute path
+      absEventPath = event.GetWatch()->GetPath() + event.GetName();            
+      if(event.IsType(IN_ISDIR)) {
+        absEventPath = Directory::appendTrailingSlash(absEventPath);
       }
+
       
       
       // IN_CREATE
-			if(event.IsType(IN_CREATE)) {        
-        //cout << "object created: " << eventPath << " [NEW]" << endl;        
+			if(event.IsType(IN_CREATE)) {
 
+        cout << "CREATE EVENT: " << absEventPath << endl;
+        
         // directories just send a CREATE event so we can
         // throw the event right now
         if(event.IsType(IN_ISDIR)) {
-   				pInotify->addWatch(eventPath);
+          pInotify->addWatch(absEventPath);
           
           famEvent.m_type  = FAM_CREATE;
           famEvent.m_isDir = true;
           famEvent.m_path  = event.GetWatch()->GetPath();
-          famEvent.m_file  = event.GetName();            
-                 
-          pInotify->FamEvent(&famEvent);
+          famEvent.m_file  = event.GetName();
+          
+          pInotify->famEvent(&famEvent);
         }
         // the file's CREATE event is always followed by a
         // CLOSE event. therefore we queue it and wait for CLOSE
         else {
-          events[eventPath] = new CFileAlterationEvent();
-          events[eventPath]->m_type  = FAM_CREATE;
-          events[eventPath]->m_isDir = false;
-          events[eventPath]->m_path  = event.GetWatch()->GetPath();
-          events[eventPath]->m_file  = event.GetName();
+    
+          events[absEventPath] = new CFileAlterationEvent();
+          events[absEventPath]->m_type  = FAM_CREATE;
+          events[absEventPath]->m_isDir = false;
+          events[absEventPath]->m_path  = event.GetWatch()->GetPath();
+          events[absEventPath]->m_file  = event.GetName();
         }        
         
 			} // IN_CREATE
+
       
       // IN_DELETE
       else if(event.IsType(IN_DELETE)) {
-        //cout << "object deleted: " << eventPath << endl;
+        
+        cout << "DELETE EVENT: " << absEventPath << endl;
+
+        if(event.IsType(IN_ISDIR)) {
+          pInotify->removeWatch(absEventPath);
+        }
         
         famEvent.m_type = FAM_DELETE;
         famEvent.m_path = event.GetWatch()->GetPath();
         famEvent.m_file = event.GetName();        
-        if(event.IsType(IN_ISDIR)) {
-          famEvent.m_isDir = true;
-    			pInotify->removeWatch(eventPath);          
-        }
+        famEvent.m_isDir = event.IsType(IN_ISDIR);
+        pInotify->famEvent(&famEvent);
 
-        pInotify->FamEvent(&famEvent);
       } // IN_DELETE        
 
+      
       // IN_CLOSE_WRITE
       else if(event.IsType(IN_CLOSE_WRITE)) {
         //cout << "object closed: " << eventPath << " cookie: " << event.GetCookie() << endl;
+
+        cout << "CLOSE_WRITE EVENT: " << absEventPath << endl;
         
         // check if there is a create event and throw it ...
-        eventsIter = events.find(eventPath);
+        eventsIter = events.find(absEventPath);
         if(eventsIter != events.end()) {
           
           CFileAlterationEvent* evt = eventsIter->second;
-          pInotify->FamEvent(evt);
+          pInotify->famEvent(evt);
           delete evt;
           events.erase(eventsIter); 
         }
         // ... else we have a (file) modify event
-        else {
+        /*else {
           famEvent.m_type  = FAM_MODIFY;
           famEvent.m_isDir = false;
           famEvent.m_path  = event.GetWatch()->GetPath();
           famEvent.m_file  = event.GetName();
-          pInotify->FamEvent(&famEvent);
-        }
+          pInotify->famEvent(&famEvent);
+        }*/
         
       } // IN_CLOSE_WRITE
       
@@ -311,11 +410,38 @@ void CInotifyMonitor::run()
       // IN_MOVED_FROM
       else if(event.IsType(IN_MOVED_FROM)) {        
         //cout << "object moved from: " << eventPath << " [NEW]" << endl;
-
+        
         movedFromCookie = event.GetCookie();
         movedFromPath   = event.GetWatch()->GetPath();
         movedFromFile   = event.GetName();
         movedFromIsDir  = event.IsType(IN_ISDIR);
+
+        // if there is an other event in the queue an 
+        // if it is a MOVED_TO with the same cookie
+        // the dir is moved inside the shared dirs
+        if(pInotify->m_pInotify->PeekEvent(&peek) &&
+           peek.IsType(IN_MOVED_TO) && 
+           peek.GetCookie() == event.GetCookie()) {
+           // the event is thrown in the next round of this loop
+           continue;
+        }
+        // else the dir is moved outside the shared dirs
+        // which means we throw a delete event and remove the watch
+        else {
+
+          famEvent.m_type  = FAM_DELETE;
+          famEvent.m_path  = movedFromPath;
+          famEvent.m_file  = movedFromFile;        
+          famEvent.m_isDir = movedFromIsDir;
+          movedFromCookie = 0;
+
+          if(movedFromIsDir) {
+            pInotify->removeWatch(Directory::appendTrailingSlash(movedFromPath + movedFromFile));
+          }
+
+          pInotify->famEvent(&famEvent);          
+        }
+        
       } // IN_MOVED_FROM
       
       // IN_MOVED_TO
@@ -331,23 +457,29 @@ void CInotifyMonitor::run()
           famEvent.m_path  = event.GetWatch()->GetPath();
           famEvent.m_file  = event.GetName();
           famEvent.m_oldPath  = movedFromPath;
-          famEvent.m_oldFile  = movedFromFile;          
-          pInotify->FamEvent(&famEvent);          
+          famEvent.m_oldFile  = movedFromFile;
+
+          if(event.IsType(IN_ISDIR)) {
+            pInotify->moveWatch(famEvent.m_oldPath + famEvent.m_oldFile, 
+                                famEvent.m_path + famEvent.m_file);
+          }
+          
+          pInotify->famEvent(&famEvent);          
 
           movedFromCookie = 0;
         }
         else {
           //cout << "new object moved in to: " << eventPath << " [NEW]" << endl;
           
-          famEvent.m_type = (event.IsType(IN_ISDIR) ? (FAM_CREATE | FAM_MOVE) : FAM_CREATE);          
+          famEvent.m_type  = FAM_CREATE;
           famEvent.m_isDir = event.IsType(IN_ISDIR);
           famEvent.m_path  = event.GetWatch()->GetPath();
           famEvent.m_file  = event.GetName();                 
                      
           if(event.IsType(IN_ISDIR)) {
-            pInotify->addWatch(eventPath); 
+            pInotify->addWatch(absEventPath); 
           }
-          pInotify->FamEvent(&famEvent); 
+          pInotify->famEvent(&famEvent); 
         }
 
       }  // IN_MOVED_TO   
@@ -365,11 +497,10 @@ void CInotifyMonitor::run()
 
 #ifdef WIN32
 
-/*   
+/*
 http://msdn.microsoft.com/en-us/library/aa365261(VS.85).aspx
-
-FindFirstChangeNotification
-FindNextChangeNotification
+http://msdn.microsoft.com/en-us/library/aa365465(VS.85).aspx
+ReadDirectoryChangesW
 */
 
 CWindowsFileMonitor::CWindowsFileMonitor(IFileAlterationMonitor* pEventHandler)
@@ -380,6 +511,7 @@ CWindowsFileMonitor::CWindowsFileMonitor(IFileAlterationMonitor* pEventHandler)
 
 CWindowsFileMonitor::~CWindowsFileMonitor()
 {
+  close();
 }
   
 bool CWindowsFileMonitor::addWatch(std::string path)
@@ -426,4 +558,14 @@ void CWindowsFileMonitor::run()
 	}*/
 }
 
-#endif
+#endif // WIN32
+
+
+#ifdef HAVE_KQUEUE
+
+/*
+http://wiki.netbsd.se/kqueue_tutorial
+http://developer.apple.com/Mac/library/documentation/Darwin/Reference/ManPages/man2/kqueue.2.html
+ */
+
+#endif // HAVE_KQUEUE

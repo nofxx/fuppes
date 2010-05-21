@@ -41,23 +41,10 @@ CXMLNode::~CXMLNode()
 
 void CXMLNode::ClearChildren()
 {
-  CXMLNode* pNode;
-  std::map<int, CXMLNode*>::iterator pTmpIt;
- 
-  for(m_NodeListIter = m_NodeList.begin(); m_NodeListIter != m_NodeList.end();) {
-    
-    if(m_NodeList.empty()) {
-      break;
-    }
-    
-    pTmpIt = m_NodeListIter;
-    ++pTmpIt;
-    
-    pNode = (*m_NodeListIter).second;
-    delete pNode;
-    
-    m_NodeList.erase(m_NodeListIter);
-    m_NodeListIter = pTmpIt;
+  // keep deleting the first element until the list is empty
+  while(!m_NodeList.empty()) {
+    delete m_NodeList.begin()->second;
+    m_NodeList.erase(m_NodeList.begin());
   }
   
   m_nChildCount = 0;
@@ -212,12 +199,17 @@ void CXMLNode::Value(int p_nValue)
   Value(szValue);
 }
 
+#warning todo: Verify that this function works as expected.
 CXMLNode* CXMLNode::AddChild(std::string p_sName, std::string p_sValue)
 {
-  xmlNewTextChild(m_pNode, NULL, BAD_CAST p_sName.c_str(), BAD_CAST p_sValue.c_str());    
-  ClearChildren();
-  #warning todo
-  return NULL;
+  xmlNode* newChild = xmlNewTextChild(m_pNode, NULL, BAD_CAST p_sName.c_str(), BAD_CAST p_sValue.c_str());    
+
+  // TODO Why do we clear the children here? Aren't we trying to add children?
+  int id = ChildCount();
+  CXMLNode* new_node = new CXMLNode(newChild, id, this);
+  m_NodeList.insert(pair<int, CXMLNode*>(id, new_node));
+
+  return new_node;
 }
 
 void CXMLNode::RemoveChild(int p_nIdx)

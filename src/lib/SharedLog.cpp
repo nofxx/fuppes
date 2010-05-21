@@ -37,132 +37,6 @@
 #endif
 
 using namespace std;
-using namespace fuppes;
-
-std::string Log::senderToString(Log::Sender sender) // static
-{
-	switch(sender) {
-    case Log::unknown:
-      return "unknown";
-    case Log::http:
-      return "http";
-    case Log::soap:
-      return "soap";
-    case Log::gena:
-      return "gena";
-    case Log::ssdp:
-      return "ssdp";
-    case Log::fam:
-      return "fam";
-
-    case Log::contentdir:
-      return "contentdir";
-    case Log::contentdb:
-      return "contentdb";
-    case Log::sql:
-      return "sql";
-
-    case Log::plugin:
-      return "plugin";
-		default:
-			return "unknown";
-	};	
-}
-
-Log::Sender Log::stringToSender(std::string sender) // static
-{
-  if(sender == "unknown")
-    return Log::unknown;
-  else if(sender == "http")
-    return Log::http;
-  else if(sender == "soap")
-    return Log::soap;
-  else if(sender == "gena")
-    return Log::gena;
-  else if(sender == "ssdp")
-    return Log::ssdp;
-  else if(sender == "fam")
-    return Log::fam;
-  
-  else if(sender == "contentdir")
-    return Log::contentdir;
-  else if(sender == "contentdb")
-    return Log::contentdb;
-  else if(sender == "sql")
-    return Log::sql;
-  
-  else if(sender == "plugin")
-    return Log::plugin;
-  else
-    return Log::unknown;
-}
-
-
-Log* Log::m_instance = NULL;
-
-void Log::init() // static
-{
-  if(m_instance != NULL)
-    return;
-  
-  m_instance = new Log();  
-  /*m_instance->m_logSenders.push_back(Log::http);
-  m_instance->m_logSenders.push_back(Log::ssdp);
-  m_instance->m_logSenders.push_back(Log::fam);*/
-}
-
-void Log::uninit() // static
-{
-  if(m_instance == NULL)
-    return;
-  
-  delete m_instance;
-  m_instance = NULL;
-}
-
-void Log::log(Log::Sender sender, Log::Level level, const std::string fileName, int lineNo, const char* format, ...) // static
-{
-  bool active = false;
-  std::list<Log::Sender>::iterator iter = m_instance->m_logSenders.begin();
-  for(; iter != m_instance->m_logSenders.end(); iter++) {
-    if(*iter == sender) {
-      active = true;
-      break;
-    }
-  }
-
-  if(!active) {
-    //cout << "Log sender: " << Log::senderToString(sender) << " not active" << endl;
-    return;
-  }
-  
-	va_list args;
-  va_start(args, format);
-	CSharedLog::LogArgs(0, fileName, lineNo, format, args);
-	va_end(args);
-}
-
-void Log::log(Log::Sender sender, Log::Level level, const std::string fileName, int lineNo, const std::string msg) // static
-{
-  bool active = false;
-  std::list<Log::Sender>::iterator iter = m_instance->m_logSenders.begin();
-  for(; iter != m_instance->m_logSenders.end(); iter++) {
-    if(*iter == sender) {
-      active = true;
-      break;
-    }
-  }
-
-  if(!active) {
-    //cout << "Log sender: " << Log::senderToString(sender) << " not active" << endl;
-    return;
-  }
-
-	string out = "[" + Log::senderToString(sender) + "] " + msg;
-	CSharedLog::Log(0, fileName, lineNo, out);
-}
-
-
 
 CSharedLog* CSharedLog::m_Instance = 0;
 ofstream*   CSharedLog::m_fsLogFile = NULL;
@@ -178,7 +52,7 @@ CSharedLog* CSharedLog::Shared()
 
 CSharedLog::CSharedLog()
 {
-  Log::init();
+  fuppes::Log::init();
   SetLogLevel(1, false);
   
 	
@@ -210,7 +84,7 @@ CSharedLog::~CSharedLog()
     m_fsLogFile->close();
     delete m_fsLogFile;
     m_fsLogFile = NULL;
-  }
+  }
 }
 
 bool CSharedLog::SetLogFileName(std::string p_sLogFileName)

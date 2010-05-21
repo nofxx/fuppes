@@ -63,8 +63,8 @@ CHTTPMessage::CHTTPMessage()
   #endif
   m_nTransferEncoding    = HTTP_TRANSFER_ENCODING_NONE;
 
-	memset(&m_LocalEp, '\0', sizeof(struct sockaddr_in));
-	memset(&m_RemoteEp, '\0', sizeof(struct sockaddr_in));
+	memset(&m_LocalEp, 0, sizeof(struct sockaddr_in));
+	memset(&m_RemoteEp, 0, sizeof(struct sockaddr_in));
 }
 
 CHTTPMessage::~CHTTPMessage()

@@ -1,10 +1,10 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            ContentDatabase.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -36,82 +36,111 @@
 #include "../Common/Common.h"
 #include "../Common/Thread.h"
 #include "FileAlterationMonitor.h"
+#include "FileAlterationHandler.h"
+#include "UpdateThread.h"
 
 #include "DatabaseConnection.h"
+
+class CContentDatabase;
 
 class RebuildThread: public fuppes::Thread
 {
 	public:
+
+    enum RebuildType {
+      rebuild       = 1,
+      addNew        = 2,
+      removeMissing = 4
+    };
+    
 		RebuildThread() : fuppes::Thread("db rebuild thread") {
+      m_rebuildType = rebuild;
 		}
-	
+
+    ~RebuildThread() {
+      close();
+    }
+    
+    void setRebuildType(int type) {
+      m_rebuildType = type;
+    }
+    
 	private:
 		void run();
+
+    void DbScanDir(CContentDatabase* db, SQLQuery* qry, std::string p_sDirectory, long long int p_nParentId);
+    unsigned int InsertFile(CContentDatabase* pDb, SQLQuery* qry, unsigned int p_nParentId, std::string p_sFileName, bool hidden = false);
+    
+    int m_rebuildType;
 };
-	
-class CContentDatabase: public IFileAlterationMonitor
+
+
+class ScanDirectoryThread: public fuppes::Thread
 {
   public:
+    ScanDirectoryThread(std::string path) :
+      fuppes::Thread("ScanDirectoryThread" + path) {
+      m_path = path;
+	  }
+  
+  private:
+    void run();
+    void scanDir(SQLQuery* qry, std::string path, unsigned int parentId);
+
+    std::string m_path;
+};
+
+class CContentDatabase
+{
+  friend class RebuildThread;
+  
+  public:
     static CContentDatabase* Shared();  
- 
     ~CContentDatabase();
 
     bool Init(bool* p_bIsNewDB);
-  
 
-		bool Execute(std::string p_sStatement);
-    unsigned int Insert(std::string p_sStatement);
-
-    bool Select(std::string p_sStatement);
-  
-
-    bool Eof();
-    CSQLResult* GetResult();
-    void Next();
-  
-    std::list<CSQLResult*> m_ResultList;
-    std::list<CSQLResult*>::iterator m_ResultListIterator;
-    unsigned int  m_nRowsReturned;		
-		
     void RebuildDB();
     void UpdateDB();
     void AddNew();
     void RemoveMissing();
-    bool IsRebuilding();// { return m_bIsRebuilding; };
+    bool IsRebuilding();
 	
-    unsigned int GetObjId();
-  
-		fuppesThreadMutex m_Mutex;
-  
+    static unsigned int GetObjId();
+   
     CFileAlterationMonitor* fileAlterationMonitor() { return Shared()->m_pFileAlterationMonitor; }
-    //void FamEvent(FAM_EVENT_TYPE eventType, std::string path, std::string name, std::string oldPath = "", std::string oldName = "");
-    void FamEvent(CFileAlterationEvent* event);
     
     void deleteObject(unsigned int objectId); 
     void deleteContainer(std::string path);    
+
+
+
+    static unsigned int insertFile(std::string fileName, object_id_t parentId = 0, SQLQuery* qry = NULL, bool lock = true);
+    static unsigned int insertDirectory(std::string path, std::string title, object_id_t parentId, SQLQuery* qry = NULL, bool lock = true);
+
+    static void scanDirectory(std::string path);
+
+    static int systemUpdateId();
+    static void incSystemUpdateId();
+
     
   private:    
     CContentDatabase();
-    void BuildDB();
+    void BuildDB(int rebuildType);
     
-		void Lock();
-    void Unlock();
-    void ClearResult();
-		
-	  //fuppesThread  m_RebuildThread;
-		RebuildThread*	 m_RebuildThread;
+		RebuildThread*	 m_rebuildThread;
+    fuppes::UpdateThread*    m_updateThread;
 
-    //bool m_bIsRebuilding;
     static CContentDatabase* m_Instance;
-    int m_nLockCount;
   
     CFileAlterationMonitor* m_pFileAlterationMonitor;
+    FileAlterationHandler*  m_fileAlterationHandler;
 
-    bool          m_bInTransaction;
-    bool Open();
-    void Close();
-		
 		unsigned int	m_objectId;
+    unsigned int  m_systemUpdateId;
+
+    std::list<ScanDirectoryThread*>     m_scanDirThreadList;
+    fuppes::Mutex                       m_insertMutex;
 };
 
 #endif // _CONTENTDATABASE_H

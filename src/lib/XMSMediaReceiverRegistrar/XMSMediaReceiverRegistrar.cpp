@@ -27,7 +27,7 @@
 #include "XMSMediaReceiverRegistrarDescription.cpp"
 
 CXMSMediaReceiverRegistrar::CXMSMediaReceiverRegistrar(std::string HTTPServerURL):
-CUPnPService(UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR, HTTPServerURL)
+CUPnPService(UPNP_SERVICE_X_MS_MEDIA_RECEIVER_REGISTRAR, 1, HTTPServerURL)
 {
 }
 

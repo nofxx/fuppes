@@ -1,10 +1,10 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Common.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -35,6 +35,7 @@
 #include <string>
 #include <sstream>
 #include <assert.h>
+#include <vector>
 
 #include <libxml/xmlwriter.h>
 
@@ -83,12 +84,6 @@ moved to fuppes_types.h because it's needed by some plugins
 #define ASSERT assert
 
 const std::string MIME_TYPE_TEXT_HTML = "text/html";
-
-//bool FileExists(std::string p_sFileName);
-//bool IsFile(std::string p_sFileName);
-//bool DirectoryExists(std::string p_sDirName);
-//bool IsDirectory(std::string p_sDirName);
-bool CreateDirectory(std::string dir);
 
 std::string StringReplace(std::string p_sIn, std::string p_sSearch, std::string p_sReplace);
 std::string ExtractFileExt(std::string p_sFileName);
@@ -175,15 +170,50 @@ fuppesLibHandle   FuppesLoadLibrary(std::string p_sLibName);
 fuppesProcHandle  FuppesGetProcAddress(fuppesLibHandle p_LibHandle, std::string p_sProcName);
 bool              FuppesCloseLibrary(fuppesLibHandle p_LibHandle);
 
-
 #ifdef WIN32
-
 #define upnpPathDelim           "\\"
-
 #else
-
 #define upnpPathDelim           "/"
-
 #endif
+
+namespace fuppes
+{
+
+class DateTime
+{
+	public:
+		static DateTime		now();
+		std::string				toString();
+    int               toInt();
+		DateTime&					operator=(const DateTime &dateTime);
+		
+	private:		
+		//std::string m_string;
+#ifndef WIN32
+    time_t    m_time;
+#else
+    fixme
+#endif
+};
+
+
+class FormatHelper
+{
+  public:
+    static std::string msToUpnpDuration(int ms);
+    static std::string fileNameToTitle(std::string fileName);
+};
+
+
+typedef std::vector<std::string>  StringList;
+
+class String
+{
+  public:
+    static StringList split(std::string in, std::string delimiter);
+};
+
+}
+
 
 #endif // _COMMON_H

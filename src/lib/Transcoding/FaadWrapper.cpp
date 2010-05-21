@@ -75,7 +75,7 @@ int CFaadWrapper::adts_parse(int *bitrate, float *length)
 
       t_framelength += frame_length;
 
-      if (frame_length > m_nBufferSize)
+      if (frame_length > (int)m_nBufferSize)
         break;
 
       m_nBytesConsumed = frame_length;
@@ -113,7 +113,6 @@ uint32_t seek_callback(void *user_data, uint64_t position)
 
 int CFaadWrapper::write_audio_16bit(char* p_PcmOut, void *sample_buffer, unsigned int samples)
 {
-  int ret;
   unsigned int i;
   short *sample_buffer16 = (short*)sample_buffer;
   char *data = (char*)malloc(samples * 16 * sizeof(char)/8);
@@ -338,60 +337,61 @@ bool CFaadWrapper::LoadLib()
   std::string sLibName = "libfaad.so.0"; 
   #endif 
    
-  if(!CSharedConfig::Shared()->FaadLibName().empty()) { 
-    sLibName = CSharedConfig::Shared()->FaadLibName();  
+  if(!CSharedConfig::Shared()->transcodingSettings->FaadLibName().empty()) { 
+    sLibName = CSharedConfig::Shared()->transcodingSettings->FaadLibName();  
   } 
    
-  CSharedLog::Shared()->Log(L_EXT, "try opening " + sLibName, __FILE__, __LINE__); 
+  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "try opening %s", sLibName.c_str());
   m_LibHandle = FuppesLoadLibrary(sLibName);  
+
   if(!m_LibHandle) { 
-    CSharedLog::Shared()->Log(L_EXT, "cannot open library " + sLibName, __FILE__, __LINE__); 
-        printf("[WARNING :: AACDecoder] cannot open library %s\n", sLibName.c_str());
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot open library %s", sLibName.c_str()); 
+    printf("[WARNING :: AACDecoder] cannot open library %s\n", sLibName.c_str());
     return false; 
   }
  
   m_faacDecOpen = (faacDecOpen_t)FuppesGetProcAddress(m_LibHandle, "faacDecOpen"); 
   if(!m_faacDecOpen) { 
-    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'faacDecOpen'", __FILE__, __LINE__);    
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot load symbol 'faacDecOpen'");    
     return false; 
   }
 
   m_faacDecGetErrorMessage = (faacDecGetErrorMessage_t)FuppesGetProcAddress(m_LibHandle, "faacDecGetErrorMessage"); 
   if(!m_faacDecGetErrorMessage) { 
-    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'faacDecGetErrorMessage'", __FILE__, __LINE__);    
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot load symbol 'faacDecGetErrorMessage'");    
     return false; 
   }
   
   m_faacDecGetCurrentConfiguration = (faacDecGetCurrentConfiguration_t)FuppesGetProcAddress(m_LibHandle, "faacDecGetCurrentConfiguration"); 
   if(!m_faacDecGetCurrentConfiguration) { 
-    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'faacDecGetCurrentConfiguration'", __FILE__, __LINE__);    
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot load symbol 'faacDecGetCurrentConfiguration'");    
   } 
 
   m_faacDecSetConfiguration = (faacDecSetConfiguration_t)FuppesGetProcAddress(m_LibHandle, "faacDecSetConfiguration"); 
   if(!m_faacDecSetConfiguration) { 
-    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'faacDecSetConfiguration'", __FILE__, __LINE__);    
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot load symbol 'faacDecSetConfiguration'");    
   } 
 
   m_faacDecInit = (faacDecInit_t)FuppesGetProcAddress(m_LibHandle, "faacDecInit"); 
   if(!m_faacDecInit) { 
-    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'faacDecInit'", __FILE__, __LINE__);    
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot load symbol 'faacDecInit'");    
   } 
 
   m_faacDecInit2 = (faacDecInit2_t)FuppesGetProcAddress(m_LibHandle, "faacDecInit2"); 
   if(!m_faacDecInit2) { 
-    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'faacDecInit2'", __FILE__, __LINE__);    
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot load symbol 'faacDecInit2'");    
     return false; 
   }
   
   m_faacDecDecode = (faacDecDecode_t)FuppesGetProcAddress(m_LibHandle, "faacDecDecode"); 
   if(!m_faacDecDecode) { 
-    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'faacDecDecode'", __FILE__, __LINE__);    
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot load symbol 'faacDecDecode'");    
     return false; 
   } 
 
   m_faacDecClose = (faacDecClose_t)FuppesGetProcAddress(m_LibHandle, "faacDecClose"); 
   if(!m_faacDecClose) { 
-    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'faacDecClose'", __FILE__, __LINE__);    
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot load symbol 'faacDecClose'");    
     return false; 
   } 
 
@@ -399,7 +399,7 @@ bool CFaadWrapper::LoadLib()
   if(!m_AudioSpecificConfig) {
 		m_AudioSpecificConfig = (AudioSpecificConfig_t)FuppesGetProcAddress(m_LibHandle, "faacDecAudioSpecificConfig"); 
 		if(!m_AudioSpecificConfig) {  
-  	  CSharedLog::Shared()->Log(L_EXT, "cannot load symbol '(faacDec)AudioSpecificConfig'", __FILE__, __LINE__);    
+  	  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot load symbol '(faacDec)AudioSpecificConfig'");    
       return false;
 		}
   }
@@ -420,7 +420,7 @@ bool CFaadWrapper::LoadLib()
   CSharedLog::Shared()->Log(L_EXT, "try opening " + sLibName, __FILE__, __LINE__); 
   m_mp4ffLibHandle = FuppesLoadLibrary(sLibName);  
   if(!m_mp4ffLibHandle) { 
-    CSharedLog::Shared()->Log(L_EXT, "cannot open library " + sLibName, __FILE__, __LINE__); 
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot open library %s", sLibName.c_str()); 
         printf("[WARNING :: AACDecoder] cannot open library %s\n", sLibName.c_str());
     return false; 
   }  
@@ -428,49 +428,49 @@ bool CFaadWrapper::LoadLib()
 
   m_mp4ff_read_sample = (mp4ff_read_sample_t)FuppesGetProcAddress(m_mp4ffLibHandle, "mp4ff_read_sample"); 
   if(!m_mp4ff_read_sample) { 
-    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'mp4ff_read_sample'", __FILE__, __LINE__);    
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot load symbol 'mp4ff_read_sample'");    
     return false; 
   } 
   
   m_mp4ff_time_scale = (mp4ff_time_scale_t)FuppesGetProcAddress(m_mp4ffLibHandle, "mp4ff_time_scale"); 
   if(!m_mp4ff_time_scale) { 
-    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'mp4ff_time_scale'", __FILE__, __LINE__);    
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot load symbol 'mp4ff_time_scale'");    
     return false; 
   } 
   
   m_mp4ff_num_samples = (mp4ff_num_samples_t)FuppesGetProcAddress(m_mp4ffLibHandle, "mp4ff_num_samples"); 
   if(!m_mp4ff_num_samples) { 
-    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'mp4ff_num_samples'", __FILE__, __LINE__);    
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot load symbol 'mp4ff_num_samples'");    
     return false; 
   } 
   
   m_mp4ff_open_read = (mp4ff_open_read_t)FuppesGetProcAddress(m_mp4ffLibHandle, "mp4ff_open_read"); 
   if(!m_mp4ff_open_read) { 
-    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'mp4ff_open_read'", __FILE__, __LINE__);    
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot load symbol 'mp4ff_open_read'");    
     return false; 
   } 
   
   m_mp4ff_close = (mp4ff_close_t)FuppesGetProcAddress(m_mp4ffLibHandle, "mp4ff_close"); 
   if(!m_mp4ff_close) { 
-    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'mp4ff_close'", __FILE__, __LINE__);    
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot load symbol 'mp4ff_close'");    
     return false; 
   } 
   
   m_mp4ff_get_decoder_config = (mp4ff_get_decoder_config_t)FuppesGetProcAddress(m_mp4ffLibHandle, "mp4ff_get_decoder_config"); 
   if(!m_mp4ff_get_decoder_config) { 
-    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'mp4ff_get_decoder_config'", __FILE__, __LINE__);    
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot load symbol 'mp4ff_get_decoder_config'");    
     return false; 
   } 
   
   m_mp4ff_total_tracks = (mp4ff_total_tracks_t)FuppesGetProcAddress(m_mp4ffLibHandle, "mp4ff_total_tracks"); 
   if(!m_mp4ff_total_tracks) { 
-    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'mp4ff_total_tracks'", __FILE__, __LINE__);    
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot load symbol 'mp4ff_total_tracks'");    
     return false; 
   } 
   
   m_mp4ff_get_sample_duration = (mp4ff_get_sample_duration_t)FuppesGetProcAddress(m_mp4ffLibHandle, "mp4ff_get_sample_duration"); 
   if(!m_mp4ff_get_sample_duration) { 
-    CSharedLog::Shared()->Log(L_EXT, "cannot load symbol 'mp4ff_get_sample_duration'", __FILE__, __LINE__);    
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "cannot load symbol 'mp4ff_get_sample_duration'");    
     return false; 
   }
   
@@ -520,6 +520,8 @@ bool CFaadWrapper::OpenFile(std::string p_sFileName, CAudioDetails* pAudioDetail
     first_time = true;
     return InitAACDecoder();
   }
+
+  return false;
 }
 
 void CFaadWrapper::CloseFile()
@@ -544,7 +546,7 @@ long CFaadWrapper::DecodeInterleaved(char* p_PcmOut, int p_nBufferSize, int* p_n
 
 unsigned int CFaadWrapper::NumPcmSamples()
 {
-  printf("num samples %d\n", numSamples);
+  printf("num samples %ld\n", numSamples);
 	return 0; //numSamples;
 }
 

@@ -71,8 +71,8 @@ bool CLameWrapper::LoadLib()
   std::string sLibName = "libmp3lame.so.0";
   #endif
   
-  if(!CSharedConfig::Shared()->LameLibName().empty()) {
-    sLibName = CSharedConfig::Shared()->LameLibName();
+  if(!CSharedConfig::Shared()->transcodingSettings->LameLibName().empty()) {
+    sLibName = CSharedConfig::Shared()->transcodingSettings->LameLibName();
   }  
   
   CSharedLog::Log(L_EXT, __FILE__, __LINE__, "try opening %s", sLibName.c_str());

@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Socket.cpp
  *
@@ -26,11 +26,12 @@
 
 #include "Socket.h"
 #include "Exception.h"
-#include "../SharedConfig.h"
+//#include "../SharedConfig.h"
 using namespace fuppes;
 
 #include <fcntl.h>
 #include <string.h>
+#include <stdlib.h>
 
 #ifndef WIN32
 #include <errno.h>
@@ -67,8 +68,8 @@ bool SocketBase::setNonBlocking()
 	if (opts < 0) {
     return false;
 	}
-	opts = (opts | O_NONBLOCK);
-	if (fcntl(m_socket, F_SETFL,opts) < 0) {		
+	opts |= (O_NONBLOCK);
+	if (fcntl(m_socket, F_SETFL, opts) < 0) {		
     return false;
 	} 
 	#endif
@@ -76,19 +77,53 @@ bool SocketBase::setNonBlocking()
   return true;
 }
 
+bool SocketBase::setBlocking() 
+{
+	if(!m_nonBlocking)
+		return true;
+	
+	#ifdef WIN32     
+  int nonblocking = 0;
+  if(ioctlsocket(m_socket, FIONBIO, (unsigned long*) &nonblocking) != 0)
+    return false;
+  #else     
+  int opts;
+	opts = fcntl(m_socket, F_GETFL);
+	if (opts < 0) {
+    return false;
+	}
+	opts &= (~O_NONBLOCK);
+	if (fcntl(m_socket, F_SETFL, opts) < 0) {		
+    return false;
+	} 
+	#endif
+	m_nonBlocking = false;
+  return true;
+}
+
 bool SocketBase::close()
 {
+	if(m_socket == -1) {
+		return true;
+	}
+	
   #ifdef WIN32
-  return closesocket(m_socket);
+  bool closed = closesocket(m_socket);
   #else
-  return (::close(m_socket) == 0);
-  #endif  
+  bool closed = (::close(m_socket) == 0);
+  #endif
+	if(closed)
+		m_socket = -1;
+  else
+    throw fuppes::Exception("error closing socket", __FILE__, __LINE__);
+
+	return closed;
 }
 
 
 
 
-TCPSocket::TCPSocket()
+TCPSocket::TCPSocket(std::string ipv4Address /* = ""*/)
 {
 	// create socket
 	m_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -97,7 +132,10 @@ TCPSocket::TCPSocket()
 	
 	// set local end point
   m_localEndpoint.sin_family      = AF_INET;
-  m_localEndpoint.sin_addr.s_addr = inet_addr(CSharedConfig::Shared()->GetIPv4Address().c_str());
+	if(ipv4Address.size() == 0)
+	  m_localEndpoint.sin_addr.s_addr = INADDR_ANY;
+	else
+	  m_localEndpoint.sin_addr.s_addr = inet_addr(ipv4Address.c_str());
   m_localEndpoint.sin_port				= htons(0);
   ::memset(&(m_localEndpoint.sin_zero), '\0', 8);
   
@@ -129,17 +167,83 @@ bool TCPSocket::connect()
   m_remoteEndpoint.sin_port        = htons(m_remotePort);
   ::memset(&(m_remoteEndpoint.sin_zero), '\0', 8);
 
+
+  bool blocking = isBlocking();
+  if(blocking)
+    setNonBlocking();
+  
 	// connect
 	int ret = ::connect(m_socket, (struct sockaddr*)&m_remoteEndpoint, sizeof(m_remoteEndpoint));
-	if(ret == -1)
+	/*if(ret == -1)
 		throw fuppes::Exception(__FILE__, __LINE__, "failed to connect to %s:%d", m_remoteAddress.c_str(), m_remotePort);
-	
+*/
+  
+  if (ret < 0) {
+    
+    if (errno != EINPROGRESS) {
+   		throw fuppes::Exception(__FILE__, __LINE__, "failed to connect to %s:%d", m_remoteAddress.c_str(), m_remotePort);
+    }
+
+
+    fd_set myset; 
+    struct timeval tv;
+    int valopt; 
+    socklen_t lon;
+    
+    tv.tv_sec = 3; 
+    tv.tv_usec = 0; 
+    FD_ZERO(&myset); 
+    FD_SET(m_socket, &myset); 
+    ret = select(m_socket+1, NULL, &myset, NULL, &tv); 
+    if (ret < 0 && errno != EINTR) { 
+      throw fuppes::Exception(__FILE__, __LINE__, "Error connecting %d - %s\n", errno, strerror(errno));  
+    } 
+    else if (ret > 0) {
+      
+      // Socket selected for write 
+      lon = sizeof(int); 
+      if (getsockopt(m_socket, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0) { 
+        throw fuppes::Exception(__FILE__, __LINE__, "Error in getsockopt() %d - %s\n", errno, strerror(errno)); 
+      } 
+      // Check the value returned... 
+      if (valopt) { 
+        throw fuppes::Exception(__FILE__, __LINE__, "Error in delayed connection() %d - %s\n", valopt, strerror(valopt)); 
+      }
+      
+    } 
+    else { 
+      throw fuppes::Exception(__FILE__, __LINE__, "Timeout in select() - Cancelling!\n"); 
+    }
+    
+  } // ret < 0
+  
+
+  
+
+
+  if(blocking)
+    setBlocking();
+
+  
 	return true;
 }
 
 fuppes_off_t TCPSocket::send(std::string message)
 {
 	return send(message.c_str(), message.length());
+}
+
+
+static inline void socketSleep(unsigned int milliseconds)
+{
+  #ifdef WIN32
+  Sleep(milliseconds);
+  #else
+  if(milliseconds < 1000)
+    usleep(milliseconds * 1000);
+  else
+    sleep(milliseconds / 1000);  
+  #endif
 }
 
 fuppes_off_t TCPSocket::send(const char* buffer, fuppes_off_t size)
@@ -172,7 +276,7 @@ fuppes_off_t TCPSocket::send(const char* buffer, fuppes_off_t size)
 
     // would block
     if(wouldBlock)
-      fuppesSleep(10);      
+      socketSleep(10);      
 
   } while ((lastSend < 0) || (fullSend < size) || wouldBlock);    
   

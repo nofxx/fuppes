@@ -26,8 +26,9 @@
 #include "ConnectionManagerDescription.cpp"
 
 using namespace std;
-/*
+
 CConnectionManagerCore* CConnectionManagerCore::m_instance = 0;
+
 
 void CConnectionManagerCore::init() // static
 {
@@ -36,17 +37,17 @@ void CConnectionManagerCore::init() // static
 	}
 }
 
-void CConnectionManagerCore::deleteInstance() // static
+void CConnectionManagerCore::uninit() // static
 {
 	if(m_instance == 0)
 		return;
   delete m_instance;
   m_instance = NULL;
 }
-*/
+
 
 CConnectionManager::CConnectionManager(std::string p_sHTTPServerURL):
-	CUPnPService(UPNP_SERVICE_CONNECTION_MANAGER, p_sHTTPServerURL)
+	CUPnPService(UPNP_SERVICE_CONNECTION_MANAGER, 1, p_sHTTPServerURL)
 {
 }
 
@@ -62,19 +63,19 @@ void CConnectionManager::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage
 	
 	switch(pUPnPAction->GetActionType()) {
 		case CMA_GET_PROTOCOL_INFO:
-			ret = getProtocolInfo(pUPnPAction, &res);
+			ret = getProtocolInfo(pUPnPAction, res);
 			break;
-		case CMA_PREPARE_FOR_CONNECTION:
+		/*case CMA_PREPARE_FOR_CONNECTION:
 			ret = prepareForConnection(pUPnPAction, &res);
 			break;
 		case CMA_CONNECTION_COMPLETE:
 			ret = connectionComplete(pUPnPAction, &res);
-			break;
+			break;*/
 		case CMA_GET_CURRENT_CONNECTION_IDS:
-			ret = getCurrentConnectionIds(pUPnPAction, &res);
+			ret = getCurrentConnectionIds(pUPnPAction, res);
 			break;
 		case CMA_GET_CURRENT_CONNECTION_INFO:
-			ret = getCurrentConnectionInfo(pUPnPAction, &res);
+			ret = getCurrentConnectionInfo(pUPnPAction, res);
 			break;
 	}
 
@@ -106,9 +107,82 @@ void CConnectionManager::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage
   
 }
 
-CM_ERROR CConnectionManager::getProtocolInfo(CUPnPAction* /*action*/, std::string* /*result*/)
+CM_ERROR CConnectionManager::getProtocolInfo(CUPnPAction* /*action*/, std::string& result)
 {
-	return ERR_INVALID_ACTION;
+/*
+POST /ConnectionManager/Control HTTP/1.1
+SOAPAction: "urn:schemas-upnp-org:service:ConnectionManager:1#GetProtocolInfo"
+Content-Type: text/xml; charset=utf-8
+
+<?xml version="1.0"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <s:Body>
+    <u:GetProtocolInfo xmlns:u="urn:schemas-upnp-org:service:ConnectionManager:1">
+    </u:GetProtocolInfo>
+  </s:Body>
+</s:Envelope>
+
+HTTP/1.1 200 OK
+Content-Type:  text/xml; charset="utf-8"
+
+<?xml version="1.0" encoding="utf-8"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <s:Body>
+    <u:GetProtocolInfoResponse xmlns:u="urn:schemas-upnp-org:service:ConnectionManager:1">
+      <Source>http-get:*:audio/mpeg:DLNA.ORG_PN=MP3;DLNA.ORG_OP=01;DLNA.ORG_FLAGS=01700000000000000000000000000000,http-get:*:video/flv:*,http-get:*:application/ogg:*,http-get:*:audio/x-flac:*</Source>
+      <Sink></Sink>
+    </u:GetProtocolInfoResponse>
+  </s:Body>
+</s:Envelope>
+*/
+  
+  xmlTextWriterPtr writer;
+	xmlBufferPtr buf;
+	
+	buf    = xmlBufferCreate();   
+	writer = xmlNewTextWriterMemory(buf, 0);    
+	xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL);
+  
+  // root
+  xmlTextWriterStartElementNS(writer, BAD_CAST "s", BAD_CAST "Envelope", NULL);    
+  xmlTextWriterWriteAttributeNS(writer, BAD_CAST "s", 
+    BAD_CAST "encodingStyle", 
+    BAD_CAST  "http://schemas.xmlsoap.org/soap/envelope/", 
+    BAD_CAST "http://schemas.xmlsoap.org/soap/encoding/");
+   
+    // body
+    xmlTextWriterStartElementNS(writer, BAD_CAST "s", BAD_CAST "Body", NULL);    
+  
+      // GetProtocolInfo response
+      xmlTextWriterStartElementNS(writer, BAD_CAST "u",        
+        BAD_CAST "GetProtocolInfoResponse", 
+        BAD_CAST "urn:schemas-upnp-org:service:ConnectionManager:1");
+
+        // Source
+        xmlTextWriterStartElement(writer, BAD_CAST "Source");
+        xmlTextWriterWriteString(writer, BAD_CAST "");
+        xmlTextWriterEndElement(writer);
+
+        // Sink
+        xmlTextWriterStartElement(writer, BAD_CAST "Sink");
+        xmlTextWriterWriteString(writer, BAD_CAST "");
+        xmlTextWriterEndElement(writer);
+                                
+      // end GetProtocolInfo response
+      xmlTextWriterEndElement(writer);
+      
+    // end body
+    xmlTextWriterEndElement(writer);
+   
+	// end root
+	xmlTextWriterEndElement(writer);
+  xmlTextWriterEndDocument(writer);
+	xmlFreeTextWriter(writer);
+	
+  result = (const char*)buf->content;
+	xmlBufferFree(buf);
+
+ 	return ERR_NONE;
 }
 
 CM_ERROR CConnectionManager::prepareForConnection(CUPnPAction* /*action*/, std::string* /*result*/)
@@ -121,12 +195,185 @@ CM_ERROR CConnectionManager::connectionComplete(CUPnPAction* /*action*/, std::st
 	return ERR_INVALID_ACTION;
 }
 
-CM_ERROR CConnectionManager::getCurrentConnectionIds(CUPnPAction* /*action*/, std::string* /*result*/)
+CM_ERROR CConnectionManager::getCurrentConnectionIds(CUPnPAction* /*action*/, std::string& result)
 {
-	return ERR_INVALID_ACTION;
+/*
+POST /ConnectionManager/Control HTTP/1.1
+SOAPAction: "urn:schemas-upnp-org:service:ConnectionManager:1#GetCurrentConnectionIDs"
+Content-Type: text/xml; charset=utf-8
+
+<?xml version="1.0"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <s:Body>
+    <u:GetCurrentConnectionIDs xmlns:u="urn:schemas-upnp-org:service:ConnectionManager:1">
+    </u:GetCurrentConnectionIDs>
+  </s:Body>
+</s:Envelope>
+
+
+HTTP/1.1 200 OK
+Content-Type:  text/xml; charset="utf-8"
+
+<?xml version="1.0" encoding="utf-8"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <s:Body>
+    <u:GetCurrentConnectionIDsResponse xmlns:u="urn:schemas-upnp-org:service:ConnectionManager:1">
+      <ConnectionIDs>0</ConnectionIDs>
+    </u:GetCurrentConnectionIDsResponse>
+  </s:Body>
+</s:Envelope>
+*/
+
+  xmlTextWriterPtr writer;
+	xmlBufferPtr buf;
+	
+	buf    = xmlBufferCreate();   
+	writer = xmlNewTextWriterMemory(buf, 0);    
+	xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL);
+  
+  // root
+  xmlTextWriterStartElementNS(writer, BAD_CAST "s", BAD_CAST "Envelope", NULL);    
+  xmlTextWriterWriteAttributeNS(writer, BAD_CAST "s", 
+    BAD_CAST "encodingStyle", 
+    BAD_CAST  "http://schemas.xmlsoap.org/soap/envelope/", 
+    BAD_CAST "http://schemas.xmlsoap.org/soap/encoding/");
+   
+    // body
+    xmlTextWriterStartElementNS(writer, BAD_CAST "s", BAD_CAST "Body", NULL);    
+  
+      // GetCurrentConnectionIDs response
+      xmlTextWriterStartElementNS(writer, BAD_CAST "u",        
+        BAD_CAST "GetCurrentConnectionIDsResponse", 
+        BAD_CAST "urn:schemas-upnp-org:service:ConnectionManager:1");
+
+        // ConnectionIDs
+        xmlTextWriterStartElement(writer, BAD_CAST "ConnectionIDs");
+        xmlTextWriterWriteString(writer, BAD_CAST "0");
+        xmlTextWriterEndElement(writer);
+                                
+      // end GetCurrentConnectionIDs response
+      xmlTextWriterEndElement(writer);
+      
+    // end body
+    xmlTextWriterEndElement(writer);
+   
+	// end root
+	xmlTextWriterEndElement(writer);
+  xmlTextWriterEndDocument(writer);
+	xmlFreeTextWriter(writer);
+	
+  result = (const char*)buf->content;
+	xmlBufferFree(buf);
+  
+	return ERR_NONE;
 }
 
-CM_ERROR CConnectionManager::getCurrentConnectionInfo(CUPnPAction* /*action*/, std::string* /*result*/)
+CM_ERROR CConnectionManager::getCurrentConnectionInfo(CUPnPAction* /*action*/, std::string& result)
 {
-	return ERR_INVALID_ACTION;
+/*
+POST /ConnectionManager/Control HTTP/1.1
+SOAPAction: "urn:schemas-upnp-org:service:ConnectionManager:1#GetCurrentConnectionInfo"
+Content-Type: text/xml; charset=utf-8
+
+<?xml version="1.0"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <s:Body>
+    <u:GetCurrentConnectionInfo xmlns:u="urn:schemas-upnp-org:service:ConnectionManager:1">
+      <ConnectionID>0</ConnectionID>
+    </u:GetCurrentConnectionInfo>
+  </s:Body>
+</s:Envelope>
+
+HTTP/1.1 200 OK
+Content-Type:  text/xml; charset="utf-8"
+
+<?xml version="1.0" encoding="utf-8"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <s:Body>
+    <u:GetCurrentConnectionInfoResponse xmlns:u="urn:schemas-upnp-org:service:ConnectionManager:1">
+      <RcsID>-1</RcsID>
+      <AVTransportID>-1</AVTransportID>
+      <ProtocolInfo></ProtocolInfo>
+      <PeerConnectionManager></PeerConnectionManager>
+      <PeerConnectionID>0</PeerConnectionID>
+      <Direction>Output</Direction>
+      <Status>Unknown</Status>
+    </u:GetCurrentConnectionInfoResponse>
+  </s:Body>
+</s:Envelope>
+*/
+ 
+  xmlTextWriterPtr writer;
+	xmlBufferPtr buf;
+	
+	buf    = xmlBufferCreate();   
+	writer = xmlNewTextWriterMemory(buf, 0);    
+	xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL);
+  
+  // root
+  xmlTextWriterStartElementNS(writer, BAD_CAST "s", BAD_CAST "Envelope", NULL);    
+  xmlTextWriterWriteAttributeNS(writer, BAD_CAST "s", 
+    BAD_CAST "encodingStyle", 
+    BAD_CAST  "http://schemas.xmlsoap.org/soap/envelope/", 
+    BAD_CAST "http://schemas.xmlsoap.org/soap/encoding/");
+   
+    // body
+    xmlTextWriterStartElementNS(writer, BAD_CAST "s", BAD_CAST "Body", NULL);    
+  
+      // GetCurrentConnectionInfo response
+      xmlTextWriterStartElementNS(writer, BAD_CAST "u",        
+        BAD_CAST "GetCurrentConnectionInfoResponse", 
+        BAD_CAST "urn:schemas-upnp-org:service:ConnectionManager:1");
+
+        // RcsID
+        xmlTextWriterStartElement(writer, BAD_CAST "RcsID");
+        xmlTextWriterWriteString(writer, BAD_CAST "-1");
+        xmlTextWriterEndElement(writer);
+
+        // AVTransportID
+        xmlTextWriterStartElement(writer, BAD_CAST "AVTransportID");
+        xmlTextWriterWriteString(writer, BAD_CAST "-1");
+        xmlTextWriterEndElement(writer);
+
+        // ProtocolInfo
+        xmlTextWriterStartElement(writer, BAD_CAST "ProtocolInfo");
+        xmlTextWriterWriteString(writer, BAD_CAST "");
+        xmlTextWriterEndElement(writer);
+
+        // PeerConnectionManager
+        xmlTextWriterStartElement(writer, BAD_CAST "PeerConnectionManager");
+        xmlTextWriterWriteString(writer, BAD_CAST "");
+        xmlTextWriterEndElement(writer);
+                                
+        // PeerConnectionID
+        xmlTextWriterStartElement(writer, BAD_CAST "PeerConnectionID");
+        xmlTextWriterWriteString(writer, BAD_CAST "-1");
+        xmlTextWriterEndElement(writer);
+
+        // Direction
+        xmlTextWriterStartElement(writer, BAD_CAST "Direction");
+        xmlTextWriterWriteString(writer, BAD_CAST "Output");
+        xmlTextWriterEndElement(writer);
+
+        // Status
+        xmlTextWriterStartElement(writer, BAD_CAST "Status");
+        xmlTextWriterWriteString(writer, BAD_CAST "Unknown");
+        xmlTextWriterEndElement(writer);
+                                
+      // end GetCurrentConnectionInfo response
+      xmlTextWriterEndElement(writer);
+      
+    // end body
+    xmlTextWriterEndElement(writer);
+   
+	// end root
+	xmlTextWriterEndElement(writer);
+  xmlTextWriterEndDocument(writer);
+	xmlFreeTextWriter(writer);
+	
+  result = (const char*)buf->content;
+	xmlBufferFree(buf);
+
+  return ERR_NONE;
 }
+

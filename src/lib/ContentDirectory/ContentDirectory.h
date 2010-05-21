@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            ContentDirectory.h
  * 
@@ -109,7 +109,7 @@ class CContentDirectory: public CUPnPService
                                    CSQLResult* pSQLResult,
                                    CUPnPBrowseSearchBase*  pUPnPBrowse,
                                    std::string p_sObjectID);      
-    void BuildAudioVideoBroadcastItemDescription(xmlTextWriterPtr pWriter,
+    void BuildAudioBroadcastItemDescription(xmlTextWriterPtr pWriter,
                                    CSQLResult* pSQLResult,
                                    CUPnPBrowseSearchBase*  pUPnPBrowse,
                                    std::string p_sObjectID);                                    
@@ -121,6 +121,10 @@ class CContentDirectory: public CUPnPService
                                    CSQLResult* pSQLResult,
                                    CUPnPBrowseSearchBase*  pUPnPBrowse,
                                    std::string p_sObjectID); 
+    void BuildVideoBroadcastItemDescription(xmlTextWriterPtr pWriter,
+                                   CSQLResult* pSQLResult,
+                                   CUPnPBrowseSearchBase*  pUPnPBrowse,
+                                   std::string p_sObjectID);   
     void BuildPlaylistItemDescription(xmlTextWriterPtr pWriter,
                                    CSQLResult* pSQLResult,
                                    CUPnPBrowseSearchBase*  pUPnPBrowse,

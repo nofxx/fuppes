@@ -39,7 +39,7 @@
 
 struct CImageSettings {
   
-  friend class CConfigFile;
+  friend class CDeviceConfigFile;
   
   CImageSettings();
   CImageSettings(CImageSettings* pImageSettings);
@@ -127,7 +127,7 @@ typedef enum TRANSCODING_HTTP_RESPONSE {
 
 struct CTranscodingSettings {
   
-    friend class CConfigFile;
+    friend class CDeviceConfigFile;
   
     CTranscodingSettings();  
     CTranscodingSettings(CTranscodingSettings* pTranscodingSettings);
@@ -201,7 +201,7 @@ struct CTranscodingSettings {
 
 struct CFileSettings {
   
-  friend class CConfigFile;
+  friend class CDeviceConfigFile;
   
   CFileSettings();
   CFileSettings(CFileSettings* pFileSettings);
@@ -263,19 +263,28 @@ struct CMediaServerSettings
 
 class CDeviceSettings
 {
-  friend class CConfigFile;
+  // TODO using friends seems messy; but it also seems nessecary for now. 
+  // If somebody can think of a better way then go ahead
+  friend class CDeviceConfigFile;
   friend class CDeviceIdentificationMgr;
   
   public:
+
+    enum PlaylistStyle {
+      container,    // send playlists as container
+      file,         // use playlist type of the original file
+      pls,          // PLS
+      m3u,          // m3u
+      wpl,          // wpl
+      xspf          // xspf
+    };
+    
 	  CDeviceSettings(std::string p_sDeviceName);
     CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSettings);
     ~CDeviceSettings();
-		
-		bool HasUserAgent(std::string p_sUserAgent);
-    bool HasIP(std::string p_sIPAddress);	
-    /*std::list<std::string> m_slUserAgents;
-		std::list<std::string> m_slIPAddresses;*/
 
+    bool HasIP(std::string p_sIPAddress); 
+		
     OBJECT_TYPE       ObjectType(std::string p_sExt);
     std::string       ObjectTypeAsStr(std::string p_sExt);
 
@@ -305,7 +314,8 @@ class CDeviceSettings
 		
     bool        EnableDeviceIcon() { return m_bEnableDeviceIcon; }  
     bool        Xbox360Support() { return m_bXBox360Support; }    
-		bool        ShowPlaylistAsContainer() { return m_bShowPlaylistAsContainer; }		
+		//bool        ShowPlaylistAsContainer() { return m_bShowPlaylistAsContainer; }		
+    PlaylistStyle playlistStyle() { return m_playlistStyle; }
     bool        DLNAEnabled() { return MediaServerSettings()->UseDLNA; }
     bool				ShowEmptyResolution() { return m_bShowEmptyResolution; }
 		
@@ -318,7 +328,8 @@ class CDeviceSettings
     DisplaySettings_t m_DisplaySettings;
 		CMediaServerSettings m_MediaServerSettings;
 		
-		bool m_bShowPlaylistAsContainer;
+		//bool m_bShowPlaylistAsContainer;
+    PlaylistStyle m_playlistStyle;
 		bool m_bXBox360Support;
     //bool m_bDLNAEnabled;  
     bool m_bEnableDeviceIcon;
@@ -328,9 +339,6 @@ class CDeviceSettings
     std::map<std::string, CFileSettings*>::iterator m_FileSettingsIterator;
   
     int nDefaultReleaseDelay;
-    
-    std::list<std::string> m_slUserAgents;
-		std::list<std::string> m_slIPAddresses;
 };
 
 #endif // _DEVICESETTINGS_H

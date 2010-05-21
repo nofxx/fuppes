@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2009-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -57,7 +57,14 @@ class File
 		  Append		= 8,
 		  Text			= 16
 	  };
-	
+
+    enum Flags {
+      None        = 0,
+      Readable    = 1,
+      Writable    = 2,
+      Executable  = 4
+    };
+    
 		File(std::string fileName = "");
     ~File();
     void          setFileName(std::string fileName);
@@ -68,10 +75,14 @@ class File
 
     bool          seek(fuppes_off_t);
     fuppes_off_t  read(char* buffer, fuppes_off_t length);
-    //bool          getline(std::string& line);
+    bool          getline(std::string& line);
 
+    static bool remove(std::string fileName);
     
     static bool exists(std::string fileName);
+    static bool readable(std::string fileName);
+    static bool writable(std::string fileName);
+    static bool executable(std::string fileName);
     
 	private:
 		std::string   m_fileName;

@@ -131,13 +131,13 @@ std::string GenerateUUID(std::string fileName)
   
   #ifdef HAVE_UUID
   uuid_t uuid;
-  char*  szUUID = new char[64];
+  char   szUUID[37];
   
   uuid_generate(uuid);  
-  uuid_unparse(uuid, szUUID);
+  uuid_unparse(uuid, (char*)&szUUID);
   
   sResult << szUUID; 
-  delete[] szUUID;
+  //delete[] szUUID;
   #else  
   srand(time(0));
 
