@@ -41,7 +41,7 @@
 
 
 #ifndef DISABLE_TRANSCODING
-class CTranscodingCacheObject: private fuppes::Thread
+class CTranscodingCacheObject: public fuppes::Thread
 {
   public:
     CTranscodingCacheObject();

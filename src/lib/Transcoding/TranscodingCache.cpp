@@ -1,3 +1,4 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            TranscodingCache.cpp
  *
@@ -180,10 +181,13 @@ bool CTranscodingCacheObject::Init(CTranscodeSessionInfo* pSessionInfo, CDeviceS
   if(!m_pAudioEncoder) {
     
     m_pAudioEncoder = CTranscodingMgr::Shared()->CreateAudioEncoder(pDeviceSettings->GetEncoderType(sExt));
+    if(m_pAudioEncoder == NULL) {
+      cout << "error loading audio encoder" << endl;  
+      return false;
+    }
     if(!m_pAudioEncoder->LoadLib()) {      
       delete m_pAudioEncoder;
       m_pAudioEncoder = NULL;
-      
       cout << "error initializing audio encoder" << endl;  
       return false;
     }
@@ -356,7 +360,7 @@ void CTranscodingCacheObject::run()
   pCacheObj->m_pAudioEncoder->Init();
     
   // transcode loop
-  while(((samplesRead = pCacheObj->m_pDecoder->DecodeInterleaved((char*)pCacheObj->m_pPcmOut, pCacheObj->nPcmBufferSize, &nBytesConsumed)) >= 0) && !pCacheObj->m_bBreakTranscoding)
+  while(!stopRequested() && ((samplesRead = pCacheObj->m_pDecoder->DecodeInterleaved((char*)pCacheObj->m_pPcmOut, pCacheObj->nPcmBufferSize, &nBytesConsumed)) >= 0) && !pCacheObj->m_bBreakTranscoding)
   {
     // encode
     nEncRet = pCacheObj->m_pAudioEncoder->EncodeInterleaved(pCacheObj->m_pPcmOut, samplesRead, nBytesConsumed);
@@ -409,7 +413,7 @@ void CTranscodingCacheObject::run()
   } // while decode
   
   // transcoding loop exited
-  if(!pCacheObj->m_bBreakTranscoding)
+  if(!stopRequested() && !pCacheObj->m_bBreakTranscoding)
   {
     // append remaining frames
     if(nTmpValidBytes > 0) {
@@ -614,6 +618,7 @@ void CTranscodingCache::run()
 				CSharedLog::Log(L_EXT, __FILE__, __LINE__, sLog.str().c_str());
 						 
         pCache->m_CachedObjects.erase(pCache->m_CachedObjectsIterator);
+        pCacheObj->close();
         delete pCacheObj;
         pCache->m_CachedObjectsIterator = TmpIterator;
       }
