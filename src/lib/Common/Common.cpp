@@ -689,7 +689,7 @@ std::string FormatHelper::msToUpnpDuration(int ms) // static
 
 
   char out[13]; // hh:ii:ss.mmm
-  sprintf(out, "%.2d:%.2d:%2.d.%.3d", h, m, s, ms);
+  sprintf(out, "%.2d:%.2d:%.2d.%.3d", h, m, s, ms);
 
   return out;
 }

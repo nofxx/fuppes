@@ -233,14 +233,14 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
 	}
 	if(image)
 		delete image;
-	
-	image = CPluginMgr::metadataPlugin("magickWand");
+
+
+	image = CPluginMgr::metadataPlugin("simage");
 	if(image && image->openFile(p_sFileName)) {
-				
+		
 		if(image->readData(&metadata)) {
 			pImageItem->nWidth  = metadata.width;
 			pImageItem->nHeight = metadata.height;
-      pImageItem->sDate   = (strlen(metadata.date) > 0 ? TrimWhiteSpace(metadata.date) : string());
 			
 			image->closeFile();
 			free_metadata(&metadata);
@@ -250,14 +250,15 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
 	}
 	if(image)
 		delete image;
-		
 	
-	image = CPluginMgr::metadataPlugin("simage");
+	
+	image = CPluginMgr::metadataPlugin("magickWand");
 	if(image && image->openFile(p_sFileName)) {
-		
+				
 		if(image->readData(&metadata)) {
 			pImageItem->nWidth  = metadata.width;
 			pImageItem->nHeight = metadata.height;
+      pImageItem->sDate   = (strlen(metadata.date) > 0 ? TrimWhiteSpace(metadata.date) : string());
 			
 			image->closeFile();
 			free_metadata(&metadata);
@@ -293,7 +294,7 @@ bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoIt
 			pVideoItem->sACodec  = metadata.audio_codec;
 			pVideoItem->sVCodec  = metadata.video_codec;
 
-			pVideoItem->sDuration = metadata.duration;
+			pVideoItem->durationMs = metadata.duration_ms;
 			
 			video->closeFile();
 			free_metadata(&metadata);

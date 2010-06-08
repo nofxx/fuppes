@@ -28,6 +28,8 @@
 #include "../Log.h"
 #include "DatabaseObject.h"
 #include "ContentDatabase.h"
+#include "FileDetails.h"
+#include "VirtualContainerMgr.h"
 using namespace fuppes;
 
 #include <iostream>
@@ -48,9 +50,10 @@ void FileAlterationHandler::famEvent(CFileAlterationEvent* event)
 {
   fuppes::MutexLocker locker(&m_mutex);
 
+  if(event->type() != FAM_MODIFY) {  
+    m_lastEventTime = DateTime::now();
+  }
   
-  m_lastEventTime = DateTime::now();
-
   cout << CFileAlterationEvent::toString(event) << endl;
 
   // create
@@ -95,167 +98,14 @@ void FileAlterationHandler::famEvent(CFileAlterationEvent* event)
     
   } // move
 
-  
-  /*
- stringstream sSql;
-	unsigned int objId;
-	unsigned int parentId;  
-  SQLQuery qry;
-  
-  // newly created or moved in directory
-	if((event->type() == FAM_CREATE || event->type() == (FAM_CREATE | FAM_MOVE)) && event->isDir()) {
+  // modify
+  else if(event->type() == FAM_MODIFY && !event->isDir()) {
 
-		objId = GetObjId();
-		parentId = GetObjectIDFromFileName(this, event->path());
-		string path = appendTrailingSlash(event->fullPath());
-
-    sSql << 
-          "insert into OBJECTS (OBJECT_ID, TYPE, PATH, TITLE) values " <<
-          "(" << objId << 
-          ", " << CONTAINER_STORAGE_FOLDER << 
-          ", '" << SQLEscape(path) << "'" <<
-          ", '" << SQLEscape(event->file()) << "');";        
-    Insert(sSql.str());
+    Log::log(Log::fam, Log::normal, __FILE__, __LINE__, "fam modify file: %s", event->path().c_str());
+    modifyFile(event);
     
-		//cout << "SQL INSERT NEW DIR: " << sSql.str() << endl;
-		
-    sSql.str("");
-    sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID) " <<
-          "values (" << objId << ", " << parentId << ")";      
-    Insert(sSql.str());
+  } // modify
     
-		// moved in from outside the watches dirs
-    if(event->type() == (FAM_CREATE | FAM_MOVE)) {
-      //cout << "scan moved in" << endl;
-      DbScanDir(this, &qry, appendTrailingSlash(event->fullPath()), objId);
-    }
-	} // new or moved directory
-  
-	// directory deleted
-  else if(event->type() == FAM_DELETE && event->isDir()) {    
-    deleteContainer(event->fullPath());    
-  } // directory deleted  
-  
-	// directory moved/renamed
-  else if(event->type() == FAM_MOVE && event->isDir()) {        
-     
-    // update moved folder
-    objId = GetObjectIDFromFileName(this, appendTrailingSlash(event->oldFullPath()));
-		
-		//cout << "OBJID: " << objId << " " << appendTrailingSlash(event->oldFullPath()) << endl;
-		
-		// update path
-    sSql << 
-      "update OBJECTS set " <<
-      " PATH = '" << SQLEscape(appendTrailingSlash(event->fullPath())) << "', "
-      " TITLE = '" << SQLEscape(event->file()) << "' " <<
-      "where OBJECT_ID = " << objId;
-      
-    //cout << sSql.str() << endl;
-    Execute(sSql.str());
-    sSql.str("");
-		
-		// move fam watch
-		m_pFileAlterationMonitor->moveWatch(event->oldFullPath(), event->fullPath());
-		
-    // update mapping
-    parentId = GetObjectIDFromFileName(this, event->path());
-    
-    sSql << 
-      "update MAP_OBJECTS set " <<
-      " PARENT_ID = " << parentId << " "
-      "where OBJECT_ID = " << objId << " and DEVICE is NULL";
-      
-    //cout << sSql.str() << endl;
-    Execute(sSql.str());
-    sSql.str("");
-
-    // update child object's path
-    sSql << "select ID, PATH from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(event->oldFullPath())) << "%' and DEVICE is NULL";
-
-		//CSQLQuery* qry = CDatabase::query();
-		qry.select(sSql.str());
-		sSql.str("");
-
-    string newPath;  
-    //CContentDatabase db; 
-
-		while(!qry.eof()) {
-			CSQLResult* result = qry.result();
-
-      newPath = StringReplace(result->asString("PATH"), appendTrailingSlash(event->oldFullPath()), appendTrailingSlash(event->fullPath()));
-
-#warning move fam watch
-			//m_pFileAlterationMonitor->moveWatch();
-			
-      #warning sql prepare
-      sSql << 
-        "update OBJECTS set " <<
-        " PATH = '" << SQLEscape(newPath) << "' " <<
-        "where ID = " << result->asString("ID");
-      
-      //cout << sSql.str() << endl;
-      Execute(sSql.str());
-      sSql.str("");
-
-			qry.next();
-		}   
-
-  } // directory moved/renamed  
- 
-  
-  
-  // file created
-  else if(event->type() == FAM_CREATE && !event->isDir()) { 
-    //cout << "FAM_FILE_NEW: " << path << " name: " << name << endl;
-        
-    parentId = GetObjectIDFromFileName(this, event->path());
-    InsertFile(this, parentId, event->fullPath());    
-  } // file created
-
-	// file deleted
-  else if(event->type() == FAM_DELETE && !event->isDir()) { 
-    //cout << "FAM_FILE_DEL: " << path << " name: " << name << endl;
-    
-    objId = GetObjectIDFromFileName(this, event->fullPath());
-    deleteObject(objId);    
-  } // file deleted 
-  
-	// file moved
-  else if(event->type() == FAM_MOVE && !event->isDir()) { 
-    //cout << "FAM_FILE_MOVE: " << path << " name: " << name << " old: " << oldPath << " - " << oldName << endl;
-        
-    objId = GetObjectIDFromFileName(this, event->oldFullPath());
-    parentId = GetObjectIDFromFileName(this, event->path());
-    
-    // update mapping
-    sSql << 
-        "update MAP_OBJECTS set " <<
-        "  PARENT_ID = " << parentId << " " <<        
-        "where OBJECT_ID = " << objId << " and DEVICE is NULL";
-    Execute(sSql.str());
-    sSql.str("");
-    
-    // update object
-    sSql << "update OBJECTS set " <<
-        "PATH = '" << SQLEscape(event->path()) << "', " <<
-        "FILE_NAME = '" << SQLEscape(event->file()) << "', " <<
-        "TITLE = '" << SQLEscape(event->file()) << "' " <<
-        "where ID = " << objId;
-    //cout << sSql.str() << endl;
-    Execute(sSql.str());
-    sSql.str("");
-
-  } // file moved
-  
-  // file modified
-  else if(event->type() == FAM_MOVE && !event->isDir()) {
-    //cout << "file modified" << endl;
-  }
-
-*/
-  
-  
 }
 
 
@@ -290,6 +140,10 @@ void FileAlterationHandler::deleteDirectory(CFileAlterationEvent* event)
     return;
   }
 
+  // remove all virtual files that are build from the directories content
+  VirtualContainerMgr::deleteDirectory(dir);
+
+  // remove the dir
   dir->remove();
   delete dir;
 
@@ -307,11 +161,22 @@ void FileAlterationHandler::moveDirectory(CFileAlterationEvent* event)
     return;
   }
 
+  // get the new parent
+  DbObject* parent = DbObject::createFromFileName(event->path());
+  if(!parent) {
+    cout << "fam error: directory: " << event->path() << " not found" << endl;
+    delete obj;
+    return;
+  }
+  
   string newPath = Directory::appendTrailingSlash(event->path() + event->dir());
   obj->setPath(newPath);
   obj->setTitle(event->dir());
+  obj->setParentId(parent->objectId());
   obj->save();
+  
   delete obj;
+  delete parent;
                                                
   // increment systemUpdateId
   CContentDatabase::incSystemUpdateId();
@@ -322,6 +187,8 @@ void FileAlterationHandler::moveDirectory(CFileAlterationEvent* event)
 void FileAlterationHandler::createFile(CFileAlterationEvent* event)
 {
   CContentDatabase::insertFile(event->path() + event->file(), 0, NULL, true);
+
+  // virtual folder structure is updated by UpdateThread after reading the files metadata
 }
 
 void FileAlterationHandler::deleteFile(CFileAlterationEvent* event)
@@ -331,6 +198,16 @@ void FileAlterationHandler::deleteFile(CFileAlterationEvent* event)
     cout << "fam error: file: " << (event->path() + event->file()) << " not found" << endl;
     return;
   }
+
+
+  // TODO remove thumbnail for video file
+  // CSharedConfig::Shared()->globalSettings->GetTempDir() << file->objectId() << ".jpg"
+
+// check for album art
+  
+
+  // delete the file from the virtual folder structure
+  VirtualContainerMgr::deleteFile(file);
   
   file->remove();
   delete file;
@@ -338,6 +215,15 @@ void FileAlterationHandler::deleteFile(CFileAlterationEvent* event)
 
 void FileAlterationHandler::moveFile(CFileAlterationEvent* event)
 {
+  // if the old object was an unsupported file type ...
+  OBJECT_TYPE objectType = CFileDetails::Shared()->GetObjectType(event->oldFile());  
+  // ... we create a new file
+  if(objectType == OBJECT_TYPE_UNKNOWN) {
+    createFile(event);
+    return;
+  } 
+
+  
   // get the object from the old path
   string oldPath = event->oldPath() + event->oldFile();
   DbObject* file = DbObject::createFromFileName(oldPath);
@@ -346,18 +232,63 @@ void FileAlterationHandler::moveFile(CFileAlterationEvent* event)
     return;
   }
 
-  string newPath = event->path();
-  file->setPath(newPath);
+  // get the new parent
+  DbObject* parent = DbObject::createFromFileName(event->path());
+  if(!parent) {
+    cout << "fam error: dir: " << event->path() << " not found" << endl;
+    delete file;
+    return;
+  }
+
+
+cout << "old parent id: " << file->parentId() << " new pid: " << parent->objectId() << endl;
+  
+
+// check for album art
+  
+  file->setParentId(parent->objectId());
+  file->setPath(event->path());
   file->setFileName(event->file());
 
   string title = FormatHelper::fileNameToTitle(event->oldFile());
   if(file->title() == title) {
     file->setTitle(TruncateFileExt(event->file()));
   }
-  file->save();
+  file->save();  
   delete file;
+  delete parent;
 
   // increment systemUpdateId
   CContentDatabase::incSystemUpdateId();
 }
 
+
+
+void FileAlterationHandler::modifyFile(CFileAlterationEvent* event)
+{
+  // get the object
+  DbObject* file = DbObject::createFromFileName(event->path() + event->file());
+  if(!file) {
+    cout << "fam error: file: " << event->path() + event->file() << " not found" << endl;
+    return;
+  }
+
+  // check the modification time
+  time_t modified = File::lastModified(event->path() + event->file());
+
+  cout << "MODIFIED  : " << modified << endl;
+  cout << "DBMODIFIED: " << file->lastModified() << endl;
+  cout << "DBUPDATED : " << file->lastUpdated() << endl;
+  
+
+  if(modified > file->lastUpdated()) {
+    file->setLastModified(modified);
+    file->save();
+  }
+  delete file;
+
+  // UpdateThread will check the file for changes and update the virtual folder structure if necessary
+
+  // increment systemUpdateId
+  //CContentDatabase::incSystemUpdateId();
+}

@@ -43,6 +43,7 @@
 #include "HotPlug.h"
 
 #include "DatabaseObject.h"
+#include "VirtualContainerMgr.h"
 
 #include <sstream>
 #include <string>
@@ -125,47 +126,18 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
     sql = qry.build(SQL_CREATE_TABLE_OBJECT_DETAILS, 0);    
     qry.exec(sql);
 
+    // create indices
+    StringList indices = String::split(qry.connection()->getStatement(SQL_CREATE_INDICES), ";");
+    for(unsigned int i = 0; i < indices.size(); i++) {
+      qry.exec(indices.at(i));
+    }
+    
     // set db version
     sql = qry.build(SQL_SET_DB_INFO, DB_VERSION);
     qry.exec(sql);
   }
   
   
-
-    /*
-    if(!Execute("CREATE INDEX IDX_OBJECTS_OBJECT_ID ON OBJECTS(OBJECT_ID);"))
-      return false;
-
-    CREATE INDEX IDX_OBJECTS_OBJECT_ID ON OBJECTS(OBJECT_ID)
-    CREATE INDEX IDX_OBJECTS_PARENT_ID ON OBJECTS(PARENT_ID)
-    CREATE INDEX IDX_OBJECTS_DETAIL_ID ON OBJECTS(DETAIL_ID)
-    CREATE INDEX IDX_OBJECTS_PATH ON OBJECTS(PATH)
-    CREATE INDEX IDX_OBJECTS_FILE_NAME ON OBJECTS(FILE_NAME)
-    CREATE INDEX IDX_OBJECTS_TITLE ON OBJECTS(TITLE)
-
-    CREATE INDEX IDX_OBJECT_DETAILS_ID ON OBJECT_DETAILS(ID)
-
-
-    
-    if(!Execute("CREATE INDEX IDX_MAP_OBJECTS_OBJECT_ID ON MAP_OBJECTS(OBJECT_ID);"))
-      return false;
-    
-    if(!Execute("CREATE INDEX IDX_MAP_OBJECTS_PARENT_ID ON MAP_OBJECTS(PARENT_ID);"))
-      return false;	
-        
-    if(!Execute("CREATE INDEX IDX_OBJECTS_DETAIL_ID ON OBJECTS(DETAIL_ID);"))
-      return false;
-
-    if(!Execute("CREATE INDEX IDX_OBJECT_DETAILS_ID ON OBJECT_DETAILS(ID);"))
-      return false;
-    */
-		
-    /*if(!Execute("CREATE INDEX IDX_MAP_OBJECT_DETAILS_OBJECT_ID ON MAP_OBJECT_DETAILS(OBJECT_ID);"))
-      return false;
-    
-    if(!Execute("CREATE INDEX IDX_MAP_OBJECT_DETAILS_DETAILS_ID ON MAP_OBJECT_DETAILS(DETAIL_ID);"))
-      return false;*/
-//  }
 
 
   // this is mysql only code
@@ -202,7 +174,7 @@ bool CContentDatabase::Init(bool* p_bIsNewDB)
 
     // setup file alteration monitor
     if(m_pFileAlterationMonitor->isActive()) {
-		  qry.select("select PATH from OBJECTS where TYPE = 1 and DEVICE is NULL");
+		  qry.select("select PATH from OBJECTS where TYPE >= 1 and TYPE < 100 and DEVICE is NULL");
 		  while(!qry.eof()) {
 			  m_pFileAlterationMonitor->addWatch(qry.result()->asString("PATH"));
 			  qry.next();
@@ -525,7 +497,7 @@ void RebuildThread::DbScanDir(CContentDatabase* db, SQLQuery* qry, std::string p
         unsigned int nObjId = 0;
         
         /* directory */
-        if(Directory::exists(sTmp)) {
+        if(Directory::exists(sTmp) && !Directory::hidden(sTmp)) {
 					
           sTmpFileName = ToUTF8(sTmpFileName);          
           sTmpFileName = SQLEscape(sTmpFileName);        
@@ -662,70 +634,6 @@ unsigned int findAlbumArt(std::string dir, std::string* ext, SQLQuery* qry)
 	return qry->result()->asUInt("OBJECT_ID");
 }
 
-/**
- * if "file" is set only selected "file" is updated else 
- * all audio files in the "path" will be set to "artId, ext" using "qry"
- */
-
-void setAlbumArtImage(std::string path, std::string file, unsigned int artId, std::string ext, SQLQuery* qry)
-{	
-	stringstream sql;
-	sql << "select * from OBJECTS " <<
-		"where PATH = '" + SQLEscape(path) + "' ";
-	if(file.empty()) {
-		sql << " and TYPE in (" <<
-			ITEM_AUDIO_ITEM << ", " << ITEM_AUDIO_ITEM_MUSIC_TRACK << ")";  
-	}
-	else {
-		sql << " and FILE_NAME = '" << SQLEscape(file) + "' ";
-	}
-	sql <<  " and DEVICE is NULL";
-
-	//cout << sql.str() << endl;
-	
-	unsigned int detailId;
-	bool updateDetails;
-	qry->select(sql.str());
-	while(!qry->eof()) {
-
-		sql.str("");
-		sql.clear();
-		
-		detailId = 0;
-		updateDetails = false;
-		if(!qry->result()->isNull("DETAIL_ID")) {
-			detailId = qry->result()->asUInt("DETAIL_ID");
-			updateDetails = true;
-		}		
-	
-		if(updateDetails) {
-			sql << "update OBJECT_DETAILS set " <<
-				"ALBUM_ART_ID = " << artId <<	", " <<
-				"ALBUM_ART_EXT = '" << SQLEscape(ext) << "' " <<
-				"where ID = " << detailId;
-			qry->exec(sql.str());
-			//cout << sql.str() << endl;
-		}
-		else {
-			sql << "insert into OBJECT_DETAILS " <<
-				"(ALBUM_ART_ID, ALBUM_ART_EXT) " <<
-				"values " <<
-				"(" << artId << ", " <<
-				"'" << SQLEscape(ext) << "')";
-			detailId = qry->insert(sql.str());
-			//cout << sql.str() << endl;
-			
-			sql.str("");
-			sql << "update OBJECTS set " <<
-				"DETAIL_ID = " << detailId << " " <<
-				"where OBJECT_ID = " << qry->result()->asString("OBJECT_ID");
-			qry->exec(sql.str());
-		}
-		
-		qry->next();
-	}
-}
-
 
 
 unsigned int RebuildThread::InsertFile(CContentDatabase* pDb, SQLQuery* qry, unsigned int p_nParentId, std::string p_sFileName, bool hidden /* = false*/)
@@ -817,23 +725,7 @@ unsigned int GetObjectIDFromFileName(SQLQuery* qry, std::string p_sFileName)
   return nResult;
 }
 
-bool MapPlaylistItem(unsigned int p_nPlaylistID, unsigned int p_nItemID)
-{
-  //CContentDatabase* pDB = CContentDatabase::Shared(); //new CContentDatabase();
-  
-  stringstream sSql;  
-  sSql <<
-    "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID) values " <<
-    "( " << p_nItemID <<
-    ", " << p_nPlaylistID << ")";
 
-  SQLQuery qry;
-  qry.exec(sSql.str());
-  
-  //delete pDB;
-	return true;
-}
-    
 
 void ParsePlaylist(CSQLResult* pResult)
 {
@@ -849,16 +741,6 @@ void ParsePlaylist(CSQLResult* pResult)
 		
   CContentDatabase* pDb = CContentDatabase::Shared(); //new CContentDatabase();
   SQLQuery qry;
-  
-#warning FIXME
-  /*
-   we need to move the ref_id field from the objects table to the mapping table.
-   the problem is that playlist items don't have a correct ref id and therefore search queries like
-   upnp:class derivedfrom "object.item" and :refID exists false
-   will get files that are also in playlists at least twice
-   */
-
-
   DbObject* existing;
   
   while(!Parser->Eof()) {
@@ -885,7 +767,7 @@ void ParsePlaylist(CSQLResult* pResult)
     }
     else if(!Parser->Entry()->bIsLocalFile) {
       nObjectID = InsertURL(Parser->Entry()->sFileName, Parser->Entry()->sTitle, Parser->Entry()->sMimeType);
-			MapPlaylistItem(nPlaylistID, nObjectID);
+			//MapPlaylistItem(nPlaylistID, nObjectID);
     }    
     
     Parser->Next();
@@ -954,9 +836,9 @@ void RebuildThread::run()
 			del->exec(sSql.str());
 			sSql.str("");
 			
-			sSql << "delete from MAP_OBJECTS where OBJECT_ID = " << result->asString("OBJECT_ID");
+			/*sSql << "delete from MAP_OBJECTS where OBJECT_ID = " << result->asString("OBJECT_ID");
 			del->exec(sSql.str());
-			sSql.str("");
+			sSql.str("");*/
 				
 			sSql << "delete from OBJECTS where OBJECT_ID = " << result->asString("OBJECT_ID");
 			del->exec(sSql.str());
@@ -969,7 +851,7 @@ void RebuildThread::run()
 		CSharedLog::Print("[DONE] remove missing");		
 	}
 		
-  qry.exec("vacuum");
+  qry.connection()->vacuum();
   
   int i;
   unsigned int nObjId = 0;
@@ -980,7 +862,7 @@ void RebuildThread::run()
   CSharedLog::Print("read shared directories");
 
 	CContentDatabase* db = CContentDatabase::Shared();
-  SharedObjects* so = CSharedConfig::Shared()->sharedObjects;
+  SharedObjects* so = CSharedConfig::Shared()->sharedObjects();
 	
   for(i = 0; i < so->SharedDirCount(); i++) {
     string tempSharedDir = so->GetSharedDir(i);
@@ -1066,6 +948,13 @@ void RebuildThread::run()
   CSharedLog::Print("[DONE] parse iTunes databases");
 
 
+
+  // create virtual folder layout
+  if(m_rebuildType & RebuildThread::rebuild) {
+    CVirtualContainerMgr::Shared()->RebuildContainerList(true, false);
+  }
+
+  
   DateTime end = DateTime::now();
   CSharedLog::Print("[ContentDatabase] database created at %s", end.toString().c_str());
 
@@ -1077,7 +966,7 @@ void RebuildThread::run()
   //fuppesThreadExit();
 }
 
-
+/*
 void CContentDatabase::deleteObject(unsigned int objectId)
 {
   stringstream sql;
@@ -1185,3 +1074,4 @@ void CContentDatabase::deleteContainer(std::string path)
 
 	delete qry;
 }
+*/

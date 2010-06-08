@@ -10,41 +10,33 @@
 using namespace std;
 using namespace fuppes;
 
-void DatabaseSettings::InitVariables(void) {
+DatabaseSettings::DatabaseSettings()
+{
   m_dbConnectionParams.readonly = false;
+  m_dbConnectionParams.filename = "";
+  m_dbConnectionParams.type = "sqlite3";
 }
 
+DatabaseSettings::~DatabaseSettings()
+{
+}
+
+
 bool DatabaseSettings::InitPostRead() {
-  PathFinder* pf = CSharedConfig::Shared()->pathFinder;
 
   // set dbfilename if necessary  
-  if(dbConnectionParams().type == "sqlite3") {
-    if(dbConnectionParams().filename.empty()) setDbFilename(DB_NAME);
-
-    // now append a path to the object
-    string temp = pf->findInPath(dbConnectionParams().filename, File::writable);
-    if(!temp.empty()) {
-      setDbFilename(temp);
-    } else {
-      temp = pf->findInPath("", Directory::writable); // find a writable directory in the path
-      if(!temp.empty()) {
-        setDbFilename(temp + DB_NAME);
-      }
-
-      if(dbConnectionParams().filename.empty()) return false;
-    }
+  if(dbConnectionParams().type == "sqlite3" && dbConnectionParams().filename.empty()) {
+    #ifdef WIN32
+    setDbFilename(string(getenv("APPDATA")) + "\\.FUPPES\\fuppes.db");
+    #else
+    setDbFilename(string(getenv("HOME")) + "/.fuppes/fuppes.db");
+    #endif
   }
-  // TODO there should be something here that says wether or not loading mysql worked
-
+   
   return true;
 }
 
 bool DatabaseSettings::UseDefaultSettings(void) {
-  // set it up and get it ready
-  m_dbConnectionParams.readonly = false;
-  m_dbConnectionParams.type = "sqlite3";
-  m_dbConnectionParams.filename = "";
-
   return InitPostRead();
 }
 

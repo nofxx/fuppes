@@ -128,7 +128,7 @@ class CPlugin
 		std::string		pluginVersion() { return std::string(m_pluginInfo.plugin_version); }
 		std::string		libraryVersion() { return std::string(m_pluginInfo.library_version); }
 		
-		static void		logCb(int level, const char* file, int line, const char* format, ...);
+		static void		logCb(void* plugin, int level, const char* file, int line, const char* format, ...);
 		
 	protected:
 		fuppesLibHandle		m_handle;
@@ -157,7 +157,7 @@ class CDlnaPlugin: public CPlugin
 
 typedef int		(*metadataFileOpen_t)(plugin_info* plugin, const char* fileName);
 typedef int		(*metadataRead_t)(plugin_info* plugin, metadata_t* audio);
-typedef int		(*metadataReadImage_t)(plugin_info* plugin, char** mimeType, unsigned char** buffer, size_t* size);
+typedef int		(*metadataReadImage_t)(plugin_info* plugin, char** mimeType, unsigned char** buffer, size_t* size, int width, int height);
 typedef void	(*metadataFileClose_t)(plugin_info* plugin);
 
 class CMetadataPlugin: public CPlugin
@@ -171,7 +171,7 @@ class CMetadataPlugin: public CPlugin
 	
 		bool openFile(std::string fileName);
 		bool readData(metadata_t* metadata);
-		bool readImage(char** mimeType, unsigned char** buffer, size_t* size);
+		bool readImage(char** mimeType, unsigned char** buffer, size_t* size, int width = 0, int height = 0);
 		void closeFile();
 	
 	private:

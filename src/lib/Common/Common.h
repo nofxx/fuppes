@@ -205,7 +205,47 @@ class FormatHelper
 };
 
 
-typedef std::vector<std::string>  StringList;
+/*typedef             StringList;*/
+typedef std::vector<std::string>::iterator  StringListIterator;
+
+class StringList
+{
+  public:
+
+    unsigned int size() {
+      return m_list.size();
+    }
+    
+    std::string at(int idx) { 
+      return m_list.at(idx); 
+    }
+    
+    void push_back(std::string value) {
+      m_list.push_back(value);
+    }
+
+    int indexOf(std::string value) {
+
+      for(unsigned int i = 0; i < m_list.size(); i++) {
+        if(m_list.at(i) == value) {
+          return (int)i;
+        }
+      }
+      
+      return -1;
+    }
+
+    StringListIterator begin() {
+      return m_list.begin();
+    }
+    
+    StringListIterator end() {
+      return m_list.end();
+    }
+
+  private:
+    std::vector<std::string>  m_list;
+};
 
 class String
 {

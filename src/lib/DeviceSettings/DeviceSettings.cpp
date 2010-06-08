@@ -4,7 +4,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -372,7 +372,7 @@ int CFileSettings::ReleaseDelay()
 CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
 {
   m_sDeviceName = p_sDeviceName;
-  m_sVirtualFolderDevice = "default";
+  //m_virtualFolderLayout = "default";
 
   //m_bShowPlaylistAsContainer	= false;
   m_playlistStyle             = container;
@@ -397,7 +397,7 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
 	m_MediaServerSettings.SerialNumber = "0123456789";
 	m_MediaServerSettings.UseSerialNumber = true;
 	m_MediaServerSettings.UseUPC = false;
-	m_MediaServerSettings.UseDLNA = false;
+	m_MediaServerSettings.UseDLNA = true;
 		
 	m_MediaServerSettings.UseURLBase = true;
 	m_MediaServerSettings.UseXMSMediaReceiverRegistrar = false;
@@ -406,7 +406,7 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
 CDeviceSettings::CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSettings)
 {
   m_sDeviceName = p_sDeviceName;
-  m_sVirtualFolderDevice = pSettings->m_sVirtualFolderDevice;
+  //m_virtualFolderLayout = pSettings->m_virtualFolderLayout;
   
   //m_bShowPlaylistAsContainer = pSettings->m_bShowPlaylistAsContainer;
   m_playlistStyle             = pSettings->m_playlistStyle;

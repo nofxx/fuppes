@@ -421,6 +421,7 @@ fi
 
 
 # musepack decoder plugin
+MUSEPACK_CFLAGS=""
 MUSEPACK_LIBS=""
 have_mpc=no
 AC_ARG_ENABLE([musepack], [AC_HELP_STRING([--enable-musepack],
@@ -440,9 +441,10 @@ AC_ARG_WITH(musepack-dir, AC_HELP_STRING([--with-musepack-dir=path],
 
 if test "x$enable_musepack" = "xyes" ; then
     AC_CHECK_HEADERS(${MPC_H_DIR}mpcdec/config_types.h, have_mpc=yes, have_mpc=no)
-    #if test "x$have_mpc" = "xno"; then
-    #  AC_CHECK_HEADERS(${MPC_H_DIR}mpc/mpc_types.h, have_mpc=yes, have_mpc=no)
-    #fi
+    if test "x$have_mpc" = "xno"; then
+      AC_CHECK_HEADERS(${MPC_H_DIR}mpc/mpcdec.h, have_mpc=yes, have_mpc=no)
+      MUSEPACK_CFLAGS="-DMUSEPACK2"
+    fi
     if test "x$have_mpc" = "xyes"; then
       MUSEPACK_LIBS="-lmpcdec"      
 		fi
@@ -642,25 +644,6 @@ AC_SUBST(MYSQL_LIBS)
 
 
 dnl Checks for Additional stuffs.
-
-# virtual folder
-have_vfolder=no
-AC_ARG_ENABLE([vfolder], [AC_HELP_STRING([--enable-vfolder],
-    [enable virtual folder support [default=yes]])],
-    [have_vfolder=$enableval], [have_vfolder='yes'])
-if test "x$have_vfolder" = "xyes" ; then
-	AH_TEMPLATE([HAVE_VFOLDER], [])
-	AC_DEFINE([HAVE_VFOLDER], [1], [])
-fi
-AM_CONDITIONAL(HAVE_VFOLDER, test "x$have_vfolder" = "xyes")
-
-
-# DLNA
-AC_ARG_ENABLE([dlna], [AC_HELP_STRING([--enable-dlna],
-    [enable dlna support [default=yes]])],
-    [enable_dlna=$enableval], [enable_dlna='yes'])
-AM_CONDITIONAL(DLNA_SUPPORT, test "x$enable_dlna" = "xyes")
-
 
 # HTTP Port
 AC_ARG_WITH([http-port],
@@ -924,12 +907,6 @@ else
   echo "    inotify            : disabled"
 fi
 
-# vfolder
-if test "x$have_vfolder" = "xyes"; then
-  echo "    vfolder            : enabled"
-else
-  echo "    vfolder            : disabled"
-fi
 
 
 echo ""

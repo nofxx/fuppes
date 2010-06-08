@@ -30,12 +30,15 @@
 #include "../../config.h"
 #endif
 
-#include <string>
+#include "../UPnPService.h"
 
-class CSoapControl
+class SoapControl: public CUPnPService
 {
 	public:
-		bool handleAction(std::string soapAction, std::string body, std::string* result);	
+		SoapControl(std::string HTTPServerURL);
+		
+		std::string GetServiceDescription();
+    void HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut);
 };
 
 #endif // _SOAPCONTROL_H

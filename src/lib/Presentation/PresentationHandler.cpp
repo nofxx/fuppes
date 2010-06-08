@@ -141,7 +141,7 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/jstest.html") == 0) {
     nPresentationPage = PRESENTATION_PAGE_JSTEST;
     sContent = this->GetJsTestHTML();
-    sPageName = "Configuration";
+    sPageName = "JS Test";
   }
 
 #warning todo add http cache fields to the response header
@@ -270,6 +270,7 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE /*p_nPresentat
       "<li><a href=\"/presentation/options.html\">Options</a></li>" <<
       "<li><a href=\"/presentation/status.html\">Status</a></li>" <<
       "<li><a href=\"/presentation/config.html\">Configuration</a></li>" <<
+      "<li><a href=\"/presentation/jstest.html\">Test</a></li>" <<
     "</ul>";
   
   sResult << "</div>" << endl;  
@@ -511,17 +512,17 @@ std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)
 	
     // remove shared objects(s)
     stringstream sVar;
-    for(int i = sharedCfg->sharedObjects->SharedDirCount() - 1; i >= 0; i--) {
+    for(int i = sharedCfg->sharedObjects()->SharedDirCount() - 1; i >= 0; i--) {
       sVar << "shared_dir_" << i;      
       if(pRequest->PostVarExists(sVar.str()))      
-        sharedCfg->sharedObjects->RemoveSharedDirectory(i);      
+        sharedCfg->sharedObjects()->RemoveSharedDirectory(i);      
       sVar.str("");
     }    
     
-    for(int i = sharedCfg->sharedObjects->SharedITunesCount() - 1; i >= 0; i--) {
+    for(int i = sharedCfg->sharedObjects()->SharedITunesCount() - 1; i >= 0; i--) {
       sVar << "shared_itunes_" << i;      
       if(pRequest->PostVarExists(sVar.str()))      
-        sharedCfg->sharedObjects->RemoveSharedITunes(i);      
+        sharedCfg->sharedObjects()->RemoveSharedITunes(i);      
       sVar.str("");
     }    
     
@@ -529,10 +530,10 @@ std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)
     if(pRequest->PostVarExists("new_obj") && (pRequest->GetPostVar("new_obj").length() > 0))
     {     
       if(pRequest->GetPostVar("new_obj_type").compare("dir") == 0) {
-        sharedCfg->sharedObjects->AddSharedDirectory(pRequest->GetPostVar("new_obj"));
+        sharedCfg->sharedObjects()->AddSharedDirectory(pRequest->GetPostVar("new_obj"));
       }
       else if(pRequest->GetPostVar("new_obj_type").compare("itunes") == 0) {
-        sharedCfg->sharedObjects->AddSharedITunes(pRequest->GetPostVar("new_obj"));
+        sharedCfg->sharedObjects()->AddSharedITunes(pRequest->GetPostVar("new_obj"));
       }
     }
 
@@ -603,20 +604,20 @@ std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)
                "<tbody>" << endl;
   
   // dirs
-  for(int i = 0; i < sharedCfg->sharedObjects->SharedDirCount(); i++) {
+  for(int i = 0; i < sharedCfg->sharedObjects()->SharedDirCount(); i++) {
     sResult << "<tr>" << endl;    
     sResult << "<td><input type=\"checkbox\" name=\"shared_dir_" << i << "\" value=\"remove\"></td>" << endl;
     sResult << "<td>dir</td>" << endl;
-    sResult << "<td>" << sharedCfg->sharedObjects->GetSharedDir(i) << "</td>" << endl;
+    sResult << "<td>" << sharedCfg->sharedObjects()->GetSharedDir(i) << "</td>" << endl;
     sResult << "</tr>" << endl;
   }
   
   // itunes
-  for(int i = 0; i < sharedCfg->sharedObjects->SharedITunesCount(); i++) {
+  for(int i = 0; i < sharedCfg->sharedObjects()->SharedITunesCount(); i++) {
     sResult << "<tr>" << endl;    
     sResult << "<td><input type=\"checkbox\" name=\"shared_itunes_" << i << "\" value=\"remove\"></td>" << endl;   
     sResult << "<td>iTunes</td>" << endl;    
-    sResult << "<td>" << sharedCfg->sharedObjects->GetSharedITunes(i) << "</td>" << endl;
+    sResult << "<td>" << sharedCfg->sharedObjects()->GetSharedITunes(i) << "</td>" << endl;
     sResult << "</tr>" << endl;
   }  
   
@@ -816,8 +817,22 @@ std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes)
     result << "<tr><td>descriptionUrl</td><td>";
     result << pDevice->descriptionUrl() << "<br />";
     result << "</td></tr>" << endl;
-    
 
+
+    // mac
+    result << "<tr><td>mac</td><td>";
+    result << pDevice->macAddress();
+    result << "</td></tr>" << endl;
+
+
+    // device settings
+    if(pDevice->deviceSettings()) {  
+      result << "<tr><td>device settings</td><td>";
+      result << pDevice->deviceSettings()->name();
+      result << "</td></tr>" << endl;
+    }
+    
+    
     result << "</table>" << endl;
     
     result << "</div>" << endl; //details
@@ -836,18 +851,35 @@ std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes)
 
 std::string CPresentationHandler::GetJsTestHTML()
 {
-  std::stringstream sResult;
+  std::stringstream result;
   
-  sResult << "<h1>JS test</h1>";
+  result << "<h1>JS test</h1>";
 
-  sResult << "<div>";
+  // browse
+  result << "<h2>browse data</h2>";
+  result << "<div>";
+  result << "virtual folder layout: ";
+  result << "<form><select id=\"virtual-layout\">";
+  result << "<option selected=\"selected\">none</option>\n";
+  fuppes::StringList enabled = CSharedConfig::Shared()->virtualFolders()->getEnabledFolders();
+  for(unsigned int i = 0; i < enabled.size(); i++) {
+    result << "<option>" << enabled.at(i) << "</option>\n";
+  }
+  result << "</select></form>";
 
-  sResult << "<a href=\"javascript:browseDirectChildren(0, 0, 20);\">browse</a>"; // objectId, startIdx, requestCnt
-  sResult << "<div id=\"browse-result\">";
+  result << "<a href=\"javascript:browseDirectChildren(0, 0, 0);\">browse</a>"; // objectId, startIdx, requestCnt  
+  result << "<div id=\"browse-result\"></div>";
+  result << "</div>";
 
-  sResult << "</div>";
+
+  // soap controll
+  result << "<h2>fuppes soap controll</h2>";
+  result << "<div>";
+  result << "<a href=\"javascript:fuppesCtrl();\">ctrl test</a>";
+  result << "<div id=\"ctrl-result\"></div>";
+  result << "</div>";
+
   
-  sResult << "</div>";
   
-  return sResult.str();
+  return result.str();
 }

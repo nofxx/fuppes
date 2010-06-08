@@ -76,6 +76,7 @@ class File
     bool          seek(fuppes_off_t);
     fuppes_off_t  read(char* buffer, fuppes_off_t length);
     bool          getline(std::string& line);
+    fuppes_off_t  write(char* buffer, fuppes_off_t length);
 
     static bool remove(std::string fileName);
     
@@ -83,6 +84,8 @@ class File
     static bool readable(std::string fileName);
     static bool writable(std::string fileName);
     static bool executable(std::string fileName);
+
+    static time_t lastModified(std::string fileName);
     
 	private:
 		std::string   m_fileName;

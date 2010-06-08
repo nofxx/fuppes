@@ -1,10 +1,10 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            HTTPMessage.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -234,6 +234,9 @@ class CHTTPMessage
   
     bool              PostVarExists(std::string p_sPostVarName);
     std::string       GetPostVar(std::string p_sPostVarName);
+    
+    bool              GetVarExists(string key);
+    std::string       getGetVar(std::string key);
   
 		std::string				getVarAsStr(std::string key);
 		int								getVarAsInt(std::string key);
@@ -257,7 +260,9 @@ class CHTTPMessage
   
 	  CDeviceSettings*  DeviceSettings() { return m_pDeviceSettings; }
 	  void              DeviceSettings(CDeviceSettings* pSettings) { m_pDeviceSettings = pSettings; }
-  
+		std::string       virtualFolderLayout() { return m_virtualFolderLayout; }
+		void							setVirtualFolderLayout(std::string layout) { m_virtualFolderLayout = layout; }
+		
 		std::string GetRemoteIPAddress();
 		void        SetLocalEndPoint(sockaddr_in);
 	  void        SetRemoteEndPoint(sockaddr_in);		
@@ -324,7 +329,8 @@ private:
 		std::map<std::string, std::string> 						m_getVars;
 		std::map<std::string, std::string>::iterator	m_getVarsIter;
   
-	  CDeviceSettings*   m_pDeviceSettings;    
+	  CDeviceSettings* 		m_pDeviceSettings;   
+		std::string					m_virtualFolderLayout;
 
 		std::string m_sContent;
     std::string m_sHeader;

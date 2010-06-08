@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <stdio.h>
-#include <stdarg.h>
 
 using namespace std;
 using namespace fuppes;
@@ -115,14 +114,28 @@ void Log::log(Log::Sender sender, Log::Level level, const std::string fileName, 
   
 	va_list args;
   va_start(args, format);
-	//CSharedLog::LogArgs(0, fileName, lineNo, format, args);
+  Log::log(sender, level, fileName, lineNo, format, args);
+	va_end(args);
+}
+
+
+void Log::log(Log::Sender sender, Log::Level level, const std::string fileName, int lineNo, const char* format, va_list args) // static
+{
+  bool active = isActiveSender(sender);
+
+  if(!active) {
+    //cout << "Log sender: " << Log::senderToString(sender) << " not active" << endl;
+    return;
+  }
+  
 	char buffer[8192 * 10];	
  	string out = "[" + Log::senderToString(sender) + "] ";
   vsnprintf(buffer, sizeof(buffer) - 1, format, args);
-	va_end(args);
 	
 	cout << out << buffer << endl;
 }
+
+
 
 void Log::log(Log::Sender sender, Log::Level level, const std::string fileName, int lineNo, const std::string msg) // static
 {

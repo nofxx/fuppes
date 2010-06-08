@@ -52,7 +52,11 @@ class CSQLiteConnection: public CDatabaseConnection
 		}
 
 		bool setup();
-		
+
+    plugin_info* plugin() { return m_plugin; }
+
+    void vacuum();
+    
 	private:
 		bool				connect(const CConnectionParams params);
 		ISQLQuery*	query();
@@ -235,6 +239,12 @@ void CSQLiteConnection::rollback()
 	delete qry;
 }
 
+void CSQLiteConnection::vacuum()
+{
+  CSQLiteQuery qry(this, m_handle);
+  qry.exec("vacuum");
+}
+
 
 CSQLiteQuery::CSQLiteQuery(CDatabaseConnection* connection, sqlite3* handle)
 {
@@ -257,6 +267,8 @@ bool CSQLiteQuery::select(const std::string sql)
   //CSharedLog::Log(L_DBG, __FILE__, __LINE__, "SELECT %s", p_sStatement.c_str());
 
 	//std::cout << "select: " << sql << std::endl;
+  CSQLiteConnection* connection = (CSQLiteConnection*)m_connection;
+  connection->plugin()->cb.log(connection->plugin(), 0, __FILE__, __LINE__, "query: %s", sql.c_str());
 	
   do {
     nResult = sqlite3_get_table(m_handle, sql.c_str(), &szResult, &nRows, &nCols, &szErr);

@@ -25,6 +25,7 @@
 
 
 #include "Directory.h"
+#include "Common.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -32,6 +33,8 @@
 #ifdef WIN32
 #include <string.h>
 #endif
+
+#include <iostream>
 
 using namespace std;
 using namespace fuppes;
@@ -187,6 +190,21 @@ bool Directory::searchable(std::string directory) // static
 
   return isExecutable;
 }
+
+bool Directory::hidden(std::string directory) // static
+{
+	string folder;
+	ExtractFolderFromPath(directory, &folder);
+#ifndef WIN32
+	if(folder.length() > 0) {
+		return (folder[0] == '.');
+	}
+#else
+	FIXME
+#endif
+	return false;
+}
+
 
 std::string Directory::appendTrailingSlash(std::string directory) // static
 {

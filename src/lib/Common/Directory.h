@@ -61,7 +61,8 @@ class Directory
     static bool readable(std::string directory);
     static bool writable(std::string directory);
     static bool searchable(std::string directory);
-
+    static bool hidden(std::string directory);
+		
     static bool walk(std::vector<std::string>* paths, bool (*step)(std::string));
 		
 		Directory(std::string path);

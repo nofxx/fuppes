@@ -2,6 +2,8 @@
 #ifndef _OBJECTTYPES_H
 #define _OBJECTTYPES_H
 
+#include <string>
+
 typedef enum tagOBJECT_TYPE
 {
   OBJECT_TYPE_UNKNOWN = 0,  
@@ -64,5 +66,23 @@ typedef enum tagOBJECT_TYPE
 
   
 }OBJECT_TYPE;
+
+/*
+std::string objectTypeToString(OBJECT_TYPE type) {
+
+
+  switch(type) {
+    case OBJECT_TYPE_UNKNOWN:
+      break;
+      
+    case CONTAINER_STORAGE_FOLDER:
+      return "";
+      break;
+  }
+
+  ASSERT(true == false);
+  return "unknown";
+}
+*/
 
 #endif // _OBJECTTYPES_H

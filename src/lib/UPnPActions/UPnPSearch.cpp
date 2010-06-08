@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -26,12 +26,8 @@
 #include "UPnPSearch.h"
 #include "../Common/Common.h"
 #include "../Common/RegEx.h"
-//#include "../ContentDirectory/ContentDatabase.h"
 #include "../ContentDirectory/UPnPObjectTypes.h"
 #include "../ContentDirectory/DatabaseConnection.h"
-#ifdef HAVE_VFOLDER
-#include "../ContentDirectory/VirtualContainerMgr.h"
-#endif
 
 #include <sstream>
 #include <iostream>
@@ -111,16 +107,12 @@ bool CUPnPSearch::prepareSQL()
   stringstream sSql;
   SQLQuery qry;
   
-  string sDevice; // = " is NULL ";
+  string sDevice = virtualFolderLayout();
+  bVirtualSearch = !sDevice.empty();
+
   
   unsigned int nContainerId = GetObjectIDAsUInt(); //GetContainerIdAsUInt();
   if(nContainerId > 0) {
-#ifdef HAVE_VFOLDER
-    if(CVirtualContainerMgr::isVirtualContainer(nContainerId, DeviceSettings()->VirtualFolderDevice())) {
-      bVirtualSearch = true;
-      sDevice = DeviceSettings()->VirtualFolderDevice();//sDevice = " = '" + DeviceSettings()->VirtualFolderDevice() + "' ";
-    }
-#endif
     
     if(m_sParentIds.length() == 0) {
       stringstream sIds;
@@ -130,15 +122,6 @@ bool CUPnPSearch::prepareSQL()
       //cout << "PARENT ID LIST: " << m_sParentIds << endl; fflush(stdout);
     }
   }
-#ifdef HAVE_VFOLDER
-  else if(nContainerId == 0) {
-		if(CVirtualContainerMgr::hasVirtualChildren(nContainerId, DeviceSettings()->VirtualFolderDevice())) {
-      bVirtualSearch = true;
-      //sDevice = " = '" + DeviceSettings()->VirtualFolderDevice() + "' ";
-     sDevice = DeviceSettings()->VirtualFolderDevice();
-    }
-	}
-#endif
   
   
 	m_query = qry.build(SQL_SEARCH_PART_SELECT_FIELDS, 0, sDevice); //"select * ";

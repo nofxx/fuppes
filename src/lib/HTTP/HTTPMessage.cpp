@@ -1,10 +1,10 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            HTTPMessage.cpp
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -140,7 +140,7 @@ void CHTTPMessage::SetBinContent(char* p_szBinContent, fuppes_off_t p_nBinConten
 CUPnPAction* CHTTPMessage::GetAction()
 {
   if(!m_pUPnPAction) {
-    m_pUPnPAction = CUPnPActionFactory::buildActionFromString(m_sContent, m_pDeviceSettings);
+    m_pUPnPAction = CUPnPActionFactory::buildActionFromString(m_sContent, m_pDeviceSettings, m_virtualFolderLayout);
   }
   return m_pUPnPAction;
 }
@@ -571,6 +571,21 @@ std::string CHTTPMessage::GetPostVar(std::string p_sPostVarName)
   
   return sResult;
 }
+
+
+bool CHTTPMessage::GetVarExists(string key)
+{
+  return (getGetVar(key).length() > 0);
+}
+
+std::string CHTTPMessage::getGetVar(std::string key)
+{
+  RegEx rxGet("[?|&]" + key + "=(\\w+)");
+  if(rxGet.search(m_sRequest))
+    return rxGet.match(1);
+  return "";
+}
+
 
 std::string	CHTTPMessage::getVarAsStr(std::string key)
 {

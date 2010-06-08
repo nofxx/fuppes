@@ -4,7 +4,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2007-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -283,6 +283,8 @@ class CDeviceSettings
     CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSettings);
     ~CDeviceSettings();
 
+    std::string       name() { return m_sDeviceName; }
+    
     bool HasIP(std::string p_sIPAddress); 
 		
     OBJECT_TYPE       ObjectType(std::string p_sExt);
@@ -319,11 +321,12 @@ class CDeviceSettings
     bool        DLNAEnabled() { return MediaServerSettings()->UseDLNA; }
     bool				ShowEmptyResolution() { return m_bShowEmptyResolution; }
 		
-    std::string  VirtualFolderDevice() { return m_sVirtualFolderDevice; }
-  
+    /*std::string  virtualFolderLayout() { return m_virtualFolderLayout; }
+    void  setVirtualFolderLayout(std::string layout) { m_virtualFolderLayout = layout; }*/
+    
   private:
     std::string m_sDeviceName;
-    std::string m_sVirtualFolderDevice;
+    //std::string m_virtualFolderLayout;
     
     DisplaySettings_t m_DisplaySettings;
 		CMediaServerSettings m_MediaServerSettings;

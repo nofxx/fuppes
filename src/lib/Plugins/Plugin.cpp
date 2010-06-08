@@ -102,7 +102,8 @@ bool CPluginMgr::init_plugin(string fileName) {
   try {
     plugin_info pluginInfo;
     pluginInfo.plugin_type = PT_NONE;
-    pluginInfo.log = &CPlugin::logCb;
+    pluginInfo.cb.log = &CPlugin::logCb;
+    pluginInfo.cb.ctrl = NULL;
     pluginInfo.plugin_name[0] = '\0';
     pluginInfo.plugin_author[0] = '\0';
     pluginInfo.plugin_version[0] = '\0';
@@ -521,8 +522,8 @@ CPlugin::CPlugin(fuppesLibHandle handle, plugin_info* info)
 	strcpy(m_pluginInfo.library_version, info->library_version);
 	
 	m_pluginInfo.user_data = NULL;
-	m_pluginInfo.log = &CPlugin::logCb;
-	m_pluginInfo.ctrl = NULL;
+	m_pluginInfo.cb.log = &CPlugin::logCb;
+	m_pluginInfo.cb.ctrl = NULL;
 
 	m_pluginInitInstance = NULL;
 	m_pluginUninitInstance = NULL;
@@ -546,8 +547,8 @@ CPlugin::CPlugin(CPlugin* plugin)
 	strcpy(m_pluginInfo.library_version, plugin->m_pluginInfo.library_version);
 	
 	m_pluginInfo.user_data = NULL;
-	m_pluginInfo.log = &CPlugin::logCb;
-	m_pluginInfo.ctrl = NULL;
+	m_pluginInfo.cb.log = &CPlugin::logCb;
+	m_pluginInfo.cb.ctrl = NULL;
 
 	m_pluginInitInstance = plugin->m_pluginInitInstance;
 	m_pluginUninitInstance = plugin->m_pluginUninitInstance;
@@ -583,11 +584,20 @@ void CPlugin::uninit()
   m_handle = NULL;
 }
 
-void CPlugin::logCb(int level, const char* file, int line, const char* format, ...)
+void CPlugin::logCb(void* plugin, int level, const char* file, int line, const char* format, ...)
 {
+  plugin_info* info = (plugin_info*)plugin;
+
+
+  fuppes::Log::Sender sender = fuppes::Log::plugin;
+  
+  /*switch(info->plugin_type) {
+    case PT_DATABASE_CONNECTION:
+  }*/
+  
 	va_list args;	
   va_start(args, format);
-	CSharedLog::LogArgs(level, file, line, format, args);	
+  fuppes::Log::log(sender, fuppes::Log::debug, file, line, format, args);
   va_end(args);
 }
 
@@ -675,12 +685,12 @@ bool CMetadataPlugin::readData(metadata_t* metadata)
 	return (m_readData(&m_pluginInfo, metadata) == 0);
 }
 
-bool CMetadataPlugin::readImage(char** mimeType, unsigned char** buffer, size_t* size)
+bool CMetadataPlugin::readImage(char** mimeType, unsigned char** buffer, size_t* size, int width /*= 0*/, int height /*= 0*/)
 {
 	if(m_readImage == NULL) {
 		return false;
 	}
-	return (m_readImage(&m_pluginInfo, mimeType, buffer, size) == 0);
+	return (m_readImage(&m_pluginInfo, mimeType, buffer, size, width, height) == 0);
 }
 
 void CMetadataPlugin::closeFile()
@@ -1040,7 +1050,7 @@ unsigned int CAudioEncoderPlugin::GuessContentLength(unsigned int numPcmSamples)
 CPresentationPlugin::CPresentationPlugin(fuppesLibHandle handle, plugin_info* info)
 :CPlugin(handle, info)
 {
-	m_pluginInfo.ctrl = &CPresentationPlugin::ctrlAction;
+	m_pluginInfo.cb.ctrl = &CPresentationPlugin::ctrlAction;
 }
 
 int CPresentationPlugin::ctrlAction(const char* action, arg_list_t* args, arg_list_t* result)

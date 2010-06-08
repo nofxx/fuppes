@@ -38,15 +38,24 @@ static const fuppes_sql sqlite3_statements[] = {
 	"VISIBLE = 1 and "
 	"%DEVICE%"
   },
-
   
   {SQL_GET_CHILD_OBJECTS,
   "select "
-  "  o.OBJECT_ID, o.TYPE, o.PATH, o.FILE_NAME, o.TITLE, "
+  "  o.OBJECT_ID, o.TYPE, o.TITLE, "
   "  d.IV_HEIGHT, d.IV_WIDTH, d.DATE, d.AV_DURATION, "
   "  d.A_ALBUM, d.A_ARTIST, d.A_GENRE, d.A_TRACK_NO, "
 	"  d.A_BITRATE, d.A_SAMPLERATE, d.A_BITS_PER_SAMPLE, d.A_CHANNELS, d.AV_DURATION, "
-  "  d.SIZE, d.A_CODEC, d.V_CODEC, d.V_BITRATE, d.DLNA_PROFILE, d.ALBUM_ART_ID, d.ALBUM_ART_EXT "
+  "  d.SIZE, d.A_CODEC, d.V_CODEC, d.V_BITRATE, d.DLNA_PROFILE, d.ALBUM_ART_ID, d.ALBUM_ART_EXT, "
+  "CASE "
+  "  WHEN o.DEVICE is NULL "
+  "  THEN o.PATH "
+  "  ELSE  (select PATH from OBJECTS where DEVICE is NULL and OBJECT_ID = o.VREF_ID) "
+  "END AS PATH, "
+  "CASE "
+  "  WHEN o.DEVICE is NULL "
+  "  THEN o.FILE_NAME "
+  "  ELSE  (select FILE_NAME from OBJECTS where DEVICE is NULL and OBJECT_ID = o.VREF_ID) "
+  "END AS FILE_NAME "
   "from "
   "  OBJECTS o "
   "  left join OBJECT_DETAILS d on (d.ID = o.DETAIL_ID) "
@@ -64,18 +73,37 @@ static const fuppes_sql sqlite3_statements[] = {
 
   {SQL_GET_OBJECT_DETAILS,
   "select "
-  "  o.OBJECT_ID, o.PARENT_ID, o.TITLE, o.PATH, o.FILE_NAME, o.TYPE, d.* "
+  "  o.OBJECT_ID, o.PARENT_ID, o.TITLE, o.TYPE, o.DEVICE, "
+  "CASE "
+  "  WHEN o.DEVICE is NULL "
+  "  THEN o.PATH "
+  "  ELSE  (select PATH from OBJECTS where DEVICE is NULL and OBJECT_ID = o.VREF_ID) "
+  "END AS PATH, "
+  "CASE "
+  "  WHEN o.DEVICE is NULL "
+  "  THEN o.FILE_NAME "
+  "  ELSE  (select FILE_NAME from OBJECTS where DEVICE is NULL and OBJECT_ID = o.VREF_ID) "
+  "END AS FILE_NAME, "
+  "d.* "
   "from "
   "  OBJECTS o "
   "  left join OBJECT_DETAILS d on (d.ID = o.DETAIL_ID) "
   "where "
   "  o.OBJECT_ID = %OBJECT_ID% and "
-	"  o.%DEVICE% "
-  },
+  "  o.%DEVICE% "
+  },    
 
-  {SQL_GET_ALBUM_ART_DETAILS,
+
+  {SQL_GET_ALBUM_ART_DETAILS,  
+  "select "
+  "  IV_HEIGHT, "
+  "  IV_WIDTH, "
+  "  ALBUM_ART_EXT "
+  "from "
+  "  OBJECT_DETAILS d "
+  "where "
+  "  d.ID = %OBJECT_ID% "
   },
-  
 
   {SQL_SEARCH_PART_SELECT_FIELDS,
   "select * "
@@ -92,15 +120,15 @@ static const fuppes_sql sqlite3_statements[] = {
   "where "
   "  o.%DEVICE% "
   },
-
+  
   {SQL_SEARCH_GET_CHILDREN_OBJECT_IDS,
   "select OBJECT_ID from OBJECTS "
   "where "
   "  PARENT_ID in (%OBJECT_ID%) and "
-  "  %DEVICE "
+  "  %DEVICE% "
   },
 
-
+  
   {SQL_TABLES_EXIST,
    " SELECT name FROM sqlite_master WHERE name='OBJECTS'"
   },
@@ -128,7 +156,7 @@ static const fuppes_sql sqlite3_statements[] = {
 	  "  TYPE INTEGER NOT NULL, "
 	  "  PATH TEXT NOT NULL, "
 	  "  FILE_NAME TEXT DEFAULT NULL, "
-	  "  TITLE TEXT DEFAULT NULL, "
+	  "  TITLE TEXT DEFAULT NULL COLLATE NOCASE, "
 	  "  MD5 TEXT DEFAULT NULL, "
 	  "  MIME_TYPE TEXT DEFAULT NULL, "
 	  "  REF_ID BIGINT DEFAULT 0, "
@@ -137,7 +165,7 @@ static const fuppes_sql sqlite3_statements[] = {
     "  VCONTAINER_PATH TEXT DEFAULT NULL, "
    	"  VREF_ID BIGINT DEFAULT 0, "
 	  "  VISIBLE INTEGER DEFAULT 1, "
-    "  CHANGED_AT INTEGER, "
+    "  MODIFIED_AT INTEGER, "
     "  UPDATED_AT INTEGER ) "
   },
 
@@ -146,7 +174,7 @@ static const fuppes_sql sqlite3_statements[] = {
   {SQL_CREATE_TABLE_OBJECT_DETAILS,
     "CREATE TABLE OBJECT_DETAILS ( "
     "  ID INTEGER PRIMARY KEY AUTOINCREMENT, "
-    "  AV_DURATION TEXT, "
+    "  AV_DURATION INTEGER, "
     "  A_ALBUM TEXT, "
     "  A_ARTIST TEXT, "
     "  A_CHANNELS INTEGER, " 
@@ -170,50 +198,21 @@ static const fuppes_sql sqlite3_statements[] = {
     "  DLNA_MIME_TYPE TEXT DEFAULT NULL, "
     "  SOURCE INT DEFAULT 0 ) "
   },
-
-
-
-
-  {SQL_GET_OBJECT_BY_FILENAME,
-    ""
+  
+  {SQL_CREATE_INDICES,
+    "CREATE INDEX IDX_OBJECTS_OBJECT_ID ON OBJECTS(OBJECT_ID);"
+    "CREATE INDEX IDX_OBJECTS_PARENT_ID ON OBJECTS(PARENT_ID);"
+    "CREATE INDEX IDX_OBJECTS_DETAIL_ID ON OBJECTS(DETAIL_ID);"
+    "CREATE INDEX IDX_OBJECTS_PATH ON OBJECTS(PATH);"
+    "CREATE INDEX IDX_OBJECTS_FILE_NAME ON OBJECTS(FILE_NAME);"
+    "CREATE INDEX IDX_OBJECTS_TITLE ON OBJECTS(TITLE);"
+    "CREATE INDEX IDX_OBJECT_DETAILS_ID ON OBJECT_DETAILS(ID);"
   },
 
-
-
-  {SQL_VC_HAS_CHILDREN,
-    "select count(*) as VALUE from OBJECTS where "
-    "PARENT_ID = %OBJECT_ID% and %DEVICE%"
-  },
-
-  //"select count(*) as VALUE from MAP_OBJECTS where PARENT_ID = " << p_nParentId << " and DEVICE = '" << p_sDevice << "';";	
-
-  {SQL_VC_GET_CHILD_COUNT,
-    ""
-  },
-
-
-
+  
   {SQL_GET_OBJECT_TYPE_COUNT,
     "select TYPE, count(*) as VALUE from OBJECTS group by TYPE"
   },
-  
-  
-  /*
-    if(!Execute("CREATE INDEX IDX_OBJECTS_OBJECT_ID ON OBJECTS(OBJECT_ID);"))
-      return false;
-    
-    if(!Execute("CREATE INDEX IDX_MAP_OBJECTS_OBJECT_ID ON MAP_OBJECTS(OBJECT_ID);"))
-      return false;
-    
-    if(!Execute("CREATE INDEX IDX_MAP_OBJECTS_PARENT_ID ON MAP_OBJECTS(PARENT_ID);"))
-      return false;	
-        
-    if(!Execute("CREATE INDEX IDX_OBJECTS_DETAIL_ID ON OBJECTS(DETAIL_ID);"))
-      return false;
-
-    if(!Execute("CREATE INDEX IDX_OBJECT_DETAILS_ID ON OBJECT_DETAILS(ID);"))
-      return false;
-  */
   
 
 };

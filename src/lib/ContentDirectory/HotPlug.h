@@ -73,6 +73,8 @@ class HotPlugDbus: public HotPlugBase
 
   private:
     void run();
+
+    void queryObject(std::string object);
     
     DBusConnection* m_connection;
 };

@@ -262,7 +262,7 @@ int fuppes_decoder_file_open(plugin_info* plugin, const char* filename, audio_se
   
   if(!FLAC__stream_decoder_process_until_end_of_metadata(data->decoder)) {
     //cout << "[ERROR] CFLACDecoder::OpenFile() - FLAC_StreamDecoderProcessUntilEndOfMetadata" << endl;
-		plugin->log(0, __FILE__, __LINE__, "[ERROR] CFLACDecoder::OpenFile() - FLAC_StreamDecoderProcessUntilEndOfMetadata");
+		plugin->cb.log(plugin, 0, __FILE__, __LINE__, "[ERROR] CFLACDecoder::OpenFile() - FLAC_StreamDecoderProcessUntilEndOfMetadata");
     fuppes_decoder_file_close(plugin);
     return 1; 
   }  

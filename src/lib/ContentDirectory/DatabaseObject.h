@@ -63,8 +63,12 @@ DLNA_MIME_TYPE
 SOURCE          // metadata source (file = the file itself, playlist = from a playlist, itunes = from itunes db)
 */
 
+class DbObject;
+
 class ObjectDetails
 {
+
+  friend class DbObject;
 
   public:
     enum DetailSource {
@@ -95,6 +99,8 @@ class ObjectDetails
       m_iv_height = details.m_iv_height;
       m_v_bitrate = details.m_v_bitrate;      
       m_v_codec = details.m_v_codec;
+      m_albumArtId = details.m_albumArtId;
+      m_albumArtExt = details.m_albumArtExt;
       m_size = details.m_size;
       m_source = details.m_source;
 
@@ -102,23 +108,25 @@ class ObjectDetails
       
 	  	return *this;
 	  }
-
+    
     object_id_t   id() { return m_id; }
     int           trackNo() { return m_a_trackNo; }
-    int           samplerate() { return m_a_samplerate; }
-    int           bitrate() { return m_a_bitrate; }
+    int           audioSamplerate() { return m_a_samplerate; }
+    int           audioBitrate() { return m_a_bitrate; }
     std::string   album() { return m_a_album; }
     std::string   artist() { return m_a_artist; }
     std::string   genre() { return m_a_genre; }
     std::string   composer() { return m_a_composer; }
     std::string   description() { return m_a_description; }
     std::string   audioCodec() { return m_a_codec; }
-    int           channels() { return m_a_channels; }
-    std::string   duration() { return m_av_duration; }
+    int           audioChannels() { return m_a_channels; }
+    unsigned int  durationMs() { return m_av_duration; }
     int           width() { return m_iv_width; }
     int           height() { return m_iv_height; }
     int           videoBitrate() { return m_v_bitrate; }
     std::string   videoCodec() { return m_v_codec; }
+    object_id_t   albumArtId() { return m_albumArtId; }
+    std::string   albumArtExt() { return m_albumArtExt; }
     fuppes_off_t  size() { return m_size; }
     DetailSource  source() { return m_source; }
 
@@ -186,14 +194,14 @@ class ObjectDetails
       }
     }
 
-    void setChannels(int channels) {
+    void setAudioChannels(int channels) {
       if(m_a_channels != channels) {
         m_a_channels = channels;
         m_changed = true;
       }
     }
 
-    void setDuration(std::string duration) {
+    void setDurationMs(unsigned int duration) {
       if(m_av_duration != duration) {
         m_av_duration = duration;
         m_changed = true;
@@ -228,6 +236,20 @@ class ObjectDetails
       }
     }
 
+    void setAlbumArtId(object_id_t albumArtId) {
+      if(m_albumArtId != albumArtId) {
+        m_albumArtId = albumArtId;
+        m_changed = true;
+      }
+    }
+
+    void setAlbumArtExt(std::string albumArtExt) {
+      if(m_albumArtExt != albumArtExt) {
+        m_albumArtExt = albumArtExt;
+        m_changed = true;
+      }
+    }
+    
     void setSize(fuppes_off_t size) {
       if(m_size != size) {
         m_size = size;
@@ -242,6 +264,7 @@ class ObjectDetails
       }
     }
 
+    bool load(object_id_t detailId, SQLQuery* qry = NULL);
     bool save(SQLQuery* qry = NULL);
     
   private:
@@ -256,11 +279,13 @@ class ObjectDetails
     std::string     m_a_description;
     std::string     m_a_codec;
     int             m_a_channels;
-    std::string     m_av_duration;
+    unsigned int    m_av_duration;
     int             m_iv_width;
     int             m_iv_height;
     int             m_v_bitrate;
     std::string     m_v_codec;
+    object_id_t     m_albumArtId;
+    std::string     m_albumArtExt;
     fuppes_off_t    m_size;
     DetailSource    m_source;
 
@@ -284,10 +309,10 @@ MD5             ::
 MIME_TYPE       ::
 REF_ID          :: id of the referenced object (e.g. a playlist item that points to a object that is also available via normal folders)
 VISIBLE         :: object visiblility (0 = false, 1 = true)
-CHANGED_AT      :: last time file hast changes (unix timestamp)
-UPDATED_AT      :: last time file was checked (unix timestamp)
+MODIFIED_AT     :: last time file was modified (unix timestamp)
+UPDATED_AT      :: last time file was checked by fuppes (unix timestamp)
 
-DEVICE          :: the virtual device
+DEVICE          :: the name of the virtual folder layout
 VCONTAINER_TYPE :: the type of the virtual container (e.g. genre, album, artist)
 VCONTAINER_PATH :: the full virtual path this object is part of ( e.g. folder | genre | artist)
 VREF_ID         :: id of the referenced "original" object (the file with DEVICE == NULL and REF_ID == NULL)
@@ -301,14 +326,15 @@ class DbObject
       None      = 0,
       Folder    = 1,
       Split     = 2,
+      Filter    = 3,
       Genre     = 4,
-      Artist    = 8,
-      Composer  = 16,
-      Album     = 32
+      Artist    = 5,
+      Composer  = 6,
+      Album     = 7
     };
   
-    static DbObject* createFromObjectId(unsigned int objectId, SQLQuery* qry = NULL);
-    static DbObject* createFromFileName(std::string fileName, SQLQuery* qry = NULL);
+    static DbObject* createFromObjectId(object_id_t objectId, SQLQuery* qry = NULL, std::string layout = "");
+    static DbObject* createFromFileName(std::string fileName, SQLQuery* qry = NULL, std::string layout = "");
     
     object_id_t             objectId() { return m_objectId; }
     object_id_t             parentId() { return m_parentId; }
@@ -323,6 +349,8 @@ class DbObject
     VirtualContainerType    vcType() { return m_vcType; }
     std::string             vcPath() { return m_vcPath; }
     bool                    visible() { return m_visible; }
+    time_t                  lastModified() { return m_lastModified; }
+    time_t                  lastUpdated() { return m_lastUpdated; }
 
     // set the object id. if not set an object id will be set when saving
     void  setObjectId(object_id_t objectId) { 
@@ -412,9 +440,29 @@ class DbObject
       }
     }
 
+    void setLastModified(time_t lastModified) {
+      if(m_lastModified != lastModified) {
+        m_lastModified = lastModified;
+        m_changed = true;
+        m_lastModifiedChanged = true;
+      }
+    }
+    
     void setUpdated() {
       m_changed = true;
     }
+
+
+    ObjectDetails*  details() {
+
+      // check if the object has details and load them if necessary
+      if(m_detailId != 0 && m_details.m_id == 0) {
+        m_details.load(m_detailId);
+      }
+
+      return &m_details;
+    }
+    
     
     DbObject();
     DbObject(DbObject* object);
@@ -430,6 +478,8 @@ class DbObject
     bool save(SQLQuery* qry = NULL, bool createReference = false);
 
     bool remove();
+
+    static std::string toString(DbObject* object, bool details = false);
     
   private:
     unsigned int            m_id;
@@ -447,10 +497,13 @@ class DbObject
     VirtualContainerType    m_vcType;
     std::string             m_vcPath;
     object_id_t             m_vrefId;
-
+    time_t                  m_lastModified;
+    time_t                  m_lastUpdated;
+    
     bool                    m_changed;
     bool                    m_pathChanged;
     std::string             m_oldPath;
+    bool                    m_lastModifiedChanged;
     
     ObjectDetails           m_details;
 };

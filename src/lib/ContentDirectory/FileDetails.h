@@ -47,7 +47,7 @@ struct SAudioItem
 { 
   std::string sTitle;
   std::string sGenre;
-	std::string sDuration;
+	unsigned int durationMs;
   std::string sDescription;
   /*std::string sLongDescription;
   std::string sPublisher;
@@ -116,7 +116,7 @@ struct SVideoItem
   std::string sLanguage;
   std::string sRelation;
 	
-	std::string  sDuration;
+	unsigned int durationMs;
 	std::string  sVCodec;
   std::string  sACodec;
   

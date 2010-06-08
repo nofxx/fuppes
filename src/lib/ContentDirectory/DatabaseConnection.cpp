@@ -34,9 +34,12 @@ using namespace std;
 
 using namespace fuppes;
 
-SQLQuery::SQLQuery()
+SQLQuery::SQLQuery(CDatabaseConnection* connection /*= NULL*/)
 {
-	m_query = CDatabase::query();
+  if(connection)
+    m_query = connection->query();
+  else
+  	m_query = CDatabase::query();
 }
 
 SQLQuery::~SQLQuery()

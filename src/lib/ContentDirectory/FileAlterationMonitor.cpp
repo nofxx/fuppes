@@ -128,7 +128,7 @@ bool CInotifyMonitor::addWatch(std::string path)
 
   InotifyWatch* pWatch = NULL;
   try { // IN_UNMOUNT
-		pWatch = new InotifyWatch(path, IN_CREATE | IN_DELETE | IN_MOVE | IN_CLOSE_WRITE); // IN_MODIFY 
+		pWatch = new InotifyWatch(path, IN_CREATE | IN_DELETE | IN_MOVE | IN_CLOSE_WRITE); // | IN_MODIFY
     m_pInotify->Add(pWatch);
     m_watches[path] = pWatch;
   }
@@ -396,15 +396,21 @@ void CInotifyMonitor::run()
           events.erase(eventsIter); 
         }
         // ... else we have a (file) modify event
-        /*else {
+        else {
           famEvent.m_type  = FAM_MODIFY;
           famEvent.m_isDir = false;
           famEvent.m_path  = event.GetWatch()->GetPath();
           famEvent.m_file  = event.GetName();
           pInotify->famEvent(&famEvent);
-        }*/
+        }
         
       } // IN_CLOSE_WRITE
+
+
+      // IN_MODIFY
+      else if(event.IsType(IN_MODIFY)) {
+        cout << "MODIFY EVENT: " << absEventPath << endl;
+      } // IN_MODIFY
       
       
       // IN_MOVED_FROM

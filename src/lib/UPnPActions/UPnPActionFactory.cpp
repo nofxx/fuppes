@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -34,7 +34,7 @@
 
 using namespace std;
 
-CUPnPAction* CUPnPActionFactory::buildActionFromString(std::string p_sContent, CDeviceSettings* pDeviceSettings)
+CUPnPAction* CUPnPActionFactory::buildActionFromString(std::string p_sContent, CDeviceSettings* pDeviceSettings, std::string vfolderLayout)
 {
   xmlDocPtr pDoc = NULL;
   pDoc = xmlReadMemory(p_sContent.c_str(), p_sContent.length(), "", NULL, 0);
@@ -113,6 +113,11 @@ CUPnPAction* CUPnPActionFactory::buildActionFromString(std::string p_sContent, C
       pAction->DeviceSettings(pDeviceSettings);
       parseDestroyObjectAction(pAction);
     }
+    else {
+      cout << "unhandled ContentDirectory ACTION: " << sName << endl;
+      pAction = NULL;
+		}
+    
 	}
 	
 	// Connection Manager
@@ -136,7 +141,7 @@ CUPnPAction* CUPnPActionFactory::buildActionFromString(std::string p_sContent, C
 		else {	
 			pAction = new CUPnPAction(UPNP_SERVICE_CONNECTION_MANAGER, CMA_UNKNOWN, p_sContent);			
 		}
-		pAction->DeviceSettings(pDeviceSettings);
+
 	}
 	
 	// XMSMediaReceiverRegistrar
@@ -155,15 +160,25 @@ CUPnPAction* CUPnPActionFactory::buildActionFromString(std::string p_sContent, C
       cout << "unhandled XMS ACTION: " << sName << endl;
       pAction = NULL;
 		}
-		
-    if(pAction) {
-      pAction->DeviceSettings(pDeviceSettings);
-    }
+
 	}
+
+  // fuppes soap control
+ 	else if(sNs.compare("urn:fuppesControl") == 0) {
+
+    cout << "FUPPES SOAP CONTROL ACTION: " << sName << endl;
+    pAction = new CUPnPAction(FUPPES_SOAP_CONTROL, FUPPES_CTRL_TEST, p_sContent);      
+
+	}
+  
 	
 	if(!pAction) {
 		CSharedLog::Log(L_DBG, __FILE__, __LINE__, "unhandled UPnP Action \"%s\"", sName.c_str());
 	}
+  else {
+    pAction->DeviceSettings(pDeviceSettings);
+    pAction->setVirtualFolderLayout(vfolderLayout);
+  }
 	
   xmlFreeDoc(pDoc);
   return pAction;

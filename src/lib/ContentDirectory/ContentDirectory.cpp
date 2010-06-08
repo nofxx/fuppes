@@ -4,7 +4,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -31,9 +31,7 @@
 #include "../Common/Common.h"
 #include "../Common/RegEx.h"
 #include "../Plugins/Plugin.h"
-#ifdef HAVE_VFOLDER
 #include "VirtualContainerMgr.h"
-#endif
 #include "libdlna/dlna.h"
 
 #include "ContentDatabase.h"
@@ -96,8 +94,9 @@ void CContentDirectory::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage*
     // DestroyObject
     case UPNP_DESTROY_OBJECT:
       HandeUPnPDestroyObject(pUPnPAction, &sContent);
-    /*default:
-      break;*/
+    default:
+      ASSERT(true == false);
+      break;
   }
   
   if(!sContent.empty()) {    
@@ -242,6 +241,9 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
                         unsigned int* p_pnNumberReturned,
                         CUPnPBrowse*  pUPnPBrowse)
 {
+
+	cout << "BrowseMetadata VIRTUAL LAYOUT: " << pUPnPBrowse->virtualFolderLayout() << ":" << endl;
+
   // total matches and
   // number returned are always 1
   // on metadata browse
@@ -251,40 +253,24 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
 	SQLQuery qry;
 	string sql;
 	
-  string sDevice; // = "DEVICE is NULL ";
-	
-#ifdef HAVE_VFOLDER
-  bool bVirtualContainer = CVirtualContainerMgr::isVirtualContainer(pUPnPBrowse->GetObjectIDAsUInt(),
-                                                           pUPnPBrowse->DeviceSettings()->VirtualFolderDevice(), &qry);
-  if(bVirtualContainer)
-    sDevice = pUPnPBrowse->DeviceSettings()->VirtualFolderDevice(); //sDevice = "DEVICE = '" + pUPnPBrowse->DeviceSettings()->VirtualFolderDevice() + "' ";
-#endif
-
-
+  
   // get container type
   OBJECT_TYPE nContainerType = CONTAINER_STORAGE_FOLDER;
   if(pUPnPBrowse->GetObjectIDAsUInt() > 0) {
-
-		sql = qry.build(SQL_GET_OBJECT_TYPE, pUPnPBrowse->GetObjectIDAsUInt(), sDevice);
-    /*sSql << "select TYPE from OBJECTS " <<
-      "where OBJECT_ID = " << pUPnPBrowse->GetObjectIDAsUInt() << " and " << sDevice;*/		
+		sql = qry.build(SQL_GET_OBJECT_TYPE, pUPnPBrowse->GetObjectIDAsUInt(), pUPnPBrowse->virtualFolderLayout());
 		qry.select(sql);        
     nContainerType = (OBJECT_TYPE)qry.result()->asInt("TYPE");
   }
 
 	
   // get child count
-  bool bNeedCount = false;
-  if(nContainerType < ITEM) {
-		sql = qry.build(SQL_COUNT_CHILD_OBJECTS, pUPnPBrowse->GetObjectIDAsUInt(), sDevice);
-    bNeedCount = true;
-  }
-
   string sChildCount = "0";
-  if(bNeedCount) {
+  if(nContainerType < ITEM) {
+		sql = qry.build(SQL_COUNT_CHILD_OBJECTS, pUPnPBrowse->GetObjectIDAsUInt(), pUPnPBrowse->virtualFolderLayout());
 		qry.select(sql);
     sChildCount = qry.result()->asString("COUNT");
   }
+
   
   string sParentId;
   
@@ -326,7 +312,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   // sub folders
   else
   {
-		sql = qry.build(SQL_GET_OBJECT_DETAILS, pUPnPBrowse->GetObjectIDAsUInt(), sDevice);
+		sql = qry.build(SQL_GET_OBJECT_DETAILS, pUPnPBrowse->GetObjectIDAsUInt(), pUPnPBrowse->virtualFolderLayout());
 		qry.select(sql);
 		
 
@@ -356,43 +342,14 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
 	SQLQuery qry;
   //OBJECT_TYPE nContainerType = CONTAINER_STORAGE_FOLDER;
  
-  string sDevice; // = "DEVICE is NULL ";
+	cout << "BrowseDirectChildren VIRTUAL LAYOUT: " << pUPnPBrowse->virtualFolderLayout() << ":" << endl;
 
-//cout << "BROWSE CHILDREN OF PID: " << pUPnPBrowse->GetObjectIDAsUInt() << endl;
-	
-#ifdef HAVE_VFOLDER
-  bool bVirtualContainer = CVirtualContainerMgr::hasVirtualChildren(pUPnPBrowse->GetObjectIDAsUInt(), pUPnPBrowse->DeviceSettings()->VirtualFolderDevice(), &qry);
-  if(bVirtualContainer)
-    sDevice = pUPnPBrowse->DeviceSettings()->VirtualFolderDevice();//sDevice = "DEVICE = '" + pUPnPBrowse->DeviceSettings()->VirtualFolderDevice() + "' ";
-//cout << "HAVE_VFOLDER" << endl;
-#endif
-
-	//cout << "DEVICE: " << sDevice << ":" << endl;
-	
-	
-  // get total matches
-  //cout << "get total matches" << endl; fflush(stdout);
-  /*sSql << "select count(*) as COUNT from MAP_OBJECTS where PARENT_ID = " <<
-          pUPnPBrowse->GetObjectIDAsUInt() << " and " << sDevice; */
-	/*sSql <<
-      "select count(*) as COUNT " <<
-      "from OBJECTS o, MAP_OBJECTS m " <<
-      "where " <<
-			"m.PARENT_ID = " << pUPnPBrowse->GetObjectIDAsUInt() << " and " << 
-			"o.OBJECT_ID = m.OBJECT_ID and " <<
-			"o.HIDDEN = 0 and " <<
-			"m." << sDevice << " and o." << sDevice;*/
-	
-
-	string sql = qry.build(SQL_COUNT_CHILD_OBJECTS, pUPnPBrowse->GetObjectIDAsUInt(), sDevice);
-	qry.select(sql);
-    
   
-	*p_pnTotalMatches = 0;
-
-  //qry->select(sSql.str()); 
+  // get total matches
+	string sql = qry.build(SQL_COUNT_CHILD_OBJECTS, pUPnPBrowse->GetObjectIDAsUInt(), pUPnPBrowse->virtualFolderLayout());
+	qry.select(sql);
+ 	*p_pnTotalMatches = 0;
   if(!qry.eof()) {
-    //cout << "COUNT: " << qry.result()->asInt("COUNT") << endl;
     *p_pnTotalMatches = qry.result()->asInt("COUNT");
   }
   sSql.str("");
@@ -401,31 +358,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
   //cout << "DONE get total matches " << *p_pnTotalMatches << endl; fflush(stdout);  
 
 
-  /*if(sDevice.empty())
-    sDevice = "DEVICE is NULL";
-  else
-    sDevice = "DEVICE = '" + sDevice + "'";
-	
-  // get description
-  sSql << 
-    "select " <<
-    "  o.OBJECT_ID, o.TYPE, o.PATH, o.FILE_NAME, " <<
-    "  d.IV_HEIGHT, d.IV_WIDTH, d.DATE, " <<
-    "  o.TITLE, d.AV_DURATION, d.A_ALBUM, d.A_ARTIST, d.A_GENRE, " <<
-  	"  d.A_TRACK_NO, d.AV_BITRATE, d.A_SAMPLERATE, d.A_CHANNELS, " <<
-	  "  d.AV_DURATION, d.SIZE, d.A_CODEC, d.V_CODEC, d.DLNA_PROFILE, " <<
-		"  d.ALBUM_ART_ID, d.ALBUM_ART_EXT " <<
-    "from " <<
-    "  MAP_OBJECTS m, OBJECTS o " <<
-    "  left join OBJECT_DETAILS d on (d.ID = o.DETAIL_ID) " <<
-    "where " <<
-    "  o.OBJECT_ID = m.OBJECT_ID and " <<
-    "  m.PARENT_ID = " << pUPnPBrowse->GetObjectIDAsUInt() << " and " << 
-		"  o." << sDevice << " and " <<
-    "  m." << sDevice << " and " <<
-		"  o.HIDDEN = 0 " <<
-    "order by " <<*/
-	sql = qry.build(SQL_GET_CHILD_OBJECTS, pUPnPBrowse->GetObjectIDAsUInt(), sDevice);
+	sql = qry.build(SQL_GET_CHILD_OBJECTS, pUPnPBrowse->GetObjectIDAsUInt(), pUPnPBrowse->virtualFolderLayout());
 	sql +=  pUPnPBrowse->m_sortCriteriaSQL;
     //"  o.TYPE, o.FILE_NAME ";
   
@@ -495,12 +428,9 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
   stringstream sSql;
 	SQLQuery qry;
 	
-  string sDevice; // = "DEVICE is NULL ";
-
-#ifdef HAVE_VFOLDER
-  if(CVirtualContainerMgr::hasVirtualChildren(pSQLResult->asUInt("OBJECT_ID"), pUPnPBrowse->DeviceSettings()->VirtualFolderDevice(), &qry))
-		sDevice = pUPnPBrowse->DeviceSettings()->VirtualFolderDevice(); //sDevice = "DEVICE = '" + pUPnPBrowse->DeviceSettings()->VirtualFolderDevice() + "' ";
-#endif
+  string sDevice = pUPnPBrowse->virtualFolderLayout();
+  cout << "BuildContainerDescription DEVICE: " << sDevice << "*" << endl;
+  
   /*sSql = string("select count(*) as COUNT from MAP_OBJECTS ") +
     "where PARENT_ID = " + pSQLResult->asString("OBJECT_ID") + " and " + sDevice;*/
 
@@ -607,7 +537,9 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
 
 				    char szArtId[11];
 				    sprintf(szArtId, "%010X", pSQLResult->asUInt("ALBUM_ART_ID"));
-				    string url = "http://" + m_sHTTPServerURL + "/MediaServer/ImageItems/" + string(szArtId) + "." + qry.result()->asString("ALBUM_ART_EXT"); //"jpg?width=160&height=160";
+				    string url = "http://" + m_sHTTPServerURL + "/ImageItems/" + string(szArtId) + "." + qry.result()->asString("ALBUM_ART_EXT"); //"jpg?width=160&height=160";
+            if(sDevice.length() > 0)
+              url += "?vfolder=none";
 				    xmlTextWriterWriteString(pWriter, BAD_CAST url.c_str());
 			    xmlTextWriterEndElement(pWriter);
         }
@@ -618,8 +550,6 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
 
 		
 
-   
-    #warning todo: create playlist for other folder types
     if(p_nContainerType == CONTAINER_PLAYLIST_CONTAINER) {
       // res
       xmlTextWriterStartElement(pWriter, BAD_CAST "res");
@@ -628,7 +558,7 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
       string ext = ExtractFileExt(pSQLResult->asString("FILE_NAME"));
         
       //sTmp = "http-get:*:" + pSQLResult->asString("MIME_TYPE") + ":*";
-			#warning todo
+			#warning todo MIME TYPE
 			sTmp = "http-get:*:todo:*";
       xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
       
@@ -768,14 +698,13 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
 	  xmlTextWriterEndElement(pWriter);
   }
 
-
+  
   if(!pSQLResult->isNull("ALBUM_ART_ID") && 
     pSQLResult->asUInt("ALBUM_ART_ID") > 0 &&
     CPluginMgr::dlnaPlugin() != NULL) {
 
     SQLQuery qry;
     string device;
-#warning todo: device
     string sql = qry.build(SQL_GET_ALBUM_ART_DETAILS, pSQLResult->asString("ALBUM_ART_ID"), device);
   	qry.select(sql);
   	if(!qry.eof()) {
@@ -789,7 +718,6 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
         qry.result()->asInt("IV_HEIGHT"),
         &profile, &mimeType);
 
-      //profile = "JPEG_TN";
       
 		  xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:albumArtURI");
 			  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "xmlns:dlna", BAD_CAST "urn:schemas-dlna-org:metadata-1-0/");
@@ -797,7 +725,9 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
 
 			  char szArtId[11];
 			  sprintf(szArtId, "%010X", pSQLResult->asUInt("ALBUM_ART_ID"));
-			  string url = "http://" + m_sHTTPServerURL + "/MediaServer/ImageItems/" + string(szArtId) + "." + qry.result()->asString("ALBUM_ART_EXT"); //"jpg?width=160&height=160";
+			  string url = "http://" + m_sHTTPServerURL + "/ImageItems/" + string(szArtId) + "." + qry.result()->asString("ALBUM_ART_EXT"); //"jpg?width=160&height=160";
+        if(pUPnPBrowse->virtualFolderLayout().length() > 0)
+              url += "?vfolder=none";
 			  xmlTextWriterWriteString(pWriter, BAD_CAST url.c_str());
 		  xmlTextWriterEndElement(pWriter);
     }
@@ -862,8 +792,8 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
   }                                                    
 
   sExt = pUPnPBrowse->DeviceSettings()->Extension(sExt);
-                                                    
-  sTmp = "http://" + m_sHTTPServerURL + "/MediaServer/AudioItems/" + p_sObjectID + "." + sExt;  
+
+  sTmp = "http://" + m_sHTTPServerURL + "/AudioItems/" + buildObjectAlias(p_sObjectID, pSQLResult) + "." + sExt;    
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.c_str());
   xmlTextWriterEndElement(pWriter);  
 }
@@ -1029,7 +959,7 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
   
 	sExt = pUPnPBrowse->DeviceSettings()->Extension(sExt);
 																									
-  sTmp = "http://" + m_sHTTPServerURL + "/MediaServer/ImageItems/" + p_sObjectID + "." + sExt;
+  sTmp = "http://" + m_sHTTPServerURL + "/ImageItems/" + buildObjectAlias(p_sObjectID, pSQLResult) + "." + sExt;
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.c_str());
   xmlTextWriterEndElement(pWriter);  
     
@@ -1061,11 +991,16 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterEndElement(pWriter);      
 
 	// albumArt
-	if(CPluginMgr::hasMetadataPlugin("ffmpegthumbnailer")) {
+
+
+  
+	if(pSQLResult->asUInt("ALBUM_ART_ID") > 0 || CPluginMgr::hasMetadataPlugin("ffmpegthumbnailer")) {
 		xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:albumArtURI");
 		  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "xmlns:dlna", BAD_CAST "urn:schemas-dlna-org:metadata-1-0/");
-			xmlTextWriterWriteAttribute(pWriter, BAD_CAST "dlna:profileID", BAD_CAST "JPEG_TN");
-			string url = "http://" + m_sHTTPServerURL + "/MediaServer/ImageItems/" + p_sObjectID + ".jpg?width=160&height=160";
+			xmlTextWriterWriteAttribute(pWriter, BAD_CAST "dlna:profileID", BAD_CAST "JPEG_SM");
+			string url = "http://" + m_sHTTPServerURL + "/ImageItems/" + p_sObjectID + ".jpg";
+      if(pUPnPBrowse->virtualFolderLayout().length() > 0)
+        url += "?vfolder=none";
 			xmlTextWriterWriteString(pWriter, BAD_CAST url.c_str());
 	  xmlTextWriterEndElement(pWriter);
   }
@@ -1127,7 +1062,7 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
 	
   sExt = pUPnPBrowse->DeviceSettings()->Extension(sExt, pSQLResult->asString("A_CODEC"), pSQLResult->asString("V_CODEC"));
                                                     
-  sTmp = "http://" + m_sHTTPServerURL + "/MediaServer/VideoItems/" + p_sObjectID + "." + sExt;  
+  sTmp = "http://" + m_sHTTPServerURL + "/VideoItems/" + buildObjectAlias(p_sObjectID, pSQLResult) + "." + sExt;  
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.c_str());
   xmlTextWriterEndElement(pWriter);  
 }
@@ -1402,8 +1337,11 @@ void CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_ps
   *p_psResult = output;
 }
 
+#warning FIXME
+
 void CContentDirectory::HandeUPnPDestroyObject(CUPnPAction* pAction, std::string* p_psResult)
 {
+  /*
   if(CSharedConfig::Shared()->globalSettings->TrashDir().length() == 0 ||
     CDatabase::connectionParams().readonly == true) {
     return;
@@ -1472,11 +1410,12 @@ void CContentDirectory::HandeUPnPDestroyObject(CUPnPAction* pAction, std::string
 
   
   // delete from db
-	CContentDatabase::Shared()->deleteObject(pAction->GetObjectIDAsUInt());
+	//CContentDatabase::Shared()->deleteObject(pAction->GetObjectIDAsUInt());
 	delete qry;
 		
 #warning todo: error code
   *p_psResult = "";
+  */
 }
 
 
@@ -1529,3 +1468,56 @@ std::string CContentDirectory::BuildProtocolInfo(bool p_bTranscode,
 
   return sTmp;
 }
+
+
+inline bool convertAlias(std::string& alias)
+{
+  string tmp = alias;
+  tmp = StringReplace(tmp, " & ", " and ");
+  tmp = StringReplace(tmp, " ", "%20");
+  
+  RegEx rxAlias("^[A-Z|a-z|%20|-]+$");
+  if(rxAlias.search(tmp)) {
+    alias = tmp;
+    return true;
+  }
+  return false;
+}
+
+std::string CContentDirectory::buildObjectAlias(std::string objectId, 
+                                                CSQLResult* pSQLResult)
+{
+  /*
+  if(!rewriteUrl()) {  
+    return objectId;
+  }
+*/
+  
+  /*cout << "buildObjectAlias for object id: " << objectId << endl;
+  cout << "title: " << pSQLResult->asString("TITLE") << endl;  */
+
+  string alias;
+  bool valid = false;
+  switch((OBJECT_TYPE)pSQLResult->asInt("TYPE")) {
+
+    case ITEM_AUDIO_ITEM:
+    case ITEM_AUDIO_ITEM_MUSIC_TRACK:
+      // ARTIST ALBUM TRACK_NO ...
+      //valid = convertAlias(alias);
+      if(!valid) {
+        alias = pSQLResult->asString("TITLE");
+        valid = convertAlias(alias);
+      }
+      break;
+    
+    default:
+      alias = pSQLResult->asString("TITLE");
+      valid = convertAlias(alias);
+      break;
+  }
+
+  //cout << "alias: " << alias << " " << (valid ? "valid" : "invalid") << endl;
+
+  return (valid ? objectId + "/" + alias : objectId);
+}
+

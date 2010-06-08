@@ -89,7 +89,7 @@ int fuppes_transcoder_transcode_image_mem(plugin_info* plugin,
 	
 	status = MagickReadImageBlob(wand, *inBuffer, inSize);
 	if(status == MagickFalse) {
-		plugin->log(0, __FILE__, __LINE__,
+		plugin->cb.log(plugin, 0, __FILE__, __LINE__,
 								"error reading image from buffer. size: %d", inSize);
 		wand = DestroyMagickWand(wand);
 		return -1;

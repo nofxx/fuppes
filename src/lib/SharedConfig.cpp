@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -74,11 +74,12 @@ CSharedConfig::CSharedConfig()
 
   /*pluginDirectories = new PluginDirectories();
   pluginDirectories->SetupDefaultPaths();*/
-  
+
   // Create all of the smaller objects
-  sharedObjects = new SharedObjects();
+  m_sharedObjects = new SharedObjects();
   networkSettings = new NetworkSettings();
   globalSettings = new GlobalSettings();
+  m_virtualFolders = new VirtualFolders();
   deviceMapping = new DeviceMapping();
   contentDirectory = new ContentDirectory();
   databaseSettings = new DatabaseSettings();
@@ -91,14 +92,15 @@ CSharedConfig::~CSharedConfig()
 	delete CTranscodingMgr::Shared();
 
   // delete all of the smaller objects
-  delete sharedObjects;
+  delete m_sharedObjects;
   delete networkSettings;
   delete globalSettings;
   delete deviceMapping;
+  delete m_virtualFolders;
   delete contentDirectory;
   delete databaseSettings;
   delete transcodingSettings;
-
+  
   //delete pluginDirectories;
   delete pathFinder;
 
@@ -305,7 +307,7 @@ bool CSharedConfig::ReadConfigFile()
 
   pTmp = pRootNode->FindNodeByName("shared_objects");
   if (pTmp) {	
-    sharedObjects->Init(pTmp);
+    m_sharedObjects->Init(pTmp);
   } else {
     PrintConfigReadErrors(READERROR_SHARED_OBJECTS);
   }
@@ -327,6 +329,16 @@ bool CSharedConfig::ReadConfigFile()
     PrintConfigReadErrors(READERROR_GLOBAL_SETTINGS);
   }
 
+  pTmp = pRootNode->FindNodeByName("vfolders");
+  if (pTmp) {	
+    m_virtualFolders->Init(pTmp);
+  } else {
+    PrintConfigReadErrors(READERROR_VFOLDER_SETTINGS);
+    delete m_pDoc;
+    m_pDoc = NULL;
+    return false;
+  }
+  
   pTmp = pRootNode->FindNodeByName("device_mapping");
   if (pTmp) {	
     deviceMapping->Init(pTmp);
@@ -387,6 +399,9 @@ static void PrintConfigReadErrors(int error) {
       break;
     case READERROR_GLOBAL_SETTINGS:
       Log::error(Log::config, Log::normal, __FILE__, __LINE__, "Warning: The Global settings could not be read.");
+      break;
+    case READERROR_VFOLDER_SETTINGS:
+      Log::error(Log::config, Log::normal, __FILE__, __LINE__, "Warning: The vfolder settings could not be read.");
       break;
     case READERROR_DEVICE_MAPPING:
       Log::error(Log::config, Log::normal, __FILE__, __LINE__, "ERROR: A device mapping could not be found and one is required. Even an empty device mapping will work. (The empty device mapping makes everything use the default device)");
@@ -465,7 +480,7 @@ std::string CSharedConfig::CreateTempFileName()
 }
 
 
-bool CSharedConfig::isAlbumArtFile(const std::string fileName)
+bool CSharedConfig::isAlbumArtFile(const std::string fileName) // static
 {
 	string name = ToLower(fileName);
 #warning todo: What is left to do?
@@ -480,6 +495,36 @@ bool CSharedConfig::isAlbumArtFile(const std::string fileName)
 		return true;
 	
 	return false;
+}
+
+std::string CSharedConfig::getAlbumArtFiles() // static
+{
+  string result = "";
+  
+  fuppes::StringList ext;
+  ext.push_back("jpg");
+  ext.push_back("jpeg");
+  ext.push_back("png");
+
+  fuppes::StringList file;
+  file.push_back("cover");
+  file.push_back(".folder");
+  file.push_back("folder");
+  file.push_back("front");
+  
+  StringListIterator iterExt;
+  StringListIterator iterFile;
+  for(iterExt = ext.begin(); iterExt != ext.end(); iterExt++) {
+
+    for(iterFile = file.begin(); iterFile != file.end(); iterFile++) {
+
+      if(result.length() > 0)
+        result += ",";
+      result += "'" + *iterFile + "." + *iterExt + "'";
+    }
+  }
+  
+  return result;
 }
 
 bool CSharedConfig::WriteDefaultConfig(std::string p_sFileName)

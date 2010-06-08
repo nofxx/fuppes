@@ -7,6 +7,16 @@ Version SVN-6
   * added xspf playlist creation
   * playlist style configurable
   * updated inotify-cxx from 0.7.2 to 0.7.3
+  * new database layout
+  * rewrote FAM (file alteration monitoring) handling on linux (using inotify)
+  * rewrote virtual folder handling
+  * new config file structure
+  * ip or mac based device mapping
+  * libmpcdec 2.x support
+  * ffmpegthumbnailer 2.x support
+  * mysql support
+  * URL rewrite (/AudioItems/0123456789/title.mp3 instead of /AudioItems/0123456789.mp3)
+
 
 
 Version SVN-660 2010-01-11

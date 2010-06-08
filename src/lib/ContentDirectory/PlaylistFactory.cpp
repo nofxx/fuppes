@@ -279,7 +279,6 @@ std::string PlaylistFactory::BuildWPL(std::string p_sObjectId)
 std::string PlaylistFactory::BuildXSPF(std::string p_sObjectId)
 {
   unsigned int  nObjectId = HexToInt(p_sObjectId);
-	OBJECT_TYPE nObjectType = OBJECT_TYPE_UNKNOWN;
 	SQLQuery qry;
 
   xmlTextWriterPtr writer;

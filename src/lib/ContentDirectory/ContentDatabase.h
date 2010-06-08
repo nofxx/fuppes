@@ -110,8 +110,8 @@ class CContentDatabase
    
     CFileAlterationMonitor* fileAlterationMonitor() { return Shared()->m_pFileAlterationMonitor; }
     
-    void deleteObject(unsigned int objectId); 
-    void deleteContainer(std::string path);    
+    /*void deleteObject(unsigned int objectId); 
+    void deleteContainer(std::string path);    */
 
 
 

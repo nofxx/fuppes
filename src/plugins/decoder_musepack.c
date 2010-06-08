@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -44,7 +44,13 @@ extern "C" {
 #endif
 		
 typedef struct musepackData_t {
+
+#ifndef MUSEPACK2
 	mpc_decoder 		decoder;
+#else
+	mpc_demux       *decoder;
+#endif
+
 	mpc_reader   		reader;
 	mpc_streaminfo	streamInfo;	
 	
@@ -58,33 +64,63 @@ typedef struct musepackData_t {
 
 
 /* callback functions for the mpc_reader */
+#ifndef MUSEPACK2
 mpc_int32_t read_impl(void *data, void *ptr, mpc_int32_t size)
 {
   musepackData_t* d = (musepackData_t*)data;
+#else
+mpc_int32_t read_impl(mpc_reader *data, void *ptr, mpc_int32_t size)
+{
+  musepackData_t* d = (musepackData_t*)data->data;	
+#endif
   return fread(ptr, 1, size, d->file);
 }
 
+#ifndef MUSEPACK2
 mpc_bool_t seek_impl(void *data, mpc_int32_t offset)
 {
 	musepackData_t* d = (musepackData_t*)data;
+#else
+mpc_bool_t seek_impl(mpc_reader *data, mpc_int32_t offset)
+{
+	musepackData_t* d = (musepackData_t*)data->data;
+#endif
 	return d->seekable ? !fseek(d->file, offset, SEEK_SET) : FALSE;
 }
 
+#ifndef MUSEPACK2
 mpc_int32_t tell_impl(void *data)
 {
 	musepackData_t* d = (musepackData_t*)data;
+#else
+mpc_int32_t tell_impl(mpc_reader *data)
+{
+	musepackData_t* d = (musepackData_t*)data->data;
+#endif
   return ftell(d->file);
 }
 
+#ifndef MUSEPACK2
 mpc_int32_t get_size_impl(void *data)
 {
 	musepackData_t* d = (musepackData_t*)data;
+#else
+mpc_int32_t get_size_impl(mpc_reader *data)
+{
+	musepackData_t* d = (musepackData_t*)data->data;
+#endif
 	return d->size;
 }
 
+#ifndef MUSEPACK2
 mpc_bool_t canseek_impl(void *data)
 {
 	musepackData_t* d = (musepackData_t*)data;
+#else
+mpc_bool_t canseek_impl(mpc_reader *data)
+{
+	musepackData_t* d = (musepackData_t*)data->data;
+#endif
 	return d->seekable;
 }
 
@@ -164,7 +200,7 @@ int fuppes_decoder_file_open(plugin_info* plugin, const char* fileName, audio_se
 
 	data->file = fopen(fileName, "rb");
   if(data->file == 0) {
-		plugin->log(0, __FILE__, __LINE__, "error opening %s.\n", fileName);
+		plugin->cb.log(plugin, 0, __FILE__, __LINE__, "error opening %s.\n", fileName);
 		free(plugin->user_data);
     return 1;
   }
@@ -185,8 +221,12 @@ int fuppes_decoder_file_open(plugin_info* plugin, const char* fileName, audio_se
 
   /* read file's streaminfo data */  
 	mpc_streaminfo_init(&data->streamInfo);
-  if(mpc_streaminfo_read(&data->streamInfo, &data->reader) != ERROR_CODE_OK) {	// MPC_STATUS_OK
-		plugin->log(0, __FILE__, __LINE__, "Not a valid musepack file: %s.\n", fileName);
+#ifndef MUSEPACK2
+  if(mpc_streaminfo_read(&data->streamInfo, &data->reader) != ERROR_CODE_OK) {
+#else
+  if(mpc_streaminfo_read(&data->streamInfo, &data->reader) != MPC_STATUS_OK) {
+#endif
+		plugin->cb.log(plugin, 0, __FILE__, __LINE__, "Not a valid musepack file: %s.\n", fileName);
 		fclose(data->file);
 		free(plugin->user_data);
     return 1;
@@ -195,7 +235,7 @@ int fuppes_decoder_file_open(plugin_info* plugin, const char* fileName, audio_se
   /* instantiate a decoder with our file reader */
   mpc_decoder_setup(&data->decoder, &data->reader);
   if(!mpc_decoder_initialize(&data->decoder, &data->streamInfo)) {
-		plugin->log(0, __FILE__, __LINE__, "error initializing decoder: %s.\n", fileName);
+		plugin->cb.log(plugin, 0, __FILE__, __LINE__, "error initializing decoder: %s.\n", fileName);
 		fclose(data->file);
 		free(plugin->user_data);
     return 1;
@@ -231,14 +271,14 @@ int fuppes_decoder_decode_interleaved(plugin_info* plugin, char* pcmOut, int buf
 	
 	MPC_SAMPLE_FORMAT sampleBuffer[MPC_DECODER_BUFFER_LENGTH];
   if(bufferSize < MPC_DECODER_BUFFER_LENGTH) {
-		plugin->log(0, __FILE__, __LINE__, "buffer size too small for mpc decoding\n");
+		plugin->cb.log(plugin, 0, __FILE__, __LINE__, "buffer size too small for mpc decoding\n");
     return -1;
   }
 
   unsigned status = mpc_decoder_decode(&data->decoder, sampleBuffer, 0, 0);
   if (status == (unsigned)(-1)) {
     //decode error
-		plugin->log(0, __FILE__, __LINE__, "decoder error\n");
+		plugin->cb.log(plugin, 0, __FILE__, __LINE__, "decoder error\n");
     return -1;
   }
   else if (status == 0) {  // EOF

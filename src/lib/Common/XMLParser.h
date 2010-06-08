@@ -37,8 +37,19 @@
 class CXMLNode
 {
   public:
+    enum ElementType {
+      UnknownNode,
+      ElementNode,
+      AttributeNode,
+      TextNode,
+      CommentNode
+    };
+    
     CXMLNode(xmlNode* p_NodePtr, int p_nIdx, CXMLNode* pParent);
     ~CXMLNode();
+
+
+    CXMLNode::ElementType type() { return m_type; }
     
     int ChildCount();
     CXMLNode* ChildNode(int p_nIdx);
@@ -48,12 +59,14 @@ class CXMLNode
     CXMLNode* FindNodeByValue(std::string p_sName, 
                               std::string p_sValue, 
                               bool p_bRecursive = false);
-    
+
     std::string Attribute(std::string p_sName);
+    std::string attribute(std::string key) { return Attribute(key); }
     unsigned int AttributeAsUInt(std::string p_sName);
   
     std::string Name();
-  
+    std::string name() { return Name(); }
+    
     std::string Value();
     void Value(std::string p_sValue);
     void Value(int p_nValue);
@@ -67,6 +80,7 @@ class CXMLNode
     xmlNode* m_pNode;
     int      m_nIdx;
     int      m_nChildCount;
+    ElementType m_type;
     std::map<int, CXMLNode*> m_NodeList;
     std::map<int, CXMLNode*>::iterator m_NodeListIter;
   

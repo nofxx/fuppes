@@ -77,7 +77,7 @@ HAVE_ZLIB="yes"
 HAVE_UUID="no"
 HAVE_ICONV="yes"
 HAVE_TAGLIB="yes"
-
+HAVE_EXIV2="no"
 
 HAVE_JPEG="yes"
 HAVE_PNG="yes"
@@ -462,8 +462,13 @@ cd $FUPPES_DIR
 
 #CPPFLAGS="$CPPFLAGS -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE=1" \
 LIBS="$LIBS -ldl -lz" \
-./configure --host=$HOST --prefix=$PREFIX --disable-vfolder \
+./configure --host=$HOST --prefix=$PREFIX --sysconfdir=/opt/fuppes/etc \
 --enable-force-inotify=yes --disable-taglib
+
+sed -i -e 's/FUPPES_DATADIR=\\"$(datadir)\/fuppes\\"/FUPPES_DATADIR=\\"\/opt\/fuppes\/data\\"/' src/Makefile
+sed -i -e 's/FUPPES_PLUGINDIR=\\"$(libdir)\/fuppes\\"/FUPPES_PLUGINDIR=\\"\/opt\/fuppes\/plugins\\"/' src/Makefile
+sed -i -e 's/FUPPES_SYSCONFDIR=\\"$(sysconfdir)\/fuppes\\"/FUPPES_SYSCONFDIR=\\"\/opt\/fuppes\/etc\\"/' src/Makefile
+
 $MAKE
 $MAKE_INSTALL
 

@@ -1,10 +1,10 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            UPnPActionFactory.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,7 +22,6 @@
  *  with this program; if not, write to the Free Software Foundation, Inc.,
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
- 
 #ifndef _UPNPACTIONFACTORY_H
 #define _UPNPACTIONFACTORY_H
 
@@ -45,7 +44,7 @@ class CUPnPActionFactory
     *  @param  p_sContent  the string to build th message from
     *  @return returns the action object on success otherwise NULL
     */
-		static CUPnPAction* buildActionFromString(std::string p_sContent, CDeviceSettings* pDeviceSettings);
+		static CUPnPAction* buildActionFromString(std::string p_sContent, CDeviceSettings* pDeviceSettings, std::string vfolderLayout);
 
   private:
           

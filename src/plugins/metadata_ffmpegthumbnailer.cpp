@@ -36,12 +36,15 @@ using namespace std;
 
 using namespace ffmpegthumbnailer;
 
-int read_image(const char* fileName, char** mimeType, unsigned char** buffer, size_t* size)
+int read_image(const char* fileName, char** mimeType, unsigned char** buffer, size_t* size, int width, int height)
 {
 	std::vector<uint8_t>	data;
 
+	if(width == 0)
+		width = 160;
+	
 	try {
-		VideoThumbnailer thumbnailer(160, false, true, 8, true);	
+		VideoThumbnailer thumbnailer(width, false, true, 8, true);	
 		//thumbnailer.setSeekPercentage(44);
 		thumbnailer.generateThumbnail(fileName, Jpeg, data);
 	}
@@ -90,9 +93,9 @@ int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
 	return -1;
 }
 
-int fuppes_metadata_read_image(plugin_info* plugin, char** mimeType, unsigned char** buffer, size_t* size)
+int fuppes_metadata_read_image(plugin_info* plugin, char** mimeType, unsigned char** buffer, size_t* size, int width, int height)
 {
-	return read_image(((ffmpegthumbnailer_t*)plugin->user_data)->fileName, mimeType, buffer, size);
+	return read_image(((ffmpegthumbnailer_t*)plugin->user_data)->fileName, mimeType, buffer, size, width, height);
 }
 
 void fuppes_metadata_file_close(plugin_info* plugin)

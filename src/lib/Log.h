@@ -4,6 +4,7 @@
 
 #include <list>
 #include <string>
+#include <stdarg.h>
 
 namespace fuppes {
 
@@ -53,6 +54,13 @@ namespace fuppes {
 		    int lineNo,
 		    const char* format,
 		    ...);
+      
+		  static void log(Log::Sender sender, 
+		    Log::Level level, 
+		    const std::string fileName, 
+		    int lineNo,
+		    const char* format,
+		    va_list args);
 			
 			static void log(Log::Sender sender, 
 		    Log::Level level, 

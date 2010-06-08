@@ -76,18 +76,22 @@ typedef struct {
 
 typedef int (*ctrl_action_t)(const char* action, arg_list_t* args, arg_list_t* result);
 
-typedef void (*log_t)(int level, const char* file, int line, const char* format, ...);
+
+typedef void (*log_t)(void* plugin, int level, const char* file, int line, const char* format, ...);
 
 typedef struct {
-	char					plugin_name[200];
-	char					plugin_author[1000];
-	PLUGIN_TYPE		plugin_type;
-	char					plugin_version[100];
-	char					library_version[100];
-	
-	void*					user_data;
 	log_t					log;
 	ctrl_action_t	ctrl;
+} plugin_callbacks;
+
+typedef struct {
+	char							plugin_name[200];
+	char							plugin_author[1000];
+	PLUGIN_TYPE				plugin_type;
+	char							plugin_version[100];
+	char							library_version[100];
+	void*							user_data;
+	plugin_callbacks	cb;
 } plugin_info;
 
 
@@ -113,7 +117,7 @@ typedef struct {
 	char* 					artist;
 	char*						album;
 	char*						genre;
-	char*						duration;
+	unsigned int		duration_ms;
 	char*						description;
 	int							track_no;
 	int							year;

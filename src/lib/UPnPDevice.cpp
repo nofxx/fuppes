@@ -46,6 +46,7 @@ CUPnPDevice::CUPnPDevice(UPNP_DEVICE_TYPE nType, std::string p_sHTTPServerURL, I
   m_pEventHandler   = pEventHandler;
   m_descriptionAvailable = true;
 	m_pHTTPClient = NULL;
+  m_deviceSettings = NULL;
 }
 
 
@@ -58,6 +59,7 @@ CUPnPDevice::CUPnPDevice(IUPnPDevice* pEventHandler, std::string p_sUUID):
   m_sUUID						= p_sUUID;
   m_descriptionAvailable = false;
 	m_pHTTPClient = NULL;
+  m_deviceSettings = NULL;
 }
 
 CUPnPDevice::~CUPnPDevice()
@@ -86,26 +88,24 @@ void CUPnPDevice::OnAsyncReceiveMsg(CHTTPMessage* pMessage)
 {
   fuppes::MutexLocker locker(&m_mutex);
 
+  // get the device's mac address
+  fuppes::MacAddressTable::mac(pMessage->GetRemoteIPAddress(), m_macAddress);
+  // get the device settings from the message
+  m_deviceSettings = pMessage->DeviceSettings();
+
+  // parse the device description
   m_descriptionAvailable = ParseDescription(pMessage->GetContent());
  	if(m_descriptionAvailable) {
     GetTimer()->SetInterval(900);
 		CSharedLog::Log(L_EXT, __FILE__, __LINE__, "new device %s", m_sFriendlyName.c_str());
-		/*if(m_pEventHandler) {
-      m_pEventHandler->onUPnPDeviceDeviceReady(m_sUUID);
-    }*/
 
-
-    // get the device mac address
-    if(fuppes::MacAddressTable::mac(pMessage->GetRemoteIPAddress(), m_macAddress)) {
-
+     if(!m_macAddress.empty()) {
       // todo:
       // at this point we have the complete device description and the device's mac address
       // so let's make a suggestion which device setting to use.
       cout << "FriendlyName: " << GetFriendlyName() << " MAC: " << m_macAddress << endl;
     }
-     
 	}
-
 
 }
 

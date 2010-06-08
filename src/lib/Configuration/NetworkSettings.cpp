@@ -215,15 +215,16 @@ bool NetworkSettings::ResolveIPByInterface(std::string p_sInterfaceName)
   struct ifreq ifa;
   struct sockaddr_in *saddr;
   int       fd;
+  char str[INET_ADDRSTRLEN + 1];
   
   strcpy (ifa.ifr_name, p_sInterfaceName.c_str());
   if(((fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) || ioctl(fd, SIOCGIFADDR, &ifa)) {
 		cout << "[ERROR] can't resolve ip from interface \"" << p_sInterfaceName << "\"." << endl;
 		return false;
 	}
-  saddr = (struct sockaddr_in*)&ifa.ifr_addr;
-  m_sIP = inet_ntoa(saddr->sin_addr);
-  //cout << "address of iface: " << p_sInterfaceName << " = " << m_sIP << endl;  
+  saddr = (struct sockaddr_in*)&(ifa.ifr_addr);
+  m_sIP = inet_ntop(AF_INET, &(saddr->sin_addr), str, INET_ADDRSTRLEN);
+  close(fd);
   return true;
   #endif
 }

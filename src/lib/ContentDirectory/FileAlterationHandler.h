@@ -57,6 +57,7 @@ class FileAlterationHandler: public IFileAlterationMonitor
     void    createFile(CFileAlterationEvent* event);
     void    deleteFile(CFileAlterationEvent* event);
     void    moveFile(CFileAlterationEvent* event);
+    void    modifyFile(CFileAlterationEvent* event);
 };
 
 

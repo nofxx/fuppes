@@ -39,6 +39,7 @@
 #include "Common/Timer.h"
 #include "Common/Thread.h"
 #include "HTTP/HTTPClient.h"
+#include "DeviceSettings/DeviceSettings.h"
 
 using namespace std;
 
@@ -133,6 +134,9 @@ class CUPnPDevice: public CUPnPBase, fuppes::ITimer, IHTTPClient
     std::string macAddress() { return m_macAddress; }
 
     std::string descriptionUrl() { return m_descriptionUrl; }
+
+
+    CDeviceSettings* deviceSettings() { return m_deviceSettings; }
     
   protected:
     std::string   m_sFriendlyName;
@@ -159,7 +163,7 @@ class CUPnPDevice: public CUPnPBase, fuppes::ITimer, IHTTPClient
     IUPnPDevice*    m_pEventHandler;
 		CHTTPClient*    m_pHTTPClient;
     fuppes::Mutex		m_mutex;
-  
+    CDeviceSettings* m_deviceSettings;
 
     
 

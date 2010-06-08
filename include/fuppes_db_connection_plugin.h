@@ -122,15 +122,10 @@ enum fuppes_sql_no {
   SQL_SET_DB_INFO                 = 12,
   SQL_CREATE_TABLE_OBJECTS        = 13,
   SQL_CREATE_TABLE_OBJECT_DETAILS = 14,
-
-  SQL_GET_OBJECT_BY_FILENAME      = 15,
-
-  // virtual container
-  SQL_VC_HAS_CHILDREN = 16,
-  SQL_VC_GET_CHILD_COUNT = 17,
-
+  SQL_CREATE_INDICES              = 15,
+  
   // status
-  SQL_GET_OBJECT_TYPE_COUNT = 18
+  SQL_GET_OBJECT_TYPE_COUNT = 16
 };
 
 struct fuppes_sql
@@ -153,6 +148,8 @@ class CDatabaseConnection
 		virtual void rollback() = 0;
 
  		virtual const char* getStatement(fuppes_sql_no number) = 0;
+
+    virtual void vacuum() = 0;
 };
 
 

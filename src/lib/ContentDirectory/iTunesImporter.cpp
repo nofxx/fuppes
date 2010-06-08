@@ -159,7 +159,7 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
 		"'" << SQLEscape(track.sAlbum) << "', " <<
 		track.nOriginalTrackNumber << ", " <<
 		"'" << SQLEscape(track.sGenre) << "', " <<
-		"'" << track.sDuration << "', " <<
+		"" << track.durationMs << ", " <<
 		"'" << track.sDate << "', " <<
 		track.nNrAudioChannels << ", " <<
 		track.nBitrate << ", " <<

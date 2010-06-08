@@ -92,7 +92,8 @@ class CMySQLConnection: public CDatabaseConnection
 
 
     void check();
-    
+
+    void vacuum() { }
 	private:
 		bool				connect(const CConnectionParams params);
 		ISQLQuery*	query();

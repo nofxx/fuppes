@@ -27,6 +27,7 @@
 #include "../Log.h"
 #include "../SharedConfig.h"
 #include "../Configuration/DeviceMapping.h"
+#include "../Common/RegEx.h"
 #include "MacAddressTable.h"
 #include <iostream>
 
@@ -123,6 +124,7 @@ void CDeviceIdentificationMgr::IdentifyDevice(CHTTPMessage* pDeviceMessage)
 
     if (it->value.compare(mac) == 0) {
       pDeviceMessage->DeviceSettings(it->device);
+      pDeviceMessage->setVirtualFolderLayout(it->vfolder);
       foundMatch = true;
     }
   }
@@ -131,15 +133,46 @@ void CDeviceIdentificationMgr::IdentifyDevice(CHTTPMessage* pDeviceMessage)
   for(vector<struct mapping>::const_iterator it = devmap->ipAddrs.begin(); !foundMatch && it != devmap->ipAddrs.end(); ++it) {
     if (it->value.compare(pDeviceMessage->GetRemoteIPAddress()) == 0) {
       pDeviceMessage->DeviceSettings(it->device);
+      pDeviceMessage->setVirtualFolderLayout(it->vfolder);
       foundMatch = true;
     }
   }
-	
+
+  
   // ... just use the default device
 	if(!foundMatch) {
-  	pDeviceMessage->DeviceSettings(m_pDefaultSettings);    
+  	pDeviceMessage->DeviceSettings(m_pDefaultSettings);
+
+    // check if the default vfolder layout is enabled
+    StringList enabled = CSharedConfig::Shared()->virtualFolders()->getEnabledFolders();
+    if(enabled.indexOf("default") >= 0)    
+      pDeviceMessage->setVirtualFolderLayout("default");
+    else
+      pDeviceMessage->setVirtualFolderLayout("");
   }
 
+  
+  // check if the requests http header contains a layout request
+  // this is nothing that any real upnp rendere should have but
+  // the fuppes webinterface uses it and maybe some future config gui
+  // could also use this
+  RegEx rxVirtualLayout("VIRTUAL-LAYOUT: *(\\w+)", PCRE_CASELESS);
+  if(rxVirtualLayout.search(pDeviceMessage->GetHeader())) {
+    string layout = rxVirtualLayout.match(1);
+
+    if(layout.compare("none") == 0) {
+        pDeviceMessage->setVirtualFolderLayout("");
+    }
+    else {    
+      StringList enabled = CSharedConfig::Shared()->virtualFolders()->getEnabledFolders();
+      if(enabled.indexOf(layout) >= 0)
+        pDeviceMessage->setVirtualFolderLayout(layout);
+    }
+  }
+
+
+  
+  
   Log::log(Log::config, Log::extended, __FILE__, __LINE__,
     "HTTP Request using device settings \"%s\"\n\tip: %s\n\tuser agent: %s\n\tmac address: %s",
     pDeviceMessage->DeviceSettings()->m_sDeviceName.c_str(),

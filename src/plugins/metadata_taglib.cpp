@@ -95,12 +95,13 @@ void taglib_get_duration(plugin_info* info, metadata_t* metadata)
   mins  = length % 60;
   hours = length / 60;  */
 
-  char szDuration[12];
+  //char szDuration[12];
 	/*sprintf(szDuration, "%02d:%02d:%02d.00", hours, mins, secs);
 	szDuration[11] = '\0';*/
-	sprintf(szDuration, "%d000", length);
+	//sprintf(szDuration, "%d000", length);
 
-	set_value(&metadata->duration, szDuration);
+	//set_value(&metadata->duration, szDuration);
+	metadata->duration_ms = length * 1000;
 }
 
 void taglib_get_channels(plugin_info* info, metadata_t* metadata)

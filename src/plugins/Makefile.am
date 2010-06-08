@@ -179,8 +179,6 @@ endif
 
 
 ## dlna profile detection plugin
-if DLNA_SUPPORT
-
 lib_LTLIBRARIES += libmetadata_dlna_profiles.la
 
 libmetadata_dlna_profiles_la_SOURCES = \
@@ -190,8 +188,6 @@ libmetadata_dlna_profiles_la_SOURCES = \
 libmetadata_dlna_profiles_la_CXXFLAGS = 
 	
 libmetadata_dlna_profiles_la_LDFLAGS = 
-
-endif
 
 
 

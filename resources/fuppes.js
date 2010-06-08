@@ -27,23 +27,29 @@ function loadResult(result)
 
 function browseDirectChildren(objectId, startIdx, requestCnt) 
 {
+	var vfolder = $('virtual-layout').value;
+
   var request = new Request({
     url: '/UPnPServices/ContentDirectory/control/', 
     onSuccess: function(responseText, responseXML) {
 
-    var table = '<table>' +
+    var table = '<table id="table-browse" width="100%">' +
       '<tr>' +
-      '<th>id</th>' +
-      '<th>class</th>' +
+      '<th width="100">id</th>' +
+      '<th width="100">class</th>' +
       '<th>title</th>' +
-      '<th>child count</th>' +
+      '<th width="60">count</th>' +
       '</tr>';
 
-    var msg = '';
+		table += '<tr>' +
+         '<td id="parent-id"></td>' +
+	       '<td colspan="3" id="parent-browse">&nbsp;</td>' +
+			'</tr>';
 
+
+    var msg = '';
     msg += 'NumberReturned: ' + responseXML.documentElement.getElement('NumberReturned').get('text') + '<br />';
     msg += 'TotalMatches: ' + responseXML.documentElement.getElement('TotalMatches').get('text') + '<br />';
-
 
 
     var result = loadResult(responseXML.getElement('Result').get('text'));
@@ -109,22 +115,16 @@ function browseDirectChildren(objectId, startIdx, requestCnt)
     });
 
 
-    table += '</table>'
+    table += '</table>';
+    $('browse-result').innerHTML = table;
 
-
-    var output = table;
-
-
-    //output += '<a href="javascript:browseDirectChildren(\'' + objectId + '\', 0, 0);">parent</a>';
-
-
-    $('browse-result').innerHTML = output;
-
+		browseMetadata(objectId);
   }});
 
   request.setHeader('SOAPAction','"urn:schemas-upnp-org:service:ContentDirectory:1#Browse"');
   request.setHeader('Content-Type','text/xml; charset=utf-8');
   request.setHeader('User-Agent','fuppes webinterface');
+  request.setHeader('Virtual-Layout', vfolder);
 
   var body = '<?xml version="1.0"?>' +
     '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">' +
@@ -147,6 +147,86 @@ function browseDirectChildren(objectId, startIdx, requestCnt)
 
 }
 
+
+
+function browseMetadata(objectId) 
+{
+	var vfolder = $('virtual-layout').value;
+
+  var request = new Request({
+    url: '/UPnPServices/ContentDirectory/control/', 
+    onSuccess: function(responseText, responseXML) {
+
+			var result = loadResult(responseXML.getElement('Result').get('text'));
+		  var items = result.documentElement.getChildren();
+		  items.each(function(item, index) {
+
+				$('parent-id').innerHTML = item.get('parentID');
+				if(item.get('parentID') != -1)
+					$('parent-browse').innerHTML = '<a href="javascript:browseDirectChildren(\'' + item.get('parentID') + '\', 0, 0);">up</a>';
+				else
+					$('parent-browse').innerHTML = '';
+			});
+
+ 	}});
+
+  request.setHeader('SOAPAction','"urn:schemas-upnp-org:service:ContentDirectory:1#Browse"');
+  request.setHeader('Content-Type','text/xml; charset=utf-8');
+  request.setHeader('User-Agent','fuppes webinterface');
+  request.setHeader('Virtual-Layout', vfolder);
+
+  var body = '<?xml version="1.0"?>' +
+    '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">' +
+    '<s:Body>' + 
+    '<u:Browse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"> ' +
+    '<ObjectID>' + objectId + '</ObjectID>' + 
+    '<Filter>*</Filter>' + 
+    '<StartingIndex>0</StartingIndex>' + 
+    '<RequestedCount>0</RequestedCount>' + 
+    '<SortCriteria></SortCriteria>' + 
+    '<BrowseFlag>BrowseMetadata</BrowseFlag>' + 
+    '</u:Browse>' +
+    '</s:Body>' +
+    '</s:Envelope>';
+
+  request.send({
+    method: 'post',
+    data: body
+  });
+
+}
+
+
+
+function fuppesCtrl() 
+{
+
+  var request = new Request({
+    url: '/', 
+    onSuccess: function(responseText, responseXML) {
+
+			$('ctrl-result').innerHTML = responseXML.getElement('Result').get('text');
+
+ 	}});
+
+  request.setHeader('SOAPAction','"fuppesctrl#Test"');
+  request.setHeader('Content-Type','text/xml; charset=utf-8');
+  request.setHeader('User-Agent','fuppes webinterface');
+
+  var body = '<?xml version="1.0"?>' +
+    '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">' +
+    '<s:Body>' + 
+			'<c:Test xmlns:c="urn:fuppesControl">' +
+  		'</c:Test>' +
+    '</s:Body>' +
+    '</s:Envelope>';
+
+  request.send({
+    method: 'post',
+    data: body
+  });
+
+}
 
 
 

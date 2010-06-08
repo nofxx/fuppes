@@ -128,11 +128,10 @@ static inline void init_metadata(metadata_t* metadata)
 	metadata->album[0] = '\0';
 	metadata->genre = (char*)malloc(sizeof(char));
 	metadata->genre[0] = '\0';
-	metadata->duration = (char*)malloc(sizeof(char));
-	metadata->duration[0] = '\0';
 	metadata->description = (char*)malloc(sizeof(char));
 	metadata->description[0] = '\0';
-	
+
+	metadata->duration_ms = 0;
 	metadata->track_no = 0;
 	metadata->year = 0;
 	metadata->channels = 0;
@@ -162,7 +161,6 @@ static inline void free_metadata(metadata_t* metadata)
 	free(metadata->artist);
 	free(metadata->album);
 	free(metadata->genre);
-	free(metadata->duration);
 	free(metadata->description);
 
 	free(metadata->date);

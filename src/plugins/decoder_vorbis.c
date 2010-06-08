@@ -62,7 +62,7 @@ int fuppes_decoder_file_open(plugin_info* plugin, const char* fileName, audio_se
 		
 	data->fd = fopen(fileName, "rb");
 	if(data->fd == NULL) {
-		plugin->log(0, __FILE__, __LINE__, "error opening file: %s\n", fileName);
+		plugin->cb.log(plugin, 0, __FILE__, __LINE__, "error opening file: %s\n", fileName);
 		free(plugin->user_data);
 		return 1;
 	}
@@ -72,7 +72,7 @@ int fuppes_decoder_file_open(plugin_info* plugin, const char* fileName, audio_se
   #endif
 		
 	if(ov_open(data->fd, &data->vorbisFile, NULL, 0) < 0) {
-		plugin->log(0, __FILE__, __LINE__, "Input does not appear to be an Ogg bitstream.\n");
+		plugin->cb.log(plugin, 0, __FILE__, __LINE__, "Input does not appear to be an Ogg bitstream.\n");
 		free(plugin->user_data);
     return 1;
 	}
@@ -111,7 +111,7 @@ int fuppes_decoder_decode_interleaved(plugin_info* plugin, char* pcmOut, int buf
   else if(bytesConsumed < 0) { // error in the stream
 
     if(bytesConsumed == OV_HOLE) {
-      plugin->log(2, __FILE__, __LINE__, "OV_HOLE");
+      plugin->cb.log(plugin, 2, __FILE__, __LINE__, "OV_HOLE");
 		}
     else if(bytesConsumed == OV_EBADLINK) {
       //CSharedLog::Shared()->Log(L_EXT,"OV_EBADLINK", __FILE__, __LINE__);

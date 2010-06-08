@@ -147,6 +147,8 @@ class CContentDirectory: public CUPnPService
                                   std::string p_sMimeType,
                                   std::string p_sProfileId,
                                   CUPnPBrowseSearchBase*  pUPnPBrowse);
+
+    std::string buildObjectAlias(std::string objectId, CSQLResult* pSQLResult);
 };
 
 #endif // _CONTENTDIRECTORY_H

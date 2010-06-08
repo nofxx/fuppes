@@ -172,6 +172,8 @@ libfuppes_la_SOURCES = \
 	lib/ContentDirectory/HotPlug.h\
 	lib/ContentDirectory/iTunesImporter.cpp\
 	lib/ContentDirectory/iTunesImporter.h\
+ 	lib/ContentDirectory/VirtualContainerMgr.h\
+  lib/ContentDirectory/VirtualContainerMgr.cpp\
   lib/ConnectionManager/ConnectionManager.cpp\
   lib/ConnectionManager/ConnectionManagerDescription.cpp\
   lib/GENA/SubscriptionMgr.cpp\
@@ -226,12 +228,6 @@ libfuppes_la_SOURCES = \
   lib/Log.cpp\
   lib/Fuppes.cpp\
   lib/libmain.cpp
-
-if HAVE_VFOLDER
-libfuppes_la_SOURCES += \
-	lib/ContentDirectory/VirtualContainerMgr.h \
-  lib/ContentDirectory/VirtualContainerMgr.cpp
-endif
 
 if HAVE_INOTIFY
 libfuppes_la_SOURCES += \

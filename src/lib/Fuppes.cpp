@@ -38,9 +38,7 @@
 #include "GENA/SubscriptionMgr.h"
 
 #include "ContentDirectory/ContentDatabase.h"
-#ifdef HAVE_VFOLDER
 #include "ContentDirectory/VirtualContainerMgr.h"
-#endif
 
 using namespace std;
 
@@ -161,9 +159,7 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
   CSharedLog::Log(L_EXT, __FILE__, __LINE__, "UPnP subsystem started");
 
   // init virtual containers
-#ifdef HAVE_VFOLDER
 	CVirtualContainerMgr::Shared();
-#endif
 	
 	/* if everything is up and running, multicast alive messages
   and search for other devices */       

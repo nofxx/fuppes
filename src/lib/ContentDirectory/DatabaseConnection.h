@@ -38,7 +38,7 @@ typedef ISQLQuery CSQLQuery;
 class SQLQuery
 {
 	public:
-		SQLQuery();
+		SQLQuery(CDatabaseConnection* connection = NULL);
 		~SQLQuery();
 
     std::string build(fuppes_sql_no queryNo, std::string objectId, std::string device = "");

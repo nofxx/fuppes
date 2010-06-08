@@ -51,10 +51,7 @@ class UpdateThread: public Thread
     void updateImageFile(DbObject* obj, SQLQuery* qry);
 
 
-    FileAlterationHandler* m_famHandler;
-#ifdef HAVE_VFOLDER
-#endif
-    
+    FileAlterationHandler* m_famHandler;    
 };
 
 

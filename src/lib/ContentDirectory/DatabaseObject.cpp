@@ -33,7 +33,7 @@ using namespace fuppes;
 using namespace std;
 
 
-DbObject* DbObject::createFromObjectId(unsigned int objectId, SQLQuery* qry /*= NULL*/) // static
+DbObject* DbObject::createFromObjectId(object_id_t objectId, SQLQuery* qry /*= NULL*/, std::string layout /*= ""*/) // static
 {
   DbObject* result = NULL;
 
@@ -47,7 +47,7 @@ DbObject* DbObject::createFromObjectId(unsigned int objectId, SQLQuery* qry /*= 
   sql <<
     "select * from OBJECTS where "
     "REF_ID = 0 and "
-    "DEVICE is NULL and "
+    "DEVICE " << (layout.empty() ? "is NULL" : " = '" + SQLEscape(layout) + "'") << " and " <<
     "OBJECT_ID = " << objectId;
 
   qry->select(sql.str());
@@ -61,7 +61,7 @@ DbObject* DbObject::createFromObjectId(unsigned int objectId, SQLQuery* qry /*= 
   return result;
 }
 
-DbObject* DbObject::createFromFileName(std::string fileName, SQLQuery* qry /*= NULL*/) // static
+DbObject* DbObject::createFromFileName(std::string fileName, SQLQuery* qry /*= NULL*/, std::string layout /*= ""*/) // static
 {
   DbObject* result = NULL;
 
@@ -80,7 +80,7 @@ DbObject* DbObject::createFromFileName(std::string fileName, SQLQuery* qry /*= N
   std::string sql = 
     "select * from OBJECTS where "
     "REF_ID = 0 and "
-    "DEVICE is NULL and "
+    "DEVICE " + (layout.empty() ? "is NULL" : " = '" + SQLEscape(layout) + "'") + " and " +
     "PATH = '" + SQLEscape(path) + "' and ";
 
   if(tmp.empty())
@@ -129,9 +129,13 @@ DbObject::DbObject(DbObject* object)
   m_vcPath    = object->m_vcPath;
   m_vrefId    = object->m_vrefId;
 
+  m_lastModified = object->m_lastModified;
+  m_lastUpdated = object->m_lastUpdated;
+  
   m_details   = object->m_details;
   m_changed   = false;
   m_pathChanged = false;
+  m_lastModifiedChanged = false;
 }
     
 DbObject::DbObject(CSQLResult* result)
@@ -153,9 +157,13 @@ DbObject::DbObject(CSQLResult* result)
   m_vcType    = (VirtualContainerType)result->asInt("VCONTAINER_TYPE");
   m_vcPath    = result->asString("VCONTAINER_PATH");
   m_vrefId    = result->asUInt("VREF_ID");
+
+  m_lastModified = result->asInt("MODIFIED_AT");
+  m_lastUpdated = result->asInt("UPDATED_AT");
   
   m_changed   = false;
   m_pathChanged = false;
+  m_lastModifiedChanged = false;
 
   m_details.reset();
 }
@@ -172,9 +180,12 @@ void DbObject::reset()
   m_vcType    = None;
   m_vcPath    = "";
   m_vrefId    = 0;
+  m_lastModified = 0;
+  m_lastUpdated = 0;
 
   m_changed   = false;
   m_pathChanged = false;
+  m_lastModifiedChanged = false;
 
   m_details.reset();
 }
@@ -185,6 +196,9 @@ bool DbObject::save(SQLQuery* qry /*= NULL*/, bool createReference /*= false*/)
   if(!m_changed)
     return true;
 
+  ASSERT(m_type != OBJECT_TYPE_UNKNOWN);
+
+  
   bool tmpQry = (qry == NULL);
   if(tmpQry) {
     qry = new SQLQuery();
@@ -196,6 +210,14 @@ bool DbObject::save(SQLQuery* qry /*= NULL*/, bool createReference /*= false*/)
   if(m_objectId == 0) {
     m_objectId = CContentDatabase::GetObjId();
   }
+
+
+  // we don't need the path and filename values for virtual objects
+  if(!m_device.empty()) {
+    m_path = "virtual";
+    m_fileName = "virtual";
+  }
+
   
   if(m_id > 0) { // UPDATE
 
@@ -212,8 +234,18 @@ bool DbObject::save(SQLQuery* qry /*= NULL*/, bool createReference /*= false*/)
       "DEVICE = " << (m_device.empty() ? "NULL" : "'" + SQLEscape(m_device) + "'") << ", " <<
       "VCONTAINER_TYPE = " << m_vcType << ", " <<
       "VCONTAINER_PATH = " << (m_vcPath.empty() ? "NULL" : "'" + SQLEscape(m_vcPath) + "'") << ", " <<
-      "VREF_ID = " << m_vrefId << ", " <<
-      "UPDATED_AT = " << DateTime::now().toInt() << " " <<
+      "VREF_ID = " << m_vrefId << ", ";
+
+      // we either update the last updated timestamp ...
+      if(!m_lastModifiedChanged) {
+        sql << "UPDATED_AT = " << DateTime::now().toInt() << " ";
+      }
+      // ... or the last modified timestamp
+      else {
+        sql << "MODIFIED_AT = " << m_lastModified << " ";
+      }
+
+    sql <<
       "where "
       "ID = " << m_id;
 
@@ -271,7 +303,7 @@ bool DbObject::save(SQLQuery* qry /*= NULL*/, bool createReference /*= false*/)
       "VCONTAINER_PATH, "
       "VREF_ID, "
       "VISIBLE, "
-      "CHANGED_AT"
+      "MODIFIED_AT"
       ") values ( " <<
       m_objectId << ", " << 
       m_parentId << ", " << 
@@ -307,45 +339,102 @@ bool DbObject::save(SQLQuery* qry /*= NULL*/, bool createReference /*= false*/)
 bool DbObject::remove()
 {
   SQLQuery qry;
-  std::string sql;
+  std::stringstream sql;
 
 
   // container
   if(m_type > OBJECT_TYPE_UNKNOWN && m_type < ITEM) {
-  
-    // delete object details
-    sql = "delete from OBJECT_DETAILS where ID in ("
-      "select DETAIL_ID from OBJECTS where PATH like '" + SQLEscape(m_path) + "%')";
-    qry.exec(sql);
 
-    // delete objects
-    sql = "delete from OBJECTS where PATH like '" + SQLEscape(m_path) + "%'";
-    qry.exec(sql);
 
-    #warning todo delete virtual folders and ref items
+    if(m_device.length() == 0) {
+    
+      // delete object details
+      sql.str("");
+      sql << "delete from OBJECT_DETAILS where ID in (" <<
+        "select DETAIL_ID from OBJECTS where PATH like '" << SQLEscape(m_path) << "%')";
+      qry.exec(sql.str());
 
+      // delete objects
+      sql.str("");
+      sql << "delete from OBJECTS where PATH like '" << SQLEscape(m_path) << "%'";
+      qry.exec(sql.str());
+      
+    }
+    else {
+      assert(true == false); // don't call DbObject::remove() for virtual folders
+    }
+    
   }
   else if(m_type > ITEM) {
 
-    // delete object details
-    sql = "delete from OBJECT_DETAILS where ID = ("
-      "select DETAIL_ID from OBJECTS where "
-      "  PATH = '" + SQLEscape(m_path) + "' and "
-      "  FILE_NAME = '" + SQLEscape(m_fileName) + "' "
-      ")";
-    qry.exec(sql);
 
+    // delete object details for non virtual and non referencing files
+    if(m_device.length() == 0 && m_refId == 0 && m_detailId > 0) {
+ 
+      sql.str("");
+      sql << "delete from OBJECT_DETAILS where ID = " << m_detailId;
+      qry.exec(sql.str());
+    }
+      
     // delete object
-    sql = "delete from OBJECTS where "
-      "  PATH = '" + SQLEscape(m_path) + "' and "
-      "  FILE_NAME = '" + SQLEscape(m_fileName) + "' ";
-    qry.exec(sql);
-    
+    sql.str("");
+    sql << "delete from OBJECTS where ID = " << m_id;
+    qry.exec(sql.str());   
   }
     
   return true;
 }
 
+
+std::string DbObject::toString(DbObject* object, bool details /*= false*/) // static
+{
+  stringstream result;
+
+  result <<
+    "id       : " << object->m_id << endl <<
+    "object id: " << object->m_objectId << endl <<
+    "parent id: " << object->m_parentId << endl <<
+    "detail id: " << object->m_detailId << endl <<
+    "type     : " << object->m_type << endl <<
+    "path     : " << object->m_path << endl <<
+    "fileName : " << object->m_fileName << endl <<
+    "title    : " << object->m_title << endl <<
+    "md5      : " << object->m_md5 << endl <<
+    "refId    : " << object->m_refId << endl <<
+    "device   : " << object->m_device << endl <<
+    "visible  : " << (object->m_visible ? "true" : "false") << endl <<
+    "vcType   : " << object->m_vcType << endl <<
+    "vcPath   : " << object->m_vcPath << endl <<
+    "vrefId   : " << object->m_vrefId << endl;
+
+  if(!details) {
+    return result.str();
+  }
+
+  result << endl << "details" << endl <<
+    "id: " << object->details()->id() << endl <<
+    "trackNo: " << object->details()->trackNo() << endl <<
+    "audioSamplerate: " << object->details()->audioSamplerate() << endl <<
+    "audioBitrate: " << object->details()->audioBitrate() << endl <<
+    "album: " << object->details()->album() << endl <<
+    "artist: " << object->details()->artist() << endl <<
+    "genre: " << object->details()->genre() << endl <<
+    "composer: " << object->details()->composer() << endl <<
+    "description: " << object->details()->description() << endl <<
+    "audioCodec: " << object->details()->audioCodec() << endl <<
+    "audioChannels: " << object->details()->audioChannels() << endl << 
+    "durationMs: " << object->details()->durationMs() << endl <<
+    "width: " << object->details()->width() << endl <<
+    "height: " << object->details()->height() << endl <<
+    "videoBitrate: " << object->details()->videoBitrate() << endl <<
+    "videoCodec: " << object->details()->videoCodec() << endl <<
+    "albumArtId: " << object->details()->albumArtId() << endl <<
+    "albumArtExt: " << object->details()->albumArtExt() << endl <<
+    "size: " << object->details()->size() << endl <<
+    "source: " << object->details()->source() << endl;
+  
+  return result.str();
+}
 
 
 
@@ -369,14 +458,62 @@ void ObjectDetails::reset()
   m_a_description = "";
   m_a_codec = "";
   m_a_channels = 0;
-  m_av_duration = "";
+  m_av_duration = 0;
   m_iv_width = 0;
   m_iv_height = 0;
   m_v_bitrate = 0;
   m_v_codec = "";
+  m_albumArtId = 0;
+  m_albumArtExt = "";
   m_size = 0;
   m_source = Unknown;
   m_changed = false;
+}
+
+bool ObjectDetails::load(object_id_t detailId, SQLQuery* qry /*= NULL*/)
+{
+  ASSERT(m_id == 0);
+
+  bool tmpQry = (qry == NULL);
+  if(tmpQry) {
+    qry = new SQLQuery();
+  }
+
+  std::stringstream sql;
+  sql << "select * from OBJECT_DETAILS where ID = " << detailId;
+  bool ret = qry->select(sql.str());
+  if(qry->eof()) {
+    ret = false;
+  }
+  else {    
+    m_id = qry->result()->asUInt("ID");
+    m_a_trackNo = qry->result()->asInt("A_TRACK_NO");
+    m_a_samplerate = qry->result()->asInt("A_SAMPLERATE");
+    m_a_bitrate = qry->result()->asInt("A_BITRATE");
+    m_a_album = qry->result()->asString("A_ALBUM");
+    m_a_artist = qry->result()->asString("A_ARTIST");
+    m_a_genre = qry->result()->asString("A_GENRE");
+    m_a_composer = qry->result()->asString("A_COMPOSER");
+    m_a_description = qry->result()->asString("A_DESCRIPTION");
+    m_a_codec = qry->result()->asString("A_CODEC");
+    m_a_channels = qry->result()->asInt("A_CHANNELS");
+    m_av_duration = qry->result()->asUInt("AV_DURATION");
+    m_iv_width = qry->result()->asInt("IV_WIDTH");
+    m_iv_height = qry->result()->asInt("IV_HEIGHT");
+    m_v_bitrate = qry->result()->asInt("V_BITRATE");
+    m_v_codec = qry->result()->asString("V_CODEC");
+    m_albumArtId = qry->result()->asUInt("ALBUM_ART_ID");
+    m_albumArtExt = qry->result()->asString("ALBUM_ART_EXT");
+    m_size = qry->result()->asUInt("SIZE");
+    m_source = (ObjectDetails::DetailSource)qry->result()->asInt("AV_BITRATE");
+    m_changed = false;
+  }
+  
+
+  if(tmpQry)
+    delete qry;
+
+  return ret;
 }
 
 bool ObjectDetails::save(SQLQuery* qry /*= NULL*/)
@@ -406,7 +543,7 @@ bool ObjectDetails::save(SQLQuery* qry /*= NULL*/)
     "A_DESCRIPTION = " << (m_a_description.empty() ? "NULL" : "'" + SQLEscape(m_a_description) + "'") << ", " <<
     "A_CODEC = " << (m_a_codec.empty() ? "NULL" : "'" + SQLEscape(m_a_codec) + "'") << ", " <<
     "A_CHANNELS = " << m_a_channels << ", " <<
-    "AV_DURATION = " << (m_av_duration.empty() ? "NULL" : "'" + SQLEscape(m_av_duration) + "'") << ", " <<
+    "AV_DURATION = " << m_av_duration << ", " <<
 
     "IV_WIDTH = " << m_iv_width << ", " <<
     "IV_HEIGHT = " << m_iv_height << ", " <<
@@ -414,6 +551,11 @@ bool ObjectDetails::save(SQLQuery* qry /*= NULL*/)
     "V_CODEC = " << (m_v_codec.empty() ? "NULL" : "'" + SQLEscape(m_v_codec) + "'") << ", " <<
     "V_BITRATE = " << m_v_bitrate << ", " << 
 
+
+    "ALBUM_ART_ID = " << m_albumArtId << ", " << 
+    "ALBUM_ART_EXT = " << (m_albumArtExt.empty() ? "NULL" : "'" + SQLEscape(m_albumArtExt) + "'") << ", " <<
+
+      
     "SIZE = " << m_size << ", " << 
     "SOURCE = " << m_source << " " << 
 
@@ -451,6 +593,8 @@ bool ObjectDetails::save(SQLQuery* qry /*= NULL*/)
       "IV_HEIGHT, " <<
       "V_CODEC, " <<
       "V_BITRATE, " <<
+      "ALBUM_ART_ID, " <<
+      "ALBUM_ART_EXT, " <<
       "SIZE, " <<
       "SOURCE " <<
       " ) values ( " <<
@@ -464,11 +608,13 @@ bool ObjectDetails::save(SQLQuery* qry /*= NULL*/)
       (m_a_description.empty() ? "NULL" : "'" + SQLEscape(m_a_description) + "'") << ", " <<
       (m_a_codec.empty() ? "NULL" : "'" + SQLEscape(m_a_codec) + "'") << ", " <<
       m_a_channels << ", " <<
-      (m_av_duration.empty() ? "NULL" : "'" + SQLEscape(m_av_duration) + "'") << ", " <<
+      m_av_duration << ", " <<
       m_iv_width << ", " <<
       m_iv_height << ", " <<
       (m_v_codec.empty() ? "NULL" : "'" + SQLEscape(m_v_codec) + "'") << ", " <<
       m_v_bitrate << ", " <<
+      m_albumArtId << ", " <<
+      (m_albumArtExt.empty() ? "NULL" : "'" + SQLEscape(m_albumArtExt) + "'") << ", " <<      
       m_size << ", " <<
       m_source << " " <<
       " ) ";

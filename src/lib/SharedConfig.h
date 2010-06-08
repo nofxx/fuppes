@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            SharedConfig.h
  *
@@ -44,7 +44,6 @@
 #define VFOLDER_DIR "vfolders"
 #define DEVICE_DIR "devices"
 
-#define DB_NAME "fuppes.db"
 #define UUID_NAME "UUID.txt"
 
 // Errors that could happen when reading the global config file
@@ -52,12 +51,13 @@
 #define READERROR_SHARED_OBJECTS    2
 #define READERROR_NETWORK           3
 #define READERROR_GLOBAL_SETTINGS   4
-#define READERROR_DEVICE_MAPPING    5
-#define READERROR_CONTENT_DIRECTORY 6
-#define READERROR_DATABASE_DEFAULT  7
-#define READERROR_DATABASE_FAIL     8
-#define READERROR_TRANSCODING       9
-#define READERROR_PLUGINDIRS        10
+#define READERROR_VFOLDER_SETTINGS  5
+#define READERROR_DEVICE_MAPPING    6
+#define READERROR_CONTENT_DIRECTORY 7
+#define READERROR_DATABASE_DEFAULT  8
+#define READERROR_DATABASE_FAIL     9
+#define READERROR_TRANSCODING       10
+#define READERROR_PLUGINDIRS        11
 
 #include <string>
 #include <vector>
@@ -104,14 +104,17 @@ class CSharedConfig
 		void							setPluginDirectory(std::string dir) { m_pluginDirectory = dir; }
 
     // Make the smaller objects that we will use
-    SharedObjects* sharedObjects;
+    static SharedObjects* sharedObjects() { return Shared()->m_sharedObjects; }
     NetworkSettings* networkSettings;
     GlobalSettings* globalSettings;
+    static VirtualFolders* virtualFolders() { return Shared()->m_virtualFolders; }
     DeviceMapping* deviceMapping;
     ContentDirectory* contentDirectory;
     DatabaseSettings* databaseSettings;
     TranscodingSettings* transcodingSettings;
 
+    
+    
     // Instance Settings
     std::string GetAppName();
     std::string GetAppFullname();
@@ -134,7 +137,9 @@ class CSharedConfig
   
 		// album art
 		static bool isAlbumArtFile(const std::string fileName);
-		
+    static std::string getAlbumArtFiles();
+
+    
     unsigned int GetFuppesInstanceCount();
     CFuppes* GetFuppesInstance(unsigned int p_nIndex);
     void AddFuppesInstance(CFuppes* pFuppes);
@@ -149,7 +154,12 @@ class CSharedConfig
   private:
     static CSharedConfig* m_Instance;    
     CXMLDocument* m_pDoc;
-      
+
+    
+    SharedObjects* m_sharedObjects;
+    VirtualFolders* m_virtualFolders;
+
+    
     std::string   m_sFileName;
     std::string   m_sBaseConfigFile;
 

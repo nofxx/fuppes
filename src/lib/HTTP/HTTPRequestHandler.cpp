@@ -28,15 +28,15 @@
 #include "../ContentDirectory/PlaylistFactory.h"
 #include "../Common/UUID.h"
 #include "../Common/File.h"
+#include "../Common/RegEx.h"
 #include "../GENA/SubscriptionMgr.h"
 #include "../SharedLog.h"
+#include "../SharedConfig.h"
 #include "../ContentDirectory/FileDetails.h"
-#ifdef HAVE_VFOLDER
-#include "../ContentDirectory/VirtualContainerMgr.h"
-#endif
 #include "../ContentDirectory/DatabaseConnection.h"
 #include "../Plugins/Plugin.h"
 #include "../Transcoding/TranscodingMgr.h"
+#include "../ControlInterface/SoapControl.h"
 
 //#include <iostream>
 #include <sstream>
@@ -182,19 +182,29 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
 
 
   /* AudioItem, ImageItem, videoItem */
-  else if(sRequest.length() > 24) {
+  else {
 
-		string sObjectId = TruncateFileExt(sRequest.substr(24, sRequest.length()));
-		
-		if((sRequest.substr(0, 24).compare("/MediaServer/AudioItems/") == 0) ||
-       (sRequest.substr(0, 24).compare("/MediaServer/VideoItems/") == 0)) {		
-			
-			bResult = handleItemRequest(sObjectId, pRequest, pResponse);
-		}
-		else if(sRequest.substr(0, 24).compare("/MediaServer/ImageItems/") == 0) {
-			
-			bResult = handleImageRequest(sObjectId, pRequest, pResponse);    
-		}
+    RegEx rxUrl("/(Audio|Video|Image)Items/([0-9|A-F|a-f]+)/*[\\w|%20|-]*\\.(\\w+)");
+    if(!rxUrl.search(sRequest)) {
+      cout << "malformed url: " << sRequest << endl;
+    }
+    else {
+
+      string sObjectId = rxUrl.match(2);
+      // cout << rxUrl.match(3) << endl;
+
+      if((rxUrl.match(1).compare("Audio") == 0) || 
+         (rxUrl.match(1).compare("Video") == 0)) {
+
+			  bResult = handleItemRequest(sObjectId, pRequest, pResponse);
+      }
+      else if(rxUrl.match(1).compare("Image") == 0) {
+
+  			bResult = handleImageRequest(sObjectId, pRequest, pResponse);    
+      }
+      
+    }
+ 
   }
   
   /* set 404 */
@@ -225,6 +235,7 @@ bool CHTTPRequestHandler::HandleSOAPAction(CHTTPMessage* pRequest, CHTTPMessage*
   CContentDirectory* pDir = NULL; //new CContentDirectory(m_sHTTPServerURL);
   CConnectionManager* pMgr = NULL; //new CConnectionManager(m_sHTTPServerURL);;
   CXMSMediaReceiverRegistrar* pXMS = NULL; //new CXMSMediaReceiverRegistrar();
+  SoapControl* soapCtrl = NULL;
   
   switch(pAction->GetTargetDeviceType())
   {
@@ -244,6 +255,11 @@ bool CHTTPRequestHandler::HandleSOAPAction(CHTTPMessage* pRequest, CHTTPMessage*
       pXMS = new CXMSMediaReceiverRegistrar(m_sHTTPServerURL);
       pXMS->HandleUPnPAction(pAction, pResponse);
       delete pXMS;
+      break;
+		case FUPPES_SOAP_CONTROL:
+      soapCtrl = new SoapControl(m_sHTTPServerURL);
+      soapCtrl->HandleUPnPAction(pAction, pResponse);
+      delete soapCtrl;
       break;
     default:
       bRet = false;
@@ -276,13 +292,7 @@ bool CHTTPRequestHandler::handleItemRequest(std::string p_sObjectId, CHTTPMessag
 
   unsigned int      objectId = HexToInt(p_sObjectId);
   
-  string sDevice; // = " and o.DEVICE is NULL ";
-#ifdef HAVE_VFOLDER
-  if(CVirtualContainerMgr::isVirtualContainer(objectId, pRequest->DeviceSettings()->VirtualFolderDevice()))
-    sDevice = pRequest->DeviceSettings()->VirtualFolderDevice();
-#endif
-
-
+  string sDevice = pRequest->virtualFolderLayout();
   string sql = qry.build(SQL_GET_OBJECT_DETAILS, objectId, sDevice);
   qry.select(sql);
   if(!qry.eof()) {
@@ -385,12 +395,12 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 
   unsigned int objectId = HexToInt(p_sObjectId);
   
-  string sDevice;
-#ifdef HAVE_VFOLDER
-  if(CVirtualContainerMgr::isVirtualContainer(HexToInt(p_sObjectId), pRequest->DeviceSettings()->VirtualFolderDevice()))
-    sDevice = pRequest->DeviceSettings()->VirtualFolderDevice();
-#endif
-
+  string sDevice = pRequest->virtualFolderLayout();
+  if(pRequest->GetVarExists("vfolder")) {
+    sDevice = pRequest->getGetVar("vfolder");
+    if(sDevice == "none")
+      sDevice = "";
+  }
   string sql = qry.build(SQL_GET_OBJECT_DETAILS, objectId, sDevice);
   qry.select(sql);
     
@@ -403,6 +413,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
   sExt  = ExtractFileExt(sPath);	
 	bool audioFile = false;
 	bool videoFile = false;
+  bool hasCached = false;
 	
 	OBJECT_TYPE type = (OBJECT_TYPE)qry.result()->asInt("TYPE");
 	if(type >= ITEM_IMAGE_ITEM && type < ITEM_IMAGE_ITEM_MAX) {
@@ -415,6 +426,12 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 	else if(type >= ITEM_VIDEO_ITEM && type < ITEM_VIDEO_ITEM_MAX) {
 		//cout << "request image from video file " << sPath << endl;
 		videoFile = true;
+
+    if(qry.result()->asUInt("ALBUM_ART_ID") > 0) {
+      hasCached = fuppes::File::exists(CSharedConfig::Shared()->globalSettings->GetTempDir() + qry.result()->asString("ALBUM_ART_ID") + ".jpg");
+      sPath = CSharedConfig::Shared()->globalSettings->GetTempDir() + qry.result()->asString("ALBUM_ART_ID") + ".jpg";
+      sExt = "jpg";
+    }
 	}
 	else {
 		CSharedLog::Log(L_EXT, __FILE__, __LINE__, "unsupported image request on object type %d", type);
@@ -435,7 +452,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 	
 	// transcode | scale request via GET
 	// and/or embedded image from audio file
-	if(width > 0 || height > 0 || audioFile || videoFile) {
+	if((width > 0 || height > 0 || audioFile || videoFile) && !hasCached) {
 		CSharedLog::Log(L_EXT, __FILE__, __LINE__, "GET transcode %s - %dx%d",  sPath.c_str(), width, height);
 		
 		size_t inSize = 0;
@@ -460,7 +477,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 				  return false;
 				}
 			}
-			else if(videoFile) {
+      else if(videoFile) {
 				metadata = CPluginMgr::metadataPlugin("ffmpegthumbnailer");
 				if(!metadata) {
 					CSharedLog::Log(L_EXT, __FILE__, __LINE__, "metadata plugin %s not found", "ffmpegthumbnailer");
@@ -468,7 +485,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 					free(outBuffer);
 					free(mimeType);
 				  return false;
-				}
+        }
 				transcode = false;
 			}
 			
@@ -485,9 +502,16 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 			metadata->closeFile();
 			delete metadata;
 		} // embedded image
-		
+
+
+
+    // an actual image file or a cached image is requested
 		else {
-	
+
+      if(hasCached) {
+				transcode = false;
+      }
+      
 			std::fstream fsImg;
 			fsImg.open(sPath.c_str(), ios::binary|ios::in);
 		  if(fsImg.fail() == 1) {

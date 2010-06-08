@@ -36,9 +36,7 @@
 #include "SharedLog.h"
 #include "Fuppes.h"
 #include "ContentDirectory/ContentDatabase.h"
-#ifdef HAVE_VFOLDER
 #include "ContentDirectory/VirtualContainerMgr.h"
-#endif
 #include "DeviceSettings/DeviceIdentificationMgr.h"
 #include "Plugins/Plugin.h"
 #include "Common/RegEx.h"
@@ -196,11 +194,11 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
         }
         break;
       case 'd':
-        if(file.Search(optarg)) {
+        //if(file.Search(optarg)) {
           CSharedConfig::Shared()->databaseSettings->setDbFilename(optarg);
-        } else {
-          fileFail = true;
-        }
+        //} else {
+        //  fileFail = true;
+        //}
         break;
       case 'g':
         // TODO not implemented yet
@@ -418,9 +416,7 @@ void fuppes_update_db_remove_missing()
 
 void fuppes_rebuild_vcontainers()
 {
-#ifdef HAVE_VFOLDER
   CVirtualContainerMgr::Shared()->RebuildContainerList();
-#endif
 }
 
 void fuppes_get_http_server_address(char* sz_addr, unsigned int n_buff_size)

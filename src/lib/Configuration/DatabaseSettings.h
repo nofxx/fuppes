@@ -13,6 +13,8 @@
 class DatabaseSettings : public ConfigSettings
 {
   public:
+    DatabaseSettings();
+    virtual ~DatabaseSettings();
     virtual bool Read(void);
 
     CConnectionParams dbConnectionParams() { return m_dbConnectionParams; }
@@ -21,7 +23,7 @@ class DatabaseSettings : public ConfigSettings
     bool UseDefaultSettings(void);
 
   private:
-    virtual void InitVariables(void);
+    //virtual void InitVariables(void);
     virtual bool InitPostRead(void);
 
     CConnectionParams m_dbConnectionParams;

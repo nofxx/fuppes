@@ -60,9 +60,9 @@ bool File::open(File::OpenMode mode)
 
 	if(mode & Read)
 		openmode += "r";
-	/*if(mode & Write)
-		openmode += "a";
-	if(mode & Truncate)
+	if(mode & Write)
+		openmode += "w";
+	/*if(mode & Truncate)
 		openmode |= "w";
 	if(mode & Append)
 		openmode += "a";*/
@@ -79,7 +79,7 @@ bool File::open(File::OpenMode mode)
 */
 
   m_file = fopen(m_fileName.c_str(), openmode.c_str());
-  return isOpen();;
+  return isOpen();
 
 	/*m_fstream.open(m_fileName.c_str(), openmode);
 	return m_fstream.is_open();*/
@@ -108,9 +108,17 @@ bool File::seek(fuppes_off_t offset)
 fuppes_off_t File::read(char* buffer, fuppes_off_t length)
 {
   if(!m_file)
-    return false;
+    return 0;
 
   return fread(buffer, 1, length, m_file);
+}
+
+fuppes_off_t File::write(char* buffer, fuppes_off_t length)
+{
+  if(!m_file)
+    return 0;
+  
+  return fwrite(buffer, 1, length, m_file);
 }
 
 fuppes_off_t File::size()
@@ -249,4 +257,15 @@ bool File::executable(std::string fileName) // static
   }
 
   return isExecutable;
+}
+
+
+time_t File::lastModified(std::string fileName) // static
+{
+  struct stat Stat;
+  if(stat(fileName.c_str(), &Stat) == 0 && S_ISREG(Stat.st_mode)) {
+    return Stat.st_ctime;
+  }
+
+  return 0;
 }

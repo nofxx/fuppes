@@ -117,6 +117,11 @@ typedef enum UPNP_X_MS_MEDIA_RECEIVER_REGISTRAR_ACTIONS {
 } UPNP_X_MS_MEDIA_RECEIVER_REGISTRAR_ACTIONS;
 
 
+
+typedef enum FUPPES_SOAP_CONTROL_ACTIONS {
+	FUPPES_CTRL_TEST
+} FUPPES_SOAP_CONTROL_ACTIONS;
+
 class CUPnPAction
 {
   friend class CUPnPActionFactory;
@@ -140,7 +145,10 @@ class CUPnPAction
 
     CDeviceSettings* DeviceSettings() { return m_pDeviceSettings; }
 	  void DeviceSettings(CDeviceSettings* pSettings) { m_pDeviceSettings = pSettings; }
-
+    
+		std::string       virtualFolderLayout() { return m_virtualFolderLayout; }
+		void							setVirtualFolderLayout(std::string layout) { m_virtualFolderLayout = layout; }
+    
     std::string   objectId() { return m_sObjectId; }
     unsigned int GetObjectIDAsUInt() { return HexToInt(m_sObjectId); }
 
@@ -149,7 +157,8 @@ class CUPnPAction
     int              m_nActionType;
     std::string      m_sContent;
 		
-		CDeviceSettings*   m_pDeviceSettings;
+		CDeviceSettings*    m_pDeviceSettings;
+    std::string         m_virtualFolderLayout;
 		
 		std::string      m_sObjectId;
 };
