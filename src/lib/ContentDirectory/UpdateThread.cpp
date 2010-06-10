@@ -128,6 +128,11 @@ void UpdateThread::run()
       } // container
       else {
 
+        ObjectDetails oldDetails;
+        bool update = (obj->detailId() > 0);
+        if(update)
+          oldDetails = *obj->details();
+
         switch(obj->type()) {
 
           case ITEM_IMAGE_ITEM:
@@ -136,15 +141,12 @@ void UpdateThread::run()
             break;
 
           case ITEM_AUDIO_ITEM:
-          case ITEM_AUDIO_ITEM_MUSIC_TRACK: {
-              bool update = (obj->detailId() > 0);
-              ObjectDetails oldDetails = *obj->details();
-              updateAudioFile(obj, &ins);
-              if(!update)
-                VirtualContainerMgr::insertFile(obj);
-              else
-                VirtualContainerMgr::updateFile(obj, &oldDetails);
-            }
+          case ITEM_AUDIO_ITEM_MUSIC_TRACK:
+            updateAudioFile(obj, &ins);
+            if(!update)
+              VirtualContainerMgr::insertFile(obj);
+            else
+              VirtualContainerMgr::updateFile(obj, &oldDetails);
             break;
           case ITEM_AUDIO_ITEM_AUDIO_BROADCAST:
             break;

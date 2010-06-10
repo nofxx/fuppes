@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-#include <mp4.h>
+#include <mp4v2/mp4v2.h>
 	
 void register_fuppes_plugin(plugin_info* info)
 {
@@ -63,66 +63,56 @@ int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
 	// title
 	MP4GetMetadataName(mp4file, &value);
 	if(value) {
-		set_value(&metadata->title, value);
+		set_value(metadata->title, value);
 		free(value);
 	}
 	
 	// duration
 	u_int32_t scale = MP4GetTimeScale(mp4file);//scale is ticks in secs, used same value in duration.
 	MP4Duration length = MP4GetDuration(mp4file);
-	int hours, mins, secs;
-	length = length /scale;
-	secs = length % 60;
-	length /= 60;
-	mins = length % 60;
-	hours = length / 60;
-
-	char szDuration[12];
-	sprintf(szDuration, "%02d:%02d:%02d.00", hours, mins, secs);
-	szDuration[11] = '\0';
-	
-	set_value(&metadata->duration, szDuration);
-	
+  length = length / scale;
+  metadata->duration_ms = length * 1000;
+  
 	// channels
-	metadata->channels = MP4GetTrackAudioChannels(mp4file, 
+	metadata->nr_audio_channels = MP4GetTrackAudioChannels(mp4file, 
 																		MP4FindTrackId(mp4file, 0, MP4_AUDIO_TRACK_TYPE));
 	// bitrate
-	metadata->bitrate = MP4GetTrackBitRate(mp4file, 
+	metadata->audio_bitrate = MP4GetTrackBitRate(mp4file, 
 														MP4FindTrackId(mp4file, 0, MP4_AUDIO_TRACK_TYPE));
-	metadata->bits_per_sample = 0;
+	metadata->audio_bits_per_sample = 0;
 
 	// artist
 	MP4GetMetadataArtist(mp4file, &value);
 	if(value) {
-		set_value(&metadata->artist, value);
+		set_value(metadata->artist, value);
 		free(value);
 	}
 	
 	// genre
 	MP4GetMetadataGenre(mp4file, &value);
 	if(value) {
-		set_value(&metadata->genre, value);
+		set_value(metadata->genre, value);
 		free(value);
 	}
 	
 	// Album
 	MP4GetMetadataAlbum(mp4file, &value);
 	if(value) {
-		set_value(&metadata->album, value);
+		set_value(metadata->album, value);
 		free(value);
 	}
 	
 	// description/comment
 	MP4GetMetadataComment(mp4file, &value);
 	if(value) {
-		set_value(&metadata->description, value);
+		set_value(metadata->description, value);
 		free(value);
 	}
 
 	// track no.
 	u_int16_t track, totaltracks;
 	MP4GetMetadataTrack(mp4file, &track, &totaltracks);
-	metadata->track_no = track;
+	metadata->track_number = track;
 
 	// date/year
 	/*MP4GetMetadataYear(mp4file, &value);

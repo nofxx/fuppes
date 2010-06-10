@@ -309,38 +309,22 @@ AM_CONDITIONAL(FFMPEG_TRANSCODER_PLUGIN, test "x$have_transcoder_ffmpeg" = "xyes
 # end libavformat
 
 
-
+# check for mp4v2
+have_mp4v2=no
 AC_ARG_ENABLE([mp4v2], [AC_HELP_STRING([--enable-mp4v2],
     [enable mp4v2 metadata plugin [default=yes]])],
     [enable_mp4v2=$enableval], [enable_mp4v2='yes'])
 
-have_mpeg4ip=no
+
 if test "x$enable_mp4v2" = "xyes" ; then
-
-	
-	if test -z "$MPEG4IP_CONFIG"; then
-		AC_PATH_PROG(MPEG4IP_CONFIG, mpeg4ip-config, no, $prefix/bin/)
-	fi
-
-	if test "$MPEG4IP_CONFIG" = "no" ; then   
-		 AC_MSG_NOTICE([*** mpeg4ip/libmp4v2 support disabled ***]);
-	else
-
-		AC_MSG_CHECKING(MP4V2_CFLAGS)
-		MP4V2_CFLAGS=`$MPEG4IP_CONFIG --cflags`
+	AH_TEMPLATE([HAVE_LAME], [])
+	AC_CHECK_HEADERS([mp4v2/mp4v2.h], have_mp4v2=yes, have_mp4v2=no)
+	if test "x$have_mp4v2" = "xyes"; then    
+		MP4V2_CFLAGS=""
 		MP4V2_LIBS="-lmp4v2"
-		AC_MSG_RESULT($MP4V2_CFLAGS)
-		
-		have_mpeg4ip=yes
 	fi
-
-	AC_SUBST(MP4V2_CFLAGS)
-	AC_SUBST(MP4V2_LIBS)
 fi
-AM_CONDITIONAL(MP4V2_METADATA_PLUGIN, test "x$have_mpeg4ip" = "xyes")
-
-
-
+AM_CONDITIONAL(MP4V2_METADATA_PLUGIN, test "x$have_mp4v2" = "xyes")
 
 
               
@@ -820,8 +804,8 @@ else
   echo "    taglib             : disabled (mp3, ogg, flac & mpc)"
 fi
 
-# mpeg4ip
-if test "x$have_mpeg4ip" = "xyes"; then
+# mp4v2
+if test "x$have_mp4v2" = "xyes"; then
   echo "    mpeg4ip/mp4v2      : enabled  (mp4/m4a)"
 else
   echo "    mpeg4ip/mp4v2      : disabled (mp4/m4a)"

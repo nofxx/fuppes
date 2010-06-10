@@ -52,7 +52,7 @@ bool CHTTPRequestHandler::HandleRequest(CHTTPMessage* pRequest, CHTTPMessage* pR
 {
   /*cout << "CHTTPRequestHandler::HandleRequest()" << endl;    
   cout << "Type: " << pRequest->GetMessageType() << endl;  */
-  bool bResult; 
+  bool bResult = false; 
   
   pResponse->DeviceSettings(pRequest->DeviceSettings());  
   
@@ -68,13 +68,15 @@ bool CHTTPRequestHandler::HandleRequest(CHTTPMessage* pRequest, CHTTPMessage* pR
     // SOAP
     case HTTP_MESSAGE_TYPE_POST_SOAP_ACTION:
       bResult = this->HandleSOAPAction(pRequest, pResponse);
-			Log::log(Log::soap, Log::debug, __FILE__, __LINE__, "RESPONSE:\n" + pResponse->GetMessageAsString());
+      if(bResult)
+  			Log::log(Log::soap, Log::debug, __FILE__, __LINE__, "RESPONSE:\n" + pResponse->GetMessageAsString());
       break;
       
     // GENA
     case HTTP_MESSAGE_TYPE_SUBSCRIBE:
       bResult = this->HandleGENAMessage(pRequest, pResponse);
-			Log::log(Log::gena, Log::debug, __FILE__, __LINE__, "RESPONSE:\n" + pResponse->GetMessageAsString());
+      if(bResult)
+  			Log::log(Log::gena, Log::debug, __FILE__, __LINE__, "RESPONSE:\n" + pResponse->GetMessageAsString());
 			break;
     
     default :
@@ -185,10 +187,7 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
   else {
 
     RegEx rxUrl("/(Audio|Video|Image)Items/([0-9|A-F|a-f]+)/*[\\w|%20|-]*\\.(\\w+)");
-    if(!rxUrl.search(sRequest)) {
-      cout << "malformed url: " << sRequest << endl;
-    }
-    else {
+    if(rxUrl.search(sRequest)) {
 
       string sObjectId = rxUrl.match(2);
       // cout << rxUrl.match(3) << endl;

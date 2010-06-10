@@ -171,7 +171,10 @@ std::string CHTTPMessage::GetHeaderAsString()
       break;
     case HTTP_MESSAGE_TYPE_206_PARTIAL_CONTENT:
       sResult << sVersion << " 206 Partial Content\r\n";
-      break;    
+      break;
+    case HTTP_MESSAGE_TYPE_400_BAD_REQUEST:
+      sResult << sVersion << " 400 Bad Request\r\n";
+      break;
     case HTTP_MESSAGE_TYPE_403_FORBIDDEN:
       sResult << sVersion << " 403 Forbidden\r\n";
       break;

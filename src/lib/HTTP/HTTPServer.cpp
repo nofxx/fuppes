@@ -509,7 +509,13 @@ void HTTPSession::run()
       // build response
       bResult = pHandler->HandleRequest(pRequest, pResponse);
       if(!bResult)
-        bResult = pSession->GetHTTPServer()->CallOnReceive(pRequest, pResponse);      
+        bResult = pSession->GetHTTPServer()->CallOnReceive(pRequest, pResponse);
+
+      if(!bResult) {
+        pResponse->SetVersion(HTTP_VERSION_1_0);
+        pResponse->SetMessageType(HTTP_MESSAGE_TYPE_400_BAD_REQUEST);
+        pResponse->SetMessage("400 Bad Request");        
+      }
     }
     // otherwise create a "403 (forbidden)" response
     else {
