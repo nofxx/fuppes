@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            FileDetails.cpp
  *
@@ -143,8 +143,7 @@ bool CFileDetails::IsSupportedFileExtension(std::string p_sFileExtension)
   return CDeviceIdentificationMgr::Shared()->DefaultDevice()->Exists(p_sFileExtension);
 }
 
-bool CFileDetails::getMusicTrackDetails(std::string p_sFileName,
-																				metadata_t* metadata)
+bool CFileDetails::getMusicTrackDetails(std::string p_sFileName, AudioItem* audioItem) // static
 {
   string sExt = ExtractFileExt(p_sFileName);
   if(!CDeviceIdentificationMgr::Shared()->DefaultDevice()->FileSettings(sExt)->ExtractMetadata())
@@ -152,57 +151,29 @@ bool CFileDetails::getMusicTrackDetails(std::string p_sFileName,
 	
 	CMetadataPlugin* audio = NULL;
 
-	if(sExt.compare("m4a") == 0 || sExt.compare("mp4") == 0) {
+	/*if(sExt.compare("m4a") == 0 || sExt.compare("mp4") == 0) {
 		audio = CPluginMgr::metadataPlugin("mp4v2");
 	}
-	else {
+	else {*/
 		audio = CPluginMgr::metadataPlugin("taglib");
-	}
+	//}
+
+	//audio = CPluginMgr::metadataPlugin("libavformat");
 	
 	//metadata_t metadata;
-	if(!audio || !audio->openFile(p_sFileName)) {
-		if(audio)
-			delete audio;		
-		return false;
-	}
-		
-	//init_metadata(metadata);			
-	if(!audio->readData(metadata)) {
-		//free_metadata(metadata);	
-		delete audio;
-		return false;
-	}
+	if(!audio)
+    return false;
 
-	/*pMusicTrack->sTitle 					= TrimWhiteSpace(metadata.title);  
-	pMusicTrack->sDuration				= metadata.duration;
-	pMusicTrack->nNrAudioChannels =	metadata.channels;
-	pMusicTrack->nBitrate 				= metadata.bitrate;
-	pMusicTrack->nBitsPerSample 	= 0;
-	pMusicTrack->nSampleRate 			= metadata.samplerate;
-	pMusicTrack->sArtist 					= TrimWhiteSpace(metadata.artist);
-	pMusicTrack->sAlbum 					= TrimWhiteSpace(metadata.album);
-	pMusicTrack->sGenre 					= TrimWhiteSpace(metadata.genre);
-	pMusicTrack->sDescription 		= TrimWhiteSpace(metadata.description);
-	pMusicTrack->nOriginalTrackNumber = metadata.track_no;*/
-	//pMusicTrack->sDate 					= sDate.str();
-
-	if(strlen(metadata->artist) == 0) {
-		set_value(&metadata->artist, "unknown");							
-	}	
-	if(strlen(metadata->album) == 0) {
-		set_value(&metadata->album, "unknown");							
-	}	
-	if(strlen(metadata->genre) == 0) {
-		set_value(&metadata->genre, "unknown");							
+  bool result = false;
+  if(audio->openFile(p_sFileName)) {
+    result = audio->readData(audioItem->metadata());
+	  audio->closeFile(); 
 	}
-	
-	audio->closeFile();
-	delete audio;
-	//free_metadata(&metadata);
-	return true;	
+  delete audio;  
+	return result;	
 }
 
-bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageItem)
+bool CFileDetails::getImageDetails(std::string p_sFileName, ImageItem* imageItem) // static
 {
 	if(!CPluginMgr::hasMetadataPlugin("exiv2") && 
 	 	 !CPluginMgr::hasMetadataPlugin("magickWand") &&
@@ -214,96 +185,64 @@ bool CFileDetails::GetImageDetails(std::string p_sFileName, SImageItem* pImageIt
     return false;
 	
 	CMetadataPlugin* image;
-	metadata_t metadata;
-	init_metadata(&metadata);
-	
+  bool result = false;
+  
 	image = CPluginMgr::metadataPlugin("exiv2");
-	if(image && image->openFile(p_sFileName)) {
-				
-		if(image->readData(&metadata)) {
-			pImageItem->nWidth  = metadata.width;
-			pImageItem->nHeight = metadata.height;
-      pImageItem->sDate   = (strlen(metadata.date) > 0 ? TrimWhiteSpace(metadata.date) : string());
-			
-			image->closeFile();
-			free_metadata(&metadata);
-			delete image;
-			return true;
-		}
-	}
-	if(image)
-		delete image;
+  if(image) {
+	  if(image->openFile(p_sFileName)) {
+		  result = image->readData(imageItem->metadata());
+      image->closeFile();
+	  }
+	  delete image;
+    if(result)
+      return true;
+  }
 
 
-	image = CPluginMgr::metadataPlugin("simage");
-	if(image && image->openFile(p_sFileName)) {
-		
-		if(image->readData(&metadata)) {
-			pImageItem->nWidth  = metadata.width;
-			pImageItem->nHeight = metadata.height;
-			
-			image->closeFile();
-			free_metadata(&metadata);
-			delete image;
-			return true;
-		}
-	}
-	if(image)
-		delete image;
-	
-	
-	image = CPluginMgr::metadataPlugin("magickWand");
-	if(image && image->openFile(p_sFileName)) {
-				
-		if(image->readData(&metadata)) {
-			pImageItem->nWidth  = metadata.width;
-			pImageItem->nHeight = metadata.height;
-      pImageItem->sDate   = (strlen(metadata.date) > 0 ? TrimWhiteSpace(metadata.date) : string());
-			
-			image->closeFile();
-			free_metadata(&metadata);
-			delete image;
-			return true;
-		}
-	}
-	if(image)
-		delete image;
-	
-	free_metadata(&metadata);
+  image = CPluginMgr::metadataPlugin("simage");
+  if(image) {
+	  if(image->openFile(p_sFileName)) {
+		  result = image->readData(imageItem->metadata());
+      image->closeFile();
+	  }
+	  delete image;
+    if(result)
+      return true;
+  }
+  
+
+  image = CPluginMgr::metadataPlugin("magickWand");
+  if(image) {
+	  if(image->openFile(p_sFileName)) {
+		  result = image->readData(imageItem->metadata());
+      image->closeFile();
+	  }
+	  delete image;
+    if(result)
+      return true;
+  }
+
+
 	return false;
 }
 
-bool CFileDetails::GetVideoDetails(std::string p_sFileName, SVideoItem* pVideoItem)
+bool CFileDetails::getVideoDetails(std::string p_sFileName, VideoItem* videoItem) // static
 {
 	string sExt = ExtractFileExt(p_sFileName);  
   if(!CDeviceIdentificationMgr::Shared()->DefaultDevice()->FileSettings(sExt)->ExtractMetadata())
     return false;
-
-	bool result = false;
+  
 	CMetadataPlugin* video = CPluginMgr::metadataPlugin("libavformat");
-	metadata_t metadata;
-	if(video && video->openFile(p_sFileName)) {
-
-		init_metadata(&metadata);
-		if(video->readData(&metadata)) {
-			
-			pVideoItem->nWidth  = metadata.width;
-			pVideoItem->nHeight = metadata.height;
-			
-			pVideoItem->nBitrate = metadata.bitrate;
-			pVideoItem->sACodec  = metadata.audio_codec;
-			pVideoItem->sVCodec  = metadata.video_codec;
-
-			pVideoItem->durationMs = metadata.duration_ms;
-			
-			video->closeFile();
-			free_metadata(&metadata);
-			result = true;
-		}
+	if(!video) {
+		return false;
 	}
 
-	if(video)
-		delete video;
-	
+	bool result = false;
+	if(video->openFile(p_sFileName)) {
+		result = video->readData(videoItem->metadata());
+		video->closeFile();
+	}
+	delete video;	
+
 	return result;
 }

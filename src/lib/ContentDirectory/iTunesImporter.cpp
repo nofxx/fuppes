@@ -73,7 +73,7 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
 {
   int i;
   CXMLNode* pNode;
-  SAudioItem track;
+  AudioItem track;
   string fileName;
 	string path;
  
@@ -87,7 +87,7 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
     return;
   }
     
-  for(i = 0; i < pDict->ChildCount(); i++) {
+  /*for(i = 0; i < pDict->ChildCount(); i++) {
     pNode = pDict->ChildNode(i);
     
     if(pNode->Value().compare("Kind") == 0) {
@@ -110,10 +110,10 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
     }
     else if(pNode->Value().compare("Track Number") == 0) {
       track.nOriginalTrackNumber = atoi(pDict->ChildNode(i + 1)->Value().c_str());
-    }
+    }*/
     /*else if(pNode->Value().compare("Track Count") == 0) {
     } */
-    else if(pNode->Value().compare("Year") == 0) {
+    /*else if(pNode->Value().compare("Year") == 0) {
       track.sDate = pDict->ChildNode(i + 1)->Value();
     }
     else if(pNode->Value().compare("Bit Rate") == 0) {
@@ -142,13 +142,14 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
       
    
   }
+*/
      //cout << endl;
 
   stringstream sSql;
   CSQLQuery* qry = CDatabase::query();    
 	unsigned int nObjId = CContentDatabase::Shared()->GetObjId();
   
-  qry->connection()->startTransaction();
+   /*qry->connection()->startTransaction();
     
   sSql << 
 	  "insert into OBJECT_DETAILS " <<
@@ -183,7 +184,7 @@ void CiTunesImporter::ParseDict(CXMLNode* pDict)
   qry->insert(sSql.str());
   
   
-  qry->connection()->commit();    
+  qry->connection()->commit();    */
   delete qry;
 }
 

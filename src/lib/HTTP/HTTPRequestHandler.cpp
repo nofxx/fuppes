@@ -313,37 +313,10 @@ bool CHTTPRequestHandler::handleItemRequest(std::string p_sObjectId, CHTTPMessag
         CSharedLog::Log(L_EXT, __FILE__, __LINE__, "transcode %s",  sPath.c_str());
      
         sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
-        if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {          
+        if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {
           //
-          SAudioItem trackDetails;
-          if(!qry.result()->isNull("TITLE")) {
-            trackDetails.sTitle = qry.result()->asString("TITLE");
-          }
-          
-          if(!qry.result()->isNull("A_ARTIST")) {
-            trackDetails.sArtist = qry.result()->asString("A_ARTIST");
-          }
-          
-          if(!qry.result()->isNull("A_ALBUM")) {
-            trackDetails.sAlbum  = qry.result()->asString("A_ALBUM");
-          }
-          
-          if(!qry.result()->isNull("A_GENRE")) {
-            trackDetails.sGenre = qry.result()->asString("A_GENRE");
-          }
-          
-          if(!qry.result()->isNull("A_TRACK_NO")) {
-            trackDetails.sOriginalTrackNumber = qry.result()->asString("A_TRACK_NO");
-          }          
-          
-          if(!qry.result()->isNull("A_CODEC")) {
-            trackDetails.sACodec = qry.result()->asString("A_CODEC");
-          }
-          if(!qry.result()->isNull("V_CODEC")) {
-            trackDetails.sVCodec = qry.result()->asString("V_CODEC");
-          }
-          
-          bResult = pResponse->TranscodeContentFromFile(sPath, trackDetails);
+          DbObject object(qry.result());          
+          bResult = pResponse->TranscodeContentFromFile(sPath, &object);
         }
         else if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) {
           // mark the head response as chunked so
@@ -578,8 +551,8 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
  
 		sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
 		if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {          
-			SAudioItem trackDetails;
-			if(!pResponse->TranscodeContentFromFile(sPath, trackDetails)) {
+			DbObject object(qry.result());
+			if(!pResponse->TranscodeContentFromFile(sPath, &object)) {
 				return false;
 			}
 		}

@@ -156,7 +156,7 @@ class CDlnaPlugin: public CPlugin
 
 
 typedef int		(*metadataFileOpen_t)(plugin_info* plugin, const char* fileName);
-typedef int		(*metadataRead_t)(plugin_info* plugin, metadata_t* audio);
+typedef int		(*metadataRead_t)(plugin_info* plugin, struct metadata_t* metadata);
 typedef int		(*metadataReadImage_t)(plugin_info* plugin, char** mimeType, unsigned char** buffer, size_t* size, int width, int height);
 typedef void	(*metadataFileClose_t)(plugin_info* plugin);
 
@@ -170,7 +170,7 @@ class CMetadataPlugin: public CPlugin
 		bool initPlugin();
 	
 		bool openFile(std::string fileName);
-		bool readData(metadata_t* metadata);
+		bool readData(struct metadata_t* metadata);
 		bool readImage(char** mimeType, unsigned char** buffer, size_t* size, int width = 0, int height = 0);
 		void closeFile();
 	

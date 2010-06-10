@@ -677,7 +677,7 @@ bool CMetadataPlugin::openFile(std::string fileName)
 	return ((m_fileOpen(&m_pluginInfo, fileName.c_str())) == 0);
 }
 
-bool CMetadataPlugin::readData(metadata_t* metadata)
+bool CMetadataPlugin::readData(struct metadata_t* metadata)
 {	
 	if(m_readData == NULL) {
 		return false;
@@ -1074,7 +1074,7 @@ int CPresentationPlugin::ctrlAction(const char* action, arg_list_t* args, arg_li
 	
 	stringListIter iter = ctrlResult.begin();	
 	arg_list_t* resultArgs = result;	
-	while(iter != ctrlResult.end()) {
+	/*while(iter != ctrlResult.end()) {
 
 		set_value(&resultArgs->key, iter->first.c_str());
 		set_value(&resultArgs->value, iter->second.c_str());
@@ -1083,7 +1083,7 @@ int CPresentationPlugin::ctrlAction(const char* action, arg_list_t* args, arg_li
 		if(iter != ctrlResult.end()) {
 			resultArgs = arg_list_append(result);
 		}
-	}
+	}*/
 	
 	//cout << "ctrlAction: " << action << " DONE" << endl;
 	return 0;	

@@ -141,9 +141,9 @@ void UpdateThread::run()
               ObjectDetails oldDetails = *obj->details();
               updateAudioFile(obj, &ins);
               if(!update)
-                VirtualContainerMgr::insertAudioFile(obj);
+                VirtualContainerMgr::insertFile(obj);
               else
-                VirtualContainerMgr::updateAudioFile(obj, &oldDetails);
+                VirtualContainerMgr::updateFile(obj, &oldDetails);
             }
             break;
           case ITEM_AUDIO_ITEM_AUDIO_BROADCAST:
@@ -380,84 +380,31 @@ void UpdateThread::run()
 
 void UpdateThread::updateAudioFile(DbObject* obj, SQLQuery* qry)
 {
-  
-  metadata_t metadata;
-	init_metadata(&metadata);
-
   string fileName = obj->path() + obj->fileName();
-
+  AudioItem audioItem;
   //cout << "UPDATE AUDIO FILE: " << fileName << endl;
 
   bool gotMetadata = true;
-	if(!CFileDetails::Shared()->getMusicTrackDetails(fileName, &metadata)) {
-		free_metadata(&metadata);
-    cout << "NO METADATA" << endl;
-    gotMetadata = false;
-	  //return;
-
-    obj->setUpdated();
-    obj->save();
-    return;
-	}
-
-  fuppes_off_t fileSize = getFileSize(fileName);
+	gotMetadata = CFileDetails::getMusicTrackDetails(fileName, &audioItem);
 
   unsigned int objectId = obj->objectId(); // CContentDatabase::GetObjId();
 	unsigned int imgId = 0;
   
 	string imgMimeType;
-	if(metadata.has_image == 1) {
+	if(audioItem.hasImage()) {
 		imgId = objectId;
-		imgMimeType = metadata.image_mime_type;
+		imgMimeType = audioItem.imageMimeType();
 	}
 
-/*
-  string sDlna;
-
-	stringstream sSql;
-	sSql << 
-	  "insert into OBJECT_DETAILS " <<
-		"(A_ARTIST, A_ALBUM, A_TRACK_NO, A_GENRE, AV_DURATION, DATE, " <<
-    "A_CHANNELS, AV_BITRATE, A_SAMPLERATE, " <<
-		"ALBUM_ART_ID, ALBUM_ART_EXT, SIZE, DLNA_PROFILE) " <<
-		"values (" <<
-		"'" << SQLEscape(metadata.artist) << "', " <<
-		"'" << SQLEscape(metadata.album) << "', " <<
-		metadata.track_no << ", " <<
-		"'" << SQLEscape(metadata.genre) << "', " <<
-		"'" << metadata.duration << "', " <<
-		"'" << "" << "', " <<
-		metadata.channels << ", " <<
-		metadata.bitrate << ", " <<
-		metadata.samplerate << ", " <<
-		imgId << ", " <<
-		"'" << imgMimeType << "', " <<
-    fileSize << ", " <<
-    "'" << sDlna << "')";
-  */
-
   ObjectDetails details;
-  details.setSize(fileSize);
+  details.setSize(getFileSize(fileName));
   if(gotMetadata) {
-    details.setArtist(metadata.artist);
-    details.setAlbum(metadata.album);
-    details.setTrackNo(metadata.track_no);
-    details.setGenre(metadata.genre);
-    details.setDurationMs(metadata.duration_ms);
-    details.setAudioChannels(metadata.channels);
-    details.setAudioBitrate(metadata.bitrate);
-    details.setAudioSamplerate(metadata.samplerate);
+    details = audioItem;
   }
-
-  string title = metadata.title;
-	free_metadata(&metadata);	
-
-  //cout << sSql.str() << endl;
-
-
   details.save(qry);
-  
-  obj->setTitle(title);
+
+  if(!audioItem.title().empty())
+    obj->setTitle(audioItem.title());
   obj->setDetailId(details.id());
   obj->save(qry);  
 }
@@ -467,8 +414,8 @@ void UpdateThread::updateImageFile(DbObject* obj, SQLQuery* qry)
   string fileName = obj->path() + obj->fileName();
   cout << "UPDATE IMAGE FILE: " << fileName << endl;
 
-  SImageItem ImageItem;
-  bool gotMetadata = CFileDetails::Shared()->GetImageDetails(fileName, &ImageItem);
+  ImageItem imageItem;
+  bool gotMetadata = CFileDetails::getImageDetails(fileName, &imageItem);
 
   if(!gotMetadata) {
     obj->setUpdated();
@@ -476,16 +423,17 @@ void UpdateThread::updateImageFile(DbObject* obj, SQLQuery* qry)
     return;
   }
   
-  string dlna;
+  /*string dlna;
 	string mimeType;
 	string ext = ExtractFileExt(fileName);
 	if(CPluginMgr::dlnaPlugin()) {
-		CPluginMgr::dlnaPlugin()->getImageProfile(ext, ImageItem.nWidth, ImageItem.nHeight, &dlna, &mimeType);
-	}
+		CPluginMgr::dlnaPlugin()->getImageProfile(ext, imageItem.width(), imageItem.height(), &dlna, &mimeType);
+	}*/
 
   ObjectDetails details;
-  details.setWidth(ImageItem.nWidth);
-  details.setHeight(ImageItem.nHeight);
+  /*details.setWidth(imageItem.width());
+  details.setHeight(imageItem.height());*/
+  details = imageItem;
   details.save(qry);
   
   obj->setDetailId(details.id());
@@ -514,25 +462,19 @@ void UpdateThread::updateVideoFile(DbObject* obj, SQLQuery* qry)
   string fileName = obj->path() + obj->fileName();
   cout << "UPDATE VIDEO FILE: " << fileName << endl;
   
-  SVideoItem VideoItem;
-	bool gotMetadata = CFileDetails::Shared()->GetVideoDetails(fileName, &VideoItem);
-  
-  //string sDlna; // = CFileDetails::Shared()->GuessDLNAProfileId(p_sFileName);
-	VideoItem.nSize = getFileSize(fileName);
+  VideoItem videoItem;
+	bool gotMetadata = CFileDetails::getVideoDetails(fileName, &videoItem);
 
   ObjectDetails details;
-  details.setSize(VideoItem.nSize);
+  details.setSize(getFileSize(fileName));
   if(gotMetadata) {
-    details.setWidth(VideoItem.nWidth);
-    details.setHeight(VideoItem.nHeight);
-    details.setDurationMs(VideoItem.durationMs);
-    details.setVideoBitrate(VideoItem.nBitrate);
-    details.setAudioCodec(VideoItem.sACodec);
-    details.setVideoCodec(VideoItem.sVCodec);
+    details = videoItem;
   }
   details.save(qry);
   
   obj->setDetailId(details.id());
+  if(!videoItem.title().empty())
+    obj->setTitle(videoItem.title());
   obj->save(qry);
 }
 

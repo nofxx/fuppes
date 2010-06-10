@@ -1,10 +1,10 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            fuppes_plugin_types.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2008-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2008-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -31,6 +31,7 @@ extern "C" {
 #ifndef _FUPPES_PLUGIN_TYPES_H
 #define _FUPPES_PLUGIN_TYPES_H
 
+#include "fuppes_types.h"
 
 
 typedef enum PLUGIN_TYPE {
@@ -111,32 +112,86 @@ typedef enum METADATA_PLUGIN_CAPABILITIES {
 	MDC_IMAGE			= 1 << 1
 } METADATA_PLUGIN_CAPABILITIES;
 
-typedef struct {
+struct metadata_t {
 	METADATA_TYPE		type;
-	char*						title;
-	char* 					artist;
-	char*						album;
-	char*						genre;
-	unsigned int		duration_ms;
-	char*						description;
-	int							track_no;
-	int							year;
-	int							channels;
 
+	// baseItem
+	char						title[1000];
+	char						publisher[1000];
+	char						date[1000];
+	char						description[1000];
+	char						long_description[1000];
+  
+	// audioItem
+	char						genre[1000];
+  // description
+  // long_description
+	char						language[1000];
+
+	// audioItem::musicTrack
+	char						artist[1000];
+	char						album[1000];
+	unsigned int		track_number;
+	char						contributor[1000];
+
+  // item:audioItem:audioBook 
+  char						producer[1000];
+
+
+
+  // item:imageItem
+  // description
+  // long_description
+  
+  // item:imageItem:photo
+  // album
+  
+  
+
+  // item:videoItem
+  // genre
+  // description
+  // long_description
+  char           actors[1000];
+  // producer
+  char           director[1000];
+  // language
+
+  // item:videoItem:movie
+  char           series_title[1000];                 // e.g. "Seinfeld - Season 3"
+  char           program_title[1000];                // e.g. "The Pez Dispenser"
+  unsigned int    episode_nr;                   // e.g. "14"
+  unsigned int    episode_count;                // e.g. "23"
+  
+  // item:videoItem:musicVideoClip
+  // artist
+  // album
+  // contributor
+
+
+
+  // res
+	fuppes_off_t		size;
+	unsigned int		duration_ms;
+	unsigned int		nr_audio_channels;
+	unsigned int		audio_bitrate;
+  unsigned int    audio_bits_per_sample;
+  unsigned int    audio_sample_frequency;
+	unsigned int		video_bitrate;
+  unsigned int    width;
+  unsigned int    height;
+  unsigned int    color_depth;
+  
+  
+	// other
+	unsigned int		year;
+  char            composer[1000];
+	char						audio_codec[100];
+	char						video_codec[100];
 	int							has_image;
-	char*						image_mime_type;
-	
-	int							width;
-	int							height;
-	char*						date;
-    	
-	int							bitrate;
-	int 						samplerate;
-  int 						bits_per_sample;
-	
-	char*						audio_codec;
-	char*						video_codec;
-} metadata_t;
+	char						image_mime_type[100];
+  
+};
 
 
 // AUDIO

@@ -1,10 +1,10 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            metadata_taglib.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2008-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -40,7 +40,8 @@ using namespace std;
 int taglib_open_file(plugin_info* info, const char* fileName)
 {
 	info->user_data = new TagLib::FileRef(fileName);
-	if(((TagLib::FileRef*)info->user_data)->isNull()) {
+	if(((TagLib::FileRef*)info->user_data)->isNull() ||
+     (((TagLib::FileRef*)info->user_data)->audioProperties()) == NULL) {
 		delete (TagLib::FileRef*)info->user_data;
 		info->user_data = NULL;
 		return -1;
@@ -52,67 +53,73 @@ void taglib_get_title(plugin_info* plugin, metadata_t* audio)
 {	
 	TagLib::String sTmp =
 		((TagLib::FileRef*)plugin->user_data)->tag()->title();
-	set_value(&audio->title, sTmp.to8Bit(true).c_str());
+	set_value(audio->title, sTmp.to8Bit(true).c_str());
 }
 
 void taglib_get_artist(plugin_info* plugin, metadata_t* audio)
 {	
 	TagLib::String sTmp =
 		((TagLib::FileRef*)plugin->user_data)->tag()->artist();
-	set_value(&audio->artist, sTmp.to8Bit(true).c_str());
+	set_value(audio->artist, sTmp.to8Bit(true).c_str());
 }
 
 void taglib_get_album(plugin_info* plugin, metadata_t* audio)
 {	
 	TagLib::String sTmp =
 		((TagLib::FileRef*)plugin->user_data)->tag()->album();
-	set_value(&audio->album, sTmp.to8Bit(true).c_str());
+	set_value(audio->album, sTmp.to8Bit(true).c_str());
 }
 
 void taglib_get_genre(plugin_info* plugin, metadata_t* audio)
 {	
 	TagLib::String sTmp =
 		((TagLib::FileRef*)plugin->user_data)->tag()->genre();
-	set_value(&audio->genre, sTmp.to8Bit(true).c_str());
+	set_value(audio->genre, sTmp.to8Bit(true).c_str());
 }
 
 void taglib_get_comment(plugin_info* plugin, metadata_t* audio)
 {	
 	TagLib::String sTmp =
 		((TagLib::FileRef*)plugin->user_data)->tag()->comment();
-	set_value(&audio->description, sTmp.to8Bit(true).c_str());
+	set_value(audio->description, sTmp.to8Bit(true).c_str());
+}
+
+void taglib_get_composer(plugin_info* plugin, metadata_t* audio)
+{
+	TagLib::MPEG::File* mpegFile = new TagLib::MPEG::File(((TagLib::FileRef*)plugin->user_data)->file()->name());
+	if(mpegFile->isValid() == false || mpegFile->ID3v2Tag() == NULL) {
+		delete mpegFile;
+		return;
+	}
+
+	TagLib::ID3v2::Tag *tag = mpegFile->ID3v2Tag();
+  const TagLib::ID3v2::FrameList frameList = tag->frameList("TCOM");
+	if(frameList.isEmpty()) {
+		delete mpegFile;
+		return;
+	}
+	
+	set_value(audio->composer, frameList.front()->toString().to8Bit(true).c_str());
+	delete mpegFile;
 }
 
 void taglib_get_duration(plugin_info* info, metadata_t* metadata)
 {
 	TagLib::String sTmp;
 
-	long length = ((TagLib::FileRef*)info->user_data)->audioProperties()->length();  
-  /*int hours, mins, secs;
-    
-  secs  = length % 60;
-  length /= 60;
-  mins  = length % 60;
-  hours = length / 60;  */
-
-  //char szDuration[12];
-	/*sprintf(szDuration, "%02d:%02d:%02d.00", hours, mins, secs);
-	szDuration[11] = '\0';*/
-	//sprintf(szDuration, "%d000", length);
-
-	//set_value(&metadata->duration, szDuration);
+	long length = ((TagLib::FileRef*)info->user_data)->audioProperties()->length();
 	metadata->duration_ms = length * 1000;
 }
 
 void taglib_get_channels(plugin_info* info, metadata_t* metadata)
 {
-	metadata->channels = 
+	metadata->nr_audio_channels = 
 		((TagLib::FileRef*)info->user_data)->audioProperties()->channels();
 }
 
 void taglib_get_track_no(plugin_info* info, metadata_t* metadata)
 {
-	metadata->track_no = 
+	metadata->track_number = 
 		((TagLib::FileRef*)info->user_data)->tag()->track();
 }
 
@@ -124,13 +131,13 @@ void taglib_get_year(plugin_info* info, metadata_t* metadata)
 
 void taglib_get_bitrate(plugin_info* info, metadata_t* metadata)
 {
-	metadata->bitrate = 
+	metadata->audio_bitrate = 
 		(((TagLib::FileRef*)info->user_data)->audioProperties()->bitrate() * 1024);
 }
 
 void taglib_get_samplerate(plugin_info* info, metadata_t* metadata)
 {
-	metadata->samplerate = 
+	metadata->audio_sample_frequency = 
 		((TagLib::FileRef*)info->user_data)->audioProperties()->sampleRate();
 }
 
@@ -165,7 +172,7 @@ void taglib_check_image(plugin_info* info, metadata_t* metadata)
 	//cout << "mime/type: " << picFrame->mimeType().toCString() << endl;
   
 	metadata->has_image = 1;
-	set_value(&metadata->image_mime_type, picFrame->mimeType().toCString());
+	set_value(metadata->image_mime_type, picFrame->mimeType().toCString());
 
 	delete mpegFile;
 }
@@ -193,7 +200,7 @@ int taglib_read_image(plugin_info* info, char** mimeType, unsigned char** buffer
 		return -1;
 	}
 
-	set_value(mimeType, picFrame->mimeType().toCString());
+	set_value_old(mimeType, picFrame->mimeType().toCString());
 	
 	const TagLib::ByteVector pic = picFrame->picture();
 	*buffer = (unsigned char*)realloc(*buffer, pic.size());
@@ -244,10 +251,11 @@ int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
 	taglib_get_year(plugin, metadata);
 	taglib_get_bitrate(plugin, metadata);
 	taglib_get_samplerate(plugin, metadata);
-
+	taglib_get_composer(plugin, metadata);
+	// original performer // TOPE
 	taglib_check_image(plugin, metadata);
 	
-	metadata->bits_per_sample = 0;
+	metadata->audio_bits_per_sample = 0;
 
 	return 0;
 }

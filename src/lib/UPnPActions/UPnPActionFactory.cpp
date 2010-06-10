@@ -312,7 +312,7 @@ bool CUPnPActionFactory::parseSortCriteria(CUPnPBrowseSearchBase* action)
 	if(!rxSort.Search(action->GetContent().c_str())) {
 	
 		// sort by title if no sort criteria found
-		action->m_sortCriteriaSQL = " A_TRACK_NO, TITLE asc ";
+		action->m_sortCriteriaSQL = " A_TRACK_NUMBER, TITLE asc ";
 		return false;
 	}
 	
@@ -350,19 +350,19 @@ bool CUPnPActionFactory::parseSortCriteria(CUPnPBrowseSearchBase* action)
 			part = " TYPE " + ext;
 		}
 		else if(part.compare("upnp:artist") == 0) {
-			part = " A_ARTIST " + ext;
+			part = " AV_ARTIST " + ext;
 		}
 		else if(part.compare("upnp:genre") == 0) {
-			part = " A_GENRE " + ext;
+			part = " AV_GENRE " + ext;
 		}
 		else if(part.compare("upnp:album") == 0) {
-			part = " A_ALBUM " + ext;
+			part = " AV_ALBUM " + ext;
 		}
     else if(part.compare("dc:title") == 0) {
 			part = " TITLE " + ext;
 		}
 		else if(part.compare("upnp:originalTrackNumber") == 0) {
-			part = " A_TRACK_NO " + ext;
+			part = " A_TRACK_NUMBER " + ext;
 		}
 		// unhandled
 		else {

@@ -190,7 +190,6 @@ void DbObject::reset()
   m_details.reset();
 }
 
-
 bool DbObject::save(SQLQuery* qry /*= NULL*/, bool createReference /*= false*/)
 {
   if(!m_changed)
@@ -413,7 +412,7 @@ std::string DbObject::toString(DbObject* object, bool details /*= false*/) // st
 
   result << endl << "details" << endl <<
     "id: " << object->details()->id() << endl <<
-    "trackNo: " << object->details()->trackNo() << endl <<
+    "trackNumber: " << object->details()->trackNumber() << endl <<
     "audioSamplerate: " << object->details()->audioSamplerate() << endl <<
     "audioBitrate: " << object->details()->audioBitrate() << endl <<
     "album: " << object->details()->album() << endl <<
@@ -448,14 +447,14 @@ ObjectDetails::ObjectDetails()
 void ObjectDetails::reset()
 {
   m_id = 0;
-  m_a_trackNo = 0;
+  m_a_trackNumber = 0;
   m_a_samplerate = 0;
   m_a_bitrate = 0;
-  m_a_album = "";
-  m_a_artist = "";
-  m_a_genre = "";
+  m_av_album = "";
+  m_av_artist = "";
+  m_av_genre = "";
   m_a_composer = "";
-  m_a_description = "";
+  m_description = "";
   m_a_codec = "";
   m_a_channels = 0;
   m_av_duration = 0;
@@ -469,6 +468,76 @@ void ObjectDetails::reset()
   m_source = Unknown;
   m_changed = false;
 }
+
+
+ObjectDetails& ObjectDetails::operator=(AudioItem& audioItem)
+{
+  cout << "ObjectDetails::operator=(const AudioItem& audioItem)" << endl;
+
+  if(!audioItem.artist().empty())
+    setArtist(audioItem.artist());
+
+  if(!audioItem.album().empty())
+    setAlbum(audioItem.album());
+
+  setTrackNumber(audioItem.originalTrackNumber());
+
+  if(!audioItem.genre().empty())
+    setGenre(audioItem.genre());
+
+  if(!audioItem.composer().empty())
+    setComposer(audioItem.composer());
+
+  setDurationMs(audioItem.durationMs());
+
+  setAudioChannels(audioItem.nrAudioChannels());
+
+  setAudioBitrate(audioItem.bitrate());
+
+  setAudioSamplerate(audioItem.sampleFrequency());
+  
+  return *this;
+}
+
+ObjectDetails& ObjectDetails::operator=(ImageItem& imageItem)
+{
+  cout << "ObjectDetails::operator=(const ImageItem& imageItem)" << endl;
+
+  if(!imageItem.album().empty())
+    setAlbum(imageItem.album());
+  
+  setWidth(imageItem.width());
+  setHeight(imageItem.height());
+  
+  return *this;
+}
+
+ObjectDetails& ObjectDetails::operator=(VideoItem& videoItem)
+{
+  cout << "ObjectDetails::operator=(const VideoItem& videoItem)" << endl;
+
+
+  if(!videoItem.genre().empty())
+    setGenre(videoItem.genre());
+
+  if(!videoItem.artist().empty())
+    setArtist(videoItem.artist());
+
+  if(!videoItem.album().empty())
+    setAlbum(videoItem.album());
+
+  setDurationMs(videoItem.durationMs());
+
+  setWidth(videoItem.width());
+  setHeight(videoItem.height());
+
+
+  setAudioCodec(videoItem.audioCodec());
+  setVideoCodec(videoItem.videoCodec());
+
+  return *this;
+}
+
 
 bool ObjectDetails::load(object_id_t detailId, SQLQuery* qry /*= NULL*/)
 {
@@ -487,21 +556,21 @@ bool ObjectDetails::load(object_id_t detailId, SQLQuery* qry /*= NULL*/)
   }
   else {    
     m_id = qry->result()->asUInt("ID");
-    m_a_trackNo = qry->result()->asInt("A_TRACK_NO");
+    m_a_trackNumber = qry->result()->asInt("A_TRACK_NUMBER");
     m_a_samplerate = qry->result()->asInt("A_SAMPLERATE");
     m_a_bitrate = qry->result()->asInt("A_BITRATE");
-    m_a_album = qry->result()->asString("A_ALBUM");
-    m_a_artist = qry->result()->asString("A_ARTIST");
-    m_a_genre = qry->result()->asString("A_GENRE");
+    m_av_album = qry->result()->asString("AV_ALBUM");
+    m_av_artist = qry->result()->asString("AV_ARTIST");
+    m_av_genre = qry->result()->asString("AV_GENRE");
     m_a_composer = qry->result()->asString("A_COMPOSER");
-    m_a_description = qry->result()->asString("A_DESCRIPTION");
-    m_a_codec = qry->result()->asString("A_CODEC");
+    m_description = qry->result()->asString("DESCRIPTION");
+    m_a_codec = qry->result()->asString("AUDIO_CODEC");
     m_a_channels = qry->result()->asInt("A_CHANNELS");
     m_av_duration = qry->result()->asUInt("AV_DURATION");
     m_iv_width = qry->result()->asInt("IV_WIDTH");
     m_iv_height = qry->result()->asInt("IV_HEIGHT");
     m_v_bitrate = qry->result()->asInt("V_BITRATE");
-    m_v_codec = qry->result()->asString("V_CODEC");
+    m_v_codec = qry->result()->asString("VIDEO_CODEC");
     m_albumArtId = qry->result()->asUInt("ALBUM_ART_ID");
     m_albumArtExt = qry->result()->asString("ALBUM_ART_EXT");
     m_size = qry->result()->asUInt("SIZE");
@@ -532,23 +601,23 @@ bool ObjectDetails::save(SQLQuery* qry /*= NULL*/)
   if(m_id > 0) { // UPDATE
      
     sql << "update OBJECT_DETAILS set "
-    "A_TRACK_NO = " << m_a_trackNo << ", " <<
+    "A_TRACK_NUMBER = " << m_a_trackNumber << ", " <<
     "A_SAMPLERATE = " << m_a_samplerate << ", " <<
     "A_BITRATE = " << m_a_bitrate << ", " << 
 
-    "A_ALBUM = " << (m_a_album.empty() ? "NULL" : "'" + SQLEscape(m_a_album) + "'") << ", " <<
-    "A_ARTIST = " << (m_a_artist.empty() ? "NULL" : "'" + SQLEscape(m_a_artist) + "'") << ", " <<      
-    "A_GENRE = " << (m_a_genre.empty() ? "NULL" : "'" + SQLEscape(m_a_genre) + "'") << ", " <<
+    "AV_ALBUM = " << (m_av_album.empty() ? "NULL" : "'" + SQLEscape(m_av_album) + "'") << ", " <<
+    "AV_ARTIST = " << (m_av_artist.empty() ? "NULL" : "'" + SQLEscape(m_av_artist) + "'") << ", " <<      
+    "AV_GENRE = " << (m_av_genre.empty() ? "NULL" : "'" + SQLEscape(m_av_genre) + "'") << ", " <<
     "A_COMPOSER = " << (m_a_composer.empty() ? "NULL" : "'" + SQLEscape(m_a_composer) + "'") << ", " <<
-    "A_DESCRIPTION = " << (m_a_description.empty() ? "NULL" : "'" + SQLEscape(m_a_description) + "'") << ", " <<
-    "A_CODEC = " << (m_a_codec.empty() ? "NULL" : "'" + SQLEscape(m_a_codec) + "'") << ", " <<
+    "DESCRIPTION = " << (m_description.empty() ? "NULL" : "'" + SQLEscape(m_description) + "'") << ", " <<
+    "AUDIO_CODEC = " << (m_a_codec.empty() ? "NULL" : "'" + SQLEscape(m_a_codec) + "'") << ", " <<
     "A_CHANNELS = " << m_a_channels << ", " <<
     "AV_DURATION = " << m_av_duration << ", " <<
 
     "IV_WIDTH = " << m_iv_width << ", " <<
     "IV_HEIGHT = " << m_iv_height << ", " <<
       
-    "V_CODEC = " << (m_v_codec.empty() ? "NULL" : "'" + SQLEscape(m_v_codec) + "'") << ", " <<
+    "VIDEO_CODEC = " << (m_v_codec.empty() ? "NULL" : "'" + SQLEscape(m_v_codec) + "'") << ", " <<
     "V_BITRATE = " << m_v_bitrate << ", " << 
 
 
@@ -578,34 +647,34 @@ bool ObjectDetails::save(SQLQuery* qry /*= NULL*/)
   else { // INSERT
     
     sql << "insert into OBJECT_DETAILS (" <<
-      "A_TRACK_NO, " <<
+      "A_TRACK_NUMBER, " <<
       "A_SAMPLERATE, " <<
       "A_BITRATE, " <<
-      "A_ALBUM, " <<
-      "A_ARTIST, " <<
-      "A_GENRE, " <<
+      "AV_ALBUM, " <<
+      "AV_ARTIST, " <<
+      "AV_GENRE, " <<
       "A_COMPOSER, " <<
-      "A_DESCRIPTION, " <<
-      "A_CODEC, " <<
+      "DESCRIPTION, " <<
+      "AUDIO_CODEC, " <<
       "A_CHANNELS, " <<
       "AV_DURATION, " <<
       "IV_WIDTH, " <<
       "IV_HEIGHT, " <<
-      "V_CODEC, " <<
+      "VIDEO_CODEC, " <<
       "V_BITRATE, " <<
       "ALBUM_ART_ID, " <<
       "ALBUM_ART_EXT, " <<
       "SIZE, " <<
       "SOURCE " <<
       " ) values ( " <<
-      m_a_trackNo << ", " <<
+      m_a_trackNumber << ", " <<
       m_a_samplerate << ", " <<
       m_a_bitrate << ", " << 
-      (m_a_album.empty() ? "NULL" : "'" + SQLEscape(m_a_album) + "'") << ", " <<
-      (m_a_artist.empty() ? "NULL" : "'" + SQLEscape(m_a_artist) + "'") << ", " <<
-      (m_a_genre.empty() ? "NULL" : "'" + SQLEscape(m_a_genre) + "'") << ", " <<
+      (m_av_album.empty() ? "NULL" : "'" + SQLEscape(m_av_album) + "'") << ", " <<
+      (m_av_artist.empty() ? "NULL" : "'" + SQLEscape(m_av_artist) + "'") << ", " <<
+      (m_av_genre.empty() ? "NULL" : "'" + SQLEscape(m_av_genre) + "'") << ", " <<
       (m_a_composer.empty() ? "NULL" : "'" + SQLEscape(m_a_composer) + "'") << ", " <<
-      (m_a_description.empty() ? "NULL" : "'" + SQLEscape(m_a_description) + "'") << ", " <<
+      (m_description.empty() ? "NULL" : "'" + SQLEscape(m_description) + "'") << ", " <<
       (m_a_codec.empty() ? "NULL" : "'" + SQLEscape(m_a_codec) + "'") << ", " <<
       m_a_channels << ", " <<
       m_av_duration << ", " <<

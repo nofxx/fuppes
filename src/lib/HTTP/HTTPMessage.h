@@ -36,6 +36,7 @@
 #include "../UPnPActions/UPnPAction.h"
 #include "../Transcoding/TranscodingCache.h"
 #include "../ContentDirectory/FileDetails.h"
+#include "../ContentDirectory/DatabaseObject.h"
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -254,7 +255,7 @@ class CHTTPMessage
 		std::string				soapAction() { return m_soapAction; }
 		
     bool             LoadContentFromFile(std::string);
-    bool             TranscodeContentFromFile(std::string p_sFileName, SAudioItem p_sTrackDetails);
+    bool             TranscodeContentFromFile(std::string p_sFileName, fuppes::DbObject* object);
     void             BreakTranscoding();  
     bool             IsTranscoding();
   

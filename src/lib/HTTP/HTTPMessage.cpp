@@ -750,7 +750,7 @@ bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
 }
 
 
-bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName, SAudioItem p_sTrackDetails)
+bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName, fuppes::DbObject* object)
 { 
   #ifdef DISABLE_TRANSCODING
   CSharedLog::Log(L_EXT, __FILE__, __LINE__, "TranscodeContentFromFile :: %s - %s", p_sFileName.c_str(), "ERROR: transcoding disabled");
@@ -773,13 +773,13 @@ bool CHTTPMessage::TranscodeContentFromFile(std::string p_sFileName, SAudioItem 
   m_pTranscodingSessionInfo->m_sInFileName         = p_sFileName;  
   m_pTranscodingSessionInfo->m_nGuessContentLength = 0;
   
-  m_pTranscodingSessionInfo->m_sTitle   = p_sTrackDetails.sTitle;
-  m_pTranscodingSessionInfo->m_sArtist  = p_sTrackDetails.sArtist;
-  m_pTranscodingSessionInfo->m_sAlbum   = p_sTrackDetails.sAlbum;
-  m_pTranscodingSessionInfo->m_sGenre   = p_sTrackDetails.sGenre;
-  m_pTranscodingSessionInfo->m_sOriginalTrackNumber = p_sTrackDetails.sOriginalTrackNumber;
-  m_pTranscodingSessionInfo->sACodec    = p_sTrackDetails.sACodec;
-  m_pTranscodingSessionInfo->sVCodec    = p_sTrackDetails.sVCodec;
+  m_pTranscodingSessionInfo->m_sTitle   = object->title(); //.sTitle;
+  m_pTranscodingSessionInfo->m_sArtist  = object->details()->artist(); //sArtist;
+  m_pTranscodingSessionInfo->m_sAlbum   = object->details()->album(); //sAlbum;
+  m_pTranscodingSessionInfo->m_sGenre   = object->details()->genre(); //sGenre;
+  m_pTranscodingSessionInfo->m_sOriginalTrackNumber = object->details()->trackNumber(); // sOriginalTrackNumber;
+  m_pTranscodingSessionInfo->sACodec    = object->details()->audioCodec(); //.sACodec;
+  m_pTranscodingSessionInfo->sVCodec    = object->details()->videoCodec(); //.sVCodec;
 
   m_pTranscodingCacheObj = CTranscodingCache::Shared()->GetCacheObject(m_pTranscodingSessionInfo->m_sInFileName);
   if(!m_pTranscodingCacheObj->Init(m_pTranscodingSessionInfo, DeviceSettings())) {

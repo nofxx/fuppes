@@ -458,11 +458,11 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
   
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "id", BAD_CAST szObjId); 
     // searchable
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "searchable", BAD_CAST "0"); 
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "searchable", BAD_CAST "true"); 
     // parentID
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "parentID", BAD_CAST p_sParentId.c_str()); 
     // restricted
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "restricted", BAD_CAST "0");     
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "restricted", BAD_CAST "true");     
     // childCount
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "childCount", BAD_CAST sChildCount.c_str());   
      
@@ -499,15 +499,15 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
 		if(p_nContainerType == CONTAINER_ALBUM_MUSIC_ALBUM) {
 
 
-      if(pUPnPBrowse->IncludeProperty("upnp:artist") && !pSQLResult->isNull("A_ARTIST")) {
+      if(pUPnPBrowse->IncludeProperty("upnp:artist") && !pSQLResult->isNull("AV_ARTIST")) {
         xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:artist");    
-          xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("A_ARTIST").c_str());
+          xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("AV_ARTIST").c_str());
       	xmlTextWriterEndElement(pWriter); 
       }
 
-      if(pUPnPBrowse->IncludeProperty("upnp:genre") && !pSQLResult->isNull("A_GENRE")) {
+      if(pUPnPBrowse->IncludeProperty("upnp:genre") && !pSQLResult->isNull("AV_GENRE")) {
         xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:genre");
-          xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("A_GENRE").c_str());
+          xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("AV_GENRE").c_str());
       	xmlTextWriterEndElement(pWriter);
       }
 
@@ -583,20 +583,23 @@ void CContentDirectory::BuildItemDescription(xmlTextWriterPtr pWriter,
                                              OBJECT_TYPE p_nObjectType, 
                                              std::string p_sParentId)
 {                                            
-  /* item */
+  // item
   xmlTextWriterStartElement(pWriter, BAD_CAST "item");
 
-    /* id */  
-    char szObjId[11];         
-    unsigned int nObjId = pSQLResult->asUInt("OBJECT_ID");
-    sprintf(szObjId, "%010X", nObjId);   
-    //cout << "ITEM ID: " << nObjId << endl;    
-  
+    // id
+    char szObjId[11];
+    sprintf(szObjId, "%010X", pSQLResult->asUInt("OBJECT_ID"));  
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "id", BAD_CAST szObjId); 
-    /* parentID  */
+    // parentID
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "parentID", BAD_CAST p_sParentId.c_str()); 
-    /* restricted */
-    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "restricted", BAD_CAST "0");    
+    // restricted 
+    xmlTextWriterWriteAttribute(pWriter, BAD_CAST "restricted", BAD_CAST "true");
+    // ref id
+    if(pSQLResult->asUInt("REF_ID") != 0) {
+      char refId[11];
+      sprintf(refId, "%010X", pSQLResult->asUInt("REF_ID"));
+      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "refID", BAD_CAST refId); 
+    }
   
     // date
     if(pUPnPBrowse->IncludeProperty("dc:date") && !pSQLResult->isNull("DATE")) {
@@ -674,27 +677,27 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
     xmlTextWriterWriteString(pWriter, BAD_CAST pUPnPBrowse->DeviceSettings()->ObjectTypeAsStr(sExt).c_str());    
   xmlTextWriterEndElement(pWriter);                                                    
 
-	if(pUPnPBrowse->IncludeProperty("upnp:artist") && !pSQLResult->isNull("A_ARTIST")) {
+	if(pUPnPBrowse->IncludeProperty("upnp:artist") && !pSQLResult->isNull("AV_ARTIST")) {
     xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:artist");    
-      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("A_ARTIST").c_str());
+      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("AV_ARTIST").c_str());
   	xmlTextWriterEndElement(pWriter); 
   }
 	
-	if(pUPnPBrowse->IncludeProperty("upnp:album") && !pSQLResult->isNull("A_ALBUM")) {
+	if(pUPnPBrowse->IncludeProperty("upnp:album") && !pSQLResult->isNull("AV_ALBUM")) {
     xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:album");
-      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("A_ALBUM").c_str());
+      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("AV_ALBUM").c_str());
     xmlTextWriterEndElement(pWriter);
   }
 
-  if(pUPnPBrowse->IncludeProperty("upnp:genre") && !pSQLResult->isNull("A_GENRE")) {
+  if(pUPnPBrowse->IncludeProperty("upnp:genre") && !pSQLResult->isNull("AV_GENRE")) {
     xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:genre");
-      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("A_GENRE").c_str());
+      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("AV_GENRE").c_str());
   	xmlTextWriterEndElement(pWriter);
   }
   
-  if(pUPnPBrowse->IncludeProperty("upnp:originalTrackNumber") && !pSQLResult->isNull("A_TRACK_NO")) {	
+  if(pUPnPBrowse->IncludeProperty("upnp:originalTrackNumber") && !pSQLResult->isNull("A_TRACK_NUMBER")) {	
     xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:originalTrackNumber");    
-      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("A_TRACK_NO").c_str());
+      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("A_TRACK_NUMBER").c_str());
 	  xmlTextWriterEndElement(pWriter);
   }
 
@@ -742,10 +745,7 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
 
 
 	// protocol info
-  string sDLNA = pSQLResult->asString("DLNA_PROFILE");
-  if(sDLNA.empty())
-    sDLNA = pUPnPBrowse->DeviceSettings()->DLNA(sExt);
-  
+  string sDLNA = pUPnPBrowse->DeviceSettings()->DLNA(sExt);  
   string sTmp = BuildProtocolInfo(bTranscode, sMimeType, sDLNA, pUPnPBrowse);
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
 	
@@ -819,9 +819,9 @@ void CContentDirectory::BuildAudioBroadcastItemDescription(xmlTextWriterPtr pWri
   xmlTextWriterEndElement(pWriter);      
 
   // genre (item.audioItem)
-  if(pUPnPBrowse->IncludeProperty("upnp:genre") && !pSQLResult->isNull("A_GENRE")) {
+  if(pUPnPBrowse->IncludeProperty("upnp:genre") && !pSQLResult->isNull("AV_GENRE")) {
     xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:genre");
-      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("A_GENRE").c_str());
+      xmlTextWriterWriteString(pWriter, BAD_CAST pSQLResult->asString("AV_GENRE").c_str());
   	xmlTextWriterEndElement(pWriter);
   }
 
@@ -930,7 +930,7 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
 	}	
 	
 	if(!bTranscode) {
-		dlna = pSQLResult->asString("DLNA_PROFILE");
+		//dlna = pSQLResult->asString("DLNA_PROFILE");
 	}
 	else {
 		// CPluginMgr::DlnaPlugin()->getImageProfile();
@@ -972,7 +972,7 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
 {                                                     
   string sExt = ExtractFileExt(pSQLResult->asString("FILE_NAME"));
     
-  bool bTranscode = pUPnPBrowse->DeviceSettings()->DoTranscode(sExt, pSQLResult->asString("A_CODEC"), pSQLResult->asString("V_CODEC"));
+  bool bTranscode = pUPnPBrowse->DeviceSettings()->DoTranscode(sExt, pSQLResult->asString("AUDIO_CODEC"), pSQLResult->asString("VIDEO_CODEC"));
 
   // title
   xmlTextWriterStartElement(pWriter, BAD_CAST "dc:title");
@@ -1009,14 +1009,12 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   // res
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");    
     
-  string sMimeType = pUPnPBrowse->DeviceSettings()->MimeType(sExt, pSQLResult->asString("A_CODEC"), pSQLResult->asString("V_CODEC"));
+  string sMimeType = pUPnPBrowse->DeviceSettings()->MimeType(sExt, pSQLResult->asString("AUDIO_CODEC"), pSQLResult->asString("VIDEO_CODEC"));
   
   
 
   // res@protocolInfo
-  string sDLNA = pSQLResult->asString("DLNA_PROFILE");
-  if(sDLNA.empty())
-    sDLNA = pUPnPBrowse->DeviceSettings()->DLNA(sExt);
+  string sDLNA = pUPnPBrowse->DeviceSettings()->DLNA(sExt);
   
   string sTmp = BuildProtocolInfo(bTranscode, sMimeType, sDLNA, pUPnPBrowse);  
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
@@ -1060,7 +1058,7 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST "size", BAD_CAST pSQLResult->asString("SIZE").c_str());
   }
 	
-  sExt = pUPnPBrowse->DeviceSettings()->Extension(sExt, pSQLResult->asString("A_CODEC"), pSQLResult->asString("V_CODEC"));
+  sExt = pUPnPBrowse->DeviceSettings()->Extension(sExt, pSQLResult->asString("AUDIO_CODEC"), pSQLResult->asString("VIDEO_CODEC"));
                                                     
   sTmp = "http://" + m_sHTTPServerURL + "/VideoItems/" + buildObjectAlias(p_sObjectID, pSQLResult) + "." + sExt;  
   xmlTextWriterWriteString(pWriter, BAD_CAST sTmp.c_str());

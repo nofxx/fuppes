@@ -193,15 +193,15 @@ bool CUPnPSearch::prepareSQL()
 					bNumericProp = false;
 				}
         else if(sProp.compare("upnp:artist") == 0) {
-				  sProp = "A_ARTIST";
+				  sProp = "AV_ARTIST";
 					bNumericProp = false;
 				}
 				else if(sProp.compare("upnp:genre") == 0) {
-				  sProp = "A_GENRE";
+				  sProp = "AV_GENRE";
 					bNumericProp = false;
 				}
 				else if(sProp.compare("upnp:album") == 0) {
-				  sProp = "A_ALBUM";
+				  sProp = "AV_ALBUM";
 					bNumericProp = false;
 				}
         else if(sProp.compare("res:protocolInfo") == 0) {

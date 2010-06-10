@@ -27,6 +27,7 @@
 #include <iostream>
 #include <sstream>
 #include <time.h>
+#include <string.h>
 #include "../config.h"
 #include "Common/Exception.h"
 
@@ -365,6 +366,7 @@ void CSharedLog::LogArgs(int p_nLogLevel, const std::string p_sFileName, int p_n
     return;
 	
 	char buffer[8192];	
+  memset(buffer, 0, sizeof(buffer));
 	vsnprintf(buffer, sizeof(buffer) - 1, p_szFormat, args);
 	Log(p_nLogLevel, p_sFileName, p_nLineNumber, string(buffer));	
 }
@@ -378,6 +380,7 @@ void CSharedLog::Print(const char* p_szFormat, ...)
 {
   va_list args;
 	char buffer[8192];
+  memset(buffer, 0, sizeof(buffer));
   va_start(args, p_szFormat);
 	vsnprintf(buffer, sizeof(buffer) - 1, p_szFormat, args);
   va_end(args);

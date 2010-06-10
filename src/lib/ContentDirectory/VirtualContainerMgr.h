@@ -102,18 +102,13 @@ class VirtualContainerMgr
     /**
      * object the original file object (REF_ID NULL and DEVICE = NULL)
      */
-    static void insertAudioFile(fuppes::DbObject* object);
-
-    /**
-     * object the original file object (REF_ID NULL and DEVICE = NULL)
-     */
-    static void insertGenericFile(fuppes::DbObject* object);
+    static void insertFile(fuppes::DbObject* object);
 
     /**
      * object the original file object with the updated details (REF_ID NULL and DEVICE = NULL)
      * details the old file details
      */
-    static void updateAudioFile(fuppes::DbObject* object, fuppes::ObjectDetails* oldDetails);     
+    static void updateFile(fuppes::DbObject* object, fuppes::ObjectDetails* oldDetails);     
 
 
     /**
@@ -127,11 +122,10 @@ class VirtualContainerMgr
     static void deleteDirectory(fuppes::DbObject* directory);
     
   private:
-    static void insertAudioFileForLayout(fuppes::DbObject* object, std::string layout);    
-    static void insertGenericFileForLayout(fuppes::DbObject* object, std::string layout);
+    static void insertFileForLayout(fuppes::DbObject* object, std::string layout);
     static object_id_t createFolderIfNotExists(fuppes::DbObject* object, object_id_t pid, fuppes::DbObject::VirtualContainerType type, std::string path, std::string layout);
 
-    static void updateAudioFileForLayout(fuppes::DbObject* object, fuppes::ObjectDetails* oldDetails, std::string layout);
+    static void updateFileForLayout(fuppes::DbObject* object, fuppes::ObjectDetails* oldDetails, std::string layout);
 
     static void deleteFileForLayout(fuppes::DbObject* object, std::string layout);
     static void deleteFolderIfEmpty(fuppes::DbObject* vfolder);

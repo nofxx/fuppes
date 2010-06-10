@@ -96,7 +96,7 @@ int fuppes_metadata_file_open(plugin_info* plugin, const char* fileName)
 	return 0;
 }
 
-int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
+int fuppes_metadata_read(plugin_info* plugin, struct metadata_t* metadata)
 {
 	metadata->type = MD_IMAGE;
 	

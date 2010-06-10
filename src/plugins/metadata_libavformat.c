@@ -38,7 +38,7 @@ extern "C" {
 #include <avutil.h>
 #include <avcodec.h>
 #endif
-
+  
 #include <string.h>
 #include <stdarg.h>
 
@@ -79,35 +79,26 @@ int fuppes_metadata_file_open(plugin_info* plugin, const char* fileName)
 	return 0;
 }
 
-int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
+int fuppes_metadata_read(plugin_info* plugin, struct metadata_t* metadata)
 {
+  AVFormatContext* ctx = (AVFormatContext*)plugin->user_data;
+  
 	// duration
 	if(((AVFormatContext*)plugin->user_data)->duration != AV_NOPTS_VALUE) {
- 
-	  int hours, mins, secs, us;
+	  int secs, us;
 		secs = ((AVFormatContext*)plugin->user_data)->duration / AV_TIME_BASE;
 		us   = ((AVFormatContext*)plugin->user_data)->duration % AV_TIME_BASE;
-		/*mins = secs / 60;
-		secs %= 60;
-		hours = mins / 60;
-		mins %= 60;*/
-	
-		//char szDuration[12];
-	  /*sprintf(szDuration, "%02d:%02d:%02d.%02d", hours, mins, secs, (10 * us) / AV_TIME_BASE);
-	  szDuration[11] = '\0';*/
-    //sprintf(szDuration, "%d%03d", secs, (10 * us) / AV_TIME_BASE);
-		//set_value(&metadata->duration, szDuration);
     metadata->duration_ms = secs * 1000;
 	}
 	
 	// bitrate
 	if(((AVFormatContext*)plugin->user_data)->bit_rate)
-  	metadata->bitrate = ((AVFormatContext*)plugin->user_data)->bit_rate / 8;
+  	metadata->video_bitrate = ((AVFormatContext*)plugin->user_data)->bit_rate / 8;
 
   // filesize  
 	//pVideoItem->nSize = pFormatCtx->file_size;	
   
-	char codec_name[128];
+	//char codec_name[128];
 	//char buf1[32];
 	int i;
 	for(i = 0; i < ((AVFormatContext*)plugin->user_data)->nb_streams; i++) {
@@ -120,51 +111,19 @@ int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
 			continue;
 		}
 		
-		strncpy(codec_name, (char*)pCodec->name, sizeof(codec_name));
-		
-/*    if(pStream->codec->codec_id == CODEC_ID_MP3) {
-    
-			if(pStream->codec->sub_id == 2)
-				strncpy(codec_name, "mp2", sizeof(codec_name));
-      else if (pStream->codec->sub_id == 1)
-				strncpy(codec_name, "mp1", sizeof(codec_name));
-    }
-    else if(pStream->codec->codec_id == CODEC_ID_MPEG2TS) {
-      // fake mpeg2 transport stream codec (currently not registered)
-			strncpy(codec_name, "mpeg2ts", sizeof(codec_name));
-    } 
-		else if(pStream->codec->codec_name[0] != '\0') {
-			strncpy(codec_name, pStream->codec->codec_name, sizeof(codec_name));
-    }
-		else {
-      // output avi tags 
-      if(isprint(pStream->codec->codec_tag&0xFF) && 
-				 isprint((pStream->codec->codec_tag>>8)&0xFF) &&
-				 isprint((pStream->codec->codec_tag>>16)&0xFF) &&
-				 isprint((pStream->codec->codec_tag>>24)&0xFF)) {
-           
-					 snprintf(buf1, sizeof(buf1), "%c%c%c%c / 0x%04X",
-                    pStream->codec->codec_tag & 0xff,
-                    (pStream->codec->codec_tag >> 8) & 0xff,
-                    (pStream->codec->codec_tag >> 16) & 0xff,
-                    (pStream->codec->codec_tag >> 24) & 0xff,
-                     pStream->codec->codec_tag);
-      } 
-			else {
-         snprintf(buf1, sizeof(buf1), "0x%04x", pStream->codec->codec_tag);
-      }
-			strncpy(codec_name, buf1, sizeof(codec_name));
-		} */
+		//strncpy(codec_name, (char*)pCodec->name, sizeof(codec_name));
 
+    printf("codec %s*\n", pCodec->name);
+    
 		switch(pStream->codec->codec_type) {
 			case CODEC_TYPE_VIDEO:
 				metadata->type		= MD_VIDEO;
 				metadata->width 	= pStream->codec->width;
 				metadata->height	= pStream->codec->height;
-				set_value(&metadata->video_codec, codec_name);
+				set_value(&metadata->video_codec, pCodec->name);
 				break;
 			case CODEC_TYPE_AUDIO:
-				set_value(&metadata->audio_codec, codec_name);
+				set_value(&metadata->audio_codec, pCodec->name);
 				if(metadata->type == MD_NONE) {
 					metadata->type = MD_AUDIO;
 				}
@@ -176,9 +135,94 @@ int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
 			default:
 				break;
 		} // switch (codec_type)
-		
+    
 	}	// for
 
+
+  // metadata
+  // here is a nice list of possible metadata keys:
+  // http://multimedia.cx/eggs/supplying-ffmpeg-with-metadata/
+  if(ctx->metadata) {
+
+    // convert tag names to generic ffmpeg names
+    av_metadata_conv(ctx, NULL, ctx->iformat->metadata_conv);
+    
+    AVMetadataTag* tag = NULL;
+
+    while((tag = av_metadata_get(ctx->metadata, "", tag, AV_METADATA_IGNORE_SUFFIX))) {      
+      printf("%s => %s\n", tag->key, tag->value);
+    }
+    
+    // title
+    if((tag = av_metadata_get(ctx->metadata, "title", NULL, AV_METADATA_IGNORE_SUFFIX))) {
+      printf("libavformat metadata: TITLE: %s\n", tag->value);
+    	set_value(metadata->title, tag->value);      
+    }
+
+    // genre
+    if((tag = av_metadata_get(ctx->metadata, "genre", NULL, AV_METADATA_IGNORE_SUFFIX))) {
+      printf("libavformat metadata: GENRE: %s\n", tag->value);
+    	set_value(metadata->genre, tag->value);      
+    }
+
+    // track
+    if((tag = av_metadata_get(ctx->metadata, "track", NULL, AV_METADATA_IGNORE_SUFFIX))) {
+      printf("libavformat metadata: TRACK: %s\n", tag->value);
+    	//set_value(&metadata->genre, tag->value);      
+    }
+
+    // comment
+    if((tag = av_metadata_get(ctx->metadata, "comment", NULL, AV_METADATA_IGNORE_SUFFIX))) {
+      printf("libavformat metadata: comment: %s\n", tag->value);
+    	set_value(metadata->description, tag->value);      
+    }
+
+    // composer
+    if((tag = av_metadata_get(ctx->metadata, "composer", NULL, AV_METADATA_IGNORE_SUFFIX))) {
+      printf("libavformat metadata: composer: %s\n", tag->value);
+    	set_value(metadata->composer, tag->value);      
+    }
+    
+    // date
+    if((tag = av_metadata_get(ctx->metadata, "date", NULL, AV_METADATA_IGNORE_SUFFIX))) {
+      printf("libavformat metadata: date: %s\n", tag->value);
+    	set_value(metadata->date, tag->value);      
+    }
+
+    // language
+    if((tag = av_metadata_get(ctx->metadata, "language", NULL, AV_METADATA_IGNORE_SUFFIX))) {
+      printf("libavformat metadata: language: %s\n", tag->value);
+    	set_value(metadata->language, tag->value);      
+    }
+
+    // performer
+    if((tag = av_metadata_get(ctx->metadata, "performer", NULL, AV_METADATA_IGNORE_SUFFIX))) {
+      printf("libavformat metadata: performer: %s\n", tag->value);
+    	//set_value(&metadata->language, tag->value);      
+    }
+
+    // publisher
+    if((tag = av_metadata_get(ctx->metadata, "publisher", NULL, AV_METADATA_IGNORE_SUFFIX))) {
+      printf("libavformat metadata: publisher: %s\n", tag->value);
+    	set_value(metadata->publisher, tag->value);      
+    }
+
+    // show
+    if((tag = av_metadata_get(ctx->metadata, "show", NULL, AV_METADATA_IGNORE_SUFFIX))) {
+      printf("libavformat metadata: show: %s\n", tag->value);
+    	set_value(metadata->series_title, tag->value);      
+    }
+
+    // episode_id
+    if((tag = av_metadata_get(ctx->metadata, "episode_id", NULL, AV_METADATA_IGNORE_SUFFIX))) {
+      printf("libavformat metadata: episode_id: %s\n", tag->value);
+    	set_value(metadata->program_title, tag->value);      
+    }
+    
+  }
+  
+
+  
 	return 0;
 }
 

@@ -32,6 +32,7 @@
 
 #include "DatabaseConnection.h"
 #include "UPnPObjectTypes.h"
+#include "FileDetails.h"
 
 namespace fuppes
 {
@@ -40,26 +41,39 @@ namespace fuppes
 
 /*
 ID
-AV_BITRATE
-AV_DURATION
-A_ALBUM
-A_ARTIST
-A_CHANNELS
-A_DESCRIPTION
-A_GENRE
-A_COMPOSER
-A_SAMPLERATE
-A_TRACK_NO
-DATE
-IV_HEIGHT
-IV_WIDTH
-A_CODEC
-V_CODEC
-ALBUM_ART_ID
-ALBUM_ART_EXT
-SIZE
-DLNA_PROFILE
-DLNA_MIME_TYPE
+PUBLISHER TEXT, "
+DATE TEXT, "
+DESCRIPTION TEXT, "
+LONG_DESCRIPTION TEXT, "
+AV_GENRE TEXT, "
+AV_LANGUAGE TEXT, "
+AV_ARTIST TEXT, "
+AV_ALBUM TEXT, "
+AV_CONTRIBUTOR TEXT, "
+AV_PRODUCER TEXT, "
+A_TRACK_NUMBER UNSIGNED INTEGER, "
+V_ACTORS TEXT, "
+V_DIRECTOR TEXT, "
+V_SERIES_TITLE TEXT, "
+V_PROGRAM_TITLE TEXT, "
+V_EPISODE_NR UNSIGNED INTEGER, "
+V_EPISODE_COUNT UNSIGNED INTEGER, "
+SIZE BIGINT DEFAULT 0, "
+AV_DURATION INTEGER, "
+A_CHANNELS INTEGER, "
+A_BITRATE INTEGER, "
+A_BITS_PER_SAMPLE INTEGER, "
+A_SAMPLERATE INTEGER, "
+IV_WIDTH INTEGER, "
+IV_HEIGHT INTEGER, "
+IV_COLOR_DEPTH INTEGER, "
+A_YEAR INTEGER, "
+A_COMPOSER TEXT, "
+AUDIO_CODEC TEXT, "
+VIDEO_CODEC TEXT, "
+V_BITRATE INTEGER, "
+ALBUM_ART_ID INTEGER, "
+ALBUM_ART_EXT TEXT
 SOURCE          // metadata source (file = the file itself, playlist = from a playlist, itunes = from itunes db)
 */
 
@@ -84,14 +98,14 @@ class ObjectDetails
     ObjectDetails& operator=(const ObjectDetails& details) {
 
       m_id = 0;
-      m_a_trackNo = details.m_a_trackNo;
+      m_a_trackNumber = details.m_a_trackNumber;
       m_a_samplerate = details.m_a_samplerate;
       m_a_bitrate = details.m_a_bitrate;
-      m_a_album = details.m_a_album;
-      m_a_artist = details.m_a_artist;
-      m_a_genre = details.m_a_genre;
+      m_av_album = details.m_av_album;
+      m_av_artist = details.m_av_artist;
+      m_av_genre = details.m_av_genre;
       m_a_composer = details.m_a_composer;
-      m_a_description = details.m_a_description;
+      m_description = details.m_description;
       m_a_codec = details.m_a_codec;
       m_a_channels = details.m_a_channels;
       m_av_duration = details.m_av_duration;
@@ -108,16 +122,20 @@ class ObjectDetails
       
 	  	return *this;
 	  }
-    
+
+    ObjectDetails& operator=(AudioItem& audioItem);
+    ObjectDetails& operator=(ImageItem& imageItem);
+    ObjectDetails& operator=(VideoItem& videoItem);
+
     object_id_t   id() { return m_id; }
-    int           trackNo() { return m_a_trackNo; }
+    int           trackNumber() { return m_a_trackNumber; }
     int           audioSamplerate() { return m_a_samplerate; }
     int           audioBitrate() { return m_a_bitrate; }
-    std::string   album() { return m_a_album; }
-    std::string   artist() { return m_a_artist; }
-    std::string   genre() { return m_a_genre; }
+    std::string   album() { return m_av_album; }
+    std::string   artist() { return m_av_artist; }
+    std::string   genre() { return m_av_genre; }
     std::string   composer() { return m_a_composer; }
-    std::string   description() { return m_a_description; }
+    std::string   description() { return m_description; }
     std::string   audioCodec() { return m_a_codec; }
     int           audioChannels() { return m_a_channels; }
     unsigned int  durationMs() { return m_av_duration; }
@@ -131,9 +149,9 @@ class ObjectDetails
     DetailSource  source() { return m_source; }
 
 
-    void setTrackNo(int trackNo) {
-      if(m_a_trackNo != trackNo) {
-        m_a_trackNo = trackNo;
+    void setTrackNumber(int trackNumber) {
+      if(m_a_trackNumber != trackNumber) {
+        m_a_trackNumber = trackNumber;
         m_changed = true;
       }
     }
@@ -153,22 +171,22 @@ class ObjectDetails
     }
 
     void setAlbum(std::string album) {
-      if(m_a_album != album) {
-        m_a_album = album;
+      if(m_av_album != album) {
+        m_av_album = album;
         m_changed = true;
       }
     }
 
     void setArtist(std::string artist) {
-      if(m_a_artist != artist) {
-        m_a_artist = artist;
+      if(m_av_artist != artist) {
+        m_av_artist = artist;
         m_changed = true;
       }
     }
 
     void setGenre(std::string genre) {
-      if(m_a_genre != genre) {
-        m_a_genre = genre;
+      if(m_av_genre != genre) {
+        m_av_genre = genre;
         m_changed = true;
       }
     }
@@ -181,8 +199,8 @@ class ObjectDetails
     }
 
     void setDescription(std::string description) {
-      if(m_a_description != description) {
-        m_a_description = description;
+      if(m_description != description) {
+        m_description = description;
         m_changed = true;
       }
     }
@@ -269,14 +287,14 @@ class ObjectDetails
     
   private:
     object_id_t     m_id;
-    int             m_a_trackNo;
+    int             m_a_trackNumber;
     int             m_a_samplerate;
     int             m_a_bitrate;
-    std::string     m_a_album;
-    std::string     m_a_artist;
-    std::string     m_a_genre;
+    std::string     m_av_album;
+    std::string     m_av_artist;
+    std::string     m_av_genre;
     std::string     m_a_composer;
-    std::string     m_a_description;
+    std::string     m_description;
     std::string     m_a_codec;
     int             m_a_channels;
     unsigned int    m_av_duration;
@@ -289,6 +307,23 @@ class ObjectDetails
     fuppes_off_t    m_size;
     DetailSource    m_source;
 
+    std::string     m_publisher;
+    std::string     m_date;
+    std::string     m_longDescription;
+    std::string     m_av_language;
+    std::string     m_av_contributor;
+    std::string     m_av_producer;
+    std::string     m_v_actors;
+    std::string     m_v_director;
+    std::string     m_v_seriesTitle;
+    std::string     m_v_programTitle;
+    unsigned int    m_v_episodeNumber;
+    unsigned int    m_v_episodeCount;
+    unsigned int    m_a_bitsPerSample;
+    unsigned int    m_iv_colorDepth;
+    int             m_a_year;
+
+    
     bool            m_changed;
 };
 
@@ -326,11 +361,11 @@ class DbObject
       None      = 0,
       Folder    = 1,
       Split     = 2,
-      Filter    = 3,
-      Genre     = 4,
-      Artist    = 5,
-      Composer  = 6,
-      Album     = 7
+      Filter    = 4,
+      Genre     = 8,
+      Artist    = 16,
+      Composer  = 32,
+      Album     = 64
     };
   
     static DbObject* createFromObjectId(object_id_t objectId, SQLQuery* qry = NULL, std::string layout = "");

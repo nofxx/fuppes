@@ -140,33 +140,7 @@ void CVirtualContainerMgr::RebuildContainerList(bool force /*= false*/, bool ins
   while(!qry.eof()) {
 
     obj = new DbObject(qry.result());
-
-    switch(obj->type()) {
-
-      case ITEM_IMAGE_ITEM:
-      case ITEM_IMAGE_ITEM_PHOTO:
-        VirtualContainerMgr::insertGenericFile(obj);
-        break;
-
-      case ITEM_AUDIO_ITEM:
-      case ITEM_AUDIO_ITEM_MUSIC_TRACK:
-        VirtualContainerMgr::insertAudioFile(obj);
-        break;
-      case ITEM_AUDIO_ITEM_AUDIO_BROADCAST:
-        break;
-
-      case ITEM_VIDEO_ITEM:
-      case ITEM_VIDEO_ITEM_MOVIE:
-        VirtualContainerMgr::insertGenericFile(obj);
-        break;
-      case ITEM_VIDEO_ITEM_VIDEO_BROADCAST:
-        break;
-
-      default:
-        break;          
-    }
-    
-
+    VirtualContainerMgr::insertFile(obj);
     delete obj;        
     qry.next();
   }
@@ -203,6 +177,10 @@ std::string vcontainerNodeType(CXMLNode* node, bool &final)
       return "split";
     }
   }
+  else if(node->Name().compare("split") == 0) {
+    return "split";
+  }
+  
   else if(node->Name().compare("items") == 0) {
 
     if(node->Attribute("type").length() > 0) {
@@ -233,9 +211,25 @@ std::string createVFolderPath(CXMLNode* node)
   string result;
   string type;
   bool final;
+
+  cout << "create path for : " << node->name() << "*" << endl;
+
+
   
   if(node->name().compare("vfolder") == 0) {
     result = "folder | ";
+
+    cout << "  path for vfolder node : " << node->attribute("name") << "*" << endl;
+
+    // get parent folders
+    CXMLNode* parent = node->parent();
+    cout << "   vfolder node parent: " << parent->name() << "*" << endl;
+    while(parent->name().compare("vfolder") == 0) {
+      result += "folder | ";
+      parent = parent->parent();
+    }
+
+    cout << "  result: " << result << endl;
   }
     
   for(int i = 0; i < node->ChildCount(); i++) {
@@ -286,6 +280,7 @@ void CVirtualContainerMgr::createLayout(CXMLNode* node, object_id_t pid, SQLQuer
 
     
   DbObject folder;
+  // create a single vfolder
   if(node->name().compare("vfolder") == 0) {
 
     std::string path = createVFolderPath(node);
@@ -301,75 +296,40 @@ void CVirtualContainerMgr::createLayout(CXMLNode* node, object_id_t pid, SQLQuer
     folder.setVirtualContainerType(DbObject::Folder);
     folder.setVirtualContainerPath(path);
     folder.save();
-    
+
+
     for(int i = 0; i < node->ChildCount(); i++) {
       if(node->ChildNode(i)->type() != CXMLNode::ElementNode)
         continue;
       createLayout(node->ChildNode(i), folder.objectId() ,qry, layout);
-    }
-    
+    }    
   }
 
-}
-
-
-/*
-
-void CVirtualContainerMgr::CreateVFoldersSplit(CXMLNode* pFoldersNode, 
-                                               SQLQuery* pIns,
-                                               std::string p_sDevice, 
-                                               unsigned int p_nParentId,
-                                               CObjectDetails* pDetails,
-                                               bool p_bContainerDetails,
-																							 bool p_bCreateRef,
-                                               std::string )
-{
-  string sFolders[] = {
+  // create the split layout
+  else if(node->name().compare("split") == 0) {
+    
+    std::string path = createVFolderPath(node->parent());
+    string folders[] = {
     "0-9", "ABC", "DEF", "GHI", "JKL",
     "MNO" , "PQR", "STU", "VWX", "YZ",
-    ""
-  };
-                                                   
-  string sFilter[] = {
-    " substr(%s, 1, 1) in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9) ", 
-    " upper(substr(%s, 1, 1)) in ('A', 'B', 'C') ",
-    " upper(substr(%s, 1, 1)) in ('D', 'E', 'F') ",
-    " upper(substr(%s, 1, 1)) in ('G', 'H', 'I') ",
-    " upper(substr(%s, 1, 1)) in ('J', 'K', 'L') ",
-    " upper(substr(%s, 1, 1)) in ('M', 'N', 'O') ",
-    " upper(substr(%s, 1, 1)) in ('P', 'Q', 'R') ",
-    " upper(substr(%s, 1, 1)) in ('S', 'T', 'U') ",
-    " upper(substr(%s, 1, 1)) in ('V', 'W', 'X') ",
-    " upper(substr(%s, 1, 1)) in ('Y', 'Z') ",
-    ""
-  };
-                                                   
-  int i = 0;
-  unsigned int nId;
-  stringstream sSql;
-                                                   
-  while(sFolders[i].length() > 0) {
-    
-    nId = GetId();
-      
-    sSql.str("");
-    sSql << "insert into OBJECTS (OBJECT_ID, PARENT_ID, TYPE, PATH, FILE_NAME, TITLE, DEVICE) values " <<
-      "(" << nId << ", " << p_nParentId << ", " << CONTAINER_STORAGE_FOLDER << ", " << "'virtual', '" << 
-      sFolders[i] << "', '" << sFolders[i] << "', '" << p_sDevice << "')";
-    pIns->exec(sSql.str());
-    
+    ""};      
 
-    
-    
-    if(pFoldersNode->ChildCount() > 0) {
-      CreateChildItems(pFoldersNode, pIns, p_sDevice, nId, pDetails, sFilter[i]);
+    for(int i = 0; folders[i].length() > 0; i++) {
+      folder.reset();
+      folder.setObjectId(GetId());
+      folder.setParentId(pid);
+      folder.setType(CONTAINER_STORAGE_FOLDER);
+      folder.setTitle(folders[i]);
+      folder.setDevice(layout);
+      folder.setVirtualContainerType(DbObject::Split);
+      folder.setVirtualContainerPath(path);
+      folder.save();      
     }
-      
-    i++;
+
   }
-                                                 
+
 }
-*/
+
 
 
 /*
@@ -422,64 +382,6 @@ void CVirtualContainerMgr::CreateFolderMappings(CXMLNode* pNode,
   qry.select(sSql.str());
   while(!qry.eof()) {
     CreateSingleVFolderFolder(pNode, pIns, p_sDevice, atoi(qry.result()->asString("PARENT_ID").c_str()), p_nParentId, p_bCreateRef);
-    qry.next();
-  }
-
-}
-
-void CVirtualContainerMgr::CreateSingleVFolderFolder(CXMLNode* pNode,
-                                                     SQLQuery* pIns,
-                                                     std::string p_sDevice,
-                                                     unsigned int p_nObjectId,
-                                                     unsigned int p_nParentId,
-																										 bool p_bCreateRef)
-{
-  stringstream sSql;
-                                                  
-  SQLQuery qry;
-         
-  sSql << 
-    "select " <<
-    "  TITLE " <<
-    "from " <<
-    "  OBJECTS " <<
-    "where " <<
-		"  DEVICE is NULL and " <<
-    "  OBJECT_ID = " << p_nObjectId;
-                
-  //cout << sSql.str() << endl; fflush(stdout);
-                                                  
-  qry.select(sSql.str());
-  while(!qry.eof()) {
-    sSql.str("");
-    unsigned int nId = GetId();
-    OBJECT_TYPE  nObjType = CONTAINER_STORAGE_FOLDER;
-    
-    sSql << "insert into OBJECTS (OBJECT_ID, TYPE, PATH, TITLE, FILE_NAME, DEVICE) " <<
-            "values " <<
-            "( " << nId << 
-            ", " << nObjType << 
-            ", 'virtual' " <<
-            ", '" <<  SQLEscape(qry.result()->asString("TITLE")) << "'" <<
-            ", '" <<  SQLEscape(qry.result()->asString("TITLE")) << "'" <<
-            ", '" << p_sDevice << "')";
-  
-  //cout << sSql.str() << endl; fflush(stdout);
-    pIns->exec(sSql.str());
-    sSql.str("");
-  
-    sSql << "insert into MAP_OBJECTS (OBJECT_ID, PARENT_ID, DEVICE) values " <<
-      "( "  << nId << 
-      ", "  << p_nParentId << 
-      ", '" << p_sDevice << "');";
-  
-  //cout << sSql.str() << endl; fflush(stdout);
-    pIns->insert(sSql.str());  
-  
-    stringstream sFilter;
-    sFilter << "m.PARENT_ID = " << p_nObjectId;
-    //CreateItemMappings(pNode, pIns, p_sDevice, nId, p_bCreateRef, 0, sFilter.str());
-
     qry.next();
   }
 
@@ -565,30 +467,94 @@ void CVirtualContainerMgr::MapSharedDirsTo(CXMLNode* pNode,
 
 
 
-void VirtualContainerMgr::insertAudioFile(DbObject* object) // static
+
+void VirtualContainerMgr::insertFile(fuppes::DbObject* object) // static
 {
   StringList vfolders = CSharedConfig::Shared()->virtualFolders()->getEnabledFolders();
   for(unsigned int i = 0; i < vfolders.size(); i++) {  
-    insertAudioFileForLayout(object, vfolders.at(i));
+    insertFileForLayout(object, vfolders.at(i));
   }
 }
 
-void VirtualContainerMgr::insertAudioFileForLayout(DbObject* object, std::string layout) // static
+
+/*
+ pid          parent id of the ABC, DEF, ... folders
+ object       the object to insert (REF_ID = 0 and DEVICE = NULL)
+ childType    property type of the split children
+ layout       the virtual layout
+*/
+object_id_t getSplitParent(object_id_t pid, DbObject* object, std::string childType, std::string layout)
 {
+  string title;
+  if(childType.compare("genre") == 0) {    
+    title = object->details()->genre();    
+  }  
+  else if(childType.compare("artist") == 0) {
+    title = object->details()->artist();
+  }
+  else if(childType.compare("album") == 0) {
+    title = object->details()->artist();
+  }
+  else {
+    cout << "TODO: getSplitParent property: " << childType << endl;
+  }
+  
+  if(title.length() == 0)
+    title = "unknown";  
+  title = ToUpper(title.substr(0,1));
+  
+  SQLQuery qry;
+  stringstream sql;
+  sql << "select OBJECT_ID from OBJECTS where " <<
+    "PARENT_ID = " << pid << " and " <<
+    "TITLE like '%" << title << "%' and " <<
+    "DEVICE = '" << layout << "'";
+
+  cout << sql.str() << endl;
+  qry.select(sql.str());
+
+  ASSERT(qry.size() == 1);
+
+  return qry.result()->asUInt("OBJECT_ID");
+}
+
+
+void VirtualContainerMgr::insertFileForLayout(fuppes::DbObject* object, std::string layout) // static
+{
+  string path;
+  switch(object->type()) {
+    case ITEM_AUDIO_ITEM:
+    case ITEM_AUDIO_ITEM_MUSIC_TRACK:
+      path = "audioItem";
+      break;
+    case ITEM_IMAGE_ITEM:
+    case ITEM_IMAGE_ITEM_PHOTO:
+      path = "imageItem";
+      break;
+    case ITEM_VIDEO_ITEM:
+    case ITEM_VIDEO_ITEM_MOVIE:
+      path = "videoItem";
+      break;
+    default:
+      return;
+      break;
+  }
+
+
   SQLQuery qry;
   stringstream sql;
   
-  // get all paths containing audio items
+  // get all paths containing the item type
   StringList paths;
-  qry.select("select distinct(VCONTAINER_PATH) from OBJECTS where VCONTAINER_PATH like '%audioItem%' and DEVICE = '" + layout + "'");
+  qry.select("select distinct(VCONTAINER_PATH) from OBJECTS where VCONTAINER_PATH like '%" + path + "%' and DEVICE = '" + layout + "'");
   while(!qry.eof()) {
     paths.push_back(qry.result()->asString("VCONTAINER_PATH"));
     qry.next();
   }
-
   
   StringList parts;
   object_id_t pid;
+  object_id_t refId = 0;
   for(unsigned int i = 0; i < paths.size(); i++) {
     parts = String::split(paths.at(i), "|");
 
@@ -610,7 +576,13 @@ void VirtualContainerMgr::insertAudioFileForLayout(DbObject* object, std::string
     for(unsigned int j = 1; j < parts.size() - 1; j++) {
 
       DbObject::VirtualContainerType type = DbObject::None;
-      if(parts.at(j) == "genre")
+      if(parts.at(j) == "split") {
+        type = DbObject::Split;
+        pid = getSplitParent(pid, object, parts.at(j + 1), layout);
+        ASSERT(pid != 0);
+        continue;
+      }
+      else if(parts.at(j) == "genre")
         type = DbObject::Genre;
       else if(parts.at(j) == "artist")
         type = DbObject::Artist;
@@ -618,6 +590,10 @@ void VirtualContainerMgr::insertAudioFileForLayout(DbObject* object, std::string
         type = DbObject::Composer;
       else if(parts.at(j) == "album")
         type = DbObject::Album;
+      else {
+        cout << "TODO handle path : " << parts.at(j) << "*" << endl;
+        continue;
+      }
       
       pid = createFolderIfNotExists(object, pid, type, paths.at(i), layout);
     }
@@ -629,52 +605,18 @@ void VirtualContainerMgr::insertAudioFileForLayout(DbObject* object, std::string
     file.setDevice(layout);
     file.setVirtualContainerPath(paths.at(i));
     file.setVirtualRefId(object->objectId());
+    file.setRefId(refId);
     file.save();
 
-    cout << "insertAudioFileForDevice" << endl << DbObject::toString(&file) << endl;
+    // we take the object id of the first inserted item
+    // and use it as ref_id for the next ones (if any)
+    if(refId == 0) {
+      refId = file.objectId();
+    }
+    
+    //cout << "insertFileForDevice" << endl << DbObject::toString(&file) << endl;
   }
 
-}
-
-void VirtualContainerMgr::insertGenericFile(fuppes::DbObject* object) // static
-{
-  StringList vfolders = CSharedConfig::Shared()->virtualFolders()->getEnabledFolders();
-  for(unsigned int i = 0; i < vfolders.size(); i++) {  
-    insertGenericFileForLayout(object, vfolders.at(i));
-  }
-}
-
-void VirtualContainerMgr::insertGenericFileForLayout(fuppes::DbObject* object, std::string layout) // static
-{
-  string path;
-  switch(object->type()) {
-    case ITEM_IMAGE_ITEM:
-    case ITEM_IMAGE_ITEM_PHOTO:
-      path = "imageItem";
-      break;
-    case ITEM_VIDEO_ITEM:
-    case ITEM_VIDEO_ITEM_MOVIE:
-      path = "videoItem";
-      break;
-    default:
-      return;
-      break;
-  }
-  
-
-  SQLQuery qry;
-  stringstream sql;
-  
-  // get all paths containing the object type
-  StringList paths;
-  qry.select("select distinct(VCONTAINER_PATH) from OBJECTS where VCONTAINER_PATH like '%" + path + "%' and DEVICE = '" + layout + "'");
-  while(!qry.eof()) {
-    paths.push_back(qry.result()->asString("VCONTAINER_PATH"));
-    qry.next();
-  }
-
-  
-  
 }
 
 
@@ -687,27 +629,28 @@ object_id_t VirtualContainerMgr::createFolderIfNotExists(DbObject* object,
   string title;
   OBJECT_TYPE objType = CONTAINER_STORAGE_FOLDER;
   switch(type) {
-    //case Split:
-    //  break;
     case DbObject::Genre:
       title = object->details()->genre();
-      objType = CONTAINER_GENRE_MUSIC_GENRE;
+      objType = CONTAINER_GENRE_MUSIC_GENRE;  // video genre
       break;
     case DbObject::Artist:
       title = object->details()->artist();
-      objType = CONTAINER_PERSON_MUSIC_ARTIST;
+      objType = CONTAINER_PERSON_MUSIC_ARTIST; // video artist
       break;
     case DbObject::Composer:
       title = object->details()->composer();
       break;
     case DbObject::Album:
       title = object->details()->album();
-      objType = CONTAINER_ALBUM_MUSIC_ALBUM;
+      objType = CONTAINER_ALBUM_MUSIC_ALBUM;  // image album
       break;
     default:
       ASSERT(true == false);
       break;
   }
+
+  if(title.length() == 0)
+    title = "unknown";
   
   SQLQuery qry;
   stringstream sql;
@@ -722,7 +665,6 @@ object_id_t VirtualContainerMgr::createFolderIfNotExists(DbObject* object,
   ASSERT(qry.size() == 0 || qry.size() == 1);
 
   if(qry.size() == 1) {
-    cout << "VFOLDER EXISTS: " << sql.str() << endl;
     return qry.result()->asUInt("OBJECT_ID");
   }
   
@@ -750,28 +692,24 @@ object_id_t VirtualContainerMgr::createFolderIfNotExists(DbObject* object,
 
   folder.save();
 
-  cout << "createFolderIfNotExists" << endl << DbObject::toString(&folder) << endl;
+  //cout << "createFolderIfNotExists" << endl << DbObject::toString(&folder) << endl;
   
   return folder.objectId();
 }
 
 
-void VirtualContainerMgr::updateAudioFile(fuppes::DbObject* object, fuppes::ObjectDetails* oldDetails) // static
+void VirtualContainerMgr::updateFile(fuppes::DbObject* object, fuppes::ObjectDetails* oldDetails) // static
 {
   StringList vfolders = CSharedConfig::Shared()->virtualFolders()->getEnabledFolders();
   for(unsigned int i = 0; i < vfolders.size(); i++) {  
-    updateAudioFileForLayout(object, oldDetails, vfolders.at(i));
+    updateFileForLayout(object, oldDetails, vfolders.at(i));
   }
 }
 
-void VirtualContainerMgr::updateAudioFileForLayout(fuppes::DbObject* object, fuppes::ObjectDetails* oldDetails, std::string layout) // static
+void VirtualContainerMgr::updateFileForLayout(fuppes::DbObject* object, fuppes::ObjectDetails* oldDetails, std::string layout) // static
 {
-  stringstream sql;
-  SQLQuery qry;
-
-  sql << "select * from OBJECTS where " <<
-    "VREF_ID = " << object->objectId() << " and " <<
-    "DEVICE = '" << layout << "'";
+  deleteFileForLayout(object, layout);
+  insertFileForLayout(object, layout);
 }
 
 
@@ -818,9 +756,6 @@ void VirtualContainerMgr::deleteFileForLayout(fuppes::DbObject* object, std::str
   sql << "select * from OBJECTS where "
     "VREF_ID = " << object->objectId() << " and " <<
     "DEVICE = '" << layout << "'";
-
-
-cout << sql.str() << endl;
   
   DbObject* obj;
   DbObject* parent;

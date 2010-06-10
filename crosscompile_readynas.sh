@@ -462,7 +462,7 @@ cd $FUPPES_DIR
 
 #CPPFLAGS="$CPPFLAGS -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE=1" \
 LIBS="$LIBS -ldl -lz" \
-./configure --host=$HOST --prefix=$PREFIX --sysconfdir=/opt/fuppes/etc \
+./configure --host=$HOST --prefix=$PREFIX --sysconfdir=$PREFIX/etc \
 --enable-force-inotify=yes --disable-taglib
 
 sed -i -e 's/FUPPES_DATADIR=\\"$(datadir)\/fuppes\\"/FUPPES_DATADIR=\\"\/opt\/fuppes\/data\\"/' src/Makefile
