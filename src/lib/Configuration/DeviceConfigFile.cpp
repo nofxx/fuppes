@@ -39,19 +39,17 @@ using namespace fuppes;
 
 CDeviceConfigFile::CDeviceConfigFile()
 {
-  m_pDeviceDoc = new CXMLDocument();
 }
 
 CDeviceConfigFile::~CDeviceConfigFile()
 {
-  delete m_pDeviceDoc;
 }
 
 int CDeviceConfigFile::SetupDevice(CDeviceSettings* pSettings, string deviceName) {
   assert(pSettings != NULL);
 
   int isError = SETUP_DEVICE_SUCCESS;
-  string devFile = CSharedConfig::Shared()->pathFinder->findDeviceInPath(deviceName, File::readable);
+  string devFile = CSharedConfig::Shared()->pathFinder->findDeviceInPath(deviceName);
   if(devFile.empty()) {
     isError = SETUP_DEVICE_NOT_FOUND;
   } else {

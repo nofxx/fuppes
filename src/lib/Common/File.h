@@ -40,7 +40,9 @@
 #endif
 
 #include <string>
+#ifdef WIN32
 #include <fstream>
+#endif
 
 namespace fuppes {
 
@@ -90,8 +92,11 @@ class File
 	private:
 		std::string   m_fileName;
 		OpenMode			m_openMode;
-    //std::fstream  m_fstream;
+#ifndef WIN32
     FILE*         m_file;
+#else
+    std::fstream  m_fstream;
+#endif
 };
 
 }

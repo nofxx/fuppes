@@ -31,16 +31,19 @@
 
 #ifndef WIN32
 #include <unistd.h>
+#include <stdio.h>
 #endif
 
 using namespace fuppes;
-
+using namespace std;
 
 File::File(std::string fileName)
 {
 	m_fileName = fileName;
 	m_openMode = Closed;
+#ifndef WIN32
   m_file = NULL;
+#endif
 }
 
 File::~File()
@@ -56,6 +59,7 @@ void File::setFileName(std::string fileName)
 
 bool File::open(File::OpenMode mode)
 {
+#ifndef WIN32
 	std::string openmode;
 
 	if(mode & Read)
@@ -79,46 +83,86 @@ bool File::open(File::OpenMode mode)
 */
 
   m_file = fopen(m_fileName.c_str(), openmode.c_str());
-  return isOpen();
+  
+#else
+  ios_base::openmode openmode = ios_base::in;
 
-	/*m_fstream.open(m_fileName.c_str(), openmode);
-	return m_fstream.is_open();*/
+	if(mode & Read)
+		openmode |= ios_base::in;
+	if(mode & Write)
+		openmode |= ios_base::out;
+	if(mode & Truncate)
+		openmode |= ios_base::trunc;
+	if(mode & Append)
+		openmode |= ios_base::app;
+	if(!mode & Text)
+		openmode |= ios_base::binary;
+  
+	m_fstream.open(m_fileName.c_str(), openmode);
+#endif
+  
+  return isOpen();
 }
 
 bool File::isOpen()
 {
+#ifndef WIN32
   return (m_file != NULL);
+#else
+  return m_fstream.is_open();
+#endif
 }
 
 void File::close()
 {
+#ifndef WIN32
   fclose(m_file);
   m_file = NULL;
-	//m_fstream.close();
+#else
+	m_fstream.close();
+#endif
 }
 
 bool File::seek(fuppes_off_t offset)
-{
-  if(!m_file)
+{ 
+  if(!isOpen())
     return false;
-
+  
+#ifndef WIN32  
   return (fseeko(m_file, offset, SEEK_SET) == 0);
+#else
+  m_fstream.clear();
+  m_fstream.seekg(offset, ios::beg);
+  return m_fstream.good();
+#endif
 }
 
 fuppes_off_t File::read(char* buffer, fuppes_off_t length)
 {
-  if(!m_file)
-    return 0;
+  if(!isOpen())
+    return false;
 
+#ifndef WIN32
   return fread(buffer, 1, length, m_file);
+#else
+  m_fstream.clear();
+  m_fstream.read(buffer, length);
+  return m_fstream.good();
+#endif
 }
 
 fuppes_off_t File::write(char* buffer, fuppes_off_t length)
 {
-  if(!m_file)
-    return 0;
-  
+  if(!isOpen())
+    return false;
+
+#ifndef WIN32
   return fwrite(buffer, 1, length, m_file);
+#else
+  m_fstream.clear();
+  m_fstream.write(buffer, length);
+  return m_fstream.good();
+#endif
 }
 
 fuppes_off_t File::size()
@@ -132,11 +176,22 @@ fuppes_off_t File::size()
 
 bool File::getline(std::string& line)
 {
-  if(!m_file)
+  if(!isOpen())
     return false;
 
+#ifdef WIN32
+  m_fstream.clear();
+  char buffer[1000];
+  m_fstream.getline(buffer, 1000);
+  if(m_fstream.good()) {
+    line = buffer;
+  }
+  return m_fstream.good();
+#else
+  
+  
   fuppes_off_t start;
-  start = ftell(m_file);
+  start = ftello(m_file);
   int c;
   do {
     c = fgetc(m_file);
@@ -146,7 +201,7 @@ bool File::getline(std::string& line)
   } while (c != EOF);
 
   fuppes_off_t end;
-  end = ftell(m_file);
+  end = ftello(m_file);
 
   if(end > start) {
     seek(start);
@@ -160,6 +215,7 @@ bool File::getline(std::string& line)
   }
 
   return false;
+#endif
 }
 
 

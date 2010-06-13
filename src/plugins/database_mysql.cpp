@@ -161,7 +161,7 @@ class CMySQLQuery: public ISQLQuery
 		}
 		CSQLResult* result() { return *m_ResultListIterator; }	
 		
-		off_t lastInsertId() { return m_lastInsertId; }
+		fuppes_off_t lastInsertId() { return m_lastInsertId; }
 		
 		void clear() {
       while (!m_ResultList.empty()) {
@@ -184,11 +184,11 @@ class CMySQLQuery: public ISQLQuery
 		MYSQL* m_handle;
 		CMySQLConnection* m_connection;		
 		
-		off_t		m_lastInsertId;
+		fuppes_off_t		m_lastInsertId;
 		
 		std::list<CSQLResult*> m_ResultList;
     std::list<CSQLResult*>::iterator m_ResultListIterator;
-		off_t m_rowsReturned;
+		fuppes_off_t m_rowsReturned;
 };
 
 

@@ -186,38 +186,22 @@ bool CFileDetails::getImageDetails(std::string p_sFileName, ImageItem* imageItem
 	
 	CMetadataPlugin* image;
   bool result = false;
-  
-	image = CPluginMgr::metadataPlugin("exiv2");
-  if(image) {
-	  if(image->openFile(p_sFileName)) {
+
+  std::string plugins[] = {"exiv2, magickWand", "simage", ""};      
+
+  for(int i = 0; plugins[i].length() > 0; i++) {
+
+    image = CPluginMgr::metadataPlugin(plugins[i]);
+    if(!image)
+      continue;
+
+    if(image->openFile(p_sFileName)) {
 		  result = image->readData(imageItem->metadata());
       image->closeFile();
 	  }
-	  delete image;
-    if(result)
-      return true;
-  }
+    delete image;
+    image = NULL;
 
-
-  image = CPluginMgr::metadataPlugin("simage");
-  if(image) {
-	  if(image->openFile(p_sFileName)) {
-		  result = image->readData(imageItem->metadata());
-      image->closeFile();
-	  }
-	  delete image;
-    if(result)
-      return true;
-  }
-  
-
-  image = CPluginMgr::metadataPlugin("magickWand");
-  if(image) {
-	  if(image->openFile(p_sFileName)) {
-		  result = image->readData(imageItem->metadata());
-      image->closeFile();
-	  }
-	  delete image;
     if(result)
       return true;
   }

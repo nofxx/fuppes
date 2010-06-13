@@ -1,10 +1,10 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
- *            ConfigInterface.h
- * 
+ *            PresentationPage.h
+ *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -23,19 +23,25 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _CONFIGINTERFACE_H
-#define _CONFIGINTERFACE_H
+#ifndef _PRESENTATIONPAGE_H
+#define _PRESENTATIONPAGE_H
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
 
 #include <string>
+#include <sstream>
 
-class CCmdlineInterface
+class PresentationPage
 {
-	public:
-		bool handleAction(std::string input);
+  public:
+    virtual std::string alias() = 0;
+    virtual std::string title() = 0;
+
+    virtual std::string content() = 0;
+
 };
 
-#endif // _CONFIGINTERFACE_H
+
+#endif // _PRESENTATIONPAGE_H

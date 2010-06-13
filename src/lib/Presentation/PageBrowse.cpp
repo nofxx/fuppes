@@ -1,6 +1,6 @@
 /* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
- *            HotPlug.h
+ *            PageBrowse.cpp
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -22,65 +22,36 @@
  *  with this program; if not, write to the Free Software Foundation, Inc.,
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
- 
-#ifndef _HOTPLUG_H
-#define _HOTPLUG_H
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
+#include "PageBrowse.h"
 
-#include "../Common/Thread.h"
+#include "../Common/Common.h"
+#include "../SharedConfig.h"
 
-
-class HotPlugBase: public fuppes::Thread
+std::string PageBrowse::content()
 {
-  public:
-    virtual ~HotPlugBase() {
-    }
-    virtual bool setup() = 0;
-
-  protected:
-    HotPlugBase(): fuppes::Thread("HotPlugBase") {
-		}
-};
-
-
-class HotPlugMgr
-{
-  public:
-    static void init();
-    static void uninit();
-
-  private:
-    HotPlugMgr();
-    ~HotPlugMgr();
-    static HotPlugMgr* m_instance;
-
-    HotPlugBase*  m_hotPlug;
-};
-
-
-#ifdef HAVE_DBUS
-#include <dbus/dbus.h>
-
-class HotPlugDbus: public HotPlugBase
-{
-  public:
-    ~HotPlugDbus();
-    bool setup();
+  std::stringstream result;
+  
+  result << "<h1>browse data</h1>";
+  result << 
+    "<div>" <<
+    "<form>" <<
+      "virtual folder layout: " <<
+      "<select id=\"virtual-layout\">" << 
+        "<option selected=\"selected\">none</option>\n";
+  fuppes::StringList enabled = CSharedConfig::Shared()->virtualFolders()->getEnabledFolders();
+  for(unsigned int i = 0; i < enabled.size(); i++) {
+    result << "<option>" << enabled.at(i) << "</option>\n";
+  }
+  result << 
+      "</select> " <<
+      "<input type=\"submit\" value=\"browse\" onclick=\"browseDirectChildren(0, 0, 0, $('virtual-layout').value); return false;\" />" <<
+    "</form>" <<
+    "</div>";
+  
+  result << "<div style=\"margin-top: 20px;\" id=\"browse-result\"></div>";
+  
+  return result.str();
+}
 
 
-  private:
-    void run();
-
-    void queryObject(std::string object);
-    
-    DBusConnection* m_connection;
-};
-#endif // HAVE_DBUS
-
-
-
-
-#endif // _HOTPLUG_H

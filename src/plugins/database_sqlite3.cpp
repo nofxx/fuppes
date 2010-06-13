@@ -34,6 +34,10 @@
 
 #include <sqlite3.h>
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 class CSQLiteConnection: public CDatabaseConnection
 {
 	public:
@@ -76,7 +80,7 @@ class CSQLiteQuery: public ISQLQuery
 		
 		virtual bool select(const std::string sql);
 		virtual bool exec(const std::string sql);
-		virtual off_t insert(const std::string sql);
+		virtual fuppes_off_t insert(const std::string sql);
 		
 		bool eof() { return (m_ResultListIterator == m_ResultList.end()); }
 		void next() {
@@ -86,7 +90,7 @@ class CSQLiteQuery: public ISQLQuery
 		}
 		CSQLResult* result() { return *m_ResultListIterator; }	
 		
-		off_t lastInsertId() { return m_lastInsertId; }
+		fuppes_off_t lastInsertId() { return m_lastInsertId; }
 		
 		void clear() {
 			for(m_ResultListIterator = m_ResultList.begin(); m_ResultListIterator != m_ResultList.end();) {
@@ -275,7 +279,7 @@ bool CSQLiteQuery::select(const std::string sql)
     if(nTry > 0) {      
       //CSharedLog::Shared()->Log(L_EXTENDED_WARN, "SQLITE_BUSY", __FILE__, __LINE__);
 #ifdef WIN32
-      #warning sleep
+      Sleep(1);
 #else
       usleep(100);
 #endif
@@ -326,9 +330,8 @@ bool CSQLiteQuery::exec(const std::string sql)
     switch(nResult) {
       case SQLITE_BUSY:
         bRetry = true;
-        //fuppesSleep(50);
 #ifdef WIN32
-      #warning sleep
+        Sleep(1);
 #else
 				usleep(50);
 #endif
@@ -355,7 +358,7 @@ bool CSQLiteQuery::exec(const std::string sql)
 	return result;
 }
 
-off_t CSQLiteQuery::insert(const std::string sql)
+fuppes_off_t CSQLiteQuery::insert(const std::string sql)
 {
 	if(!exec(sql)) {
 		m_lastInsertId = 0;

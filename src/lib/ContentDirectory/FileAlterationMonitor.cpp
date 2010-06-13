@@ -532,6 +532,8 @@ bool CWindowsFileMonitor::addWatch(std::string path)
 	if(!this->running()) {
     this->start();
   }
+
+  return false;
 }
   
 void CWindowsFileMonitor::removeWatch(std::string path)

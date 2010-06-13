@@ -179,8 +179,12 @@ bool TCPSocket::connect()
 */
   
   if (ret < 0) {
-    
+
+#ifndef WIN32
     if (errno != EINPROGRESS) {
+#else
+    if (errno != WSAEWOULDBLOCK) {       
+#endif
    		throw fuppes::Exception(__FILE__, __LINE__, "failed to connect to %s:%d", m_remoteAddress.c_str(), m_remotePort);
     }
 
@@ -202,7 +206,11 @@ bool TCPSocket::connect()
       
       // Socket selected for write 
       lon = sizeof(int); 
+#ifndef WIN32
       if (getsockopt(m_socket, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0) { 
+#else
+      if (getsockopt(m_socket, SOL_SOCKET, SO_ERROR, (char*)(&valopt), &lon) < 0) { 
+#endif
         throw fuppes::Exception(__FILE__, __LINE__, "Error in getsockopt() %d - %s\n", errno, strerror(errno)); 
       } 
       // Check the value returned... 

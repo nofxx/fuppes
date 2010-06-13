@@ -27,7 +27,7 @@
 #include "../../include/fuppes_plugin.h"
 #include <wand/magick-wand.h>
 
-void magick_set_date(MagickWand* wand, char** dateMetadata)
+void magick_set_date(MagickWand* wand, char dateMetadata[])
 {
 	char* date = MagickGetImageProperty(wand, "exif:DateTimeOriginal");
 	
@@ -103,7 +103,7 @@ int fuppes_metadata_read(plugin_info* plugin, struct metadata_t* metadata)
 	metadata->width  = MagickGetImageWidth(plugin->user_data);
 	metadata->height = MagickGetImageHeight(plugin->user_data);	
 	
-	magick_set_date(plugin->user_data, &metadata->date);
+	magick_set_date(plugin->user_data, metadata->date);
 	
 	return 0;
 }

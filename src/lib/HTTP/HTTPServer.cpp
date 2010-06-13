@@ -95,7 +95,11 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
   	
   // create socket
 	m_Socket = socket(AF_INET, SOCK_STREAM, 0);
+#ifndef WIN32
   if(m_Socket == -1)
+#else
+  if(m_Socket == INVALID_SOCKET)
+#endif
 	  throw fuppes::Exception(__FILE__, __LINE__, "failed to create socket");
   
 	//#ifdef FUPPES_TARGET_MAC_OSX
@@ -349,7 +353,11 @@ void CHTTPServer::run()
 
     // accept new connection
     nConnection = accept(nSocket, (struct sockaddr*)&remote_ep, &size);   
+#ifndef WIN32
 		if(nConnection == -1) {
+#else
+ 		if(nConnection == INVALID_SOCKET) {
+#endif
 		  //#ifdef FUPPES_TARGET_MAC_OSX
 			#if defined(BSD)
       pthread_testcancel();

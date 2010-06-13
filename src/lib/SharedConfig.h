@@ -40,7 +40,7 @@
   #define FUPPES_TARGET_MAC_OSX
 #endif
 
-#define CONFIG_NAME "fuppes.cfg"
+//#define CONFIG_NAME "fuppes.cfg"
 #define VFOLDER_DIR "vfolders"
 #define DEVICE_DIR "devices"
 

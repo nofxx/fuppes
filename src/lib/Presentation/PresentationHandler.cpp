@@ -32,6 +32,7 @@
 #include "../SharedConfig.h"
 #include "../SharedLog.h"
 #include "../Common/Common.h"
+#include "../Common/RegEx.h"
 #include "../ContentDirectory/ContentDatabase.h"
 #include "../ContentDirectory/DatabaseConnection.h"
 #ifdef HAVE_VFOLDER
@@ -40,7 +41,6 @@
 #include "../ContentDirectory/FileDetails.h"
 #include "../Transcoding/TranscodingMgr.h"
 #include "../HTTP/HTTPParser.h"
-#include "../DeviceSettings/DeviceIdentificationMgr.h"
 #include "../Plugins/Plugin.h"
 
 #include <sstream>
@@ -50,13 +50,31 @@
 const std::string LOGNAME = "PresentationHandler"; 
 
 
+#include "PageStart.h"
+#include "PageDevice.h"
+#include "PageBrowse.h"
+
+#include "PageJsTest.h"
+
+
 CPresentationHandler::CPresentationHandler(std::string httpServerUrl)
 {
   m_httpServerUrl = httpServerUrl;
+
+
+  m_pages.push_back(new PageStart());
+  m_pages.push_back(new PageDevice());
+  m_pages.push_back(new PageBrowse());
+
+  m_pages.push_back(new PageJsTest());
 }
 
 CPresentationHandler::~CPresentationHandler()
 {
+  std::list<PresentationPage*>::iterator  iter;
+  for(iter = m_pages.begin(); iter != m_pages.end(); ++iter) {
+    delete *iter;
+  }  
 }
 
 
@@ -65,25 +83,53 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
   PRESENTATION_PAGE nPresentationPage = PRESENTATION_PAGE_UNKNOWN;
   string sContent;
   std::string sPageName = "undefined";
+
+
+  std::string alias;
+  std::string ext;
+  string request = ToLower(pMessage->GetRequest());
   
-  if((pMessage->GetRequest().compare("/") == 0) || (ToLower(pMessage->GetRequest()).compare("/index.html") == 0)) {    
-    //CSharedLog::Shared()->ExtendedLog(LOGNAME, "send index.html");
-    nPresentationPage = PRESENTATION_PAGE_INDEX;
-    sContent = this->GetIndexHTML();
-    sPageName = "Start";
+  if((pMessage->GetRequest().compare("/") == 0) ||
+     (request.compare("/index.html") == 0)) {    
+    alias = "index";
+    ext = "html";
   }
-	
-	else if(ToLower(pMessage->GetRequest()).compare("/presentation/style.css") == 0) {
+  else  {
+    RegEx rxUrl("/presentation/(\\w+)\\.(html|css|png|jpg|js)");
+    if(rxUrl.search(request)) {
+      alias = rxUrl.match(1);
+      ext = rxUrl.match(2);
+    }
+  }
+
+
+
+  std::list<PresentationPage*>::iterator  iter;
+  for(iter = m_pages.begin(); iter != m_pages.end(); ++iter) {
+    PresentationPage* page = *iter;
+
+    if(page->alias().compare(alias) != 0)
+      continue;
+      
+    sPageName = page->title();
+
+    stringstream result;    
+    result << getPageHeader(page);
+    result << page->content();
+    result << getPageFooter(page);
+    
+    pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
+    pResult->SetContentType("text/html; charset=\"utf-8\"");
+    pResult->SetContent(result.str());
+    return;
+  }
+
+
+
+
+  if(ToLower(pMessage->GetRequest()).compare("/presentation/style.css") == 0) {
     nPresentationPage = PRESENTATION_STYLESHEET;
 		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "style.css");
-  }
-	
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/about.html") == 0)
-  {
-    //CSharedLog::Shared()->ExtendedLog(LOGNAME, "send about.html");
-    nPresentationPage = PRESENTATION_PAGE_ABOUT;
-    sContent = this->GetAboutHTML();
-    sPageName = "About";
   }
   
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/options.html") == 0) {
@@ -138,11 +184,7 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
     sContent = this->GetConfigHTML(pMessage);
     sPageName = "Configuration";
   }
-  else if(ToLower(pMessage->GetRequest()).compare("/presentation/jstest.html") == 0) {
-    nPresentationPage = PRESENTATION_PAGE_JSTEST;
-    sContent = this->GetJsTestHTML();
-    sPageName = "JS Test";
-  }
+
 
 #warning todo add http cache fields to the response header
   
@@ -183,6 +225,14 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
     nPresentationPage = PRESENTATION_JAVASCRIPT;
 		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "fuppes.js");
   }
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/fuppes-browse.js") == 0) {
+    nPresentationPage = PRESENTATION_JAVASCRIPT;
+		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "fuppes-browse.js");
+  }
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/fuppes-control.js") == 0) {
+    nPresentationPage = PRESENTATION_JAVASCRIPT;
+		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "fuppes-control.js");
+  }
   
   if(nPresentationPage == PRESENTATION_BINARY_IMAGE) {
     pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    
@@ -199,7 +249,6 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
   {   
     stringstream sResult;   
     
-    sResult << GetXHTMLHeader();
     sResult << GetPageHeader(nPresentationPage, sPageName);
     sResult << sContent;    
     sResult << GetPageFooter(nPresentationPage);
@@ -219,31 +268,36 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
 std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE /*p_nPresentationPage*/, std::string p_sPageName)
 {
   std::stringstream sResult; 
-	 
-  /* header */
+
+  // doctype
+  sResult << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
+  sResult << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " << endl;
+  sResult << "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">" << endl;
+  
+  // html header
   sResult << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n";
   sResult << "<head>";  
   sResult << "<title>" << CSharedConfig::Shared()->GetAppName() << " - " << CSharedConfig::Shared()->GetAppFullname() << " " << CSharedConfig::Shared()->GetAppVersion();
   sResult << " (" << CSharedConfig::Shared()->networkSettings->GetHostname() << ")";
   sResult << "</title>" << endl;
 
-	//sResult << "<meta http-equiv=\"Content-Script-Type\" content=\"text/javascript\">" << endl;
 	sResult << "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">" << endl;
   sResult << "<meta http-equiv=\"Content-Style-Type\" content=\"text/css\">" << endl; 
 	sResult << "<link href=\"/presentation/style.css\" rel=\"stylesheet\" type=\"text/css\" media=\"screen\" />" << endl;
 
 	sResult << "<script type=\"text/javascript\" src=\"/presentation/mootools-1.2.4-core-yc.js\"></script>" << endl;
 	sResult << "<script type=\"text/javascript\" src=\"/presentation/fuppes.js\"></script>" << endl;
+	sResult << "<script type=\"text/javascript\" src=\"/presentation/fuppes-browse.js\"></script>" << endl;
+	sResult << "<script type=\"text/javascript\" src=\"/presentation/fuppes-control.js\"></script>" << endl;
   
   sResult << "</head>";
-  /* header end */
+  // html header end
   
     
   sResult << "<body>";
   
-  //pFuppes->GetRemoteDevices().size()
   
-  /* title */
+  // site header
   sResult << "<div id=\"header\">" << endl;
 
   sResult << "<div id=\"logo\"></div>" << endl;
@@ -258,23 +312,38 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE /*p_nPresentat
     "</p>" << endl;
   
   sResult << "</div>" << endl;
-  /* title end */
+  // site header end
+
   
-  /* menu */
+  // menu
   sResult << "<div id=\"menu\">" << endl;
   sResult << "<div id=\"framehead\">Menu</div>" << endl;    
 
+
+  sResult << "<ul>";
+  sResult << "<li><a href=\"/index.html\">start</a></li>";
+  std::list<PresentationPage*>::iterator  iter;
+  for(iter = m_pages.begin(); iter != m_pages.end(); ++iter) {
+    PresentationPage* page = *iter;
+    if(page->alias().compare("index") == 0)
+      continue;
+    sResult << "<li><a href=\"/presentation/" << page->alias() << ".html\">" << page->title() << "</a></li>";
+  }
+  sResult << "</ul>";
+
+
+
+
   sResult << 
     "<ul>" <<
-      "<li><a href=\"/index.html\">Start</a></li>" <<
       "<li><a href=\"/presentation/options.html\">Options</a></li>" <<
       "<li><a href=\"/presentation/status.html\">Status</a></li>" <<
       "<li><a href=\"/presentation/config.html\">Configuration</a></li>" <<
-      "<li><a href=\"/presentation/jstest.html\">Test</a></li>" <<
     "</ul>";
   
+  
   sResult << "</div>" << endl;  
-  /* menu end */
+  // menu end
   
 
   sResult << "<div id=\"mainframe\">" << endl;
@@ -285,6 +354,10 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE /*p_nPresentat
   return sResult.str().c_str();
 }
 
+std::string CPresentationHandler::getPageHeader(PresentationPage* page)
+{
+  return GetPageHeader(PRESENTATION_PAGE_UNKNOWN, page->title());
+}
 
 std::string CPresentationHandler::GetPageFooter(PRESENTATION_PAGE /*p_nPresentationPage*/)
 {
@@ -301,92 +374,9 @@ std::string CPresentationHandler::GetPageFooter(PRESENTATION_PAGE /*p_nPresentat
   return sResult.str().c_str();
 }
 
-/* GetXHTMLHeader */
-std::string CPresentationHandler::GetXHTMLHeader()
+std::string CPresentationHandler::getPageFooter(PresentationPage* page)
 {
-  std::stringstream sResult;
-  
-  sResult << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
-  sResult << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " << endl;
-  sResult << "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">" << endl;
-  
-  return sResult.str().c_str();
-}
-
-/* GetIndexHTML */
-std::string CPresentationHandler::GetIndexHTML()
-{
-  std::stringstream sResult;
-  
-  sResult << "<h1>system information</h1>" << endl;  
-  
-  sResult << "<p>" << endl;
-  sResult << "Version: " << CSharedConfig::Shared()->GetAppVersion() << "<br />" << endl;
-  sResult << "Hostname: " << CSharedConfig::Shared()->networkSettings->GetHostname() << "<br />" << endl;
-  sResult << "OS: " << CSharedConfig::Shared()->GetOSName() << " " << CSharedConfig::Shared()->GetOSVersion() << "<br />" << endl;
-  //sResult << "SQLite: " << CContentDatabase::Shared()->GetLibVersion() << endl;
-  sResult << "</p>" << endl;
-  
-  sResult << "<p>" << endl;
-  sResult << "build at: " << __DATE__ << " - " << __TIME__ << "<br />" << endl;
-  sResult << "build with: " << __VERSION__ << endl;
-  sResult << "</p>" << endl;
-  
-  sResult << "<p>" << endl;
-  sResult << "<a href=\"http://sourceforge.net/projects/fuppes/\">http://sourceforge.net/projects/fuppes/</a><br />" << endl;
-  sResult << "</p>" << endl;
-
-
-  // uptime
-  fuppes::DateTime now = fuppes::DateTime::now();
-  int uptime = now.toInt() - CSharedConfig::Shared()->GetFuppesInstance(0)->startTime().toInt();
-
-
-  int days;
-  int hours;
-  int minutes;
-  int seconds;
-
-  seconds = uptime % 60;
-  minutes = uptime / 60;
-  hours = minutes / 60;
-  minutes = minutes % 60;
-  days = hours / 24;
-  hours = hours % 24;
-
-  
-  sResult << "<p>" << endl;
-  sResult << "uptime: " << days << " days " << hours << " hours " << minutes << " minutes " << seconds << " seconds" << "<br />" << endl;
-  sResult << "</p>" << endl;
-  
-  sResult << "<h1>remote devices</h1>";
-  sResult << BuildFuppesDeviceList(CSharedConfig::Shared()->GetFuppesInstance(0));
-  
-  return sResult.str().c_str();
-  
-  //sResult << "<h2>Start</h2>" << endl;
-  //*p_psImgPath = "Start";
-  
-  /*for (unsigned int i = 0; i < m_vFuppesInstances.size(); i++)
-  {
-    sResult << "FUPPES Instance No. " << i + 1 << "<br />";    
-    sResult << "IP-Address: " << ((CFuppes*)m_vFuppesInstances[i])->GetIPAddress() << "<br />";
-    sResult << "HTTP-Server URL: " << ((CFuppes*)m_vFuppesInstances[i])->GetHTTPServerURL() << "<br />";    
-    sResult << "<br />";
-    sResult << "<br />";    
-    
-  }*/
-}
-
-std::string CPresentationHandler::GetAboutHTML()
-{
-  std::stringstream sResult;
-  
-  //sResult << "<h2>About</h2>" << endl;
-  //*p_psImgPath = "About";
-
-  
-  return sResult.str().c_str();
+  return GetPageFooter(PRESENTATION_PAGE_UNKNOWN);
 }
 
 std::string CPresentationHandler::GetOptionsHTML()
@@ -426,9 +416,6 @@ std::string CPresentationHandler::GetStatusHTML()
 {
   std::stringstream sResult;  
  
-  // Database status
-  sResult << "<h1>database status</h1>" << endl;  
-  sResult << buildObjectStatusTable();
 
   // transcoding  
   string sTranscoding;
@@ -455,44 +442,6 @@ std::string CPresentationHandler::GetStatusHTML()
   return sResult.str();  
 }
 
-std::string CPresentationHandler::buildObjectStatusTable()
-{
-  OBJECT_TYPE nType = OBJECT_TYPE_UNKNOWN;
-  std::stringstream sResult;
-  
-	SQLQuery qry;
-  string sql = qry.build(SQL_GET_OBJECT_TYPE_COUNT, 0);
-	qry.select(sql);
-  
-  sResult << 
-    "<table rules=\"all\" style=\"font-size: 10pt; border-style: solid; border-width: 1px; border-color: #000000;\" cellspacing=\"0\" width=\"400\">" << endl <<
-      "<thead>" << endl <<
-        "<tr>" << endl <<        
-          "<th>Type</th>" << 
-          "<th>Count</th>" << endl <<
-        "</tr>" << endl <<
-      "</thead>" << endl << 
-      "<tbody>" << endl;  
-
-
-  while(!qry.eof()) {
-    nType = (OBJECT_TYPE)qry.result()->asInt("TYPE");
-    
-    sResult << "<tr>" << endl;
-    sResult << "<td>" << CFileDetails::Shared()->GetObjectTypeAsStr(nType) << "</td>" << endl;
-    sResult << "<td>" << qry.result()->asString("VALUE") << "</td>" << endl;    
-    sResult << "</tr>" << endl;
-    
-    qry.next();
-  }
-    
-  sResult <<
-      "</tbody>" << endl <<   
-    "</table>" << endl;
-
-  return sResult.str();
-
-}
 
 std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)
 {
@@ -726,160 +675,6 @@ std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)
   return sResult.str().c_str();  
 }
 
-/* BuildFuppesDeviceList */
-std::string CPresentationHandler::BuildFuppesDeviceList(CFuppes* pFuppes)
-{
-  stringstream result;
-
-  // sort the devices
-  std::list<CUPnPDevice*> devices;
-  for(unsigned int i = 0; i < pFuppes->GetRemoteDevices().size(); i++) {
-
-    CUPnPDevice* pDevice = pFuppes->GetRemoteDevices()[i];
-    if(pDevice->descriptionAvailable())
-      devices.push_front(pDevice);
-    else
-      devices.push_back(pDevice);
-  }
-
-
-  std::list<CUPnPDevice*>::iterator iter;
-  int count = 0;
-  for(iter = devices.begin(); iter != devices.end(); iter++) {
-    
-    CUPnPDevice* pDevice = *iter;
-
-    result << "<div class=\"remote-device\">" << endl;
-
-    // icon
-    result << "<div class=\"remote-device-icon\">";
-      if(pDevice->descriptionAvailable()) {
-        result << "device icon";
-      }
-      else {
-       result << "icon loading";
-      }
-    result << "</div>" << endl;
-
- 
-    // friendly name    
-    result << "<div class=\"remote-device-friendly-name\">";
-    result << pDevice->GetFriendlyName();
-    result << "</div>" << endl;
-
-
-    result << "<div class=\"remote-device-info\">";
-    result << pDevice->GetUPnPDeviceTypeAsString() << " : " << pDevice->GetUPnPDeviceVersion();    
-    result << "</div>" << endl;
-
-    result << "<a href=\"javascript:deviceDetails(" << count << ");\">";
-    result << "details";
-    result << "</a>" << endl;
-
-    // details
-    result << "<div class=\"remote-device-details\" id=\"remote-device-details-" << count << "\">";
-
-
-    result << "<table>" << endl;
-
-    result << "<tr><th colspan=\"2\">details</th></tr>" << endl;
-    
-    // uuid
-    result << "<tr><td>uuid</td><td>";
-    result << pDevice->GetUUID();
-    result << "</td></tr>" << endl;
-    
-    // timeout
-    result << "<tr><td>timeout</td><td>";
-    result << pDevice->GetTimer()->GetCount() / 60 << "min. " << pDevice->GetTimer()->GetCount() % 60 << "sec.";
-    result << "</td></tr>" << endl;
-    
-    // ip : port
-
-    // presentation url
-    result << "<tr><td>presentation</td><td>";
-    result << pDevice->presentationUrl() << "<br />";
-    result << "</td></tr>" << endl;
-    
-    // manufacturer
-    result << "<tr><td>manufacturer</td><td>";
-    result << pDevice->manufacturer() << "<br />";
-    result << "</td></tr>" << endl;
-    
-    // manufacturerUrl
-    result << "<tr><td>manufacturerUrl</td><td>";
-    result << pDevice->manufacturerUrl() << "<br />";
-    result << "</td></tr>" << endl;
 
 
 
-    // descriptionUrl
-    result << "<tr><td>descriptionUrl</td><td>";
-    result << pDevice->descriptionUrl() << "<br />";
-    result << "</td></tr>" << endl;
-
-
-    // mac
-    result << "<tr><td>mac</td><td>";
-    result << pDevice->macAddress();
-    result << "</td></tr>" << endl;
-
-
-    // device settings
-    if(pDevice->deviceSettings()) {  
-      result << "<tr><td>device settings</td><td>";
-      result << pDevice->deviceSettings()->name();
-      result << "</td></tr>" << endl;
-    }
-    
-    
-    result << "</table>" << endl;
-    
-    result << "</div>" << endl; //details
-    
-
-    result << "</div>" << endl; // remote-device
-
-    count++;
-  }
-
-  result << "<div id=\"remote-device-count\" style=\"display: none;\">" << count << "</div>";
-  
-  return result.str();
-}
-
-
-std::string CPresentationHandler::GetJsTestHTML()
-{
-  std::stringstream result;
-  
-  result << "<h1>JS test</h1>";
-
-  // browse
-  result << "<h2>browse data</h2>";
-  result << "<div>";
-  result << "virtual folder layout: ";
-  result << "<form><select id=\"virtual-layout\">";
-  result << "<option selected=\"selected\">none</option>\n";
-  fuppes::StringList enabled = CSharedConfig::Shared()->virtualFolders()->getEnabledFolders();
-  for(unsigned int i = 0; i < enabled.size(); i++) {
-    result << "<option>" << enabled.at(i) << "</option>\n";
-  }
-  result << "</select></form>";
-
-  result << "<a href=\"javascript:browseDirectChildren(0, 0, 0);\">browse</a>"; // objectId, startIdx, requestCnt  
-  result << "<div id=\"browse-result\"></div>";
-  result << "</div>";
-
-
-  // soap controll
-  result << "<h2>fuppes soap controll</h2>";
-  result << "<div>";
-  result << "<a href=\"javascript:fuppesCtrl();\">ctrl test</a>";
-  result << "<div id=\"ctrl-result\"></div>";
-  result << "</div>";
-
-  
-  
-  return result.str();
-}

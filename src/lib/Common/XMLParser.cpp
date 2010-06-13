@@ -24,6 +24,7 @@
  
 #include "XMLParser.h"
 #include <iostream>
+#include <string.h>
 using namespace std;
 
 CXMLNode::CXMLNode(xmlNode* p_NodePtr, int p_nIdx, CXMLNode* pParent)
@@ -217,8 +218,10 @@ std::string CXMLNode::Name()
 
 std::string CXMLNode::Value()
 {
-  if(m_pNode->children && m_pNode->children->content) {
-    return string((char*)m_pNode->children->content);
+  if(m_pNode->children && 
+     m_pNode->children->content && 
+     m_pNode->children->type == XML_TEXT_NODE) {
+    return ((char*)m_pNode->children->content);
   }
   else {
     return "";
@@ -288,7 +291,7 @@ CXMLDocument::~CXMLDocument()
 bool CXMLDocument::LoadFromFile(std::string p_sFileName)
 {
   m_sFileName = p_sFileName;
-  m_pDoc = xmlReadFile(p_sFileName.c_str(), "UTF-8", XML_PARSE_NOBLANKS);
+  m_pDoc = xmlReadFile(m_sFileName.c_str(), "UTF-8", XML_PARSE_NOBLANKS);
   return (m_pDoc != NULL);
 }
 

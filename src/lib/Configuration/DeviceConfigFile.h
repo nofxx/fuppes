@@ -57,7 +57,7 @@ class CDeviceConfigFile
     int SetupDevice(CDeviceSettings* pSettings, std::string deviceName);
   
   private:
-    CXMLDocument* m_pDeviceDoc;
+    //CXMLDocument* m_pDeviceDoc;
 
     void ParseDeviceSettings(CXMLNode* pDevice, CDeviceSettings* pSettings);
     void ParseFileSettings(CXMLNode* pFileSettings, CDeviceSettings* pDevSet);

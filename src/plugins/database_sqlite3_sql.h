@@ -166,7 +166,9 @@ static const fuppes_sql sqlite3_statements[] = {
    	"  VREF_ID BIGINT DEFAULT 0, "
 	  "  VISIBLE INTEGER DEFAULT 1, "
     "  MODIFIED_AT INTEGER, "
-    "  UPDATED_AT INTEGER ) "
+    "  UPDATED_AT INTEGER, "
+    "  unique(OBJECT_ID, DEVICE) "
+    ") "
   },
 
   {SQL_CREATE_TABLE_OBJECT_DETAILS,

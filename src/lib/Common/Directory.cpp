@@ -200,7 +200,7 @@ bool Directory::hidden(std::string directory) // static
 		return (folder[0] == '.');
 	}
 #else
-	FIXME
+	return false;
 #endif
 	return false;
 }
@@ -321,25 +321,4 @@ DirEntryList Directory::dirEntryList()
 				
 	
 	return result;
-}
-
-
-
-
-bool Directory::walk(vector<string>* paths, bool (*step)(string)) {
-  vector<string>::const_iterator tourist;
-  DIR*    dir;
-  dirent* dirEntry;
-  bool done = false;
-
-  // send a tourist to walk among the folders
-  for(tourist = paths->begin(); !done && tourist != paths->end(); ++tourist) {
-    dir = opendir(tourist->c_str());
-    if(dir) {
-      while(!done && (dirEntry = readdir(dir))) {
-        done = (*step)(*tourist + dirEntry->d_name);
-      }
-      closedir(dir);
-    }
-  }
 }

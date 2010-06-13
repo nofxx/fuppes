@@ -188,7 +188,7 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
         break;
       case 'a':
         if(directory.Search(optarg)) {
-          CSharedConfig::Shared()->pathFinder->AddConfigPath(optarg);
+          PathFinder::addConfigPath(optarg);
         } else {
           dirFail = true;
         }

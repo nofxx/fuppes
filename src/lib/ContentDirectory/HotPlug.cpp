@@ -84,6 +84,7 @@ bool HotPlugDbus::setup()
     if(dbus_error_is_set(&error)) {
       Log::error(Log::hotplug, Log::normal, __FILE__, __LINE__, "dbus error: %s", error.message);
     }
+    dbus_error_free(&error);
     return false;
   }  
   
@@ -96,8 +97,9 @@ bool HotPlugDbus::setup()
          &error); // see signals from the given interface
    dbus_connection_flush(m_connection);
    if (dbus_error_is_set(&error)) { 
-      Log::error(Log::hotplug, Log::normal, __FILE__, __LINE__, "dbus error: %s", error.message);
-      return false; 
+     Log::error(Log::hotplug, Log::normal, __FILE__, __LINE__, "dbus error: %s", error.message);
+     dbus_error_free(&error);
+     return false; 
    }
 
   // start event loop
@@ -169,7 +171,6 @@ void HotPlugDbus::run()
 {
   DBusMessage* msg;
   DBusMessageIter args;
-  char* sigvalue;
   
   while(!stopRequested()) {
 

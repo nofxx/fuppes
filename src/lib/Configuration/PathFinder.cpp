@@ -1,63 +1,118 @@
-#include <cassert>
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
+/***************************************************************************
+ *            PathFinder.cpp
+ *
+ *  FUPPES - Free UPnP Entertainment Service
+ *
+ *  Copyright (C) 2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2010 Robert Massaioli <robertmassaioli@gmail.com>
+ ****************************************************************************/
+
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
 #include "PathFinder.h"
-#include "../Common/Common.h"
 #include "../Common/Directory.h"
 
 using namespace std;
 using namespace fuppes;
 
-void PathFinder::SetupDefaultPaths(void) {
-  m_sConfigPath.clear();
 
+PathFinder* PathFinder::m_instance = NULL;
+
+
+void PathFinder::init() // static
+{
+  assert(m_instance == NULL);
+  m_instance = new PathFinder();
+}
+
+void PathFinder::uninit() // static
+{
+  assert(m_instance != NULL);
+  delete m_instance;
+  m_instance = NULL;
+}
+
+PathFinder* PathFinder::instance() // static
+{
+  assert(m_instance != NULL);
+  return m_instance;
+}
+
+
+PathFinder::PathFinder()
+{
   #ifdef WIN32
-  m_sConfigPath.push_back(string(getenv("APPDATA")) + "\\FUPPES\\");
+  m_paths.push_back(string(getenv("APPDATA")) + "\\FUPPES\\");
   #else
   // .fuppes has higher priority than /etc/
-  m_sConfigPath.push_back(string(getenv("HOME")) + "/.fuppes/");
-  m_sConfigPath.push_back(Directory::appendTrailingSlash(FUPPES_SYSCONFDIR));
+  m_paths.push_back(string(getenv("HOME")) + "/.fuppes/");
+  m_paths.push_back(Directory::appendTrailingSlash(FUPPES_SYSCONFDIR));
   #endif
 
   devicesPath = DEVICE_DIRECTORY;
   vfolderPath = VFOLDER_DIRECTORY;
 }
 
-string PathFinder::DefaultPath(void) {
-  assert(m_sConfigPath.size() > 0);
+/*
+string PathFinder::defaultPath(void)
+{
+  assert(m_paths.size() > 0);
+  return m_paths.front();
+}
+*/
 
-  return m_sConfigPath.front();
+void PathFinder::addConfigPath(std::string path) // static
+{ 
+  if(!path.empty())
+    instance()->m_paths.insert(instance()->m_paths.begin(), path); 
 }
 
-void PathFinder::AddConfigPath(std::string p_sConfigDir) { 
-  if(!p_sConfigDir.empty()) m_sConfigPath.insert(m_sConfigPath.begin(), p_sConfigDir); 
-}
-
-string PathFinder::findInPath(string fileName, bool (*exists)(string), string extraPath) {
-  assert(exists != NULL);
-
+string PathFinder::findInPath(std::string fileName, File::Flags flags /*= File::Readable*/, std::string extra /*= ""*/)
+{
   bool found = false;
   string tempName = "";
-  for(vector<string>::const_iterator it = m_sConfigPath.begin(); !found && it != m_sConfigPath.end(); ++it) {
-    tempName = *it  + extraPath + fileName;
-    if((*exists)(tempName)) {
+  vector<string>::const_iterator it;
+  for(it = m_paths.begin(); it != m_paths.end(); ++it) {
+    tempName = *it;
+    tempName += extra;
+    tempName += fileName;
+    if(File::exists(tempName)) {
+      #warning todo check flags
       found = true;
-      break;
+      break;     
     }
   }
 
-  if (found) return tempName;
-  return string("");
+  return (found ? tempName : "");
 }
 
-string PathFinder::findDeviceInPath(string device, bool (*exists)(string)) {
-  assert(exists != NULL);
-  return findInPath(device + DEVICE_EXT, exists, appendTrailingSlash(devicesPath));
+string PathFinder::findDeviceInPath(string device)
+{
+  return findInPath(device + DEVICE_EXT, File::Readable, appendTrailingSlash(devicesPath));
 }
 
-string PathFinder::findVFolderInPath(string device, bool (*exists)(string)) {
-  assert(exists != NULL);
-  return findInPath(device + VFOLDER_EXT, exists, appendTrailingSlash(vfolderPath));
+string PathFinder::findVFolderInPath(string device)
+{
+  return findInPath(device + VFOLDER_EXT, File::Readable, appendTrailingSlash(vfolderPath));
 }
 
+/*
 void PathFinder::walker(bool (*step)(string)) {
-  Directory::walk(&m_sConfigPath, step);
+  Directory::walk(&m_paths, step);
 }
+*/

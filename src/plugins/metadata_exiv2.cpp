@@ -92,7 +92,7 @@ void exiv2_dump_tags(const ExifData& exif)
     }
 }
 
-int set_date(const ExifData& exif, char** date)
+int set_date(const ExifData& exif, char date[])
 {
 	const ExifData::const_iterator end = exif.end();
 	ExifData::const_iterator value = exif.findKey(ExifDateTimeCreated);
@@ -107,12 +107,12 @@ int set_date(const ExifData& exif, char** date)
 	
 	if(!dateTime.empty())
 	{
-		*date = (char*)realloc(*date, (dateTime.length() + 1) * sizeof(char));
-		strcpy(*date, const_cast<char*>(dateTime.c_str()));  
+		//*date = (char*)realloc(*date, (dateTime.length() + 1) * sizeof(char));
+		strcpy(date, const_cast<char*>(dateTime.c_str()));  
 	
 	    // format gets returned as 'YYYY:MM:DD HH:MM:SS' when it
 	    // needs to be 'YYYY-MM-DDTHH:MM:SS' so fix separators
-	    char* dateStr = *date;
+	    char* dateStr = date;
 	    
 	    if(dateTime.length() > 4 && dateStr[4] != '-')
 		    dateStr[4] = '-';
@@ -127,7 +127,7 @@ int set_date(const ExifData& exif, char** date)
 	return 0;
 }
 
-int set_long_value(const ExifData& exif, const ExifKey& key, int& field)
+int set_long_value(const ExifData& exif, const ExifKey& key, unsigned int& field)
 {
 	const ExifData::const_iterator end = exif.end();
 	const ExifData::const_iterator value = exif.findKey(key);
@@ -139,12 +139,12 @@ int set_long_value(const ExifData& exif, const ExifKey& key, int& field)
 	return 0;
 }
 
-int set_height(const ExifData& exif, int& height)
+int set_height(const ExifData& exif, unsigned int& height)
 {
 	return set_long_value(exif, ExifHeight, height);
 }
 
-int set_width(const ExifData& exif, int& width)
+int set_width(const ExifData& exif, unsigned int& width)
 {
 	return set_long_value(exif, ExifWidth, width);
 }
@@ -168,7 +168,7 @@ int exiv2ReadExif(plugin_info* plugin, metadata_t* metadata)
 	
 		errors += set_width(exif, metadata->width);
 		errors += set_height(exif, metadata->height); 
-		errors += set_date(exif, &metadata->date); 
+		errors += set_date(exif, metadata->date); 
     }
     catch(Exiv2::Error& err)
     {

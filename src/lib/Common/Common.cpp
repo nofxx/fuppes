@@ -627,44 +627,18 @@ using namespace fuppes;
 DateTime DateTime::now() // static
 {
   DateTime result;
-
-  #ifndef WIN32
   result.m_time = time(NULL);
-/*  time_t now;
-  char nowtime[26];
-  time(&now);  
-  ctime_r(&now, nowtime);
-  nowtime[24] = '\0';
-  result.m_string = nowtime;*/
-  #else		
-
-  FIXME
-  
-/*  char timeStr[9];   
-  _strtime(timeStr);	
-  result.m_string = timeStr;
-*/
-  #endif  
-
   return result;
 }
 
 std::string DateTime::toString() 
 { 
-#ifndef WIN32
   return ctime(&m_time);
-#else  
-  return m_string;
-#endif
 }
 
 int DateTime::toInt() 
 { 
-#ifndef WIN32
   return m_time;
-#else  
-  return m_string;
-#endif
 }
 
 DateTime& DateTime::operator=(const DateTime &dateTime) 

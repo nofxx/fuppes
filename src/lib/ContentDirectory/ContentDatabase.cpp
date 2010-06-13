@@ -384,10 +384,13 @@ void CContentDatabase::scanDirectory(std::string path) // static
       iter != m_Instance->m_scanDirThreadList.end();
       ) {
 
-    if((*iter)->finished())
+    if((*iter)->finished()) {
       iter = m_Instance->m_scanDirThreadList.erase(iter);
-    else
+      delete *iter;
+    }
+    else {
       iter++;        
+    }
   }
   
   m_Instance->m_scanDirThreadList.push_back(thread);
@@ -551,7 +554,7 @@ void RebuildThread::DbScanDir(CContentDatabase* db, SQLQuery* qry, std::string p
 
 					if(objId == 0) {
 	          InsertFile(db, qry, p_nParentId, sTmp);
-            usleep(1);
+            msleep(1);
 					}
 
           

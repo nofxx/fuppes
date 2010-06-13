@@ -54,7 +54,7 @@ void FileAlterationHandler::famEvent(CFileAlterationEvent* event)
     m_lastEventTime = DateTime::now();
   }
   
-  cout << CFileAlterationEvent::toString(event) << endl;
+  //cout << CFileAlterationEvent::toString(event) << endl;
 
   // create
   if(event->type() == FAM_CREATE) {
@@ -276,9 +276,11 @@ void FileAlterationHandler::modifyFile(CFileAlterationEvent* event)
   // check the modification time
   time_t modified = File::lastModified(event->path() + event->file());
 
+ /* 
   cout << "MODIFIED  : " << modified << endl;
   cout << "DBMODIFIED: " << file->lastModified() << endl;
   cout << "DBUPDATED : " << file->lastUpdated() << endl;
+  */
   
 
   if(modified > file->lastUpdated()) {

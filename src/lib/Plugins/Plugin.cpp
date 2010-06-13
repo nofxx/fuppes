@@ -124,18 +124,22 @@ bool CPluginMgr::init_plugin(string fileName) {
     
     regPlugin = (registerPlugin_t)FuppesGetProcAddress(handle, "register_fuppes_plugin");	
 
+#ifndef WIN32
     char* error;
     if ((error = dlerror()) != NULL)  {
       fprintf (stderr, "%s\n", error);
       regPlugin = NULL;
     }
+#endif
     
     unregPlugin = (unregisterPlugin_t)FuppesGetProcAddress(handle, "unregister_fuppes_plugin");	
 
+#ifndef WIN32
     if ((error = dlerror()) != NULL)  {
       fprintf (stderr, "%s\n", error);
       unregPlugin = NULL;
     }
+#endif
     
     if(regPlugin == NULL || unregPlugin == NULL) {
       //cout << "library: "  << fileName << " is no valid fuppes plugin" << endl;
@@ -1072,9 +1076,9 @@ int CPresentationPlugin::ctrlAction(const char* action, arg_list_t* args, arg_li
 		return ret;
 	}
 	
-	stringListIter iter = ctrlResult.begin();	
+	/*stringListIter iter = ctrlResult.begin();	
 	arg_list_t* resultArgs = result;	
-	/*while(iter != ctrlResult.end()) {
+	while(iter != ctrlResult.end()) {
 
 		set_value(&resultArgs->key, iter->first.c_str());
 		set_value(&resultArgs->value, iter->second.c_str());

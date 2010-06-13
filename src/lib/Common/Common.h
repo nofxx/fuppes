@@ -187,13 +187,8 @@ class DateTime
     int               toInt();
 		DateTime&					operator=(const DateTime &dateTime);
 		
-	private:		
-		//std::string m_string;
-#ifndef WIN32
+	private:
     time_t    m_time;
-#else
-    fixme
-#endif
 };
 
 

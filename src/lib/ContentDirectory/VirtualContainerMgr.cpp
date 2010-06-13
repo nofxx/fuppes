@@ -53,7 +53,12 @@ CVirtualContainerMgr* CVirtualContainerMgr::Shared()
 
 CVirtualContainerMgr::CVirtualContainerMgr()
 {
-	m_nIdCounter    = 0;
+  SQLQuery qry;
+  qry.select("select min(OBJECT_ID) as VALUE from OBJECTS where DEVICE is not NULL");
+  if(qry.eof())
+  	m_nIdCounter    = 0;
+  else
+  	m_nIdCounter    = qry.result()->asUInt("VALUE");
 }
 
 CVirtualContainerMgr::~CVirtualContainerMgr()
@@ -115,7 +120,7 @@ void CVirtualContainerMgr::RebuildContainerList(bool force /*= false*/, bool ins
   StringList vfolders = CSharedConfig::Shared()->virtualFolders()->getEnabledFolders();
   for(unsigned int i = 0; i < vfolders.size(); i++) {
     
-    string file = CSharedConfig::Shared()->pathFinder->findVFolderInPath(vfolders.at(i), File::readable); // only need read access
+    string file = CSharedConfig::Shared()->pathFinder->findVFolderInPath(vfolders.at(i));
     if(!file.empty()) {
       CSharedLog::Print("[VirtualContainer] read vfolder layout from '%s'.", (vfolders.at(i) + VFOLDER_EXT).c_str());
       HandleFile(vfolders.at(i), file, &qry);
@@ -557,9 +562,8 @@ void VirtualContainerMgr::insertFileForLayout(fuppes::DbObject* object, std::str
   object_id_t refId = 0;
   for(unsigned int i = 0; i < paths.size(); i++) {
     parts = String::split(paths.at(i), "|");
-
     ASSERT(parts.at(0) == "folder");
-
+    
     // get folder id
     sql << "select OBJECT_ID from OBJECTS where " <<
       "VCONTAINER_TYPE = " << DbObject::Folder << " and " <<
@@ -567,7 +571,7 @@ void VirtualContainerMgr::insertFileForLayout(fuppes::DbObject* object, std::str
       "DEVICE = '" + layout + "'";
     qry.select(sql.str());
     sql.str("");
-    ASSERT(qry.eof() == false);
+    ASSERT(qry.size() == 1);
     
     pid = qry.result()->asUInt("OBJECT_ID");
     
@@ -594,7 +598,7 @@ void VirtualContainerMgr::insertFileForLayout(fuppes::DbObject* object, std::str
         cout << "TODO handle path : " << parts.at(j) << "*" << endl;
         continue;
       }
-      
+
       pid = createFolderIfNotExists(object, pid, type, paths.at(i), layout);
     }
 
@@ -649,6 +653,7 @@ object_id_t VirtualContainerMgr::createFolderIfNotExists(DbObject* object,
       break;
   }
 
+  title = TrimWhiteSpace(title);
   if(title.length() == 0)
     title = "unknown";
   
@@ -658,13 +663,14 @@ object_id_t VirtualContainerMgr::createFolderIfNotExists(DbObject* object,
     "PARENT_ID = " << pid << " and " <<
     "VCONTAINER_TYPE = " << type << " and " <<
     "VCONTAINER_PATH = '" << path << "' and " <<
-    "TITLE = '" << title << "' and " <<
+    "TITLE = '" << SQLEscape(title) << "' and " <<
     "DEVICE = '" << layout << "'";
   qry.select(sql.str());
 
   ASSERT(qry.size() == 0 || qry.size() == 1);
 
   if(qry.size() == 1) {
+    //cout << "FOLDER *" << title << "* exists : id: " << qry.result()->asUInt("OBJECT_ID") << endl;
     return qry.result()->asUInt("OBJECT_ID");
   }
   

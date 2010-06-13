@@ -178,8 +178,17 @@ libfuppes_la_SOURCES = \
   lib/ConnectionManager/ConnectionManagerDescription.cpp\
   lib/GENA/SubscriptionMgr.cpp\
   lib/GENA/EventNotification.cpp\
-  lib/Presentation/PresentationHandler.cpp\
-  lib/Presentation/PresentationHandler.h\
+  lib/Presentation/PresentationHandler.cpp \
+  lib/Presentation/PresentationHandler.h \
+  lib/Presentation/PresentationPage.h \
+  lib/Presentation/PageStart.h \
+  lib/Presentation/PageStart.cpp \
+  lib/Presentation/PageDevice.h \
+  lib/Presentation/PageDevice.cpp \
+  lib/Presentation/PageBrowse.h \
+  lib/Presentation/PageBrowse.cpp \
+  lib/Presentation/PageJsTest.h \
+  lib/Presentation/PageJsTest.cpp \
   lib/Transcoding/TranscodingMgr.cpp\
   lib/Transcoding/TranscodingCache.cpp\
   lib/Transcoding/LameWrapper.h\

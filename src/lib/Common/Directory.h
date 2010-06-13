@@ -63,8 +63,6 @@ class Directory
     static bool searchable(std::string directory);
     static bool hidden(std::string directory);
 		
-    static bool walk(std::vector<std::string>* paths, bool (*step)(std::string));
-		
 		Directory(std::string path);
 		bool open();
 		DirEntryList dirEntryList();

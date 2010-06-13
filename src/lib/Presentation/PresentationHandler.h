@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2005-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -33,6 +33,7 @@
 #include "../UPnPDevice.h"
 #include "../HTTP/HTTPMessage.h"
 #include "../Fuppes.h"
+#include "PresentationPage.h"
 
 #include <string>
 #include <vector>
@@ -73,20 +74,14 @@ class CPresentationHandler
      */
     std::string HandleRequest(std::string p_sRequest);  
 
-    /** returns the HTML header
-     *  @return the HTML header as string
-     */
-    std::string GetXHTMLHeader();  
 
     std::string GetPageHeader(PRESENTATION_PAGE p_nPresentationPage, std::string p_sPageName);
     std::string GetPageFooter(PRESENTATION_PAGE p_nPresentationPage);
 
-    /** returns the main HTML page
-     *  @return the content of the index.html
-     */
-    std::string GetIndexHTML();
 
-    std::string GetAboutHTML();
+    std::string getPageHeader(PresentationPage* page);
+    std::string getPageFooter(PresentationPage* page);
+    
   
     std::string GetOptionsHTML();
   
@@ -95,18 +90,10 @@ class CPresentationHandler
     std::string GetConfigHTML(CHTTPMessage* pRequest);
 
 
-    /** builds a stringlist for all devices connected to a FUPPES instance
-     *  @param pFuppes a pointer to a FUPPES instance
-     *  @return the device list as string
-     */
-    std::string BuildFuppesDeviceList(CFuppes* pFuppes);
-
-    std::string buildObjectStatusTable();
-
-    std::string GetJsTestHTML();
-
 
     std::string m_httpServerUrl;
+
+    std::list<PresentationPage*>  m_pages;
 };
 
 #endif // _PRESENTATIONHANDLER_H

@@ -16,6 +16,9 @@
 class NetworkSettings : public ConfigSettings
 {
   public:
+    NetworkSettings();
+    virtual ~NetworkSettings();
+    
     virtual bool Read(void);
 
     std::string GetHostname(void) { return m_sHostname; }
@@ -34,7 +37,7 @@ class NetworkSettings : public ConfigSettings
     bool RemoveAllowedIP(int p_nIndex);  
 
   private:
-    virtual void InitVariables(void);
+    virtual void InitVariables(void) { }
     virtual bool InitPostRead(void);
     
     std::string   m_sHostname;

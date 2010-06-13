@@ -22,7 +22,8 @@
 using namespace std;
 using namespace fuppes;
 
-void NetworkSettings::InitVariables(void) {
+NetworkSettings::NetworkSettings()
+{  
   // ./configure --enable-default-http-port=PORT
   #ifdef DEFAULT_HTTP_PORT
   m_nHTTPPort = DEFAULT_HTTP_PORT;
@@ -31,6 +32,12 @@ void NetworkSettings::InitVariables(void) {
   #endif
   m_sNetInterface = "";  
 }
+
+NetworkSettings::~NetworkSettings()
+{
+}
+
+
 
 bool NetworkSettings::InitPostRead() {
   // Network settings
@@ -130,7 +137,8 @@ bool NetworkSettings::ResolveHostAndIP()
   bool bNew = false;
   
   // get hostname
-  char szName[MAXHOSTNAMELEN]; 
+  char szName[MAXHOSTNAMELEN + 1];
+  memset(szName, 0, MAXHOSTNAMELEN + 1);
   int  nRet = gethostname(szName, MAXHOSTNAMELEN);  
   if(nRet != 0) {
     throw fuppes::Exception(__FILE__, __LINE__, "can't resolve hostname");

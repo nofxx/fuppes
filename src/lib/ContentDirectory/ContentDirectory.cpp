@@ -242,7 +242,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
                         CUPnPBrowse*  pUPnPBrowse)
 {
 
-	cout << "BrowseMetadata VIRTUAL LAYOUT: " << pUPnPBrowse->virtualFolderLayout() << ":" << endl;
+	//cout << "BrowseMetadata VIRTUAL LAYOUT: " << pUPnPBrowse->virtualFolderLayout() << ":" << endl;
 
   // total matches and
   // number returned are always 1
@@ -258,7 +258,8 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
   OBJECT_TYPE nContainerType = CONTAINER_STORAGE_FOLDER;
   if(pUPnPBrowse->GetObjectIDAsUInt() > 0) {
 		sql = qry.build(SQL_GET_OBJECT_TYPE, pUPnPBrowse->GetObjectIDAsUInt(), pUPnPBrowse->virtualFolderLayout());
-		qry.select(sql);        
+		qry.select(sql);
+    ASSERT(!qry.eof());
     nContainerType = (OBJECT_TYPE)qry.result()->asInt("TYPE");
   }
 
@@ -342,7 +343,7 @@ void CContentDirectory::BrowseDirectChildren(xmlTextWriterPtr pWriter,
 	SQLQuery qry;
   //OBJECT_TYPE nContainerType = CONTAINER_STORAGE_FOLDER;
  
-	cout << "BrowseDirectChildren VIRTUAL LAYOUT: " << pUPnPBrowse->virtualFolderLayout() << ":" << endl;
+	//cout << "BrowseDirectChildren VIRTUAL LAYOUT: " << pUPnPBrowse->virtualFolderLayout() << ":" << endl;
 
   
   // get total matches
@@ -429,7 +430,7 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
 	SQLQuery qry;
 	
   string sDevice = pUPnPBrowse->virtualFolderLayout();
-  cout << "BuildContainerDescription DEVICE: " << sDevice << "*" << endl;
+  //cout << "BuildContainerDescription DEVICE: " << sDevice << "*" << endl;
   
   /*sSql = string("select count(*) as COUNT from MAP_OBJECTS ") +
     "where PARENT_ID = " + pSQLResult->asString("OBJECT_ID") + " and " + sDevice;*/
@@ -537,9 +538,7 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
 
 				    char szArtId[11];
 				    sprintf(szArtId, "%010X", pSQLResult->asUInt("ALBUM_ART_ID"));
-				    string url = "http://" + m_sHTTPServerURL + "/ImageItems/" + string(szArtId) + "." + qry.result()->asString("ALBUM_ART_EXT"); //"jpg?width=160&height=160";
-            if(sDevice.length() > 0)
-              url += "?vfolder=none";
+				    string url = "http://" + m_sHTTPServerURL + "/ImageItems/" + string(szArtId) + "." + qry.result()->asString("ALBUM_ART_EXT") + "?vfolder=none"; //"jpg?width=160&height=160";
 				    xmlTextWriterWriteString(pWriter, BAD_CAST url.c_str());
 			    xmlTextWriterEndElement(pWriter);
         }
@@ -728,9 +727,7 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
 
 			  char szArtId[11];
 			  sprintf(szArtId, "%010X", pSQLResult->asUInt("ALBUM_ART_ID"));
-			  string url = "http://" + m_sHTTPServerURL + "/ImageItems/" + string(szArtId) + "." + qry.result()->asString("ALBUM_ART_EXT"); //"jpg?width=160&height=160";
-        if(pUPnPBrowse->virtualFolderLayout().length() > 0)
-              url += "?vfolder=none";
+			  string url = "http://" + m_sHTTPServerURL + "/ImageItems/" + string(szArtId) + "." + qry.result()->asString("ALBUM_ART_EXT") + "?vfolder=none"; //"jpg?width=160&height=160";
 			  xmlTextWriterWriteString(pWriter, BAD_CAST url.c_str());
 		  xmlTextWriterEndElement(pWriter);
     }
@@ -998,9 +995,7 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
 		xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:albumArtURI");
 		  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "xmlns:dlna", BAD_CAST "urn:schemas-dlna-org:metadata-1-0/");
 			xmlTextWriterWriteAttribute(pWriter, BAD_CAST "dlna:profileID", BAD_CAST "JPEG_SM");
-			string url = "http://" + m_sHTTPServerURL + "/ImageItems/" + p_sObjectID + ".jpg";
-      if(pUPnPBrowse->virtualFolderLayout().length() > 0)
-        url += "?vfolder=none";
+			string url = "http://" + m_sHTTPServerURL + "/ImageItems/" + p_sObjectID + ".jpg?vfolder=none";
 			xmlTextWriterWriteString(pWriter, BAD_CAST url.c_str());
 	  xmlTextWriterEndElement(pWriter);
   }

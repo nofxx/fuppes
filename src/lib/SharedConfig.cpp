@@ -66,11 +66,13 @@ CSharedConfig* CSharedConfig::Shared()
 
 CSharedConfig::CSharedConfig()
 {
-  m_sFileName = CONFIG_NAME;
+  m_sFileName = "fuppes.cfg";
   m_pDoc = NULL;
 
-  pathFinder = new PathFinder();
-  pathFinder->SetupDefaultPaths();
+  m_sBaseConfigFile = "";
+  
+  PathFinder::init();
+  pathFinder = PathFinder::instance();
 
   /*pluginDirectories = new PluginDirectories();
   pluginDirectories->SetupDefaultPaths();*/
@@ -102,7 +104,9 @@ CSharedConfig::~CSharedConfig()
   delete transcodingSettings;
   
   //delete pluginDirectories;
-  delete pathFinder;
+  //delete pathFinder;
+  pathFinder = NULL;
+  PathFinder::uninit();
 
 	CProcessMgr::uninit();
 	CPluginMgr::uninit();
@@ -110,7 +114,7 @@ CSharedConfig::~CSharedConfig()
 
 bool CSharedConfig::FindConfigPaths(void)
 {
-  m_sBaseConfigFile = pathFinder->findInPath(m_sFileName, File::readable);
+  m_sBaseConfigFile = pathFinder->findInPath(m_sFileName);
   if(m_sBaseConfigFile.empty()) {
     CSharedLog::Log(L_NORM, __FILE__, __LINE__, "Could not find a readable config file.");
     return false;
@@ -123,6 +127,8 @@ bool CSharedConfig::FindConfigPaths(void)
 
 bool CSharedConfig::CreateConfigFile(void)
 {
+  /*
+   
   // find a writable directory in the path to see if we can do that first
   m_sBaseConfigFile = pathFinder->findInPath("", Directory::writable); 
   if (!m_sBaseConfigFile.empty()) {
@@ -151,8 +157,8 @@ bool CSharedConfig::CreateConfigFile(void)
       return true;
     }
   }
-
-  return false;
+*/
+  return true;
 }
 
 #ifdef WIN32
@@ -257,10 +263,10 @@ string CSharedConfig::GetUUID()
 	if(m_sUUID.empty()) {
     bool foundDir = false;
 		if(globalSettings->UseFixedUUID()) {
-      string uuidDir = pathFinder->findInPath("", Directory::exists);
-      if (!uuidDir.empty()) {
-			    m_sUUID = GenerateUUID(uuidDir + UUID_NAME);
-          foundDir = true;
+      string uuid = pathFinder->findInPath("uuid.txt");
+      if (!uuid.empty()) {
+  	    m_sUUID = GenerateUUID(uuid);
+        foundDir = true;
       }
 		}
 		
@@ -383,6 +389,8 @@ bool CSharedConfig::ReadConfigFile()
     PrintConfigReadErrors(READERROR_PLUGINDIRS);
   }*/
 
+  delete m_pDoc;
+  m_pDoc = NULL;
   return true;
 }
 
@@ -453,7 +461,7 @@ void CSharedConfig::GetOSInfo()
     m_sOSVersion = "?";
   }
   else {
-    iint nMajor = osinfo.dwMajorVersion;
+    int nMajor = osinfo.dwMajorVersion;
     int nMinor = osinfo.dwMinorVersion;
     int nBuild = osinfo.dwBuildNumber; 
     

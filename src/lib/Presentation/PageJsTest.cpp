@@ -1,10 +1,10 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
- *            ConfigInterface.h
- * 
+ *            PageJsTest.cpp
+ *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -23,19 +23,26 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _CONFIGINTERFACE_H
-#define _CONFIGINTERFACE_H
+#include "PageJsTest.h"
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
+#include "../Common/Common.h"
+#include "../SharedConfig.h"
 
-#include <string>
-
-class CCmdlineInterface
+std::string PageJsTest::content()
 {
-	public:
-		bool handleAction(std::string input);
-};
+  std::stringstream result;
+  
+  result << "<h1>JS test</h1>";
 
-#endif // _CONFIGINTERFACE_H
+
+  // soap controll
+  result << "<h2>fuppes soap controll</h2>";
+  result << "<div>";
+  result << "<a href=\"javascript:fuppesCtrl();\">ctrl test</a>";
+  result << "<div id=\"ctrl-result\"></div>";
+  result << "</div>";
+  
+  return result.str();
+}
+
+
