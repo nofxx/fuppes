@@ -64,7 +64,14 @@ dnl Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h netinet/in.h string.h sys/ioctl.h sys/param.h sys/socket.h unistd.h sys/utsname.h syslog.h])
-AC_CHECK_FUNCS([select], [], AC_ERROR([select not found]))
+
+
+AH_TEMPLATE([HAVE_SELECT], [])
+if test x$is_windows = xfalse; then
+  AC_CHECK_FUNCS([select], [], AC_ERROR([select not found]))
+else
+  AC_DEFINE([HAVE_SELECT], [1], [])
+fi
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_SIZEOF(off_t)
@@ -673,8 +680,8 @@ AM_CONDITIONAL([HAVE_KQUEUE], [test "x$have_kqueue" = "xyes"])
 have_dbus=no
 AH_TEMPLATE([HAVE_DBUS], [dbus support])
 AC_ARG_ENABLE([dbus], [AC_HELP_STRING([--enable-dbus],
-    [enable dbus [default=yes]])],
-    [enable_dbus=$enableval], [enable_dbus='yes'])
+    [enable dbus [default=no]])],
+    [enable_dbus=$enableval], [enable_dbus='no'])
 if test "x$enable_dbus" = "xyes" ; then
   PKG_CHECK_MODULES(DBUS, dbus-1 >= 1.2, 
     have_dbus=yes

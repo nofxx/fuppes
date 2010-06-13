@@ -9,4 +9,6 @@ dist_pixmaps_DATA = \
 	header-gradient.png \
 	header-gradient-small.png \
 	mootools-1.2.4-core-yc.js \
-	fuppes.js
+	fuppes.js \
+	fuppes-browse.js \
+	fuppes-control.js

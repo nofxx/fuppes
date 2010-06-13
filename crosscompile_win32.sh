@@ -207,7 +207,7 @@ if test "$HAVE_ZLIB" == "yes"; then
 echo "start building zlib"
 
 loadpkt "zlib-1.2.3" ".tar.gz" \
-        "http://www.zlib.net/"
+          "http://prdownloads.sourceforge.net/libpng/"
 
 echo "AC_INIT([zlib], [1.2.3], [fuppes@ulrich-voelkel.de])
 AM_INIT_AUTOMAKE([foreign])
@@ -281,13 +281,13 @@ $MAKE_INSTALL
 cd ..
 
 
-# SQLite 3.6.21 (required)
+# SQLite 3.6.23 (required)
 echo "start building sqlite"
-loadpkt "sqlite-amalgamation-3.6.21" ".tar.gz" \
+loadpkt "sqlite-amalgamation-3.6.23.1" ".tar.gz" \
         "http://www.sqlite.org/"
-cd sqlite-3.6.21
+cd sqlite-3.6.23.1
 ./configure --host=$HOST --prefix=$PREFIX \
---enable-tempstore=yes --enable-threadsafe
+--enable-threadsafe
 $MAKE
 $MAKE_INSTALL
 cd ..
@@ -323,7 +323,7 @@ if test "$HAVE_TAGLIB" == "yes"; then
 
   echo "start building taglib"
 
-  loadpkt "taglib-1.6.1" ".tar.gz" \
+  loadpkt "taglib-1.6.3" ".tar.gz" \
           "http://developer.kde.org/~wheeler/files/src/"
   CXXFLAGS="$CXXFLAGS -DMAKE_TAGLIB_LIB" \
   LDFLAGS="$LDFLAGS" \
@@ -342,7 +342,7 @@ if test "$HAVE_LAME" == "yes"; then
 
   echo "start building lame"
 
-  loadpkt "lame-398-2" ".tar.gz" \
+  loadpkt "lame-3.98.4" ".tar.gz" \
           "http://downloads.sourceforge.net/lame/"
 
   # we need to reconfigure the sources because of this bug
@@ -366,7 +366,7 @@ if test "$HAVE_OGGVORBIS" == "yes"; then
 
 # ogg
 echo "start building ogg"
-loadpkt "libogg-1.1.4" ".tar.gz" \
+loadpkt "libogg-1.2.0" ".tar.gz" \
         "http://downloads.xiph.org/releases/ogg/"
 autoreconf -vfi
 ./configure --host=$HOST --prefix=$PREFIX
@@ -376,7 +376,7 @@ cd ..
 
 # vorbis
 echo "start building vorbis"
-loadpkt "libvorbis-1.2.3" ".tar.gz" \
+loadpkt "libvorbis-1.3.1" ".tar.gz" \
         "http://downloads.xiph.org/releases/vorbis/"
 ./configure --host=$HOST --prefix=$PREFIX
 $MAKE
@@ -423,24 +423,31 @@ if test "$HAVE_MUSEPACK" == "yes"; then
 
 echo "start building musepack"
 
-loadpkt "libmpcdec-1.2.6" ".tar.bz2" \
-        "http://files.musepack.net/source/"
-
-sed -i -e 's/AC_MSG_ERROR(\[working memcmp is not available.\])/echo "no memcmp"/' configure.ac
-sed -i -e 's/AM_PROG_LIBTOOL/AM_PROG_LIBTOOL\nAC_PROG_CXX/' configure.ac
-
-#loadpkt "musepack_src_r435" ".tar.gz" \
+# SV7
+#loadpkt "libmpcdec-1.2.6" ".tar.bz2" \
 #        "http://files.musepack.net/source/"
 
-#sed -i -e 's/\\/\n/' Makefile.am
-#sed -i -e 's/\tmpcchap/#/' Makefile.am
+# SV8
+loadpkt "musepack_src_r435" ".tar.gz" \
+        "http://files.musepack.net/source/"
+
+# fixes for SV7
+#sed -i -e 's/AC_MSG_ERROR(\[working memcmp is not available.\])/echo "no memcmp"/' configure.ac
+#sed -i -e 's/AM_PROG_LIBTOOL/AM_PROG_LIBTOOL\nAC_PROG_CXX/' configure.ac
+
+# fixes for SV8 (some tools don't compile but as we don't need them anyway we just skip them)
+sed -i -e 's/\\/\n/' Makefile.am
+sed -i -e 's/\tmpcchap/#/' Makefile.am
 
 
 autoreconf -vfi
 ./configure --host=$HOST --prefix=$PREFIX
 $MAKE
 $MAKE_INSTALL
-cp include/mpcdec/config_win32.h $PREFIX/include/mpcdec/
+
+# SV7 only
+#cp include/mpcdec/config_win32.h $PREFIX/include/mpcdec/
+
 cd ..
 
 else
@@ -491,7 +498,7 @@ fi
 if test "$HAVE_EXIV2" == "yes"; then
 
   echo "start building exiv2"
-  loadpkt "exiv2-0.18.2" ".tar.gz" \
+  loadpkt "exiv2-0.20" ".tar.gz" \
           "http://www.exiv2.org/"
 
   PARAMS="--disable-xmp --disable-visibility"
@@ -501,8 +508,9 @@ if test "$HAVE_EXIV2" == "yes"; then
   
   ./configure --host=$HOST --prefix=$PREFIX $PARAMS
 
-  sed -i -e 's/LDFLAGS = /LDFLAGS = -no-undefined /' config/config.mk
-  sed -i -e 's/-lm//' config/config.mk
+  # fixes for 0.18.2
+  #sed -i -e 's/LDFLAGS = /LDFLAGS = -no-undefined /' config/config.mk
+  #sed -i -e 's/-lm//' config/config.mk
   $MAKE
   mv src/.libs/exiv2 src/.libs/exiv2.exe
   $MAKE_INSTALL
@@ -515,13 +523,13 @@ fi
 
 
 
-#libjpeg (for ImageMagick and ffmpegthumbnailer)
+#libjpeg (for ImageMagick, simage and ffmpegthumbnailer)
 if test "$HAVE_JPEG" == "yes"; then
   echo "start building jpeg"  
   loadpkt "jpegsrc.v7" ".tar.gz" \
           "http://www.ijg.org/files/"
   cd jpeg-7
-  sed -i -e 's/typedef int boolean/typedef char boolean/' jmorecfg.h
+  #sed -i -e 's/typedef int boolean/typedef char boolean/' jmorecfg.h
   ./configure --host=$HOST --prefix=$PREFIX
   $MAKE
   $MAKE_INSTALL
@@ -534,10 +542,9 @@ fi
 #libpng (for ImageMagick and simage)
 if test "$HAVE_PNG" == "yes"; then
   echo "start building png"
-  loadpkt "libpng-1.2.41" ".tar.bz2" \
+  loadpkt "libpng-1.4.2" ".tar.bz2" \
           "http://prdownloads.sourceforge.net/libpng/"
-  ./configure --host=$HOST --prefix=$PREFIX \
-  --with-libpng-compat=no
+  ./configure --host=$HOST --prefix=$PREFIX
   $MAKE
   $MAKE_INSTALL
   cd ..
@@ -553,7 +560,7 @@ fi
 if test "$HAVE_SIMAGE" == "yes"; then
 
   echo "start building simage"
-  loadpkt "simage-1.6.1" ".tar.gz" \
+  loadpkt "simage-1.7.0" ".tar.gz" \
           "http://ftp.coin3d.org/coin/src/all/"
 
   ./configure --host=$HOST --prefix=$PREFIX
@@ -609,7 +616,8 @@ fi
 sed -i -e 's/__MINGW32_MINOR_VERSION >= 15/__MINGW32_MINOR_VERSION >= 13/' configure
 sed -i -e 's/usleep/Sleep/' ffmpeg.c
  
-./configure --prefix=$PREFIX --enable-cross-compile --target-os=mingw32 \
+./configure --prefix=$PREFIX \
+--enable-cross-compile --target-os=mingw32 --arch=x86 \
 --enable-memalign-hack --cross-prefix=$HOST- --enable-shared \
 --enable-gpl --disable-ffmpeg --disable-ffplay --disable-ffserver \
 --disable-demuxer=dv1394 --disable-indevs
@@ -647,7 +655,9 @@ fi
 
 # FUPPES
 cd $FUPPES_DIR
-./configure --host=$HOST --prefix=$PREFIX \
+#CPPFLAGS="$CPPFLAGS -D__MSVCRT_VERSION__=0x0800" \
+#LIBS="$LIBS -lmsvcr80" \
+./configure --host=$HOST --prefix=$PREFIX --sysconfdir=$PREFIX/etc \
 --enable-lame --enable-transcoder-ffmpeg --enable-windows-service
 $MAKE
 $MAKE_INSTALL

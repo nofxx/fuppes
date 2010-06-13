@@ -337,7 +337,7 @@ fi
 #libpng (for ImageMagick, simage and ffmpegthumbnailer)
 if test "$HAVE_PNG" == "yes"; then
   echo "start building png"
-  loadpkt "libpng-1.4.1" ".tar.bz2" \
+  loadpkt "libpng-1.4.2" ".tar.bz2" \
           "http://prdownloads.sourceforge.net/libpng/"
   ./configure --host=$HOST --prefix=$PREFIX
   $MAKE
