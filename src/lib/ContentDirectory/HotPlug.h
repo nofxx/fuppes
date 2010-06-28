@@ -67,6 +67,7 @@ class HotPlugMgr
 class HotPlugDbus: public HotPlugBase
 {
   public:
+    HotPlugDbus();
     ~HotPlugDbus();
     bool setup();
 

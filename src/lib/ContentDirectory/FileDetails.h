@@ -111,11 +111,11 @@ class BaseItem
 
 	  struct metadata_t* metadata() { return &m_metadata; }
     
-    std::string   title() { return m_metadata.title; }
-    std::string   publisher() { return m_metadata.publisher; }
-    std::string   date() { return m_metadata.date; }
-    std::string   description() { return m_metadata.description; }
-    std::string   longDescription() { return m_metadata.long_description; }
+    std::string   title() { return TrimWhiteSpace(m_metadata.title); }
+    std::string   publisher() { return TrimWhiteSpace(m_metadata.publisher); }
+    std::string   date() { return TrimWhiteSpace(m_metadata.date); }
+    std::string   description() { return TrimWhiteSpace(m_metadata.description); }
+    std::string   longDescription() { return TrimWhiteSpace(m_metadata.long_description); }
     
   protected:
 		struct metadata_t		m_metadata;
@@ -211,7 +211,8 @@ class AudioItem: public BaseItem
     std::string   audioCodec() { return m_metadata.audio_codec; }
     bool          hasImage() { return (m_metadata.has_image == 1); }
     std::string   imageMimeType() { return m_metadata.image_mime_type; }
-
+    int           imageWidth() { return m_metadata.image_width; }
+    int           imageHeight() { return m_metadata.image_height; } 
 };
 
 
@@ -329,7 +330,7 @@ class VideoItem: public BaseItem
 {
   public:
     // item:videoItem
-    std::string   genre() { return m_metadata.genre; }
+    std::string   genre() { return TrimWhiteSpace(m_metadata.genre); }
     // the upnp property is actually actor and multivalued
     // but we return a single string with all actors separated by comma
     std::string   actors() { return m_metadata.actors; }

@@ -123,6 +123,10 @@ class CContentDatabase
     static int systemUpdateId();
     static void incSystemUpdateId();
 
+    /* export all objects in path to fileName and remove from local db*/
+    static bool exportData(std::string fileName, std::string path, bool remove);
+    /* import all objects from fileName with path */
+    static bool importData(std::string fileName, std::string path);
     
   private:    
     CContentDatabase();

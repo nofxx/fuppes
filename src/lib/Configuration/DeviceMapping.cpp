@@ -55,6 +55,8 @@ bool VirtualFolders::Read(void)
 StringList VirtualFolders::getEnabledFolders()
 {
   StringList result;
+  if(!m_enabled)
+    return result;
 
   std::vector<struct VirtualFolder>::iterator iter;
   for(iter = m_folderSettings.begin();

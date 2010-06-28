@@ -82,7 +82,7 @@ static const fuppes_sql mysql_sql[] = {
   "  o.OBJECT_ID = %OBJECT_ID% and "
   "  o.%DEVICE% "
   },    
-
+/*
   {SQL_GET_ALBUM_ART_DETAILS,  
   "select "
   "  IV_HEIGHT, "
@@ -93,7 +93,7 @@ static const fuppes_sql mysql_sql[] = {
   "where "
   "  d.ID = %OBJECT_ID% "
   },
-
+*/
   {SQL_SEARCH_PART_SELECT_FIELDS,
   "select * "
   },

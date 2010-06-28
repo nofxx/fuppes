@@ -34,15 +34,26 @@ std::string PageDevice::content()
 {
   std::stringstream result;
 
-
   result << "<h1>" << title() << "</h1>" << endl;  
-  
 
+  // device settings
+  string deviceSettings;
+  CDeviceIdentificationMgr::Shared()->PrintSettings(&deviceSettings);
+  result << deviceSettings;
+
+
+
+  // detected devices
+  result << "<h1>detected render devices</h1>" << endl;  
+  
   // sort the devices
   std::list<CUPnPDevice*> devices;
   for(unsigned int i = 0; i < CSharedConfig::Shared()->GetFuppesInstance(0)->GetRemoteDevices().size(); i++) {
 
     CUPnPDevice* pDevice = CSharedConfig::Shared()->GetFuppesInstance(0)->GetRemoteDevices()[i];
+    if(pDevice->GetUPnPDeviceType() != UPNP_DEVICE_MEDIA_RENDERER) 
+      continue;
+
     if(pDevice->descriptionAvailable())
       devices.push_front(pDevice);
     else
@@ -57,7 +68,7 @@ std::string PageDevice::content()
     CUPnPDevice* pDevice = *iter;
 
     result << "<div class=\"remote-device\">" << endl;
-
+    
     // icon
     result << "<div class=\"remote-device-icon\">";
       if(pDevice->descriptionAvailable()) {

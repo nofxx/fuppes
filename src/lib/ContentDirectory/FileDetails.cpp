@@ -70,7 +70,10 @@ OBJECT_TYPE CFileDetails::GetObjectType(std::string p_sFileName)
 
 std::string CFileDetails::GetObjectTypeAsStr(OBJECT_TYPE p_nObjectType)
 {
-  if(p_nObjectType < ITEM) {
+  assert((p_nObjectType > OBJECT_TYPE_UNKNOWN && p_nObjectType < CONTAINER_MAX) ||
+         (p_nObjectType >= ITEM && p_nObjectType < ITEM_MAX));
+  
+  if(p_nObjectType < CONTAINER_MAX) {
     return GetContainerTypeAsStr(p_nObjectType);
   }
   
@@ -96,9 +99,13 @@ std::string CFileDetails::GetObjectTypeAsStr(OBJECT_TYPE p_nObjectType)
       return "object.item.videoItem.movie";
     case ITEM_VIDEO_ITEM_VIDEO_BROADCAST :
       return "object.item.videoItem.videoBroadcast";
+    case ITEM_VIDEO_ITEM_MUSIC_VIDEO_CLIP:
+      return "object.item.videoItem.musicVideoClip";
       
-    default:
-      return "unknown";
+    default: {
+      cout << "unknown object type: " << p_nObjectType << ". I'm going to crash now. Sorry!" << endl;
+      assert(true == false);
+    }
   }
 }
 
@@ -132,8 +139,10 @@ std::string CFileDetails::GetContainerTypeAsStr(OBJECT_TYPE p_nContainerType)
     case CONTAINER_STORAGE_FOLDER :
       return "object.container.storageFolder";
     
-    default:
-      return "unknown";
+    default: {
+      cout << "container type: " << p_nContainerType << ". I'm going to crash now. Sorry!" << endl;
+      assert(true == false);
+    }
   }
 }
 

@@ -5,16 +5,8 @@ libdir = @libdir@/fuppes
 lib_LTLIBRARIES =
 
 ##
-##  CORE PLUGINS
+##  DATABASE PLUGINS
 ##
-
-## basic presentation
-
-#lib_LTLIBRARIES += libcore_presentation.la
-
-#libcore_presentation_la_SOURCES = \
-#	core_presentation.cpp
-
 
 ## sqlite3
 

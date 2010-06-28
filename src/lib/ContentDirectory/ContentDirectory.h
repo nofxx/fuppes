@@ -64,6 +64,9 @@ class CContentDirectory: public CUPnPService
 
 
 
+    static std::string buildDlnaInfo(bool transcode, std::string dlnaProfile);
+    
+
   private:
     /** scans a specific directory
      *  @param  p_sDirectory  path to the directory to scan
@@ -142,12 +145,13 @@ class CContentDirectory: public CUPnPService
     void HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_psResult);
 
     void HandeUPnPDestroyObject(CUPnPAction* pAction, std::string* p_psResult);  	
-	
+    
     std::string BuildProtocolInfo(bool p_bTranscode,
                                   std::string p_sMimeType,
                                   std::string p_sProfileId,
                                   CUPnPBrowseSearchBase*  pUPnPBrowse);
 
+    void writeAlbumArtUrl(xmlTextWriterPtr pWriter, CUPnPAction* pAction, CSQLResult* pSQLResult);
     std::string buildObjectAlias(std::string objectId, CSQLResult* pSQLResult);
 };
 

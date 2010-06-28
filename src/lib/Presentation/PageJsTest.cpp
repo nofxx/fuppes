@@ -36,9 +36,14 @@ std::string PageJsTest::content()
 
 
   // soap controll
-  result << "<h2>fuppes soap controll</h2>";
+  result << "<h2>fuppes soap control</h2>";
   result << "<div>";
-  result << "<a href=\"javascript:fuppesCtrl();\">ctrl test</a>";
+  result << "<ul>";
+  result << "<li><a href=\"javascript:fuppesCtrl('Test');\">Test</a></li>";
+  result << "<li><a href=\"javascript:fuppesCtrl('DatabaseRebuild');\">DatabaseRebuild</a></li>";
+  result << "<li><a href=\"javascript:fuppesCtrl('DatabaseUpdate');\">DatabaseUpdate</a></li>";
+  result << "<li><a href=\"javascript:fuppesCtrl('VfolderUpdate');\">VfolderUpdate</a></li>";
+  result << "</ul>";
   result << "<div id=\"ctrl-result\"></div>";
   result << "</div>";
   

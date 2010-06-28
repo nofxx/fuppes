@@ -378,7 +378,7 @@ bool CSharedConfig::ReadConfigFile()
   if (pTmp) {	
 	  transcodingSettings->Init(pTmp);
   } else {
-    PrintConfigReadErrors(READERROR_TRANSCODING);
+    //PrintConfigReadErrors(READERROR_TRANSCODING);
   }
 
   /*
@@ -519,6 +519,7 @@ std::string CSharedConfig::getAlbumArtFiles() // static
   file.push_back(".folder");
   file.push_back("folder");
   file.push_back("front");
+  file.push_back(".front");
   
   StringListIterator iterExt;
   StringListIterator iterFile;

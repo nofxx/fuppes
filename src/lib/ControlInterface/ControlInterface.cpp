@@ -1,10 +1,10 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            ControlInterface.cpp
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2008-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -31,6 +31,34 @@ using namespace std;
 
 #include "../SharedConfig.h"
 
+ControlInterface* ControlInterface::m_instance = NULL;
+
+void ControlInterface::init() // static
+{
+	ASSERT(m_instance == NULL);
+  m_instance = new ControlInterface();
+}
+
+void ControlInterface::uninit() // static
+{
+	ASSERT(m_instance != NULL);
+  delete m_instance;
+  m_instance = NULL;
+}
+
+ControlInterface::ControlInterface()
+{
+}
+
+
+void exec(FUPPES_CONTROL_ACTION action) // static
+{
+  switch(action) {
+  }
+}
+
+
+/*
 int	CControlInterface::action(std::string action, stringList* args, stringList* result)
 {
 	//CFuppes* fuppes = CSharedConfig::Shared()->GetFuppesInstance(0);
@@ -57,3 +85,4 @@ int	CControlInterface::action(std::string action, stringList* args, stringList* 
 	
 	return 0;
 }
+*/

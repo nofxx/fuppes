@@ -266,6 +266,7 @@ sockaddr_in CUDPSocket::GetLocalEndPoint()
 //fuppesThreadCallback UDPReceiveLoop(void *arg)
 void CUDPSocket::run()
 {
+/* 
   #ifndef FUPPES_TARGET_WIN32                     
   //set thread cancel state
   int nRetVal = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
@@ -281,6 +282,7 @@ void CUDPSocket::run()
     exit(EXIT_FAILURE);
   }
   #endif // FUPPES_TARGET_WIN32
+*/
 
   CUDPSocket* udp_sock = this; //(CUDPSocket*)arg;
 
@@ -316,12 +318,12 @@ void CUDPSocket::run()
 		
     bytes_received = recvfrom(udp_sock->GetSocketFd(), buffer, sizeof(buffer), 0, (struct sockaddr*)&remote_ep, &size);
     if(bytes_received <= 0) {
-		  #if defined(BSD)
+		  /*#if defined(BSD)
 			pthread_testcancel();
 			fuppesSleep(100);
-			#else
+			#else */
       CSharedLog::Log(L_DBG, __FILE__, __LINE__, "error :: recvfrom()");
-      #endif
+      //#endif
 			continue;
     }
 		buffer[bytes_received] = '\0';

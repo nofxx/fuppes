@@ -31,6 +31,10 @@
 #include <sstream>
 using namespace std;
 
+
+#include "../ContentDirectory/ContentDatabase.h"
+
+
 SoapControl::SoapControl(std::string HTTPServerURL):
 CUPnPService(FUPPES_SOAP_CONTROL, 1, HTTPServerURL)
 {
@@ -43,31 +47,54 @@ std::string SoapControl::GetServiceDescription()
 
 void SoapControl::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut)
 {
+	FuppesCtrlAction* action = (FuppesCtrlAction*)pUPnPAction;
+	
 	cout << "SoapControl:: handleAction : " << pUPnPAction->GetContent() << endl;
 	
-	string content = "";
+	stringstream content;
 
-	if(pUPnPAction->GetActionType() == FUPPES_CTRL_TEST) {
-			content = 
+
+	switch(action->type()) {
+
+		case FUPPES_CTRL_DATABASE_REBUILD:
+			break;
+		
+	}
+	
+
+	if(action->type() == FUPPES_CTRL_TEST) {
+			content << 
 				"<c:TestResponse xmlns:c=\"urn:fuppesControl\">"
 				"<Result>test</Result>"
 				"</c:TestResponse>";
+
+
+		//CContentDatabase::exportData("/home/ulrich/Desktop/export.db", "/home/ulrich/Desktop/fuppes-test/Oregon/", true);		
 	}
 
 	
-  if(!content.empty()) {    
-    pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml; charset=\"utf-8\"");
+  if(content.str().empty()) { 
+		content << 
+				"<c:Error xmlns:c=\"urn:fuppesControl\">"
+				"<Code>123</Code>"
+				"<Message>fuppes soap control error</Message>"
+				"</c:Error>";
+	}
+  
+	string result = 
+		"<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+		"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
+		"  <s:Body>"
+		+ content.str() +
+		"  </s:Body>"
+		"</s:Envelope>";
+	
+	pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_200_OK, "text/xml; charset=\"utf-8\"");	
+  pMessageOut->SetContent(result);
 
-		content = 
-			"<?xml version=\"1.0\" encoding=\"utf-8\"?>"
-			"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
-			"  <s:Body>"
-			+ content +
-			"  </s:Body>"
-			"</s:Envelope>";
-			
-    pMessageOut->SetContent(content);
-  }
+cout << result << endl;
+	
+/*
   else {
     pMessageOut->SetMessage(HTTP_MESSAGE_TYPE_500_INTERNAL_SERVER_ERROR, "text/xml; charset=\"utf-8\"");            
 
@@ -90,4 +117,5 @@ void SoapControl::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMess
     
     pMessageOut->SetContent(content);
 	}
+*/
 }

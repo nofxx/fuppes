@@ -215,6 +215,10 @@ static inline void init_metadata(struct metadata_t* metadata)
 
   //metadata->image_mime_type = (char*)malloc(sizeof(char));
 	set_value(metadata->image_mime_type, "");
+
+  metadata->image_width = 0;
+
+  metadata->image_height = 0;
 }
 
 static inline void free_metadata(struct metadata_t* metadata)

@@ -210,7 +210,7 @@ bool File::getline(std::string& line)
     read(buffer, end - start);
     buffer[end - start] = '\0';
     line = buffer;
-    delete buffer;
+    delete[] buffer;
     return true;    
   }
 

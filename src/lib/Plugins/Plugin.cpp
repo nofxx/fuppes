@@ -46,7 +46,7 @@ CPluginMgr* CPluginMgr::m_instance = 0;
 CPluginMgr::CPluginMgr()
 {
 	m_dlnaPlugin = NULL;
-	m_presentationPlugin = NULL;
+	//m_presentationPlugin = NULL;
 }
 
 void CPluginMgr::init(void) {
@@ -103,7 +103,7 @@ bool CPluginMgr::init_plugin(string fileName) {
     plugin_info pluginInfo;
     pluginInfo.plugin_type = PT_NONE;
     pluginInfo.cb.log = &CPlugin::logCb;
-    pluginInfo.cb.ctrl = NULL;
+    //pluginInfo.cb.ctrl = NULL;
     pluginInfo.plugin_name[0] = '\0';
     pluginInfo.plugin_author[0] = '\0';
     pluginInfo.plugin_version[0] = '\0';
@@ -125,7 +125,7 @@ bool CPluginMgr::init_plugin(string fileName) {
     regPlugin = (registerPlugin_t)FuppesGetProcAddress(handle, "register_fuppes_plugin");	
 
 #ifndef WIN32
-    char* error;
+    const char* error;
     if ((error = dlerror()) != NULL)  {
       fprintf (stderr, "%s\n", error);
       regPlugin = NULL;
@@ -165,7 +165,7 @@ bool CPluginMgr::init_plugin(string fileName) {
               fileName.c_str());
         }
         break;
-      case PT_PRESENTATION:
+      /*case PT_PRESENTATION:
         if(m_instance->m_presentationPlugin == NULL) {
           plugin = new CPresentationPlugin(handle, &pluginInfo);
           if(plugin->initPlugin()) {
@@ -179,7 +179,7 @@ bool CPluginMgr::init_plugin(string fileName) {
               "Already registered similar presentation plugin. Skipping '%s'", 
               fileName.c_str());
         }
-        break;					
+        break;*/					
       case PT_METADATA:
         if(m_instance->m_metadataPlugins.find(ToLower(pluginInfo.plugin_name)) == m_instance->m_metadataPlugins.end()) {
           plugin = new CMetadataPlugin(handle, &pluginInfo);
@@ -324,10 +324,10 @@ void CPluginMgr::uninit() // static
 		delete m_instance->m_dlnaPlugin;
   }
 
-	if(m_instance->m_presentationPlugin) {
+	/*if(m_instance->m_presentationPlugin) {
     m_instance->m_presentationPlugin->uninit();
 		delete m_instance->m_presentationPlugin;
-  }
+  }*/
 
 	
 	fuppesThreadDestroyMutex(&m_instance->m_mutex);
@@ -336,7 +336,7 @@ void CPluginMgr::uninit() // static
 }
 
 
-bool CPluginMgr::hasMetadataPlugin(std::string pluginName)
+bool CPluginMgr::hasMetadataPlugin(std::string pluginName) // static
 {
 	bool result = false;
 	
@@ -344,6 +344,19 @@ bool CPluginMgr::hasMetadataPlugin(std::string pluginName)
 	pluginName = ToLower(pluginName);
 
 	result = (m_instance->m_metadataPlugins.find(pluginName) != m_instance->m_metadataPlugins.end());
+	
+	fuppesThreadUnlockMutex(&m_instance->m_mutex);
+	return result;
+}
+
+bool CPluginMgr::hasTranscoderPlugin(std::string pluginName) // static
+{
+	bool result = false;
+	
+	fuppesThreadLockMutex(&m_instance->m_mutex);
+	pluginName = ToLower(pluginName);
+
+	result = (m_instance->m_transcoderPlugins.find(pluginName) != m_instance->m_transcoderPlugins.end());
 	
 	fuppesThreadUnlockMutex(&m_instance->m_mutex);
 	return result;
@@ -471,8 +484,8 @@ std::string CPluginMgr::printInfo(bool html /*= false*/)
 	result << "misc:" << br;
 	if(m_instance->m_dlnaPlugin)
 		result << "  " << m_instance->m_dlnaPlugin->name() << br;
-	if(m_instance->m_presentationPlugin)
-		result << "  " << m_instance->m_presentationPlugin->name() << br;
+	/*if(m_instance->m_presentationPlugin)
+		result << "  " << m_instance->m_presentationPlugin->name() << br;*/
 	result << br;	
 	
 	result << "metadata:" << br;
@@ -527,7 +540,7 @@ CPlugin::CPlugin(fuppesLibHandle handle, plugin_info* info)
 	
 	m_pluginInfo.user_data = NULL;
 	m_pluginInfo.cb.log = &CPlugin::logCb;
-	m_pluginInfo.cb.ctrl = NULL;
+	//m_pluginInfo.cb.ctrl = NULL;
 
 	m_pluginInitInstance = NULL;
 	m_pluginUninitInstance = NULL;
@@ -552,7 +565,7 @@ CPlugin::CPlugin(CPlugin* plugin)
 	
 	m_pluginInfo.user_data = NULL;
 	m_pluginInfo.cb.log = &CPlugin::logCb;
-	m_pluginInfo.cb.ctrl = NULL;
+	//m_pluginInfo.cb.ctrl = NULL;
 
 	m_pluginInitInstance = plugin->m_pluginInitInstance;
 	m_pluginUninitInstance = plugin->m_pluginUninitInstance;
@@ -1051,46 +1064,11 @@ unsigned int CAudioEncoderPlugin::GuessContentLength(unsigned int numPcmSamples)
  *  CPresentationPlugin
  */
 
+/*
 CPresentationPlugin::CPresentationPlugin(fuppesLibHandle handle, plugin_info* info)
 :CPlugin(handle, info)
 {
-	m_pluginInfo.cb.ctrl = &CPresentationPlugin::ctrlAction;
-}
-
-int CPresentationPlugin::ctrlAction(const char* action, arg_list_t* args, arg_list_t* result)
-{
-//	cout << "ctrlAction: " << action << endl;
-
-	stringList ctrlArgs;
-	stringList ctrlResult;
-	CControlInterface ctrl;
-
-	while(args) {
-		ctrlArgs[string(args->key)] = args->value;
-		args = (arg_list_t*)args->next;
-	}
-	
-	int ret = ctrl.action(action, &ctrlArgs, &ctrlResult);	
-	if(ret != 0) {
-		//cout << "ctrlAction: " << action << " error: " << ret << endl;
-		return ret;
-	}
-	
-	/*stringListIter iter = ctrlResult.begin();	
-	arg_list_t* resultArgs = result;	
-	while(iter != ctrlResult.end()) {
-
-		set_value(&resultArgs->key, iter->first.c_str());
-		set_value(&resultArgs->value, iter->second.c_str());
-		
-		iter++;
-		if(iter != ctrlResult.end()) {
-			resultArgs = arg_list_append(result);
-		}
-	}*/
-	
-	//cout << "ctrlAction: " << action << " DONE" << endl;
-	return 0;	
+	//m_pluginInfo.cb.ctrl = &CPresentationPlugin::ctrlAction;
 }
 
 bool CPresentationPlugin::initPlugin()
@@ -1115,8 +1093,8 @@ bool CPresentationPlugin::handleRequest(CHTTPMessage* pRequest, CHTTPMessage* pR
 	pResponse->SetVersion(pRequest->GetVersion());
 	
 	
-	/*char* url, char* get[], int getc, char* post[], int postc,
-		int* error, char** mime_type, char** result, int* length */
+	//char* url, char* get[], int getc, char* post[], int postc,
+	//	int* error, char** mime_type, char** result, int* length 
 	
 	string url = pRequest->GetRequest();  
 	
@@ -1141,7 +1119,7 @@ bool CPresentationPlugin::handleRequest(CHTTPMessage* pRequest, CHTTPMessage* pR
 	return (ret == 0);
 }
 
-
+*/
 
 
 

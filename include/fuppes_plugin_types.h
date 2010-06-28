@@ -42,7 +42,6 @@ typedef enum PLUGIN_TYPE {
 	PT_AUDIO_ENCODER,
 	PT_TRANSCODER,
 	PT_THREADED_TRANSCODER,
-	PT_PRESENTATION,
 	PT_DATABASE_CONNECTION
 } PLUGIN_TYPE;
 
@@ -75,14 +74,14 @@ typedef struct {
 
 
 
-typedef int (*ctrl_action_t)(const char* action, arg_list_t* args, arg_list_t* result);
+//typedef int (*ctrl_action_t)(const char* action, arg_list_t* args, arg_list_t* result);
 
 
 typedef void (*log_t)(void* plugin, int level, const char* file, int line, const char* format, ...);
 
 typedef struct {
 	log_t					log;
-	ctrl_action_t	ctrl;
+	//ctrl_action_t	ctrl;
 } plugin_callbacks;
 
 typedef struct {
@@ -190,7 +189,8 @@ struct metadata_t {
 	char						video_codec[100];
 	int							has_image;
 	char						image_mime_type[100];
-  
+  int             image_width;
+  int             image_height;
 };
 
 

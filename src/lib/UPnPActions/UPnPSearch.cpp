@@ -110,6 +110,7 @@ bool CUPnPSearch::prepareSQL()
   string sDevice = virtualFolderLayout();
   bVirtualSearch = !sDevice.empty();
 
+  stringstream tmp;
   
   unsigned int nContainerId = GetObjectIDAsUInt(); //GetContainerIdAsUInt();
   if(nContainerId > 0) {
@@ -240,28 +241,51 @@ bool CUPnPSearch::prepareSQL()
 				// replace value
 				if(sProp.compare("TYPE") == 0) { 
           sOp = "in";
-          
-          #warning todo: use values from UPnPObjectTypes.h
+
+          tmp.str("");
+
 				  if(sVal.compare("object.item") == 0) {
 						sOp = ">=";
-						sVal = "100";
+            tmp << ITEM;
 					}
-					else if(sVal.compare("object.item.imageItem") == 0)
-					  sVal = "(110, 111)";
-					else if(sVal.compare("object.item.audioItem") == 0)
-					  sVal = "(120, 121, 122)";	
-					else if(sVal.compare("object.item.videoItem") == 0)
-					  sVal = "(130, 131, 132, 133)";
-					else if(sVal.compare("object.container.person.musicArtist") == 0)
-					  sVal = "(11)";          
-					else if(sVal.compare("object.container.album.musicAlbum") == 0)
-					  sVal = "(31)";
-          else if(sVal.compare("object.container.genre.musicGenre") == 0)
-            sVal = "(41)";
-          else if (sVal.compare("object.container.playlistContainer") == 0)
-            sVal = "(20)";
+					else if(sVal.compare("object.item.imageItem") == 0) {
+            sOp = "between";
+					  tmp << ITEM_IMAGE_ITEM << " and " << (ITEM_IMAGE_ITEM_MAX - 1); //sVal = "(110, 111)";
+          }
+					else if(sVal.compare("object.item.audioItem") == 0) {
+            sOp = "between";
+					  tmp << ITEM_AUDIO_ITEM << " and " << (ITEM_AUDIO_ITEM_MAX - 1); //sVal = "(120, 121, 122)";	
+          }
+					else if(sVal.compare("object.item.videoItem") == 0){
+            sOp = "between";
+					  tmp << ITEM_VIDEO_ITEM << " and " << (ITEM_VIDEO_ITEM_MAX - 1); //sVal = "(130, 131, 132, 133)";
+          }
+					else if(sVal.compare("object.container.person.musicArtist") == 0) {
+            sOp = "=";
+					  tmp << CONTAINER_PERSON_MUSIC_ARTIST; //sVal = "(11)";
+          }
+					else if(sVal.compare("object.container.album.musicAlbum") == 0) {
+            sOp = "=";
+					  tmp << CONTAINER_ALBUM_MUSIC_ALBUM; //sVal = "(31)";
+          }          
+          else if(sVal.compare("object.container.genre.musicGenre") == 0) {
+            sOp = "=";
+					  tmp << CONTAINER_GENRE_MUSIC_GENRE; //sVal = "(41)";
+          }
+          else if(sVal.compare("object.container.genre.movieGenre") == 0) {
+            sOp = "=";
+					  tmp << CONTAINER_GENRE_MOVIE_GENRE;
+          }
+          else if (sVal.compare("object.container.playlistContainer") == 0) {
+            sOp = "=";
+					  tmp << CONTAINER_PLAYLIST_CONTAINER; //sVal = "201)";
+          }
 					else
 					  bBuildOK = false;
+
+          if(bBuildOK)
+            sVal = tmp.str();
+          tmp.str("");          
 				} 
 				else if (!bNumericProp) {
 				  if(bLikeOp)

@@ -26,7 +26,7 @@ typedef enum tagOBJECT_TYPE
     
   CONTAINER_GENRE = 40,
     CONTAINER_GENRE_MUSIC_GENRE = 41,
-    //CONTAINER_GENRE_MOVIE_GENRE = 42,
+    CONTAINER_GENRE_MOVIE_GENRE = 42,
     
   /*CONTAINER_CHANNEL_GROUP = 50,
     CONTAINER_CHANNEL_GROUP_AUDIO_CHANNEL_GROUP = 51,
@@ -37,7 +37,24 @@ typedef enum tagOBJECT_TYPE
   /*CONTAINER_STORAGE_SYSTEM = 70,
   CONTAINER_STORAGE_VOLUME = 80,
   CONTAINER_BOOKMARK_FOLDER = 90*/  
+
+  CONTAINER_MAX = 90,  
+
+
+
+  /* we use the space between CONTAINER_MAX and ITEM for some special purpose values */
   
+  
+  /*
+   when parsing a playlist and we find a stream url
+   we set the type to "unknown broadcast" and try to 
+   detect the type (audio or video) of the stream later.
+   this is no valid upnp object type!
+  */
+  ITEM_UNKNOWN_BROADCAST = 91,
+
+
+
   
   ITEM = 100,  
   
@@ -54,35 +71,18 @@ typedef enum tagOBJECT_TYPE
   ITEM_VIDEO_ITEM = 130,
     ITEM_VIDEO_ITEM_MOVIE            = 131,
     ITEM_VIDEO_ITEM_VIDEO_BROADCAST  = 132,
-    //ITEM_VIDEO_ITEM_MUSIC_VIDEO_CLIP = 133,
+    ITEM_VIDEO_ITEM_MUSIC_VIDEO_CLIP = 133,
 	ITEM_VIDEO_ITEM_MAX = 133,
 
-  ITEM_TEXT_ITEM = 140//,
+  ITEM_TEXT_ITEM = 140,
   /*ITEM_BOOKMARK_ITEM = 150,
   
   ITEM_EPG_ITEM = 160,
     ITEM_EPG_ITEM_AUDIO_PROGRAM = 161,
     ITEM_EPG_ITEM_VIDEO_PROGRAM = 162,*/     
 
+  ITEM_MAX = 200
   
 }OBJECT_TYPE;
-
-/*
-std::string objectTypeToString(OBJECT_TYPE type) {
-
-
-  switch(type) {
-    case OBJECT_TYPE_UNKNOWN:
-      break;
-      
-    case CONTAINER_STORAGE_FOLDER:
-      return "";
-      break;
-  }
-
-  ASSERT(true == false);
-  return "unknown";
-}
-*/
 
 #endif // _OBJECTTYPES_H

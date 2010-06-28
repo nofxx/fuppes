@@ -822,7 +822,7 @@ void RebuildThread::run()
 		while(!qry.eof()) {
 			CSQLResult* result = qry.result();
 
-			if(result->asUInt("TYPE") < ITEM) {
+			if(result->asUInt("TYPE") < CONTAINER_MAX) {
 				if(Directory::exists(result->asString("PATH"))) {
 					qry.next();
 					continue;
@@ -834,7 +834,10 @@ void RebuildThread::run()
 					continue;
 				}
 			}
-				
+      DbObject* file = new DbObject(result);
+      VirtualContainerMgr::deleteFile(file);
+      delete file;
+      
 			sSql << "delete from OBJECT_DETAILS where ID = " << result->asString("OBJECT_ID");
 			del->exec(sSql.str());
 			sSql.str("");
@@ -846,7 +849,7 @@ void RebuildThread::run()
 			sSql << "delete from OBJECTS where OBJECT_ID = " << result->asString("OBJECT_ID");
 			del->exec(sSql.str());
 			sSql.str("");
-			
+	
 			qry.next();
 		}
 
@@ -969,112 +972,140 @@ void RebuildThread::run()
   //fuppesThreadExit();
 }
 
-/*
-void CContentDatabase::deleteObject(unsigned int objectId)
+
+bool CContentDatabase::exportData(std::string fileName, std::string path, bool remove) // static
 {
+  CConnectionParams  params;
+  params.filename = fileName;
+
+  CDatabasePlugin* sqlitePlugin = CPluginMgr::databasePlugin("sqlite3");
+  if(!sqlitePlugin)
+    return false;
+
+  CDatabaseConnection* connection = sqlitePlugin->createConnection();
+  if(!connection)
+    return false;
+
+  if(!connection->connect(params)) {
+    delete connection;
+    return false;      
+  }
+
+
   stringstream sql;
-	CSQLQuery* qry = CDatabase::query();
-	
-  // get type
-  sql << "select TYPE, PATH from OBJECTS where OBJECT_ID = " << objectId << " and DEVICE is NULL";
-	qry->select(sql.str());
-	sql.str("");
-    
-  string objects;
-	if(qry->eof()) {
-		delete qry;
-	  return;
-	}
+  // get from local db
+  SQLQuery get;
+  // write to new connection
+  SQLQuery set(connection);
 
-	CSQLResult* result = qry->result();
 
-  OBJECT_TYPE type = (OBJECT_TYPE)result->asUInt("TYPE");
-  if(type < ITEM) { // is a container
-		fileAlterationMonitor()->removeWatch(result->asString("PATH"));
-    deleteContainer(result->asString("PATH"));    
+  sql << set.build(SQL_TABLES_EXIST, 0);
+  set.select(sql.str());
+  sql.str("");
+  if(!set.eof()) { 
+    set.exec("drop table FUPPES_DB_INFO");
+    set.exec("drop table OBJECTS");
+    set.exec("drop table OBJECT_DETAILS");
   }
-  else {  
-    //cout << "contentdb: delete object : " << result->asString("PATH") << endl;  
+  
+  // create tables
+  sql << set.build(SQL_CREATE_TABLE_DB_INFO, 0);
+  set.exec(sql.str());
+  sql.str("");
 
-		// delete details    
-    sql << "select DETAIL_ID from OBJECTS where OBJECT_ID = " << objectId;
-		qry->select(sql.str());
-		sql.str("");
+  sql << set.build(SQL_CREATE_TABLE_OBJECTS, 0);
+  set.exec(sql.str());
+  sql.str("");
+  
+  sql << set.build(SQL_CREATE_TABLE_OBJECT_DETAILS, 0);
+  set.exec(sql.str());
+  sql.str("");
+  
+  sql << set.build(SQL_SET_DB_INFO, DB_VERSION);
+  set.exec(sql.str());
+  sql.str("");
 
-		if(!qry->eof() && !qry->result()->isNull("DETAIL_ID")) {      
-      sql << "delete from OBJECT_DETAILS where ID = " << qry->result()->asString("DETAIL_ID");
-      qry->exec(sql.str());
-      sql.str("");
-		}
     
-    // delete mapping
-    sql << "delete from MAP_OBJECTS where OBJECT_ID = " << objectId;
-		qry->exec(sql.str());
-    sql.str("");
-    
-    // delete object
-    sql << "delete from OBJECTS where OBJECT_ID = " << objectId;
-		qry->exec(sql.str());
-    sql.str("");
-  }
+  
+  // get all objects in path
+  path = appendTrailingSlash(path);
+  sql.str("");
+  sql << "select * from OBJECTS where " <<
+    "PATH like '" << SQLEscape(path) << "%' and " <<
+    "DEVICE is NULL";
 
-	delete qry;
-}
+  DbObject* in;
+  DbObject* out;
+  ObjectDetails details;
+  
+  object_id_t oid = 0;
+  
+  get.select(sql.str());
+  cout << "START EXPORT" << endl;
+  while(!get.eof()) {
+    oid++;
+    in = new DbObject(get.result());
+    out = new DbObject(in);
 
-void CContentDatabase::deleteContainer(std::string path)
-{
-  stringstream sSql;
-	CSQLQuery* qry = CDatabase::query();
-	
-  // delete object details
-  sSql << 
-    "select DETAIL_ID from OBJECTS where PATH like '" <<
-    SQLEscape(appendTrailingSlash(path)) << "%' and DEVICE is NULL";
+    cout << "export OBJECT: " << in->title() << "*" << endl;
 
-	qry->select(sSql.str());
-	sSql.str("");
-	
-  string details;
-	while(!qry->eof()) {
-		
-    if(!qry->result()->isNull("DETAIL_ID")) {
-      details += qry->result()->asString("DETAIL_ID") + ", ";
+    // export details
+    if(in->detailId() > 0) {
+      details.reset();
+      details = *in->details();
+      details.save(&set);
+      
+      out->setDetailId(details.id());
     }
-    qry->next();
-	}
-  
-  if(details.length() > 0) {
-    details = details.substr(0, details.length() -2);
     
-    sSql << "delete from OBJECT_DETAILS where ID in (" << details << ")";
-    //cout << sSql.str() << endl;
-    qry->exec(sSql.str());
-    sSql.str("");
-  }
-  
-  // delete mappings
-  sSql << "select OBJECT_ID from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(path)) << "%' and DEVICE is NULL";		
-	qry->select(sSql.str());
-	sSql.str("");
-  
-  string objects;
-	while(!qry->eof()) {
-    objects += qry->result()->asString("OBJECT_ID") + ", ";
-    qry->next();
-	}
-  
-  if(objects.length() > 0) {
-    objects = objects.substr(0, objects.length() -2);
-    qry->exec("delete from MAP_OBJECTS where OBJECT_ID in (" + objects + ")");
-  }
-  
-#warning todo: remove fam watches
-  
-  // delete objects
-  sSql << "delete from OBJECTS where PATH like '" << SQLEscape(appendTrailingSlash(path)) << "%'";
-  qry->exec(sSql.str());
-  sSql.str("");
+    // export object
+    string newPath = in->path();
+    newPath = "./" + StringReplace(newPath, path, "");
+    
+    out->setPath(newPath);
+    out->setObjectId(in->objectId());
+    out->save(&set);
+    delete out;
 
-	delete qry;
+
+    // delete object from local db
+    
+    
+    delete in;
+    
+    get.next();
+  }
+  cout << "EXPORT FINISHED" << endl;
+
+  delete connection;
+  return true;
 }
-*/
+
+bool CContentDatabase::importData(std::string fileName, std::string path) // static
+{
+  CConnectionParams  params;
+  params.filename = fileName;
+
+  CDatabasePlugin* sqlitePlugin = CPluginMgr::databasePlugin("sqlite3");
+  if(!sqlitePlugin)
+    return false;
+
+  CDatabaseConnection* connection = sqlitePlugin->createConnection();
+  if(!connection)
+    return false;
+
+  if(!connection->connect(params)) {
+    delete connection;
+    return false;      
+  }
+
+
+  stringstream sql;
+  // get from new connection
+  SQLQuery get(connection);
+    // write to local db
+  SQLQuery set;
+  
+  return false;
+}
+

@@ -180,7 +180,7 @@ CFileSettings::CFileSettings()
 }
 
 CFileSettings::CFileSettings(CFileSettings* pFileSettings)
-{ 
+{
   pTranscodingSettings = NULL;
   pImageSettings = NULL;
   
@@ -515,7 +515,8 @@ void CDeviceSettings::AddExt(CFileSettings* pFileSettings, std::string p_sExt)
 {
   m_FileSettingsIterator = m_FileSettings.find(p_sExt);
   if(m_FileSettingsIterator != m_FileSettings.end()) {
-    return;
+    //return;
+    delete m_FileSettings[p_sExt];
   }
   m_FileSettings[p_sExt] = new CFileSettings(pFileSettings);
 }

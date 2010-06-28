@@ -253,7 +253,7 @@ bool DbObject::save(SQLQuery* qry /*= NULL*/, bool createReference /*= false*/)
 
     // if we update a container which path has changed
     // we have to update the path of all child objects
-    if(m_pathChanged && (m_type > OBJECT_TYPE_UNKNOWN && m_type < ITEM)) {
+    if(m_pathChanged && (m_type > OBJECT_TYPE_UNKNOWN && m_type < CONTAINER_MAX)) {
       sql.str("");
 
       sql << "update OBJECTS set "
@@ -342,7 +342,7 @@ bool DbObject::remove()
 
 
   // container
-  if(m_type > OBJECT_TYPE_UNKNOWN && m_type < ITEM) {
+  if(m_type > OBJECT_TYPE_UNKNOWN && m_type < CONTAINER_MAX) {
 
 
     if(m_device.length() == 0) {
@@ -575,6 +575,7 @@ bool ObjectDetails::load(object_id_t detailId, SQLQuery* qry /*= NULL*/)
     m_albumArtExt = qry->result()->asString("ALBUM_ART_EXT");
     m_size = qry->result()->asUInt("SIZE");
     m_source = (ObjectDetails::DetailSource)qry->result()->asInt("AV_BITRATE");
+    m_streamMimeType = qry->result()->asString("STREAM_MIME_TYPE");
     m_changed = false;
   }
   
@@ -626,8 +627,8 @@ bool ObjectDetails::save(SQLQuery* qry /*= NULL*/)
 
       
     "SIZE = " << m_size << ", " << 
-    "SOURCE = " << m_source << " " << 
-
+    "SOURCE = " << m_source << ", " << 
+    "STREAM_MIME_TYPE = " << (m_streamMimeType.empty() ? "NULL" : "'" + SQLEscape(m_streamMimeType) + "'") << " " <<
     "where "
     "ID = " << m_id;
 
@@ -665,7 +666,8 @@ bool ObjectDetails::save(SQLQuery* qry /*= NULL*/)
       "ALBUM_ART_ID, " <<
       "ALBUM_ART_EXT, " <<
       "SIZE, " <<
-      "SOURCE " <<
+      "SOURCE, " <<
+      "STREAM_MIME_TYPE " <<
       " ) values ( " <<
       m_a_trackNumber << ", " <<
       m_a_samplerate << ", " <<
@@ -685,7 +687,8 @@ bool ObjectDetails::save(SQLQuery* qry /*= NULL*/)
       m_albumArtId << ", " <<
       (m_albumArtExt.empty() ? "NULL" : "'" + SQLEscape(m_albumArtExt) + "'") << ", " <<      
       m_size << ", " <<
-      m_source << " " <<
+      m_source << ", " <<
+      (m_streamMimeType.empty() ? "NULL" : "'" + SQLEscape(m_streamMimeType) + "'") << " " <<
       " ) ";
 
     

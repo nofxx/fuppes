@@ -1,3 +1,18 @@
+/***************************************************************************
+ *            fuppes-browse.js
+ *
+ *  FUPPES - Free UPnP Entertainment Service
+ *
+ *  Copyright (C) 2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ ****************************************************************************/
+
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ */
 
 function loadResult(result)
 {
@@ -34,7 +49,12 @@ function browseDirectChildren(objectId, startIdx, requestCnt, vfolder)
       '<th width="60">count</th>' +
       '</tr>';
 
-		table += '<tr>' +
+		table += 
+			'<tr>' +
+         '<td id="self-id"></td>' +
+	       '<td colspan="3" id="self-label">&nbsp;</td>' +
+			'</tr>' +
+			'<tr>' +
          '<td id="parent-id"></td>' +
 	       '<td colspan="3" id="parent-browse">&nbsp;</td>' +
 			'</tr>';
@@ -90,25 +110,9 @@ function browseDirectChildren(objectId, startIdx, requestCnt, vfolder)
 
       table += '</tr>';
 
-
       table += '<tr>';
-      table += '<td colspan="4" class="detail-td" style="display: none;" id="detail-td-' + item.get('id') + '">load details</td>';
+      table += '<td colspan="4" class="td-detail" style="display: none;" id="detail-td-' + item.get('id') + '">load details</td>';
       table += '</tr>';
-      
-
-/*
-<container id="0000000001" searchable="0" parentID="0" restricted="0" childCount="48">
-<dc:title>title</dc:title>
-<upnp:class>object.container.storageFolder</upnp:class>
-</container>
-
-<item id="000000963D" parentID="6FF6" restricted="0">
-<dc:title>title</dc:title>
-<upnp:class>object.item.videoItem</upnp:class>
-<upnp:albumArtURI xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" dlna:profileID="JPEG_TN">http://192.168.0.8:5080/MediaServer/ImageItems/000000963D.jpg</upnp:albumArtURI>
-<res protocolInfo="http-get:*:video/x-msvideo:DLNA.ORG_PS=1;DLNA.ORG_CI=0;DLNA.ORG_OP=01;DLNA.ORG_FLAGS=21700000000000000000000000000000" duration="00:14:30.05" resolution="320x240" bitrate="13563" size="11806720">http://192.168.0.8:5080/MediaServer/VideoItems/000000963D.avi</res>
-</item>
-*/
     });
 
 
@@ -166,6 +170,10 @@ function browseMetadata(objectId, vfolder, details)
 						$('parent-browse').innerHTML = '<a href="javascript:browseDirectChildren(\'' + item.get('parentID') + '\', 0, 0, \''  + vfolder + '\');">up</a>';
 					else
 						$('parent-browse').innerHTML = '';
+
+
+					$('self-id').innerHTML = item.get('id');
+					$('self-label').innerHTML = item.get('id');
 				}
 				else {
 					setObjectDetails(item);
@@ -225,19 +233,99 @@ function showObjectDetails(objectId, vfolder)
 
 function setObjectDetails(object)
 {
-	result = '<div><a href="javascript:closeObjectDetails(\'' + object.get('id') + '\');">close</a></div>';
 
+	var values = new Object();
+	values['title'] = undefined;
+	values['class'] = undefined;
+	values['albumart'] = undefined;
+	values['res'] = new Object();
+	values['res']['url'] = undefined;
+
+	debug = "";
+  var nodes = object.getChildren();
+  nodes.each(function(node, node_index) {
+
+		if(node.get('tag') == 'dc:title') {
+			values['title'] = node.get('text');
+		}
+		else if(node.get('tag') == 'upnp:class') {
+			values['class'] = node.get('text');
+		}
+
+		else if(node.get('tag') == 'upnp:artist') {
+		}
+		else if(node.get('tag') == 'upnp:album') {
+		}
+		else if(node.get('tag') == 'upnp:genre') {
+		}
+		else if(node.get('tag') == 'upnp:originaltracknumber') {
+		}
+
+		else if(node.get('tag') == 'upnp:albumarturi') {
+			values['albumart'] = node.get('text');
+		}
+		else if(node.get('tag') == 'res') {
+			values['res']['url'] = node.get('text');
+
+			values['res']['protocolInfo'] = node.get('protocolInfo');
+			values['res']['duration'] = node.get('duration');
+			values['res']['resolution'] = node.get('resolution');
+			values['res']['bitrate'] = node.get('bitrate');
+			values['res']['size'] = node.get('size');
+
+			if(values['class'].indexOf('object.item.imageItem') == 0)
+				values['albumart'] = values['res']['url'];
+		}
+		else {
+			debug += "*" + node.get('tag') + ": " + node.get('text') + "*<br />";
+		}
+
+  });
+
+	result = '<div class="object-details">';
+	result += '<div class="object-details-close"><a href="javascript:closeObjectDetails(\'' + object.get('id') + '\');">close</a></div>';
 	result += '<div>';
 
-		result += 'object id: ' +  object.get('id') + '<br />';		
-		result += 'parent id: ' +  object.get('parentID') + '<br />';
+		result += '<div class="album-art-image">';
+		if(values['albumart'] != undefined)
+			result += '<img src="' + values['albumart'] + '" height="100" alt=""/>';
+		else
+			result += 'no image available';
+		result += '</div>';
 
-    var nodes = object.getChildren();
-    nodes.each(function(node, node_index) {
-			result += node.get('tag') + ": " + node.get('text') + "<br />";
-    });
+		result += '<div class="object-values">';
+		result += '<table>';
+			result += '<tr>';
+			result += '<th colspan="4">' + values['title'] + '</th>';
+			result += '</tr>';
 
+			result += '<tr>';
+			result += '<td>class</td><td colspan="3">' + values['class'] + '</td>';
+			result += '</tr>';
 
+			result += '<tr>';
+			result += '<td>object id</td><td>' + object.get('id') + '</td><td>parent id</td><td>' + object.get('parentID') + '</td>';
+			result += '</tr>';
+			
+			result += '<tr>';
+			result += '<td>res</td><td colspan="3">' + 
+									values['res']['url'] + 
+									/*'<ul>' +
+										'<li>protocolInfo: ' + values['res']['protocolInfo'] + '</li>' +
+										'<li>duration: ' + values['res']['duration'] + '</li>' +
+										'<li>resolution: ' + values['res']['resolution'] + '</li>' +
+										'<li>bitrate: ' + values['res']['bitrate'] + '</li>' +
+										'<li>size: ' + values['res']['size'] + '</li>' +
+									'</ul>' +*/
+								'</td>';
+			result += '</tr>';
+
+		result += '</table>';
+		result += debug;
+		result += '</div>';
+		
+
+	result += '</div>';
 	result += '</div>';
 
 	var details = $('detail-td-' + object.get('id'));
@@ -254,12 +342,6 @@ function closeObjectDetails(objectId)
   if(!visible) {
     return;
   }
-
 	details.setStyle('display', 'none');
-  /*details.get('tween', {property: 'opacity', duration: 'short'}).start(0).chain (
-    function() {
-      this.element.setStyle('display', 'none')
-    }
-  );*/
 }
 

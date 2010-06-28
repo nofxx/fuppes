@@ -174,13 +174,15 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
     sContent = this->GetOptionsHTML();
     sPageName = "Options";
   }
+/*
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/status.html") == 0) {
     nPresentationPage = PRESENTATION_PAGE_STATUS;
     sContent = this->GetStatusHTML();
     sPageName = "Status";
   }
+*/
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/config.html") == 0) {
-    nPresentationPage = PRESENTATION_PAGE_STATUS;
+    nPresentationPage = PRESENTATION_PAGE_INDEX;
     sContent = this->GetConfigHTML(pMessage);
     sPageName = "Configuration";
   }
@@ -247,7 +249,7 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
   }
   else if((nPresentationPage != PRESENTATION_BINARY_IMAGE) && (nPresentationPage != PRESENTATION_PAGE_UNKNOWN))
   {   
-    stringstream sResult;   
+    stringstream sResult;
     
     sResult << GetPageHeader(nPresentationPage, sPageName);
     sResult << sContent;    
@@ -255,12 +257,17 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
     
     pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    
     pResult->SetContentType("text/html; charset=\"utf-8\""); // HTTP_CONTENT_TYPE_TEXT_HTML
-    pResult->SetContent(sResult.str());    
+    pResult->SetContent(sResult.str());
   }  
-  else if(nPresentationPage == PRESENTATION_PAGE_UNKNOWN) 
-  {
+  else if(nPresentationPage == PRESENTATION_PAGE_UNKNOWN) {
+    stringstream sResult;
+    sResult << GetPageHeader(nPresentationPage, "404");
+    sResult << "<p>ERROR 404 :: page not found</p>";
+    sResult << GetPageFooter(nPresentationPage);
+
     pResult->SetMessageType(HTTP_MESSAGE_TYPE_404_NOT_FOUND); 
     pResult->SetContentType("text/html");
+    pResult->SetContent(sResult.str());    
   }
 }
 
@@ -337,7 +344,6 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE /*p_nPresentat
   sResult << 
     "<ul>" <<
       "<li><a href=\"/presentation/options.html\">Options</a></li>" <<
-      "<li><a href=\"/presentation/status.html\">Status</a></li>" <<
       "<li><a href=\"/presentation/config.html\">Configuration</a></li>" <<
     "</ul>";
   
@@ -412,6 +418,7 @@ std::string CPresentationHandler::GetOptionsHTML()
   return sResult.str().c_str();
 }
 
+/*
 std::string CPresentationHandler::GetStatusHTML()
 {
   std::stringstream sResult;  
@@ -433,14 +440,10 @@ std::string CPresentationHandler::GetStatusHTML()
   sResult << "UUID: " << CSharedConfig::Shared()->GetFuppesInstance(0)->GetUUID() << "<br />";    
   sResult << "</p>" << endl;
   
-  // device settings
-  sResult << "<h1>device settings</h1>" << endl;
-  string sDeviceSettings;
-  CDeviceIdentificationMgr::Shared()->PrintSettings(&sDeviceSettings);
-  sResult << sDeviceSettings << endl;
   
   return sResult.str();  
 }
+*/
 
 
 std::string CPresentationHandler::GetConfigHTML(CHTTPMessage* pRequest)

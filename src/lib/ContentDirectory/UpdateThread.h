@@ -46,12 +46,16 @@ class UpdateThread: public Thread
   private:
 		void run();
 
+    bool updateItems(CDatabaseConnection* connection, SQLQuery* get, SQLQuery* set);
+    
     void updateAudioFile(DbObject* obj, SQLQuery* qry);
     void updateVideoFile(DbObject* obj, SQLQuery* qry);
     void updateImageFile(DbObject* obj, SQLQuery* qry);
 
 
-    FileAlterationHandler* m_famHandler;    
+    FileAlterationHandler* m_famHandler;
+    int m_count;
+    int m_sleep;
 };
 
 

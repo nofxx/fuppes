@@ -253,7 +253,10 @@ class CHTTPMessage
   
 		std::string				soapTarget() { return m_soapTarget; }
 		std::string				soapAction() { return m_soapAction; }
-		
+
+    void              dlnaContentFeatures(std::string features) { m_dlnaContentFeatures = features; }
+    void              dlnaTransferMode(std::string mode) { m_dlnaTransferMode = mode; }
+    
     bool             LoadContentFromFile(std::string);
     bool             TranscodeContentFromFile(std::string p_sFileName, fuppes::DbObject* object);
     void             BreakTranscoding();  
@@ -316,7 +319,10 @@ private:
   		
 		std::string					m_soapTarget;
 		std::string					m_soapAction;	
-	
+
+    std::string         m_dlnaContentFeatures;
+    std::string         m_dlnaTransferMode;
+  
     HTTP_TRANSFER_ENCODING m_nTransferEncoding;
   
 	  CUPnPAction*       m_pUPnPAction;

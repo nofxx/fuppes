@@ -72,6 +72,7 @@ HotPlugMgr::~HotPlugMgr()
 
 bool HotPlugDbus::setup()
 {
+  return false;
   Log::log(Log::hotplug, Log::normal, __FILE__, __LINE__, "creating new dbus connection");
 
   DBusError error;
@@ -88,7 +89,7 @@ bool HotPlugDbus::setup()
     return false;
   }  
   
-  dbus_connection_set_exit_on_disconnect(m_connection, FALSE);
+  //dbus_connection_set_exit_on_disconnect(m_connection, FALSE);
 
 
   // setup message filter
@@ -105,6 +106,11 @@ bool HotPlugDbus::setup()
   // start event loop
   start();
   return true;
+}
+
+HotPlugDbus::HotPlugDbus()
+{
+  m_connection = NULL;
 }
 
 HotPlugDbus::~HotPlugDbus()

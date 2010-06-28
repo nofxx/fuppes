@@ -68,6 +68,9 @@ void UpdateThread::run()
 {
   cout << "start update thread" << endl;
 
+  m_sleep = 0;
+  m_count = 0;
+  
   msleep(1000);
 
   CDatabaseConnection* connection = CDatabase::connection(true);
@@ -77,11 +80,9 @@ void UpdateThread::run()
   SQLQuery get(connection);
   DbObject* obj;
   stringstream sql;
-  int count = 0;
-  int sleep = 0;
   while(!stopRequested()) {
 
-    count = 0;
+    m_count = 0;
 
     // check if a fam event occured recently
     int diff = DateTime::now().toInt() - m_famHandler->lastEventTime().toInt();
@@ -91,101 +92,12 @@ void UpdateThread::run()
     }
 
 
-    // update metadata
-    sql.str("");
-    sql << "select * from OBJECTS where TYPE > " << ITEM << " and (UPDATED_AT is NULL or UPDATED_AT < MODIFIED_AT) and DEVICE is NULL and REF_ID = 0";
-    qry.select(sql.str());
-    if(qry.eof()) {
-      if(sleep < 4000)
-        sleep += 500;
-    }
-    else {
-      sleep = 500;
-      //ins.connection()->startTransaction();
-    }
+    // 1. update the items metadata
+    updateItems(connection, &get, &ins);
     
-    while(!qry.eof() && !stopRequested()) {
-
-
-      // check if a fam event occured recently
-      int diff = DateTime::now().toInt() - m_famHandler->lastEventTime().toInt();
-      if(diff < 5) {
-        //ins.connection()->commit();
-        break;
-      }
-      
-
-      
-      count++;
-      obj = new DbObject(qry.result());
-      
-      cout << "update object " << count << " of " << qry.size() << " :: " << obj->fileName() << endl;
-      //cout << "OBJ: " << obj->type() << " :: " << qry.result()->asInt("TYPE") << endl;
-      
-      // container
-      if(obj->type() < ITEM) {
-
-      } // container
-      else {
-
-        ObjectDetails oldDetails;
-        bool update = (obj->detailId() > 0);
-        if(update)
-          oldDetails = *obj->details();
-
-        switch(obj->type()) {
-
-          case ITEM_IMAGE_ITEM:
-          case ITEM_IMAGE_ITEM_PHOTO:
-            updateImageFile(obj, &ins);
-            break;
-
-          case ITEM_AUDIO_ITEM:
-          case ITEM_AUDIO_ITEM_MUSIC_TRACK:
-            updateAudioFile(obj, &ins);
-            if(!update)
-              VirtualContainerMgr::insertFile(obj);
-            else
-              VirtualContainerMgr::updateFile(obj, &oldDetails);
-            break;
-          case ITEM_AUDIO_ITEM_AUDIO_BROADCAST:
-            break;
-
-          case ITEM_VIDEO_ITEM:
-          case ITEM_VIDEO_ITEM_MOVIE:
-            updateVideoFile(obj, &ins);
-            break;
-          case ITEM_VIDEO_ITEM_VIDEO_BROADCAST:
-            break;
-
-          default:
-            break;          
-        }
-
-      } // item
-
-
-
-      // vfolder updates
-
-      /*if(count % 1000 == 0) {
-        ins.connection()->commit();
-        ins.connection()->startTransaction();
-      }*/
-        
-
-      
-      delete obj;
-      qry.next();
-      msleep(1);
-    } // while !eof (update metadata)
-    //ins.connection()->commit();
-
-
-
     
-    // check for album art and update dirs/files
-    count = 0;
+    // 2. check for album art and update dirs/files
+    m_count = 0;
     sql.str("");
     DbObject* parent;
     DbObject* sibling;
@@ -194,7 +106,7 @@ void UpdateThread::run()
     // get all visible images that have a certain name
     sql << 
       "select * from OBJECTS where TYPE >= " << ITEM_IMAGE_ITEM << " and TYPE < " << ITEM_IMAGE_ITEM_MAX << " and " <<
-      "DEVICE is NULL and REF_ID = 0 and VISIBLE = 1 and FILE_NAME in ( " <<
+      "DEVICE is NULL and REF_ID = 0 and VISIBLE = 1 and lower(FILE_NAME) in ( " <<
       CSharedConfig::getAlbumArtFiles() <<
       ") order by FILE_NAME, PARENT_ID";
    
@@ -207,7 +119,7 @@ void UpdateThread::run()
         break;
       }
 
-      count++;
+      m_count++;
       obj = new DbObject(qry.result());
 
       cout << "ALBUM ART FILE: " << obj->fileName() << " PID: " << obj->parentId() << endl;
@@ -279,9 +191,10 @@ void UpdateThread::run()
 
     
 
-
-    // create video thumbnails if enabled
-    count = 0;
+    
+    // map images or create video thumbnails if enabled
+    m_count = 0;
+    DbObject* image;
     CMetadataPlugin* thumbnailer = CPluginMgr::metadataPlugin("ffmpegthumbnailer");
     sql.str("");
     sql << 
@@ -289,7 +202,7 @@ void UpdateThread::run()
       "DEVICE is NULL and REF_ID = 0 and " <<
       "DETAIL_ID in (select ID from OBJECT_DETAILS where ALBUM_ART_ID = 0 and ALBUM_ART_EXT is NULL);";
     qry.select(sql.str());
-    while(thumbnailer && !qry.eof() && !stopRequested()) {
+    while(!qry.eof() && !stopRequested()) {
 
       // check if a fam event occured recently
       int diff = DateTime::now().toInt() - m_famHandler->lastEventTime().toInt();
@@ -297,50 +210,83 @@ void UpdateThread::run()
         break;
       }
 
-      count++;
+      m_count++;
       obj = new DbObject(qry.result());
       string filename = obj->path() + obj->fileName();
       stringstream tmpfile;
       tmpfile << CSharedConfig::Shared()->globalSettings->GetTempDir() << obj->objectId() << ".jpg";
 
 
-      cout << "create thumbnail " << count << " of " << qry.size() << " for: " << filename << endl;
-      
-      size_t size = 0;
-	  	unsigned char* buffer = (unsigned char*)malloc(1);
-	  	char* mimeType = (char*)malloc(1);
-	  	memset(mimeType, 0, 1);
+      // check if we got an image file with the same name as the video
+      sql.str("");
+      sql << "select * from OBJECTS where " <<
+        "PATH = '" << SQLEscape(obj->path()) << "' and " <<
+        "FILE_NAME like '" << SQLEscape(TruncateFileExt(obj->fileName())) << ".%' and " <<
+        "TYPE >= " << ITEM_IMAGE_ITEM << " and TYPE < " << ITEM_IMAGE_ITEM_MAX << " and " <<
+        "DEVICE is NULL and " <<
+        "REF_ID = 0";
+      get.select(sql.str());
+      if(!get.eof()) {
 
-			thumbnailer->openFile(filename);
-      bool hasImage = thumbnailer->readImage(&mimeType, &buffer, &size, 300);
-  		thumbnailer->closeFile();
+        image = new DbObject(get.result());
+
+        // set album art
+        obj->details()->setAlbumArtId(image->objectId());
+        obj->details()->setAlbumArtExt(ExtractFileExt(image->fileName()));
+        obj->details()->save(&ins);
+
+        // hide image
+        image->setVisible(false);
+        image->save(&ins);
+        
+        delete image;
+        delete obj;
+        qry.next();
+        msleep(1);
+        continue;
+      }
+
+
+                                        
+      if(thumbnailer) {
+
+        cout << "create thumbnail " << m_count << " of " << qry.size() << " for: " << filename << endl;
+        
+        size_t size = 0;
+	    	unsigned char* buffer = (unsigned char*)malloc(1);
+	    	char* mimeType = (char*)malloc(1);
+	    	memset(mimeType, 0, 1);
+
+			  thumbnailer->openFile(filename);
+        bool hasImage = thumbnailer->readImage(&mimeType, &buffer, &size, 300);
+    		thumbnailer->closeFile();
 			
 
-      if(hasImage) {
+        if(hasImage) {
 
-        cout << "HAS IMAGE: " << size << endl;
+          cout << "HAS IMAGE: " << size << endl;
+          
+          fuppes::File out(tmpfile.str());
+          out.open(File::Write);
+          out.write((char*)buffer, size);
+          out.close();
+
+
+          // set the album art id to the same value as the object id
+          obj->details()->setAlbumArtId(obj->objectId());
+          obj->details()->setAlbumArtExt("jpg");
+          obj->details()->save(&ins);
+        }
+        else {
+          obj->details()->setAlbumArtExt("fail");
+          obj->details()->save(&ins);
+        }
         
-        fuppes::File out(tmpfile.str());
-        out.open(File::Write);
-        out.write((char*)buffer, size);
-        out.close();
+        free(buffer);
+			  free(mimeType);
 
 
-        // set the album art id to the same value as the object id
-        obj->details()->setAlbumArtId(obj->objectId());
-        obj->details()->setAlbumArtExt("jpg");
-        obj->details()->save(&ins);
-      }
-      else {
-        obj->details()->setAlbumArtExt("fail");
-        obj->details()->save(&ins);
-      }
-      
-      free(buffer);
-			free(mimeType);
-
-      
-
+      } // if thumbnailer
 
       delete obj;
       qry.next();
@@ -358,7 +304,7 @@ void UpdateThread::run()
     // let the thread sleep for a while
     // we chunk the sleep time to avoid blocking closing of this thread
     // on shutdown or database update/rebuild
-    int tmp = sleep;
+    int tmp = m_sleep;
     do {
       if(tmp > 500) {
         msleep(500);
@@ -378,6 +324,94 @@ void UpdateThread::run()
   cout << "exit update thread" << endl;
   
 }
+
+
+
+bool UpdateThread::updateItems(CDatabaseConnection* connection, SQLQuery* get, SQLQuery* set)
+{
+  stringstream sql;
+  DbObject* obj;
+
+  m_count = 0;
+  
+  // update metadata
+  sql << "select * from OBJECTS where TYPE > " << ITEM << " and (UPDATED_AT is NULL or UPDATED_AT < MODIFIED_AT) and DEVICE is NULL and REF_ID = 0";
+  get->select(sql.str());
+  if(get->eof()) {
+    if(m_sleep < 4000)
+      m_sleep += 500;
+    return false;
+  }
+  m_sleep = 500;
+  
+    
+  while(!get->eof() && !stopRequested()) {
+
+    // check if a fam event occured recently
+    int diff = DateTime::now().toInt() - m_famHandler->lastEventTime().toInt();
+    if(diff < 5) {
+      return (m_count > 0);
+    }
+      
+    m_count++;
+    obj = new DbObject(get->result());
+
+    cout << "update object " << m_count << " of " << get->size() << " :: " << obj->fileName() << endl;
+      
+    // container
+    if(obj->type() < CONTAINER_MAX) {
+
+    } // container
+    else if(obj->type() >= ITEM) {
+
+      ObjectDetails oldDetails;
+      bool update = (obj->detailId() > 0);
+      if(update)
+        oldDetails = *obj->details();
+
+      switch(obj->type()) {
+
+        case ITEM_IMAGE_ITEM:
+        case ITEM_IMAGE_ITEM_PHOTO:
+          updateImageFile(obj, set);
+          break;
+
+        case ITEM_AUDIO_ITEM:
+        case ITEM_AUDIO_ITEM_MUSIC_TRACK:
+          updateAudioFile(obj, set);
+          if(!update)
+            VirtualContainerMgr::insertFile(obj);
+          else
+            VirtualContainerMgr::updateFile(obj, &oldDetails);
+          break;
+        case ITEM_AUDIO_ITEM_AUDIO_BROADCAST:
+          break;
+
+        case ITEM_VIDEO_ITEM:
+        case ITEM_VIDEO_ITEM_MOVIE:
+        case ITEM_VIDEO_ITEM_MUSIC_VIDEO_CLIP:
+          updateVideoFile(obj, set);
+          break;
+        case ITEM_VIDEO_ITEM_VIDEO_BROADCAST:
+          break;
+
+        default:
+          break;          
+      }
+
+    } // item
+      
+    delete obj;
+    get->next();
+    msleep(1);
+  } // while !eof
+
+  return (m_count > 0);
+}
+
+
+
+
 
 
 void UpdateThread::updateAudioFile(DbObject* obj, SQLQuery* qry)
@@ -408,7 +442,19 @@ void UpdateThread::updateAudioFile(DbObject* obj, SQLQuery* qry)
   if(!audioItem.title().empty())
     obj->setTitle(audioItem.title());
   obj->setDetailId(details.id());
-  obj->save(qry);  
+  obj->save(qry);
+
+  
+  if(audioItem.hasImage()) {
+    details.setAlbumArtId(obj->objectId());
+    // todo set extension from mime type
+    //audioItem.imageMimeType();
+    details.setAlbumArtExt("jpg");
+    details.setWidth(audioItem.imageWidth());
+    details.setHeight(audioItem.imageHeight());
+    details.save();
+  }
+  
 }
 
 void UpdateThread::updateImageFile(DbObject* obj, SQLQuery* qry)
@@ -435,6 +481,7 @@ void UpdateThread::updateImageFile(DbObject* obj, SQLQuery* qry)
   ObjectDetails details;
   /*details.setWidth(imageItem.width());
   details.setHeight(imageItem.height());*/
+  details.setSize(getFileSize(fileName));
   details = imageItem;
   details.save(qry);
   

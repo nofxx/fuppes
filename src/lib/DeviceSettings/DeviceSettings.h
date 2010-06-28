@@ -206,8 +206,15 @@ struct CFileSettings {
   CFileSettings();
   CFileSettings(CFileSettings* pFileSettings);
   ~CFileSettings();
-  
+
+  /*
+   * returns the original or the target mime type depending on whether transcoding is enabled
+   */
   std::string   MimeType(std::string p_sACodec = "", std::string p_sVCodec = "");
+  /*
+   * always returns the original mime type
+   */
+  std::string   originalMimeType() { return sMimeType; }
   std::string   DLNA();
   
   unsigned int  TargetAudioSampleRate();

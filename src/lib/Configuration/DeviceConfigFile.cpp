@@ -394,14 +394,15 @@ void CDeviceConfigFile::ParseImageSettings(CXMLNode* pISNode, CFileSettings* pFi
   assert(pISNode != NULL);
   assert(pFileSet != NULL);
 
-  // delete existing (inherited) settings
-  // if transcoding disabled
+
+  // if transcoding disabled ...
   if(pISNode->Attribute("enabled").compare("true") != 0) {
+    // ... delete existing (inherited) settings
     if(pFileSet->pImageSettings) {
       delete pFileSet->pImageSettings;
       pFileSet->pImageSettings = NULL;
-      return;
     }
+    return;
   }
   
   // create new settings

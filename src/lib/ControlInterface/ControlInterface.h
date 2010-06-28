@@ -1,10 +1,10 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            ControlInterface.h
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2008 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -30,20 +30,30 @@
 #include "../../config.h"
 #endif
 
+#include "../UPnPActions/UPnPAction.h"
+
 #include <string>
 #include <map>
 
+/*
 typedef std::multimap<std::string, std::string>	argList;
 typedef std::multimap<std::string, std::string>::iterator	argListIter;
 
 typedef std::map<std::string, std::string>	stringList;
 typedef std::map<std::string, std::string>::iterator	stringListIter;
+*/
 
-class CControlInterface
+class ControlInterface
 {
 	public:
-		int	action(std::string action, stringList* args, stringList* result);
-		//int	action(std::string action, stringList* values);
+		static void init();
+		static void uninit();
+
+    static void exec(FUPPES_CONTROL_ACTION action);
+    
+	private:
+		ControlInterface();
+		static ControlInterface* m_instance;
 };
 
 #endif // _CONTROLTERFACE_H

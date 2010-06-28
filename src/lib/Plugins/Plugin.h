@@ -47,7 +47,7 @@ class CMetadataPlugin;
 class CTranscoderPlugin;
 class CAudioDecoderPlugin;
 class CAudioEncoderPlugin;
-class CPresentationPlugin;
+//class CPresentationPlugin;
 class CDatabasePlugin;
 
 
@@ -62,7 +62,7 @@ class CPluginMgr
 
 		// returns a reference to a single plugin instance
 		static CDlnaPlugin*						dlnaPlugin() { return m_instance->m_dlnaPlugin; }
-		static CPresentationPlugin*		presentationPlugin() { return m_instance->m_presentationPlugin; }
+		//static CPresentationPlugin*		presentationPlugin() { return m_instance->m_presentationPlugin; }
 		static CDatabasePlugin*				databasePlugin(const std::string pluginName);
 
 		// returns a new instance of the plugin that must be deleted by caller
@@ -74,6 +74,7 @@ class CPluginMgr
 
 
 		static bool hasMetadataPlugin(std::string pluginName);
+		static bool hasTranscoderPlugin(std::string pluginName);
 		
 		static std::string						printInfo(bool html = false);
 		
@@ -98,7 +99,7 @@ class CPluginMgr
 		std::map<std::string, CAudioEncoderPlugin*>::iterator m_audioEncoderPluginsIter;
 		
 		CDlnaPlugin*					m_dlnaPlugin;		
-		CPresentationPlugin*	m_presentationPlugin;
+		//CPresentationPlugin*	m_presentationPlugin;
 		
 		std::map<std::string, CDatabasePlugin*> m_databasePlugins;
 		std::map<std::string, CDatabasePlugin*>::iterator m_databasePluginsIter;
@@ -343,6 +344,7 @@ class CAudioEncoderPlugin: public CPlugin, public CAudioEncoderBase
 
 
 
+/*
 typedef int (*presentationHandleRequest_t)(plugin_info* plugin, 
 																					 const char* url, arg_list_t* get, arg_list_t* post,
 																					 int* error, char** mime_type, char** result, int* length);
@@ -356,13 +358,13 @@ class CPresentationPlugin: public CPlugin
 		
 		bool	handleRequest(CHTTPMessage* pRequest, CHTTPMessage* pResponse);		
 
-		static int ctrlAction(const char* action, arg_list_t* args, arg_list_t* result);
+		//static int ctrlAction(const char* action, arg_list_t* args, arg_list_t* result);
 		
 	private:
 		presentationHandleRequest_t	 m_handleRequest;
 
 };
-
+*/
 
 typedef CDatabaseConnection* (*createConnection_t)(plugin_info* plugin);
 class CDatabasePlugin: public CPlugin

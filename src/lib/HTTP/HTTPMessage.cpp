@@ -189,9 +189,10 @@ std::string CHTTPMessage::GetHeaderAsString()
     case HTTP_MESSAGE_TYPE_GENA_OK:
       sResult << sVersion << " 200 OK\r\n";
       break;    
-    
+      
     default:
       CSharedLog::Log(L_DBG, __FILE__, __LINE__, "GetHeaderAsString() :: unhandled message type");
+      assert(0);
       break;
 	}		  
   
@@ -305,7 +306,12 @@ std::string CHTTPMessage::GetHeaderAsString()
   	sResult << "DATE: " << szTime << "\r\n";	
 	
 	  // dlna
-    sResult << "contentFeatures.dlna.org: \r\n";
+    if(!m_dlnaContentFeatures.empty())
+      sResult << "contentFeatures.dlna.org: " << m_dlnaContentFeatures << "\r\n";
+    if(!m_dlnaTransferMode.empty())
+      sResult << "transferMode.dlna.org: " << m_dlnaTransferMode << "\r\n";
+
+    // ext
     sResult << "EXT:\r\n";    
   }
   
@@ -730,7 +736,7 @@ bool CHTTPMessage::LoadContentFromFile(std::string p_sFileName)
 
 	m_file.setFileName(p_sFileName);
 	if(m_file.open(fuppes::File::Read)) {
-		m_nBinContentLength = m_file.size();    
+		m_nBinContentLength = m_file.size();
     return (m_nBinContentLength >= 0);
 	}
 	else {

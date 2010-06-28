@@ -211,6 +211,7 @@ void CDeviceIdentificationMgr::PrintSetting(CDeviceSettings* pSettings, std::str
   
   CFileSettings* pFileSet;
   stringstream sTmp;
+  stringstream result;
   
   if(!p_sOut) {  
     cout << "device: " << pSettings->m_sDeviceName << endl;
@@ -218,6 +219,7 @@ void CDeviceIdentificationMgr::PrintSetting(CDeviceSettings* pSettings, std::str
     cout << "  file_settings: " << endl;
   }
   else {
+  /*
     *p_sOut += "<table>";
     *p_sOut += "<tr><th colspan=\"2\">device: " + pSettings->m_sDeviceName + "</th></tr>";
     
@@ -227,6 +229,28 @@ void CDeviceIdentificationMgr::PrintSetting(CDeviceSettings* pSettings, std::str
     sTmp.str("");
     
     *p_sOut += "<tr><th colspan=\"2\">file settings</th></tr>";
+*/
+
+    result << "<h2>" << pSettings->m_sDeviceName << "</h2>";
+
+    result << "<table>" <<
+      "<thead>" <<
+        "<tr>" <<
+          "<th colspan=\"3\">" << "settings" << "</th>" <<
+          "<th colspan=\"4\">" << "transcoding" << "</th>" <<
+        "</tr>" <<
+        "<tr>" <<
+          "<th>ext</th>" <<
+          "<th>mime/type</th>" <<
+          "<th>objectType</th>" <<
+          "<th>ext</th>" <<
+          "<th>mime/type</th>" <<
+          "<th></th>" <<
+          "<th></th>" <<
+        "</tr>" <<
+      "</thead>" <<
+      "<tbody>";
+    
   }
   
   for(pSettings->m_FileSettingsIterator = pSettings->m_FileSettings.begin();
@@ -241,7 +265,8 @@ void CDeviceIdentificationMgr::PrintSetting(CDeviceSettings* pSettings, std::str
       cout << "    mime-type: " << pFileSet->MimeType() << endl;
       cout << "    upnp-type: " << pFileSet->ObjectType() << endl;
     }
-    else {  
+    else { 
+/*
       *p_sOut += "<tr><th colspan=\"2\">ext: " + pSettings->m_FileSettingsIterator->first + " </th></tr>";
       *p_sOut += "<tr><td>dlna</td>";
       *p_sOut += "<td>" + pFileSet->DLNA() + "</td></tr>";
@@ -249,6 +274,12 @@ void CDeviceIdentificationMgr::PrintSetting(CDeviceSettings* pSettings, std::str
       *p_sOut += "<td>" + pFileSet->MimeType() + "</td></tr>";
       *p_sOut += "<tr><td>upnp type</td>";
       *p_sOut += "<td>" + pFileSet->ObjectTypeAsStr() + "</td></tr>";
+*/
+      
+      result << "<tr>";
+      result << "<td style=\"background-color: #ccffcc;\">" << pSettings->m_FileSettingsIterator->first << "</td>";
+      result << "<td style=\"background-color: #ccffcc;\">" << pFileSet->originalMimeType() << "</td>";
+      result << "<td style=\"background-color: #ccffcc;\">" << pFileSet->ObjectTypeAsStr() << "</td>";
     }
 
 
@@ -257,11 +288,12 @@ void CDeviceIdentificationMgr::PrintSetting(CDeviceSettings* pSettings, std::str
         cout << "  transcode: " << endl;
         cout << "    ext: " << pFileSet->pTranscodingSettings->sExt << endl;
         cout << "    dlna: " << pFileSet->pTranscodingSettings->sDLNA << endl;
-        cout << "    mime-type: " << pFileSet->pTranscodingSettings->sMimeType << endl;      
+        cout << "    mime/type: " << pFileSet->MimeType() << endl;      
         cout << "    release delay: " << pFileSet->ReleaseDelay() << endl;
       }
       else {
-        *p_sOut += "<tr><th colspan=\"2\">transcode</th></tr>";
+        /*
+         *p_sOut += "<tr><th colspan=\"2\">transcode</th></tr>";
         *p_sOut += "<tr><td>ext</td>";
         *p_sOut += "<td>" + pFileSet->pTranscodingSettings->sExt + "</td></tr>";  
         *p_sOut += "<tr><td>dlna</td>";
@@ -273,6 +305,13 @@ void CDeviceIdentificationMgr::PrintSetting(CDeviceSettings* pSettings, std::str
         *p_sOut += "<tr><td>release delay</td>";
         *p_sOut += "<td>" + sTmp.str() + "</td></tr>";
         sTmp.str("");
+        */
+        
+        result << "<td style=\"background-color: #ffcccc;\">" << pFileSet->pTranscodingSettings->sExt << "</td>";
+        result << "<td style=\"background-color: #ffcccc;\">" << pFileSet->MimeType() << "</td>";
+        result << "<td style=\"background-color: #ffcccc;\">" << "" << "</td>";
+        result << "<td style=\"background-color: #ffcccc;\">" << "" << "</td>";
+        //result << "<td>" << pFileSet->ReleaseDelay() << "</td>";        
       }
     }
     else if(pFileSet->pImageSettings) {
@@ -284,6 +323,7 @@ void CDeviceIdentificationMgr::PrintSetting(CDeviceSettings* pSettings, std::str
         cout << "    less: " << pFileSet->pImageSettings->bLess << endl;
       }
       else {
+        /*
         *p_sOut += "<tr><th colspan=\"2\">resize</th></tr>";
         sTmp << pFileSet->pImageSettings->nHeight;
         *p_sOut += "<tr><td>height</td>";
@@ -305,6 +345,12 @@ void CDeviceIdentificationMgr::PrintSetting(CDeviceSettings* pSettings, std::str
           *p_sOut += "<td>true</td></tr>";
         else
           *p_sOut += "<td>false</td></tr>";
+        */
+
+        result << "<td style=\"background-color: #ffcccc;\">" << pFileSet->pImageSettings->sExt << "</td>";
+        result << "<td style=\"background-color: #ffcccc;\">" << pFileSet->MimeType() << "</td>";
+        result << "<td style=\"background-color: #ffcccc;\">" << pFileSet->pImageSettings->nWidth << "</td>";
+        result << "<td style=\"background-color: #ffcccc;\">" << pFileSet->pImageSettings->nHeight << "</td>";
       }
     }
     else {
@@ -312,7 +358,8 @@ void CDeviceIdentificationMgr::PrintSetting(CDeviceSettings* pSettings, std::str
         cout << "  no transcoding/resizing" << endl;
       }
       else {
-        *p_sOut += "<tr><td colspan=\"2\">no transcoding/resizing</td></tr>";
+        //*p_sOut += "<tr><td colspan=\"2\">no transcoding/resizing</td></tr>";
+        result << "<td colspan=\"4\" style=\"background-color: #ffcccc;\">n/a</td>";
       }
     }
           
@@ -320,12 +367,15 @@ void CDeviceIdentificationMgr::PrintSetting(CDeviceSettings* pSettings, std::str
       cout << endl;
     }
     else {
-      *p_sOut += "<tr><td colspan=\"2\">&nbsp;</td></tr>";
+      result << "</tr>";
     }
-  }
+        
+  } // for
   
   if(p_sOut) {
-    *p_sOut += "</table>";
+    //*p_sOut += "</table>";
+    result << "</tbody></table>";
+    *p_sOut = result.str();
   }
   
 }
@@ -337,8 +387,11 @@ void CDeviceIdentificationMgr::PrintSettings(std::string* p_sOut)
   if(!p_sOut) {
     cout << "device settings" << endl;
   }
-  
-  PrintSetting(m_pDefaultSettings, p_sOut);
+
+
+  string result;  
+  PrintSetting(m_pDefaultSettings, &result);
+  *p_sOut += result;
   
   for(m_SettingsIt = m_Settings.begin(); 
       m_SettingsIt != m_Settings.end(); 
@@ -346,7 +399,8 @@ void CDeviceIdentificationMgr::PrintSettings(std::string* p_sOut)
 
     pSettings = *m_SettingsIt;
       
-    PrintSetting(pSettings, p_sOut);    
+    PrintSetting(pSettings, &result);    
+    *p_sOut += result;
   }
   
 }

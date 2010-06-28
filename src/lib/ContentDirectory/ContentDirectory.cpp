@@ -32,7 +32,6 @@
 #include "../Common/RegEx.h"
 #include "../Plugins/Plugin.h"
 #include "VirtualContainerMgr.h"
-#include "libdlna/dlna.h"
 
 #include "ContentDatabase.h"
 
@@ -174,10 +173,10 @@ void CContentDirectory::DbHandleUPnPBrowse(CUPnPBrowse* pUPnPBrowse, std::string
       switch(pUPnPBrowse->browseFlag()) {
         
         case UPNP_BROWSE_FLAG_METADATA:          
-          BrowseMetadata(resWriter, &nTotalMatches, &nNumberReturned, pUPnPBrowse);          
+          BrowseMetadata(resWriter, &nTotalMatches, &nNumberReturned, pUPnPBrowse);
           break;
         case UPNP_BROWSE_FLAG_DIRECT_CHILDREN:                    
-          BrowseDirectChildren(resWriter, &nTotalMatches, &nNumberReturned, pUPnPBrowse);          
+          BrowseDirectChildren(resWriter, &nTotalMatches, &nNumberReturned, pUPnPBrowse);
           break;
         default:
           break;
@@ -266,7 +265,7 @@ void CContentDirectory::BrowseMetadata(xmlTextWriterPtr pWriter,
 	
   // get child count
   string sChildCount = "0";
-  if(nContainerType < ITEM) {
+  if(nContainerType < CONTAINER_MAX) {
 		sql = qry.build(SQL_COUNT_CHILD_OBJECTS, pUPnPBrowse->GetObjectIDAsUInt(), pUPnPBrowse->virtualFolderLayout());
 		qry.select(sql);
     sChildCount = qry.result()->asString("COUNT");
@@ -399,7 +398,7 @@ void CContentDirectory::BuildDescription(xmlTextWriterPtr pWriter,
   OBJECT_TYPE nObjType = (OBJECT_TYPE)pSQLResult->asInt("TYPE");
   
   // container
-  if(nObjType < ITEM) {
+  if(nObjType < CONTAINER_MAX) {
     
     if((nObjType == CONTAINER_PLAYLIST_CONTAINER) && pUPnPBrowse->DeviceSettings()->playlistStyle () != CDeviceSettings::container) {
       BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, nObjType, p_sParentId);
@@ -410,7 +409,7 @@ void CContentDirectory::BuildDescription(xmlTextWriterPtr pWriter,
       
   }
   // item
-  else {
+  else if(nObjType >= ITEM) {
     BuildItemDescription(pWriter, pSQLResult, pUPnPBrowse, nObjType, p_sParentId);
   }
 }
@@ -517,7 +516,7 @@ void CContentDirectory::BuildContainerDescription(xmlTextWriterPtr pWriter,
         pSQLResult->asUInt("ALBUM_ART_ID") > 0 &&
         CPluginMgr::dlnaPlugin() != NULL) {
 
-        sql = qry.build(SQL_GET_ALBUM_ART_DETAILS, pSQLResult->asString("ALBUM_ART_ID"), sDevice);
+        sql = qry.build(SQL_GET_OBJECT_DETAILS, pSQLResult->asString("ALBUM_ART_ID"), sDevice);
       	qry.select(sql);
       	if(!qry.eof()) {
 
@@ -700,7 +699,10 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
 	  xmlTextWriterEndElement(pWriter);
   }
 
-  
+
+  writeAlbumArtUrl(pWriter, pUPnPBrowse, pSQLResult);
+
+/*
   if(!pSQLResult->isNull("ALBUM_ART_ID") && 
     pSQLResult->asUInt("ALBUM_ART_ID") > 0 &&
     CPluginMgr::dlnaPlugin() != NULL) {
@@ -733,6 +735,7 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
     }
 
 	}
+*/
 	
   // res
   xmlTextWriterStartElement(pWriter, BAD_CAST "res");
@@ -742,7 +745,7 @@ void CContentDirectory::BuildAudioItemDescription(xmlTextWriterPtr pWriter,
 
 
 	// protocol info
-  string sDLNA = pUPnPBrowse->DeviceSettings()->DLNA(sExt);  
+  string sDLNA = pUPnPBrowse->DeviceSettings()->DLNA(sExt);
   string sTmp = BuildProtocolInfo(bTranscode, sMimeType, sDLNA, pUPnPBrowse);
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
 	
@@ -933,7 +936,8 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
 		// CPluginMgr::DlnaPlugin()->getImageProfile();
 	}
 
-  string sTmp = BuildProtocolInfo(false, pUPnPBrowse->DeviceSettings()->MimeType(sExt), dlna, pUPnPBrowse);
+
+  string sTmp = BuildProtocolInfo(bTranscode, pUPnPBrowse->DeviceSettings()->MimeType(sExt), dlna, pUPnPBrowse);
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
 
   // resolution
@@ -963,7 +967,7 @@ void CContentDirectory::BuildImageItemDescription(xmlTextWriterPtr pWriter,
 }
 
 void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
-                                               CSQLResult* pSQLResult,
+                                                  CSQLResult* pSQLResult,
                                                   CUPnPBrowseSearchBase*  pUPnPBrowse,
                                                   std::string p_sObjectID)
 {                                                     
@@ -988,17 +992,29 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
   xmlTextWriterEndElement(pWriter);      
 
 	// albumArt
-
-
+  writeAlbumArtUrl(pWriter, pUPnPBrowse, pSQLResult);
   
+
+  /*
 	if(pSQLResult->asUInt("ALBUM_ART_ID") > 0 || CPluginMgr::hasMetadataPlugin("ffmpegthumbnailer")) {
 		xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:albumArtURI");
 		  xmlTextWriterWriteAttribute(pWriter, BAD_CAST "xmlns:dlna", BAD_CAST "urn:schemas-dlna-org:metadata-1-0/");
 			xmlTextWriterWriteAttribute(pWriter, BAD_CAST "dlna:profileID", BAD_CAST "JPEG_SM");
-			string url = "http://" + m_sHTTPServerURL + "/ImageItems/" + p_sObjectID + ".jpg?vfolder=none";
+    
+			string url = "http://" + m_sHTTPServerURL + "/ImageItems/";
+      if(pSQLResult->asUInt("ALBUM_ART_ID") > 0) {
+        char szArtId[11];
+			  sprintf(szArtId, "%010X", pSQLResult->asUInt("ALBUM_ART_ID"));
+        url += szArtId;
+      }
+      else {
+        url += p_sObjectID;
+      }
+      url += ".jpg?vfolder=none";
+      
 			xmlTextWriterWriteString(pWriter, BAD_CAST url.c_str());
 	  xmlTextWriterEndElement(pWriter);
-  }
+  }*/
 
 	
   // res
@@ -1010,7 +1026,6 @@ void CContentDirectory::BuildVideoItemDescription(xmlTextWriterPtr pWriter,
 
   // res@protocolInfo
   string sDLNA = pUPnPBrowse->DeviceSettings()->DLNA(sExt);
-  
   string sTmp = BuildProtocolInfo(bTranscode, sMimeType, sDLNA, pUPnPBrowse);  
   xmlTextWriterWriteAttribute(pWriter, BAD_CAST "protocolInfo", BAD_CAST sTmp.c_str());
                                                     
@@ -1274,7 +1289,7 @@ void CContentDirectory::HandleUPnPSearch(CUPnPSearch* pSearch, std::string* p_ps
   
       while(!qry->eof()) {        
         pRow = qry->result();        
-        BuildDescription(resWriter, pRow, pSearch, "0");		
+        BuildDescription(resWriter, pRow, pSearch, "0");
         nNumberReturned++;
         
         qry->next();
@@ -1412,6 +1427,132 @@ void CContentDirectory::HandeUPnPDestroyObject(CUPnPAction* pAction, std::string
 }
 
 
+
+
+/*
+# Play speed
+#    1 normal
+#    0 invalid
+DLNA_ORG_PS = 'DLNA.ORG_PS'
+DLNA_ORG_PS_VAL = '1'
+*/
+
+enum dlna_org_playSpeed {
+  ps_invalid  = 0,
+  ps_normal   = 1
+};
+
+/*
+# Conversion Indicator
+#    1 transcoded
+#    0 not transcoded
+DLNA_ORG_CI = 'DLNA.ORG_CI'
+DLNA_ORG_CI_VAL = '0'
+*/
+
+enum dlna_org_conversionIndicator {
+  ci_none = 0,
+  ci_transcoded = 1
+};
+
+
+/*
+# Operations
+#    00 not time seek range, not range
+#    01 range supported
+#    10 time seek range supported
+#    11 both supported
+DLNA_ORG_OP = 'DLNA.ORG_OP'
+DLNA_ORG_OP_VAL = '01'
+*/
+
+enum dlna_org_operations {
+  op_none   = 0x00,
+  op_range  = 0x01,
+  op_time   = 0x10,
+  op_both   = 0x11
+};
+
+
+/*
+# Flags
+#    senderPaced                      80000000  31
+#    lsopTimeBasedSeekSupported       40000000  30
+#    lsopByteBasedSeekSupported       20000000  29
+#    playcontainerSupported           10000000  28
+#    s0IncreasingSupported            08000000  27
+#    sNIncreasingSupported            04000000  26
+#    rtspPauseSupported               02000000  25
+#    streamingTransferModeSupported   01000000  24
+#    interactiveTransferModeSupported 00800000  23
+#    backgroundTransferModeSupported  00400000  22
+#    connectionStallingSupported      00200000  21
+#    dlnaVersion15Supported           00100000  20
+DLNA_ORG_FLAGS = 'DLNA.ORG_FLAGS'
+DLNA_ORG_FLAGS_VAL = '01500000000000000000000000000000'
+*/
+
+enum dlna_org_flags {
+  flag_senderPaced                      = (1 << 31),
+  flag_lsopTimeBasedSeekSupported       = (1 << 30),
+  flag_lsopByteBasedSeekSupported       = (1 << 29),
+  flag_playcontainerSupported           = (1 << 28),
+  flag_s0IncreasingSupported            = (1 << 27),
+  flag_sNIncreasingSupported            = (1 << 26),
+  flag_rtspPauseSupported               = (1 << 25),
+  flag_streamingTransferModeSupported   = (1 << 24),
+  flag_interactiveTransferModeSupported = (1 << 23),
+  flag_backgroundTransferModeSupported  = (1 << 22),
+  flag_connectionStallingSupported      = (1 << 21),
+  flag_dlnaVersion15Supported           = (1 << 20)
+};
+
+
+std::string CContentDirectory::buildDlnaInfo(bool transcode, std::string dlnaProfile) // static
+{
+  string result = "";
+  
+  // play speed
+  dlna_org_playSpeed ps = ps_normal;
+
+  // conversion indicator
+  dlna_org_conversionIndicator ci = ci_none;
+  if(transcode)
+    ci = ci_transcoded;
+
+  // operations
+  dlna_org_operations op = op_range;
+  if(transcode)
+    op = op_none;
+
+  // flags
+  int flags = 0;
+  flags = 
+    flag_streamingTransferModeSupported |
+    flag_backgroundTransferModeSupported |
+    flag_connectionStallingSupported |  flag_dlnaVersion15Supported;
+  if(!transcode)
+    flags |= flag_lsopByteBasedSeekSupported;
+    
+
+	char dlna_info[448];
+	if(!dlnaProfile.empty()) {
+		sprintf(dlna_info, "%s=%s;%s=%.2x;%s=%d;%s=%d;%s=%.8x%.24x",
+				  "DLNA.ORG_PN", dlnaProfile.c_str(), "DLNA.ORG_OP", op, 
+          "DLNA.ORG_PS", ps, "DLNA.ORG_CI", ci, 
+          "DLNA.ORG_FLAGS", flags, 0);
+	}
+	else {
+		sprintf(dlna_info, "%s=%.2x;%s=%d;%s=%d;%s=%.8x%.24x",
+				  "DLNA.ORG_OP", op, "DLNA.ORG_PS", ps,
+          "DLNA.ORG_CI", ci, "DLNA.ORG_FLAGS", flags, 0);
+	}
+
+  result = dlna_info;
+  return result;
+}
+
+
 std::string CContentDirectory::BuildProtocolInfo(bool p_bTranscode,
                                   std::string p_sMimeType,
                                   std::string p_sProfileId,
@@ -1424,42 +1565,146 @@ std::string CContentDirectory::BuildProtocolInfo(bool p_bTranscode,
 	}
 	
 	sTmp = "http-get:*:" + p_sMimeType + ":";
-
-	dlna_org_conversion_t ci = DLNA_ORG_CONVERSION_NONE;
-	if(p_bTranscode)
-		ci = DLNA_ORG_CONVERSION_TRANSCODED;
-	
-	dlna_org_operation_t op = DLNA_ORG_OPERATION_NONE;
-	if(!p_bTranscode)
-		op = DLNA_ORG_OPERATION_RANGE;
-
-	int flags;
-	flags = 
-		DLNA_ORG_FLAG_STREAMING_TRANSFER_MODE |
-		DLNA_ORG_FLAG_BACKGROUND_TRANSFERT_MODE |
-		DLNA_ORG_FLAG_CONNECTION_STALL |
-		DLNA_ORG_FLAG_DLNA_V15;
-	
-	if(!p_bTranscode) {
-		flags |= DLNA_ORG_FLAG_BYTE_BASED_SEEK;
-	}
-	
-	char dlna_info[448];
-	if(!p_sProfileId.empty()) {
-		sprintf(dlna_info, "%s=%d;%s=%d;%s=%.2x;%s=%s;%s=%.8x%.24x",
-				 "DLNA.ORG_PS", DLNA_ORG_PLAY_SPEED_NORMAL, "DLNA.ORG_CI", ci,
-				 "DLNA.ORG_OP", op, "DLNA.ORG_PN", p_sProfileId.c_str(),
-				 "DLNA.ORG_FLAGS", flags, 0);
-	}
-	else {
-		sprintf(dlna_info, "%s=%d;%s=%d;%s=%.2x;%s=%.8x%.24x",
-				 "DLNA.ORG_PS", DLNA_ORG_PLAY_SPEED_NORMAL, "DLNA.ORG_CI", ci,
-				 "DLNA.ORG_OP", op, "DLNA.ORG_FLAGS", flags, 0);
-	}
-
-  sTmp += dlna_info;
-
+  sTmp += CContentDirectory::buildDlnaInfo(p_bTranscode, p_sProfileId);
   return sTmp;
+}
+
+
+
+
+void CContentDirectory::writeAlbumArtUrl(xmlTextWriterPtr pWriter,
+                                                CUPnPAction* pAction,
+                                                CSQLResult* pSQLResult)
+{
+  OBJECT_TYPE objectType = (OBJECT_TYPE)pSQLResult->asInt("TYPE");
+  bool video = (objectType >= ITEM_VIDEO_ITEM && objectType < ITEM_VIDEO_ITEM_MAX);
+  bool audio = (objectType >= ITEM_AUDIO_ITEM && objectType < ITEM_AUDIO_ITEM_MAX);
+  bool image = (objectType >= ITEM_IMAGE_ITEM && objectType < ITEM_IMAGE_ITEM_MAX);
+
+
+  SQLQuery qry;
+  object_id_t albumArtId = 0;
+  std::string albumArtExt;
+  int albumArtWidth = 0;
+  int albumArtHeight = 0;
+  bool appendSize = false;
+  
+  if(audio) {
+    // audio files with an album art have either the id for an image file
+    // or their own object id if the file contains an image.
+    // if the id is 0 there is no album art available
+    if(pSQLResult->isNull("ALBUM_ART_ID") || pSQLResult->asUInt("ALBUM_ART_ID") == 0)
+      return;
+
+    // object contains the image
+    if(pSQLResult->asUInt("ALBUM_ART_ID") == pSQLResult->asUInt("OBJECT_ID") || 
+       pSQLResult->asUInt("ALBUM_ART_ID") == pSQLResult->asUInt("REF_ID") ||
+       pSQLResult->asUInt("ALBUM_ART_ID") == pSQLResult->asUInt("VREF_ID")) {
+
+      albumArtId = pSQLResult->asUInt("ALBUM_ART_ID");
+      albumArtExt = "jpg"; //pSQLResult->asUInt("ALBUM_ART_EXT");
+      albumArtWidth = pSQLResult->asInt("IV_WIDTH");
+      albumArtHeight = pSQLResult->asInt("IV_HEIGHT");
+      if(albumArtWidth == 0 || albumArtHeight == 0) {
+        albumArtWidth = 300;
+        albumArtHeight = 300;
+      }
+      appendSize = true;
+    }
+    // image file
+    else {
+      string sql = qry.build(SQL_GET_OBJECT_DETAILS, pSQLResult->asString("ALBUM_ART_ID"));
+      qry.select(sql);
+      if(qry.eof())
+        return;
+
+      albumArtId = pSQLResult->asUInt("ALBUM_ART_ID");
+      albumArtExt = qry.result()->asString("ALBUM_ART_EXT");
+      albumArtWidth = qry.result()->asInt("IV_WIDTH");
+      albumArtHeight = qry.result()->asInt("IV_HEIGHT");
+    }
+    
+  } // audio
+
+
+  if(image) {
+
+    // if we got an image and no magickWand transcoder there is no album art
+    if(!CPluginMgr::hasTranscoderPlugin("magickWand") && 
+       (pSQLResult->isNull("ALBUM_ART_ID") || pSQLResult->asUInt("ALBUM_ART_ID") == 0))
+    return;
+
+    // else we use the object itself
+    albumArtId = pSQLResult->asUInt("OBJECT_ID");
+    albumArtExt = ExtractFileExt(pSQLResult->asString("FILE_NAME"));
+    albumArtWidth = 300;
+    albumArtHeight = 300;
+  } // image
+
+
+  if(video) {
+
+    // no album art set and no ffmpegthumbniler means no album art
+    if(!CPluginMgr::hasMetadataPlugin("ffmpegthumbnailer") &&
+       (pSQLResult->isNull("ALBUM_ART_ID") || pSQLResult->asUInt("ALBUM_ART_ID") == 0))
+      return;
+
+    // create image from the video using ffmpegthumbnailer
+    if((pSQLResult->isNull("ALBUM_ART_ID") || pSQLResult->asUInt("ALBUM_ART_ID") == 0)) {
+      albumArtId = pSQLResult->asUInt("OBJECT_ID");
+      albumArtExt = "jpg";
+      albumArtWidth = 300;
+      albumArtHeight = 300;    
+      
+    }
+    // image file
+    else {
+
+      string sql = qry.build(SQL_GET_OBJECT_DETAILS, pSQLResult->asString("ALBUM_ART_ID"));
+      qry.select(sql);
+      if(qry.eof())
+        return;
+
+      albumArtId = pSQLResult->asUInt("ALBUM_ART_ID");
+      albumArtExt = pSQLResult->asString("ALBUM_ART_EXT");
+      albumArtWidth = qry.result()->asInt("IV_WIDTH");
+      albumArtHeight = qry.result()->asInt("IV_HEIGHT"); 
+    }
+    
+  } // video
+
+
+
+  std::string mimeType;
+  std::string profile;
+  if(CPluginMgr::dlnaPlugin() != NULL) {
+    CPluginMgr::dlnaPlugin()->getImageProfile(
+      albumArtExt, albumArtWidth, albumArtHeight, &profile, &mimeType);
+  }
+
+  if(mimeType.empty()) {
+    mimeType = pAction->DeviceSettings()->MimeType(albumArtExt);
+  }
+
+
+  char szArtId[11];
+  sprintf(szArtId, "%010X", albumArtId);
+  stringstream url;
+  url << "http://" << m_sHTTPServerURL << "/ImageItems/" << string(szArtId) << "." << albumArtExt << "?vfolder=none";
+  if(appendSize)
+    url << "&width=" << albumArtWidth << "&height=" << albumArtHeight;
+
+  // write the xml node
+  xmlTextWriterStartElement(pWriter, BAD_CAST "upnp:albumArtURI");
+
+    if(!profile.empty()) {
+      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "xmlns:dlna", BAD_CAST "urn:schemas-dlna-org:metadata-1-0/");
+      xmlTextWriterWriteAttribute(pWriter, BAD_CAST "dlna:profileID", BAD_CAST profile.c_str());
+    }
+    
+	  xmlTextWriterWriteString(pWriter, BAD_CAST url.str().c_str());
+
+  xmlTextWriterEndElement(pWriter);
 }
 
 

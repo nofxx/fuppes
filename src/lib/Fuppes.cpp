@@ -36,6 +36,7 @@
 #include "MediaServer.h"
 #include "UPnPDevice.h"
 #include "GENA/SubscriptionMgr.h"
+#include "ControlInterface/ControlInterface.h"
 
 #include "ContentDirectory/ContentDatabase.h"
 #include "ContentDirectory/VirtualContainerMgr.h"
@@ -160,6 +161,9 @@ CFuppes::CFuppes(std::string p_sIPAddress, std::string p_sUUID)
 
   // init virtual containers
 	CVirtualContainerMgr::Shared();
+
+  // init control interface
+  ControlInterface::init();
 	
 	/* if everything is up and running, multicast alive messages
   and search for other devices */       
@@ -181,10 +185,8 @@ CFuppes::~CFuppes()
 {  
   CSharedLog::Log(L_EXT, __FILE__, __LINE__, "deleting FUPPES instance");
 
-
-
   
-  cout << "delete SSDP" << endl;
+  //cout << "delete SSDP" << endl;
   if(m_pSSDPCtrl) {
     /* multicast notify-byebye */
     CSharedLog::Shared()->Log(L_EXT, __FILE__, __LINE__, "multicasting byebye messages");
@@ -195,7 +197,7 @@ CFuppes::~CFuppes()
     m_pSSDPCtrl->Stop();
   }
 
-  cout << "stop HTTP Server" << endl;
+  //cout << "stop HTTP Server" << endl;
   /* stop HTTP-server */
   if(m_pHTTPServer) {
     CSharedLog::Shared()->Log(L_EXT, __FILE__, __LINE__, "stopping HTTP server");
@@ -205,7 +207,7 @@ CFuppes::~CFuppes()
 
 
   
-    cout << "delete devices" << endl;
+  //cout << "delete devices" << endl;
   
   m_RemoteDeviceIterator = m_RemoteDevices.begin();
   while(m_RemoteDeviceIterator != m_RemoteDevices.end()) {
@@ -220,53 +222,53 @@ CFuppes::~CFuppes()
   fuppesThreadDestroyMutex(&m_RemoteDevicesMutex);
   
   /* destroy objects */
-  cout << "delete pConnectionManager" << endl;
+  //cout << "delete pConnectionManager" << endl;
   if(m_pConnectionManager)
     delete m_pConnectionManager;
 
-  cout << "delete pXMSMediaReceiverRegistrar" << endl;
+  //cout << "delete pXMSMediaReceiverRegistrar" << endl;
   if(m_pXMSMediaReceiverRegistrar)
     delete m_pXMSMediaReceiverRegistrar;
 
-  cout << "delete pContentDirectory" << endl;
+  //cout << "delete pContentDirectory" << endl;
   if(m_pContentDirectory)
     delete m_pContentDirectory;
 
-  cout << "delete pMediaServer" << endl;
+  //cout << "delete pMediaServer" << endl;
   if(m_pMediaServer)
     delete m_pMediaServer;
 
-  cout << "delete pSSDPCtrl" << endl;
+  //cout << "delete pSSDPCtrl" << endl;
   if(m_pSSDPCtrl)
     delete m_pSSDPCtrl;
 
-  cout << "delete pHTTPServer" << endl;
+  //cout << "delete pHTTPServer" << endl;
   if(m_pHTTPServer) {
     m_pHTTPServer->Stop();
     delete m_pHTTPServer;
   }
-  
 
-  cout << "delete CSubscriptionMgr" << endl;
+  //cout << "delete CSubscriptionMgr" << endl;
   CSubscriptionMgr::deleteInstance();
 
-  cout << "delete CSubscriptionCache" << endl;
+  //cout << "delete CSubscriptionCache" << endl;
   CSubscriptionCache::deleteInstance();
   
-  cout << "delete CContentDatabase" << endl;
+  //cout << "delete CContentDatabase" << endl;
   delete CContentDatabase::Shared();
-#ifdef HAVE_FOLDER
-  delete CVirtualContainerMgr::Shared();
-#endif
 
-  cout << "delete CConnectionManagerCore" << endl;
+  delete CVirtualContainerMgr::Shared();
+
+
+  //cout << "delete CConnectionManagerCore" << endl;
 	CConnectionManagerCore::uninit();
   
   //cout << "delete CFileAlterationMgr" << endl;
   //CFileAlterationMgr::deleteInstance();
-  cout << "CFileDetails CConnectionManagerCore" << endl;
+  //cout << "CFileDetails CConnectionManagerCore" << endl;
   CFileDetails::deleteInstance();
 
+  ControlInterface::uninit();
 
   //delete CTranscodingMgr::Shared();
 }

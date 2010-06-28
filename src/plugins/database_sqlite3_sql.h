@@ -41,7 +41,7 @@ static const fuppes_sql sqlite3_statements[] = {
   
   {SQL_GET_CHILD_OBJECTS,
   "select "
-  "  o.OBJECT_ID, o.TYPE, o.TITLE, o.REF_ID, "
+  "  o.OBJECT_ID, o.TYPE, o.TITLE, o.REF_ID, o.VREF_ID, "
   "  d.IV_HEIGHT, d.IV_WIDTH, d.DATE, d.AV_DURATION, "
   "  d.AV_ALBUM, d.AV_ARTIST, d.AV_GENRE, d.A_TRACK_NUMBER, "
 	"  d.A_BITRATE, d.A_SAMPLERATE, d.A_BITS_PER_SAMPLE, d.A_CHANNELS, d.AV_DURATION, "
@@ -73,7 +73,7 @@ static const fuppes_sql sqlite3_statements[] = {
 
   {SQL_GET_OBJECT_DETAILS,
   "select "
-  "  o.OBJECT_ID, o.PARENT_ID, o.REF_ID, o.TITLE, o.TYPE, o.DEVICE, "
+  "  o.OBJECT_ID, o.PARENT_ID, o.REF_ID, o.VREF_ID, o.TITLE, o.TYPE, o.DEVICE, "
   "CASE "
   "  WHEN o.DEVICE is NULL "
   "  THEN o.PATH "
@@ -93,7 +93,7 @@ static const fuppes_sql sqlite3_statements[] = {
   "  o.%DEVICE% "
   },    
 
-
+/*
   {SQL_GET_ALBUM_ART_DETAILS,  
   "select "
   "  IV_HEIGHT, "
@@ -104,6 +104,7 @@ static const fuppes_sql sqlite3_statements[] = {
   "where "
   "  d.ID = %OBJECT_ID% "
   },
+*/  
 
   {SQL_SEARCH_PART_SELECT_FIELDS,
   "select * "
@@ -158,7 +159,6 @@ static const fuppes_sql sqlite3_statements[] = {
 	  "  FILE_NAME TEXT DEFAULT NULL, "
 	  "  TITLE TEXT DEFAULT NULL COLLATE NOCASE, "
 	  "  MD5 TEXT DEFAULT NULL, "
-	  "  MIME_TYPE TEXT DEFAULT NULL, "
 	  "  REF_ID BIGINT DEFAULT 0, "
     "  DEVICE TEXT DEFAULT NULL, "
     "  VCONTAINER_TYPE INTEGER DEFAULT 0, "
@@ -207,6 +207,7 @@ static const fuppes_sql sqlite3_statements[] = {
     "  V_BITRATE INTEGER, "
     "  ALBUM_ART_ID INTEGER, "
     "  ALBUM_ART_EXT TEXT, "
+	  "  STREAM_MIME_TYPE TEXT DEFAULT NULL, "
     "  SOURCE INT DEFAULT 0 ) "
   },
   

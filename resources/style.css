@@ -158,3 +158,44 @@ td {
 .remote-device .remote-device-details table tr td {
   border-width: 0px;
 }
+
+
+/* browse */
+#browse-result #table-browse {
+}
+
+#table-browse .td-detail {
+	background-color: #ccccff;
+}
+
+#table-browse .object-details {
+	min-height: 120px;
+}
+
+.object-details object-details-close {
+}
+
+.object-details .album-art-image {
+	width: 210px;
+	float: right;
+	height: 100px;
+}
+
+.object-details table {
+	width: 100%;
+	border: 1px solid black;
+}
+
+.object-details table th {
+	background-image: none;
+	color: black;
+}
+
+
+.object-details .object-values {
+	margin-right: 220px;
+	padding: 4px;
+}
+
+
+

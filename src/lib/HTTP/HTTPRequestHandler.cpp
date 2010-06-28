@@ -34,7 +34,6 @@
 #include "../SharedConfig.h"
 #include "../ContentDirectory/FileDetails.h"
 #include "../ContentDirectory/DatabaseConnection.h"
-#include "../Plugins/Plugin.h"
 #include "../Transcoding/TranscodingMgr.h"
 #include "../ControlInterface/SoapControl.h"
 
@@ -63,6 +62,8 @@ bool CHTTPRequestHandler::HandleRequest(CHTTPMessage* pRequest, CHTTPMessage* pR
     case HTTP_MESSAGE_TYPE_HEAD:
     case HTTP_MESSAGE_TYPE_POST:
       bResult = this->HandleHTTPRequest(pRequest, pResponse);
+      if(bResult)
+       	Log::log(Log::http, Log::debug, __FILE__, __LINE__, "RESPONSE:\n" + pResponse->GetHeaderAsString());
       break;
       
     // SOAP
@@ -131,10 +132,10 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
      ((sRequest.length() > 14) && (ToLower(sRequest).substr(0, 14).compare("/presentation/") == 0))
     )
   {
-		CPresentationPlugin* pres = CPluginMgr::presentationPlugin();
+		/*CPresentationPlugin* pres = CPluginMgr::presentationPlugin();
     if(pres && pres->handleRequest(pRequest, pResponse)) {
    		return true;
-		}
+		}*/
 
     CPresentationHandler* pHandler = new CPresentationHandler(m_sHTTPServerURL);
     pHandler->OnReceivePresentationRequest(pRequest, pResponse);
@@ -287,68 +288,79 @@ bool CHTTPRequestHandler::handleItemRequest(std::string p_sObjectId, CHTTPMessag
   std::string       sMimeType;
   SQLQuery				  qry;
   bool              bResult = true;  
-  
+  bool              transcode = false;
 
   unsigned int      objectId = HexToInt(p_sObjectId);
   
   string sDevice = pRequest->virtualFolderLayout();
   string sql = qry.build(SQL_GET_OBJECT_DETAILS, objectId, sDevice);
   qry.select(sql);
-  if(!qry.eof()) {
-    // TODO Object Types are still on the todo list
-    //nObjectType = (OBJECT_TYPE)atoi(pDb->GetResult()->asString("TYPE").c_str());
-    //cout << "OBJECT_TYPE: " << nObjectType << endl;
-        
-    sPath = qry.result()->asString("PATH") + qry.result()->asString("FILE_NAME");
-    sExt  = ExtractFileExt(sPath);
-    
-    if(!fuppes::File::exists(sPath)) {
-      CSharedLog::Log(L_EXT, __FILE__, __LINE__, "file: %s not found", sPath.c_str());
-      bResult = false;
-    }
-    else
-    {      
-      if(pRequest->DeviceSettings()->DoTranscode(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"))) {
-        CSharedLog::Log(L_EXT, __FILE__, __LINE__, "transcode %s",  sPath.c_str());
-     
-        sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
-        if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {
-          //
-          DbObject object(qry.result());          
-          bResult = pResponse->TranscodeContentFromFile(sPath, &object);
-        }
-        else if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) {
-          // mark the head response as chunked so
-          // the correct header will be build
-          pResponse->SetIsBinary(true);
-          bResult = true;
-						
-          if(pRequest->DeviceSettings()->TranscodingHTTPResponse(sExt) == RESPONSE_CHUNKED) {
-            pResponse->SetTransferEncoding(HTTP_TRANSFER_ENCODING_CHUNKED);
-          }
-          else if(pRequest->DeviceSettings()->TranscodingHTTPResponse(sExt) == RESPONSE_STREAM) {
-            pResponse->SetTransferEncoding(HTTP_TRANSFER_ENCODING_NONE);
-          }
-        }
-      }
-      else {
-        sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
-        pResponse->LoadContentFromFile(sPath);
-      }      
-      
-      // we always set the response type to "200 OK"
-      // if the message should be a "206 partial content" 
-      // CHTTPServer will change the type
-      pResponse->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
-      pResponse->SetContentType(sMimeType);
-      //bResult = true;
-    }
-  }
-  else // eof
-  {
+  if(qry.eof()) {
     CSharedLog::Log(L_EXT, __FILE__, __LINE__, "unknown object id: %s", p_sObjectId.c_str());
-    bResult = false;
+    return false;
   }
+  
+  // TODO Object Types are still on the todo list
+  //nObjectType = (OBJECT_TYPE)atoi(pDb->GetResult()->asString("TYPE").c_str());
+  //cout << "OBJECT_TYPE: " << nObjectType << endl;
+      
+  sPath = qry.result()->asString("PATH") + qry.result()->asString("FILE_NAME");
+  sExt  = ExtractFileExt(sPath);
+  
+  if(!fuppes::File::exists(sPath)) {
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "file: %s not found", sPath.c_str());
+    return false;
+  }
+
+
+  transcode = pRequest->DeviceSettings()->DoTranscode(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
+    
+  if(transcode) {
+    CSharedLog::Log(L_EXT, __FILE__, __LINE__, "transcode %s",  sPath.c_str());
+ 
+    sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
+    if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {
+      //
+      DbObject object(qry.result());          
+      bResult = pResponse->TranscodeContentFromFile(sPath, &object);
+    }
+    else if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) {
+      // mark the head response as chunked so
+      // the correct header will be build
+      pResponse->SetIsBinary(true);
+      bResult = true;
+				
+      if(pRequest->DeviceSettings()->TranscodingHTTPResponse(sExt) == RESPONSE_CHUNKED) {
+        pResponse->SetTransferEncoding(HTTP_TRANSFER_ENCODING_CHUNKED);
+      }
+      else if(pRequest->DeviceSettings()->TranscodingHTTPResponse(sExt) == RESPONSE_STREAM) {
+        pResponse->SetTransferEncoding(HTTP_TRANSFER_ENCODING_NONE);
+      }
+    }
+  }
+  else {
+    sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
+    pResponse->LoadContentFromFile(sPath);
+  }
+  
+
+  
+  if(pRequest->DeviceSettings()->DLNAEnabled()) {
+    std::string dlnaFeatures = CContentDirectory::buildDlnaInfo(transcode, pRequest->DeviceSettings()->DLNA(sExt));
+    std::string dlnaMode = "streaming";
+
+    pResponse->dlnaContentFeatures(dlnaFeatures);
+    pResponse->dlnaTransferMode(dlnaMode);        
+  }
+  
+  // we always set the response type to "200 OK"
+  // if the message should be a "206 partial content" 
+  // CHTTPServer will change the type
+  pResponse->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
+  pResponse->SetContentType(sMimeType);
+  
+  bResult = true;
+    
   
   return bResult;
 }

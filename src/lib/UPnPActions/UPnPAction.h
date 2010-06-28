@@ -117,11 +117,6 @@ typedef enum UPNP_X_MS_MEDIA_RECEIVER_REGISTRAR_ACTIONS {
 } UPNP_X_MS_MEDIA_RECEIVER_REGISTRAR_ACTIONS;
 
 
-
-typedef enum FUPPES_SOAP_CONTROL_ACTIONS {
-	FUPPES_CTRL_TEST
-} FUPPES_SOAP_CONTROL_ACTIONS;
-
 class CUPnPAction
 {
   friend class CUPnPActionFactory;
@@ -185,6 +180,27 @@ class CUPnPBrowseSearchBase: public CUPnPAction
 	protected:
 		std::string			m_query;
 		std::string			m_queryCount;
+};
+
+
+
+
+typedef enum FUPPES_CONTROL_ACTION {
+  FUPPES_CTRL_UNKNOWN,
+  FUPPES_CTRL_DATABASE_REBUILD,
+  FUPPES_CTRL_DATABASE_UPDATE,
+  FUPPES_CTRL_VFOLDER_REBUILD,
+	FUPPES_CTRL_TEST
+} FUPPES_CONTROL_ACTION;
+
+class FuppesCtrlAction: public CUPnPAction
+{
+  public:
+    FuppesCtrlAction(FUPPES_CONTROL_ACTION type, std::string content)
+      :CUPnPAction(FUPPES_SOAP_CONTROL, type, content) {
+    }
+
+    FUPPES_CONTROL_ACTION type() { return (FUPPES_CONTROL_ACTION)GetActionType(); }
 };
 
 

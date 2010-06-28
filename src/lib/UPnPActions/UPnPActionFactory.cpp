@@ -28,6 +28,7 @@
 #include "../Common/RegEx.h"
 #include "../SharedLog.h"
 
+
 #include <iostream>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
@@ -167,7 +168,23 @@ CUPnPAction* CUPnPActionFactory::buildActionFromString(std::string p_sContent, C
  	else if(sNs.compare("urn:fuppesControl") == 0) {
 
     cout << "FUPPES SOAP CONTROL ACTION: " << sName << endl;
-    pAction = new CUPnPAction(FUPPES_SOAP_CONTROL, FUPPES_CTRL_TEST, p_sContent);      
+
+    if(sName.compare("DatabaseRebuild") == 0) {
+	    pAction = new FuppesCtrlAction(FUPPES_CTRL_DATABASE_REBUILD, p_sContent);
+	  }
+    else if(sName.compare("DatabaseUpdate") == 0) {
+	    pAction = new FuppesCtrlAction(FUPPES_CTRL_DATABASE_UPDATE, p_sContent);
+	  }
+    else if(sName.compare("VfolderRebuild") == 0) {
+	    pAction = new FuppesCtrlAction(FUPPES_CTRL_VFOLDER_REBUILD, p_sContent);
+	  }
+     
+    else if(sName.compare("Test") == 0) {
+	    pAction = new FuppesCtrlAction(FUPPES_CTRL_TEST, p_sContent);
+	  }
+    else {
+	    pAction = new FuppesCtrlAction(FUPPES_CTRL_UNKNOWN, p_sContent);
+    }
 
 	}
   

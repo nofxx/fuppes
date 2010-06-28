@@ -66,7 +66,6 @@ fuppesd_LDFLAGS = \
 endif
 
 libfuppes_la_SOURCES = \
-	lib/ContentDirectory/libdlna/dlna.h \
   lib/SSDP/UDPSocket.h\
   lib/SSDP/SSDPCtrl.h\
 	lib/SSDP/SSDPMessage.h\
@@ -151,6 +150,7 @@ libfuppes_la_SOURCES = \
   lib/HTTP/HTTPRequestHandler.cpp\
   lib/HTTP/CommonFunctions.cpp\
   lib/ControlInterface/ErrorCodes.h\
+  lib/ControlInterface/ControlActions.h\
   lib/ControlInterface/ControlInterface.cpp\
   lib/ControlInterface/ControlInterface.h\
   lib/ControlInterface/SoapControl.cpp\

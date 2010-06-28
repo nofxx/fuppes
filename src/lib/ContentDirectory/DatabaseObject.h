@@ -73,7 +73,8 @@ AUDIO_CODEC TEXT, "
 VIDEO_CODEC TEXT, "
 V_BITRATE INTEGER, "
 ALBUM_ART_ID INTEGER, "
-ALBUM_ART_EXT TEXT
+ALBUM_ART_EXT TEXT,
+MIME_TYPE TEXT
 SOURCE          // metadata source (file = the file itself, playlist = from a playlist, itunes = from itunes db)
 */
 
@@ -117,6 +118,7 @@ class ObjectDetails
       m_albumArtExt = details.m_albumArtExt;
       m_size = details.m_size;
       m_source = details.m_source;
+      m_streamMimeType = details.m_streamMimeType;
 
       m_changed = true;
       
@@ -147,6 +149,7 @@ class ObjectDetails
     std::string   albumArtExt() { return m_albumArtExt; }
     fuppes_off_t  size() { return m_size; }
     DetailSource  source() { return m_source; }
+    std::string   streamMimeType() { return m_streamMimeType; }   // for audio/video streams
 
 
     void setTrackNumber(int trackNumber) {
@@ -282,6 +285,13 @@ class ObjectDetails
       }
     }
 
+    void setStreamMimeType(std::string streamMimeType) {
+      if(m_streamMimeType != streamMimeType) {
+        m_streamMimeType = streamMimeType;
+        m_changed = true;
+      }
+    }
+
     bool load(object_id_t detailId, SQLQuery* qry = NULL);
     bool save(SQLQuery* qry = NULL);
     
@@ -306,6 +316,7 @@ class ObjectDetails
     std::string     m_albumArtExt;
     fuppes_off_t    m_size;
     DetailSource    m_source;
+    std::string     m_streamMimeType;
 
     std::string     m_publisher;
     std::string     m_date;
@@ -341,7 +352,6 @@ PATH            :: the absolute path to the file (without the filename)
 FILE_NAME       :: the filename
 TITLE           :: the object's title
 MD5             ::
-MIME_TYPE       ::
 REF_ID          :: id of the referenced object (e.g. a playlist item that points to a object that is also available via normal folders)
 VISIBLE         :: object visiblility (0 = false, 1 = true)
 MODIFIED_AT     :: last time file was modified (unix timestamp)
