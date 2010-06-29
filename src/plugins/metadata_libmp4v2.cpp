@@ -63,7 +63,7 @@ int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
 	// title
 	MP4GetMetadataName(mp4file, &value);
 	if(value) {
-		set_value(metadata->title, value);
+		set_value(metadata->title, sizeof(metadata->title), value);
 		free(value);
 	}
 	
@@ -84,28 +84,28 @@ int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
 	// artist
 	MP4GetMetadataArtist(mp4file, &value);
 	if(value) {
-		set_value(metadata->artist, value);
+		set_value(metadata->artist, sizeof(metadata->artist), value);
 		free(value);
 	}
 	
 	// genre
 	MP4GetMetadataGenre(mp4file, &value);
 	if(value) {
-		set_value(metadata->genre, value);
+		set_value(metadata->genre, sizeof(metadata->genre), value);
 		free(value);
 	}
 	
 	// Album
 	MP4GetMetadataAlbum(mp4file, &value);
 	if(value) {
-		set_value(metadata->album, value);
+		set_value(metadata->album, sizeof(metadata->album), value);
 		free(value);
 	}
 	
 	// description/comment
 	MP4GetMetadataComment(mp4file, &value);
 	if(value) {
-		set_value(metadata->description, value);
+		set_value(metadata->description, sizeof(metadata->description), value);
 		free(value);
 	}
 

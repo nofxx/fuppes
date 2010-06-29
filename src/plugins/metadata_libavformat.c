@@ -120,10 +120,10 @@ int fuppes_metadata_read(plugin_info* plugin, struct metadata_t* metadata)
 				metadata->type		= MD_VIDEO;
 				metadata->width 	= pStream->codec->width;
 				metadata->height	= pStream->codec->height;
-				set_value(&metadata->video_codec, pCodec->name);
+				set_value(metadata->video_codec, sizeof(metadata->video_codec), pCodec->name);
 				break;
 			case CODEC_TYPE_AUDIO:
-				set_value(&metadata->audio_codec, pCodec->name);
+				set_value(metadata->audio_codec, sizeof(metadata->audio_codec), pCodec->name);
 				if(metadata->type == MD_NONE) {
 					metadata->type = MD_AUDIO;
 				}
@@ -156,13 +156,13 @@ int fuppes_metadata_read(plugin_info* plugin, struct metadata_t* metadata)
     // title
     if((tag = av_metadata_get(ctx->metadata, "title", NULL, AV_METADATA_IGNORE_SUFFIX))) {
       printf("libavformat metadata: TITLE: %s\n", tag->value);
-    	set_value(metadata->title, tag->value);      
+    	set_value(metadata->title, sizeof(metadata->title), tag->value);      
     }
 
     // genre
     if((tag = av_metadata_get(ctx->metadata, "genre", NULL, AV_METADATA_IGNORE_SUFFIX))) {
       printf("libavformat metadata: GENRE: %s\n", tag->value);
-    	set_value(metadata->genre, tag->value);      
+    	set_value(metadata->genre, sizeof(metadata->genre), tag->value);      
     }
 
     // track
@@ -174,25 +174,25 @@ int fuppes_metadata_read(plugin_info* plugin, struct metadata_t* metadata)
     // comment
     if((tag = av_metadata_get(ctx->metadata, "comment", NULL, AV_METADATA_IGNORE_SUFFIX))) {
       printf("libavformat metadata: comment: %s\n", tag->value);
-    	set_value(metadata->description, tag->value);      
+    	set_value(metadata->description, sizeof(metadata->description), tag->value);      
     }
 
     // composer
     if((tag = av_metadata_get(ctx->metadata, "composer", NULL, AV_METADATA_IGNORE_SUFFIX))) {
       printf("libavformat metadata: composer: %s\n", tag->value);
-    	set_value(metadata->composer, tag->value);      
+    	set_value(metadata->composer, sizeof(metadata->composer), tag->value);      
     }
     
     // date
     if((tag = av_metadata_get(ctx->metadata, "date", NULL, AV_METADATA_IGNORE_SUFFIX))) {
       printf("libavformat metadata: date: %s\n", tag->value);
-    	set_value(metadata->date, tag->value);      
+    	set_value(metadata->date, sizeof(metadata->date), tag->value);      
     }
 
     // language
     if((tag = av_metadata_get(ctx->metadata, "language", NULL, AV_METADATA_IGNORE_SUFFIX))) {
       printf("libavformat metadata: language: %s\n", tag->value);
-    	set_value(metadata->language, tag->value);      
+    	set_value(metadata->language, sizeof(metadata->language), tag->value);      
     }
 
     // performer
@@ -204,19 +204,19 @@ int fuppes_metadata_read(plugin_info* plugin, struct metadata_t* metadata)
     // publisher
     if((tag = av_metadata_get(ctx->metadata, "publisher", NULL, AV_METADATA_IGNORE_SUFFIX))) {
       printf("libavformat metadata: publisher: %s\n", tag->value);
-    	set_value(metadata->publisher, tag->value);      
+    	set_value(metadata->publisher, sizeof(metadata->publisher), tag->value);      
     }
 
     // show
     if((tag = av_metadata_get(ctx->metadata, "show", NULL, AV_METADATA_IGNORE_SUFFIX))) {
       printf("libavformat metadata: show: %s\n", tag->value);
-    	set_value(metadata->series_title, tag->value);      
+    	set_value(metadata->series_title, sizeof(metadata->series_title), tag->value);      
     }
 
     // episode_id
     if((tag = av_metadata_get(ctx->metadata, "episode_id", NULL, AV_METADATA_IGNORE_SUFFIX))) {
       printf("libavformat metadata: episode_id: %s\n", tag->value);
-    	set_value(metadata->program_title, tag->value);      
+    	set_value(metadata->program_title, sizeof(metadata->program_title), tag->value);      
     }
     
   }

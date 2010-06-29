@@ -317,6 +317,7 @@ void CVirtualContainerMgr::createLayout(CXMLNode* node, object_id_t pid, SQLQuer
     string folders[] = {
     "0-9", "ABC", "DEF", "GHI", "JKL",
     "MNO" , "PQR", "STU", "VWX", "YZ",
+    "!?#",
     ""};      
 
     for(int i = 0; folders[i].length() > 0; i++) {
@@ -500,6 +501,9 @@ object_id_t getSplitParent(object_id_t pid, DbObject* object, std::string childT
   else if(childType.compare("album") == 0) {
     title = object->details()->artist();
   }
+  else if(childType.compare("composer") == 0) {
+    title = object->details()->composer();
+  }
   else {
     cout << "TODO: getSplitParent property: " << childType << endl;
   }
@@ -507,6 +511,12 @@ object_id_t getSplitParent(object_id_t pid, DbObject* object, std::string childT
   if(title.length() == 0)
     title = "unknown";  
   title = ToUpper(title.substr(0,1));
+
+  // check if the first character is a number
+  if(isdigit(title.c_str()[0]) != 0)
+    title = "0-9";
+  
+#warning todo: handle umlauts and other special characters
   
   SQLQuery qry;
   stringstream sql;
@@ -517,6 +527,22 @@ object_id_t getSplitParent(object_id_t pid, DbObject* object, std::string childT
 
   cout << sql.str() << endl;
   qry.select(sql.str());
+
+
+  // this is a quick fix to handle umlauts and other special characters
+  // it's not a clean solution because umlauts will go into the '!?#' folder
+  // instead of e.g A-C for the a-umlaut.
+  if(qry.size() == 0) {
+
+    sql.str("");
+    sql << "select OBJECT_ID from OBJECTS where " <<
+      "PARENT_ID = " << pid << " and " <<
+      "TITLE like '%" << "#" << "%' and " <<
+      "DEVICE = '" << layout << "'";
+
+    qry.select(sql.str());
+  }
+  
 
   ASSERT(qry.size() == 1);
 

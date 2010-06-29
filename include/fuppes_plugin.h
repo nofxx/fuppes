@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2008-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2008-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -50,17 +50,18 @@ static inline int set_value_old(char** out, const char* in)
 }
 
 
-static inline int set_value(char out[], const char* in)
+static inline int set_value(char out[], size_t out_size, const char* in)
 {	
-	int size = strlen(in);
+	size_t size = strlen(in);
   if(size == 0) {
     out[size] = '\0';
     return 0;
   }
 
-  //printf("SIZEOF SET VALUE NEW %lu*\n", sizeof(out));
+  if(size >= out_size) {
+    size = out_size - 1;
+  }
   
-	//*out = (char*)realloc(*out, size + 1);	
 	strncpy(out, in, size);
 	out[size] = '\0';
   return size;
@@ -135,52 +136,45 @@ static inline void init_metadata(struct metadata_t* metadata)
 {
 	metadata->type = MD_NONE;
 
-	//metadata->title = (char*)malloc(sizeof(char));
-	set_value(metadata->title, "");
+	set_value(metadata->title, sizeof(metadata->title), "");
 
-	//metadata->publisher = (char*)malloc(sizeof(char));
-	set_value(metadata->publisher, "unknown");
+	set_value(metadata->publisher, sizeof(metadata->publisher), "unknown");
 
-  //metadata->date = (char*)malloc(sizeof(char));
-	set_value(metadata->date, "");
+	set_value(metadata->date, sizeof(metadata->date), "");
 
-  //metadata->description = (char*)malloc(sizeof(char));
-	set_value(metadata->description, "");
+  set_value(metadata->description, sizeof(metadata->description), "");
 
-  //metadata->long_description = (char*)malloc(sizeof(char));
-	set_value(metadata->long_description, "");
+  set_value(metadata->long_description, sizeof(metadata->long_description), "");
+
+
+	set_value(metadata->genre, sizeof(metadata->genre), "unknown");
   
-  //metadata->genre = (char*)malloc(sizeof(char));
-	set_value(metadata->genre, "unknown");
-
-  //metadata->language = (char*)malloc(sizeof(char));
-	set_value(metadata->language, "");
-
-  //metadata->artist = (char*)malloc(sizeof(char));
-	set_value(metadata->artist, "unknown");
-
-  //metadata->album = (char*)malloc(sizeof(char));
-	set_value(metadata->album, "unknown");
+	set_value(metadata->language, sizeof(metadata->language), "");
+  
+	set_value(metadata->artist, sizeof(metadata->artist), "unknown");
+  
+	set_value(metadata->album, sizeof(metadata->album), "unknown");
 
   metadata->track_number = 0;
 
-  //metadata->contributor = (char*)malloc(sizeof(char));
-	set_value(metadata->contributor, "");
 
-  //metadata->producer = (char*)malloc(sizeof(char));
-	set_value(metadata->producer, "");
+	set_value(metadata->contributor, sizeof(metadata->contributor), "");
 
-  //metadata->actors = (char*)malloc(sizeof(char));
-	set_value(metadata->actors, "");
+	set_value(metadata->producer, sizeof(metadata->producer), "");
+
+
+
+	set_value(metadata->actors, sizeof(metadata->actors), "");
+
+	set_value(metadata->director, sizeof(metadata->director), "");
   
-  //metadata->director = (char*)malloc(sizeof(char));
-	set_value(metadata->director, "");
 
-  //metadata->series_title = (char*)malloc(sizeof(char));
-	set_value(metadata->series_title, "");
 
-  //metadata->program_title = (char*)malloc(sizeof(char));
-	set_value(metadata->program_title, "");
+	set_value(metadata->series_title, sizeof(metadata->series_title), "");
+
+	set_value(metadata->program_title, sizeof(metadata->program_title), "");
+
+  
   
   metadata->episode_nr = 0;
 
@@ -202,20 +196,16 @@ static inline void init_metadata(struct metadata_t* metadata)
 	// other
   metadata->year = 0;
 
-  //metadata->composer = (char*)malloc(sizeof(char));
-	set_value(metadata->composer, "unknown");
+	set_value(metadata->composer, sizeof(metadata->composer), "unknown");
 
-  //metadata->audio_codec = (char*)malloc(sizeof(char));
-	set_value(metadata->audio_codec, "");
+	set_value(metadata->audio_codec, sizeof(metadata->audio_codec), "");
 
-  //metadata->video_codec = (char*)malloc(sizeof(char));
-	set_value(metadata->video_codec, "");
-
+	set_value(metadata->video_codec, sizeof(metadata->video_codec), "");
+    
   metadata->has_image = 0;
 
-  //metadata->image_mime_type = (char*)malloc(sizeof(char));
-	set_value(metadata->image_mime_type, "");
-
+	set_value(metadata->image_mime_type, sizeof(metadata->image_mime_type), "");
+  
   metadata->image_width = 0;
 
   metadata->image_height = 0;

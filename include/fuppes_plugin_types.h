@@ -111,6 +111,7 @@ typedef enum METADATA_PLUGIN_CAPABILITIES {
 	MDC_IMAGE			= 1 << 1
 } METADATA_PLUGIN_CAPABILITIES;
 
+
 struct metadata_t {
 	METADATA_TYPE		type;
 
@@ -151,14 +152,14 @@ struct metadata_t {
   // genre
   // description
   // long_description
-  char           actors[1000];
+  char            actors[1000];
   // producer
-  char           director[1000];
+  char            director[1000];
   // language
 
   // item:videoItem:movie
-  char           series_title[1000];                 // e.g. "Seinfeld - Season 3"
-  char           program_title[1000];                // e.g. "The Pez Dispenser"
+  char            series_title[1000];                 // e.g. "Seinfeld - Season 3"
+  char            program_title[1000];                // e.g. "The Pez Dispenser"
   unsigned int    episode_nr;                   // e.g. "14"
   unsigned int    episode_count;                // e.g. "23"
   

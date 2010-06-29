@@ -53,35 +53,35 @@ void taglib_get_title(plugin_info* plugin, metadata_t* audio)
 {	
 	TagLib::String sTmp =
 		((TagLib::FileRef*)plugin->user_data)->tag()->title();
-	set_value(audio->title, sTmp.to8Bit(true).c_str());
+	set_value(audio->title, sizeof(audio->title), sTmp.to8Bit(true).c_str());
 }
 
 void taglib_get_artist(plugin_info* plugin, metadata_t* audio)
 {	
 	TagLib::String sTmp =
 		((TagLib::FileRef*)plugin->user_data)->tag()->artist();
-	set_value(audio->artist, sTmp.to8Bit(true).c_str());
+	set_value(audio->artist, sizeof(audio->artist), sTmp.to8Bit(true).c_str());
 }
 
 void taglib_get_album(plugin_info* plugin, metadata_t* audio)
 {	
 	TagLib::String sTmp =
 		((TagLib::FileRef*)plugin->user_data)->tag()->album();
-	set_value(audio->album, sTmp.to8Bit(true).c_str());
+	set_value(audio->album, sizeof(audio->album), sTmp.to8Bit(true).c_str());
 }
 
 void taglib_get_genre(plugin_info* plugin, metadata_t* audio)
 {	
 	TagLib::String sTmp =
 		((TagLib::FileRef*)plugin->user_data)->tag()->genre();
-	set_value(audio->genre, sTmp.to8Bit(true).c_str());
+	set_value(audio->genre, sizeof(audio->genre), sTmp.to8Bit(true).c_str());
 }
 
 void taglib_get_comment(plugin_info* plugin, metadata_t* audio)
 {	
 	TagLib::String sTmp =
 		((TagLib::FileRef*)plugin->user_data)->tag()->comment();
-	set_value(audio->description, sTmp.to8Bit(true).c_str());
+	set_value(audio->description, sizeof(audio->description), sTmp.to8Bit(true).c_str());
 }
 
 void taglib_get_composer(plugin_info* plugin, metadata_t* audio)
@@ -99,7 +99,7 @@ void taglib_get_composer(plugin_info* plugin, metadata_t* audio)
 		return;
 	}
 	
-	set_value(audio->composer, frameList.front()->toString().to8Bit(true).c_str());
+	set_value(audio->composer, sizeof(audio->composer), frameList.front()->toString().to8Bit(true).c_str());
 	delete mpegFile;
 }
 
@@ -172,7 +172,7 @@ void taglib_check_image(plugin_info* info, metadata_t* metadata)
 	//cout << "mime/type: " << picFrame->mimeType().toCString() << endl;
   
 	metadata->has_image = 1;
-	set_value(metadata->image_mime_type, picFrame->mimeType().toCString());
+	set_value(metadata->image_mime_type, sizeof(metadata->image_mime_type), picFrame->mimeType().toCString());
 
 	delete mpegFile;
 }
