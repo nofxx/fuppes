@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            Socket.h
  *
@@ -55,11 +55,15 @@
 
 namespace fuppes {
 
+class TCPServer;
+  
 class SocketBase
 {
+  friend class TCPServer;
+  
 	protected:
 		SocketBase();
-		~SocketBase() { }
+		virtual ~SocketBase();
 		
 	public:
 		bool setNonBlocking();
@@ -67,15 +71,44 @@ class SocketBase
 		bool isBlocking() { return !m_nonBlocking; }
 		bool close();
 
+		fuppes_off_t	send(std::string message);
+		fuppes_off_t	send(const char* buffer, fuppes_off_t size);
+		// timeout works only on nonblocking sockets and if "select()" is available
+		fuppes_off_t	receive(int timeout = 0);
+		
+		char*					buffer() { return m_buffer; }
+		fuppes_off_t	bufferSize() { return m_bufferSize; }
+		fuppes_off_t	bufferFill() { return m_bufferFill; }
+
+    
+    
+ 		std::string		localAddress() { return inet_ntoa(m_localEndpoint.sin_addr); }
+		int						localPort() { return ntohs(m_localEndpoint.sin_port); }
+
+		#ifdef WIN32
+		SOCKET		socket() { return m_socket; }
+		#else
+		int				socket() { return m_socket; }
+    #endif
+
+    sockaddr_in   remoteEndpoint() { return m_remoteEndpoint; }
+    
 	protected:		
 		#ifdef WIN32
 		SOCKET		m_socket;
 		#else
 		int				m_socket;
 		#endif
-	
+
+    sockaddr_in  m_localEndpoint;
+    sockaddr_in  m_remoteEndpoint;
+    
 	private:
 		bool			m_nonBlocking;
+
+    char*				 m_buffer;
+		fuppes_off_t m_bufferSize;
+		fuppes_off_t m_bufferFill;
 };	
 
 	
@@ -90,20 +123,11 @@ class TCPSocket: public SocketBase
 {
 	public:
 		TCPSocket(std::string ipv4Address = "");
-		~TCPSocket();
+		virtual ~TCPSocket();
 		
 		bool					connect();
-		fuppes_off_t	send(std::string message);
-		fuppes_off_t	send(const char* buffer, fuppes_off_t size);
-		// timeout works only on nonblocking sockets and if "select()" is available
-		fuppes_off_t	receive(int timeout = 0);
-		
-		char*					buffer() { return m_buffer; }
-		fuppes_off_t	bufferSize() { return m_bufferSize; }
-		fuppes_off_t	bufferFill() { return m_bufferFill; }
-		
-		std::string		localAddress() { return inet_ntoa(m_localEndpoint.sin_addr); }
-		int						localPort() { return ntohs(m_localEndpoint.sin_port); }
+    
+
 
 		std::string		remoteAddress() { return m_remoteAddress; }
 		void					remoteAddress(std::string address) { m_remoteAddress = address; }
@@ -112,22 +136,31 @@ class TCPSocket: public SocketBase
 		sockaddr_in		remoteEndpoint() { return m_remoteEndpoint; }
 		
 	private:
-    sockaddr_in  m_localEndpoint;
-    sockaddr_in  m_remoteEndpoint;
-
 		std::string	 m_remoteAddress;
 		unsigned int m_remotePort;
-
-		char*				 m_buffer;
-		fuppes_off_t m_bufferSize;
-		fuppes_off_t m_bufferFill;
 };
 
-class TCPServer: private SocketBase
+class TCPRemoteSocket: public SocketBase
+{
+  friend class TCPServer;
+
+  public:
+    TCPRemoteSocket(): SocketBase() { }
+  
+};
+
+class TCPServer: public SocketBase
 {
 	public:
-		TCPServer() { }
-		~TCPServer() { }   
+		TCPServer():SocketBase() { }
+		virtual ~TCPServer() { }
+
+    bool init(std::string ip, int port);
+    bool listen();
+
+    // caller has to free object instance
+    TCPRemoteSocket* accept(int timeoutMs);
+    
 };
 
 }

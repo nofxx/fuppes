@@ -93,7 +93,7 @@ int fuppes_metadata_read(plugin_info* plugin, struct metadata_t* metadata)
 	
 	// bitrate
 	if(((AVFormatContext*)plugin->user_data)->bit_rate)
-  	metadata->video_bitrate = ((AVFormatContext*)plugin->user_data)->bit_rate / 8;
+  	metadata->video_bitrate = ((AVFormatContext*)plugin->user_data)->bit_rate;
 
   // filesize  
 	//pVideoItem->nSize = pFormatCtx->file_size;	

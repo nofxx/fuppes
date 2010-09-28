@@ -47,37 +47,8 @@
 
 namespace fuppes {
 
-class DirEntry;
-
-typedef std::vector<DirEntry> DirEntryList;
-
-class Directory
-{
-  public:
-    static bool create(std::string directory);
-    static bool remove(std::string directory);
-
-    static bool exists(std::string directory);
-    static bool readable(std::string directory);
-    static bool writable(std::string directory);
-    static bool searchable(std::string directory);
-    static bool hidden(std::string directory);
-		
-		Directory(std::string path);
-		bool open();
-		DirEntryList dirEntryList();
-		void close();
-		
-		static std::string appendTrailingSlash(std::string directory);
-		static std::string removeTrailingSlash(std::string directory);
-
-	private:
-
-		std::string		m_path;
-		DIR*  				m_dir;
-};
-
-
+class Directory;
+	
 class DirEntry
 {
 	friend class Directory;
@@ -85,9 +56,11 @@ class DirEntry
 	public:
 		
 		enum Type {
-			Directory,
-			File,
-			Symlink			
+			Directory		= 1,
+			File				= 2,
+			Symlink			= 4,
+
+			All					= (Directory | File | Symlink)
 		};
 
 		DirEntry::Type	type() { return m_type; }
@@ -111,6 +84,37 @@ class DirEntry
 		std::string				m_path;
 		std::string				m_name;
 
+};
+
+typedef std::vector<DirEntry> DirEntryList;
+typedef std::vector<DirEntry>::iterator DirEntryListIterator;
+
+class Directory
+{
+  public:
+    static bool create(std::string directory);
+    static bool remove(std::string directory);
+
+    static bool exists(std::string directory);
+    static bool readable(std::string directory);
+    static bool writable(std::string directory);
+    static bool searchable(std::string directory);
+    static bool hidden(std::string directory);
+		
+		Directory(std::string path = "");
+		void setPath(std::string path);
+		bool open();
+		DirEntryList dirEntryList(int filter = DirEntry::All);
+		std::string	 path() { return m_path; }
+		void close();
+		
+		static std::string appendTrailingSlash(std::string directory);
+		static std::string removeTrailingSlash(std::string directory);
+
+	private:
+
+		std::string		m_path;
+		DIR*  				m_dir;
 };
 
 }

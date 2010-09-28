@@ -464,8 +464,12 @@ void ObjectDetails::reset()
   m_v_codec = "";
   m_albumArtId = 0;
   m_albumArtExt = "";
+  m_albumArtMimeType = "";
+  m_albumArtWidth = 0;
+  m_albumArtHeight = 0;
   m_size = 0;
   m_source = Unknown;
+  m_streamMimeType = "";
   m_changed = false;
 }
 
@@ -573,6 +577,9 @@ bool ObjectDetails::load(object_id_t detailId, SQLQuery* qry /*= NULL*/)
     m_v_codec = qry->result()->asString("VIDEO_CODEC");
     m_albumArtId = qry->result()->asUInt("ALBUM_ART_ID");
     m_albumArtExt = qry->result()->asString("ALBUM_ART_EXT");
+    m_albumArtMimeType = qry->result()->asString("ALBUM_ART_MIME_TYPE");
+    m_albumArtWidth = qry->result()->asInt("ALBUM_ART_WIDTH");
+    m_albumArtHeight = qry->result()->asInt("ALBUM_ART_HEIGHT");
     m_size = qry->result()->asUInt("SIZE");
     m_source = (ObjectDetails::DetailSource)qry->result()->asInt("AV_BITRATE");
     m_streamMimeType = qry->result()->asString("STREAM_MIME_TYPE");
@@ -624,7 +631,9 @@ bool ObjectDetails::save(SQLQuery* qry /*= NULL*/)
 
     "ALBUM_ART_ID = " << m_albumArtId << ", " << 
     "ALBUM_ART_EXT = " << (m_albumArtExt.empty() ? "NULL" : "'" + SQLEscape(m_albumArtExt) + "'") << ", " <<
-
+    "ALBUM_ART_MIME_TYPE = " << (m_albumArtMimeType.empty() ? "NULL" : "'" + SQLEscape(m_albumArtMimeType) + "'") << ", " <<
+    "ALBUM_ART_WIDTH = " << m_albumArtWidth << ", " << 
+    "ALBUM_ART_HEIGHT = " << m_albumArtHeight << ", " << 
       
     "SIZE = " << m_size << ", " << 
     "SOURCE = " << m_source << ", " << 
@@ -636,6 +645,7 @@ bool ObjectDetails::save(SQLQuery* qry /*= NULL*/)
     "ALBUM_ART_EXT TEXT, " 
       "DATE TEXT, "*/
 
+    //std::cout << sql.str() << std::endl;        
     ret = qry->exec(sql.str());
 
     sql.str("");
@@ -665,6 +675,9 @@ bool ObjectDetails::save(SQLQuery* qry /*= NULL*/)
       "V_BITRATE, " <<
       "ALBUM_ART_ID, " <<
       "ALBUM_ART_EXT, " <<
+      "ALBUM_ART_MIME_TYPE, " <<
+      "ALBUM_ART_WIDTH, " <<
+      "ALBUM_ART_HEIGHT, " <<
       "SIZE, " <<
       "SOURCE, " <<
       "STREAM_MIME_TYPE " <<
@@ -686,13 +699,16 @@ bool ObjectDetails::save(SQLQuery* qry /*= NULL*/)
       m_v_bitrate << ", " <<
       m_albumArtId << ", " <<
       (m_albumArtExt.empty() ? "NULL" : "'" + SQLEscape(m_albumArtExt) + "'") << ", " <<      
+      (m_albumArtMimeType.empty() ? "NULL" : "'" + SQLEscape(m_albumArtMimeType) + "'") << ", " <<      
+      m_albumArtWidth << ", " <<
+      m_albumArtHeight << ", " <<
       m_size << ", " <<
       m_source << ", " <<
       (m_streamMimeType.empty() ? "NULL" : "'" + SQLEscape(m_streamMimeType) + "'") << " " <<
       " ) ";
 
     
-  //  std::cout << sql.str() << std::endl;    
+    //std::cout << sql.str() << std::endl;    
     ret = (qry->insert(sql.str()) > 0);
     m_id = qry->lastInsertId();
 
@@ -712,7 +728,3 @@ bool ObjectDetails::save(SQLQuery* qry /*= NULL*/)
   m_changed = !ret;
   return ret;
 }
-
-
-
-

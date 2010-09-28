@@ -27,6 +27,7 @@
 #include "../DeviceSettings/DeviceIdentificationMgr.h"
 #include "../Common/File.h"
 #include "../SharedConfig.h"
+#include "../Log.h"
 
 #include <sstream>
 #include <iostream>
@@ -153,7 +154,17 @@ void CDeviceConfigFile::ParseDeviceSettings(CXMLNode* pDevice, CDeviceSettings* 
     }
     // dlna
     else if(pTmp->Name().compare("enable_dlna") == 0) {
-      pSettings->MediaServerSettings()->UseDLNA = (pTmp->Value().compare("true") == 0);
+      //pSettings->MediaServerSettings()->UseDLNA = (pTmp->Value().compare("true") == 0);
+      Log::log(Log::config, Log::normal, __FILE__, __LINE__, "\"enable_dlna\" option is deprecated. use \"dlna_version\" instead");
+    }
+    // dlna version
+    else if(pTmp->Name().compare("dlna_version") == 0) {
+      if(pTmp->Value().compare("none") == 0)
+        pSettings->MediaServerSettings()->DlnaVersion = CMediaServerSettings::dlna_none;
+      else if(pTmp->Value().compare("1.0") == 0)
+        pSettings->MediaServerSettings()->DlnaVersion = CMediaServerSettings::dlna_1_0;
+      else if(pTmp->Value().compare("1.5") == 0)
+        pSettings->MediaServerSettings()->DlnaVersion = CMediaServerSettings::dlna_1_5;
     }
     // transocding_release_delay
     else if(pTmp->Name().compare("transcoding_release_delay") == 0) {
@@ -219,9 +230,9 @@ void CDeviceConfigFile::ParseFileSettings(CXMLNode* pFileSettings, CDeviceSettin
     else if(pTmp->Name().compare("mime_type") == 0) {
       pFileSet->sMimeType = pTmp->Value();
     }
-    else if(pTmp->Name().compare("dlna") == 0) {
+    /*else if(pTmp->Name().compare("dlna") == 0) {
       pFileSet->sDLNA = pTmp->Value();
-    }
+    }*/
     else if(pTmp->Name().compare("transcode") == 0) {
       ParseTranscodingSettings(pTmp, pFileSet);
     }
@@ -274,9 +285,9 @@ void CDeviceConfigFile::ParseTranscodingSettings(CXMLNode* pTCNode, CFileSetting
     else if(pTmp->Name().compare("mime_type") == 0) {
       pFileSet->pTranscodingSettings->sMimeType = pTmp->Value();
     }
-    else if(pTmp->Name().compare("dlna") == 0) {
+    /*else if(pTmp->Name().compare("dlna") == 0) {
       pFileSet->pTranscodingSettings->sDLNA = pTmp->Value();
-    }
+    }*/
     else if(pTmp->Name().compare("http_encoding") == 0) {
       if(pTmp->Value().compare("chunked") == 0) {
         pFileSet->pTranscodingSettings->nTranscodingResponse = RESPONSE_CHUNKED;

@@ -39,3 +39,34 @@ function deviceDetails(idx)
   
 }
 
+
+function logLevel(level) {
+	body = "<log-level>" + level + "</log-level>";
+
+	var request = new FuppesControl({
+		action: 'SetLogLevel',
+		body: body,
+		onComplete: function(result) {
+		},
+		onError: function(error) {
+		}
+	});
+	request.send();
+}
+
+function logSender(sender) {
+	checkbox = $('log-sender-' + sender);
+	action = (checkbox.checked ? "AddLogSender" : "DelLogSender");
+	body = "<log-sender>" + sender + "</log-sender>";
+
+	var request = new FuppesControl({
+		action: action,
+		body: body,
+		onComplete: function(result) {
+		},
+		onError: function(error) {
+		}
+	});
+	request.send();
+}
+

@@ -69,7 +69,7 @@ CTranscodingCacheObject::CTranscodingCacheObject()
   m_bLocked = false;
   
   
-  fuppesThreadInitMutex(&m_Mutex);
+  //fuppesThreadInitMutex(&m_Mutex);
 }
 
 CTranscodingCacheObject::~CTranscodingCacheObject()
@@ -90,7 +90,7 @@ CTranscodingCacheObject::~CTranscodingCacheObject()
     //fuppesThreadClose(m_TranscodeThread);        
   //}
     
-  fuppesThreadDestroyMutex(&m_Mutex);  
+  //fuppesThreadDestroyMutex(&m_Mutex);  
   if(m_sBuffer) {
     free(m_sBuffer);
   }
@@ -229,14 +229,16 @@ bool CTranscodingCacheObject::IsReleased()
 
 void CTranscodingCacheObject::Lock()
 {
-  fuppesThreadLockMutex(&m_Mutex);
+  //fuppesThreadLockMutex(&m_Mutex);
+  m_Mutex.lock();
   m_bLocked = true;
 }
 
 void CTranscodingCacheObject::Unlock()
 {
   m_bLocked = false;
-  fuppesThreadUnlockMutex(&m_Mutex);
+  //fuppesThreadUnlockMutex(&m_Mutex);
+  m_Mutex.unlock();
 }
 
 unsigned int CTranscodingCacheObject::GetValidBytes()
@@ -525,7 +527,7 @@ CTranscodingCache::CTranscodingCache()
 :fuppes::Thread("TranscodingCache")
 {
   //m_ReleaseThread = (fuppesThread)NULL;
-  fuppesThreadInitMutex(&m_Mutex); 
+  //fuppesThreadInitMutex(&m_Mutex); 
 }
 
 CTranscodingCache::~CTranscodingCache()
@@ -537,13 +539,13 @@ CTranscodingCache::~CTranscodingCache()
 	if(this->running())
 		this->stop();
   
-  fuppesThreadDestroyMutex(&m_Mutex);
+  //fuppesThreadDestroyMutex(&m_Mutex);
 }
 
 
 CTranscodingCacheObject* CTranscodingCache::GetCacheObject(std::string p_sFileName)
 {
-  fuppesThreadLockMutex(&m_Mutex);
+  m_Mutex.lock();
   
   CTranscodingCacheObject* pResult = NULL;  
   
@@ -558,14 +560,14 @@ CTranscodingCacheObject* CTranscodingCache::GetCacheObject(std::string p_sFileNa
   pResult->m_nRefCount++;
   pResult->ResetReleaseCount();
   
-  fuppesThreadUnlockMutex(&m_Mutex);  
+  m_Mutex.unlock();
   
   return pResult;
 }
 
 void CTranscodingCache::ReleaseCacheObject(CTranscodingCacheObject* pCacheObj)
 {
-  fuppesThreadLockMutex(&m_Mutex);  
+  m_Mutex.lock();
  
   /*if(!m_ReleaseThread) {
     fuppesThreadStart(m_ReleaseThread, ReleaseLoop);
@@ -584,7 +586,7 @@ void CTranscodingCache::ReleaseCacheObject(CTranscodingCacheObject* pCacheObj)
   
   #warning todo: pause transcoding if ref count == 0
   
-  fuppesThreadUnlockMutex(&m_Mutex);  
+  m_Mutex.unlock();
 }
 
 //fuppesThreadCallback ReleaseLoop(void* arg)
@@ -598,7 +600,7 @@ void CTranscodingCache::run()
 	while(!this->stopRequested()) {
     fuppesSleep(1000);
     
-    fuppesThreadLockMutex(&pCache->m_Mutex);  
+    pCache->m_Mutex.lock();
    
     for(pCache->m_CachedObjectsIterator = pCache->m_CachedObjects.begin();
         pCache->m_CachedObjectsIterator != pCache->m_CachedObjects.end();
@@ -631,7 +633,7 @@ void CTranscodingCache::run()
       }
     }
     
-    fuppesThreadUnlockMutex(&pCache->m_Mutex);   
+    pCache->m_Mutex.unlock();
   }
   
   //fuppesThreadExit();

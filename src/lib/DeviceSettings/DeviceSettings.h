@@ -134,7 +134,7 @@ struct CTranscodingSettings {
   
     std::string   sExt;
     std::string   sMimeType;
-    std::string   sDLNA;
+    //std::string   sDLNA;
   
     /*std::string   sDecoder;     // vorbis | flac | mpc
     std::string   sEncoder;     // lame | twolame | pcm | wav
@@ -143,7 +143,7 @@ struct CTranscodingSettings {
     std::string   sOutParams;
   
     std::string MimeType() { return sMimeType; }
-    std::string DLNA() { return sDLNA; }
+    //std::string DLNA() { return sDLNA; }
     bool Enabled() { return bEnabled; }
   
     unsigned int AudioBitRate() { return nAudioBitRate; }
@@ -215,7 +215,7 @@ struct CFileSettings {
    * always returns the original mime type
    */
   std::string   originalMimeType() { return sMimeType; }
-  std::string   DLNA();
+  //std::string   DLNA();
   
   unsigned int  TargetAudioSampleRate();
   unsigned int  TargetAudioBitRate();
@@ -243,7 +243,7 @@ struct CFileSettings {
     std::string   sExt;
     OBJECT_TYPE   nType;
     std::string   sMimeType;
-    std::string   sDLNA;  
+    //std::string   sDLNA;  
 };
 
 typedef std::map<std::string, CFileSettings*>::iterator FileSettingsIterator_t;
@@ -262,7 +262,16 @@ struct CMediaServerSettings
 	bool					UseSerialNumber;
 	std::string		UPC;
 	bool					UseUPC;
-	bool					UseDLNA;
+
+  
+  enum DlnaVersion_t {
+    dlna_none,
+    dlna_1_0,
+    dlna_1_5
+  };
+  
+	//bool					UseDLNA;
+  DlnaVersion_t DlnaVersion;
 
 	bool					UseURLBase;
 	bool					UseXMSMediaReceiverRegistrar;
@@ -304,7 +313,8 @@ class CDeviceSettings
     ENCODER_TYPE      GetEncoderType(std::string p_sExt);
   
     std::string   MimeType(std::string p_sExt, std::string p_sACodec = "", std::string p_sVCodec = "");
-    std::string   DLNA(std::string p_sExt);
+    std::string   extensionByMimeType(std::string mimeType);
+    //std::string   DLNA(std::string p_sExt);
   
     unsigned int  TargetAudioSampleRate(std::string p_sExt);
     unsigned int  TargetAudioBitRate(std::string p_sExt);
@@ -325,11 +335,14 @@ class CDeviceSettings
     bool        Xbox360Support() { return m_bXBox360Support; }    
 		//bool        ShowPlaylistAsContainer() { return m_bShowPlaylistAsContainer; }		
     PlaylistStyle playlistStyle() { return m_playlistStyle; }
-    bool        DLNAEnabled() { return MediaServerSettings()->UseDLNA; }
+    //bool        DLNAEnabled() { return MediaServerSettings()->UseDLNA; }
+    CMediaServerSettings::DlnaVersion_t dlnaVersion() { return MediaServerSettings()->DlnaVersion; }
     bool				ShowEmptyResolution() { return m_bShowEmptyResolution; }
 		
     /*std::string  virtualFolderLayout() { return m_virtualFolderLayout; }
     void  setVirtualFolderLayout(std::string layout) { m_virtualFolderLayout = layout; }*/
+
+    std::string   protocolInfo();
     
   private:
     std::string m_sDeviceName;
@@ -344,6 +357,8 @@ class CDeviceSettings
     //bool m_bDLNAEnabled;  
     bool m_bEnableDeviceIcon;
 		bool m_bShowEmptyResolution;
+
+    std::string   m_protocolInfo;
 		
     std::map<std::string, CFileSettings*> m_FileSettings;
     std::map<std::string, CFileSettings*>::iterator m_FileSettingsIterator;

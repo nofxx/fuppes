@@ -65,7 +65,7 @@ class CPresentationHandler
      *  @param pMessage  the incoming message
      *  @param pResult  the outgoing message
      */
-    void OnReceivePresentationRequest(CHTTPMessage* pMessage, CHTTPMessage* pResult);
+    void OnReceivePresentationRequest(CHTTPMessage* pMessage, CHTTPMessage* pResult, bool& isImage, int &width, int &height);
   
   private:
 
@@ -75,7 +75,7 @@ class CPresentationHandler
     std::string HandleRequest(std::string p_sRequest);  
 
 
-    std::string GetPageHeader(PRESENTATION_PAGE p_nPresentationPage, std::string p_sPageName);
+    std::string GetPageHeader(PRESENTATION_PAGE p_nPresentationPage, std::string p_sPageName, std::string js = "");
     std::string GetPageFooter(PRESENTATION_PAGE p_nPresentationPage);
 
 

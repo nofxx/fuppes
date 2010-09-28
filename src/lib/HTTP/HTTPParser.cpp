@@ -1,4 +1,4 @@
-/* -*- Mode: C;++ indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            HTTPParser.cpp
  *
@@ -116,7 +116,8 @@ bool CHTTPParser::parseHeader(std::string header, CHTTPMessage* message)
 	
 	parseCommonValues(header, message);
 	parseGetVars(header, message);
-	
+  parseDlnaHeader(header, message);
+  
 	CDeviceIdentificationMgr::Shared()->IdentifyDevice(message); 
   return true;
 }
@@ -237,4 +238,25 @@ void CHTTPParser::parseGetVars(std::string /*header*/, CHTTPMessage* message)
 		
 		get = get.substr(amp + 1, get.length());
 	}
+}
+
+void CHTTPParser::parseDlnaHeader(std::string header, CHTTPMessage* message) // static
+{
+
+  RegEx rxGetCF("getcontentFeatures\\.dlna\\.org: *(\\d+) *\r\n", PCRE_CASELESS);
+	if(rxGetCF.Search(header.c_str())) {
+    if(rxGetCF.match(1).compare("1") == 0)
+  		message->dlnaGetContentFeatures(true);
+	}
+  
+  RegEx rxTM("transferMode\\.dlna\\.org: *(\\w+) *\r\n", PCRE_CASELESS);
+	if(rxTM.Search(header.c_str())) {
+    message->dlnaTransferMode(rxTM.match(1));
+	}
+  
+  RegEx rxCF("contentFeatures\\.dlna\\.org: *(\\w+) *\r\n", PCRE_CASELESS);
+	if(rxCF.Search(header.c_str())) {
+    message->dlnaContentFeatures(rxCF.match(1));
+  }
+
 }

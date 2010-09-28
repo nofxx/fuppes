@@ -29,6 +29,7 @@
 
 #include <sstream>
 #include <string.h>
+#include <fcntl.h>
 
 #if (defined(__unix__) || defined(unix)) && !defined(USG)
 #include <sys/param.h>
@@ -98,7 +99,23 @@ bool CUDPSocket::SetupSocket(bool p_bDoMulticast, std::string p_sIPAddress /* = 
 		 constantly poll the cancellation state.
 		 otherwise fuppes will hang on shutdown
 		 same for HTTPServer */
-	fuppesSocketSetNonBlocking(m_Socket);
+	//fuppesSocketSetNonBlocking(m_Socket);
+     #ifdef WIN32     
+    int nonblocking = 1;
+    if(ioctlsocket(m_Socket, FIONBIO, (unsigned long*) &nonblocking) != 0)
+      return false;
+    #else     
+    int opts;
+	  opts = fcntl(m_Socket, F_GETFL);
+	  if (opts < 0) {
+      return false;
+	  }
+	  opts = (opts | O_NONBLOCK);
+	  if (fcntl(m_Socket, F_SETFL,opts) < 0) {		
+      return false;
+	  } 
+	  #endif
+  
 	#endif
 	
 	/* Set local endpoint */
@@ -170,7 +187,12 @@ void CUDPSocket::TeardownSocket()
 	}
 
   /* Close socket */
-  fuppesSocketClose(m_Socket);
+  #ifdef WIN32
+  ::closesocket(m_Socket);
+  #else
+  ::close(m_Socket);
+  #endif
+  
   m_Socket = -1;
 }
 

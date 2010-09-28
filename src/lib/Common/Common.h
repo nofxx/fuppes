@@ -122,39 +122,6 @@ fuppes_off_t strToOffT(std::string value);
   typedef int fuppesSocket;
 #endif
 
-bool fuppesSocketSetNonBlocking(fuppesSocket p_SocketHandle);
-int  fuppesSocketClose(fuppesSocket p_SocketHandle);
-
-
-#ifdef WIN32
-  typedef CRITICAL_SECTION  fuppesThreadMutex;
-#else
-  typedef pthread_mutex_t   fuppesThreadMutex;
-#endif
-
-
-void fuppesThreadInitMutex(fuppesThreadMutex* p_ThreadMutex);
-void fuppesThreadDestroyMutex(fuppesThreadMutex* p_ThreadMutex);
-
-void fuppesThreadLockMutex(fuppesThreadMutex* p_ThreadMutex);
-void fuppesThreadUnlockMutex(fuppesThreadMutex* p_ThreadMutex);
-
-
-class MutexLocker2
-{
-	public:
-		MutexLocker2(fuppesThreadMutex* mutex) {
-			m_mutex = mutex;
-			fuppesThreadLockMutex(m_mutex);
-		}
-		~MutexLocker2() {
-			fuppesThreadUnlockMutex(m_mutex);
-		}
-		
-	private:
-		fuppesThreadMutex* m_mutex;
-};
-
 
 #ifdef WIN32
   typedef HINSTANCE  fuppesLibHandle;

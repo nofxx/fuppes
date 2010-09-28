@@ -108,7 +108,7 @@ class CContentDatabase
 	
     static unsigned int GetObjId();
    
-    CFileAlterationMonitor* fileAlterationMonitor() { return Shared()->m_pFileAlterationMonitor; }
+    static CFileAlterationMonitor* fileAlterationMonitor() { return Shared()->m_pFileAlterationMonitor; }
     
     /*void deleteObject(unsigned int objectId); 
     void deleteContainer(std::string path);    */

@@ -63,6 +63,8 @@ CHTTPMessage::CHTTPMessage()
   #endif
   m_nTransferEncoding    = HTTP_TRANSFER_ENCODING_NONE;
 
+  m_dlnaGetContentFeatures = false;
+  
 	memset(&m_LocalEp, 0, sizeof(struct sockaddr_in));
 	memset(&m_RemoteEp, 0, sizeof(struct sockaddr_in));
 }
@@ -306,6 +308,8 @@ std::string CHTTPMessage::GetHeaderAsString()
   	sResult << "DATE: " << szTime << "\r\n";	
 	
 	  // dlna
+    if(m_dlnaGetContentFeatures)
+      sResult << "getcontentFeatures.dlna.org: 1\r\n";
     if(!m_dlnaContentFeatures.empty())
       sResult << "contentFeatures.dlna.org: " << m_dlnaContentFeatures << "\r\n";
     if(!m_dlnaTransferMode.empty())

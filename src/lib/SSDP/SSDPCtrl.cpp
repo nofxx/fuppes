@@ -39,14 +39,14 @@ CSSDPCtrl::CSSDPCtrl(std::string p_sIPAddress, std::string p_sHTTPServerURL)
 	//msearch_thread = (fuppesThread)NULL;
   m_isStarted = false;
 	
-  fuppesThreadInitMutex(&m_SessionReceiveMutex);
-  fuppesThreadInitMutex(&m_SessionTimedOutMutex);
+  //fuppesThreadInitMutex(&m_SessionReceiveMutex);
+  //fuppesThreadInitMutex(&m_SessionTimedOutMutex);
 }
 
 CSSDPCtrl::~CSSDPCtrl()
 {
-  fuppesThreadDestroyMutex(&m_SessionReceiveMutex);
-  fuppesThreadDestroyMutex(&m_SessionTimedOutMutex);
+  //fuppesThreadDestroyMutex(&m_SessionReceiveMutex);
+  //fuppesThreadDestroyMutex(&m_SessionTimedOutMutex);
   
   delete m_pNotifyMsgFactory;
 }
@@ -82,7 +82,7 @@ CUDPSocket* CSSDPCtrl::get_socket()
 void CSSDPCtrl::CleanupSessions(bool clearRunning /*= false*/)
 {
   CSharedLog::Log(L_DBG, __FILE__, __LINE__, "CleanupSessions");
-  fuppesThreadLockMutex(&m_SessionTimedOutMutex); 
+  m_SessionTimedOutMutex.lock(); 
       
   if(m_HandleMSearchThreadList.size() > 0)
   {    
@@ -143,7 +143,7 @@ void CSSDPCtrl::CleanupSessions(bool clearRunning /*= false*/)
     }  
   }
 
-  fuppesThreadUnlockMutex(&m_SessionTimedOutMutex); 
+  m_SessionTimedOutMutex.unlock(); 
 }
 
 void CSSDPCtrl::send_msearch()
@@ -156,9 +156,9 @@ void CSSDPCtrl::send_msearch()
   m_LastMulticastEp = pSession->GetLocalEndPoint();
   pSession->Start();
 
-  fuppesThreadLockMutex(&m_SessionTimedOutMutex); 
+  m_SessionTimedOutMutex.lock(); 
   m_RunningSessionList.push_back(pSession);
-  fuppesThreadUnlockMutex(&m_SessionTimedOutMutex); 
+  m_SessionTimedOutMutex.unlock(); 
   
   CleanupSessions();
 }
@@ -242,7 +242,7 @@ void CSSDPCtrl::SetReceiveHandler(ISSDPCtrl* pHandler)
 
 void CSSDPCtrl::OnUDPSocketReceive(CSSDPMessage* pSSDPMessage)
 {
-  fuppesThreadLockMutex(&m_SessionReceiveMutex);  
+  m_SessionReceiveMutex.lock();  
 	
   stringstream sLog;
   sLog << "OnUDPSocketReceive() :: " << inet_ntoa(pSSDPMessage->GetRemoteEndPoint().sin_addr) << ":" << ntohs(pSSDPMessage->GetRemoteEndPoint().sin_port) << endl;
@@ -267,13 +267,13 @@ void CSSDPCtrl::OnUDPSocketReceive(CSSDPMessage* pSSDPMessage)
     }
   }
 	
-	fuppesThreadUnlockMutex(&m_SessionReceiveMutex);  
+	m_SessionReceiveMutex.unlock();  
 }
 
 void CSSDPCtrl::OnSessionReceive(CSSDPMessage* pMessage)
 {
   /* lock receive mutex */
-  fuppesThreadLockMutex(&m_SessionReceiveMutex);  
+  m_SessionReceiveMutex.lock();  
   
   /* logging */
   //CSharedLog::Log(L_DBG, __FILE__, __LINE__, pMessage->GetMessage().c_str());
@@ -284,7 +284,7 @@ void CSSDPCtrl::OnSessionReceive(CSSDPMessage* pMessage)
       m_pReceiveHandler->OnSSDPCtrlReceiveMsg(pMessage);
   
   /* unlock receive mutex */
-  fuppesThreadUnlockMutex(&m_SessionReceiveMutex);
+  m_SessionReceiveMutex.unlock();
 }
 
 void CSSDPCtrl::OnSessionTimeOut(CMSearchSession* pSender)
@@ -292,7 +292,7 @@ void CSSDPCtrl::OnSessionTimeOut(CMSearchSession* pSender)
   CleanupSessions();
   
   /* lock timeout mutex */
-  fuppesThreadLockMutex(&m_SessionTimedOutMutex); 
+  m_SessionTimedOutMutex.lock(); 
   
 
   // remove from running session list ...
@@ -313,13 +313,13 @@ void CSSDPCtrl::OnSessionTimeOut(CMSearchSession* pSender)
   m_SessionList.push_back(pSender);
   
   /* unlock timeout mutex */
-  fuppesThreadUnlockMutex(&m_SessionTimedOutMutex); 
+  m_SessionTimedOutMutex.unlock(); 
 }
 
 
 void CSSDPCtrl::HandleMSearch(CSSDPMessage* pSSDPMessage)
 {
-  fuppesThreadLockMutex(&m_SessionTimedOutMutex);      
+  m_SessionTimedOutMutex.lock();      
 
   stringstream sLog;
   sLog << "received m-search from: \"" << inet_ntoa(pSSDPMessage->GetRemoteEndPoint().sin_addr) << ":" << ntohs(pSSDPMessage->GetRemoteEndPoint().sin_port) << "\"";
@@ -336,7 +336,7 @@ void CSSDPCtrl::HandleMSearch(CSSDPMessage* pSSDPMessage)
     pHandleMSearch->Start();
   }
  
-  fuppesThreadUnlockMutex(&m_SessionTimedOutMutex);   
+  m_SessionTimedOutMutex.unlock();   
   
   CleanupSessions();
 }

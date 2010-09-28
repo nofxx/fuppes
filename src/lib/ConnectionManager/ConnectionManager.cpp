@@ -107,7 +107,7 @@ void CConnectionManager::HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage
   
 }
 
-CM_ERROR CConnectionManager::getProtocolInfo(CUPnPAction* /*action*/, std::string& result)
+CM_ERROR CConnectionManager::getProtocolInfo(CUPnPAction* action, std::string& result)
 {
 /*
 POST /ConnectionManager/Control HTTP/1.1
@@ -135,6 +135,7 @@ Content-Type:  text/xml; charset="utf-8"
   </s:Body>
 </s:Envelope>
 */
+
   
   xmlTextWriterPtr writer;
 	xmlBufferPtr buf;
@@ -160,7 +161,7 @@ Content-Type:  text/xml; charset="utf-8"
 
         // Source
         xmlTextWriterStartElement(writer, BAD_CAST "Source");
-        xmlTextWriterWriteString(writer, BAD_CAST "");
+        xmlTextWriterWriteString(writer, BAD_CAST action->DeviceSettings()->protocolInfo().c_str());
         xmlTextWriterEndElement(writer);
 
         // Sink

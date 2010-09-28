@@ -227,7 +227,7 @@ void CSubscriptionCache::deleteInstance() // static
 
 CSubscriptionCache::CSubscriptionCache()
 {
-  fuppesThreadInitMutex(&m_Mutex);
+  //fuppesThreadInitMutex(&m_Mutex);
 }
 
 CSubscriptionCache::~CSubscriptionCache()
@@ -239,17 +239,17 @@ CSubscriptionCache::~CSubscriptionCache()
   }
   m_Subscriptions.clear();
   
-  fuppesThreadDestroyMutex(&m_Mutex);
+  //fuppesThreadDestroyMutex(&m_Mutex);
 }
 
 void CSubscriptionCache::Lock()
 {
-  fuppesThreadLockMutex(&m_Mutex); 
+  m_Mutex.lock();
 }
 
 void CSubscriptionCache::Unlock()
 {
-  fuppesThreadUnlockMutex(&m_Mutex);  
+  m_Mutex.unlock();
 }
 
 void CSubscriptionCache::AddSubscription(CSubscription* pSubscription)
@@ -257,9 +257,9 @@ void CSubscriptionCache::AddSubscription(CSubscription* pSubscription)
   string sSID = GenerateUUID();
   pSubscription->SetSID(sSID);
   
-  fuppesThreadLockMutex(&m_Mutex);  
+  m_Mutex.lock();
   m_Subscriptions[sSID] = pSubscription;
-  fuppesThreadUnlockMutex(&m_Mutex);  
+  m_Mutex.unlock();
 }
 
 bool CSubscriptionCache::RenewSubscription(std::string pSID)
@@ -268,7 +268,7 @@ bool CSubscriptionCache::RenewSubscription(std::string pSID)
   
   bool bResult = false;
   
-  fuppesThreadLockMutex(&m_Mutex);
+  m_Mutex.lock();
   m_SubscriptionsIterator = m_Subscriptions.find(pSID);
   if(m_SubscriptionsIterator != m_Subscriptions.end()) {    
     CSharedLog::Log(L_EXT, __FILE__, __LINE__, "renew subscription \"%s\" done", pSID.c_str());
@@ -280,7 +280,7 @@ bool CSubscriptionCache::RenewSubscription(std::string pSID)
     bResult = false;
   }
   
-  fuppesThreadUnlockMutex(&m_Mutex);
+  m_Mutex.unlock();
   return bResult;  
 }
 
@@ -291,7 +291,7 @@ bool CSubscriptionCache::DeleteSubscription(std::string pSID)
   bool bResult = false;
   CSubscription* pSubscription;
   
-  fuppesThreadLockMutex(&m_Mutex);    
+  m_Mutex.lock();  
   m_SubscriptionsIterator = m_Subscriptions.find(pSID);  
   if(m_SubscriptionsIterator != m_Subscriptions.end()) { 
     CSharedLog::Log(L_EXT, __FILE__, __LINE__, "delete subscription \"%s\" done", pSID.c_str());
@@ -305,7 +305,7 @@ bool CSubscriptionCache::DeleteSubscription(std::string pSID)
     bResult = false;
   }
   
-  fuppesThreadUnlockMutex(&m_Mutex);
+  m_Mutex.unlock();
   return bResult;  
 }
 

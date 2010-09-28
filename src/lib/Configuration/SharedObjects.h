@@ -42,8 +42,9 @@ class SharedObject
   
   public:
     enum SharedObjectType {
-      directory,
-      itunes
+      directory   = 0,
+      playlist    = 1,
+      itunes      = 2
     };
 
     SharedObjectType type() { return m_type; }
@@ -75,9 +76,17 @@ class SharedObjects : public ConfigSettings
     void AddSharedITunes(std::string p_sITunes);
     void RemoveSharedITunes(int p_nIdx);
 
+    // share objects
+    int sharedObjectCount() { return m_sharedObjects.size(); }
+    SharedObject* sharedObject(int idx) { return m_sharedObjects[idx]; }
+    void removeSharedObject(int idx);
+    
   private:
     std::vector<std::string>  m_lSharedDirs;
     std::vector<std::string>  m_lSharedITunes;
+
+    std::vector<SharedObject*>  m_sharedObjects;
+    std::vector<SharedObject*>::iterator  m_sharedObjectsIter;
 };
 
 #endif // _SHARED_OBJECTS_H

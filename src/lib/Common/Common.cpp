@@ -45,7 +45,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cctype>
-#include <fcntl.h>
+
 #ifndef WIN32
 #include <dlfcn.h>
 #endif
@@ -520,75 +520,6 @@ fuppes_off_t strToOffT(std::string value)
 	return result;
 }
 
-
-bool fuppesSocketSetNonBlocking(fuppesSocket p_SocketHandle)
-{
-  #ifdef WIN32     
-  int nonblocking = 1;
-  if(ioctlsocket(p_SocketHandle, FIONBIO, (unsigned long*) &nonblocking) != 0)
-    return false;
-  #else     
-  int opts;
-	opts = fcntl(p_SocketHandle, F_GETFL);
-	if (opts < 0) {
-    return false;
-	}
-	opts = (opts | O_NONBLOCK);
-	if (fcntl(p_SocketHandle, F_SETFL,opts) < 0) {		
-    return false;
-	} 
-	#endif
-  return true;
-}
-
-int fuppesSocketClose(fuppesSocket p_SocketHandle)
-{
-  #ifdef WIN32
-  return closesocket(p_SocketHandle);
-  #else
-  return close(p_SocketHandle);
-  #endif  
-}
-
-
-void fuppesThreadInitMutex(fuppesThreadMutex* p_ThreadMutex)
-{
-  #ifdef WIN32
-  InitializeCriticalSection(p_ThreadMutex);
-  //InitializeCriticalSectionAndSpinCount(p_ThreadMutex, 0x80000400);
-  #else
-  pthread_mutex_init(p_ThreadMutex, NULL);
-  #endif  
-}
-
-void fuppesThreadDestroyMutex(fuppesThreadMutex* p_ThreadMutex)
-{
-  #ifdef WIN32
-  DeleteCriticalSection(p_ThreadMutex);
-  #else
-  pthread_mutex_destroy(p_ThreadMutex);
-  #endif
-}
-
-void fuppesThreadLockMutex(fuppesThreadMutex* p_ThreadMutex)
-{
-  #ifdef WIN32
-  #warning todo: check if mutex is initialized (uninitialized mutexes will crash on win32)
-  EnterCriticalSection(p_ThreadMutex);
-  #else
-  pthread_mutex_lock(p_ThreadMutex);
-  #endif  
-}
-
-void fuppesThreadUnlockMutex(fuppesThreadMutex* p_ThreadMutex)
-{
-  #ifdef WIN32
-  #warning todo: check if mutex is initialized (uninitialized mutexes will crash on win32)
-  LeaveCriticalSection(p_ThreadMutex);
-  #else
-  pthread_mutex_unlock(p_ThreadMutex);
-  #endif  
-}
 
 
 fuppesLibHandle FuppesLoadLibrary(std::string p_sLibName)

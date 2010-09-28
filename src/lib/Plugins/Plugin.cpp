@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2008-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2008-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -71,7 +71,7 @@ bool CPluginMgr::try_init(string fileName)
   //cout << "filename: " << fileName << endl;
 	if(m_instance == 0) {
 		m_instance = new CPluginMgr();
-		fuppesThreadInitMutex(&m_instance->m_mutex);
+		//fuppesThreadInitMutex(&m_instance->m_mutex);
 	}
 
   if(!File::exists(fileName)) return false; // next file
@@ -330,7 +330,7 @@ void CPluginMgr::uninit() // static
   }*/
 
 	
-	fuppesThreadDestroyMutex(&m_instance->m_mutex);
+	//fuppesThreadDestroyMutex(&m_instance->m_mutex);
 	delete m_instance;
 	m_instance = NULL;
 }
@@ -340,12 +340,12 @@ bool CPluginMgr::hasMetadataPlugin(std::string pluginName) // static
 {
 	bool result = false;
 	
-	fuppesThreadLockMutex(&m_instance->m_mutex);
+	m_instance->m_mutex.lock();
 	pluginName = ToLower(pluginName);
 
 	result = (m_instance->m_metadataPlugins.find(pluginName) != m_instance->m_metadataPlugins.end());
 	
-	fuppesThreadUnlockMutex(&m_instance->m_mutex);
+	m_instance->m_mutex.unlock();
 	return result;
 }
 
@@ -353,18 +353,18 @@ bool CPluginMgr::hasTranscoderPlugin(std::string pluginName) // static
 {
 	bool result = false;
 	
-	fuppesThreadLockMutex(&m_instance->m_mutex);
+	m_instance->m_mutex.lock();
 	pluginName = ToLower(pluginName);
 
 	result = (m_instance->m_transcoderPlugins.find(pluginName) != m_instance->m_transcoderPlugins.end());
 	
-	fuppesThreadUnlockMutex(&m_instance->m_mutex);
+	m_instance->m_mutex.unlock();
 	return result;
 }
 
 CMetadataPlugin* CPluginMgr::metadataPlugin(std::string pluginName)
 {
-	fuppesThreadLockMutex(&m_instance->m_mutex);
+	m_instance->m_mutex.lock();
 	CMetadataPlugin* plugin = NULL;
 	
 	pluginName = ToLower(pluginName);
@@ -376,13 +376,13 @@ CMetadataPlugin* CPluginMgr::metadataPlugin(std::string pluginName)
 		plugin = new CMetadataPlugin(m_instance->m_metadataPlugins[pluginName]);
 	}
 	
-	fuppesThreadUnlockMutex(&m_instance->m_mutex);
+	m_instance->m_mutex.unlock();
 	return plugin;	
 }
 
 CTranscoderBase* CPluginMgr::transcoderPlugin(std::string pluginName)
 {
-	fuppesThreadLockMutex(&m_instance->m_mutex);
+	m_instance->m_mutex.lock();
 	CTranscoderPlugin* plugin = NULL;
 
 	pluginName = ToLower(pluginName);	
@@ -394,13 +394,13 @@ CTranscoderBase* CPluginMgr::transcoderPlugin(std::string pluginName)
 		plugin = new CTranscoderPlugin(m_instance->m_transcoderPlugins[pluginName]);
 	}	
 
-	fuppesThreadUnlockMutex(&m_instance->m_mutex);
+	m_instance->m_mutex.unlock();
 	return (CTranscoderBase*)plugin;
 }
 
 CAudioDecoderPlugin* CPluginMgr::audioDecoderPlugin(std::string pluginName)
 {
-	fuppesThreadLockMutex(&m_instance->m_mutex);
+	m_instance->m_mutex.lock();
 	CAudioDecoderPlugin* plugin = NULL;
 
 	pluginName = ToLower(pluginName);
@@ -412,13 +412,13 @@ CAudioDecoderPlugin* CPluginMgr::audioDecoderPlugin(std::string pluginName)
 		plugin = new CAudioDecoderPlugin(m_instance->m_audioDecoderPlugins[pluginName]);
 	}	
 
-	fuppesThreadUnlockMutex(&m_instance->m_mutex);
+	m_instance->m_mutex.unlock();
 	return plugin;
 }
 
 CAudioEncoderPlugin* CPluginMgr::audioEncoderPlugin(std::string pluginName)
 {
-	fuppesThreadLockMutex(&m_instance->m_mutex);
+	m_instance->m_mutex.lock();
 	CAudioEncoderPlugin* plugin = NULL;
 		
 	pluginName = ToLower(pluginName);
@@ -430,13 +430,13 @@ CAudioEncoderPlugin* CPluginMgr::audioEncoderPlugin(std::string pluginName)
 		plugin = new CAudioEncoderPlugin(m_instance->m_audioEncoderPlugins[pluginName]);
 	}	
 
-	fuppesThreadUnlockMutex(&m_instance->m_mutex);
+	m_instance->m_mutex.unlock();
 	return plugin;
 }
 
 CDatabasePlugin* CPluginMgr::databasePlugin(const std::string pluginName)
 {
-	fuppesThreadLockMutex(&m_instance->m_mutex);
+	m_instance->m_mutex.lock();
 	CDatabasePlugin* plugin = NULL;
 		
 	//pluginName = ToLower(pluginName);
@@ -448,7 +448,7 @@ CDatabasePlugin* CPluginMgr::databasePlugin(const std::string pluginName)
 		plugin = m_instance->m_databasePlugins[pluginName];
 	}
 
-	fuppesThreadUnlockMutex(&m_instance->m_mutex);
+	m_instance->m_mutex.unlock();
 	return plugin;
 }
 
@@ -632,7 +632,19 @@ bool CDlnaPlugin::initPlugin()
 	if(m_getImageProfile == NULL) {
 		return false;
 	}
-	
+
+	m_getAudioProfile = (dlnaGetAudioProfile_t)FuppesGetProcAddress(m_handle, "fuppes_dlna_get_audio_profile");
+	if(m_getAudioProfile == NULL) {
+		return false;
+	}
+
+  /*
+	m_getVideoProfile = (dlnaGetVideoProfile_t)FuppesGetProcAddress(m_handle, "fuppes_dlna_get_video_profile");
+	if(m_getVideoProfile == NULL) {
+		return false;
+	}
+  */
+  
 	return true;
 }
 
@@ -646,6 +658,18 @@ bool CDlnaPlugin::getImageProfile(std::string ext, int width, int height, std::s
 		return true;
 	}
 	return false;																																		
+}
+
+bool CDlnaPlugin::getAudioProfile(std::string ext, int channels, int bitrate, std::string* dlnaProfile, std::string* mimeType)
+{
+  char profile[256];
+	char mime[256];
+	if(m_getAudioProfile(ext.c_str(), channels, bitrate, (char*)&profile, (char*)&mime) == 0) {
+		*dlnaProfile = profile;
+		*mimeType = mime;
+		return true;
+	}
+	return false;	
 }
 
 

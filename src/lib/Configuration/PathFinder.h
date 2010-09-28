@@ -57,12 +57,19 @@ class PathFinder
 
     static void addConfigPath(std::string path);
 
+    static std::string findThumbnailsDir();
+    
+    static fuppes::StringList GetDevicesList();
+    static fuppes::StringList GetVfoldersList();
+    
   private:
     PathFinder();
     static PathFinder* m_instance;
     
     std::string devicesPath, vfolderPath; // the extra paths for device files and vfolder files
     std::vector<std::string> m_paths;
+
+    std::string         m_thumbnailsDir;
 };
 
 #endif

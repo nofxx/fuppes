@@ -43,6 +43,7 @@ class PageStart: public PresentationPage
 
   private:
     std::string buildObjectStatusTable();
+    std::string buildLogSelection();
 };
 
 

@@ -463,11 +463,12 @@ cd $FUPPES_DIR
 #CPPFLAGS="$CPPFLAGS -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE=1" \
 LIBS="$LIBS -ldl -lz" \
 ./configure --host=$HOST --prefix=$PREFIX --sysconfdir=$PREFIX/etc \
---enable-force-inotify=yes --disable-taglib
+--localstatedir=$PREFIX/var --enable-force-inotify=yes --disable-taglib
 
 sed -i -e 's/FUPPES_DATADIR=\\"$(datadir)\/fuppes\\"/FUPPES_DATADIR=\\"\/opt\/fuppes\/data\\"/' src/Makefile
 sed -i -e 's/FUPPES_PLUGINDIR=\\"$(libdir)\/fuppes\\"/FUPPES_PLUGINDIR=\\"\/opt\/fuppes\/plugins\\"/' src/Makefile
 sed -i -e 's/FUPPES_SYSCONFDIR=\\"$(sysconfdir)\/fuppes\\"/FUPPES_SYSCONFDIR=\\"\/opt\/fuppes\/etc\\"/' src/Makefile
+sed -i -e 's/FUPPES_LOCALSTATEDIR=\\"$(localstatedir)\/fuppes\\"/FUPPES_LOCALSTATEDIR=\\"\/opt\/fuppes\/var\\"/' src/Makefile
 
 $MAKE
 $MAKE_INSTALL

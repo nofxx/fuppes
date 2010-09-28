@@ -180,7 +180,7 @@ typedef enum HTTP_RESPONSE_TYPE {
   HTTP_RESPONSE_TYPE_GENA_OK        					 = 7
 	
 } HTTP_RESPONSE_TYPE;
-	
+
 class HTTPResponseHeader: public HTTPHeader {
 };
 
@@ -254,8 +254,30 @@ class CHTTPMessage
 		std::string				soapTarget() { return m_soapTarget; }
 		std::string				soapAction() { return m_soapAction; }
 
+
+    
+    // getcontentFeatures.dlna.org: 1
+    void              dlnaGetContentFeatures(bool get) { m_dlnaGetContentFeatures = get; }
+    bool              dlnaGetContentFeatures() { return m_dlnaGetContentFeatures; }
+    
+    // contentFeatures.dlna.org: *
     void              dlnaContentFeatures(std::string features) { m_dlnaContentFeatures = features; }
+    std::string       dlnaContentFeatures() { return m_dlnaContentFeatures; }
+    
+    // transferMode.dlna.org: Interactive
+    enum {
+      Streaming,
+      Interactive,
+      Background
+    } dlnaTransferMode_t;
+    
     void              dlnaTransferMode(std::string mode) { m_dlnaTransferMode = mode; }
+    std::string       dlnaTransferMode() { return m_dlnaTransferMode; }
+
+    // dlna 1.0 clients may not send the transferMode header.
+    // in that case we have to treat it as "Streaming" for Audio and Video objects
+    // and "Interactive" for all other binaries
+
     
     bool             LoadContentFromFile(std::string);
     bool             TranscodeContentFromFile(std::string p_sFileName, fuppes::DbObject* object);
@@ -320,6 +342,7 @@ private:
 		std::string					m_soapTarget;
 		std::string					m_soapAction;	
 
+    bool                m_dlnaGetContentFeatures;
     std::string         m_dlnaContentFeatures;
     std::string         m_dlnaTransferMode;
   

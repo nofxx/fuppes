@@ -120,8 +120,8 @@ bool CSharedConfig::FindConfigPaths(void)
     return false;
   }
   
-  Log::log(Log::config, Log::normal, __FILE__, __LINE__, "Shared (Base) Config File: %s", m_sBaseConfigFile.c_str());
-  cout << "Shared (Base) Config File:" << m_sBaseConfigFile << endl;
+  //Log::log(Log::config, Log::normal, __FILE__, __LINE__, "Shared (Base) Config File: %s", m_sBaseConfigFile.c_str());
+  //cout << "Shared (Base) Config File:" << m_sBaseConfigFile << endl;
   return true;
 }
 
@@ -280,6 +280,11 @@ string CSharedConfig::GetUUID()
 
 bool CSharedConfig::ReadConfigFile()
 {
+  cout << "read config file: " << m_sBaseConfigFile << endl;
+  if(!File::writable(m_sBaseConfigFile)) {
+    cout << "WARNING: config file: " << m_sBaseConfigFile << " is not writable" << endl;
+  }
+  
   if(m_pDoc != NULL) delete m_pDoc;
   m_pDoc = new CXMLDocument();
 
@@ -389,8 +394,8 @@ bool CSharedConfig::ReadConfigFile()
     PrintConfigReadErrors(READERROR_PLUGINDIRS);
   }*/
 
-  delete m_pDoc;
-  m_pDoc = NULL;
+  //delete m_pDoc;
+  //m_pDoc = NULL;
   return true;
 }
 

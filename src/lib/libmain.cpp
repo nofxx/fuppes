@@ -268,16 +268,12 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
     return FUPPES_FALSE;
   }                 
 
-  /*
-	CConnectionParams params;
-	params.type = "sqlite3";
-	params.filename = CSharedConfig::Shared()->GetDbFileName();
-	params.type = "mysql";
-	params.hostname = "localhost";
-	params.username = "formac";
-	params.password = "formac";
-	params.dbname = "formac";*/
-	
+
+
+  if(CSharedConfig::Shared()->databaseSettings->dbConnectionParams().type == "sqlite3") {
+    // check Directory::writable(CSharedConfig::Shared()->databaseSettings->dbConnectionParams().filename)
+  }
+    
 	if(!CDatabase::connect(CSharedConfig::Shared()->databaseSettings->dbConnectionParams())) {
     Log::error(Log::unknown, Log::normal, __FILE__, __LINE__, "error opening database %s", CSharedConfig::Shared()->databaseSettings->dbConnectionParams().type.c_str());
 		return FUPPES_FALSE;

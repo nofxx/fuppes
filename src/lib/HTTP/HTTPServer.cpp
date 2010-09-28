@@ -26,7 +26,7 @@
 #include "HTTPServer.h"
 #include "HTTPMessage.h"
 #include "HTTPRequestHandler.h"
-#include "CommonFunctions.h"
+//#include "CommonFunctions.h"
 #include "../SharedLog.h"
 #include "../SharedConfig.h"
 #include "../Common/RegEx.h"
@@ -48,40 +48,16 @@
 // the max buffer size for transcoded files
 #define MAX_TRANSCODING_BUFFER_SIZE 65536 // 64 kbyte
 
-
-
 #ifndef WIN32
-
-// mac os x has no MSG_NOSIGNAL 
-// but >= 10.2 comes with SO_NOSIGPIPE
-// SO_NOSIGPIPE is a setsockopt() option
-// and not a send() parameter as MSG_NOSIGNAL
-// OpenBSD has none of the options so we
-// need to ignore SIGPIPE events
-// the signal is created in fuppes_start() (libmain.cpp)
-#ifndef MSG_NOSIGNAL
-#define MSG_NOSIGNAL 0
-#ifdef SO_NOSIGPIPE
-  #define USE_SO_NOSIGPIPE
-#endif
-#endif
-
 #include <sys/errno.h>
-
 #endif
 
 using namespace std;
 using namespace fuppes;
 
-//fuppesThreadCallback AcceptLoop(void *arg);
-//fuppesThreadCallback SessionLoop(void *arg);
-
-/*bool ReceiveRequest(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Request);
-bool SendResponse(CHTTPSessionInfo* p_Session, CHTTPMessage* p_Response, CHTTPMessage* p_Request);*/
 
 bool ReceiveRequest(HTTPSession* p_Session, CHTTPMessage* p_Request);
 bool SendResponse(HTTPSession* p_Session, CHTTPMessage* p_Response, CHTTPMessage* p_Request);
-
 
 /** Constructor */
 CHTTPServer::CHTTPServer(std::string p_sIPAddress)
@@ -92,59 +68,10 @@ CHTTPServer::CHTTPServer(std::string p_sIPAddress)
 	m_isStarted   = false;
 	//accept_thread = (fuppesThread)NULL;
 	//fuppesThreadInitMutex(&m_ReceiveMutex);  	
-  	
-  // create socket
-	m_Socket = socket(AF_INET, SOCK_STREAM, 0);
-#ifndef WIN32
-  if(m_Socket == -1)
-#else
-  if(m_Socket == INVALID_SOCKET)
-#endif
-	  throw fuppes::Exception(__FILE__, __LINE__, "failed to create socket");
+
+
+  m_listenSocket.init(p_sIPAddress, CSharedConfig::Shared()->networkSettings->GetHTTPPort());
   
-	
-	#ifdef HAVE_SELECT
-	fuppesSocketSetNonBlocking(m_Socket);
-	#endif
-	
-	
-	#ifdef USE_SO_NOSIGPIPE
-  int use_sigpipe = 1;
-  int nOpt = setsockopt(m_Socket, SOL_SOCKET, SO_NOSIGPIPE, &use_sigpipe, sizeof(use_sigpipe));	  
-	if(nOpt < 0)
-	  throw fuppes::Exception(__FILE__, __LINE__, "failed to setsockopt(SO_NOSIGPIPE)");
-  #endif 
-
-	
-	// set socket option SO_REUSEADDR so restarting fuppes with
-	// a fixed http port will not lead to a bind error
-  int nRet  = 0;
-  #ifdef WIN32  
-  bool bOptVal = true;
-  nRet = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, (char*)&bOptVal, sizeof(bool));
-  #else
-  int flag = 1;
-  nRet = setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
-  #endif
-  if(nRet == -1) {
-    throw fuppes::Exception(__FILE__, __LINE__, "failed to setsockopt: SO_REUSEADDR");
-  }
-
-  // set local end point
-	local_ep.sin_family      = AF_INET;
-	local_ep.sin_addr.s_addr = inet_addr(p_sIPAddress.c_str());
-	local_ep.sin_port				 = htons(CSharedConfig::Shared()->networkSettings->GetHTTPPort());
-	memset(&(local_ep.sin_zero), '\0', 8);
-	
-  // bind the socket
-	nRet = bind(m_Socket, (struct sockaddr*)&local_ep, sizeof(local_ep));	
-  if(nRet == -1)
-    throw fuppes::Exception(__FILE__, __LINE__, "failed to bind socket to : %s:%d", p_sIPAddress.c_str(), CSharedConfig::Shared()->networkSettings->GetHTTPPort());
-  
-  // fetch local end point to get port number on random ports
-	socklen_t size = sizeof(local_ep);
-	getsockname(m_Socket, (struct sockaddr*)&local_ep, &size);
-
   MacAddressTable::init();
 } // CHTTPServer()
 
@@ -162,11 +89,8 @@ void CHTTPServer::Start()
 {
   m_bBreakAccept = false;
   
-  // listen on socket
-  int nRet = listen(m_Socket, 0);
-  if(nRet == -1) {
+  if(!m_listenSocket.listen())
     throw fuppes::Exception(__FILE__, __LINE__, "failed to listen on socket");
-  }
 
   HTTPSessionStore::init();
   
@@ -200,7 +124,8 @@ void CHTTPServer::Stop()
   //CleanupSessions();
 
   // close socket
-  fuppesSocketClose(m_Socket);
+  //fuppesSocketClose(m_Socket);
+  m_listenSocket.close();
   m_bIsRunning = false;
 
   HTTPSessionStore::uninit();
@@ -211,7 +136,8 @@ void CHTTPServer::Stop()
 std::string CHTTPServer::GetURL()
 {
   stringstream result;
-  result << inet_ntoa(local_ep.sin_addr) << ":" << ntohs(local_ep.sin_port);
+  //result << inet_ntoa(local_ep.sin_addr) << ":" << ntohs(local_ep.sin_port);
+  result << m_listenSocket.localAddress() << ":" << m_listenSocket.localPort();
   return result.str();
 }
 
@@ -289,83 +215,21 @@ bool CHTTPServer::CallOnReceive(CHTTPMessage* pMessageIn, CHTTPMessage* pMessage
 //fuppesThreadCallback AcceptLoop(void *arg)
 void CHTTPServer::run()
 {                     
-/*
-  #ifndef FUPPES_TARGET_WIN32                     
-  //set thread cancel state
-  int nRetVal = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-  if (nRetVal != 0) {
-    perror("Thread pthread_setcancelstate Failed...\n");
-    exit(EXIT_FAILURE);
-  }
+	CSharedLog::Log(L_EXT, __FILE__, __LINE__,  "listening on %s", this->GetURL().c_str());
+	this->m_isStarted = true;
 
-  // set thread cancel type
-  nRetVal = pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
-  if (nRetVal != 0) {
-    perror("Thread pthread_setcanceltype failed...");
-    exit(EXIT_FAILURE);
-  }
-  #endif // FUPPES_TARGET_WIN32
-*/
-
-  // local vars
-	CHTTPServer* pHTTPServer = this; //(CHTTPServer*)arg; 
-  
-	fuppesSocket nSocket     = pHTTPServer->GetSocket();
-	fuppesSocket nConnection = 0;
-  
-	struct sockaddr_in remote_ep;
-	socklen_t size = sizeof(remote_ep);
-  
-  // log  
-	CSharedLog::Log(L_EXT, __FILE__, __LINE__,
-    "listening on %s", pHTTPServer->GetURL().c_str());
-
-	pHTTPServer->m_isStarted = true;
-
-	
-	#ifdef HAVE_SELECT
-	fd_set fds;	
-	struct timeval timeout;
-	#endif
-	
+  TCPRemoteSocket* sock;
+   
   // loop	
-	while(!this->stopRequested()) //!pHTTPServer->m_bBreakAccept)
-	{
-		#ifdef HAVE_SELECT
-		FD_ZERO(&fds);
-		FD_SET(nSocket, &fds);
-		
-		timeout.tv_sec = 2;
-		timeout.tv_usec = 0;
- 		int sel = select(nSocket + 1, &fds, NULL, NULL, &timeout);
+	while(!this->stopRequested())	{
 
-		if(!FD_ISSET(nSocket, &fds)  || sel <= 0)
-			continue;
-		#endif
+    sock = m_listenSocket.accept(2000);
+    if(sock == NULL)
+      continue;
 
-    // accept new connection
-    nConnection = accept(nSocket, (struct sockaddr*)&remote_ep, &size);   
-#ifndef WIN32
-		if(nConnection == -1) {
-#else
- 		if(nConnection == INVALID_SOCKET) {
-#endif
-		  //#ifdef FUPPES_TARGET_MAC_OSX
-/*			#if defined(BSD)
-      pthread_testcancel();
-			msleep(10);
-			#endif*/
-			continue;
-		}
-			
-    // start session thread ...
-    /*CHTTPSessionInfo* pSession = new CHTTPSessionInfo(pHTTPServer, nConnection, remote_ep, pHTTPServer->GetURL());      
-    fuppesThread SessionThread = (fuppesThread)NULL;
-    fuppesThreadStartArg(SessionThread, SessionLoop, *pSession);
-    pSession->SetThreadHandle(SessionThread);*/
-		HTTPSession* session = new HTTPSession(pHTTPServer, nConnection, remote_ep, pHTTPServer->GetURL());
+    HTTPSession* session = new HTTPSession(this, sock, this->GetURL());
 		session->start();
-    
+
     // ... and store the thread in the session list
     //pHTTPServer->m_ThreadList.push_back(pSession);
 		//pHTTPServer->m_ThreadList.push_back(session);
@@ -374,13 +238,11 @@ void CHTTPServer::run()
     //pHTTPServer->CleanupSessions();
 	}  
 
-	pHTTPServer->m_isStarted = false;
+	this->m_isStarted = false;
 	
   CSharedLog::Log(L_DBG, __FILE__, __LINE__, "exiting accept loop");
-  //pHTTPServer->CleanupSessions();
-	//fuppesThreadExit();
 	
-} // AcceptLoop
+} // run()
 
 
 HTTPSessionStore* HTTPSessionStore::m_instance = NULL;
@@ -453,6 +315,9 @@ HTTPSession::~HTTPSession()
 {
   // stop and close thread
   close();
+
+  if(m_remoteSocket != NULL)
+    delete m_remoteSocket;
 }
 
 /** Session-loop
@@ -500,8 +365,7 @@ void HTTPSession::run()
       break;
     }
 
-    CSharedLog::Log(L_DBG, __FILE__, __LINE__,
-        "REQUEST %s", pRequest->GetMessage().c_str());
+    Log::log(Log::http, Log::debug, __FILE__, __LINE__, "REQUEST:\n" + pRequest->GetMessage());
     // end receive
     
     // check if requesting IP is allowed to access
@@ -536,7 +400,7 @@ void HTTPSession::run()
   }  
   
   // close connection
-  fuppesSocketClose(pSession->GetConnection());
+  //fuppesSocketClose(pSession->GetConnection());
   
   // clean up
   delete pRequest;
@@ -652,7 +516,7 @@ bool ReceiveRequest(HTTPSession* p_Session, CHTTPMessage* p_Request)
     }    
     // ... close connection gracefully
     else if(nTmpRecv == 0) {      
-      fuppesSocketClose(p_Session->GetConnection()); 
+      //fuppesSocketClose(p_Session->GetConnection()); 
       bDoReceive = false;
       break;
     }
@@ -794,7 +658,8 @@ bool SendResponse(HTTPSession* p_Session, CHTTPMessage* p_Response, CHTTPMessage
     //Log::log(Log::http, Log::debug, __FILE__, __LINE__, "send response %s\n", p_Response->GetMessageAsString().c_str());
         
     // send
-    nRet = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetMessageAsString().c_str(), (int)strlen(p_Response->GetMessageAsString().c_str()));
+    //nRet = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetMessageAsString().c_str(), (int)strlen(p_Response->GetMessageAsString().c_str()));
+    nRet = p_Session->socket()->send(p_Response->GetMessageAsString().c_str(), (int)strlen(p_Response->GetMessageAsString().c_str()));
     #ifdef WIN32 
     if(nRet == -1) {
       stringstream sLog;            
@@ -885,7 +750,8 @@ bool SendResponse(HTTPSession* p_Session, CHTTPMessage* p_Response, CHTTPMessage
 	  // log
 		CSharedLog::Log(L_DBG, __FILE__, __LINE__, "send header: %s\n", p_Response->GetHeaderAsString().c_str());
     // send
-    nErr = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()));
+    //nErr = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()));
+    nErr = p_Session->socket()->send(p_Response->GetHeaderAsString().c_str(), (int)strlen(p_Response->GetHeaderAsString().c_str()));
            
     return (nErr > 0);
   }   
@@ -924,7 +790,8 @@ bool SendResponse(HTTPSession* p_Session, CHTTPMessage* p_Response, CHTTPMessage
     // send HTTP header when the first package is ready
     if(nCnt == 0) {      
       // send
-      nErr = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), p_Response->GetHeaderAsString().length());
+      //nErr = fuppesSocketSend(p_Session->GetConnection(), p_Response->GetHeaderAsString().c_str(), p_Response->GetHeaderAsString().length());
+      nErr = p_Session->socket()->send(p_Response->GetHeaderAsString().c_str(), p_Response->GetHeaderAsString().length());
       CSharedLog::Log(L_DBG, __FILE__, __LINE__, "send header %s\n", p_Response->GetHeaderAsString().c_str());
     }
 
@@ -936,14 +803,17 @@ bool SendResponse(HTTPSession* p_Session, CHTTPMessage* p_Response, CHTTPMessage
       if(p_Response->GetTransferEncoding() == HTTP_TRANSFER_ENCODING_CHUNKED) {
         char szSize[10];
         sprintf(szSize, "%X\r\n", nRet);
-        fuppesSocketSend(p_Session->GetConnection(), szSize, strlen(szSize));
+        //fuppesSocketSend(p_Session->GetConnection(), szSize, strlen(szSize));
+        p_Session->socket()->send(szSize, strlen(szSize));
       }     
 
-      nErr = fuppesSocketSend(p_Session->GetConnection(), szChunk, nRet);    
+      //nErr = fuppesSocketSend(p_Session->GetConnection(), szChunk, nRet);
+      nErr = p_Session->socket()->send(szChunk, nRet);    
 
       if(p_Response->GetTransferEncoding() == HTTP_TRANSFER_ENCODING_CHUNKED) {
         string szCRLF = "\r\n";
-        fuppesSocketSend(p_Session->GetConnection(), szCRLF.c_str(), strlen(szCRLF.c_str()));
+        //fuppesSocketSend(p_Session->GetConnection(), szCRLF.c_str(), strlen(szCRLF.c_str()));
+        p_Session->socket()->send(szCRLF.c_str(), strlen(szCRLF.c_str()));
       }
       
     }        
@@ -997,7 +867,8 @@ bool SendResponse(HTTPSession* p_Session, CHTTPMessage* p_Response, CHTTPMessage
   // send last chunk
   if((nErr > 0) && (p_Response->GetTransferEncoding() == HTTP_TRANSFER_ENCODING_CHUNKED)) {
     string szCRLF = "0\r\n\r\n";
-    fuppesSocketSend(p_Session->GetConnection(), szCRLF.c_str(), strlen(szCRLF.c_str()));    
+    //fuppesSocketSend(p_Session->GetConnection(), szCRLF.c_str(), strlen(szCRLF.c_str()));
+    p_Session->socket()->send(szCRLF.c_str(), strlen(szCRLF.c_str()));    
   }
   
   

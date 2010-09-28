@@ -14,8 +14,7 @@ INCLUDES = \
   ${PCRE_CFLAGS}\
 	-DFUPPES_DATADIR=\"$(datadir)/fuppes\" \
 	-DFUPPES_PLUGINDIR=\"$(libdir)/fuppes\" \
-	-DFUPPES_SYSCONFDIR=\"$(sysconfdir)/fuppes\"
-
+	-DFUPPES_LOCALSTATEDIR=\"$(localstatedir)/lib/fuppes\"
 
 lib_LTLIBRARIES = libfuppes.la
 
@@ -76,7 +75,6 @@ libfuppes_la_SOURCES = \
 	lib/HTTP/HTTPServer.h\
   lib/HTTP/HTTPClient.h\
   lib/HTTP/HTTPRequestHandler.h\
-  lib/HTTP/CommonFunctions.h\
   lib/UPnPBase.h\
 	lib/UPnPDevice.h\
 	lib/UPnPService.h\
@@ -148,7 +146,6 @@ libfuppes_la_SOURCES = \
 	lib/HTTP/HTTPServer.cpp\
   lib/HTTP/HTTPClient.cpp\
   lib/HTTP/HTTPRequestHandler.cpp\
-  lib/HTTP/CommonFunctions.cpp\
   lib/ControlInterface/ErrorCodes.h\
   lib/ControlInterface/ControlActions.h\
   lib/ControlInterface/ControlInterface.cpp\
@@ -187,6 +184,8 @@ libfuppes_la_SOURCES = \
   lib/Presentation/PageDevice.cpp \
   lib/Presentation/PageBrowse.h \
   lib/Presentation/PageBrowse.cpp \
+  lib/Presentation/PageConfig.h \
+  lib/Presentation/PageConfig.cpp \
   lib/Presentation/PageJsTest.h \
   lib/Presentation/PageJsTest.cpp \
   lib/Transcoding/TranscodingMgr.cpp\

@@ -40,6 +40,9 @@ std::string PageJsTest::content()
   result << "<div>";
   result << "<ul>";
   result << "<li><a href=\"javascript:fuppesCtrl('Test');\">Test</a></li>";
+  result << "<li></li>";
+  result << "<li><a href=\"javascript:getSharedObjects();\">GetSharedObjects</a></li>";
+  result << "<li></li>";
   result << "<li><a href=\"javascript:fuppesCtrl('DatabaseRebuild');\">DatabaseRebuild</a></li>";
   result << "<li><a href=\"javascript:fuppesCtrl('DatabaseUpdate');\">DatabaseUpdate</a></li>";
   result << "<li><a href=\"javascript:fuppesCtrl('VfolderUpdate');\">VfolderUpdate</a></li>";

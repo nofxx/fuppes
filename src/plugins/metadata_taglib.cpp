@@ -132,7 +132,8 @@ void taglib_get_year(plugin_info* info, metadata_t* metadata)
 void taglib_get_bitrate(plugin_info* info, metadata_t* metadata)
 {
 	metadata->audio_bitrate = 
-		(((TagLib::FileRef*)info->user_data)->audioProperties()->bitrate() * 1024);
+		((TagLib::FileRef*)info->user_data)->audioProperties()->bitrate();
+	metadata->audio_bitrate *= 1024;
 }
 
 void taglib_get_samplerate(plugin_info* info, metadata_t* metadata)

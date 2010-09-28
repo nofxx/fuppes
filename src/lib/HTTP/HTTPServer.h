@@ -32,6 +32,7 @@
 
 #include "../Common/Common.h"
 #include "../Common/Thread.h"
+#include "../Common/Socket.h"
 
 #ifndef WIN32
 #include <arpa/inet.h>
@@ -64,23 +65,26 @@ class HTTPSession: public fuppes::Thread
     virtual ~HTTPSession();
 		void run();
 		
-    HTTPSession(CHTTPServer* pHTTPServer, fuppesSocket p_Connection, struct sockaddr_in p_RemoteEndPoint, std::string p_sHTTPServerURL)
+    HTTPSession(CHTTPServer* pHTTPServer, fuppes::TCPRemoteSocket* remoteSocket, std::string p_sHTTPServerURL)
 			:Thread("httpsession")
     {
       m_pHTTPServer    = pHTTPServer;
-      m_Connection     = p_Connection;    
+      //m_Connection     = p_Connection;    
       m_bIsTerminated  = false;
-      m_RemoteEndPoint = p_RemoteEndPoint;
+      //m_RemoteEndPoint = p_RemoteEndPoint;
       m_sServerURL     = p_sHTTPServerURL;
+      m_remoteSocket   = remoteSocket;
     }
 
-    fuppesSocket GetConnection() { return m_Connection;  }
+    fuppesSocket GetConnection() { return m_remoteSocket->socket();  }
     CHTTPServer* GetHTTPServer() { return m_pHTTPServer; }
     std::string  GetHTTPServerURL() { return m_sServerURL; }    
     //fuppesThread GetThreadHandle() { return m_ThreadHandle; }
     //void         SetThreadHandle(fuppesThread p_ThreadHandle) { m_ThreadHandle = p_ThreadHandle; }
-    struct sockaddr_in GetRemoteEndPoint() { return m_RemoteEndPoint; }
-  
+    struct sockaddr_in GetRemoteEndPoint() { return m_remoteSocket->remoteEndpoint(); }
+
+    fuppes::TCPRemoteSocket*  socket() { return m_remoteSocket; }
+    
     bool m_bIsTerminated;
 
 	private:
@@ -88,10 +92,11 @@ class HTTPSession: public fuppes::Thread
     //void CleanupSessions();
 
     CHTTPServer*        m_pHTTPServer;
-    fuppesSocket        m_Connection;
+    //fuppesSocket        m_Connection;
     //fuppesThread        m_ThreadHandle;
-    struct sockaddr_in  m_RemoteEndPoint;
+    //struct sockaddr_in  m_RemoteEndPoint;
     std::string         m_sServerURL;
+    fuppes::TCPRemoteSocket*    m_remoteSocket;
 		
 };
 
@@ -126,7 +131,7 @@ class CHTTPServer: public fuppes::Thread
 
     void          Start();		
     void          Stop();
-    fuppesSocket  GetSocket() { return m_Socket; }
+    //fuppesSocket  GetSocket() { return m_Socket; }
     std::string   GetURL();	
     //void          CleanupSessions();
 
@@ -142,11 +147,12 @@ class CHTTPServer: public fuppes::Thread
     // Eventhandler 
     IHTTPServer* m_pReceiveHandler;
 
-    sockaddr_in local_ep;
+    fuppes::TCPServer   m_listenSocket;
+    //sockaddr_in local_ep;
     bool				do_break;
     bool        m_bIsRunning;
 
-    fuppesSocket      m_Socket;					      
+    //fuppesSocket      m_Socket;					      
     //fuppesThread      accept_thread;
 		void run();
     //fuppesThreadMutex m_ReceiveMutex;

@@ -108,6 +108,7 @@ class VirtualContainerMgr
   private:
     static void insertFileForLayout(fuppes::DbObject* object, std::string layout);
     static object_id_t createFolderIfNotExists(fuppes::DbObject* object, object_id_t pid, fuppes::DbObject::VirtualContainerType type, std::string path, std::string layout);
+    static object_id_t createSharedDirFoldersIfNotExist(fuppes::DbObject* object, object_id_t pid, std::string path, std::string layout);
 
     static void updateFileForLayout(fuppes::DbObject* object, fuppes::ObjectDetails* oldDetails, std::string layout);
 

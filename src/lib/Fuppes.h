@@ -93,11 +93,11 @@ class CFuppes: public ISSDPCtrl, IHTTPServer, IUPnPDevice
     std::string           m_sIPAddress;
     std::string           m_sUUID;
     IFuppes*              m_pPresentationRequestHandler;
-    fuppesThreadMutex     m_OnTimerMutex;  
+    fuppes::Mutex         m_OnTimerMutex;  
 
     std::map<std::string, CUPnPDevice*>           m_RemoteDevices;
     std::map<std::string, CUPnPDevice*>::iterator m_RemoteDeviceIterator;
-    fuppesThreadMutex     m_RemoteDevicesMutex;
+    fuppes::Mutex         m_RemoteDevicesMutex;
 
     std::list<CUPnPDevice*>           m_TimedOutDevices;
     std::list<CUPnPDevice*>::iterator m_TimedOutDevicesIterator;

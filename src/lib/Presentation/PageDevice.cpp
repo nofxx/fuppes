@@ -144,11 +144,50 @@ std::string PageDevice::content()
 
 
     // device settings
-    if(pDevice->deviceSettings()) {  
-      result << "<tr><td>device settings</td><td>";
-      result << pDevice->deviceSettings()->name();
-      result << "</td></tr>" << endl;
+    result << "<tr><td>device settings</td><td>";
+
+    fuppes::StringList list = PathFinder::GetDevicesList();    
+    fuppes::StringListIterator iter;
+    string selected = "";
+    
+    result << "<select onchange=\"\">";
+
+    for(iter = list.begin(); iter != list.end(); iter++) {
+      selected = "";
+      if((pDevice->deviceSettings() && pDevice->deviceSettings()->name() == *iter) ||
+         (!pDevice->deviceSettings() && (*iter).compare("default") == 0)) {
+        selected = " selected=\"selected\" ";
+      }
+      result << "<option" << selected << ">" << *iter << "</option>";
     }
+    result << "</select>";
+    
+    /*
+    static fuppes::StringList GetVfoldersList();*/
+
+    result << "</td></tr>" << endl;
+
+
+    // vfolder settings
+    result << "<tr><td>vfolder settings</td><td>";
+
+    list = PathFinder::GetVfoldersList();
+    result << "<select onchange=\"\">";
+
+    for(iter = list.begin(); iter != list.end(); iter++) {
+      selected = "";
+      if((pDevice->deviceSettings() && pDevice->deviceSettings()->name() == *iter) ||
+         (!pDevice->deviceSettings() && (*iter).compare("default") == 0)) {
+        selected = " selected=\"selected\" ";
+      }
+      result << "<option" << selected << ">" << *iter << "</option>";
+    }
+    result << "</select>";
+    
+    /*
+    static fuppes::StringList GetVfoldersList();*/
+
+    result << "</td></tr>" << endl;
     
     
     result << "</table>" << endl;

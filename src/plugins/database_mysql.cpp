@@ -178,6 +178,10 @@ class CMySQLQuery: public ISQLQuery
     unsigned int size() {
       return m_ResultList.size();
     }
+
+    void  prepare(const std::string sql) {
+      m_sqlPrepare = sql;
+    }
     
 	private:
 		CMySQLQuery(CDatabaseConnection* connection, MYSQL* handle);		
@@ -189,6 +193,8 @@ class CMySQLQuery: public ISQLQuery
 		std::list<CSQLResult*> m_ResultList;
     std::list<CSQLResult*>::iterator m_ResultListIterator;
 		fuppes_off_t m_rowsReturned;
+
+    std::string   m_sqlPrepare;
 };
 
 

@@ -95,7 +95,7 @@ CTranscodingSettings::CTranscodingSettings(CTranscodingSettings* pTranscodingSet
   nLameQuality  = pTranscodingSettings->nLameQuality;
   
   sExt        = pTranscodingSettings->sExt;
-  sDLNA       = pTranscodingSettings->sDLNA;
+  //sDLNA       = pTranscodingSettings->sDLNA;
   sMimeType   = pTranscodingSettings->sMimeType;
   
   sACodec           = pTranscodingSettings->sACodec;
@@ -193,7 +193,7 @@ CFileSettings::CFileSettings(CFileSettings* pFileSettings)
   
   bEnabled  = pFileSettings->bEnabled;
   sMimeType = pFileSettings->sMimeType;
-  sDLNA     = pFileSettings->sDLNA;
+  //sDLNA     = pFileSettings->sDLNA;
   nType     = pFileSettings->nType;
   sExt      = pFileSettings->sExt;
   
@@ -289,6 +289,7 @@ std::string CFileSettings::MimeType(std::string p_sACodec, std::string p_sVCodec
   }
 }
 
+/*
 std::string CFileSettings::DLNA()
 {
   if(pTranscodingSettings && pTranscodingSettings->Enabled()) {
@@ -298,6 +299,7 @@ std::string CFileSettings::DLNA()
     return sDLNA;
   }
 }
+*/
 
 unsigned int  CFileSettings::TargetAudioSampleRate()
 {
@@ -397,7 +399,8 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName)
 	m_MediaServerSettings.SerialNumber = "0123456789";
 	m_MediaServerSettings.UseSerialNumber = true;
 	m_MediaServerSettings.UseUPC = false;
-	m_MediaServerSettings.UseDLNA = true;
+	//m_MediaServerSettings.UseDLNA = true;
+ 	m_MediaServerSettings.DlnaVersion = CMediaServerSettings::dlna_1_5;
 		
 	m_MediaServerSettings.UseURLBase = true;
 	m_MediaServerSettings.UseXMSMediaReceiverRegistrar = false;
@@ -432,7 +435,8 @@ CDeviceSettings::CDeviceSettings(std::string p_sDeviceName, CDeviceSettings* pSe
 	m_MediaServerSettings.UseSerialNumber = pSettings->MediaServerSettings()->UseSerialNumber;
 	m_MediaServerSettings.UPC = pSettings->MediaServerSettings()->UPC;
 	m_MediaServerSettings.UseUPC = pSettings->MediaServerSettings()->UseUPC;
-	m_MediaServerSettings.UseDLNA = pSettings->MediaServerSettings()->UseDLNA;	
+	//m_MediaServerSettings.UseDLNA = pSettings->MediaServerSettings()->UseDLNA;	
+ 	m_MediaServerSettings.DlnaVersion = pSettings->MediaServerSettings()->DlnaVersion;
 	
 	m_MediaServerSettings.UseURLBase = pSettings->MediaServerSettings()->UseURLBase;
 	m_MediaServerSettings.UseXMSMediaReceiverRegistrar = pSettings->MediaServerSettings()->UseXMSMediaReceiverRegistrar;
@@ -684,6 +688,18 @@ std::string CDeviceSettings::MimeType(std::string p_sExt, std::string p_sACodec,
     return "";
 }
 
+std::string CDeviceSettings::extensionByMimeType(std::string mimeType)
+{
+  FileSettingsIterator_t iter = m_FileSettings.begin();
+  for(; iter != m_FileSettings.end(); iter++) {
+    if(iter->second->originalMimeType().compare(mimeType) == 0)
+      return iter->first;    
+  }
+
+  return "";
+}
+
+/*
 std::string CDeviceSettings::DLNA(std::string p_sExt)
 {
   FileSettingsIterator_t  iter;
@@ -694,6 +710,7 @@ std::string CDeviceSettings::DLNA(std::string p_sExt)
   else  
     return "";
 }
+*/
 
 unsigned int CDeviceSettings::TargetAudioSampleRate(std::string p_sExt)
 {
@@ -759,3 +776,28 @@ int CDeviceSettings::ReleaseDelay(std::string p_sExt)
   
   return nDefaultReleaseDelay;
 }
+
+std::string CDeviceSettings::protocolInfo()
+{
+  if(m_protocolInfo.length() > 0)
+    return m_protocolInfo;
+
+  CFileSettings* tmp;
+  FileSettingsIterator_t  iter;
+  for(iter = m_FileSettings.begin();
+      iter != m_FileSettings.end();
+      iter++) {
+
+    tmp = iter->second;
+
+    m_protocolInfo += "http-get:*:";
+    m_protocolInfo += this->MimeType(tmp->Extension());
+    m_protocolInfo += ":*,";        
+  }
+
+  if(m_protocolInfo.length() > 0)
+    m_protocolInfo = m_protocolInfo.substr(0, m_protocolInfo.length() - 1);
+
+  return m_protocolInfo;
+}
+

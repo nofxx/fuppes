@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
  *            HTTPParser.h
  *
@@ -46,7 +46,8 @@ class CHTTPParser
 		
   private:
 		static void parseCommonValues(std::string header, CHTTPMessage* message);
-		static void parseGetVars(std::string header, CHTTPMessage* message);		
+		static void parseGetVars(std::string header, CHTTPMessage* message);
+		static void parseDlnaHeader(std::string header, CHTTPMessage* message);
 };
 
 #endif // _HTTPPARSER_H

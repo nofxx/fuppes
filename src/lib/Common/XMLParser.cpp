@@ -228,6 +228,15 @@ std::string CXMLNode::Value()
   }
 }
 
+int CXMLNode::ValueAsInt()
+{
+  std::string value = Value();
+  int result = -1;
+  if(isdigit(value.c_str()[0]) != 0)
+    result = strtol(value.c_str(), NULL, 0);
+  return result;
+}
+
 void CXMLNode::Value(std::string p_sValue)
 {
   if(m_pNode->children)
@@ -246,14 +255,18 @@ void CXMLNode::Value(int p_nValue)
 #warning todo: Verify that this function works as expected.
 CXMLNode* CXMLNode::AddChild(std::string p_sName, std::string p_sValue)
 {
+
+cout << "add child: " << this->name() << "*" << endl;
+  
   xmlNode* newChild = xmlNewTextChild(m_pNode, NULL, BAD_CAST p_sName.c_str(), BAD_CAST p_sValue.c_str());    
 
+  ClearChildren();
+  
   // TODO Why do we clear the children here? Aren't we trying to add children?
-  int id = ChildCount();
-  CXMLNode* new_node = new CXMLNode(newChild, id, this);
-  m_NodeList.insert(pair<int, CXMLNode*>(id, new_node));
+  int idx = ChildCount();
+  m_NodeList[idx] = new CXMLNode(newChild, idx, this);
 
-  return new_node;
+  return m_NodeList[idx];
 }
 
 void CXMLNode::RemoveChild(int p_nIdx)

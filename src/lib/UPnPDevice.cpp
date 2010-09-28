@@ -249,13 +249,24 @@ std::string CUPnPDevice::localDeviceDescription(CHTTPMessage* pRequest)
 				xmlTextWriterEndElement(writer);
 			}
 		
-			// DLNA
-		  if(pRequest->DeviceSettings()->MediaServerSettings()->UseDLNA) {
+			// DLNA 1.0
+		  if(pRequest->DeviceSettings()->MediaServerSettings()->DlnaVersion == CMediaServerSettings::dlna_1_0) {
 				xmlTextWriterStartElementNS(writer, BAD_CAST "dlna", BAD_CAST "X_DLNADOC", BAD_CAST "urn:schemas-dlna-org:device-1-0");
       	xmlTextWriterWriteString(writer, BAD_CAST "DMS-1.00");
 				xmlTextWriterEndElement(writer);
 			}
+ 			// DLNA 1.5
+		  else if(pRequest->DeviceSettings()->MediaServerSettings()->DlnaVersion == CMediaServerSettings::dlna_1_5) {
+				xmlTextWriterStartElementNS(writer, BAD_CAST "dlna", BAD_CAST "X_DLNADOC", BAD_CAST "urn:schemas-dlna-org:device-1-0");
+      	xmlTextWriterWriteString(writer, BAD_CAST "DMS-1.50");
+				xmlTextWriterEndElement(writer);
 
+        /*xmlTextWriterStartElementNS(writer, BAD_CAST "dlna", BAD_CAST "X_DLNADOC", BAD_CAST "urn:schemas-dlna-org:device-1-0");
+      	xmlTextWriterWriteString(writer, BAD_CAST "M-DMS-1.50");
+				xmlTextWriterEndElement(writer);*/
+        //<dlna:X_DLNACAP xmlns:dlna="urn:schemas-dlna-org:device-1-0">av-upload,image-upload,audio-upload</dlna:X_DLNACAP>
+			}
+  
       // presentationURL
       xmlTextWriterStartElement(writer, BAD_CAST "presentationURL");
       xmlTextWriterWriteString(writer, BAD_CAST m_sPresentationURL.c_str());

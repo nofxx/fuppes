@@ -1,7 +1,7 @@
 /* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
- *            PresentationPage.h
- *
+ *            ControlActions.h
+ * 
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
@@ -23,26 +23,25 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _PRESENTATIONPAGE_H
-#define _PRESENTATIONPAGE_H
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
+#ifndef _CONTROLACTIONS_H
+#define _CONTROLACTIONS_H
 
-#include <string>
-#include <sstream>
+typedef enum FUPPES_CONTROL_ACTION {
+  FUPPES_CTRL_UNKNOWN,
+  
+  FUPPES_CTRL_DATABASE_REBUILD,
+  FUPPES_CTRL_DATABASE_UPDATE,
+  FUPPES_CTRL_VFOLDER_REBUILD,
 
-class PresentationPage
-{
-  public:
-    virtual std::string alias() = 0;
-    virtual std::string title() = 0;
-    virtual std::string js() { return ""; }
+  FUPPES_CTRL_GET_DIR,
+  FUPPES_CTRL_GET_SHARED_OBJECTS,
+  FUPPES_CTRL_ADD_SHARED_OBJECT,
+  FUPPES_CTRL_DEL_SHARED_OBJECT,
+  FUPPES_CTRL_MOD_SHARED_OBJECT,
 
-    virtual std::string content() = 0;
-
-};
+	FUPPES_CTRL_TEST
+} FUPPES_CONTROL_ACTION;
 
 
-#endif // _PRESENTATIONPAGE_H
+#endif // _CONTROLACTIONS_H

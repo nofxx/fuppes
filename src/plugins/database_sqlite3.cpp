@@ -78,9 +78,9 @@ class CSQLiteQuery: public ISQLQuery
 			clear();
 		}
 		
-		virtual bool select(const std::string sql);
-		virtual bool exec(const std::string sql);
-		virtual fuppes_off_t insert(const std::string sql);
+		virtual bool select(const std::string sql = "");
+		virtual bool exec(const std::string sql = "");
+		virtual fuppes_off_t insert(const std::string sql = "");
 		
 		bool eof() { return (m_ResultListIterator == m_ResultList.end()); }
 		void next() {
@@ -109,6 +109,19 @@ class CSQLiteQuery: public ISQLQuery
     unsigned int size() {
       return m_ResultList.size();
     }
+
+
+    static std::string escape(std::string value);
+
+    void  prepare(const std::string sql) {
+      m_sqlPrepare = sql;
+      m_sqlPrepared = "";
+    }
+
+    void bind(const std::string field, const std::string value) {
+      std::string format = "'" + CSQLiteQuery::escape(value) + "'";
+      setValue(field, format);
+    }
     
 	private:
 		CSQLiteQuery(CDatabaseConnection* connection, sqlite3* handle);		
@@ -119,6 +132,21 @@ class CSQLiteQuery: public ISQLQuery
 		std::list<CSQLResult*> m_ResultList;
     std::list<CSQLResult*>::iterator m_ResultListIterator;
 		off_t m_rowsReturned;
+
+    std::string   m_sqlPrepare;
+    std::string   m_sqlPrepared;
+
+    void setValue(std::string field, std::string value) {
+
+      std::string tmp = m_sqlPrepare;
+      field = ":" + field;
+      
+      while(tmp.find(field) != std::string::npos)	{
+	      m_sqlPrepared += tmp.substr(0, tmp.find(field)) + value;
+		    tmp   = tmp.substr(tmp.find(field) + value.length(), tmp.length());
+	    }
+      m_sqlPrepared += tmp;
+    }
 		
 		CDatabaseConnection* m_connection;
 };
@@ -196,7 +224,7 @@ bool CSQLiteConnection::connect(const CConnectionParams params)
   //std::cout << "open sqlite3 db file: " << params.filename << ":" << std::endl;
   
 	if(sqlite3_open(params.filename.c_str(), &m_handle) != SQLITE_OK) {
-    fprintf(stderr, "Can't create/open database: %s\n", sqlite3_errmsg(m_handle));
+    fprintf(stderr, "[sqlite] can't create/open database: %s :: %s\n", sqlite3_errmsg(m_handle), params.filename.c_str());
     sqlite3_close(m_handle);
     return false;
   }
@@ -256,10 +284,22 @@ CSQLiteQuery::CSQLiteQuery(CDatabaseConnection* connection, sqlite3* handle)
 	m_connection = connection;
 }
 
-bool CSQLiteQuery::select(const std::string sql)
+bool CSQLiteQuery::select(const std::string sql /* = "" */)
 {
 	clear();
-	
+  
+  if(m_sqlPrepared.length() == 0 && sql.length() == 0)
+    return false;
+
+  if(m_sqlPrepared.length() > 0 && sql.length() > 0)
+    return false;
+
+  std::string statement = m_sqlPrepared;
+  if(statement.length() == 0)
+    statement = sql;
+  
+
+  
   char* szErr = NULL;
   char** szResult;
   int nRows = 0;
@@ -268,16 +308,13 @@ bool CSQLiteQuery::select(const std::string sql)
   int nResult = SQLITE_OK;  
   int nTry = 0;
   
-  //CSharedLog::Log(L_DBG, __FILE__, __LINE__, "SELECT %s", p_sStatement.c_str());
 
-	//std::cout << "select: " << sql << std::endl;
   CSQLiteConnection* connection = (CSQLiteConnection*)m_connection;
-  connection->plugin()->cb.log(connection->plugin(), 0, __FILE__, __LINE__, "query: %s", sql.c_str());
+  connection->plugin()->cb.log(connection->plugin(), 0, __FILE__, __LINE__, "query: %s", statement.c_str());
 	
   do {
-    nResult = sqlite3_get_table(m_handle, sql.c_str(), &szResult, &nRows, &nCols, &szErr);
-    if(nTry > 0) {      
-      //CSharedLog::Shared()->Log(L_EXTENDED_WARN, "SQLITE_BUSY", __FILE__, __LINE__);
+    nResult = sqlite3_get_table(m_handle, statement.c_str(), &szResult, &nRows, &nCols, &szErr);
+    if(nTry > 0) {
 #ifdef WIN32
       Sleep(1);
 #else
@@ -285,19 +322,19 @@ bool CSQLiteQuery::select(const std::string sql)
 #endif
     }
     nTry++;
-  }while(nResult == SQLITE_BUSY);
-    
+  } while (nResult == SQLITE_BUSY);
+
+
+  // select error
   if(nResult != SQLITE_OK) {
-    //CSharedLog::Log(L_DBG, __FILE__, __LINE__, "SQL error: %s, Statement: %s\n", szErr, p_sStatement.c_str());
-		std::cout << "SQL select error: " << szErr << " :: " << sql << std::endl;
+		std::cout << "SQL select error: " << szErr << " :: " << statement << std::endl;
     sqlite3_free(szErr);
     return false;
   }
 
-	
-	//std::cout << "SELECT :: rows: " << nRows << " cols: " << nCols << std::endl;
-	
-	CSQLiteResult* pResult;     
+
+  // get the result
+  CSQLiteResult* pResult;     
   for(int i = 1; i < nRows + 1; i++) {
     pResult = new CSQLiteResult();
           
@@ -311,12 +348,22 @@ bool CSQLiteQuery::select(const std::string sql)
   m_ResultListIterator = m_ResultList.begin();     
   sqlite3_free_table(szResult);
 
-	//std::cout << "sqlite3 select done : " << this << std::endl;
 	return true;
 }
 
-bool CSQLiteQuery::exec(const std::string sql)
+bool CSQLiteQuery::exec(const std::string sql /* = "" */)
 {
+  if(m_sqlPrepared.length() == 0 && sql.length() == 0)
+    return false;
+
+  if(m_sqlPrepared.length() > 0 && sql.length() > 0)
+    return false;
+
+  std::string statement = m_sqlPrepared;
+  if(statement.length() == 0)
+    statement = sql;
+
+  
   char* szErr  = NULL;
   bool  bRetry = true;
   bool	result = false;
@@ -326,7 +373,7 @@ bool CSQLiteQuery::exec(const std::string sql)
 	
   while(bRetry) {  
     
-    nResult = sqlite3_exec(m_handle, sql.c_str(), NULL, NULL, &szErr);
+    nResult = sqlite3_exec(m_handle, statement.c_str(), NULL, NULL, &szErr);
     switch(nResult) {
       case SQLITE_BUSY:
         bRetry = true;
@@ -346,7 +393,7 @@ bool CSQLiteQuery::exec(const std::string sql)
       default:
         bRetry = false;
 				result = false;
-				std::cout << "SQL exec error: " << szErr << " :: " << sql << std::endl;
+				std::cout << "SQL exec error: " << szErr << " :: " << statement << std::endl;
         //CSharedLog::Log(L_NORM, __FILE__, __LINE__, "CContentDatabase::Insert - insert :: SQL error: %s\nStatement: %s", szErr, p_sStatement.c_str());
         sqlite3_free(szErr);
         //nResult = 0;
@@ -358,7 +405,7 @@ bool CSQLiteQuery::exec(const std::string sql)
 	return result;
 }
 
-fuppes_off_t CSQLiteQuery::insert(const std::string sql)
+fuppes_off_t CSQLiteQuery::insert(const std::string sql /* = "" */)
 {
 	if(!exec(sql)) {
 		m_lastInsertId = 0;
@@ -369,6 +416,24 @@ fuppes_off_t CSQLiteQuery::insert(const std::string sql)
 	return m_lastInsertId;
 }
 
+
+std::string CSQLiteQuery::escape(std::string value) // static
+{
+  int nPos     = -2;
+  int nLastPos = -1;
+  do {
+    
+    if(nPos != -2)
+      nLastPos = nPos;
+    
+    nPos = value.find('\'', nPos + 2);  
+    if((nPos > -1) && (nPos != nLastPos))
+      value = value.replace(nPos, 1, "\'\'");
+    
+  } while((nPos > -1) && (nPos != nLastPos));
+  
+  return value;
+}
 
 
 

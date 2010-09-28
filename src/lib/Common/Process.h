@@ -31,6 +31,7 @@
 #endif
 
 #include "Common.h"
+#include "Thread.h"
 
 #include <unistd.h>
 #include <string>
@@ -64,7 +65,7 @@ class CProcessMgr {
 		std::map<pid_t, CProcess*>						m_processes;
 		std::map<pid_t, CProcess*>::iterator	m_processesIter;		
 		#endif
-		fuppesThreadMutex											m_mutex;
+		fuppes::Mutex											    m_mutex;
 };
 
 

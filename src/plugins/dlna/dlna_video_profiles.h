@@ -1,15 +1,16 @@
 /***************************************************************************
- *            CommonFunctions.h
+ *            dlna_video_profiles.h
  *
- *  FUPPES - the Free UPnP Entertainment Service
+ *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2007 Ulrich Völkel <u-voelkel@users.sourceforge.net> 
+ *  Copyright (C) 2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 2 as 
- *  published by the Free Software Foundation.
+ *  it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,16 +22,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _COMMONFUNCTIONS_H
-#define _COMMONFUNCTIONS_H
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
-
-#include "../Common/Common.h"
-
-int fuppesSocketSend(fuppesSocket p_Socket, const char* pBuffer, int p_nLength);
-
-
-#endif // _COMMONFUNCTIONS_H
+int dlna_get_video_profile_mpeg1(char* vcodec, char* acodec, char* profile, char* mimeType)
+{
+  strcpy(mimeType, "video/mpeg");
+  strcpy(profile, "MPEG1");
+  return 0;
+}

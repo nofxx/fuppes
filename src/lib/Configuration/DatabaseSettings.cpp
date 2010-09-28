@@ -27,9 +27,12 @@ bool DatabaseSettings::InitPostRead() {
   // set dbfilename if necessary  
   if(dbConnectionParams().type == "sqlite3" && dbConnectionParams().filename.empty()) {
     #ifdef WIN32
-    setDbFilename(string(getenv("APPDATA")) + "\\.FUPPES\\fuppes.db");
+    setDbFilename(string(getenv("APPDATA")) + "\\FUPPES\\fuppes.db");
     #else
-    setDbFilename(string(getenv("HOME")) + "/.fuppes/fuppes.db");
+    if(Directory::writable(Directory::appendTrailingSlash(FUPPES_LOCALSTATEDIR)))
+      setDbFilename(Directory::appendTrailingSlash(FUPPES_LOCALSTATEDIR) + "fuppes.db");
+    else
+      setDbFilename(string(getenv("HOME")) + "/.fuppes/fuppes.db");
     #endif
   }
    

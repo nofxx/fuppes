@@ -30,7 +30,7 @@
 #include "../../config.h"
 #endif
 
-#include "../UPnPActions/UPnPAction.h"
+#include "ControlActions.h"
 
 #include <string>
 #include <map>

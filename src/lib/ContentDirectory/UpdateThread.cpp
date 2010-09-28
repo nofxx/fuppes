@@ -66,7 +66,7 @@ UpdateThread::~UpdateThread()
 
 void UpdateThread::run()
 {
-  cout << "start update thread" << endl;
+  //cout << "start update thread" << endl;
 
   m_sleep = 0;
   m_count = 0;
@@ -121,9 +121,7 @@ void UpdateThread::run()
 
       m_count++;
       obj = new DbObject(qry.result());
-
-      cout << "ALBUM ART FILE: " << obj->fileName() << " PID: " << obj->parentId() << endl;
-
+      
       if(obj->parentId() == lastPid) {
         delete obj;
         qry.next();
@@ -132,6 +130,8 @@ void UpdateThread::run()
             
       parent = DbObject::createFromObjectId(obj->parentId());
 
+      //cout << "ALBUM ART FILE: " << obj->fileName() << " PID: " << obj->parentId() << endl;
+      
       if(parent->details()->albumArtId() != 0) {
         delete parent;
         delete obj;
@@ -139,10 +139,18 @@ void UpdateThread::run()
         continue; 
       }
 
+
       
       // set the parent folder album art id      
+      string ext = ExtractFileExt(obj->fileName());
+      string mime = CDeviceIdentificationMgr::Shared()->DefaultDevice()->MimeType(ext);
+      
       parent->details()->setAlbumArtId(obj->objectId());
-      parent->details()->setAlbumArtExt(ExtractFileExt(obj->fileName()));
+      parent->details()->setAlbumArtExt(ext);
+      parent->details()->setAlbumArtMimeType(mime);      
+      
+      parent->details()->setAlbumArtWidth(obj->details()->width());
+      parent->details()->setAlbumArtHeight(obj->details()->height());
       parent->details()->save();
       parent->setDetailId(parent->details()->id());
       parent->save();
@@ -155,17 +163,18 @@ void UpdateThread::run()
         "select * from OBJECTS where PARENT_ID = " << obj->parentId() << " and " <<
         "TYPE >= " << ITEM_AUDIO_ITEM << " and TYPE < " << ITEM_AUDIO_ITEM_MAX << " and " <<
         "DEVICE is NULL";
-      cout << sql.str() << endl;
+      //cout << sql.str() << endl;
       get.select(sql.str());
       while(!get.eof()) {
         
         sibling = new DbObject(get.result());
 
-        cout << "SIBLING: " << sibling->fileName() << endl;
-        
         if(sibling->details()->albumArtId() == 0) {
           sibling->details()->setAlbumArtId(obj->objectId());
-          sibling->details()->setAlbumArtExt(ExtractFileExt(obj->fileName()));
+          sibling->details()->setAlbumArtExt(ext);
+          sibling->details()->setAlbumArtMimeType(mime);
+          sibling->details()->setAlbumArtWidth(obj->details()->width());
+          sibling->details()->setAlbumArtHeight(obj->details()->height());
           sibling->details()->save();
           sibling->setDetailId(sibling->details()->id());
           sibling->save();
@@ -182,7 +191,7 @@ void UpdateThread::run()
       lastPid = obj->parentId();      
       obj->setVisible(false);
       obj->save();
-      obj->details()->setAlbumArtExt(ExtractFileExt(obj->fileName()));
+      //obj->details()->setAlbumArtExt(ExtractFileExt(obj->fileName()));
       obj->details()->save();
       delete obj;
       qry.next();
@@ -214,9 +223,8 @@ void UpdateThread::run()
       obj = new DbObject(qry.result());
       string filename = obj->path() + obj->fileName();
       stringstream tmpfile;
-      tmpfile << CSharedConfig::Shared()->globalSettings->GetTempDir() << obj->objectId() << ".jpg";
-
-
+      tmpfile << PathFinder::findThumbnailsDir() << obj->objectId() << ".jpg";
+      
       // check if we got an image file with the same name as the video
       sql.str("");
       sql << "select * from OBJECTS where " <<
@@ -264,7 +272,7 @@ void UpdateThread::run()
 
         if(hasImage) {
 
-          cout << "HAS IMAGE: " << size << endl;
+          //cout << "HAS IMAGE: " << size << endl;
           
           fuppes::File out(tmpfile.str());
           out.open(File::Write);
@@ -321,7 +329,7 @@ void UpdateThread::run()
 
   delete connection;
   
-  cout << "exit update thread" << endl;
+  //cout << "exit update thread" << endl;
   
 }
 
@@ -374,6 +382,10 @@ bool UpdateThread::updateItems(CDatabaseConnection* connection, SQLQuery* get, S
         case ITEM_IMAGE_ITEM:
         case ITEM_IMAGE_ITEM_PHOTO:
           updateImageFile(obj, set);
+          if(!update)
+            VirtualContainerMgr::insertFile(obj);
+          else
+            VirtualContainerMgr::updateFile(obj, &oldDetails);
           break;
 
         case ITEM_AUDIO_ITEM:
@@ -391,6 +403,10 @@ bool UpdateThread::updateItems(CDatabaseConnection* connection, SQLQuery* get, S
         case ITEM_VIDEO_ITEM_MOVIE:
         case ITEM_VIDEO_ITEM_MUSIC_VIDEO_CLIP:
           updateVideoFile(obj, set);
+          if(!update)
+            VirtualContainerMgr::insertFile(obj);
+          else
+            VirtualContainerMgr::updateFile(obj, &oldDetails);
           break;
         case ITEM_VIDEO_ITEM_VIDEO_BROADCAST:
           break;
@@ -437,24 +453,24 @@ void UpdateThread::updateAudioFile(DbObject* obj, SQLQuery* qry)
   if(gotMetadata) {
     details = audioItem;
   }
+
+  
+  if(audioItem.hasImage()) {
+    details.setAlbumArtId(obj->objectId());
+
+    string ext = CDeviceIdentificationMgr::Shared()->DefaultDevice()->extensionByMimeType(audioItem.imageMimeType());
+    details.setAlbumArtExt(ext);    
+    details.setAlbumArtMimeType(audioItem.imageMimeType());
+    details.setAlbumArtWidth(audioItem.imageWidth());
+    details.setAlbumArtHeight(audioItem.imageHeight());
+  }
+
   details.save(qry);
 
   if(!audioItem.title().empty())
     obj->setTitle(audioItem.title());
   obj->setDetailId(details.id());
-  obj->save(qry);
-
-  
-  if(audioItem.hasImage()) {
-    details.setAlbumArtId(obj->objectId());
-    // todo set extension from mime type
-    //audioItem.imageMimeType();
-    details.setAlbumArtExt("jpg");
-    details.setWidth(audioItem.imageWidth());
-    details.setHeight(audioItem.imageHeight());
-    details.save();
-  }
-  
+  obj->save(qry);  
 }
 
 void UpdateThread::updateImageFile(DbObject* obj, SQLQuery* qry)
@@ -479,10 +495,8 @@ void UpdateThread::updateImageFile(DbObject* obj, SQLQuery* qry)
 	}*/
 
   ObjectDetails details;
-  /*details.setWidth(imageItem.width());
-  details.setHeight(imageItem.height());*/
-  details.setSize(getFileSize(fileName));
   details = imageItem;
+  details.setSize(getFileSize(fileName));
   details.save(qry);
   
   obj->setDetailId(details.id());
@@ -522,8 +536,9 @@ void UpdateThread::updateVideoFile(DbObject* obj, SQLQuery* qry)
   details.save(qry);
   
   obj->setDetailId(details.id());
-  if(!videoItem.title().empty())
-    obj->setTitle(videoItem.title());
+  //if(!videoItem.title().empty())
+  //  obj->setTitle(videoItem.title());
+  obj->setUpdated();
   obj->save(qry);
 }
 

@@ -50,7 +50,16 @@ using namespace fuppes;
 SocketBase::SocketBase()
 { 
 	m_socket = -1;
-	m_nonBlocking = false;
+ 	m_buffer = NULL;
+	m_nonBlocking = false;	
+}
+
+SocketBase::~SocketBase()
+{
+  this->close();
+
+	if(m_buffer != NULL)
+		free(m_buffer);
 }
 
 bool SocketBase::setNonBlocking() 
@@ -108,26 +117,144 @@ bool SocketBase::close()
 	}
 	
   #ifdef WIN32
-  bool closed = closesocket(m_socket);
+  bool closed = (closesocket(m_socket) == 0);
   #else
   bool closed = (::close(m_socket) == 0);
   #endif
 	if(closed)
 		m_socket = -1;
   else
-    throw fuppes::Exception("error closing socket", __FILE__, __LINE__);
+    throw fuppes::Exception(__FILE__, __LINE__, "error closing socket %d - %s\n", errno, strerror(errno));  
 
 	return closed;
 }
 
 
+fuppes_off_t SocketBase::send(std::string message)
+{
+	return send(message.c_str(), message.length());
+}
+
+static inline void socketSleep(unsigned int milliseconds)
+{
+  #ifdef WIN32
+  Sleep(milliseconds);
+  #else
+  if(milliseconds < 1000)
+    usleep(milliseconds * 1000);
+  else
+    sleep(milliseconds / 1000);  
+  #endif
+}
+
+fuppes_off_t SocketBase::send(const char* buffer, fuppes_off_t size)
+{
+	int						lastSend = 0;
+  fuppes_off_t	fullSend = 0;
+  bool					wouldBlock = false; 
+
+  do {
+    lastSend = ::send(m_socket, &buffer[fullSend], size - fullSend, MSG_NOSIGNAL);
+    
+    wouldBlock = false;
+    #ifdef WIN32
+    wouldBlock = (WSAGetLastError() == WSAEWOULDBLOCK);    
+    #else
+    wouldBlock = (errno == EAGAIN);
+    #endif
+    
+    // incomplete
+    if(lastSend > 0)
+      fullSend += lastSend; 
+    
+    // complete
+    if(fullSend == size)
+      return fullSend;    
+    
+    // error
+    if((lastSend < 0) && !wouldBlock)
+      return -1; //throw Exception(__FILE__, __LINE__, "send error %d", lastSend);
+
+    // would block
+    if(wouldBlock)
+      socketSleep(10);      
+
+  } while ((lastSend < 0) || (fullSend < size) || wouldBlock);    
+  
+  return fullSend;	
+}
+
+fuppes_off_t SocketBase::receive(int timeout /*= 0*/)
+{
+	#ifdef HAVE_SELECT
+	if(timeout > 0) {
+		setNonBlocking();
+	}
+	
+	fd_set fds;	
+	struct timeval tv;
+	
+	FD_ZERO(&fds);
+	FD_SET(m_socket, &fds);
+		
+	tv.tv_sec = timeout;
+	tv.tv_usec = 0;
+ 	int sel = select(m_socket + 1, &fds, NULL, NULL, &tv);
+	
+	if(sel < 0) 
+		throw Exception(__FILE__, __LINE__, "socket errror");
+	
+	if(!FD_ISSET(m_socket, &fds) || sel == 0)
+		return 0;
+	#endif
+	
+	// create new buffer
+	if(m_buffer == NULL) {
+		m_buffer = (char*)::malloc(INITIAL_BUFFER_SIZE);
+		m_bufferSize = INITIAL_BUFFER_SIZE;
+		m_bufferFill = 0;
+	}
+
+	// resize buffer
+	if(m_bufferSize - m_bufferFill == 0) {
+		m_buffer = (char*)::realloc(m_buffer, m_bufferSize + INITIAL_BUFFER_SIZE);
+		m_bufferSize += INITIAL_BUFFER_SIZE;
+	}
+		
+	// calc buffer offset and size and receive
+	char* buffer = &m_buffer[m_bufferFill];
+	fuppes_off_t size = (m_bufferSize - m_bufferFill) - 1;
+	fuppes_off_t bytesReceived = ::recv(m_socket, buffer, size, 0);
+	
+	// error
+	if(bytesReceived < 0)
+		throw Exception(__FILE__, __LINE__, "socket errror");
+	
+	// set new fill status and terminate buffer
+	if(bytesReceived > 0) {
+		m_bufferFill += bytesReceived;
+		m_buffer[m_bufferFill] = '\0';
+	}
+
+	return bytesReceived;
+}
+
+
+
+
+
 
 
 TCPSocket::TCPSocket(std::string ipv4Address /* = ""*/)
+:SocketBase()
 {
 	// create socket
-	m_socket = socket(AF_INET, SOCK_STREAM, 0);
-  if(m_socket == -1)    
+	m_socket = ::socket(AF_INET, SOCK_STREAM, 0);
+#ifndef WIN32
+  if(m_socket == -1)
+#else
+  if(m_socket == INVALID_SOCKET)
+#endif
     throw Exception("failed to create socket", __FILE__, __LINE__); 
 	
 	// set local end point
@@ -147,16 +274,10 @@ TCPSocket::TCPSocket(std::string ipv4Address /* = ""*/)
   // fetch local end point to get port number on random ports
 	socklen_t size = sizeof(m_localEndpoint);
 	getsockname(m_socket, (struct sockaddr*)&m_localEndpoint, &size);
-	
-	m_buffer = NULL;
 }
 
 TCPSocket::~TCPSocket()
 {
-	this->close();
-
-	if(m_buffer != NULL)
-		free(m_buffer);
 }
 
 bool TCPSocket::connect()
@@ -236,112 +357,95 @@ bool TCPSocket::connect()
 	return true;
 }
 
-fuppes_off_t TCPSocket::send(std::string message)
+
+
+
+bool TCPServer::init(std::string ip, int port)
 {
-	return send(message.c_str(), message.length());
-}
+	// create socket
+	m_socket = ::socket(AF_INET, SOCK_STREAM, 0);
+#ifndef WIN32
+  if(m_socket == -1)
+#else
+  if(m_socket == INVALID_SOCKET)
+#endif
+    throw Exception("failed to create socket", __FILE__, __LINE__); 
 
-
-static inline void socketSleep(unsigned int milliseconds)
-{
-  #ifdef WIN32
-  Sleep(milliseconds);
-  #else
-  if(milliseconds < 1000)
-    usleep(milliseconds * 1000);
-  else
-    sleep(milliseconds / 1000);  
-  #endif
-}
-
-fuppes_off_t TCPSocket::send(const char* buffer, fuppes_off_t size)
-{
-	int						lastSend = 0;
-  fuppes_off_t	fullSend = 0;
-  bool					wouldBlock = false; 
-
-  do {
-    lastSend = ::send(m_socket, &buffer[fullSend], size - fullSend, MSG_NOSIGNAL);
-    
-    wouldBlock = false;
-    #ifdef WIN32
-    wouldBlock = (WSAGetLastError() == WSAEWOULDBLOCK);    
-    #else
-    wouldBlock = (errno == EAGAIN);
-    #endif
-    
-    // incomplete
-    if(lastSend > 0)
-      fullSend += lastSend; 
-    
-    // complete
-    if(fullSend == size)
-      return fullSend;    
-    
-    // error
-    if((lastSend < 0) && !wouldBlock)
-      throw Exception(__FILE__, __LINE__, "send error %d", lastSend);
-
-    // would block
-    if(wouldBlock)
-      socketSleep(10);      
-
-  } while ((lastSend < 0) || (fullSend < size) || wouldBlock);    
   
-  return fullSend;	
+  setNonBlocking();
+
+  // set socket option SO_REUSEADDR so restarting fuppes with
+	// a fixed http port will not lead to a bind error
+  int ret = 0;
+  #ifdef WIN32  
+  bool bOptVal = true;
+  ret = setsockopt(m_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&bOptVal, sizeof(bool));
+  #else
+  int flag = 1;
+  ret = setsockopt(m_socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
+  #endif
+  if(ret == -1) {
+    throw fuppes::Exception(__FILE__, __LINE__, "failed to setsockopt: SO_REUSEADDR");
+  }
+
+  
+  // set local end point
+	m_localEndpoint.sin_family      = AF_INET;
+	m_localEndpoint.sin_addr.s_addr = inet_addr(ip.c_str());
+	m_localEndpoint.sin_port				 = htons(port);
+	memset(&(m_localEndpoint.sin_zero), '\0', 8);
+	
+  // bind the socket
+	ret = bind(m_socket, (struct sockaddr*)&m_localEndpoint, sizeof(m_localEndpoint));	
+  if(ret == -1)
+    throw fuppes::Exception(__FILE__, __LINE__, "failed to bind socket to : %s:%d", ip.c_str(), port);
+  
+  // fetch local end point to get port number on random ports
+	socklen_t size = sizeof(m_localEndpoint);
+	getsockname(m_socket, (struct sockaddr*)&m_localEndpoint, &size);
+
+  return true;
 }
 
-fuppes_off_t TCPSocket::receive(int timeout /*= 0*/)
+bool TCPServer::listen()
 {
-	#ifdef HAVE_SELECT
-	if(timeout > 0) {
-		setNonBlocking();
-	}
-	
+  // start listening
+  int ret = ::listen(m_socket, 5);
+  if(ret == -1)
+    throw fuppes::Exception(__FILE__, __LINE__, "failed to listen on socket");
+
+  return true;
+}
+
+TCPRemoteSocket* TCPServer::accept(int timeoutMs)
+{
+  // select
 	fd_set fds;	
-	struct timeval tv;
-	
-	FD_ZERO(&fds);
+	struct timeval timeout;
+
+  FD_ZERO(&fds);
 	FD_SET(m_socket, &fds);
 		
-	tv.tv_sec = timeout;
-	tv.tv_usec = 0;
- 	int sel = select(m_socket + 1, &fds, NULL, NULL, &tv);
-	
-	if(sel < 0) 
-		throw Exception(__FILE__, __LINE__, "socket errror");
-	
-	if(!FD_ISSET(m_socket, &fds) || sel == 0)
-		return 0;
-	#endif
-	
-	// create new buffer
-	if(m_buffer == NULL) {
-		m_buffer = (char*)::malloc(INITIAL_BUFFER_SIZE);
-		m_bufferSize = INITIAL_BUFFER_SIZE;
-		m_bufferFill = 0;
-	}
+	timeout.tv_sec = 2;
+	timeout.tv_usec = 0;
+	int sel = select(m_socket + 1, &fds, NULL, NULL, &timeout);
 
-	// resize buffer
-	if(m_bufferSize - m_bufferFill == 0) {
-		m_buffer = (char*)::realloc(m_buffer, m_bufferSize + INITIAL_BUFFER_SIZE);
-		m_bufferSize += INITIAL_BUFFER_SIZE;
-	}
-		
-	// calc buffer offset and size and receive
-	char* buffer = &m_buffer[m_bufferFill];
-	fuppes_off_t size = (m_bufferSize - m_bufferFill) - 1;
-	fuppes_off_t bytesReceived = ::recv(m_socket, buffer, size, 0);
-	
-	// error
-	if(bytesReceived < 0)
-		throw Exception(__FILE__, __LINE__, "socket errror");
-	
-	// set new fill status and terminate buffer
-	if(bytesReceived > 0) {
-		m_bufferFill += bytesReceived;
-		m_buffer[m_bufferFill] = '\0';
-	}
+	if(!FD_ISSET(m_socket, &fds)  || sel <= 0)
+		return NULL;
 
-	return bytesReceived;
+  // accept
+  TCPRemoteSocket* result = new TCPRemoteSocket();
+  socklen_t size = sizeof(result->m_remoteEndpoint);
+  
+  result->m_socket = ::accept(m_socket, (struct sockaddr*)&result->m_remoteEndpoint, &size);   
+  #ifndef WIN32
+	if(result->m_socket == -1) {
+  #else
+ 	if(result->m_socket == INVALID_SOCKET) {
+  #endif
+    delete result;
+    return NULL;
+	}
+    
+  return result;
 }

@@ -184,14 +184,7 @@ class CUPnPBrowseSearchBase: public CUPnPAction
 
 
 
-
-typedef enum FUPPES_CONTROL_ACTION {
-  FUPPES_CTRL_UNKNOWN,
-  FUPPES_CTRL_DATABASE_REBUILD,
-  FUPPES_CTRL_DATABASE_UPDATE,
-  FUPPES_CTRL_VFOLDER_REBUILD,
-	FUPPES_CTRL_TEST
-} FUPPES_CONTROL_ACTION;
+#include "../ControlInterface/ControlActions.h"
 
 class FuppesCtrlAction: public CUPnPAction
 {

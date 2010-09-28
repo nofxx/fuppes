@@ -44,10 +44,15 @@ class SQLQuery
     std::string build(fuppes_sql_no queryNo, std::string objectId, std::string device = "");
     std::string build(fuppes_sql_no queryNo, unsigned int objectId, std::string device = "");
     
-		bool select(const std::string sql);
-    bool exec(const std::string sql);
-		fuppes_off_t insert(const std::string sql);
-		
+		bool select(const std::string sql = "");
+    bool exec(const std::string sql = "");
+		fuppes_off_t insert(const std::string sql = "");
+
+    void prepare(const std::string sql);
+    void bind(const std::string field, const std::string value);
+
+    static std::string escape(std::string value);
+    
     bool eof();
 		void next();
 		CSQLResult* result();

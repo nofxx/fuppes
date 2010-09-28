@@ -102,7 +102,7 @@ class CTranscodingCacheObject: public fuppes::Thread
  
 		unsigned int ReleaseCountOrig() { return m_nReleaseCntBak; }
 		
-    fuppesThreadMutex  m_Mutex;
+    fuppes::Mutex      m_Mutex;
 
     CAudioEncoderBase* m_pAudioEncoder;
     CAudioDecoderBase* m_pDecoder;    
@@ -156,7 +156,7 @@ class CTranscodingCache: private fuppes::Thread
     void ReleaseCacheObject(CTranscodingCacheObject* pCacheObj);
 
 
-    fuppesThreadMutex  m_Mutex; 
+    fuppes::Mutex         m_Mutex; 
     std::map<std::string, CTranscodingCacheObject*>           m_CachedObjects;
     std::map<std::string, CTranscodingCacheObject*>::iterator m_CachedObjectsIterator;
   

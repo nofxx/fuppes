@@ -54,9 +54,8 @@ int dlna_get_image_profile_jpeg(int width, int height, char* profile, char* mime
     strcpy(profile, "JPEG_LRG");
 		return 0;
   }
-  else {
-    return -1;
-  }
+
+  return -1;
 }
 
 int dlna_get_image_profile_png(int width, int height, char* profile, char* mimeType)
@@ -64,6 +63,25 @@ int dlna_get_image_profile_png(int width, int height, char* profile, char* mimeT
   if(width <= 0 && height <= 0) {
     return -1;
   }
-  
+
+  strcpy(mimeType, "image/png");
+
+  if(width <= 48 && height <= 48) {
+		strcpy(profile, "PNG_SM_ICO");
+		return 0;
+  }
+  else if(width <= 120 && height <= 120) {
+		strcpy(profile, "PNG_LRG_ICO");
+		return 0;
+  }
+  else if(width <= 160 && height <= 160) {
+		strcpy(profile, "PNG_TN");
+		return 0;
+  }
+  else if(width <= 4096 && height <= 4096) {
+    strcpy(profile, "PNG_LRG");
+		return 0;
+  }
+
 	return -1;
 }

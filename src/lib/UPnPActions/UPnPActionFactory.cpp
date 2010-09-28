@@ -178,6 +178,23 @@ CUPnPAction* CUPnPActionFactory::buildActionFromString(std::string p_sContent, C
     else if(sName.compare("VfolderRebuild") == 0) {
 	    pAction = new FuppesCtrlAction(FUPPES_CTRL_VFOLDER_REBUILD, p_sContent);
 	  }
+
+
+    else if(sName.compare("GetDir") == 0) {
+	    pAction = new FuppesCtrlAction(FUPPES_CTRL_GET_DIR, p_sContent);
+	  }
+    else if(sName.compare("GetSharedObjects") == 0) {
+	    pAction = new FuppesCtrlAction(FUPPES_CTRL_GET_SHARED_OBJECTS, p_sContent);
+	  }
+    else if(sName.compare("AddSharedObject") == 0) {
+	    pAction = new FuppesCtrlAction(FUPPES_CTRL_ADD_SHARED_OBJECT, p_sContent);
+	  }
+    else if(sName.compare("DelSharedObject") == 0) {
+	    pAction = new FuppesCtrlAction(FUPPES_CTRL_DEL_SHARED_OBJECT, p_sContent);
+	  }
+
+/* 
+  FUPPES_CTRL_MOD_SHARED_OBJECT,*/     
      
     else if(sName.compare("Test") == 0) {
 	    pAction = new FuppesCtrlAction(FUPPES_CTRL_TEST, p_sContent);

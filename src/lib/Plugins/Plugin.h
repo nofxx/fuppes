@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2008-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2008-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -84,7 +84,7 @@ class CPluginMgr
 		CPluginMgr();
 		std::string					m_pluginDir;
 		static CPluginMgr*	m_instance;
-		fuppesThreadMutex		m_mutex;
+		fuppes::Mutex	    	m_mutex;
 		
 		std::map<std::string, CMetadataPlugin*> m_metadataPlugins;
 		std::map<std::string, CMetadataPlugin*>::iterator m_metadataPluginsIter;
@@ -142,6 +142,7 @@ class CPlugin
 
 
 typedef int (*dlnaGetImageProfile_t)(const char* ext, int width, int height, char* dlnaProfile, char* mimeType);
+typedef int (*dlnaGetAudioProfile_t)(const char* ext, int channels, int bitrate, char* dlnaProfile, char* mimeType);
 class CDlnaPlugin: public CPlugin
 {
 	public:
@@ -150,9 +151,11 @@ class CDlnaPlugin: public CPlugin
 	
 		bool initPlugin();
 		bool getImageProfile(std::string ext, int width, int height, std::string* dlnaProfile, std::string* mimeType);
+		bool getAudioProfile(std::string ext, int channels, int bitrate, std::string* dlnaProfile, std::string* mimeType);
 			
 	private:
 		dlnaGetImageProfile_t			m_getImageProfile;
+		dlnaGetAudioProfile_t			m_getAudioProfile;
 };
 
 

@@ -30,6 +30,7 @@
 #endif
 
 #include "../Common/Common.h"
+#include "../Common/Thread.h"
 
 #ifndef WIN32
 #include <pthread.h>
@@ -89,8 +90,8 @@ class CSSDPCtrl: public IUDPSocket, IMSearchSession
     std::string        m_sIPAddress;    
     std::string        m_sHTTPServerURL;
     ISSDPCtrl*         m_pReceiveHandler;
-    fuppesThreadMutex  m_SessionReceiveMutex;
-    fuppesThreadMutex  m_SessionTimedOutMutex;
+    fuppes::Mutex      m_SessionReceiveMutex;
+    fuppes::Mutex      m_SessionTimedOutMutex;
 
     std::list<CMSearchSession*> m_RunningSessionList;    
     std::list<CMSearchSession*>::iterator m_RunningSessionListIterator;

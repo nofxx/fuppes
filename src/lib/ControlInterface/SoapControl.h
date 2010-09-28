@@ -31,6 +31,7 @@
 #endif
 
 #include "../UPnPService.h"
+#include "../Common/XMLParser.h"
 
 class SoapControl: public CUPnPService
 {
@@ -39,6 +40,14 @@ class SoapControl: public CUPnPService
 		
 		std::string GetServiceDescription();
     void HandleUPnPAction(CUPnPAction* pUPnPAction, CHTTPMessage* pMessageOut);
+
+
+	private:
+
+		void	getDir(CXMLNode* request, std::stringstream& result);
+		void	getSharedObjects(std::stringstream& result);
+		void	addSharedObject(CXMLNode* request, std::stringstream& result);
+		void	delSharedObject(CXMLNode* request, std::stringstream& result);
 };
 
 #endif // _SOAPCONTROL_H

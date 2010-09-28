@@ -1,11 +1,10 @@
 /* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
- *            DeviceMapping.h
+ *            PageConfig.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
  *  Copyright (C) 2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
- *  Copyright (C) 2010 Robert Massaioli <robertmassaioli@gmail.com>
  ****************************************************************************/
 
 /*
@@ -24,62 +23,25 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __DEVICEMAPPING_H
-#define __DEVICEMAPPING_H
+#ifndef _PAGECONFIG_H
+#define _PAGECONFIG_H
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
 
-#include <vector>
-#include <string>
-#include <set>
-#include "../Common/Common.h"
-#include "ConfigSettings.h"
-#include "../DeviceSettings/DeviceSettings.h"
-#include "../DeviceSettings/DeviceIdentificationMgr.h"
 
+#include "PresentationPage.h"
 
-struct VirtualFolder
-{
-  std::string name;
-  bool enabled;
-};
-
-class VirtualFolders : public ConfigSettings
+class PageConfig: public PresentationPage
 {
   public:
-    virtual bool Read(void);
-
-    fuppes::StringList  getEnabledFolders();
-
-    bool enabled() { return m_enabled; }
+    std::string alias() { return "config"; }
+    std::string title() { return "configuration"; }
+    std::string js()    { return "fuppes-config.js"; }
     
-  private:
-    std::vector<struct VirtualFolder> m_folderSettings;
-    bool m_enabled;
+    std::string content();
 };
 
 
-struct mapping {
-  std::string value;
-  std::string vfolder;
-  CDeviceSettings* device;
-};
-
-class DeviceMapping : public ConfigSettings
-{
-  public:
-    friend class CDeviceIdentificationMgr;
-
-    virtual bool Read(void);
-
-    //void requiredVirtualDevices(std::set<std::string>* vfolders);
-    
-  private:
-    // device mappings
-    std::vector<struct mapping> macAddrs;
-    std::vector<struct mapping> ipAddrs;
-};
-
-#endif
+#endif // _PAGECONFIG_H

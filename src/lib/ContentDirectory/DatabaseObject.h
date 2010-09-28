@@ -38,44 +38,62 @@ namespace fuppes
 {
 
 
-
 /*
-ID
-PUBLISHER TEXT, "
-DATE TEXT, "
-DESCRIPTION TEXT, "
-LONG_DESCRIPTION TEXT, "
-AV_GENRE TEXT, "
-AV_LANGUAGE TEXT, "
-AV_ARTIST TEXT, "
-AV_ALBUM TEXT, "
-AV_CONTRIBUTOR TEXT, "
-AV_PRODUCER TEXT, "
-A_TRACK_NUMBER UNSIGNED INTEGER, "
-V_ACTORS TEXT, "
-V_DIRECTOR TEXT, "
-V_SERIES_TITLE TEXT, "
-V_PROGRAM_TITLE TEXT, "
-V_EPISODE_NR UNSIGNED INTEGER, "
-V_EPISODE_COUNT UNSIGNED INTEGER, "
-SIZE BIGINT DEFAULT 0, "
-AV_DURATION INTEGER, "
-A_CHANNELS INTEGER, "
-A_BITRATE INTEGER, "
-A_BITS_PER_SAMPLE INTEGER, "
-A_SAMPLERATE INTEGER, "
-IV_WIDTH INTEGER, "
-IV_HEIGHT INTEGER, "
-IV_COLOR_DEPTH INTEGER, "
-A_YEAR INTEGER, "
-A_COMPOSER TEXT, "
-AUDIO_CODEC TEXT, "
-VIDEO_CODEC TEXT, "
-V_BITRATE INTEGER, "
-ALBUM_ART_ID INTEGER, "
-ALBUM_ART_EXT TEXT,
-MIME_TYPE TEXT
-SOURCE          // metadata source (file = the file itself, playlist = from a playlist, itunes = from itunes db)
+"  ID INTEGER PRIMARY KEY AUTOINCREMENT, "
+"  PUBLISHER TEXT, "
+"  DATE TEXT, "
+"  DESCRIPTION TEXT, "
+"  LONG_DESCRIPTION TEXT, "
+"  AV_GENRE TEXT, "
+"  AV_LANGUAGE TEXT, "
+"  AV_ARTIST TEXT, "
+"  AV_ALBUM TEXT, "
+"  AV_CONTRIBUTOR TEXT, "
+"  AV_PRODUCER TEXT, "
+"  A_TRACK_NUMBER UNSIGNED INTEGER, "
+"  V_ACTORS TEXT, "
+"  V_DIRECTOR TEXT, "
+"  V_SERIES_TITLE TEXT, "
+"  V_PROGRAM_TITLE TEXT, "
+"  V_EPISODE_NR UNSIGNED INTEGER, "
+"  V_EPISODE_COUNT UNSIGNED INTEGER, "
+"  SIZE BIGINT DEFAULT 0, "
+"  AV_DURATION INTEGER, "
+"  A_CHANNELS INTEGER, "
+"  A_BITRATE INTEGER, "
+"  A_BITS_PER_SAMPLE INTEGER, "
+"  A_SAMPLERATE INTEGER, "
+"  IV_WIDTH INTEGER, "
+"  IV_HEIGHT INTEGER, "
+"  IV_COLOR_DEPTH INTEGER, "
+"  A_YEAR INTEGER, "
+"  A_COMPOSER TEXT, "
+"  AUDIO_CODEC TEXT, "
+"  VIDEO_CODEC TEXT, "
+"  V_BITRATE INTEGER, "
+
+
+   // if the ALBUM_ART_ID is 0 and there is no ALBUM_ART_EXT there is no album art
+
+   // if the ALBUM_ART_ID is 0 and the ALBUM_ART_EXT is set it's nonsense
+
+   // if the ALBUM_ART_ID is > 0 it references one of the following object types:
+   //   1. a real image file. EXT, MIME_TYPE, WIDTH and HEIGHT contain the values of the real image
+   //   2. an audio file with an embedded image. EXT, MIME_TYPE, WIDTH and HEIGHT contain the values of the embedded image
+   //   3. a video file. EXT, MIME_TYPE, WIDTH and HEIGHT contain the values for a preview image
+   
+   
+"  ALBUM_ART_ID INTEGER, "
+"  ALBUM_ART_EXT TEXT, "
+"  ALBUM_ART_MIME_TYPE TEXT, "
+"  ALBUM_ART_WIDTH INTEGER, "
+"  ALBUM_ART_HEIGHT INTEGER, "
+
+// if the album art ID is 
+   
+   
+"  STREAM_MIME_TYPE TEXT DEFAULT NULL, "
+"  SOURCE INT DEFAULT 0       // metadata source (file = the file itself, playlist = from a playlist, itunes = from itunes db)
 */
 
 class DbObject;
@@ -116,6 +134,9 @@ class ObjectDetails
       m_v_codec = details.m_v_codec;
       m_albumArtId = details.m_albumArtId;
       m_albumArtExt = details.m_albumArtExt;
+      m_albumArtMimeType = details.m_albumArtMimeType;
+      m_albumArtWidth = details.m_albumArtWidth;
+      m_albumArtHeight = details.m_albumArtHeight;
       m_size = details.m_size;
       m_source = details.m_source;
       m_streamMimeType = details.m_streamMimeType;
@@ -147,6 +168,9 @@ class ObjectDetails
     std::string   videoCodec() { return m_v_codec; }
     object_id_t   albumArtId() { return m_albumArtId; }
     std::string   albumArtExt() { return m_albumArtExt; }
+    std::string   albumArtMimeType() { return m_albumArtMimeType; }
+    int           albumArtWidth() { return m_albumArtWidth; }
+    int           albumArtHeight() { return m_albumArtHeight; }
     fuppes_off_t  size() { return m_size; }
     DetailSource  source() { return m_source; }
     std::string   streamMimeType() { return m_streamMimeType; }   // for audio/video streams
@@ -270,6 +294,27 @@ class ObjectDetails
         m_changed = true;
       }
     }
+
+    void setAlbumArtMimeType(std::string albumArtMimeType) {
+      if(m_albumArtMimeType != albumArtMimeType) {
+        m_albumArtMimeType = albumArtMimeType;
+        m_changed = true;
+      }
+    }
+
+    void setAlbumArtWidth(int albumArtWidth) {
+      if(m_albumArtWidth != albumArtWidth) {
+        m_albumArtWidth = albumArtWidth;
+        m_changed = true;
+      }
+    }
+
+    void setAlbumArtHeight(int albumArtHeight) {
+      if(m_albumArtHeight != albumArtHeight) {
+        m_albumArtHeight = albumArtHeight;
+        m_changed = true;
+      }
+    }
     
     void setSize(fuppes_off_t size) {
       if(m_size != size) {
@@ -314,6 +359,9 @@ class ObjectDetails
     std::string     m_v_codec;
     object_id_t     m_albumArtId;
     std::string     m_albumArtExt;
+    std::string     m_albumArtMimeType;
+    int             m_albumArtWidth;
+    int             m_albumArtHeight;
     fuppes_off_t    m_size;
     DetailSource    m_source;
     std::string     m_streamMimeType;
@@ -375,11 +423,42 @@ class DbObject
       Genre     = 8,
       Artist    = 16,
       Composer  = 32,
-      Album     = 64
+      Album     = 64,
+      SharedDir = 128
     };
   
     static DbObject* createFromObjectId(object_id_t objectId, SQLQuery* qry = NULL, std::string layout = "");
     static DbObject* createFromFileName(std::string fileName, SQLQuery* qry = NULL, std::string layout = "");
+
+    DbObject& operator=(const DbObject& object) {
+      
+      m_id                      = object.m_id;
+      m_objectId                = object.m_objectId;
+      m_parentId                = object.m_parentId;
+      m_detailId                = object.m_detailId;
+      m_type                    = object.m_type;
+      m_path                    = object.m_path;
+      m_fileName                = object.m_fileName;
+      m_title                   = object.m_title;
+      m_md5                     = object.m_md5;
+      m_refId                   = object.m_refId;
+      m_device                  = object.m_device;
+      m_visible                 = object.m_visible;
+      m_vcType                  = object.m_vcType;
+      m_vcPath                  = object.m_vcPath;
+      m_vrefId                  = object.m_vrefId;
+      m_lastModified            = object.m_lastModified;
+      m_lastUpdated             = object.m_lastUpdated;
+          
+      m_changed                 = object.m_changed;
+      m_pathChanged             = object.m_pathChanged;
+      m_oldPath                 = object.m_oldPath;
+      m_lastModifiedChanged     = object.m_lastModifiedChanged;
+      m_details                 = object.m_details;
+      
+	  	return *this;
+	  }
+
     
     object_id_t             objectId() { return m_objectId; }
     object_id_t             parentId() { return m_parentId; }

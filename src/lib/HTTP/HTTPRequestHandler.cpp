@@ -4,7 +4,7 @@
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006-2009 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2006-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -132,14 +132,32 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
      ((sRequest.length() > 14) && (ToLower(sRequest).substr(0, 14).compare("/presentation/") == 0))
     )
   {
-		/*CPresentationPlugin* pres = CPluginMgr::presentationPlugin();
-    if(pres && pres->handleRequest(pRequest, pResponse)) {
-   		return true;
-		}*/
+    bool isImage;
+    int width = 0;
+    int height = 0;
+    CPresentationHandler pres(m_sHTTPServerURL);
+    pres.OnReceivePresentationRequest(pRequest, pResponse, isImage, width, height);
 
-    CPresentationHandler* pHandler = new CPresentationHandler(m_sHTTPServerURL);
-    pHandler->OnReceivePresentationRequest(pRequest, pResponse);
-    delete pHandler;    
+    // dlna
+    if(isImage && CPluginMgr::dlnaPlugin() != NULL &&
+      //(pRequest->dlnaGetContentFeatures() == true) &&
+      (pRequest->DeviceSettings()->dlnaVersion() != CMediaServerSettings::dlna_none)) {
+        
+      string sExt = pRequest->DeviceSettings()->extensionByMimeType(pResponse->GetContentType());
+      
+      std::string mimeType;
+      std::string profile;
+      CPluginMgr::dlnaPlugin()->getImageProfile(sExt, width, height, &profile, &mimeType);
+
+      std::string dlnaFeatures = CContentDirectory::buildDlnaInfo(false, profile);
+      std::string dlnaMode = "Interactive";
+
+      pResponse->dlnaContentFeatures(dlnaFeatures);
+      pResponse->dlnaTransferMode(dlnaMode);        
+    }
+      
+
+    
     return true;
   }
   
@@ -193,10 +211,11 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
       string sObjectId = rxUrl.match(2);
       // cout << rxUrl.match(3) << endl;
 
-      if((rxUrl.match(1).compare("Audio") == 0) || 
-         (rxUrl.match(1).compare("Video") == 0)) {
-
-			  bResult = handleItemRequest(sObjectId, pRequest, pResponse);
+      if(rxUrl.match(1).compare("Video") == 0) {
+			  bResult = handleAVItemRequest(sObjectId, pRequest, pResponse, false);
+      }
+      else if(rxUrl.match(1).compare("Audio") == 0) {
+			  bResult = handleAVItemRequest(sObjectId, pRequest, pResponse, true);
       }
       else if(rxUrl.match(1).compare("Image") == 0) {
 
@@ -279,17 +298,18 @@ bool CHTTPRequestHandler::HandleGENAMessage(CHTTPMessage* pRequest, CHTTPMessage
   return true;
 }
 
-bool CHTTPRequestHandler::handleItemRequest(std::string p_sObjectId, CHTTPMessage* pRequest, CHTTPMessage* pResponse)
+bool CHTTPRequestHandler::handleAVItemRequest(std::string p_sObjectId, CHTTPMessage* pRequest, CHTTPMessage* pResponse, bool audio)
 {
   std::stringstream sSql;
   //OBJECT_TYPE       nObjectType;
   std::string       sExt;
   std::string       sPath;
   std::string       sMimeType;
+  string            targetExt;
   SQLQuery				  qry;
   bool              bResult = true;  
   bool              transcode = false;
-
+  
   unsigned int      objectId = HexToInt(p_sObjectId);
   
   string sDevice = pRequest->virtualFolderLayout();
@@ -314,14 +334,18 @@ bool CHTTPRequestHandler::handleItemRequest(std::string p_sObjectId, CHTTPMessag
 
 
   transcode = pRequest->DeviceSettings()->DoTranscode(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
-    
-  if(transcode) {
+  sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
+  targetExt = pRequest->DeviceSettings()->Extension(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
+
+
+  if(!transcode) {
+    pResponse->LoadContentFromFile(sPath);
+  }  
+  else {
     CSharedLog::Log(L_EXT, __FILE__, __LINE__, "transcode %s",  sPath.c_str());
  
-    sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
-    if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {
-      //
-      DbObject object(qry.result());          
+    if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {  
+      DbObject object(qry.result());
       bResult = pResponse->TranscodeContentFromFile(sPath, &object);
     }
     else if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) {
@@ -329,7 +353,7 @@ bool CHTTPRequestHandler::handleItemRequest(std::string p_sObjectId, CHTTPMessag
       // the correct header will be build
       pResponse->SetIsBinary(true);
       bResult = true;
-				
+
       if(pRequest->DeviceSettings()->TranscodingHTTPResponse(sExt) == RESPONSE_CHUNKED) {
         pResponse->SetTransferEncoding(HTTP_TRANSFER_ENCODING_CHUNKED);
       }
@@ -338,20 +362,39 @@ bool CHTTPRequestHandler::handleItemRequest(std::string p_sObjectId, CHTTPMessag
       }
     }
   }
-  else {
-    sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
-    pResponse->LoadContentFromFile(sPath);
-  }
+  
   
 
-  
-  if(pRequest->DeviceSettings()->DLNAEnabled()) {
-    std::string dlnaFeatures = CContentDirectory::buildDlnaInfo(transcode, pRequest->DeviceSettings()->DLNA(sExt));
-    std::string dlnaMode = "streaming";
+  // dlna
+  if((CPluginMgr::dlnaPlugin() != NULL) &&
+     //(pRequest->dlnaGetContentFeatures() == true) &&
+     (pRequest->DeviceSettings()->dlnaVersion() != CMediaServerSettings::dlna_none)) {
 
-    pResponse->dlnaContentFeatures(dlnaFeatures);
-    pResponse->dlnaTransferMode(dlnaMode);        
-  }
+    bool hasProfile = false;
+    std::string profile;
+    if(audio) {
+
+      int channels = 0;
+      int bitrate = 0;
+      if(!transcode) {
+        channels = qry.result()->asInt("A_CHANNELS");
+        bitrate = qry.result()->asInt("A_BITRATE");
+      }
+      
+      hasProfile = CPluginMgr::dlnaPlugin()->getAudioProfile(targetExt, channels, bitrate, &profile, &sMimeType);
+    }
+    else {
+      //CPluginMgr::dlnaPlugin()->getVideoProfile();
+    }
+
+    if(hasProfile) {
+      std::string dlnaFeatures = CContentDirectory::buildDlnaInfo(transcode, profile);
+      std::string dlnaMode = (transcode ? "Streaming" : "Interactive");
+
+      pResponse->dlnaContentFeatures(dlnaFeatures);
+      pResponse->dlnaTransferMode(dlnaMode);
+    }
+  } // end dlna
   
   // we always set the response type to "200 OK"
   // if the message should be a "206 partial content" 
@@ -377,7 +420,6 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
   std::string       sMimeType;
   SQLQuery  				qry;
 
-  unsigned int objectId = HexToInt(p_sObjectId);
   
   string sDevice = pRequest->virtualFolderLayout();
   if(pRequest->GetVarExists("vfolder")) {
@@ -385,6 +427,43 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
     if(sDevice == "none")
       sDevice = "";
   }
+
+  object_id_t objectId = HexToInt(p_sObjectId);  
+  DbObject* tmp = DbObject::createFromObjectId(objectId, &qry, sDevice);
+  if(tmp == NULL) {
+		CSharedLog::Log(L_EXT, __FILE__, __LINE__, "unknown object id: %s", p_sObjectId.c_str());
+    return false;
+  }
+
+  DbObject obj = *tmp;
+  delete tmp;
+
+/*
+  bool result = false;
+
+  // real image
+  if(obj->type() >= ITEM_IMAGE_ITEM && obj->type() < ITEM_IMAGE_ITEM_MAX) {
+    result = handleRealImageRequest(obj, pRequest, pResponse);
+  }
+  // audio file embedded image
+  else if(obj->type() >= ITEM_AUDIO_ITEM && obj->type() < ITEM_AUDIO_ITEM_MAX) {
+    result = handleAudioEmbeddedImageRequest(obj, pRequest, pResponse);
+  }
+  // video file thumbnail image
+  else if(obj->type() >= ITEM_VIDEO_ITEM && obj->type() < ITEM_VIDEO_ITEM_MAX) {
+    result = handleVideoImageRequest(obj, pRequest, pResponse);
+  }
+  else {
+		CSharedLog::Log(L_EXT, __FILE__, __LINE__, "unsupported image request on object type %d", obj->type());
+	}
+
+  delete obj;
+  return result;
+  */
+  
+
+  
+  
   string sql = qry.build(SQL_GET_OBJECT_DETAILS, objectId, sDevice);
   qry.select(sql);
     
@@ -394,31 +473,34 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 	}
 
 	sPath = qry.result()->asString("PATH") + qry.result()->asString("FILE_NAME");
-  sExt  = ExtractFileExt(sPath);	
+  sExt  = ExtractFileExt(sPath);
+  sMimeType = pRequest->DeviceSettings()->MimeType(sExt);
+    
 	bool audioFile = false;
 	bool videoFile = false;
   bool hasCached = false;
 	
-	OBJECT_TYPE type = (OBJECT_TYPE)qry.result()->asInt("TYPE");
-	if(type >= ITEM_IMAGE_ITEM && type < ITEM_IMAGE_ITEM_MAX) {
+	//OBJECT_TYPE type = (OBJECT_TYPE)qry.result()->asInt("TYPE");
+	if(obj.type() >= ITEM_IMAGE_ITEM && obj.type() < ITEM_IMAGE_ITEM_MAX) {
 		//cout << "request image file " << sPath << endl;
 	}
-	else if(type >= ITEM_AUDIO_ITEM && type < ITEM_AUDIO_ITEM_MAX) {
+	else if(obj.type() >= ITEM_AUDIO_ITEM && obj.type() < ITEM_AUDIO_ITEM_MAX) {
 		//cout << "request image from audio file " << sPath << endl;
 		audioFile = true;
 	}
-	else if(type >= ITEM_VIDEO_ITEM && type < ITEM_VIDEO_ITEM_MAX) {
+	else if(obj.type() >= ITEM_VIDEO_ITEM && obj.type() < ITEM_VIDEO_ITEM_MAX) {
 		//cout << "request image from video file " << sPath << endl;
 		videoFile = true;
 
     if(qry.result()->asUInt("ALBUM_ART_ID") > 0) {
-      hasCached = fuppes::File::exists(CSharedConfig::Shared()->globalSettings->GetTempDir() + qry.result()->asString("ALBUM_ART_ID") + ".jpg");
-      sPath = CSharedConfig::Shared()->globalSettings->GetTempDir() + qry.result()->asString("ALBUM_ART_ID") + ".jpg";
+      sPath = PathFinder::findThumbnailsDir() + qry.result()->asString("ALBUM_ART_ID") + ".jpg";
+      hasCached = fuppes::File::exists(sPath);
       sExt = "jpg";
+      sMimeType = pRequest->DeviceSettings()->MimeType(sExt);
     }
 	}
 	else {
-		CSharedLog::Log(L_EXT, __FILE__, __LINE__, "unsupported image request on object type %d", type);
+		CSharedLog::Log(L_EXT, __FILE__, __LINE__, "unsupported image request on object type %d", obj.type());
 		return false;
 	}
     
@@ -443,47 +525,47 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 		size_t outSize = 0;
 		unsigned char* inBuffer = (unsigned char*)malloc(1);
 		unsigned char* outBuffer = (unsigned char*)malloc(1);
-		char* mimeType = (char*)malloc(1);
-		memset(mimeType, 0, 1);
+		char* tmpMime = (char*)malloc(1);
+		memset(tmpMime, 0, 1);
 		
-		// embedded image from audio file
+		// embedded image from audio or video file
 		bool transcode = true;
 		if(audioFile || videoFile) {
 
-			CMetadataPlugin* metadata = NULL;
+      string plugin;
 			if(audioFile) {
-				metadata = CPluginMgr::metadataPlugin("taglib");
-				if(!metadata) {
-					CSharedLog::Log(L_EXT, __FILE__, __LINE__, "metadata plugin %s not found", "taglib");
-					free(inBuffer);
-					free(outBuffer);
-					free(mimeType);
-				  return false;
-				}
+        plugin = "taglib";
 			}
       else if(videoFile) {
-				metadata = CPluginMgr::metadataPlugin("ffmpegthumbnailer");
-				if(!metadata) {
-					CSharedLog::Log(L_EXT, __FILE__, __LINE__, "metadata plugin %s not found", "ffmpegthumbnailer");
-					free(inBuffer);
-					free(outBuffer);
-					free(mimeType);
-				  return false;
-        }
+        plugin = "ffmpegthumbnailer";
 				transcode = false;
 			}
-			
+
+			CMetadataPlugin* metadata = CPluginMgr::metadataPlugin(plugin);
+			if(!metadata) {
+				CSharedLog::Log(L_EXT, __FILE__, __LINE__, "metadata plugin %s not found", plugin.c_str());
+				free(inBuffer);
+				free(outBuffer);
+				free(tmpMime);
+			  return false;
+      }
+      
+      
 			metadata->openFile(sPath);
 			inSize = 0;
-			if(!metadata->readImage(&mimeType, &inBuffer, &inSize)) {
+			if(!metadata->readImage(&tmpMime, &inBuffer, &inSize)) {
 				metadata->closeFile();
 				CSharedLog::Log(L_EXT, __FILE__, __LINE__, "metadata plugin %s failed to read embedded image", "taglib");
 				free(inBuffer);
 				free(outBuffer);
-				free(mimeType);
+				free(tmpMime);
 		    return false;
 			}
 			metadata->closeFile();
+
+      // get the mime type and the extension of the extracted file
+      sMimeType = tmpMime;
+      sExt = pRequest->DeviceSettings()->extensionByMimeType(sMimeType);        
 			delete metadata;
 		} // embedded image
 
@@ -493,7 +575,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 		else {
 
       if(hasCached) {
-				transcode = false;
+				transcode = false;        
       }
       
 			std::fstream fsImg;
@@ -502,7 +584,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 				CSharedLog::Log(L_EXT, __FILE__, __LINE__, "failed to load image file %s", sPath.c_str());
 				free(inBuffer);
 				free(outBuffer);
-				free(mimeType);
+				free(tmpMime);
 			  return false;
 			}
 			fsImg.seekg(0, ios::end); 
@@ -513,17 +595,17 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 			fsImg.close();
 		} // image file
 
-		if(transcode) {		
+		if(transcode) {
 			CTranscoderBase* transcoder = CPluginMgr::transcoderPlugin("magickWand");
 			if(transcoder == NULL) {
 				CSharedLog::Log(L_EXT, __FILE__, __LINE__, "image magick transcoder not available");
 				free(inBuffer);
 				free(outBuffer);
-				free(mimeType);
+				free(tmpMime);
 			  return false;
 			}
 		
-			CFileSettings* settings = new CFileSettings(pRequest->DeviceSettings()->FileSettings("jpeg"));
+			CFileSettings* settings = new CFileSettings(pRequest->DeviceSettings()->FileSettings(sExt));
 		
 			// TODO fixme. Robert: What are we supposed to be fixing?
 			if(!settings->pImageSettings) {
@@ -540,51 +622,91 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 			delete transcoder;
 
 			pResponse->SetBinContent((char*)outBuffer, outSize);
+
+      // todo: get the actual image dimensions
+      //width = width;
+      //height = height:
+      sMimeType = pRequest->DeviceSettings()->MimeType(sExt);
+
+
 		} else { // transcode
 			pResponse->SetBinContent((char*)inBuffer, inSize);
-		}
-		
 
+      width = obj.details()->width();
+      height = obj.details()->height();
+		}
+
+    
+/*
 		pResponse->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
 #warning todo: set correct mime type 
     // the current mimeType variable only holds a dummy mime type set above
-		pResponse->SetContentType(mimeType);
-		
+		pResponse->SetContentType(sMimeType);
+*/
 		free(inBuffer);
 		free(outBuffer);
-		free(mimeType);
+		free(tmpMime);
 		return true;
 	} // embedded audio or width|height via GET
 	
-	
-	if(pRequest->DeviceSettings()->DoTranscode(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"))) {
-		CSharedLog::Log(L_EXT, __FILE__, __LINE__, "transcode %s",  sPath.c_str());
- 
-		sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
-		if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {          
-			DbObject object(qry.result());
-			if(!pResponse->TranscodeContentFromFile(sPath, &object)) {
-				return false;
-			}
-		}
-		else if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) {
-			// mark the head response as chunked so
-			// the correct header will be build
-			pResponse->SetIsBinary(true);
+
+  // a real image file
+  else {
+
+    width = obj.details()->width();
+    height = obj.details()->height();
+    
+	  if(pRequest->DeviceSettings()->DoTranscode(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"))) {
+		  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "transcode %s",  sPath.c_str());
+   
+		  sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
+		  if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {          
+			  DbObject object(qry.result());
+			  if(!pResponse->TranscodeContentFromFile(sPath, &object)) {
+				  return false;
+			  }
+		  }
+		  else if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_HEAD) {
+			  // mark the head response as chunked so
+			  // the correct header will be build
+			  pResponse->SetIsBinary(true);
 				
-			if(pRequest->DeviceSettings()->TranscodingHTTPResponse(sExt) == RESPONSE_CHUNKED) {
-				pResponse->SetTransferEncoding(HTTP_TRANSFER_ENCODING_CHUNKED);
-			}
-			else if(pRequest->DeviceSettings()->TranscodingHTTPResponse(sExt) == RESPONSE_STREAM) {
-				pResponse->SetTransferEncoding(HTTP_TRANSFER_ENCODING_NONE);
-			}
-		}
-	}
-	else {
-		sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
-		pResponse->LoadContentFromFile(sPath);
-	}
-	
+			  if(pRequest->DeviceSettings()->TranscodingHTTPResponse(sExt) == RESPONSE_CHUNKED) {
+				  pResponse->SetTransferEncoding(HTTP_TRANSFER_ENCODING_CHUNKED);
+			  }
+			  else if(pRequest->DeviceSettings()->TranscodingHTTPResponse(sExt) == RESPONSE_STREAM) {
+				  pResponse->SetTransferEncoding(HTTP_TRANSFER_ENCODING_NONE);
+			  }
+		  }
+	  }
+	  else {
+		  sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
+		  pResponse->LoadContentFromFile(sPath);
+	  }
+
+  } // a real image file
+
+
+
+  
+  // dlna
+  if(//(pRequest->dlnaGetContentFeatures() == true) &&
+     (pRequest->DeviceSettings()->dlnaVersion() != CMediaServerSettings::dlna_none)) {
+
+    std::string mimeType;
+    std::string profile;
+    if(CPluginMgr::dlnaPlugin() != NULL) {
+      CPluginMgr::dlnaPlugin()->getImageProfile(sExt, width, height, &profile, &mimeType);
+      sMimeType = mimeType;
+    }
+
+    std::string dlnaFeatures = CContentDirectory::buildDlnaInfo(false, profile);
+    std::string dlnaMode = "Interactive";
+
+    pResponse->dlnaContentFeatures(dlnaFeatures);
+    pResponse->dlnaTransferMode(dlnaMode);        
+  }
+  
 	// we always set the response type to "200 OK"
 	// if the message should be a "206 partial content" 
 	// CHTTPServer will change the type
@@ -593,3 +715,4 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 
   return true;
 }
+

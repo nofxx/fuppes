@@ -11,4 +11,5 @@ dist_pixmaps_DATA = \
 	mootools-1.2.4-core-yc.js \
 	fuppes.js \
 	fuppes-browse.js \
-	fuppes-control.js
+	fuppes-control.js \
+	fuppes-config.js

@@ -68,6 +68,7 @@ class CXMLNode
     std::string name() { return Name(); }
     
     std::string Value();
+    int ValueAsInt();
     void Value(std::string p_sValue);
     void Value(int p_nValue);
   

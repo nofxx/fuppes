@@ -217,24 +217,24 @@ std::string createVFolderPath(CXMLNode* node)
   string type;
   bool final;
 
-  cout << "create path for : " << node->name() << "*" << endl;
+  //cout << "create path for : " << node->name() << "*" << endl;
 
 
   
   if(node->name().compare("vfolder") == 0) {
     result = "folder | ";
 
-    cout << "  path for vfolder node : " << node->attribute("name") << "*" << endl;
+    //cout << "  path for vfolder node : " << node->attribute("name") << "*" << endl;
 
     // get parent folders
     CXMLNode* parent = node->parent();
-    cout << "   vfolder node parent: " << parent->name() << "*" << endl;
+    //cout << "   vfolder node parent: " << parent->name() << "*" << endl;
     while(parent->name().compare("vfolder") == 0) {
       result += "folder | ";
       parent = parent->parent();
     }
 
-    cout << "  result: " << result << endl;
+    //cout << "  result: " << result << endl;
   }
     
   for(int i = 0; i < node->ChildCount(); i++) {
@@ -525,7 +525,7 @@ object_id_t getSplitParent(object_id_t pid, DbObject* object, std::string childT
     "TITLE like '%" << title << "%' and " <<
     "DEVICE = '" << layout << "'";
 
-  cout << sql.str() << endl;
+  //cout << sql.str() << endl;
   qry.select(sql.str());
 
 
@@ -620,6 +620,8 @@ void VirtualContainerMgr::insertFileForLayout(fuppes::DbObject* object, std::str
         type = DbObject::Composer;
       else if(parts.at(j) == "album")
         type = DbObject::Album;
+      else if(parts.at(j) == "folder")
+        continue;
       else {
         cout << "TODO handle path : " << parts.at(j) << "*" << endl;
         continue;
@@ -628,6 +630,16 @@ void VirtualContainerMgr::insertFileForLayout(fuppes::DbObject* object, std::str
       pid = createFolderIfNotExists(object, pid, type, paths.at(i), layout);
     }
 
+
+    
+    // contains(audioItem | videoItem | imageItem)
+    if(parts.at(parts.size() - 1).substr(0, 8).compare("contains") == 0) {
+      pid = createSharedDirFoldersIfNotExist(object, pid, paths.at(i), layout);
+      if(pid == 0)
+        return;
+    }
+
+    
     // insert the file
     DbObject file(object);
     file.setObjectId(CVirtualContainerMgr::Shared()->GetId());
@@ -702,6 +714,7 @@ object_id_t VirtualContainerMgr::createFolderIfNotExists(DbObject* object,
   
 
   DbObject folder;
+  ObjectDetails details;
   folder.setObjectId(CVirtualContainerMgr::Shared()->GetId());
   folder.setParentId(pid);
   folder.setType(objType);
@@ -722,6 +735,10 @@ object_id_t VirtualContainerMgr::createFolderIfNotExists(DbObject* object,
       break;
   }*/
 
+  details = *(object->details());
+  details.save();
+  
+  folder.setDetailId(details.id());
   folder.save();
 
   //cout << "createFolderIfNotExists" << endl << DbObject::toString(&folder) << endl;
@@ -729,6 +746,65 @@ object_id_t VirtualContainerMgr::createFolderIfNotExists(DbObject* object,
   return folder.objectId();
 }
 
+
+/* create a virtual copy of the real shared dir structure of 'object' for 'layout' inside 'pid' */
+object_id_t VirtualContainerMgr::createSharedDirFoldersIfNotExist(DbObject* object, 
+                                                                  object_id_t pid,
+                                                                  std::string path, 
+                                                                  std::string layout)
+{
+  // get the object parents up to the first level (pid == 0) in reverse order
+  SQLQuery qry;
+  std::list<DbObject*> parents;
+  object_id_t tmpPid = object->parentId();
+  while(tmpPid > 0) {
+    DbObject* parent = DbObject::createFromObjectId(tmpPid, &qry);  
+    parents.push_front(parent);
+    tmpPid = parent->parentId();
+  }
+
+  // loop through the parents and create a virtual copy if none exists
+  stringstream sql;
+  std::list<DbObject*>::iterator it;
+  for(it = parents.begin(); it != parents.end(); it++) {
+    DbObject* parent = *it;
+
+    sql.str("");
+    sql << "select OBJECT_ID from OBJECTS where "
+      "PARENT_ID = " << pid << " and " <<
+      "VCONTAINER_TYPE = " << DbObject::SharedDir << " and " <<
+      "VCONTAINER_PATH = '" << path << "' and " <<
+      "TITLE = '" << SQLEscape(parent->title()) << "' and " <<
+      "DEVICE = '" << layout << "'";
+    qry.select(sql.str());
+    
+    ASSERT(qry.size() == 0 || qry.size() == 1);
+
+    // folder exists
+    if(qry.size() == 1) {
+      pid = qry.result()->asUInt("OBJECT_ID");
+      delete parent;
+      continue;
+    }
+
+    // create virtual folder copy
+    DbObject folder;
+    folder.setObjectId(CVirtualContainerMgr::Shared()->GetId());
+    folder.setParentId(pid);
+    folder.setType(CONTAINER_STORAGE_FOLDER);
+    folder.setTitle(parent->title());
+    folder.setVirtualContainerType(DbObject::SharedDir);
+    folder.setVirtualContainerPath(path);
+    folder.setDevice(layout);
+    folder.save();
+
+    pid = folder.objectId();
+
+    delete parent;
+  }
+
+  return pid;
+}
 
 void VirtualContainerMgr::updateFile(fuppes::DbObject* object, fuppes::ObjectDetails* oldDetails) // static
 {

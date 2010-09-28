@@ -1,18 +1,16 @@
 
 include $(top_srcdir)/PreRules.am
 
-noinst_HEADERS = \
-  fuppes.h
-
 EXTRA_DIST = \
   fuppes_types.h.in
 
-include_HEADERS = \
+noinst_HEADERS = \
+  fuppes.h \
   fuppes_plugin.h \
   fuppes_plugin_types.h \
   fuppes_db_connection_plugin.h
 
-nodist_include_HEADERS = \
+nodist_noinst_HEADERS = \
   fuppes_types.h
 
 CLEANFILES = \

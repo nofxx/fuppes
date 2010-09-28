@@ -52,12 +52,12 @@ CProcessMgr* CProcessMgr::m_instance = NULL;
 
 CProcessMgr::CProcessMgr()
 {
-	fuppesThreadInitMutex(&m_mutex);
+	//fuppesThreadInitMutex(&m_mutex);
 }
 
 CProcessMgr::~CProcessMgr()
 {
-	fuppesThreadDestroyMutex(&m_mutex);
+	//fuppesThreadDestroyMutex(&m_mutex);
 }
 
 void CProcessMgr::init()
@@ -93,18 +93,21 @@ void CProcessMgr::signal(pid_t pid, int /*signal*/)
 	
 void CProcessMgr::register_proc(CProcess* proc)
 {
-	fuppesThreadLockMutex(&m_instance->m_mutex);
+	//fuppesThreadLockMutex(&m_instance->m_mutex);
+  m_instance->m_mutex.lock();
 	
 	#ifndef WIN32
 	m_instance->m_processes[proc->pid()] = proc;
 	#endif
 	
-	fuppesThreadUnlockMutex(&m_instance->m_mutex);
+	//fuppesThreadUnlockMutex(&m_instance->m_mutex);
+    m_instance->m_mutex.unlock();
 }
 
 void CProcessMgr::unregister_proc(CProcess* proc)
 {
-	fuppesThreadLockMutex(&m_instance->m_mutex);
+	//fuppesThreadLockMutex(&m_instance->m_mutex);
+  m_instance->m_mutex.lock();
 	
 	#ifndef WIN32
 	m_instance->m_processesIter = m_instance->m_processes.find(proc->pid());      
@@ -113,7 +116,8 @@ void CProcessMgr::unregister_proc(CProcess* proc)
 	}
 	#endif
 	
-	fuppesThreadUnlockMutex(&m_instance->m_mutex);
+	//fuppesThreadUnlockMutex(&m_instance->m_mutex);
+  m_instance->m_mutex.unlock();
 }
 
 

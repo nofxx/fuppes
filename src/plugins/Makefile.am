@@ -175,7 +175,9 @@ lib_LTLIBRARIES += libmetadata_dlna_profiles.la
 
 libmetadata_dlna_profiles_la_SOURCES = \
 	metadata_dlna_profiles.c \
-	dlna/dlna_image_profiles.h
+	dlna/dlna_image_profiles.h \
+	dlna/dlna_audio_profiles.h \
+	dlna/dlna_video_profiles.h
 
 libmetadata_dlna_profiles_la_CXXFLAGS = 
 	

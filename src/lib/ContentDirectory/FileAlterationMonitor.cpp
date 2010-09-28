@@ -118,7 +118,7 @@ CInotifyMonitor::~CInotifyMonitor()
 bool CInotifyMonitor::addWatch(std::string path)
 {  
   appendTrailingSlash(&path);
-  cout << "add watch: " << path << endl;
+  //cout << "add watch: " << path << endl;
   if(m_watches.find(path) != m_watches.end()) {
     //cout << "watch already exists: " << path << endl;
     return false;
@@ -149,7 +149,7 @@ bool CInotifyMonitor::addWatch(std::string path)
 void CInotifyMonitor::removeWatch(std::string path)
 {
   appendTrailingSlash(&path);
-  cout << "remove watch: " << path << endl;
+  //cout << "remove watch: " << path << endl;
 	Log::log(Log::fam, Log::extended, __FILE__, __LINE__, "remove watch \"%s\"", path.c_str());
 	
   std::map<std::string, InotifyWatch*>::iterator iter;
@@ -170,7 +170,7 @@ void CInotifyMonitor::removeWatch(std::string path)
     if(tmpPath.length() >= path.length() &&
        tmpPath.substr(0, path.length()).compare(path) == 0) {
 
-       cout << "delete watch: " << iter->first << endl;
+       //cout << "delete watch: " << iter->first << endl;
          
        // delete the watch
        m_pInotify->Remove(iter->second);

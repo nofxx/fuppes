@@ -51,6 +51,7 @@ const std::string LOGNAME = "PresentationHandler";
 
 
 #include "PageStart.h"
+#include "PageConfig.h"
 #include "PageDevice.h"
 #include "PageBrowse.h"
 
@@ -63,6 +64,7 @@ CPresentationHandler::CPresentationHandler(std::string httpServerUrl)
 
 
   m_pages.push_back(new PageStart());
+  m_pages.push_back(new PageConfig());
   m_pages.push_back(new PageDevice());
   m_pages.push_back(new PageBrowse());
 
@@ -78,7 +80,7 @@ CPresentationHandler::~CPresentationHandler()
 }
 
 
-void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, CHTTPMessage* pResult)
+void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, CHTTPMessage* pResult, bool& isImage, int &width, int &height)
 {
   PRESENTATION_PAGE nPresentationPage = PRESENTATION_PAGE_UNKNOWN;
   string sContent;
@@ -195,11 +197,15 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
 		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "fuppes-icon-50x50.png");
     pResult->SetContentType("image/png");
+    width = 50;
+    height = 50;
   }
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/fuppes-icon-50x50.jpg") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
 		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "fuppes-icon-50x50.jpg");
     pResult->SetContentType("image/jpeg");
+    width = 50;
+    height = 50;
   }
   // webinterface images
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/fuppes-logo.png") == 0) {
@@ -235,9 +241,15 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
     nPresentationPage = PRESENTATION_JAVASCRIPT;
 		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "fuppes-control.js");
   }
-  
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/fuppes-config.js") == 0) {
+    nPresentationPage = PRESENTATION_JAVASCRIPT;
+		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "fuppes-config.js");
+  }
+
+  isImage = false;
   if(nPresentationPage == PRESENTATION_BINARY_IMAGE) {
     pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    
+    isImage = true;
   }
 	else if(nPresentationPage == PRESENTATION_STYLESHEET) {
     pResult->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);    
@@ -272,7 +284,7 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
 }
 
 
-std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE /*p_nPresentationPage*/, std::string p_sPageName)
+std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE /*p_nPresentationPage*/, std::string p_sPageName, std::string js /*= ""*/)
 {
   std::stringstream sResult; 
 
@@ -296,6 +308,8 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE /*p_nPresentat
 	sResult << "<script type=\"text/javascript\" src=\"/presentation/fuppes.js\"></script>" << endl;
 	sResult << "<script type=\"text/javascript\" src=\"/presentation/fuppes-browse.js\"></script>" << endl;
 	sResult << "<script type=\"text/javascript\" src=\"/presentation/fuppes-control.js\"></script>" << endl;
+  if(!js.empty())
+  	sResult << "<script type=\"text/javascript\" src=\"/presentation/" << js << "\"></script>" << endl;
   
   sResult << "</head>";
   // html header end
@@ -361,8 +375,8 @@ std::string CPresentationHandler::GetPageHeader(PRESENTATION_PAGE /*p_nPresentat
 }
 
 std::string CPresentationHandler::getPageHeader(PresentationPage* page)
-{
-  return GetPageHeader(PRESENTATION_PAGE_UNKNOWN, page->title());
+{ 
+  return GetPageHeader(PRESENTATION_PAGE_UNKNOWN, page->title(), page->js());
 }
 
 std::string CPresentationHandler::GetPageFooter(PRESENTATION_PAGE /*p_nPresentationPage*/)

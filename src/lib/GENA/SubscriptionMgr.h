@@ -104,7 +104,7 @@ class CSubscriptionCache
   
   private:
     static CSubscriptionCache* m_pInstance;
-    fuppesThreadMutex  m_Mutex;
+    fuppes::Mutex  m_Mutex;
   
     CSubscriptionCache();
     ~CSubscriptionCache();

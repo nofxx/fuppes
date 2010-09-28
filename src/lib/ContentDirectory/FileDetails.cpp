@@ -178,6 +178,13 @@ bool CFileDetails::getMusicTrackDetails(std::string p_sFileName, AudioItem* audi
     result = audio->readData(audioItem->metadata());
 	  audio->closeFile(); 
 	}
+
+
+  // get the image dimensions
+  if(audioItem->hasImage() && (audioItem->imageWidth() == 0 || audioItem->imageHeight() == 0)) {
+#warning TODO: get image width and height
+  }
+  
   delete audio;  
 	return result;	
 }

@@ -611,21 +611,21 @@ AC_SUBST(SIMAGE_LIBS)
 MYSQL_CFLAGS=""
 MYSQL_LIBS=""
 have_mysql=no
-if test -z "$MYSQL_CONFIG"; then
-  AC_PATH_PROG(MYSQL_CONFIG, mysql_config, no, $prefix/bin/)
-fi
+#if test -z "$MYSQL_CONFIG"; then
+#  AC_PATH_PROG(MYSQL_CONFIG, mysql_config, no, $prefix/bin/)
+#fi
 
-if test "$MYSQL_CONFIG" != "no" ; then   
-  AC_MSG_CHECKING(MYSQL_CFLAGS)
-  MYSQL_CFLAGS=`$MYSQL_CONFIG --cflags`
-  AC_MSG_RESULT($MYSQL_CFLAGS)
+#if test "$MYSQL_CONFIG" != "no" ; then   
+#  AC_MSG_CHECKING(MYSQL_CFLAGS)
+#  MYSQL_CFLAGS=`$MYSQL_CONFIG --cflags`
+#  AC_MSG_RESULT($MYSQL_CFLAGS)
+#  
+#	AC_MSG_CHECKING(MYSQL_LIBS)
+#	MYSQL_LIBS=`$MYSQL_CONFIG --libs`
+#  AC_MSG_RESULT($MYSQL_LIBS)
   
-	AC_MSG_CHECKING(MYSQL_LIBS)
-	MYSQL_LIBS=`$MYSQL_CONFIG --libs`
-  AC_MSG_RESULT($MYSQL_LIBS)
-  
-  have_mysql=yes
-fi
+#  have_mysql=yes
+#fi
 AM_CONDITIONAL(MYSQL_DATABASE_PLUGIN, test "x$have_mysql" = "xyes")
 AC_SUBST(MYSQL_CFLAGS)
 AC_SUBST(MYSQL_LIBS)
@@ -898,6 +898,12 @@ else
   echo "    inotify            : disabled"
 fi
 
+
+echo ""
+echo "  paths"
+
+#echo "    sysconfdir:         $sysconfdir/fuppes"
+echo "    localstatedir:      $localstatedir/lib/fuppes"
 
 
 echo ""

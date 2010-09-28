@@ -26,6 +26,7 @@
 
 #include "Directory.h"
 #include "Common.h"
+#include "RegEx.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -235,8 +236,42 @@ std::string Directory::removeTrailingSlash(std::string directory) // static
 
 Directory::Directory(std::string path)
 {
+	setPath(path);
+}
+
+void Directory::setPath(std::string path)
+{
+	if(path.length() == 0) {
+		m_path = "";
+		return;
+	}
+
+	m_path = "";
 	m_dir = NULL;
-	m_path = Directory::appendTrailingSlash(path);
+	path = Directory::appendTrailingSlash(path);
+
+#ifndef WIN32
+	string pattern = "/([\\s|\\w|\\d|\\.]+/\\.\\./)";
+#else
+#endif
+
+	//cout << "DIR: " << path << endl;
+		
+	RegEx rxClear(pattern, PCRE_CASELESS);		
+	while(rxClear.search(path)) {
+
+
+		size_t pos = path.find(rxClear.match(1));
+
+		//cout << "path: " << path << " :: match: " << rxClear.match(1) << "* pos: " << pos << endl;
+		
+		m_path = path.substr(0, pos);
+		path = path.substr(pos + rxClear.match(1).length(), path.length());
+
+		cout << "mpath: " << m_path << " path: " << path << "*" << endl;
+	}
+
+	m_path += path;
 }
 
 bool Directory::open()
@@ -259,7 +294,7 @@ void Directory::close()
 	m_dir = NULL;
 }
 
-DirEntryList Directory::dirEntryList()
+DirEntryList Directory::dirEntryList(int filter /* = DirEntry::All*/)
 {
 	DirEntryList result;
 	DirEntry entry;
@@ -305,6 +340,10 @@ DirEntryList Directory::dirEntryList()
 		}
 #endif	
 
+		// filter
+		if((entry.m_type & filter) == 0)
+			continue;
+		
 		// set path and name
 		if(entry.m_type == DirEntry::Directory) {
 			entry.m_path = Directory::appendTrailingSlash(m_path + dirEntry->d_name);
@@ -314,7 +353,6 @@ DirEntryList Directory::dirEntryList()
 			entry.m_path = m_path;
 			entry.m_name = dirEntry->d_name;
 		}
-
 
 		result.push_back(entry);
 	} // while readdir

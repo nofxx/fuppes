@@ -261,7 +261,7 @@ void CDeviceIdentificationMgr::PrintSetting(CDeviceSettings* pSettings, std::str
     
     if(!p_sOut) {        
       cout << "    ext: " << pSettings->m_FileSettingsIterator->first << endl; 
-      cout << "    dlna: " << pFileSet->DLNA() << endl;
+      //cout << "    dlna: " << pFileSet->DLNA() << endl;
       cout << "    mime-type: " << pFileSet->MimeType() << endl;
       cout << "    upnp-type: " << pFileSet->ObjectType() << endl;
     }
@@ -287,7 +287,7 @@ void CDeviceIdentificationMgr::PrintSetting(CDeviceSettings* pSettings, std::str
       if(!p_sOut) {
         cout << "  transcode: " << endl;
         cout << "    ext: " << pFileSet->pTranscodingSettings->sExt << endl;
-        cout << "    dlna: " << pFileSet->pTranscodingSettings->sDLNA << endl;
+        //cout << "    dlna: " << pFileSet->pTranscodingSettings->sDLNA << endl;
         cout << "    mime/type: " << pFileSet->MimeType() << endl;      
         cout << "    release delay: " << pFileSet->ReleaseDelay() << endl;
       }

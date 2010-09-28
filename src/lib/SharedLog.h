@@ -104,6 +104,7 @@ public:
    */
   void  SetLogLevel(int p_nLogLevel, bool p_bPrintLogLevel = true);  
   std::string GetLogLevel();
+  int GetLogLevelInt() { return m_nLogLevel; }
   
   void  ToggleLog();
   

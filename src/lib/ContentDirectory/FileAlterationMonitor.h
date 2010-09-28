@@ -175,7 +175,7 @@ class CFileAlterationMonitor: protected fuppes::Thread
 {
   public:
 		virtual ~CFileAlterationMonitor() {
-			fuppesThreadDestroyMutex(&mutex);
+			//fuppesThreadDestroyMutex(&mutex);
 		}
 		
     virtual bool  addWatch(std::string path) = 0;
@@ -188,14 +188,14 @@ class CFileAlterationMonitor: protected fuppes::Thread
 			
   protected:
     CFileAlterationMonitor(IFileAlterationMonitor* pEventHandler): fuppes::Thread("FileAlterationMonitor") { 
-			fuppesThreadInitMutex(&mutex);
+			//fuppesThreadInitMutex(&mutex);
 			m_pEventHandler = pEventHandler; 
 		}
 			
     IFileAlterationMonitor* m_pEventHandler;
 
-    bool m_active;
-		fuppesThreadMutex	mutex;
+    bool          m_active;
+		fuppes::Mutex	mutex;
 };
 
 class CFileAlterationMgr
