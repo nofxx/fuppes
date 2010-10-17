@@ -169,14 +169,35 @@ void SoapControl::getDir(CXMLNode* request, std::stringstream& result)
 #ifndef WIN32
 		path = "/";		
 #else
-		todo
+		path = "/";
 #endif
 		
 	}
 
 
+#ifdef WIN32
+	if(path == "/") {
+		
+		DWORD drives = GetLogicalDrives();
+		
+		cout << "DRIVES: DWORD: " << drives << endl;
+		
+		DWORD bit = 0x01;
+		char  letter = 'A';
+		while(bit != 0x8000000) {
+			if(drives & bit) {
+				result << "<dir name=\"" << letter << ":/\">" << letter << ":/" << "</dir>";		
+			}
+			bit = bit << 1;
+			letter++;
+		}
+		
+		//result << "<dir name=\"" << iter->name() << "\">" << iter->path() << "</dir>";
+		
+		return;
+	}	
+#endif
 
-	
 	fuppes::Directory dir(path);
 	dir.open();
 	fuppes::DirEntryList info = dir.dirEntryList();

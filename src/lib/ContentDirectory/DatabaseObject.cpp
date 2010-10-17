@@ -182,11 +182,11 @@ void DbObject::reset()
   m_vrefId    = 0;
   m_lastModified = 0;
   m_lastUpdated = 0;
-
+  
   m_changed   = false;
   m_pathChanged = false;
   m_lastModifiedChanged = false;
-
+  
   m_details.reset();
 }
 
@@ -470,6 +470,9 @@ void ObjectDetails::reset()
   m_size = 0;
   m_source = Unknown;
   m_streamMimeType = "";
+
+  m_v_hasSubtitlesFile = false;
+  
   m_changed = false;
 }
 
@@ -581,8 +584,11 @@ bool ObjectDetails::load(object_id_t detailId, SQLQuery* qry /*= NULL*/)
     m_albumArtWidth = qry->result()->asInt("ALBUM_ART_WIDTH");
     m_albumArtHeight = qry->result()->asInt("ALBUM_ART_HEIGHT");
     m_size = qry->result()->asUInt("SIZE");
-    m_source = (ObjectDetails::DetailSource)qry->result()->asInt("AV_BITRATE");
+    m_source = (ObjectDetails::DetailSource)0;
     m_streamMimeType = qry->result()->asString("STREAM_MIME_TYPE");
+
+    m_v_hasSubtitlesFile = (qry->result()->asInt("V_HAS_SUBTITLES_FILE") == 1);
+    
     m_changed = false;
   }
   
@@ -627,7 +633,8 @@ bool ObjectDetails::save(SQLQuery* qry /*= NULL*/)
       
     "VIDEO_CODEC = " << (m_v_codec.empty() ? "NULL" : "'" + SQLEscape(m_v_codec) + "'") << ", " <<
     "V_BITRATE = " << m_v_bitrate << ", " << 
-
+    "V_HAS_SUBTITLES_FILE = " << (m_v_hasSubtitlesFile ? 1 : 0) << ", " <<
+      
 
     "ALBUM_ART_ID = " << m_albumArtId << ", " << 
     "ALBUM_ART_EXT = " << (m_albumArtExt.empty() ? "NULL" : "'" + SQLEscape(m_albumArtExt) + "'") << ", " <<
@@ -638,6 +645,8 @@ bool ObjectDetails::save(SQLQuery* qry /*= NULL*/)
     "SIZE = " << m_size << ", " << 
     "SOURCE = " << m_source << ", " << 
     "STREAM_MIME_TYPE = " << (m_streamMimeType.empty() ? "NULL" : "'" + SQLEscape(m_streamMimeType) + "'") << " " <<
+
+      
     "where "
     "ID = " << m_id;
 
@@ -673,6 +682,7 @@ bool ObjectDetails::save(SQLQuery* qry /*= NULL*/)
       "IV_HEIGHT, " <<
       "VIDEO_CODEC, " <<
       "V_BITRATE, " <<
+      "V_HAS_SUBTITLES_FILE, " <<      
       "ALBUM_ART_ID, " <<
       "ALBUM_ART_EXT, " <<
       "ALBUM_ART_MIME_TYPE, " <<
@@ -697,6 +707,7 @@ bool ObjectDetails::save(SQLQuery* qry /*= NULL*/)
       m_iv_height << ", " <<
       (m_v_codec.empty() ? "NULL" : "'" + SQLEscape(m_v_codec) + "'") << ", " <<
       m_v_bitrate << ", " <<
+      (m_v_hasSubtitlesFile ? 1 : 0)  << ", " <<      
       m_albumArtId << ", " <<
       (m_albumArtExt.empty() ? "NULL" : "'" + SQLEscape(m_albumArtExt) + "'") << ", " <<      
       (m_albumArtMimeType.empty() ? "NULL" : "'" + SQLEscape(m_albumArtMimeType) + "'") << ", " <<      

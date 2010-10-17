@@ -260,6 +260,10 @@ int fuppes_init(int argc, char* argv[], void(*p_log_cb)(const char* sz_log))
   // init config
 	#ifdef WIN32
 	string appDir = argv[0];
+	TCHAR path[MAX_PATH] = {0};
+	if(::GetModuleFileName(NULL, path, MAX_PATH)) {
+		appDir = ExtractFilePath(path);
+	}
 	cout << "AppDir: " << appDir << endl;
 	if(!CSharedConfig::Shared()->SetupConfig(appDir)) {
 	#else

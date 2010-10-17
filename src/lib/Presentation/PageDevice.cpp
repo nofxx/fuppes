@@ -150,7 +150,7 @@ std::string PageDevice::content()
     fuppes::StringListIterator iter;
     string selected = "";
     
-    result << "<select onchange=\"\">";
+    result << "<select id=\"device-" << pDevice->GetUUID() << "\" onchange=\"setDevice('" << pDevice->GetUUID() << "')\">";
 
     for(iter = list.begin(); iter != list.end(); iter++) {
       selected = "";

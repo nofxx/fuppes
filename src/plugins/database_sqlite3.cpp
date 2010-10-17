@@ -166,6 +166,12 @@ class CSQLiteResult: public CSQLResult
 		}
 
     std::string	asString(std::string fieldName) {
+
+      m_FieldValuesIterator = m_FieldValues.find(fieldName);
+      if(m_FieldValuesIterator == m_FieldValues.end()) {
+        fprintf(stderr, "[sqlite] unknown field: %s\n", fieldName.c_str());
+        return "";
+      }      
 		  return m_FieldValues[fieldName];
 		}
 

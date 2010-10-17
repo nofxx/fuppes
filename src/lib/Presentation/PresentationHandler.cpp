@@ -200,6 +200,13 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
     width = 50;
     height = 50;
   }
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/fuppes-icon-120x120.png") == 0) {
+    nPresentationPage = PRESENTATION_BINARY_IMAGE;
+		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "fuppes-icon-120x120.png");
+    pResult->SetContentType("image/png");
+    width = 120;
+    height = 120;
+  }
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/fuppes-icon-50x50.jpg") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
 		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "fuppes-icon-50x50.jpg");
@@ -207,6 +214,14 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
     width = 50;
     height = 50;
   }
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/fuppes-icon-120x120.jpg") == 0) {
+    nPresentationPage = PRESENTATION_BINARY_IMAGE;
+		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "fuppes-icon-120x120.jpg");
+    pResult->SetContentType("image/jpeg");
+    width = 120;
+    height = 120;
+  }
+  
   // webinterface images
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/fuppes-logo.png") == 0) {
     nPresentationPage = PRESENTATION_BINARY_IMAGE;
@@ -244,6 +259,10 @@ void CPresentationHandler::OnReceivePresentationRequest(CHTTPMessage* pMessage, 
   else if(ToLower(pMessage->GetRequest()).compare("/presentation/fuppes-config.js") == 0) {
     nPresentationPage = PRESENTATION_JAVASCRIPT;
 		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "fuppes-config.js");
+  }
+  else if(ToLower(pMessage->GetRequest()).compare("/presentation/fuppes-device.js") == 0) {
+    nPresentationPage = PRESENTATION_JAVASCRIPT;
+		pResult->LoadContentFromFile(CSharedConfig::Shared()->dataDir() + "fuppes-device.js");
   }
 
   isImage = false;

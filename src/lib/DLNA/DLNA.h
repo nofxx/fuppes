@@ -1,10 +1,10 @@
 /* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
- *            HTTPRequestHandler.h
+ *            DLNA.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2006-2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
+ *  Copyright (C) 2010 Ulrich Völkel <u-voelkel@users.sourceforge.net>
  ****************************************************************************/
 
 /*
@@ -22,36 +22,25 @@
  *  with this program; if not, write to the Free Software Foundation, Inc.,
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
- 
-#ifndef _HTTPREQUESTHANDLER_H
-#define _HTTPREQUESTHANDLER_H
+
+
+#ifndef DLNA_H
+#define DLNA_H
 
 #ifdef HAVE_CONFIG_H
-#include "../../config.h"
+#include <config.h>
 #endif
 
-#include "HTTPMessage.h"
+#include <string>
 
-
-class CHTTPRequestHandler
+class DLNA
 {
+
   public:
-    CHTTPRequestHandler(std::string p_sHTTPServerURL);
-  
-    bool HandleRequest(CHTTPMessage* pRequest, CHTTPMessage* pResponse);
-
-  private:
-    bool HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage* pResponse);
-    //bool HandleHTTPResponse();
-    bool HandleSOAPAction(CHTTPMessage* pRequest, CHTTPMessage* pResponse);    
-
-    bool HandleGENAMessage(CHTTPMessage* pRequest, CHTTPMessage* pResponse);
-  
-    bool handleAVItemRequest(std::string p_sObjectId, CHTTPMessage* pRequest, CHTTPMessage* pResponse, bool audio, std::string requestExt);
+  	static bool getImageProfile(std::string ext, int width, int height, std::string& dlnaProfile, std::string& mimeType);
+    static bool getAudioProfile(std::string ext, int channels, int bitrate, std::string& dlnaProfile, std::string& mimeType);
+    static bool getVideoProfile(std::string ext, std::string vcodec, std::string acodec, std::string& dlnaProfile, std::string& mimeType);
     
-		bool handleImageRequest(std::string p_sObjectId, CHTTPMessage* pRequest, CHTTPMessage* pResponse);
-			
-    std::string m_sHTTPServerURL;
 };
 
-#endif // _HTTPREQUESTHANDLER_H
+#endif // DLNA_H

@@ -36,7 +36,6 @@ extern "C" {
 
 typedef enum PLUGIN_TYPE {
 	PT_NONE,
-	PT_DLNA,
 	PT_METADATA,
 	PT_AUDIO_DECODER,
 	PT_AUDIO_ENCODER,

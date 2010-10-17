@@ -413,9 +413,9 @@ bool CFaadWrapper::LoadLib()
   sLibName = "libmp4ff.so.0"; 
   #endif 
 
-  if(!CSharedConfig::Shared()->Mp4ffLibName().empty()) { 
+  /*if(!CSharedConfig::Shared()->Mp4ffLibName().empty()) { 
     sLibName = CSharedConfig::Shared()->Mp4ffLibName();  
-  }
+  }*/
    
   CSharedLog::Shared()->Log(L_EXT, "try opening " + sLibName, __FILE__, __LINE__); 
   m_mp4ffLibHandle = FuppesLoadLibrary(sLibName);  

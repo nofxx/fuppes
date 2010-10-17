@@ -95,7 +95,7 @@ bool File::open(File::OpenMode mode)
 		openmode |= ios_base::trunc;
 	if(mode & Append)
 		openmode |= ios_base::app;
-	if(!mode & Text)
+	if(!(mode & Text))
 		openmode |= ios_base::binary;
   
 	m_fstream.open(m_fileName.c_str(), openmode);

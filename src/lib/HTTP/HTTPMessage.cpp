@@ -64,6 +64,8 @@ CHTTPMessage::CHTTPMessage()
   m_nTransferEncoding    = HTTP_TRANSFER_ENCODING_NONE;
 
   m_dlnaGetContentFeatures = false;
+
+  m_secGetCaptionInfo = false;
   
 	memset(&m_LocalEp, 0, sizeof(struct sockaddr_in));
 	memset(&m_RemoteEp, 0, sizeof(struct sockaddr_in));

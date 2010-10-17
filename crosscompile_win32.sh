@@ -283,9 +283,9 @@ cd ..
 
 # SQLite 3.6.23 (required)
 echo "start building sqlite"
-loadpkt "sqlite-amalgamation-3.6.23.1" ".tar.gz" \
+loadpkt "sqlite-amalgamation-3.7.3" ".tar.gz" \
         "http://www.sqlite.org/"
-cd sqlite-3.6.23.1
+cd sqlite-3.7.3
 ./configure --host=$HOST --prefix=$PREFIX \
 --enable-threadsafe
 $MAKE
@@ -542,7 +542,7 @@ fi
 #libpng (for ImageMagick and simage)
 if test "$HAVE_PNG" == "yes"; then
   echo "start building png"
-  loadpkt "libpng-1.4.2" ".tar.bz2" \
+  loadpkt "libpng-1.4.4" ".tar.bz2" \
           "http://prdownloads.sourceforge.net/libpng/"
   ./configure --host=$HOST --prefix=$PREFIX
   $MAKE
@@ -577,7 +577,7 @@ fi
 if test "$HAVE_IMAGEMAGICK" == "yes"; then
 
   echo "start building ImageMagick"
-  loadpkt "ImageMagick-6.5.8-5" ".tar.gz" \
+  loadpkt "ImageMagick-6.6.5-0" ".tar.gz" \
           "ftp://ftp.imagemagick.org/pub/ImageMagick/"
 
   sed -i -e 's/"\*.la"/"\*.dll"/' magick/module.c
@@ -620,7 +620,7 @@ sed -i -e 's/usleep/Sleep/' ffmpeg.c
 --enable-cross-compile --target-os=mingw32 --arch=x86 \
 --enable-memalign-hack --cross-prefix=$HOST- --enable-shared \
 --enable-gpl --disable-ffmpeg --disable-ffplay --disable-ffserver \
---disable-demuxer=dv1394 --disable-indevs
+--disable-demuxer=dv1394 --disable-indevs --disable-yasm
 
 $MAKE
 $MAKE_INSTALL
@@ -657,7 +657,7 @@ fi
 cd $FUPPES_DIR
 #CPPFLAGS="$CPPFLAGS -D__MSVCRT_VERSION__=0x0800" \
 #LIBS="$LIBS -lmsvcr80" \
-./configure --host=$HOST --prefix=$PREFIX --sysconfdir=$PREFIX/etc \
+./configure --host=$HOST --prefix=$PREFIX --localstatedir=$PREFIX/var \
 --enable-lame --enable-transcoder-ffmpeg --enable-windows-service
 $MAKE
 $MAKE_INSTALL

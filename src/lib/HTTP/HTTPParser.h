@@ -48,6 +48,7 @@ class CHTTPParser
 		static void parseCommonValues(std::string header, CHTTPMessage* message);
 		static void parseGetVars(std::string header, CHTTPMessage* message);
 		static void parseDlnaHeader(std::string header, CHTTPMessage* message);
+		static void parseSecHeader(std::string header, CHTTPMessage* message);
 };
 
 #endif // _HTTPPARSER_H

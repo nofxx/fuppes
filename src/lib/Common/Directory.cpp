@@ -253,6 +253,8 @@ void Directory::setPath(std::string path)
 #ifndef WIN32
 	string pattern = "/([\\s|\\w|\\d|\\.]+/\\.\\./)";
 #else
+#warning todo test
+	string pattern = "\\([\\s|\\w|\\d|\\.]+\\\\.\\.\\)";
 #endif
 
 	//cout << "DIR: " << path << endl;

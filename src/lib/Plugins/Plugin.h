@@ -42,7 +42,7 @@
 typedef void (*registerPlugin_t)(plugin_info* info);
 typedef void (*unregisterPlugin_t)(plugin_info* info);
 
-class CDlnaPlugin;
+//class CDlnaPlugin;
 class CMetadataPlugin;
 class CTranscoderPlugin;
 class CAudioDecoderPlugin;
@@ -61,7 +61,7 @@ class CPluginMgr
 		static void uninit();
 
 		// returns a reference to a single plugin instance
-		static CDlnaPlugin*						dlnaPlugin() { return m_instance->m_dlnaPlugin; }
+		//static CDlnaPlugin*						dlnaPlugin() { return m_instance->m_dlnaPlugin; }
 		//static CPresentationPlugin*		presentationPlugin() { return m_instance->m_presentationPlugin; }
 		static CDatabasePlugin*				databasePlugin(const std::string pluginName);
 
@@ -98,7 +98,7 @@ class CPluginMgr
 		std::map<std::string, CAudioEncoderPlugin*> m_audioEncoderPlugins;
 		std::map<std::string, CAudioEncoderPlugin*>::iterator m_audioEncoderPluginsIter;
 		
-		CDlnaPlugin*					m_dlnaPlugin;		
+		//CDlnaPlugin*					m_dlnaPlugin;		
 		//CPresentationPlugin*	m_presentationPlugin;
 		
 		std::map<std::string, CDatabasePlugin*> m_databasePlugins;
@@ -141,6 +141,7 @@ class CPlugin
 };
 
 
+/*
 typedef int (*dlnaGetImageProfile_t)(const char* ext, int width, int height, char* dlnaProfile, char* mimeType);
 typedef int (*dlnaGetAudioProfile_t)(const char* ext, int channels, int bitrate, char* dlnaProfile, char* mimeType);
 class CDlnaPlugin: public CPlugin
@@ -157,11 +158,12 @@ class CDlnaPlugin: public CPlugin
 		dlnaGetImageProfile_t			m_getImageProfile;
 		dlnaGetAudioProfile_t			m_getAudioProfile;
 };
+*/
 
 
 typedef int		(*metadataFileOpen_t)(plugin_info* plugin, const char* fileName);
 typedef int		(*metadataRead_t)(plugin_info* plugin, struct metadata_t* metadata);
-typedef int		(*metadataReadImage_t)(plugin_info* plugin, char** mimeType, unsigned char** buffer, size_t* size, int width, int height);
+typedef int		(*metadataReadImage_t)(plugin_info* plugin, char* mimeType, unsigned char** buffer, size_t* size, int width, int height);
 typedef void	(*metadataFileClose_t)(plugin_info* plugin);
 
 class CMetadataPlugin: public CPlugin
@@ -175,7 +177,7 @@ class CMetadataPlugin: public CPlugin
 	
 		bool openFile(std::string fileName);
 		bool readData(struct metadata_t* metadata);
-		bool readImage(char** mimeType, unsigned char** buffer, size_t* size, int width = 0, int height = 0);
+		bool readImage(char* mimeType, unsigned char** buffer, size_t* size, int width = 0, int height = 0);
 		void closeFile();
 	
 	private:

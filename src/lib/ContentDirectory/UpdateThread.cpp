@@ -262,11 +262,11 @@ void UpdateThread::run()
         
         size_t size = 0;
 	    	unsigned char* buffer = (unsigned char*)malloc(1);
-	    	char* mimeType = (char*)malloc(1);
-	    	memset(mimeType, 0, 1);
+	    	char mimeType[100];// = (char*)malloc(1);
+	    	//memset(mimeType, 0, 1);
 
 			  thumbnailer->openFile(filename);
-        bool hasImage = thumbnailer->readImage(&mimeType, &buffer, &size, 300);
+        bool hasImage = thumbnailer->readImage(&mimeType[0], &buffer, &size, 300);
     		thumbnailer->closeFile();
 			
 
@@ -283,6 +283,7 @@ void UpdateThread::run()
           // set the album art id to the same value as the object id
           obj->details()->setAlbumArtId(obj->objectId());
           obj->details()->setAlbumArtExt("jpg");
+          obj->details()->setAlbumArtMimeType(mimeType);
           obj->details()->save(&ins);
         }
         else {
@@ -291,7 +292,7 @@ void UpdateThread::run()
         }
         
         free(buffer);
-			  free(mimeType);
+			  //free(mimeType);
 
 
       } // if thumbnailer
@@ -530,6 +531,12 @@ void UpdateThread::updateVideoFile(DbObject* obj, SQLQuery* qry)
 
   ObjectDetails details;
   details.setSize(getFileSize(fileName));
+
+  // check for subtitles
+  if(File::exists(TruncateFileExt(fileName) + ".srt")) {
+    details.setHasSubtitlesFile(true);
+  }
+  
   if(gotMetadata) {
     details = videoItem;
   }

@@ -172,11 +172,11 @@ bool CUPnPSearch::prepareSQL()
 					sProp = "REF_ID";
 						
 					if(sVal.compare("true") == 0)
-					  sOp = "is not";
+					  sOp = ">";
 				  else if (sVal.compare("false") == 0)
-						sOp = "is";
+						sOp = "=";
 				
-					sVal = "NULL";
+					sVal = "0";
 				}
         
 			}

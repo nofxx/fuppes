@@ -260,3 +260,12 @@ void CHTTPParser::parseDlnaHeader(std::string header, CHTTPMessage* message) // 
   }
 
 }
+
+void CHTTPParser::parseSecHeader(std::string header, CHTTPMessage* message) // static
+{
+  RegEx rxGetCI("getCaptionInfo\\.sec: *(\\d+) *\r\n", PCRE_CASELESS);
+	if(rxGetCI.Search(header.c_str())) {
+    if(rxGetCI.match(1).compare("1") == 0)
+  		message->m_secGetCaptionInfo = true;
+	}
+}

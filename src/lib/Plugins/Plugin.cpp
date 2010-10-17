@@ -45,7 +45,7 @@ CPluginMgr* CPluginMgr::m_instance = 0;
 
 CPluginMgr::CPluginMgr()
 {
-	m_dlnaPlugin = NULL;
+	//m_dlnaPlugin = NULL;
 	//m_presentationPlugin = NULL;
 }
 
@@ -150,6 +150,7 @@ bool CPluginMgr::init_plugin(string fileName) {
     regPlugin(&pluginInfo);
 
     switch(pluginInfo.plugin_type) {
+      /*
       case PT_DLNA:
         if(m_instance->m_dlnaPlugin == NULL) {
           plugin = new CDlnaPlugin(handle, &pluginInfo);
@@ -165,6 +166,7 @@ bool CPluginMgr::init_plugin(string fileName) {
               fileName.c_str());
         }
         break;
+        */
       /*case PT_PRESENTATION:
         if(m_instance->m_presentationPlugin == NULL) {
           plugin = new CPresentationPlugin(handle, &pluginInfo);
@@ -319,10 +321,10 @@ void CPluginMgr::uninit() // static
 	m_instance->m_databasePlugins.clear();
 			
 
-	if(m_instance->m_dlnaPlugin) {
+	/*if(m_instance->m_dlnaPlugin) {
     m_instance->m_dlnaPlugin->uninit();    
 		delete m_instance->m_dlnaPlugin;
-  }
+  }*/
 
 	/*if(m_instance->m_presentationPlugin) {
     m_instance->m_presentationPlugin->uninit();
@@ -481,12 +483,12 @@ std::string CPluginMgr::printInfo(bool html /*= false*/)
 	}
 	result << br;
  
-	result << "misc:" << br;
+	/*result << "misc:" << br;
 	if(m_instance->m_dlnaPlugin)
-		result << "  " << m_instance->m_dlnaPlugin->name() << br;
+		result << "  " << m_instance->m_dlnaPlugin->name() << br;*/
 	/*if(m_instance->m_presentationPlugin)
 		result << "  " << m_instance->m_presentationPlugin->name() << br;*/
-	result << br;	
+	//result << br;	
 	
 	result << "metadata:" << br;
 	for(m_instance->m_metadataPluginsIter = m_instance->m_metadataPlugins.begin(); 
@@ -583,10 +585,10 @@ CPlugin::~CPlugin()
 	if(m_pluginUninitInstance && m_handle)
 		m_pluginUninitInstance(&m_pluginInfo);
 	
-  if(m_pluginInfo.plugin_type == PT_DLNA && m_handle != NULL) {
+  /*if(m_pluginInfo.plugin_type == PT_DLNA && m_handle != NULL) {
     FuppesCloseLibrary(m_handle);
     m_handle = NULL;
-  }
+  }*/
 }
 
 void CPlugin::uninit()
@@ -624,6 +626,7 @@ void CPlugin::logCb(void* plugin, int level, const char* file, int line, const c
  *  CDlnaPlugin
  */
 
+/*
 bool CDlnaPlugin::initPlugin()
 {
 	m_getImageProfile = NULL;
@@ -637,13 +640,6 @@ bool CDlnaPlugin::initPlugin()
 	if(m_getAudioProfile == NULL) {
 		return false;
 	}
-
-  /*
-	m_getVideoProfile = (dlnaGetVideoProfile_t)FuppesGetProcAddress(m_handle, "fuppes_dlna_get_video_profile");
-	if(m_getVideoProfile == NULL) {
-		return false;
-	}
-  */
   
 	return true;
 }
@@ -671,7 +667,7 @@ bool CDlnaPlugin::getAudioProfile(std::string ext, int channels, int bitrate, st
 	}
 	return false;	
 }
-
+*/
 
 /**
  *  CMetadataPlugin
@@ -726,7 +722,7 @@ bool CMetadataPlugin::readData(struct metadata_t* metadata)
 	return (m_readData(&m_pluginInfo, metadata) == 0);
 }
 
-bool CMetadataPlugin::readImage(char** mimeType, unsigned char** buffer, size_t* size, int width /*= 0*/, int height /*= 0*/)
+bool CMetadataPlugin::readImage(char* mimeType, unsigned char** buffer, size_t* size, int width /*= 0*/, int height /*= 0*/)
 {
 	if(m_readImage == NULL) {
 		return false;

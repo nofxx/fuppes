@@ -1,6 +1,5 @@
-/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; tab-width: 2 -*- */
 /***************************************************************************
- *            PageDevice.h
+ *            dlna_video_profiles.h
  *
  *  FUPPES - Free UPnP Entertainment Service
  *
@@ -23,25 +22,10 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _PAGEDEVICE_H
-#define _PAGEDEVICE_H
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
-
-
-#include "PresentationPage.h"
-
-class PageDevice: public PresentationPage
+bool dlna_get_video_profile_mpeg1(std::string vcodec, std::string acodec, std::string& profile, std::string& mimeType)
 {
-  public:
-    std::string alias() { return "device"; }
-    std::string title() { return "device settings"; }
-    std::string js()    { return "fuppes-device.js"; }
-    
-    std::string content();
-};
-
-
-#endif // _PAGEDEVICE_H
+  mimeType = "video/mpeg";
+  profile = "MPEG1";
+  return true;
+}

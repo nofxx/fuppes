@@ -4,7 +4,7 @@
  * 
  *  FUPPES - Free UPnP Entertainment Service
  *
- *  Copyright (C) 2005-2009 Ulrich Völkel <fuppes@ulrich-voelkel.de>
+ *  Copyright (C) 2005-2010 Ulrich Völkel <fuppes@ulrich-voelkel.de>
  ****************************************************************************/
 
 /*
@@ -153,6 +153,9 @@ class CContentDirectory: public CUPnPService
 
     void writeAlbumArtUrl(xmlTextWriterPtr pWriter, CUPnPAction* pAction, CSQLResult* pSQLResult);
     std::string buildObjectAlias(std::string objectId, CSQLResult* pSQLResult);
+
+
+    bool  m_hasSubtitles;
 };
 
 #endif // _CONTENTDIRECTORY_H

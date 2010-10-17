@@ -296,6 +296,25 @@ std::string CUPnPDevice::localDeviceDescription(CHTTPMessage* pRequest)
 						xmlTextWriterEndElement(writer);
 					xmlTextWriterEndElement(writer);
 
+          // 120x120 png
+					xmlTextWriterStartElement(writer, BAD_CAST "icon");
+						xmlTextWriterStartElement(writer, BAD_CAST "mimetype");
+						xmlTextWriterWriteString(writer, BAD_CAST "image/png");
+						xmlTextWriterEndElement(writer);
+						xmlTextWriterStartElement(writer, BAD_CAST "width");
+						xmlTextWriterWriteString(writer, BAD_CAST "120");
+						xmlTextWriterEndElement(writer);
+						xmlTextWriterStartElement(writer, BAD_CAST "height");
+						xmlTextWriterWriteString(writer, BAD_CAST "120");
+						xmlTextWriterEndElement(writer);
+						xmlTextWriterStartElement(writer, BAD_CAST "depth");
+						xmlTextWriterWriteString(writer, BAD_CAST "24");
+						xmlTextWriterEndElement(writer);        
+						xmlTextWriterStartElement(writer, BAD_CAST "url");
+						xmlTextWriterWriteString(writer, BAD_CAST "/presentation/fuppes-icon-120x120.png");
+						xmlTextWriterEndElement(writer);
+					xmlTextWriterEndElement(writer);
+        
           // 50x50 jpeg
 					xmlTextWriterStartElement(writer, BAD_CAST "icon");
 						xmlTextWriterStartElement(writer, BAD_CAST "mimetype");
@@ -312,6 +331,25 @@ std::string CUPnPDevice::localDeviceDescription(CHTTPMessage* pRequest)
 						xmlTextWriterEndElement(writer);        
 						xmlTextWriterStartElement(writer, BAD_CAST "url");
 						xmlTextWriterWriteString(writer, BAD_CAST "/presentation/fuppes-icon-50x50.jpg");
+						xmlTextWriterEndElement(writer);
+					xmlTextWriterEndElement(writer);
+
+          // 120x120 jpeg
+					xmlTextWriterStartElement(writer, BAD_CAST "icon");
+						xmlTextWriterStartElement(writer, BAD_CAST "mimetype");
+						xmlTextWriterWriteString(writer, BAD_CAST "image/jpeg");
+						xmlTextWriterEndElement(writer);
+						xmlTextWriterStartElement(writer, BAD_CAST "width");
+						xmlTextWriterWriteString(writer, BAD_CAST "120");
+						xmlTextWriterEndElement(writer);
+						xmlTextWriterStartElement(writer, BAD_CAST "height");
+						xmlTextWriterWriteString(writer, BAD_CAST "120");
+						xmlTextWriterEndElement(writer);
+						xmlTextWriterStartElement(writer, BAD_CAST "depth");
+						xmlTextWriterWriteString(writer, BAD_CAST "24");
+						xmlTextWriterEndElement(writer);        
+						xmlTextWriterStartElement(writer, BAD_CAST "url");
+						xmlTextWriterWriteString(writer, BAD_CAST "/presentation/fuppes-icon-120x120.jpg");
 						xmlTextWriterEndElement(writer);
 					xmlTextWriterEndElement(writer);
         

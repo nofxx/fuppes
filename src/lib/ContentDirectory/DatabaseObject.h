@@ -141,6 +141,8 @@ class ObjectDetails
       m_source = details.m_source;
       m_streamMimeType = details.m_streamMimeType;
 
+      m_v_hasSubtitlesFile = details.m_v_hasSubtitlesFile;
+      
       m_changed = true;
       
 	  	return *this;
@@ -175,6 +177,7 @@ class ObjectDetails
     DetailSource  source() { return m_source; }
     std::string   streamMimeType() { return m_streamMimeType; }   // for audio/video streams
 
+    bool          hasSubtitlesFile() { return m_v_hasSubtitlesFile; }
 
     void setTrackNumber(int trackNumber) {
       if(m_a_trackNumber != trackNumber) {
@@ -281,6 +284,13 @@ class ObjectDetails
       }
     }
 
+    void setHasSubtitlesFile(bool hasFile) {
+      if(m_v_hasSubtitlesFile != hasFile) {
+        m_v_hasSubtitlesFile = hasFile;
+        m_changed = true;
+      }
+    }
+
     void setAlbumArtId(object_id_t albumArtId) {
       if(m_albumArtId != albumArtId) {
         m_albumArtId = albumArtId;
@@ -366,6 +376,8 @@ class ObjectDetails
     DetailSource    m_source;
     std::string     m_streamMimeType;
 
+    bool            m_v_hasSubtitlesFile;
+    
     std::string     m_publisher;
     std::string     m_date;
     std::string     m_longDescription;

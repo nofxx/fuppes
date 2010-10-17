@@ -306,7 +306,7 @@ bool TCPSocket::connect()
 #else
     if (errno != WSAEWOULDBLOCK) {       
 #endif
-   		throw fuppes::Exception(__FILE__, __LINE__, "failed to connect to %s:%d", m_remoteAddress.c_str(), m_remotePort);
+   		return false; //throw fuppes::Exception(__FILE__, __LINE__, "failed to connect to %s:%d", m_remoteAddress.c_str(), m_remotePort);
     }
 
 

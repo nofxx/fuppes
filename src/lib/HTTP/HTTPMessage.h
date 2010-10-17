@@ -278,6 +278,10 @@ class CHTTPMessage
     // in that case we have to treat it as "Streaming" for Audio and Video objects
     // and "Interactive" for all other binaries
 
+    // getCaptionInfo.sec: 1
+    bool              secGetCaptionInfo() { return m_secGetCaptionInfo; }
+
+    
     
     bool             LoadContentFromFile(std::string);
     bool             TranscodeContentFromFile(std::string p_sFileName, fuppes::DbObject* object);
@@ -345,6 +349,8 @@ private:
     bool                m_dlnaGetContentFeatures;
     std::string         m_dlnaContentFeatures;
     std::string         m_dlnaTransferMode;
+
+    bool                m_secGetCaptionInfo;
   
     HTTP_TRANSFER_ENCODING m_nTransferEncoding;
   

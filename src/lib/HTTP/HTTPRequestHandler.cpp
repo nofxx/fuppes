@@ -36,6 +36,7 @@
 #include "../ContentDirectory/DatabaseConnection.h"
 #include "../Transcoding/TranscodingMgr.h"
 #include "../ControlInterface/SoapControl.h"
+#include "../DLNA/DLNA.h"
 
 //#include <iostream>
 #include <sstream>
@@ -139,7 +140,7 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
     pres.OnReceivePresentationRequest(pRequest, pResponse, isImage, width, height);
 
     // dlna
-    if(isImage && CPluginMgr::dlnaPlugin() != NULL &&
+    if(isImage && //CPluginMgr::dlnaPlugin() != NULL &&
       //(pRequest->dlnaGetContentFeatures() == true) &&
       (pRequest->DeviceSettings()->dlnaVersion() != CMediaServerSettings::dlna_none)) {
         
@@ -147,7 +148,7 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
       
       std::string mimeType;
       std::string profile;
-      CPluginMgr::dlnaPlugin()->getImageProfile(sExt, width, height, &profile, &mimeType);
+      DLNA::getImageProfile(sExt, width, height, profile, mimeType);
 
       std::string dlnaFeatures = CContentDirectory::buildDlnaInfo(false, profile);
       std::string dlnaMode = "Interactive";
@@ -209,13 +210,13 @@ bool CHTTPRequestHandler::HandleHTTPRequest(CHTTPMessage* pRequest, CHTTPMessage
     if(rxUrl.search(sRequest)) {
 
       string sObjectId = rxUrl.match(2);
-      // cout << rxUrl.match(3) << endl;
+      //cout << "request EXT: " << rxUrl.match(3) << "*" << endl;
 
       if(rxUrl.match(1).compare("Video") == 0) {
-			  bResult = handleAVItemRequest(sObjectId, pRequest, pResponse, false);
+			  bResult = handleAVItemRequest(sObjectId, pRequest, pResponse, false, rxUrl.match(3));
       }
       else if(rxUrl.match(1).compare("Audio") == 0) {
-			  bResult = handleAVItemRequest(sObjectId, pRequest, pResponse, true);
+			  bResult = handleAVItemRequest(sObjectId, pRequest, pResponse, true, rxUrl.match(3));
       }
       else if(rxUrl.match(1).compare("Image") == 0) {
 
@@ -298,7 +299,7 @@ bool CHTTPRequestHandler::HandleGENAMessage(CHTTPMessage* pRequest, CHTTPMessage
   return true;
 }
 
-bool CHTTPRequestHandler::handleAVItemRequest(std::string p_sObjectId, CHTTPMessage* pRequest, CHTTPMessage* pResponse, bool audio)
+bool CHTTPRequestHandler::handleAVItemRequest(std::string p_sObjectId, CHTTPMessage* pRequest, CHTTPMessage* pResponse, bool audio, std::string requestExt)
 {
   std::stringstream sSql;
   //OBJECT_TYPE       nObjectType;
@@ -333,9 +334,22 @@ bool CHTTPRequestHandler::handleAVItemRequest(std::string p_sObjectId, CHTTPMess
   }
 
 
-  transcode = pRequest->DeviceSettings()->DoTranscode(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
-  sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
-  targetExt = pRequest->DeviceSettings()->Extension(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
+  // check for subtitles
+  if(!audio && requestExt.compare("srt") == 0) {
+    sPath = TruncateFileExt(sPath) + "." + requestExt;
+    cout << "SUB REQUEST: " << sPath << "*" << endl;
+    if(!fuppes::File::exists(sPath))
+      return false;
+
+    pResponse->LoadContentFromFile(sPath);
+    pResponse->SetMessageType(HTTP_MESSAGE_TYPE_200_OK);
+    pResponse->SetContentType("application/x-subrip");
+    return true;
+  }
+
+  transcode = pRequest->DeviceSettings()->DoTranscode(sExt, qry.result()->asString("AUDIO_CODEC"), qry.result()->asString("VIDEO_CODEC"));
+  sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry.result()->asString("AUDIO_CODEC"), qry.result()->asString("VIDEO_CODEC"));
+  targetExt = pRequest->DeviceSettings()->Extension(sExt, qry.result()->asString("AUDIO_CODEC"), qry.result()->asString("VIDEO_CODEC"));
 
 
   if(!transcode) {
@@ -366,7 +380,7 @@ bool CHTTPRequestHandler::handleAVItemRequest(std::string p_sObjectId, CHTTPMess
   
 
   // dlna
-  if((CPluginMgr::dlnaPlugin() != NULL) &&
+  if(//(CPluginMgr::dlnaPlugin() != NULL) &&
      //(pRequest->dlnaGetContentFeatures() == true) &&
      (pRequest->DeviceSettings()->dlnaVersion() != CMediaServerSettings::dlna_none)) {
 
@@ -380,20 +394,25 @@ bool CHTTPRequestHandler::handleAVItemRequest(std::string p_sObjectId, CHTTPMess
         channels = qry.result()->asInt("A_CHANNELS");
         bitrate = qry.result()->asInt("A_BITRATE");
       }
-      
-      hasProfile = CPluginMgr::dlnaPlugin()->getAudioProfile(targetExt, channels, bitrate, &profile, &sMimeType);
+
+      if(audio) {
+        hasProfile = DLNA::getAudioProfile(targetExt, channels, bitrate, profile, sMimeType);
+      }
+      else {
+        //hasProfile = CPluginMgr::dlnaPlugin()->getVideoProfile(targetExt, channels, bitrate, &profile, &sMimeType);
+      }
     }
     else {
       //CPluginMgr::dlnaPlugin()->getVideoProfile();
     }
 
-    if(hasProfile) {
+    //if(hasProfile) {
       std::string dlnaFeatures = CContentDirectory::buildDlnaInfo(transcode, profile);
       std::string dlnaMode = (transcode ? "Streaming" : "Interactive");
 
       pResponse->dlnaContentFeatures(dlnaFeatures);
       pResponse->dlnaTransferMode(dlnaMode);
-    }
+    //}
   } // end dlna
   
   // we always set the response type to "200 OK"
@@ -525,8 +544,8 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 		size_t outSize = 0;
 		unsigned char* inBuffer = (unsigned char*)malloc(1);
 		unsigned char* outBuffer = (unsigned char*)malloc(1);
-		char* tmpMime = (char*)malloc(1);
-		memset(tmpMime, 0, 1);
+		char tmpMime[100];
+		//memset(tmpMime, 0, 1);
 		
 		// embedded image from audio or video file
 		bool transcode = true;
@@ -546,24 +565,24 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 				CSharedLog::Log(L_EXT, __FILE__, __LINE__, "metadata plugin %s not found", plugin.c_str());
 				free(inBuffer);
 				free(outBuffer);
-				free(tmpMime);
+				//free(tmpMime);
 			  return false;
       }
       
       
 			metadata->openFile(sPath);
 			inSize = 0;
-			if(!metadata->readImage(&tmpMime, &inBuffer, &inSize)) {
+			if(!metadata->readImage(&tmpMime[0], &inBuffer, &inSize)) {
 				metadata->closeFile();
 				CSharedLog::Log(L_EXT, __FILE__, __LINE__, "metadata plugin %s failed to read embedded image", "taglib");
 				free(inBuffer);
 				free(outBuffer);
-				free(tmpMime);
+				//free(tmpMime);
 		    return false;
 			}
 			metadata->closeFile();
 
-      // get the mime type and the extension of the extracted file
+      // get the mime type and the extension of the extracted file      
       sMimeType = tmpMime;
       sExt = pRequest->DeviceSettings()->extensionByMimeType(sMimeType);        
 			delete metadata;
@@ -584,7 +603,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 				CSharedLog::Log(L_EXT, __FILE__, __LINE__, "failed to load image file %s", sPath.c_str());
 				free(inBuffer);
 				free(outBuffer);
-				free(tmpMime);
+				//free(tmpMime);
 			  return false;
 			}
 			fsImg.seekg(0, ios::end); 
@@ -601,7 +620,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 				CSharedLog::Log(L_EXT, __FILE__, __LINE__, "image magick transcoder not available");
 				free(inBuffer);
 				free(outBuffer);
-				free(tmpMime);
+				//free(tmpMime);
 			  return false;
 			}
 		
@@ -645,8 +664,8 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 */
 		free(inBuffer);
 		free(outBuffer);
-		free(tmpMime);
-		return true;
+		//free(tmpMime);
+		//return true;
 	} // embedded audio or width|height via GET
 	
 
@@ -656,10 +675,10 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
     width = obj.details()->width();
     height = obj.details()->height();
     
-	  if(pRequest->DeviceSettings()->DoTranscode(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"))) {
+	  if(pRequest->DeviceSettings()->DoTranscode(sExt, qry.result()->asString("AUDIO_CODEC"), qry.result()->asString("VIDEO_CODEC"))) {
 		  CSharedLog::Log(L_EXT, __FILE__, __LINE__, "transcode %s",  sPath.c_str());
    
-		  sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
+		  sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry.result()->asString("AUDIO_CODEC"), qry.result()->asString("VIDEO_CODEC"));
 		  if(pRequest->GetMessageType() == HTTP_MESSAGE_TYPE_GET) {          
 			  DbObject object(qry.result());
 			  if(!pResponse->TranscodeContentFromFile(sPath, &object)) {
@@ -680,7 +699,7 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 		  }
 	  }
 	  else {
-		  sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry.result()->asString("A_CODEC"), qry.result()->asString("V_CODEC"));
+		  sMimeType = pRequest->DeviceSettings()->MimeType(sExt, qry.result()->asString("AUDIO_CODEC"), qry.result()->asString("VIDEO_CODEC"));
 		  pResponse->LoadContentFromFile(sPath);
 	  }
 
@@ -695,10 +714,8 @@ bool CHTTPRequestHandler::handleImageRequest(std::string p_sObjectId, CHTTPMessa
 
     std::string mimeType;
     std::string profile;
-    if(CPluginMgr::dlnaPlugin() != NULL) {
-      CPluginMgr::dlnaPlugin()->getImageProfile(sExt, width, height, &profile, &mimeType);
-      sMimeType = mimeType;
-    }
+    DLNA::getImageProfile(sExt, width, height, profile, mimeType);
+    sMimeType = mimeType;
 
     std::string dlnaFeatures = CContentDirectory::buildDlnaInfo(false, profile);
     std::string dlnaMode = "Interactive";

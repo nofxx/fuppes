@@ -28,7 +28,7 @@
 #endif
 
 // increment this value if the database structure has changed
-#define DB_VERSION 3
+#define DB_VERSION 4
 
 #include "ContentDatabase.h"
 #include "../SharedConfig.h"

@@ -178,7 +178,7 @@ void taglib_check_image(plugin_info* info, metadata_t* metadata)
 	delete mpegFile;
 }
 
-int taglib_read_image(plugin_info* info, char** mimeType, unsigned char** buffer, size_t* size)
+int taglib_read_image(plugin_info* info, char* mimeType, unsigned char** buffer, size_t* size)
 {
 	*size = 0;
 	TagLib::MPEG::File* mpegFile = new TagLib::MPEG::File(((TagLib::FileRef*)info->user_data)->file()->name());
@@ -201,8 +201,8 @@ int taglib_read_image(plugin_info* info, char** mimeType, unsigned char** buffer
 		return -1;
 	}
 
-	set_value_old(mimeType, picFrame->mimeType().toCString());
-	
+  strcpy(mimeType, picFrame->mimeType().toCString());
+  
 	const TagLib::ByteVector pic = picFrame->picture();
 	*buffer = (unsigned char*)realloc(*buffer, pic.size());
   memcpy(*buffer, pic.data(), pic.size());
@@ -261,7 +261,7 @@ int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
 	return 0;
 }
 
-int fuppes_metadata_read_image(plugin_info* plugin, char** mimeType, unsigned char** buffer, size_t* size)
+int fuppes_metadata_read_image(plugin_info* plugin, char* mimeType, unsigned char** buffer, size_t* size)
 {
 	return taglib_read_image(plugin, mimeType, buffer, size);
 }

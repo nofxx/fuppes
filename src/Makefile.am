@@ -230,6 +230,11 @@ libfuppes_la_SOURCES = \
 	lib/Configuration/TranscodingSettings.cpp\
 	lib/Configuration/PathFinder.h\
 	lib/Configuration/PathFinder.cpp\
+	lib/DLNA/DLNA.h\
+	lib/DLNA/DLNA.cpp\
+	lib/DLNA/dlna_audio_profiles.h\
+	lib/DLNA/dlna_image_profiles.h\
+	lib/DLNA/dlna_video_profiles.h\
   lib/SharedConfig.cpp\
   lib/SharedLog.cpp\
   lib/Log.h\
