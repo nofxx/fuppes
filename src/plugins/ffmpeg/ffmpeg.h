@@ -45,6 +45,7 @@ extern "C"
   #include <libavcodec/opt.h>
   #include <libavutil/pixdesc.h>
   #include <libavutil/parseutils.h>
+  #include <libavutil/mathematics.h>
   
   #ifdef HAVE_LIBSWSCALE
 	#include <libswscale/swscale.h>
@@ -173,6 +174,7 @@ typedef struct AVMetaDataMap {
 #define MAX_FILES 1
 #define MAX_STREAMS 42
 #define NUM_OPTIONS 30
+#define FFM_PACKET_SIZE 4096
 
 class CFFmpeg {
 
@@ -1366,11 +1368,12 @@ void opt_new_subtitle_stream(void)
     }
 
     if (subtitle_language) {
-        #ifdef HAVE_AVSTRING_H
-        av_strlcpy(st->language, subtitle_language, sizeof(st->language));
+	av_metadata_set2(&st->metadata, "language", subtitle_language, NULL);
+        /*#ifdef HAVE_AVSTRING_H
+        //av_strlcpy(st->language, subtitle_language, sizeof(st->language));
         #else
         pstrcpy(st->language, sizeof(st->language), subtitle_language);      
-        #endif
+        #endif*/
         av_free(subtitle_language);
         subtitle_language = NULL;
     }
@@ -1473,29 +1476,16 @@ void opt_output_file(const char *filename)
 
         oc->timestamp = rec_timestamp;
 
-        #ifdef HAVE_AVSTRING_H
         if (str_title)
-            av_strlcpy(oc->title, str_title, sizeof(oc->title));
+            av_metadata_set2(&oc->metadata, "title", str_title, 0);
         if (str_author)
-            av_strlcpy(oc->author, str_author, sizeof(oc->author));
+            av_metadata_set2(&oc->metadata, "artist", str_author, 0);
         if (str_copyright)
-            av_strlcpy(oc->copyright, str_copyright, sizeof(oc->copyright));
+            av_metadata_set2(&oc->metadata, "copyright", str_copyright, 0);
         if (str_comment)
-            av_strlcpy(oc->comment, str_comment, sizeof(oc->comment));
+            av_metadata_set2(&oc->metadata, "comment", str_comment, 0);
         if (str_album)
-            av_strlcpy(oc->album, str_album, sizeof(oc->album));
-        #else
-        if (str_title)
-            pstrcpy(oc->title, sizeof(oc->title), str_title);
-        if (str_author)
-            pstrcpy(oc->author, sizeof(oc->author), str_author);
-        if (str_copyright)
-            pstrcpy(oc->copyright, sizeof(oc->copyright), str_copyright);
-        if (str_comment)
-            pstrcpy(oc->comment, sizeof(oc->comment), str_comment);
-        if (str_album)
-            pstrcpy(oc->album, sizeof(oc->album), str_album);
-        #endif
+            av_metadata_set2(&oc->metadata, "album", str_album, 0);
     }
 
     output_files[nb_output_files++] = oc;
