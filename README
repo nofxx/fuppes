@@ -54,7 +54,7 @@ them requires you to find the associated library through `aptitude search'.
 $ make
 $ sudo make install
 $ sudo adduser --system --home /var/lib/fuppes --shell /bin/sh --group --no-create-home fuppes
-$ sudo chown fuppes:fuppes /var/lib/fuppes
+$ sudo chown -R fuppes:fuppes /var/lib/fuppes
 $ sudo cp daemon/fuppesd.txt /etc/init.d/fuppesd
 $ sudo chmod +x /etc/init.d/fuppesd
 $ sudo update-rc.d fuppesd defaults 60
