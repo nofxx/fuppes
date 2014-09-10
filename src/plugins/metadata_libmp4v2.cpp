@@ -58,60 +58,52 @@ int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
 		return -1;
 	}
 
-	char* value;
-	
+	const MP4Tags* tags = MP4TagsAlloc();
+	MP4TagsFetch(tags, mp4file);
+
 	// title
-	MP4GetMetadataName(mp4file, &value);
-	if(value) {
-		set_value(metadata->title, sizeof(metadata->title), value);
-		free(value);
+	if(tags->name) {
+		set_value(metadata->title, sizeof(metadata->title), tags->name);
 	}
 	
 	// duration
 	u_int32_t scale = MP4GetTimeScale(mp4file);//scale is ticks in secs, used same value in duration.
 	MP4Duration length = MP4GetDuration(mp4file);
-  length = length / scale;
-  metadata->duration_ms = length * 1000;
+	length = length / scale;
+	metadata->duration_ms = length * 1000;
   
 	// channels
-	metadata->nr_audio_channels = MP4GetTrackAudioChannels(mp4file, 
-																		MP4FindTrackId(mp4file, 0, MP4_AUDIO_TRACK_TYPE));
+	metadata->nr_audio_channels =
+		MP4GetTrackAudioChannels(mp4file, MP4FindTrackId(mp4file, 0, MP4_AUDIO_TRACK_TYPE));
 	// bitrate
-	metadata->audio_bitrate = MP4GetTrackBitRate(mp4file, 
-														MP4FindTrackId(mp4file, 0, MP4_AUDIO_TRACK_TYPE));
+	metadata->audio_bitrate =
+		MP4GetTrackBitRate(mp4file, MP4FindTrackId(mp4file, 0, MP4_AUDIO_TRACK_TYPE));
 	metadata->audio_bits_per_sample = 0;
 
 	// artist
-	MP4GetMetadataArtist(mp4file, &value);
-	if(value) {
-		set_value(metadata->artist, sizeof(metadata->artist), value);
-		free(value);
+	if(tags->artist) {
+		set_value(metadata->artist, sizeof(metadata->artist), tags->artist);
 	}
 	
 	// genre
-	MP4GetMetadataGenre(mp4file, &value);
-	if(value) {
-		set_value(metadata->genre, sizeof(metadata->genre), value);
-		free(value);
+	if(tags->genre) {
+		set_value(metadata->genre, sizeof(metadata->genre), tags->genre);
 	}
 	
 	// Album
-	MP4GetMetadataAlbum(mp4file, &value);
-	if(value) {
-		set_value(metadata->album, sizeof(metadata->album), value);
-		free(value);
+	if(tags->album) {
+		set_value(metadata->album, sizeof(metadata->album), tags->album);
 	}
 	
 	// description/comment
-	MP4GetMetadataComment(mp4file, &value);
-	if(value) {
-		set_value(metadata->description, sizeof(metadata->description), value);
-		free(value);
+	if(tags->comments) {
+		set_value(metadata->description, sizeof(metadata->description), tags->comments);
 	}
 
 	// track no.
 	u_int16_t track, totaltracks;
-	MP4GetMetadataTrack(mp4file, &track, &totaltracks);
+	track = tags->track->index;
+	totaltracks = tags->track->total;
 	metadata->track_number = track;
 
 	// date/year
@@ -121,6 +113,7 @@ int fuppes_metadata_read(plugin_info* plugin, metadata_t* metadata)
 		free(value);
 	}*/
 
+	MP4TagsFree(tags);
 	MP4Close(mp4file);
 	
 	return 0;

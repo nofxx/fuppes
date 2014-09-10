@@ -132,7 +132,7 @@ void parse_options(int argc, char **argv, OptionDef **options, CFFmpeg* pFFmpeg)
 void print_error(const char *filename, int err)
 {
     switch(err) {
-    case AVERROR_NUMEXPECTED:
+    case AVERROR(EINVAL):
         fprintf(stderr, "%s: Incorrect image filename syntax.\n"
                 "Use '%%d' to specify the image number:\n"
                 "  for img1.jpg, img2.jpg, ..., use 'img%%d.jpg';\n"
@@ -142,7 +142,7 @@ void print_error(const char *filename, int err)
     case AVERROR_INVALIDDATA:
         fprintf(stderr, "%s: Error while parsing header\n", filename);
         break;
-    case AVERROR_NOFMT:
+    case AVERROR(EILSEQ):
         fprintf(stderr, "%s: Unknown format\n", filename);
         break;
     case AVERROR(EIO):
